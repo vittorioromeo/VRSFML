@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Assume.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
@@ -89,6 +90,8 @@ namespace sf::base
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
+
     return priv::sinTable.data[priv::fastSinIdx(radians) & priv::sinMask];
 }
 
@@ -99,6 +102,8 @@ namespace sf::base
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
+
     return priv::sinTable.data[priv::fastCosIdx(radians) & priv::sinMask];
 }
 
@@ -109,6 +114,7 @@ namespace sf::base
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto fastSinCos(float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
 
     struct Result
     {

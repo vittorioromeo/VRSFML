@@ -7,7 +7,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
@@ -20,7 +20,7 @@ namespace sf
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API Sprite : Transformable, AnchorPointMixin<Sprite>
+struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<Sprite>
 {
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -53,6 +53,7 @@ struct SFML_GRAPHICS_API Sprite : Transformable, AnchorPointMixin<Sprite>
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
     FloatRect textureRect;         //!< Rectangle defining the area of the source texture to display
     Color     color{Color::White}; //!< Color of the sprite
 };

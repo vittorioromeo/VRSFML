@@ -25,7 +25,7 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sprite));
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Sprite)); // because of member initializers
-        STATIC_CHECK(!SFML_BASE_IS_STANDARD_LAYOUT(sf::Sprite)); // "only one class in the hierarchy has non-static data members"
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Sprite));
         STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Sprite));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Sprite));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Sprite));
