@@ -294,6 +294,10 @@ public:
         drawableObject.draw(*this, states);
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     struct TextureDrawParams
     {
         Vector2f position{};      //!< Position of the object in the 2D world
@@ -309,6 +313,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
+    ///
+    /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
+    /// rotation, scale, and color
     ///
     /// \param sprite Texture to draw
     /// \param states Render states to use for drawing

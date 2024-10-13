@@ -1,4 +1,4 @@
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 
 #include <Doctest.hpp>
 
@@ -6,26 +6,32 @@
 #include <GraphicsUtil.hpp>
 
 
+struct TestTransformable : sf::TransformableMixin<TestTransformable>
+{
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+};
+
+
 TEST_CASE("[Graphics] sf::Transformable")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Transformable));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestTransformable));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Transformable)); // because of member initializers
-        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Transformable));
-        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Transformable, sf::Transformable));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(TestTransformable)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TestTransformable));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(TestTransformable, TestTransformable));
     }
 
     SECTION("Construction")
     {
-        const sf::Transformable transformable;
+        const TestTransformable transformable;
         CHECK(transformable.position == sf::Vector2f{0, 0});
         CHECK(transformable.rotation == sf::Angle::Zero);
         CHECK(transformable.scale == sf::Vector2f{1, 1});
@@ -36,7 +42,7 @@ TEST_CASE("[Graphics] sf::Transformable")
 
     SECTION("Setters and getters")
     {
-        sf::Transformable transformable;
+        TestTransformable transformable;
 
         transformable.position = {3, 4};
         CHECK(transformable.position == sf::Vector2f{3, 4});
@@ -115,7 +121,7 @@ TEST_CASE("[Graphics] sf::Transformable")
 
     SECTION("Movement")
     {
-        sf::Transformable transformable;
+        TestTransformable transformable;
         CHECK(transformable.position == sf::Vector2f{0, 0});
         transformable.position += {9, 10};
         CHECK(transformable.position == sf::Vector2f{9, 10});
@@ -125,7 +131,7 @@ TEST_CASE("[Graphics] sf::Transformable")
 
     SECTION("Rotation")
     {
-        sf::Transformable transformable;
+        TestTransformable transformable;
         CHECK(transformable.rotation == sf::Angle::Zero);
         transformable.rotation += sf::degrees(15);
         CHECK(transformable.rotation == Approx(sf::degrees(15)));
@@ -141,7 +147,7 @@ TEST_CASE("[Graphics] sf::Transformable")
 
     SECTION("scaleBy()")
     {
-        sf::Transformable transformable;
+        TestTransformable transformable;
         CHECK(transformable.scale == sf::Vector2f{1, 1});
         transformable.scaleBy({2, 3});
         CHECK(transformable.scale == sf::Vector2f{2, 3});

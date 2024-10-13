@@ -18,8 +18,8 @@ Transform& Transform::rotate(Angle angle)
     const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
 
     // clang-format off
-    const Transform rotation(cosine, -sine, 0,
-                             sine,  cosine, 0);
+    const Transform rotation(cosine, -sine, 0.f,
+                             sine,  cosine, 0.f);
     // clang-format on
 
     return combine(rotation);
@@ -32,8 +32,8 @@ Transform& Transform::rotate(Angle angle, Vector2f center)
     const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
 
     // clang-format off
-    const Transform rotation(cosine, -sine, center.x * (1 - cosine) + center.y * sine,
-                             sine,  cosine, center.y * (1 - cosine) - center.x * sine);
+    const Transform rotation(cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
+                             sine,  cosine, center.y * (1.f - cosine) - center.x * sine);
     // clang-format on
 
     return combine(rotation);

@@ -4,7 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Transform.hpp"
-#include "SFML/Graphics/Transformable.hpp" // NOLINT(misc-header-include-cycle)
+#include "SFML/Graphics/TransformableMixin.hpp"
 
 #include "SFML/Base/FastSinCos.hpp"
 
@@ -14,18 +14,17 @@
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-Transform Transformable::getTransform() const
+Transform TransformableMixinBase::getTransform(const Vector2f position,
+                                               const Vector2f scale,
+                                               const Vector2f origin,
+                                               const float    radians) const
 {
-    const auto [sine, cosine] = base::fastSinCos(rotation.asRadians());
+    const auto [sine, cosine] = base::fastSinCos(radians);
+
+    SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
+    SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+
     return Transform::from(position, scale, origin, sine, cosine);
-}
-
-
-////////////////////////////////////////////////////////////
-Transform Transformable::getInverseTransform() const
-{
-    return getTransform().getInverse();
 }
 
 } // namespace sf

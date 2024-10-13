@@ -498,12 +498,15 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
     states.texture        = &texture;
     states.coordinateType = CoordinateType::Pixels;
 
-    const auto transform = Transform::from(/* position */ {0.f, 0.f},
-                                           /* scale */ {1.f, 1.f},
-                                           /* origin */ {0.f, 0.f});
-
     Vertex buffer[4];
-    appendPreTransformedSpriteVertices(transform, texture.getRect(), Color::White, buffer);
+
+    appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
+                                                       /* scale */ {1.f, 1.f},
+                                                       /* origin */ {0.f, 0.f}),
+                                       texture.getRect(),
+                                       Color::White,
+                                       buffer);
+
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }
 
@@ -515,11 +518,14 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
     states.coordinateType = CoordinateType::Pixels;
 
     const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
-    const auto transform      = Transform::from(params.position, params.scale, params.origin, sine, cosine);
-    const auto textureRect    = (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect;
 
     Vertex buffer[4];
-    appendPreTransformedSpriteVertices(transform, textureRect, params.color, buffer);
+
+    appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
+                                       (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+                                       params.color,
+                                       buffer);
+
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }
 
