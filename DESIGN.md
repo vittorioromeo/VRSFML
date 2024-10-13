@@ -199,13 +199,19 @@
     /* sf::Sprite sprite(texture); */
 
     // OK, prepare the sprite to eventually display the entire texture
-    sf::Sprite sprite(texture.getRect());
+    sf::Sprite sprite{.textureRect = texture.getRect()};
 
     // ERROR, does not compile -- a texture (or the lack thereof) has to be provided during the draw call.
     /* window.draw(sprite); */
 
     // OK, user has a valid texture available at the point of the draw call -- no lifetime woes!
     window.draw(sprite, texture);
+
+    // Alternatively, just draw the texture directly...
+    window.draw(texture);
+
+    // ...or with some parameters:
+    window.draw(texture, {.position = {25.f, 25.f}, .rotation = sf::degrees(180.f)});
     ```
 
     </details>

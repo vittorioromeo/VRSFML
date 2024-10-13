@@ -85,19 +85,13 @@ int main()
                                         {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
 
     leftInnerRT.clear();
-
-    sf::Sprite sprite(texture.getRect());
-    leftInnerRT.draw(sprite, texture);
+    leftInnerRT.draw(texture);
 
 
     leftInnerRT.display();
 
 
     auto winRT = sf::Texture::create(graphicsContext, window.getSize()).value();
-
-
-    sf::Sprite winRTSprite(winRT.getRect());
-    winRTSprite.scale = {0.2f, 0.2f};
 
     // auto finalImage = baseRenderTexture.getTexture().copyToImage();
     // auto finalTx    = sf::Texture::loadFromImage(graphicsContext, finalImage).value();
@@ -108,8 +102,8 @@ int main()
         std::cout << "fail " #__VA_ARGS__ << '\n'; \
     }
 
-    sf::Sprite rtSprite(baseRenderTexture.getTexture().getRect());
-    sf::Sprite rtAASprite(baseRenderTextureAA.getTexture().getRect());
+    sf::Sprite rtSprite{.textureRect=baseRenderTexture.getTexture().getRect()};
+    sf::Sprite rtAASprite{.textureRect=baseRenderTextureAA.getTexture().getRect()};
 
     while (true)
     {
@@ -153,9 +147,7 @@ int main()
         if (!rc)
             throw 100;
 
-        winRTSprite.position = {256, 256};
-        window.draw(winRTSprite, winRT);
-
+        window.draw(winRT{.position = {256, 256}, .scale = {0.2f, 0.2f}});
         window.display();
     }
 }
@@ -173,14 +165,14 @@ int main()
 
     auto texture = sf::Texture::loadFromFile(graphicsContext, "resources/biga.png").value();
 
-    sf::Sprite sprite(texture.getRect());
+    sf::Sprite sprite{.textureRect = texture.getRect()};
 
     sprite.scale = {(float)size.x / texture.getSize().x, (float)size.y / texture.getSize().y / 2.f};
 
     auto render = sf::RenderTexture::create(graphicsContext, {size.x, (unsigned int)(size.y / 2.f)}, {.antiAliasingLevel = 4})
                       .value();
 
-    sf::Sprite rndrSprite(render.getTexture().getRect());
+    sf::Sprite rndrSprite{.textureRect = render.getTexture().getRect()};
     rndrSprite.position = {0.f, (float)size.y / 2.f};
 
     const char* shaderSrc = R"glsl(
@@ -435,11 +427,8 @@ int main()
         renderTextures[0].clear();
         renderTextures[1].clear();
 
-        sf::Sprite sprite(texture.getRect());
-        renderTextures[0].draw(sprite, texture);
-
-        sprite.color = sf::Color::Green;
-        renderTextures[1].draw(sprite, texture);
+        renderTextures[0].draw(texture);
+        renderTextures[1].draw(texture, {.color = sf::Color::Green});
 
         baseRenderTexture.clear();
 
@@ -456,8 +445,7 @@ int main()
 
         baseRenderTexture.display();
 
-        window.draw(sf::Sprite(baseRenderTexture.getTexture().getRect()), baseRenderTexture.getTexture());
-
+        window.draw(baseRenderTexture.getTexture());
         window.display();
     }
 
@@ -526,10 +514,8 @@ int main()
 
             for (const auto& j : renderTexture)
             {
-                sf::Sprite sprite(j.getTexture().getRect());
-
                 for (int k = 0; k < 10; ++k)
-                    window.draw(sprite, j.getTexture());
+                    window.draw(j.getTexture());
             }
         }
 

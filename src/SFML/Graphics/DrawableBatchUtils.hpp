@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -48,6 +49,42 @@ using IndexType = unsigned int;
 
 
 ////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteVertices(
+    const Transform& transform,
+    const FloatRect& textureRect,
+    const Color      color,
+    Vertex* const    vertexPtr)
+{
+    const auto& [position, size] = textureRect;
+    const Vector2f absSize(base::fabs(size.x), base::fabs(size.y)); // TODO P0: consider dropping support for negative UVs
+
+    // Position
+    vertexPtr[0].position.x = transform.a02;
+    vertexPtr[0].position.y = transform.a12;
+
+    vertexPtr[1].position.x = transform.a01 * absSize.y + transform.a02;
+    vertexPtr[1].position.y = transform.a11 * absSize.y + transform.a12;
+
+    vertexPtr[2].position.x = transform.a00 * absSize.x + transform.a02;
+    vertexPtr[2].position.y = transform.a10 * absSize.x + transform.a12;
+
+    vertexPtr[3].position = transform.transformPoint(absSize);
+
+    // Color
+    vertexPtr[0].color = color;
+    vertexPtr[1].color = color;
+    vertexPtr[2].color = color;
+    vertexPtr[3].color = color;
+
+    // Texture Coordinates
+    vertexPtr[0].texCoords = position;
+    vertexPtr[1].texCoords = position + Vector2f{0.f, size.y};
+    vertexPtr[2].texCoords = position + Vector2f{size.x, 0.f};
+    vertexPtr[3].texCoords = position + size;
+}
+
+
+////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedQuadVertices(
     Vertex*&         vertexPtr,
     const Transform& transform,
@@ -77,7 +114,7 @@ using IndexType = unsigned int;
     Vertex* const   vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
-    priv::spriteToVertices(sprite, vertexPtr);
+    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
 
 

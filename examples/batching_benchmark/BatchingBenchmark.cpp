@@ -110,7 +110,7 @@ int main()
                                                                            .fillColor        = sf::Color::Black,
                                                                            .outlineColor     = sf::Color::White,
                                                                            .outlineThickness = 5.f}},
-                                                                 sf::Sprite{textureRect},
+                                                                 sf::Sprite{.textureRect = textureRect},
                                                                  getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;

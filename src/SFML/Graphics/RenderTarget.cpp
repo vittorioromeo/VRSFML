@@ -4,8 +4,10 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/GLBufferObject.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/GLSyncGuard.hpp"
@@ -33,6 +35,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/OffsetOf.hpp"
+#include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -490,14 +493,45 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Texture& texture, RenderStates states)
+{
+    states.texture        = &texture;
+    states.coordinateType = CoordinateType::Pixels;
+
+    const auto transform = Transform::from(/* position */ {0.f, 0.f},
+                                           /* scale */ {1.f, 1.f},
+                                           /* origin */ {0.f, 0.f});
+
+    Vertex buffer[4];
+    appendPreTransformedSpriteVertices(transform, texture.getRect(), Color::White, buffer);
+    draw(buffer, PrimitiveType::TriangleStrip, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params, RenderStates states)
+{
+    states.texture        = &texture;
+    states.coordinateType = CoordinateType::Pixels;
+
+    const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
+    const auto transform      = Transform::from(params.position, params.scale, params.origin, sine, cosine);
+    const auto textureRect    = (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect;
+
+    Vertex buffer[4];
+    appendPreTransformedSpriteVertices(transform, textureRect, params.color, buffer);
+    draw(buffer, PrimitiveType::TriangleStrip, states);
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
 {
     states.texture        = &texture;
     states.coordinateType = CoordinateType::Pixels;
 
     Vertex buffer[4];
-    priv::spriteToVertices(sprite, buffer);
-
+    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
     draw(buffer, PrimitiveType::TriangleStrip, states);
 }
 

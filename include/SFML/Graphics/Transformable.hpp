@@ -59,7 +59,7 @@ struct SFML_GRAPHICS_API Transformable
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Transform getTransform() const;
+    [[nodiscard, gnu::pure, gnu::flatten]] Transform getTransform() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief get the inverse of the combined transform of the object
