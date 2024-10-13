@@ -5,6 +5,7 @@
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::Transformable")
 {
     SECTION("Type traits")

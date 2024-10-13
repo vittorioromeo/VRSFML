@@ -586,17 +586,14 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 ///
 /// Usage example:
 /// \code
-/// // This example shows the most common use of sf::Texture:
+/// // This example shows the most common use of `sf::Texture`:
 /// // drawing a sprite
 ///
 /// // Load a texture from a file
 /// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
-/// // Create a sprite covering the entirety of the texture
-/// sf::Sprite sprite(texture.getRect());
-///
-/// // Draw the sprite with the intended texture
-/// window.draw(sprite, texture);
+/// // Draw the texture
+/// window.draw(texture);
 /// \endcode
 ///
 /// \code
@@ -606,9 +603,6 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 /// // Create an empty texture
 /// auto texture = sf::Texture::create({640, 480}).value();
 ///
-/// // Create a sprite covering the entirety of the texture
-/// sf::Sprite sprite(texture.getRect());
-///
 /// while (...) // the main loop
 /// {
 ///     ...
@@ -617,8 +611,8 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 ///     base::U8* pixels = ...; // get a fresh chunk of pixels (the next frame of a movie, for example)
 ///     texture.update(pixels);
 ///
-///     // draw the sprite with the intended texture
-///     window.draw(sprite, texture);
+///     // draw the texture
+///     window.draw(texture);
 ///
 ///     ...
 /// }

@@ -168,11 +168,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         leftInnerRT.clear();
         rightInnerRT.clear();
 
-        sf::Sprite sprite(texture.getRect());
-        leftInnerRT.draw(sprite, texture);
-
-        sprite.color = sf::Color::Green;
-        rightInnerRT.draw(sprite, texture);
+        leftInnerRT.draw(texture);
+        rightInnerRT.draw(texture, {.color = sf::Color::Green});
 
         baseRenderTexture.clear();
 
@@ -230,9 +227,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
                                             {{halfWidth, height}, sf::Color::Green, {halfWidth, height}}};
 
         leftInnerRT.clear();
-
-        sf::Sprite sprite(texture.getRect());
-        leftInnerRT.draw(sprite, texture);
+        leftInnerRT.draw(texture);
 
         baseRenderTexture.clear();
 

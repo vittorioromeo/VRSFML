@@ -294,6 +294,38 @@ public:
         drawableObject.draw(*this, states);
     }
 
+    struct TextureDrawParams
+    {
+        Vector2f position{};      //!< Position of the object in the 2D world
+        Vector2f scale{1.f, 1.f}; //!< Scale of the object
+        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        Angle rotation{}; //!< Orientation of the object
+
+        FloatRect textureRect{};       //!< Rectangle defining the area of the source texture to display
+        Color     color{Color::White}; //!< Color of the sprite
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// \param sprite Texture to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture& texture, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// \param sprite Texture to draw
+    /// \param params Drawing parameters
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states = RenderStates::Default);
+
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
     ///
@@ -301,6 +333,7 @@ public:
     ///
     /// \param sprite  Sprite to draw
     /// \param texture Texture associated with the sprite
+    /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Sprite& sprite, const Texture& texture, RenderStates states = RenderStates::Default);

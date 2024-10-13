@@ -77,7 +77,7 @@ public:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
         states.shader = &m_shader;
-        target.draw(sf::Sprite{m_texture.getRect()}, m_texture, states);
+        target.draw(m_texture, states);
     }
 
 private:
@@ -215,17 +215,14 @@ public:
 
         // Render the updated scene to the off-screen surface
         m_surface.clear(sf::Color::White);
-
-        sf::Sprite backgroundSprite{m_backgroundTexture.getRect()};
-        backgroundSprite.position = {135.f, 100.f};
-        m_surface.draw(backgroundSprite, m_backgroundTexture);
+        m_surface.draw(m_backgroundTexture, {.position = {135.f, 100.f}});
 
         // Update the position of the moving entities
         constexpr int numEntities = 6;
 
         for (int i = 0; i < 6; ++i)
         {
-            sf::Sprite entity{{{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
+            sf::Sprite entity{.textureRect = {{96.f * static_cast<float>(i), 0.f}, {96.f, 96.f}}};
 
             entity.position =
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
@@ -242,7 +239,7 @@ public:
         const sf::Texture& texture = m_surface.getTexture();
 
         states.shader = &m_shader;
-        target.draw(sf::Sprite{texture.getRect()}, texture, states);
+        target.draw(texture, states);
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
@@ -457,9 +454,6 @@ int main()
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, "resources/text-background.png").value();
-    sf::Sprite textBackground(textBackgroundTexture.getRect());
-    textBackground.position = {0.f, 520.f};
-    textBackground.color    = {255, 255, 255, 200};
 
     // Create the description text
     sf::Text description(font,
@@ -550,7 +544,7 @@ int main()
         }
 
         // Draw the text
-        window.draw(textBackground, textBackgroundTexture);
+        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
         window.draw(instructions);
         window.draw(description);
 

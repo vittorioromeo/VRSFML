@@ -100,7 +100,7 @@ int main(int, char**)
 
     const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
 
-    sf::Sprite image(texture.getRect());
+    sf::Sprite image{.textureRect = texture.getRect()};
     image.position = size.toVector2f() / 2.f;
     image.origin   = texture.getSize().toVector2f() / 2.f;
 

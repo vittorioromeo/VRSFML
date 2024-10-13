@@ -1083,10 +1083,6 @@ int main()
     const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "text-background.png")
                                            .value();
 
-    sf::Sprite textBackground(textBackgroundTexture.getRect());
-    textBackground.position = {0.f, 520.f};
-    textBackground.color    = {255, 255, 255, 200};
-
     // Create the description text
     sf::Text description(font,
                          {.position      = {10.f, 522.f},
@@ -1230,7 +1226,7 @@ int main()
         window.draw(*effects[current]);
 
         // Draw the text
-        window.draw(textBackground, textBackgroundTexture);
+        window.draw(textBackgroundTexture, {.position = {0.f, 520.f}, .color = {255, 255, 255, 200}});
         window.draw(instructions);
         window.draw(description);
         window.draw(playbackDeviceText);

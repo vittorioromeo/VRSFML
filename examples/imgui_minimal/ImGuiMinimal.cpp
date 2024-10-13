@@ -54,10 +54,7 @@ int main()
     auto image   = sf::Image::create(size, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
 
-    sf::Sprite sprite(texture.getRect());
-    leftInnerRT.draw(sprite, texture);
-
-
+    leftInnerRT.draw(texture);
     leftInnerRT.display();
 
 

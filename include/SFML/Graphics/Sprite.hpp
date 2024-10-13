@@ -8,12 +8,9 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Transformable.hpp"
-#include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
-
-#include "SFML/Base/Math/Fabs.hpp"
 
 
 namespace sf
@@ -25,17 +22,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API Sprite : Transformable, AnchorPointMixin<Sprite>
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the sprite from a sub-rectangle of an eventual source texture
-    ///
-    /// \param rectangle Sub-rectangle of the eventual texture (specified during drawing)
-    ///
-    /// \see `setTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Sprite(const FloatRect& rectangle);
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
     ///
@@ -72,53 +58,6 @@ public:
 };
 
 } // namespace sf
-
-
-namespace sf::priv
-{
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void spriteToVertices(const Sprite& sprite, Vertex* target)
-{
-    const auto& [position, size] = sprite.textureRect;
-    const Vector2f absSize(base::fabs(size.x), base::fabs(size.y)); // TODO P0: consider dropping support for negative UVs
-
-    // Position
-    {
-        const auto transform = sprite.getTransform();
-
-        target[0].position.x = transform.a02;
-        target[0].position.y = transform.a12;
-
-        target[1].position.x = transform.a01 * absSize.y + transform.a02;
-        target[1].position.y = transform.a11 * absSize.y + transform.a12;
-
-        target[2].position.x = transform.a00 * absSize.x + transform.a02;
-        target[2].position.y = transform.a10 * absSize.x + transform.a12;
-
-        target[3].position = transform.transformPoint(absSize);
-    }
-
-    // Color
-    {
-        target[0].color = sprite.color;
-        target[1].color = sprite.color;
-        target[2].color = sprite.color;
-        target[3].color = sprite.color;
-    }
-
-    // Texture Coordinates
-    {
-        target[0].texCoords = position;
-        target[1].texCoords = position + Vector2f{0.f, size.y};
-        target[2].texCoords = position + Vector2f{size.x, 0.f};
-        target[3].texCoords = position + size;
-    }
-}
-
-} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////

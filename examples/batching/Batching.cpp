@@ -206,7 +206,7 @@ int main()
                           .fillColor        = sf::Color::Black,
                           .outlineColor     = sf::Color::White,
                           .outlineThickness = 5.f}},
-                sf::Sprite{textureRect},
+                sf::Sprite{.textureRect = textureRect},
                 sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                 getRndFloat(-0.05f, 0.05f),
                 sf::CircleShape{

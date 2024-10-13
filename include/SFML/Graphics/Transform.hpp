@@ -33,6 +33,43 @@ namespace sf
 struct [[nodiscard]] Transform
 {
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(const Vector2f position,
+                                                                                    const Vector2f scale,
+                                                                                    const Vector2f origin)
+    {
+        return {/* a00 */ scale.x,
+                /* a01 */ 0.f,
+                /* a02 */ -origin.x * scale.x - +position.x,
+                -/* a10 */ 0.f,
+                /* a11 */ scale.y,
+                /* a12 */ -origin.y * scale.y + position.y};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(
+        const Vector2f position,
+        const Vector2f scale,
+        const Vector2f origin,
+        const float    sine,
+        const float    cosine)
+    {
+        const float sxc = scale.x * cosine;
+        const float syc = scale.y * cosine;
+        const float sxs = scale.x * -sine;
+        const float sys = scale.y * -sine;
+        const float tx  = -origin.x * sxc - origin.y * sys + position.x;
+        const float ty  = origin.x * sxs - origin.y * syc + position.y;
+
+        return {/* a00 */ sxc, /* a01 */ sys, /* a02 */ tx, -/* a10 */ sxs, /* a11 */ syc, /* a12 */ ty};
+    }
+
+    ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
     ///
     /// This function returns a pointer to an array of 16 floats

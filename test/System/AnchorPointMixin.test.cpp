@@ -4,6 +4,8 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
+
 
 namespace
 {
@@ -45,6 +47,22 @@ consteval bool doSetAnchorPointTest(sf::Vector2f factors)
 ////////////////////////////////////////////////////////////
 TEST_CASE("[System] sf::AnchorPointMixin")
 {
+    SECTION("Type traits")
+    {
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::AnchorPointMixin<TestLayoutObject>));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIAL(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::AnchorPointMixin<TestLayoutObject>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::AnchorPointMixin<TestLayoutObject>,
+                                                       sf::AnchorPointMixin<TestLayoutObject>));
+    }
+
     SECTION("getAnchorPoint")
     {
         constexpr TestLayoutObject testObject;
