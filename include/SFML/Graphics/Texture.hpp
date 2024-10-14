@@ -425,6 +425,7 @@ public:
     /// objects that are intended to be used with this texture.
     ///
     /// \return Rectangle covering the entire texture, from {0, 0} to {width, height}
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getRect() const;
 
