@@ -47,9 +47,8 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
         if (XQueryExtension(display.get(), "RANDR", &version, &version, &version))
         {
             // Get the current configuration
-            const auto config = X11Ptr<XRRScreenConfiguration>(
-                XRRGetScreenInfo(display.get(), RootWindow(display.get(), screen)));
-            if (config)
+            if (const auto config = X11Ptr<XRRScreenConfiguration>(
+                    XRRGetScreenInfo(display.get(), RootWindow(display.get(), screen))))
             {
                 // Get the available screen sizes
                 int            nbSizes = 0;

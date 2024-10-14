@@ -289,10 +289,10 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 /// coordinates.
 ///
 ////////////////////////////////////////////////////////////
-constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
-
 sf::Vertex computeVertex(sf::Vector2u position)
 {
+    constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
+
     return {.position  = position.toVector2f().componentWiseMul(scalingFactors),
             .color     = getTerrainColor(getElevation(position), getMoisture(position)),
             .texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),

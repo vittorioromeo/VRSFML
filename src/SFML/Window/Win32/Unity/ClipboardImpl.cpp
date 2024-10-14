@@ -70,10 +70,9 @@ void ClipboardImpl::setString(const String& text)
     }
 
     // Create a Win32-compatible string
-    const base::SizeT stringSize   = (text.getSize() + 1) * sizeof(WCHAR);
-    HANDLE            stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize);
+    const base::SizeT stringSize = (text.getSize() + 1) * sizeof(WCHAR);
 
-    if (stringHandle)
+    if (const HANDLE stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize))
     {
         SFML_BASE_MEMCPY(GlobalLock(stringHandle), text.toWideString<std::wstring>().data(), stringSize);
         GlobalUnlock(stringHandle);

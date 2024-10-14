@@ -140,10 +140,8 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 
         m_settings.attributeFlags |= ContextSettings::Attribute::Core;
 
-        auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(
-            derivedSharedGlContext.getFunction("glGetStringi"));
-
-        if (glGetStringiFunc)
+        if (auto glGetStringiFunc = reinterpret_cast<glGetStringiFuncType>(derivedSharedGlContext.getFunction("glGetStr"
+                                                                                                              "ingi")))
         {
             int numExtensions = 0;
             glCheckIgnoreWithFunc(glGetErrorFunc, glGetIntegervFunc(GL_NUM_EXTENSIONS, &numExtensions));
