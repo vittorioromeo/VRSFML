@@ -71,8 +71,6 @@ std::bitset<256>                      isKeyFiltered;
 std::recursive_mutex                  allWindowsMutex;
 sf::String                            windowManagerName;
 
-sf::String wmAbsPosGood[]{"Enlightenment", "FVWM", "i3"};
-
 constexpr unsigned long eventMask = FocusChangeMask | ButtonPressMask | ButtonReleaseMask | ButtonMotionMask |
                                     PointerMotionMask | KeyPressMask | KeyReleaseMask | StructureNotifyMask |
                                     EnterWindowMask | LeaveWindowMask | VisibilityChangeMask | PropertyChangeMask;
@@ -348,9 +346,10 @@ bool isWMAbsolutePositionGood()
     if (!ewmhSupported())
         return false;
 
-    return sf::base::anyOf(std::begin(wmAbsPosGood),
-                           std::end(wmAbsPosGood),
-                           [&](const sf::String& name) { return name == windowManagerName; });
+    static const sf::String wmAbsPosGood[]{"Enlightenment", "FVWM", "i3"};
+    return std::any_of(std::begin(wmAbsPosGood),
+                       std::end(wmAbsPosGood),
+                       [](const sf::String& name) { return name == windowManagerName; });
 }
 
 // Initialize raw mouse input
@@ -563,8 +562,7 @@ m_cursorGrabbed(m_fullscreen)
     // change our window's decorations and functions according to the requested style)
     if (!m_fullscreen)
     {
-        const Atom wmHintsAtom = getAtom("_MOTIF_WM_HINTS", false);
-        if (wmHintsAtom)
+        if (const Atom wmHintsAtom = getAtom("_MOTIF_WM_HINTS", false))
         {
             // NOLINTBEGIN(readability-identifier-naming)
             // Disable naming check so these better match the contents of the Motif library
@@ -970,10 +968,9 @@ void WindowImplX11::setIcon(Vector2u size, const base::U8* pixels)
     // X11 wants BGRA pixels: swap red and blue channels
     // Note: this memory will be freed by X11Ptr<XImage> deleter
     // NOLINTBEGIN(cppcoreguidelines-no-malloc)
-    auto* iconPixels = static_cast<base::U8*>(
-        std::malloc(static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4));
+    auto* iconPixels = static_cast<base::U8*>(std::malloc(base::SizeT{size.x} * base::SizeT{size.y} * 4));
     // NOLINTEND(cppcoreguidelines-no-malloc)
-    for (base::SizeT i = 0; i < static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y); ++i)
+    for (base::SizeT i = 0; i < base::SizeT{size.x} * base::SizeT{size.y}; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -1048,7 +1045,7 @@ void WindowImplX11::setIcon(Vector2u size, const base::U8* pixels)
     *ptr++ = size.y;
 #pragma GCC diagnostic pop
 
-    for (base::SizeT i = 0; i < static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y); ++i)
+    for (base::SizeT i = 0; i < base::SizeT{size.x} * base::SizeT{size.y}; ++i)
     {
         *ptr++ = static_cast<unsigned long>(
             (pixels[i * 4 + 2] << 0) | (pixels[i * 4 + 1] << 8) | (pixels[i * 4 + 0] << 16) | (pixels[i * 4 + 3] << 24));
@@ -1427,9 +1424,7 @@ void WindowImplX11::switchToFullscreen()
 
     if (ewmhSupported())
     {
-        const Atom netWmBypassCompositor = getAtom("_NET_WM_BYPASS_COMPOSITOR");
-
-        if (netWmBypassCompositor)
+        if (const Atom netWmBypassCompositor = getAtom("_NET_WM_BYPASS_COMPOSITOR"))
         {
             constexpr unsigned long bypassCompositor = 1;
 

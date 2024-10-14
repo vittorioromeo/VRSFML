@@ -16,10 +16,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 {
     std::vector<VideoMode> modes;
 
-    const Drm&          drm  = DRMContext::getDRM();
-    drmModeConnectorPtr conn = drm.savedConnector;
-
-    if (conn)
+    if (const auto* conn = DRMContext::getDRM().savedConnector)
     {
         for (int i = 0; i < conn->count_modes; i++)
             modes.push_back(VideoMode({conn->modes[i].hdisplay, conn->modes[i].vdisplay}));
@@ -34,9 +31,7 @@ std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
 ////////////////////////////////////////////////////////////
 VideoMode VideoModeImpl::getDesktopMode()
 {
-    const Drm&         drm = DRMContext::getDRM();
-    drmModeModeInfoPtr ptr = drm.mode;
-    if (ptr != nullptr)
+    if (const auto* ptr = DRMContext::getDRM().mode)
         return VideoMode({ptr->hdisplay, ptr->vdisplay});
 
     return VideoMode({0, 0});

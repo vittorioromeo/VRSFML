@@ -86,7 +86,7 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
         return result; // Empty optional
     }
 
-    result.emplace(base::PassKey<Image>{}, size, static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y) * 4);
+    result.emplace(base::PassKey<Image>{}, size, base::SizeT{size.x} * base::SizeT{size.y} * 4);
 
     // Fill it with the specified color
     base::U8*       ptr = result->m_pixels.data();
@@ -155,12 +155,11 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 #endif
 
     // Load the image and get a pointer to the pixels in memory
-    int        width    = 0;
-    int        height   = 0;
-    int        channels = 0;
-    const auto ptr      = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha));
+    int width    = 0;
+    int height   = 0;
+    int channels = 0;
 
-    if (ptr != nullptr)
+    if (const auto ptr = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha)))
     {
         SFML_BASE_ASSERT(width > 0 && "Loaded image from file with width == 0");
         SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");

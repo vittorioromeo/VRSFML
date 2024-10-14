@@ -187,7 +187,7 @@ base::Optional<Event> WindowImpl::waitEvent(Time timeout)
 {
     sf::Clock clock;
 
-    const auto timedOut = [&, startTime = clock.getElapsedTime()]
+    const auto timedOut = [&clock, timeout, startTime = clock.getElapsedTime()]
     {
         const bool infiniteTimeout = timeout == Time::Zero;
         return !infiniteTimeout && (clock.getElapsedTime() - startTime) >= timeout;

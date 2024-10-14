@@ -40,7 +40,7 @@ using GLhandle = GLuint;
 
 #include "SFML/Base/PtrDiffT.hpp"
 
-#define castToGlHandle(x)   reinterpret_cast<GLhandle>(static_cast<::sf::base::PtrDiffT>(x))
+#define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::sf::base::PtrDiffT{x})
 #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::sf::base::PtrDiffT>(x))
 
 #else

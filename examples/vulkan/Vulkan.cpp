@@ -579,6 +579,8 @@ public:
             return;
         }
 
+        VkPhysicalDeviceType deviceType = VK_PHYSICAL_DEVICE_TYPE_OTHER;
+
         // Look for a GPU that supports swapchains
         for (VkPhysicalDevice dev : devices)
         {
@@ -623,7 +625,14 @@ public:
             }
             if (deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
             {
-                gpu = dev;
+                gpu        = dev;
+                deviceType = VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU;
+            }
+            else if ((deviceProperties.deviceType == VK_PHYSICAL_DEVICE_TYPE_CPU) &&
+                     (deviceType != VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU))
+            {
+                gpu        = dev;
+                deviceType = VK_PHYSICAL_DEVICE_TYPE_CPU;
             }
         }
 

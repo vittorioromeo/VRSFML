@@ -64,7 +64,7 @@ bool CursorImpl::loadFromPixelsARGB(const base::U8* pixels, Vector2u size, Vecto
     cursorImage->xhot = hotspot.x;
     cursorImage->yhot = hotspot.y;
 
-    const base::SizeT numPixels = static_cast<base::SizeT>(size.x) * static_cast<base::SizeT>(size.y);
+    const base::SizeT numPixels = base::SizeT{size.x} * base::SizeT{size.y};
     for (base::SizeT pixelIndex = 0; pixelIndex < numPixels; ++pixelIndex)
     {
         cursorImage->pixels[pixelIndex] = static_cast<base::U32>(
