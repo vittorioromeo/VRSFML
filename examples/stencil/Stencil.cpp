@@ -23,12 +23,12 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(graphicsContext,
-                            {.size{600u, 600u},
-                             .title     = "SFML Stencil",
-                             .resizable = false,
-                             .vsync     = true,
-                             .contextSettings{.depthBits = 0, .stencilBits = 8}});
+    sf::RenderWindow window(
+        {.size{600u, 600u},
+         .title     = "SFML Stencil",
+         .resizable = false,
+         .vsync     = true,
+         .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
     const sf::RectangleShape red(
         {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red, .size = {500.f, 50.f}});

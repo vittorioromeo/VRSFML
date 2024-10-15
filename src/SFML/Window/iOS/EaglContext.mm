@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/iOS/EaglContext.hpp"
+#include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/iOS/SFView.hpp"
 #include "SFML/Window/iOS/WindowImplUIKit.hpp"
 
@@ -101,7 +102,7 @@ m_context(nil)
 EaglContext::~EaglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_windowContext.cleanupUnsharedFrameBuffers(*this);
+    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
 
     if (m_context)
     {

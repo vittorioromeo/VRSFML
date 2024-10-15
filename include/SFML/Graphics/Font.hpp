@@ -27,7 +27,6 @@ class ResourceStream;
 
 namespace sf
 {
-class GraphicsContext;
 class InputStream;
 class Path;
 class Text;
@@ -97,9 +96,7 @@ public:
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Font> openFromFile(GraphicsContext& graphicsContext,
-                                                           const Path&      filename,
-                                                           TextureAtlas*    textureAtlas = nullptr);
+    [[nodiscard]] static base::Optional<Font> openFromFile(const Path& filename, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -119,10 +116,9 @@ public:
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Font> openFromMemory(GraphicsContext& graphicsContext,
-                                                             const void*      data,
-                                                             base::SizeT      sizeInBytes,
-                                                             TextureAtlas*    textureAtlas = nullptr);
+    [[nodiscard]] static base::Optional<Font> openFromMemory(const void*   data,
+                                                             base::SizeT   sizeInBytes,
+                                                             TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -141,9 +137,7 @@ public:
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Font> openFromStream(GraphicsContext& graphicsContext,
-                                                             InputStream&     stream,
-                                                             TextureAtlas*    textureAtlas = nullptr);
+    [[nodiscard]] static base::Optional<Font> openFromStream(InputStream& stream, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -321,10 +315,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Font(base::PassKey<Font>&&,
-                                GraphicsContext& graphicsContext,
-                                TextureAtlas*    textureAtlas,
-                                void*            fontHandlesSharedPtr,
-                                const char*      familyName);
+
+                                TextureAtlas* textureAtlas,
+                                void*         fontHandlesSharedPtr,
+                                const char*   familyName);
 
 private:
     ////////////////////////////////////////////////////////////

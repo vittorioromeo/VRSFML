@@ -17,15 +17,14 @@
 int main()
 {
     sf::GraphicsContext     graphicsContext;
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
+    sf::ImGui::ImGuiContext imGuiContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
+    sf::RenderWindow window({.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
     if (!imGuiContext.init(window))
         return -1;
 
     sf::base::Optional<sf::RenderWindow>
         childWindow(sf::base::inPlace,
-                    graphicsContext,
                     sf::RenderWindow::Settings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
 
     if (!imGuiContext.init(*childWindow))

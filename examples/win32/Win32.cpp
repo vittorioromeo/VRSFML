@@ -123,12 +123,12 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     {
-        sf::RenderWindow sfmlView1(graphicsContext, view1);
-        sf::RenderWindow sfmlView2(graphicsContext, view2);
+        sf::RenderWindow sfmlView1(view1);
+        sf::RenderWindow sfmlView2(view2);
 
         // Load some textures to display
-        const auto texture1 = sf::Texture::loadFromFile(graphicsContext, "resources/image1.jpg").value();
-        const auto texture2 = sf::Texture::loadFromFile(graphicsContext, "resources/image2.jpg").value();
+        const auto texture1 = sf::Texture::loadFromFile("resources/image1.jpg").value();
+        const auto texture2 = sf::Texture::loadFromFile("resources/image2.jpg").value();
 
         // Create a clock for measuring elapsed time
         const sf::Clock clock;

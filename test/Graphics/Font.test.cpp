@@ -34,12 +34,12 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     {
         SECTION("Invalid filename")
         {
-            CHECK(!sf::Font::openFromFile(graphicsContext, "does/not/exist.ttf").hasValue());
+            CHECK(!sf::Font::openFromFile("does/not/exist.ttf").hasValue());
         }
 
         SECTION("Valid file")
         {
-            const auto font = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
+            const auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
             CHECK(font.getInfo().family == "Tuffy");
             const auto& glyph = font.getGlyph(0x45, 16, false);
             CHECK(glyph.advance == 9);
@@ -68,15 +68,15 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     {
         SECTION("Invalid data and size")
         {
-            CHECK(!sf::Font::openFromMemory(graphicsContext, nullptr, 1).hasValue());
+            CHECK(!sf::Font::openFromMemory(nullptr, 1).hasValue());
             const unsigned char testByte{0xCD};
-            CHECK(!sf::Font::openFromMemory(graphicsContext, &testByte, 0).hasValue());
+            CHECK(!sf::Font::openFromMemory(&testByte, 0).hasValue());
         }
 
         SECTION("Valid data")
         {
             const auto memory = loadIntoMemory("Graphics/tuffy.ttf");
-            const auto font   = sf::Font::openFromMemory(graphicsContext, memory.data(), memory.size()).value();
+            const auto font   = sf::Font::openFromMemory(memory.data(), memory.size()).value();
             CHECK(font.getInfo().family == "Tuffy");
             const auto& glyph = font.getGlyph(0x45, 16, false);
             CHECK(glyph.advance == 9);
@@ -104,7 +104,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
     SECTION("openFromStream()")
     {
         auto       stream = sf::FileInputStream::open("Graphics/tuffy.ttf").value();
-        const auto font   = sf::Font::openFromStream(graphicsContext, stream).value();
+        const auto font   = sf::Font::openFromStream(stream).value();
         CHECK(font.getInfo().family == "Tuffy");
         const auto& glyph = font.getGlyph(0x45, 16, false);
         CHECK(glyph.advance == 9);
@@ -130,7 +130,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get smooth")
     {
-        auto font = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
+        auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
         font.setSmooth(false);
         CHECK(!font.isSmooth());
     }

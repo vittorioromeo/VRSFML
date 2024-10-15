@@ -20,7 +20,7 @@
 #ifdef SFML_OPENGL_ES
 #include "SFML/System/Err.hpp"
 
-#include <cstdlib>
+#include "SFML/Base/Abort.hpp"
 #endif
 
 
@@ -125,7 +125,7 @@ private:
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "Persistent OpenGL buffers are not available in OpenGL ES";
-        std::abort();
+        base::abort();
 #endif
 
         SFML_BASE_ASSERT(m_capacity < byteCount);

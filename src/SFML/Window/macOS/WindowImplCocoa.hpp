@@ -51,7 +51,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplCocoa(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] explicit WindowImplCocoa(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -63,7 +63,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplCocoa(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplCocoa(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

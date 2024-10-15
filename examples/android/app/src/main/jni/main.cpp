@@ -95,16 +95,16 @@ int main(int, char**)
 
     const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
-    sf::RenderWindow window(graphicsContext, {.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
+    sf::RenderWindow window({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
     const auto       defaultView = window.getView();
 
-    const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
+    const auto texture = sf::Texture::loadFromFile("image.png").value();
 
     sf::Sprite image{.textureRect = texture.getRect()};
     image.position = size.toVector2f() / 2.f;
     image.origin   = texture.getSize().toVector2f() / 2.f;
 
-    const auto font = sf::Font::openFromFile(graphicsContext, "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
 
     sf::Text text(font, {.string = "Tap anywhere to move the logo.", .characterSize = 64u});
     text.setFillColor(sf::Color::Black);

@@ -11,10 +11,11 @@
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/Glad.hpp"
 
+#include "SFML/System/Err.hpp"
+
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <cstdlib>
 
 
 namespace
@@ -60,9 +61,9 @@ void main()
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Shader createBuiltInShader(sf::GraphicsContext& graphicsContext, const char* vertexSrc, const char* fragmentSrc)
+[[nodiscard]] sf::Shader createBuiltInShader(const char* vertexSrc, const char* fragmentSrc)
 {
-    sf::Shader shader = sf::Shader::loadFromMemory(graphicsContext, vertexSrc, fragmentSrc).value();
+    sf::Shader shader = sf::Shader::loadFromMemory(vertexSrc, fragmentSrc).value();
     SFML_BASE_ASSERT(glCheck(glIsProgram(shader.getNativeHandle())));
 
     if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))
@@ -70,6 +71,10 @@ void main()
 
     return shader;
 }
+
+
+///////////////////////////////////////////////////////////
+constinit sf::GraphicsContext* installedGraphicsContext{nullptr};
 
 } // namespace
 
@@ -79,6 +84,20 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
+    ////////////////////////////////////////////////////////////
+    struct ClearInstalledGuard
+    {
+        ~ClearInstalledGuard()
+        {
+            SFML_BASE_ASSERT(installedGraphicsContext != nullptr);
+            installedGraphicsContext = nullptr;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////
+    ClearInstalledGuard clearInstalledGuard;
+
+    ////////////////////////////////////////////////////////////
     base::Optional<Shader>  builtInShader;
     base::Optional<Texture> builtInWhiteDotTexture;
 };
@@ -87,8 +106,17 @@ struct GraphicsContext::Impl
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext()
 {
-    m_impl->builtInShader.emplace(createBuiltInShader(*this, builtInShaderVertexSrc, builtInShaderFragmentSrc));
-    m_impl->builtInWhiteDotTexture = Texture::loadFromImage(*this, *Image::create({1u, 1u}, Color::White));
+    // Install graphics context:
+    if (installedGraphicsContext != nullptr)
+    {
+        priv::err() << "Fatal error creating `sf::GraphicsContext`: a `sf::GraphicsContext` object already exists";
+        base::abort();
+    }
+
+    installedGraphicsContext = this;
+
+    m_impl->builtInShader.emplace(createBuiltInShader(builtInShaderVertexSrc, builtInShaderFragmentSrc));
+    m_impl->builtInWhiteDotTexture = Texture::loadFromImage(*Image::create({1u, 1u}, Color::White));
 }
 
 
@@ -126,6 +154,26 @@ const char* GraphicsContext::getBuiltInShaderVertexSrc() const
 const char* GraphicsContext::getBuiltInShaderFragmentSrc() const
 {
     return builtInShaderFragmentSrc;
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext* GraphicsContext::getInstalled()
+{
+    return installedGraphicsContext;
+}
+
+
+////////////////////////////////////////////////////////////
+GraphicsContext& GraphicsContext::ensureInstalled()
+{
+    if (installedGraphicsContext == nullptr) [[unlikely]]
+    {
+        priv::err() << "`sf::GraphicsContext` not installed -- did you forget to create one in `main`?";
+        base::abort();
+    }
+
+    return *installedGraphicsContext;
 }
 
 } // namespace sf

@@ -25,7 +25,7 @@ TEST_CASE("[Window] sf::Joystick")
     {
         SECTION("query()")
         {
-            CHECK(!sf::Joystick::query(windowContext, joystickId).hasValue());
+            CHECK(!sf::Joystick::query(joystickId).hasValue());
         }
     }
 }

@@ -20,10 +20,10 @@
     <summary>📜 Code example</summary>
 
     ```cpp
-    sf::GraphicsContext     graphicsContext;               // Holds all "global" OpenGL state
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext); // Holds all "global" ImGui state
+    sf::GraphicsContext     graphicsContext; // Holds all "global" OpenGL state
+    sf::ImGui::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
 
-    sf::RenderWindow window(graphicsContext, {.size{640u, 480u}, .title = "ImGui + SFML = <3"});
+    sf::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
     sf::Clock deltaClock;
 
     while (true)
@@ -193,7 +193,7 @@
 
     ```cpp
     sf::GraphicsContext graphicsContext;
-    const auto texture = sf::Texture::loadFromFile(graphicsContext, "image.png").value();
+    const auto texture = sf::Texture::loadFromFile("image.png").value();
 
     // ERROR, does not compile -- sprites do not store a texture pointer anymore.
     /* sf::Sprite sprite(texture); */
@@ -286,7 +286,7 @@
     int main()
     {
         sf::GraphicsContext graphicsContext;
-        sf::RenderWindow window(graphicsContext, screen, "Example window");
+        sf::RenderWindow window(screen, "Example window");
 
         while (true) // `window.isOpen()` does not exist anymore
         {
@@ -376,73 +376,3 @@
     - Added `Vector2<T>::movedTowards(T r, Angle phi)` function.
     - `sf::Vector2`, `sf::Vector3`, and `sf::Rect` are now aggregates.
     - Removed catch-all headers such as `SFML/Audio.hpp` to promote good header hygiene in user projects.
-
-
-<!--
-
-## TODO
-
-- `SFML_OS_EMSCRIPTEN`
-    - All examples and tests work
-
-- `SFML_ENABLE_LIFETIME_TRACKING`
-- `SFML_BUILD_IMGUI`
-- `SFML_ENABLE_STACK_TRACES`
-- Doctest
-- C++20 support
-- Download dependencies
-- EGL support on Windows via ANGLE
-- Restore factory-based API
-- New `SFML::Base` module
-- Removal of global state whenever possible
-    - No more `sf::AudioResource` nor `sf::GlResource`
-- Massive compilation time speedup
-- Simplified and polished examples
-- Windows cannot be closed anymore, `isOpen` removed
-- Built-in shaders
-- No more legacy GL whatsoever
-- Safer APIs
-    - Sockets take blocking mode in ctor
-- Better `priv::err()`
-- Simultaneous multi-device sound API
-- Removal of `sf::Drawable`
-
-- Removal of catch-all headers like `Audio.hpp`
-- Widespread usage of fast PImpl
-- Much faster debug run-time performance
-- Ahead with upstream
-- Remove `sf::VertexArray`
-- sf::Sprite does not store sf::Texture*
-
-
-
-
-Add explicit template instantiations for vectors and rect
-
-Make `Transformable` non-polymorphic
-Make `Shape` non-polymorphic
-
-
-
-
-
-    // Create an audio context and get the default playback device
-    auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
-
-
-
-      // Create the graphics context
-    sf::GraphicsContext graphicsContext;
-
-    // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(graphicsContext,
-
-const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
-
-
-
-        window.draw(leftPaddle, /* texture */ nullptr);
-        window.draw(rightPaddle, /* texture */ nullptr);
-
--->

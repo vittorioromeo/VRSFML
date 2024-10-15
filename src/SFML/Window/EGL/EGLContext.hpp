@@ -35,7 +35,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    explicit EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared);
+    explicit EglContext(unsigned int id, EglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -46,8 +46,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    explicit EglContext(WindowContext&         windowContext,
-                        unsigned int           id,
+    explicit EglContext(unsigned int           id,
                         EglContext*            shared,
                         const ContextSettings& contextSettings,
                         const WindowImpl&      owner,

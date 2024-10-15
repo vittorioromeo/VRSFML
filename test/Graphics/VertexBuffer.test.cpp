@@ -32,7 +32,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
     {
         SECTION("Default constructor")
         {
-            const sf::VertexBuffer vertexBuffer(graphicsContext);
+            const sf::VertexBuffer vertexBuffer;
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
             CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Points);
@@ -41,7 +41,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Primitive type constructor")
         {
-            const sf::VertexBuffer vertexBuffer(graphicsContext, sf::PrimitiveType::Triangles);
+            const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::Triangles);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
             CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Triangles);
@@ -50,7 +50,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Usage constructor")
         {
-            const sf::VertexBuffer vertexBuffer(graphicsContext, sf::VertexBuffer::Usage::Static);
+            const sf::VertexBuffer vertexBuffer(sf::VertexBuffer::Usage::Static);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
             CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::Points);
@@ -59,7 +59,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Primitive type and usage constructor")
         {
-            const sf::VertexBuffer vertexBuffer(graphicsContext, sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+            const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
             CHECK(vertexBuffer.getVertexCount() == 0);
             CHECK(vertexBuffer.getNativeHandle() == 0);
             CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::LineStrip);
@@ -69,7 +69,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("Copy semantics")
     {
-        const sf::VertexBuffer vertexBuffer(graphicsContext, sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+        const sf::VertexBuffer vertexBuffer(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
 
         SECTION("Construction")
         {
@@ -82,7 +82,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Assignment")
         {
-            sf::VertexBuffer vertexBufferCopy(graphicsContext);
+            sf::VertexBuffer vertexBufferCopy;
             vertexBufferCopy = vertexBuffer;
             CHECK(vertexBufferCopy.getVertexCount() == 0);
             CHECK(vertexBufferCopy.getNativeHandle() == 0);
@@ -93,14 +93,14 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("create()")
     {
-        sf::VertexBuffer vertexBuffer(graphicsContext);
+        sf::VertexBuffer vertexBuffer;
         CHECK(vertexBuffer.create(100));
         CHECK(vertexBuffer.getVertexCount() == 100);
     }
 
     SECTION("update()")
     {
-        sf::VertexBuffer vertexBuffer(graphicsContext);
+        sf::VertexBuffer vertexBuffer;
         sf::Vertex       vertices[128]{};
 
         SECTION("Vertices")
@@ -137,7 +137,7 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
         SECTION("Another buffer")
         {
-            sf::VertexBuffer otherVertexBuffer(graphicsContext);
+            sf::VertexBuffer otherVertexBuffer;
 
             CHECK(!vertexBuffer.update(otherVertexBuffer));
             CHECK(otherVertexBuffer.create(42));
@@ -147,10 +147,10 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("swap()")
     {
-        sf::VertexBuffer vertexBuffer1(graphicsContext, sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
+        sf::VertexBuffer vertexBuffer1(sf::PrimitiveType::LineStrip, sf::VertexBuffer::Usage::Dynamic);
         CHECK(vertexBuffer1.create(50));
 
-        sf::VertexBuffer vertexBuffer2(graphicsContext, sf::PrimitiveType::TriangleStrip, sf::VertexBuffer::Usage::Stream);
+        sf::VertexBuffer vertexBuffer2(sf::PrimitiveType::TriangleStrip, sf::VertexBuffer::Usage::Stream);
         CHECK(vertexBuffer2.create(60));
 
         sf::swap(vertexBuffer1, vertexBuffer2);
@@ -168,14 +168,14 @@ TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 
     SECTION("Set/get primitive type")
     {
-        sf::VertexBuffer vertexBuffer(graphicsContext);
+        sf::VertexBuffer vertexBuffer;
         vertexBuffer.setPrimitiveType(sf::PrimitiveType::TriangleFan);
         CHECK(vertexBuffer.getPrimitiveType() == sf::PrimitiveType::TriangleFan);
     }
 
     SECTION("Set/get usage")
     {
-        sf::VertexBuffer vertexBuffer(graphicsContext);
+        sf::VertexBuffer vertexBuffer;
         vertexBuffer.setUsage(sf::VertexBuffer::Usage::Dynamic);
         CHECK(vertexBuffer.getUsage() == sf::VertexBuffer::Usage::Dynamic);
     }

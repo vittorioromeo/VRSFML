@@ -13,7 +13,6 @@
 
 namespace sf
 {
-class GraphicsContext;
 class RenderTarget;
 struct RenderStates;
 struct Vertex;
@@ -48,7 +47,7 @@ public:
     /// Creates an empty vertex buffer.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext);
+    [[nodiscard]] explicit VertexBuffer();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a `VertexBuffer` with a specific `PrimitiveType`
@@ -58,7 +57,7 @@ public:
     /// \param type Type of primitive
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type);
+    [[nodiscard]] explicit VertexBuffer(PrimitiveType type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a `VertexBuffer` with a specific usage specifier
@@ -68,7 +67,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, Usage usage);
+    [[nodiscard]] explicit VertexBuffer(Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a `VertexBuffer` with a specific `PrimitiveType` and usage specifier
@@ -80,7 +79,7 @@ public:
     /// \param usage Usage specifier
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type, Usage usage);
+    [[nodiscard]] explicit VertexBuffer(PrimitiveType type, Usage usage);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
@@ -183,7 +182,7 @@ public:
     /// \return `true` if the copy was successful
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const VertexBuffer& vertexBuffer);
+    [[nodiscard]] bool update(const VertexBuffer& vertexBuffer) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator
@@ -291,13 +290,13 @@ public:
     /// \param vertexBuffer Pointer to the vertex buffer to bind, can be null to use no vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    void bind(GraphicsContext& graphicsContext) const;
+    void bind() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind any bound vertex buffer
     ///
     ////////////////////////////////////////////////////////////
-    static void unbind(GraphicsContext& graphicsContext);
+    static void unbind();
 
 private:
     friend RenderTarget;
@@ -305,11 +304,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext* m_graphicsContext;                      //!< The window context
-    unsigned int     m_buffer{};                             //!< Internal buffer identifier
-    base::SizeT      m_size{};                               //!< Size in Vertices of the currently allocated buffer
-    PrimitiveType    m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
-    Usage            m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
+    unsigned int  m_buffer{};                             //!< Internal buffer identifier
+    base::SizeT   m_size{};                               //!< Size in Vertices of the currently allocated buffer
+    PrimitiveType m_primitiveType{PrimitiveType::Points}; //!< Type of primitives to draw
+    Usage         m_usage{Usage::Stream};                 //!< How this vertex buffer is to be used
 };
 
 ////////////////////////////////////////////////////////////

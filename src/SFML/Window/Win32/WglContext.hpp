@@ -13,7 +13,6 @@
 
 namespace sf
 {
-class WindowContext;
 struct ContextSettings;
 
 namespace priv
@@ -33,7 +32,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WglContext(WindowContext& windowContext, unsigned int id, WglContext* shared);
+    [[nodiscard]] explicit WglContext(unsigned int id, WglContext* shared);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -44,8 +43,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WglContext(WindowContext&    windowContext,
-                                      unsigned int      id,
+    [[nodiscard]] explicit WglContext(unsigned int      id,
                                       WglContext*       shared,
                                       ContextSettings   contextSettings,
                                       const WindowImpl& owner,
@@ -132,11 +130,7 @@ private:
     /// \param settings Creation parameters
     ///
     ////////////////////////////////////////////////////////////
-    explicit WglContext(WindowContext&         windowContext,
-                        unsigned int           id,
-                        WglContext*            shared,
-                        const ContextSettings& settings,
-                        const SurfaceData&     surfaceData);
+    explicit WglContext(unsigned int id, WglContext* shared, const ContextSettings& settings, const SurfaceData& surfaceData);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pixel format of the device context

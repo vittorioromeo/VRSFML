@@ -79,7 +79,7 @@ void showMouseCursor()
 #pragma mark WindowImplCocoa's ctor/dtor
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, WindowHandle handle) : WindowImpl(windowContext)
+WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 {
     const AutoreleasePool pool;
     // Treat the handle as it real type
@@ -111,8 +111,7 @@ WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, WindowHandle hand
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(WindowContext& windowContext, const WindowSettings& windowSettings) :
-WindowImpl(windowContext)
+WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
 {
     const AutoreleasePool pool;
     // Transform the app process.

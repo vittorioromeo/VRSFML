@@ -8,6 +8,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/PlacementNew.hpp"
@@ -17,7 +18,6 @@
 #include <string>
 
 #include <cctype>
-#include <cstdlib>
 
 
 using AtomicUInt = std::atomic<unsigned int>;
@@ -207,7 +207,7 @@ LifetimeDependee::~LifetimeDependee()
     priv::err() << '\n';
 
     base::priv::printStackTrace();
-    std::abort();
+    base::abort();
 }
 
 

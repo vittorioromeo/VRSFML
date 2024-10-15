@@ -19,7 +19,6 @@ namespace sf
 {
 class String;
 class Time;
-class WindowContext;
 struct WindowSettings;
 
 namespace Vulkan
@@ -51,7 +50,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowContext& windowContext, WindowSettings windowSettings);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -61,7 +60,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -279,7 +278,7 @@ protected:
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImpl(WindowContext& windowContext);
+    [[nodiscard]] explicit WindowImpl();
 
     ////////////////////////////////////////////////////////////
     /// \brief Push a new event into the event queue

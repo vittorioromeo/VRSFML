@@ -47,6 +47,14 @@ public:
     ////////////////////////////////////////////////////////////
     ~WindowContext();
 
+    // Deleted copy operations
+    WindowContext(const WindowContext&)            = delete;
+    WindowContext& operator=(const WindowContext&) = delete;
+
+    // Deleted move operations
+    WindowContext(WindowContext&&)            = delete;
+    WindowContext& operator=(WindowContext&&) = delete;
+
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
     ///
@@ -105,6 +113,18 @@ public:
     ////////////////////////////////////////////////////////////
     using GLLoadFn = GlFunctionPointer (*)(const char*);
     [[nodiscard]] GLLoadFn getGLLoadFn() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns a pointer to the installed `WindowContext` if available, `nullptr` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static WindowContext* getInstalled();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the installed `WindowContext` if available, aborts the program otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    static WindowContext& ensureInstalled();
 
 protected:
     ////////////////////////////////////////////////////////////

@@ -32,7 +32,7 @@ TEST_CASE("[Graphics] sf::Sprite" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Sprite, sf::Sprite));
     }
 
-    const auto texture = sf::Texture::create(graphicsContext, {64, 64}).value();
+    const auto texture = sf::Texture::create({64, 64}).value();
 
     SECTION("Construction")
     {

@@ -19,7 +19,6 @@
 
 namespace sf
 {
-class GraphicsContext;
 class Image;
 class InputStream;
 class Path;
@@ -74,7 +73,7 @@ public:
     /// \return Texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> create(GraphicsContext& graphicsContext, Vector2u size, bool sRgb = false);
+    [[nodiscard]] static base::Optional<Texture> create(Vector2u size, bool sRgb = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -99,11 +98,7 @@ public:
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromFile(
-        GraphicsContext& graphicsContext,
-        const Path&      filename,
-        bool             sRgb = false,
-        const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromFile(const Path& filename, bool sRgb = false, const IntRect& area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory
@@ -130,11 +125,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Texture> loadFromMemory(
-        GraphicsContext& graphicsContext,
-        const void*      data,
-        base::SizeT      size,
-        bool             sRgb = false,
-        const IntRect&   area = {});
+        const void*    data,
+        base::SizeT    size,
+        bool           sRgb = false,
+        const IntRect& area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a custom stream
@@ -159,11 +153,7 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromStream(
-        GraphicsContext& graphicsContext,
-        InputStream&     stream,
-        bool             sRgb = false,
-        const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromStream(InputStream& stream, bool sRgb = false, const IntRect& area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from an image
@@ -188,11 +178,7 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromImage(
-        GraphicsContext& graphicsContext,
-        const Image&     image,
-        bool             sRgb = false,
-        const IntRect&   area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromImage(const Image& image, bool sRgb = false, const IntRect& area = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture
@@ -439,11 +425,11 @@ public:
     /// \code
     /// sf::Texture t1, t2;
     /// ...
-    /// t1.bind(graphicsContext);
+    /// t1.bind();
     /// // draw OpenGL stuff that use t1...
-    /// t2.bind(graphicsContext);
+    /// t2.bind();
     /// // draw OpenGL stuff that use t2...
-    /// sf::Texture::unbind(graphicsContext);
+    /// sf::Texture::unbind();
     /// // draw OpenGL stuff that use no texture...
     /// \endcode
     ///
@@ -460,13 +446,13 @@ public:
     /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
-    void bind(GraphicsContext& graphicsContext) const;
+    void bind() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    static void unbind(GraphicsContext& graphicsContext);
+    static void unbind();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum texture size allowed
@@ -478,7 +464,7 @@ public:
     /// \return Maximum size allowed for textures, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumSize(GraphicsContext& graphicsContext);
+    [[nodiscard]] static unsigned int getMaximumSize();
 
 private:
     friend class Text;
@@ -495,7 +481,7 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(base::PassKey<Texture>&&, GraphicsContext& graphicsContext, Vector2u size, unsigned int texture, bool sRgb);
+    [[nodiscard]] Texture(base::PassKey<Texture>&&, Vector2u size, unsigned int texture, bool sRgb);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -510,15 +496,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GraphicsContext* m_graphicsContext; //!< The window context
-    Vector2u         m_size;            //!< Public texture size
-    unsigned int     m_texture{};       //!< Internal texture identifier
-    bool             m_isSmooth{};      //!< Status of the smooth filter
-    bool             m_sRgb{};          //!< Should the texture source be converted from sRGB?
-    bool             m_isRepeated{};    //!< Is the texture in repeat mode?
-    bool             m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
-    bool             m_hasMipmap{};     //!< Has the mipmap been generated?
-    unsigned int     m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+    Vector2u     m_size;            //!< Public texture size
+    unsigned int m_texture{};       //!< Internal texture identifier
+    bool         m_isSmooth{};      //!< Status of the smooth filter
+    bool         m_sRgb{};          //!< Should the texture source be converted from sRGB?
+    bool         m_isRepeated{};    //!< Is the texture in repeat mode?
+    bool         m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
+    bool         m_hasMipmap{};     //!< Has the mipmap been generated?
+    unsigned int m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 };
 
 ////////////////////////////////////////////////////////////
@@ -624,9 +609,9 @@ SFML_GRAPHICS_API void swap(Texture& lhs, Texture& rhs) noexcept;
 /// `sf::Texture` can also be used directly as a raw texture for
 /// custom OpenGL geometry.
 /// \code
-/// texture.bind(graphicsContext);
+/// texture.bind();
 /// ... render OpenGL geometry ...
-/// sf::Texture::unbind(graphicsContext);
+/// sf::Texture::unbind();
 /// \endcode
 ///
 /// \see `sf::Sprite`, `sf::Image`, `sf::RenderTexture`

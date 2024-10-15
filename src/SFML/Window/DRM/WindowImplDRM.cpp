@@ -42,16 +42,14 @@ void restoreTerminalConfig();
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(WindowContext& windowContext, WindowHandle /*handle*/) : WindowImpl(windowContext)
+WindowImplDRM::WindowImplDRM(WindowHandle /*handle*/)
 {
     InputImpl::setTerminalConfig();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplDRM::WindowImplDRM(WindowContext& windowContext, const WindowSettings& windowSettings) :
-WindowImpl(windowContext),
-m_size(windowSettings.size)
+WindowImplDRM::WindowImplDRM(const WindowSettings& windowSettings) : m_size(windowSettings.size)
 {
     InputImpl::setTerminalConfig();
 }

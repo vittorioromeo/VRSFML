@@ -8,15 +8,6 @@
 #include "SFML/Base/Assert.hpp"
 
 
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-namespace sf
-{
-class GraphicsContext;
-} // namespace sf
-
-
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -68,7 +59,7 @@ class [[nodiscard]] GLUniqueResource
 public:
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard, gnu::always_inline, gnu::flatten]] explicit GLUniqueResource(GraphicsContext&)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] explicit GLUniqueResource()
     {
         TFuncs::create(m_id.value);
         SFML_BASE_ASSERT(m_id.value != 0u);

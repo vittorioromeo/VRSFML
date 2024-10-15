@@ -31,15 +31,13 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("create()")
     {
-        CHECK(!sf::RenderTexture::create(graphicsContext, {1'000'000, 1'000'000}).hasValue());
+        CHECK(!sf::RenderTexture::create({1'000'000, 1'000'000}).hasValue());
 
-        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 0})
-                  .hasValue());
+        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 0}).hasValue());
 
-        CHECK(sf::RenderTexture::create(graphicsContext, {100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
-                  .hasValue());
+        CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8}).hasValue());
 
-        const auto renderTexture = sf::RenderTexture::create(graphicsContext, {360, 480}).value();
+        const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
         CHECK(!renderTexture.isSmooth());
         CHECK(!renderTexture.isRepeated());
@@ -55,32 +53,32 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("getMaximumAntiAliasingLevel()")
     {
-        CHECK(sf::RenderTexture::getMaximumAntiAliasingLevel(graphicsContext) <= 64);
+        CHECK(sf::RenderTexture::getMaximumAntiAliasingLevel() <= 64);
     }
 
     SECTION("Set/get smooth")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
         renderTexture.setSmooth(true);
         CHECK(renderTexture.isSmooth());
     }
 
     SECTION("Set/get repeated")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
         renderTexture.setRepeated(true);
         CHECK(renderTexture.isRepeated());
     }
 
     SECTION("generateMipmap()")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
         CHECK(renderTexture.generateMipmap());
     }
 
     SECTION("setActive()")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
+        auto renderTexture = sf::RenderTexture::create({64, 64}).value();
         CHECK(renderTexture.setActive());
         CHECK(renderTexture.setActive(false));
         CHECK(renderTexture.setActive(true));
@@ -88,7 +86,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
     SECTION("getTexture()")
     {
-        const auto renderTexture = sf::RenderTexture::create(graphicsContext, {64, 64}).value();
+        const auto renderTexture = sf::RenderTexture::create({64, 64}).value();
         CHECK(renderTexture.getTexture().getSize() == sf::Vector2u{64, 64});
     }
 
@@ -104,8 +102,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
         // clang-format on
 
-        auto renderTexture = sf::RenderTexture::create(graphicsContext,
-                                                       {64, 64},
+        auto renderTexture = sf::RenderTexture::create({64, 64},
                                                        {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                  .value();
 
@@ -135,20 +132,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
         auto image   = sf::Image::create(size, sf::Color::White).value();
-        auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+        auto texture = sf::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext,
-                                                           size,
-                                                           {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(graphicsContext,
-                                                     size,
-                                                     {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
-        auto rightInnerRT = sf::RenderTexture::create(graphicsContext,
-                                                      size,
-                                                      {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto rightInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                 .value();
 
         const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::White, {0.f, 0.f}},
@@ -207,16 +198,12 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
         auto image   = sf::Image::create(size, sf::Color::White).value();
-        auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+        auto texture = sf::Texture::loadFromImage(image).value();
 
-        auto baseRenderTexture = sf::RenderTexture::create(graphicsContext,
-                                                           size,
-                                                           {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                      .value();
 
-        auto leftInnerRT = sf::RenderTexture::create(graphicsContext,
-                                                     size,
-                                                     {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
+        auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable})
                                .value();
 
         const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},

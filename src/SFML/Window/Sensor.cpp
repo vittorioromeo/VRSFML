@@ -11,23 +11,23 @@
 namespace sf::Sensor
 {
 ////////////////////////////////////////////////////////////
-bool isAvailable(WindowContext& windowContext, Type sensor)
+bool isAvailable(Type sensor)
 {
-    return windowContext.getSensorManager().isAvailable(sensor);
+    return WindowContext::ensureInstalled().getSensorManager().isAvailable(sensor);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setEnabled(WindowContext& windowContext, Type sensor, bool enabled)
+void setEnabled(Type sensor, bool enabled)
 {
-    windowContext.getSensorManager().setEnabled(sensor, enabled);
+    WindowContext::ensureInstalled().getSensorManager().setEnabled(sensor, enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f getValue(WindowContext& windowContext, Type sensor)
+Vector3f getValue(Type sensor)
 {
-    return windowContext.getSensorManager().getValue(sensor);
+    return WindowContext::ensureInstalled().getSensorManager().getValue(sensor);
 }
 
 } // namespace sf::Sensor

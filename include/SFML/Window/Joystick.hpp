@@ -17,7 +17,6 @@
 namespace sf
 {
 class String;
-class WindowContext;
 } // namespace sf
 
 namespace sf::priv
@@ -53,7 +52,7 @@ enum : unsigned int
 /// in this case the joystick states are not updated automatically.
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void update(WindowContext& windowContext);
+SFML_WINDOW_API void update();
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
@@ -125,7 +124,7 @@ public:
     [[nodiscard]] float getAxisPosition(Axis axis) const;
 
 private:
-    friend base::Optional<Query> query(const WindowContext& windowContext, unsigned int joystickId);
+    friend base::Optional<Query> query(unsigned int joystickId);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a joystick state query
@@ -160,7 +159,7 @@ private:
 /// \param joystick Index of the joystick to check
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Optional<Query> query(const WindowContext& windowContext, unsigned int joystickId);
+[[nodiscard]] base::Optional<Query> query(unsigned int joystickId);
 
 } // namespace sf::Joystick
 
@@ -199,7 +198,7 @@ private:
 ///
 /// Usage example:
 /// \code
-/// const auto query = sf::Joystick::query(windowContext, 0);
+/// const auto query = sf::Joystick::query(0);
 ///
 /// if (!query.hasValue()) // Is joystick #0 disconnected?
 ///     return;

@@ -36,11 +36,49 @@ namespace sf
 class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext : public WindowContext
 {
 public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
     explicit GraphicsContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
     ~GraphicsContext();
 
-    [[nodiscard]] Shader&  getBuiltInShader();
+    // Deleted copy operations
+    GraphicsContext(const GraphicsContext&)            = delete;
+    GraphicsContext& operator=(const GraphicsContext&) = delete;
+
+    // Deleted move operations
+    GraphicsContext(GraphicsContext&&)            = delete;
+    GraphicsContext& operator=(GraphicsContext&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the built-in shader
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Shader& getBuiltInShader();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the built-in 1x1 white texture
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] Texture& getBuiltInWhiteDotTexture();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns a pointer to the installed `GraphicsContext` if available, `nullptr` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static GraphicsContext* getInstalled();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the installed `GraphicsContext` if available, aborts the program otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    static GraphicsContext& ensureInstalled();
 
 private:
     friend Shader;
@@ -48,7 +86,16 @@ private:
 
     using WindowContext::createGlContext; // Needed by befriended render texture implementations
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the built-in vertex shader source code
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] const char* getBuiltInShaderVertexSrc() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the built-in fragment shader source code
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] const char* getBuiltInShaderFragmentSrc() const;
 
     ////////////////////////////////////////////////////////////

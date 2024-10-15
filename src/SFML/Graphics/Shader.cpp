@@ -312,22 +312,18 @@ struct Shader::Impl
     using TextureTable = std::unordered_map<int, const Texture*>;
     using UniformTable = std::unordered_map<std::string, int, StringHash, StringEq>;
 
-    GraphicsContext* graphicsContext;
-    unsigned int     shaderProgram{};    //!< OpenGL identifier for the program
-    int              currentTexture{-1}; //!< Location of the current texture in the shader
+    unsigned int shaderProgram{};    //!< OpenGL identifier for the program
+    int          currentTexture{-1}; //!< Location of the current texture in the shader
 
     // TODO P1: protect with mutex? Change API?
     mutable TextureTable textures; //!< Texture variables in the shader, mapped to their location
     mutable UniformTable uniforms; //!< Parameters location cache
 
-    explicit Impl(GraphicsContext& theGraphicsContext, unsigned int theShaderProgram) :
-    graphicsContext(&theGraphicsContext),
-    shaderProgram(theShaderProgram)
+    explicit Impl(unsigned int theShaderProgram) : shaderProgram(theShaderProgram)
     {
     }
 
     explicit Impl(Impl&& rhs) noexcept :
-    graphicsContext(rhs.graphicsContext),
     shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
     currentTexture(base::exchange(rhs.currentTexture, -1)),
     textures(SFML_BASE_MOVE(rhs.textures)),
@@ -399,7 +395,7 @@ Shader::~Shader()
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
-        SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
         SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -420,7 +416,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
-        SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
         SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -436,7 +432,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type)
+base::Optional<Shader> Shader::loadFromFile(const Path& filename, Type type)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -454,19 +450,17 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext, co
 
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(graphicsContext, shaderView, {}, {});
+        return compile(shaderView, {}, {});
 
     if (type == Type::Geometry)
-        return compile(graphicsContext, {}, shaderView, {});
+        return compile({}, shaderView, {});
 
-    return compile(graphicsContext, {}, {}, shaderView);
+    return compile({}, {}, shaderView);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
-                                            const Path&      vertexShaderFilename,
-                                            const Path&      fragmentShaderFilename)
+base::Optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename, const Path& fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -489,15 +483,14 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
     }
 
     // Compile the shader program
-    return compile(graphicsContext, vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
+    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
-                                            const Path&      vertexShaderFilename,
-                                            const Path&      geometryShaderFilename,
-                                            const Path&      fragmentShaderFilename)
+base::Optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename,
+                                            const Path& geometryShaderFilename,
+                                            const Path& fragmentShaderFilename)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -528,51 +521,47 @@ base::Optional<Shader> Shader::loadFromFile(GraphicsContext& graphicsContext,
     }
 
     // Compile the shader program
-    return compile(graphicsContext,
-                   vertexShaderSlice->toView(buffer),
+    return compile(vertexShaderSlice->toView(buffer),
                    geometryShaderSlice->toView(buffer),
                    fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext, base::StringView shader, Type type)
+base::Optional<Shader> Shader::loadFromMemory(base::StringView shader, Type type)
 {
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(graphicsContext, shader, {}, {});
+        return compile(shader, {}, {});
 
     if (type == Type::Geometry)
-        return compile(graphicsContext, {}, shader, {});
+        return compile({}, shader, {});
 
     SFML_BASE_ASSERT(type == Type::Fragment);
-    return compile(graphicsContext, {}, {}, shader);
+    return compile({}, {}, shader);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
-                                              base::StringView vertexShader,
-                                              base::StringView fragmentShader)
+base::Optional<Shader> Shader::loadFromMemory(base::StringView vertexShader, base::StringView fragmentShader)
 {
     // Compile the shader program
-    return compile(graphicsContext, vertexShader, {}, fragmentShader);
+    return compile(vertexShader, {}, fragmentShader);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(GraphicsContext& graphicsContext,
-                                              base::StringView vertexShader,
+base::Optional<Shader> Shader::loadFromMemory(base::StringView vertexShader,
                                               base::StringView geometryShader,
                                               base::StringView fragmentShader)
 {
     // Compile the shader program
-    return compile(graphicsContext, vertexShader, geometryShader, fragmentShader);
+    return compile(vertexShader, geometryShader, fragmentShader);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type)
+base::Optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -590,20 +579,18 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext, 
 
     // Compile the shader program
     if (type == Type::Vertex)
-        return compile(graphicsContext, shaderView, {}, {});
+        return compile(shaderView, {}, {});
 
     if (type == Type::Geometry)
-        return compile(graphicsContext, {}, shaderView, {});
+        return compile({}, shaderView, {});
 
     SFML_BASE_ASSERT(type == Type::Fragment);
-    return compile(graphicsContext, {}, {}, shaderView);
+    return compile({}, {}, shaderView);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
-                                              InputStream&     vertexShaderStream,
-                                              InputStream&     fragmentShaderStream)
+base::Optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -626,15 +613,14 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
     }
 
     // Compile the shader program
-    return compile(graphicsContext, vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
+    return compile(vertexShaderSlice->toView(buffer), {}, fragmentShaderSlice->toView(buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
-                                              InputStream&     vertexShaderStream,
-                                              InputStream&     geometryShaderStream,
-                                              InputStream&     fragmentShaderStream)
+base::Optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
+                                              InputStream& geometryShaderStream,
+                                              InputStream& fragmentShaderStream)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
@@ -665,8 +651,7 @@ base::Optional<Shader> Shader::loadFromStream(GraphicsContext& graphicsContext,
     }
 
     // Compile the shader program
-    return compile(graphicsContext,
-                   vertexShaderSlice->toView(buffer),
+    return compile(vertexShaderSlice->toView(buffer),
                    geometryShaderSlice->toView(buffer),
                    fragmentShaderSlice->toView(buffer));
 }
@@ -814,7 +799,7 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) cons
 bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
     // Store the location -> texture mapping
     if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
@@ -842,7 +827,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -924,7 +909,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     SFML_BASE_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
@@ -941,42 +926,42 @@ void Shader::bind() const
 
 
 ////////////////////////////////////////////////////////////
-void Shader::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
+void Shader::unbind()
 {
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     glCheck(glUseProgram({}));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Shader::isGeometryAvailable([[maybe_unused]] GraphicsContext& graphicsContext)
+bool Shader::isGeometryAvailable()
 {
 #ifdef SFML_OPENGL_ES
     return false;
 #else
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     return GL_VERSION_3_2;
 #endif
 }
 
 
 ////////////////////////////////////////////////////////////
-Shader::Shader(base::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram) :
-m_impl(graphicsContext, shaderProgram)
+Shader::Shader(base::PassKey<Shader>&&, unsigned int shaderProgram) : m_impl(shaderProgram)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
-                                       base::StringView vertexShaderCode,
+base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
                                        base::StringView geometryShaderCode,
                                        base::StringView fragmentShaderCode)
 {
+    auto& graphicsContext = GraphicsContext::ensureInstalled();
+
     SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure we can use geometry shaders
-    if (geometryShaderCode.data() != nullptr && !isGeometryAvailable(graphicsContext))
+    if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
     {
         priv::err() << "Failed to create a shader: your system doesn't support geometry shaders "
                     << "(you should test Shader::isGeometryAvailable() before trying to use geometry shaders)";
@@ -1067,7 +1052,7 @@ base::Optional<Shader> Shader::compile(GraphicsContext& graphicsContext,
     // in all contexts immediately (solves problems in multi-threaded apps)
     glCheck(glFlush());
 
-    return base::makeOptional<Shader>(base::PassKey<Shader>{}, graphicsContext, castFromGlHandle(shaderProgram));
+    return base::makeOptional<Shader>(base::PassKey<Shader>{}, castFromGlHandle(shaderProgram));
 }
 
 
@@ -1080,7 +1065,7 @@ void Shader::bindTextures() const
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(glUniform1i(it->first, index));
         glCheck(glActiveTexture(GL_TEXTURE0 + static_cast<GLenum>(index)));
-        it->second->bind(*m_impl->graphicsContext);
+        it->second->bind();
         ++it;
     }
 

@@ -118,9 +118,7 @@ void initRawMouse()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(WindowContext& windowContext, WindowHandle handle) :
-WindowImpl(windowContext),
-m_handle(handle)
+WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
 {
     // Set that this process is DPI aware and can handle DPI scaling
     setProcessDpiAware();
@@ -145,8 +143,7 @@ m_handle(handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplWin32::WindowImplWin32(WindowContext& windowContext, const WindowSettings& windowSettings) :
-WindowImpl(windowContext),
+WindowImplWin32::WindowImplWin32(const WindowSettings& windowSettings) :
 m_lastSize(windowSettings.size),
 m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)

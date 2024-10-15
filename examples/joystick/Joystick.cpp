@@ -37,7 +37,7 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Open the text font
-    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     constexpr auto characterSize   = 14u;
     const auto     fontLineSpacing = font.getLineSpacing(characterSize);
@@ -99,7 +99,7 @@ int main()
     // Update the label-value sf::Text objects based on the current joystick state
     const auto updateValues = [&](unsigned int index)
     {
-        const auto query = sf::Joystick::query(graphicsContext, index);
+        const auto query = sf::Joystick::query(index);
         if (!query.hasValue())
             return false;
 
@@ -119,7 +119,7 @@ int main()
     };
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{400, 775}, .title = "Joystick", .resizable = false, .vsync = true});
+    sf::RenderWindow window({.size{400, 775}, .title = "Joystick", .resizable = false, .vsync = true});
 
     // Set up our string conversion parameters
     sstr.precision(2);

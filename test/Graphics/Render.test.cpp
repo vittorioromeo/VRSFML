@@ -6,6 +6,8 @@
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
+#include "SFML/Window/WindowContext.hpp"
+
 #include <Doctest.hpp>
 
 #include <GraphicsUtil.hpp>
@@ -13,13 +15,17 @@
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
+    CHECK(sf::WindowContext::getInstalled() == nullptr);
+    CHECK(sf::GraphicsContext::getInstalled() == nullptr);
+
     sf::GraphicsContext graphicsContext;
+
+    CHECK(sf::WindowContext::getInstalled() == &static_cast<sf::WindowContext&>(graphicsContext));
+    CHECK(sf::GraphicsContext::getInstalled() == &graphicsContext);
 
     SECTION("Stencil Tests")
     {
-        auto renderTexture = sf::RenderTexture::create(graphicsContext,
-                                                       {100, 100},
-                                                       sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
+        auto renderTexture = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8})
                                  .value();
 
         renderTexture.clear(sf::Color::Red, sf::StencilValue{127u});

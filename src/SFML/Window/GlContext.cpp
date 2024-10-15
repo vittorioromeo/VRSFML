@@ -24,7 +24,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 GlContext::~GlContext()
 {
-    m_windowContext.onGlContextDestroyed(*this);
+    WindowContext::ensureInstalled().onGlContextDestroyed(*this);
 }
 
 
@@ -43,10 +43,7 @@ unsigned int GlContext::getId() const
 
 
 ////////////////////////////////////////////////////////////
-GlContext::GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings) :
-m_settings(contextSettings),
-m_windowContext(windowContext),
-m_id{id}
+GlContext::GlContext(unsigned int id, const ContextSettings& contextSettings) : m_settings(contextSettings), m_id{id}
 {
 }
 
@@ -83,7 +80,7 @@ int GlContext::evaluateFormat(
 ////////////////////////////////////////////////////////////
 bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
-    SFML_BASE_ASSERT(m_windowContext.getActiveThreadLocalGlContextPtr() == this);
+    SFML_BASE_ASSERT(WindowContext::ensureInstalled().getActiveThreadLocalGlContextPtr() == this);
 
     const auto& derivedSharedGlContext = static_cast<const DerivedGlContextType&>(sharedGlContext);
 

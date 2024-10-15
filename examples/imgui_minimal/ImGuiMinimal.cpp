@@ -20,9 +20,9 @@
 int main()
 {
     sf::GraphicsContext     graphicsContext;
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
+    sf::ImGui::ImGuiContext imGuiContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
+    sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
 
     if (!imGuiContext.init(window))
         return -1;
@@ -37,10 +37,9 @@ int main()
     const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
 
-    auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 0, .sRgbCapable = true})
-                                 .value();
+    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true}).value();
 
-    auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
+    auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
 
     const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
                                         {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
@@ -52,7 +51,7 @@ int main()
     leftInnerRT.clear();
 
     auto image   = sf::Image::create(size, sf::Color::White).value();
-    auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+    auto texture = sf::Texture::loadFromImage(image).value();
 
     leftInnerRT.draw(texture);
     leftInnerRT.display();

@@ -29,11 +29,10 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext,
-                            {.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});
+    sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});
 
     // Open the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the mouse position and mouse raw movement texts
     sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});

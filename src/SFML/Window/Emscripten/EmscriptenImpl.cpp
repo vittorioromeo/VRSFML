@@ -21,6 +21,7 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/StringUtfUtils.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -776,24 +777,20 @@ void setCallbacks()
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(WindowContext& windowContext, WindowHandle /* handle */) :
-WindowImpl(windowContext),
-m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(WindowHandle /* handle */) : m_keyRepeatEnabled(true)
 {
     err() << "Creating a window from a WindowHandle unsupported";
-    std::abort();
+    base::abort();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImplEmscripten::WindowImplEmscripten(WindowContext& windowContext, const WindowSettings& windowSettings) :
-WindowImpl(windowContext),
-m_keyRepeatEnabled(true)
+WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings) : m_keyRepeatEnabled(true)
 {
     if (window != nullptr)
     {
         err() << "Creating multiple windows is unsupported";
-        std::abort();
+        base::abort();
     }
 
     setCallbacks();

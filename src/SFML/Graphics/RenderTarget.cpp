@@ -76,9 +76,9 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 ////////////////////////////////////////////////////////////
 // Check if a render target with the given ID is active in the current context
-[[nodiscard]] bool isActive(sf::GraphicsContext& graphicsContext, IdType id)
+[[nodiscard]] bool isActive(IdType id)
 {
-    const IdType contextId = graphicsContext.getActiveThreadLocalGlContextId();
+    const IdType contextId = sf::GraphicsContext::ensureInstalled().getActiveThreadLocalGlContextId();
     SFML_BASE_ASSERT(contextId < maxIdCount);
 
     const auto renderTargetId = contextRenderTargetMap[contextId].load();
@@ -292,20 +292,17 @@ void setupVertexAttribPointers()
 ////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
-    explicit Impl(GraphicsContext& theGraphicsContext, const View& theView) :
-    graphicsContext(&theGraphicsContext),
+    explicit Impl(const View& theView) :
     view(theView),
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
-    vaoGroup(theGraphicsContext),
-    persistentVaoGroup(theGraphicsContext),
+    vaoGroup(),
+    persistentVaoGroup(),
     vboPersistentBuffer(persistentVaoGroup.vbo),
     eboPersistentBuffer(persistentVaoGroup.ebo)
     {
         vaoGroup.bind();
         persistentVaoGroup.bind();
     }
-
-    GraphicsContext* graphicsContext; //!< The window context
 
     View view; //!< Current view
 
@@ -330,8 +327,7 @@ struct RenderTarget::Impl
 
 
 ////////////////////////////////////////////////////////////
-RenderTarget::RenderTarget(GraphicsContext& graphicsContext, const View& currentView) :
-m_impl(graphicsContext, currentView)
+RenderTarget::RenderTarget(const View& currentView) : m_impl(currentView)
 {
 }
 
@@ -671,7 +667,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     setupDraw(/* persistent */ false, states);
 
     // Bind vertex buffer
-    vertexBuffer.bind(*m_impl->graphicsContext);
+    vertexBuffer.bind();
 
     // Always enable texture coordinates (needed because different buffer is bound)
     setupVertexAttribPointers();
@@ -679,7 +675,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
     // Unbind vertex buffer
-    VertexBuffer::unbind(*vertexBuffer.m_graphicsContext);
+    VertexBuffer::unbind();
 
     // Needed to restore attrib pointers on regular VBO
     m_impl->bindGLObjects(m_impl->vaoGroup);
@@ -700,12 +696,12 @@ bool RenderTarget::isSrgb() const
 bool RenderTarget::setActive(bool active)
 {
     // If this RenderTarget is already active on the current GL context, do nothing
-    if (const bool isAlreadyActive = RenderTargetImpl::isActive(*m_impl->graphicsContext, m_impl->id);
+    if (const bool isAlreadyActive = RenderTargetImpl::isActive(m_impl->id);
         (active && isAlreadyActive) || (!active && !isAlreadyActive))
         return true;
 
     // Mark this RenderTarget as active or no longer active in the tracking map
-    const RenderTargetImpl::IdType contextId = m_impl->graphicsContext->getActiveThreadLocalGlContextId();
+    const RenderTargetImpl::IdType contextId = GraphicsContext::ensureInstalled().getActiveThreadLocalGlContextId();
 
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
@@ -782,23 +778,16 @@ void RenderTarget::resetGLStates()
     unapplyTexture();
 
     {
-        Shader::unbind(*m_impl->graphicsContext);
+        Shader::unbind();
         m_impl->cache.lastProgramId = 0u;
     }
 
-    VertexBuffer::unbind(*m_impl->graphicsContext);
+    VertexBuffer::unbind();
 
     // Set the default view
     setView(getView());
 
     m_impl->cache.enable = true;
-}
-
-
-////////////////////////////////////////////////////////////
-GraphicsContext& RenderTarget::getGraphicsContext()
-{
-    return *m_impl->graphicsContext;
 }
 
 
@@ -895,7 +884,7 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 ////////////////////////////////////////////////////////////
 void RenderTarget::unapplyTexture()
 {
-    Texture::unbind(*m_impl->graphicsContext);
+    Texture::unbind();
 
     m_impl->cache.lastTextureId      = 0ul;
     m_impl->cache.lastCoordinateType = CoordinateType::Pixels;
@@ -934,7 +923,8 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
     }
 
     // Select shader to be used
-    const Shader& usedShader = states.shader != nullptr ? *states.shader : m_impl->graphicsContext->getBuiltInShader();
+    const Shader& usedShader = states.shader != nullptr ? *states.shader
+                                                        : GraphicsContext::ensureInstalled().getBuiltInShader();
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
@@ -999,8 +989,9 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
 void RenderTarget::setupDrawTexture(const RenderStates& states)
 {
     // Select texture to be used
-    const Texture& usedTexture = states.texture != nullptr ? *states.texture
-                                                           : getGraphicsContext().getBuiltInWhiteDotTexture();
+    const Texture& usedTexture = states.texture != nullptr
+                                     ? *states.texture
+                                     : GraphicsContext::ensureInstalled().getBuiltInWhiteDotTexture();
 
     // If the texture is an FBO attachment, always rebind it in order to inform the OpenGL driver that we
     // want changes made to it in other contexts to be visible here as well. This saves us from having to
@@ -1018,7 +1009,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
         return;
 
     // Bind the texture
-    usedTexture.bind(*m_impl->graphicsContext);
+    usedTexture.bind();
 
     // Update basic cache texture stuff
     m_impl->cache.lastTextureId      = usedTexture.m_cacheId;

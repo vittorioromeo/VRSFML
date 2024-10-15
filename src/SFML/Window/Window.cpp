@@ -29,14 +29,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Window::Window::Impl
 {
-    WindowContext*                   windowContext;
     base::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
     Clock                            clock;          //!< Clock for measuring the elapsed time between frames
     Time                             frameTimeLimit; //!< Current framerate limit
 
-    explicit Impl(WindowContext& theWindowContext, base::UniquePtr<priv::GlContext>&& theContext) :
-    windowContext(&theWindowContext),
-    glContext(SFML_BASE_MOVE(theContext))
+    explicit Impl(base::UniquePtr<priv::GlContext>&& theContext) : glContext(SFML_BASE_MOVE(theContext))
     {
     }
 };
@@ -44,13 +41,9 @@ struct Window::Window::Impl
 
 ////////////////////////////////////////////////////////////
 template <typename... TWindowBaseArgs>
-Window::Window(WindowContext&  windowContext,
-               const Settings& windowSettings,
-
-               unsigned int bitsPerPixel,
-               TWindowBaseArgs&&... windowBaseArgs) :
+Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArgs) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
-m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
+m_impl(WindowContext::ensureInstalled().createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
@@ -66,19 +59,15 @@ m_impl(windowContext, windowContext.createGlContext(windowSettings.contextSettin
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowContext& windowContext, const Settings& windowSettings) :
-Window(windowContext, windowSettings, windowSettings.bitsPerPixel, priv::WindowImpl::create(windowContext, windowSettings))
+Window::Window(const Settings& windowSettings) :
+Window(windowSettings, windowSettings.bitsPerPixel, priv::WindowImpl::create(windowSettings))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowContext& windowContext, WindowHandle handle, const ContextSettings& contextSettings) :
-Window(windowContext,
-       WindowSettings{.size{}, .contextSettings = contextSettings},
-       VideoModeUtils::getDesktopMode().bitsPerPixel,
-       windowContext,
-       handle)
+Window::Window(WindowHandle handle, const ContextSettings& contextSettings) :
+Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUtils::getDesktopMode().bitsPerPixel, handle)
 {
 }
 
@@ -128,7 +117,7 @@ bool Window::setActive(bool active) const
 {
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
-    if (m_impl->windowContext->setActiveThreadLocalGlContext(*m_impl->glContext, active))
+    if (WindowContext::ensureInstalled().setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
     priv::err() << "Failed to activate the window's context";
@@ -153,20 +142,6 @@ void Window::display()
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     emscripten_sleep(0u);
 #endif
-}
-
-
-////////////////////////////////////////////////////////////
-WindowContext& Window::getWindowContext()
-{
-    return *m_impl->windowContext;
-}
-
-
-////////////////////////////////////////////////////////////
-const WindowContext& Window::getWindowContext() const
-{
-    return *m_impl->windowContext;
 }
 
 } // namespace sf

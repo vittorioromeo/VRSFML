@@ -53,7 +53,7 @@
 int main()
 {
     sf::GraphicsContext graphicsContext;
-    sf::RenderWindow    window(graphicsContext,
+    sf::RenderWindow    window(
                                {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -63,19 +63,19 @@ int main()
 
     const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
-    const auto     font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto     font0 = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 16u});
 
     auto image   = sf::Image::create(size, sf::Color::White).value();
-    auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+    auto texture = sf::Texture::loadFromImage(image).value();
 
-    auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 0, .sRgbCapable = true})
+    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true})
                                  .value();
 
-    auto baseRenderTextureAA = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true})
+    auto baseRenderTextureAA = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true})
                                    .value();
 
-    auto leftInnerRT = sf::RenderTexture::create(graphicsContext, size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
+    auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
 
     const sf::Vertex leftVertexArray[6]{{{0.f, 0.f}, sf::Color::Red, {0.f, 0.f}},
                                         {{halfWidth, 0.f}, sf::Color::Red, {halfWidth, 0.f}},
@@ -91,10 +91,10 @@ int main()
     leftInnerRT.display();
 
 
-    auto winRT = sf::Texture::create(graphicsContext, window.getSize()).value();
+    auto winRT = sf::Texture::create(window.getSize()).value();
 
     // auto finalImage = baseRenderTexture.getTexture().copyToImage();
-    // auto finalTx    = sf::Texture::loadFromImage(graphicsContext, finalImage).value();
+    // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
 
 #define CHECK(...)                                 \
     if (!(__VA_ARGS__))                            \
@@ -157,20 +157,18 @@ int main()
 int main()
 {
     sf::GraphicsContext graphicsContext;
-    sf::RenderWindow    window(graphicsContext,
-                               {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
     sf::Vector2u size = window.getSize();
 
-    auto texture = sf::Texture::loadFromFile(graphicsContext, "resources/biga.png").value();
+    auto texture = sf::Texture::loadFromFile("resources/biga.png").value();
 
     sf::Sprite sprite{.textureRect = texture.getRect()};
 
     sprite.scale = {(float)size.x / texture.getSize().x, (float)size.y / texture.getSize().y / 2.f};
 
-    auto render = sf::RenderTexture::create(graphicsContext, {size.x, (unsigned int)(size.y / 2.f)}, {.antiAliasingLevel = 4})
-                      .value();
+    auto render = sf::RenderTexture::create({size.x, (unsigned int)(size.y / 2.f)}, {.antiAliasingLevel = 4}).value();
 
     sf::Sprite rndrSprite{.textureRect = render.getTexture().getRect()};
     rndrSprite.position = {0.f, (float)size.y / 2.f};
@@ -196,7 +194,7 @@ void main()
 }
 )glsl";
 
-    auto shader     = sf::Shader::loadFromMemory(graphicsContext, shaderSrc, sf::Shader::Type::Fragment).value();
+    auto shader     = sf::Shader::loadFromMemory(shaderSrc, sf::Shader::Type::Fragment).value();
     auto ulTexture2 = shader.getUniformLocation("texture2").value();
     (void)shader.setUniform(ulTexture2, texture);
 
@@ -226,7 +224,7 @@ void main()
 int main()
 {
     sf::GraphicsContext graphicsContext;
-    sf::RenderWindow    window(graphicsContext, {.size{800u, 600u}, .title = L"महसुस"});
+    sf::RenderWindow    window({.size{800u, 600u}, .title = L"महसुस"});
 
     sf::RectangleShape rs0(
         {.position         = {250.f, 250.f},
@@ -272,12 +270,12 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = L"महसुस"});
+    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस"});
 
-    auto textureAtlas = sf::TextureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
+    auto textureAtlas = sf::TextureAtlas{sf::Texture::create({1024u, 1024u}).value()};
 
-    const auto font0 = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
-    const auto font1 = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
+    const auto font0 = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
+    const auto font1 = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
 
     const auto sfmlLogoImage     = sf::Image::loadFromFile("resources/sfml_logo.png").value();
     const auto sfmlLogoAtlasRect = textureAtlas.add(sfmlLogoImage).value();
@@ -367,26 +365,24 @@ int main()
 
     sf::GraphicsContext graphicsContext;
 
-    std::cout << sf::Texture::getMaximumSize(graphicsContext) << '\n';
+    std::cout << sf::Texture::getMaximumSize() << '\n';
     return 0;
 
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
 
-    sf::RenderWindow window(graphicsContext,
-                            {.size{screenSize},
+    sf::RenderWindow window({.size{screenSize},
                              .title = "Window",
                              .vsync = true,
                              .contextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 4}});
 
     auto image   = sf::Image::create(screenSize, sf::Color::White).value();
-    auto texture = sf::Texture::loadFromImage(graphicsContext, image).value();
+    auto texture = sf::Texture::loadFromImage(image).value();
 
-    auto baseRenderTexture = sf::RenderTexture::create(graphicsContext, screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/})
-                                 .value();
+    auto baseRenderTexture = sf::RenderTexture::create(screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value();
 
-    sf::RenderTexture renderTextures
-        [2]{sf::RenderTexture::create(graphicsContext, screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value(),
-            sf::RenderTexture::create(graphicsContext, screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value()};
+    sf::RenderTexture
+        renderTextures[2]{sf::RenderTexture::create(screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value(),
+                          sf::RenderTexture::create(screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value()};
 
     std::vector<sf::Vertex> vertexArrays[2];
 
@@ -468,22 +464,22 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false});
+    sf::RenderWindow window({.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false});
 
-    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     sf::Text text(font, "Test", 20);
 
-    sf::RenderTexture renderTexture[10]{sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value(),
-                                        sf::RenderTexture::create(graphicsContext, {800u, 600u}).value()};
+    sf::RenderTexture renderTexture[10]{sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value(),
+                                        sf::RenderTexture::create({800u, 600u}).value()};
 
     ;
 
@@ -546,11 +542,11 @@ int main()
 {
     sf::GraphicsContext graphicsContext;
 
-    const auto       font         = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";
 
     auto text          = sf::Text(font, textContents);
-    auto renderTexture = sf::RenderTexture::create(graphicsContext, {1680, 1050}).value();
+    auto renderTexture = sf::RenderTexture::create({1680, 1050}).value();
 
     renderTexture.clear();
 

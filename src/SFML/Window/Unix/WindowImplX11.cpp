@@ -436,9 +436,7 @@ struct XDeleter<XRRCrtcInfo>
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(WindowContext& windowContext, WindowHandle handle) :
-WindowImpl(windowContext),
-m_isExternal(true)
+WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 {
     using namespace WindowImplX11Impl;
 
@@ -471,8 +469,7 @@ m_isExternal(true)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(WindowContext& windowContext, const WindowSettings& windowSettings) :
-WindowImpl(windowContext),
+WindowImplX11::WindowImplX11(const WindowSettings& windowSettings) :
 m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
@@ -1634,7 +1631,7 @@ void WindowImplX11::createHiddenCursor()
     // Create the cursor's pixmap (1x1 pixels)
     const Pixmap cursorPixmap  = XCreatePixmap(m_display.get(), m_window, 1, 1, 1);
     GC           windowContext = XCreateGC(m_display.get(), cursorPixmap, 0, nullptr);
-    XDrawPoint(m_display.get(), cursorPixmap, windowContext, 0, 0);
+    XDrawPoint(m_display.get(), cursorPixmap, 0, 0);
     XFreeGC(m_display.get(), windowContext);
 
     // Create the cursor, using the pixmap as both the shape and the mask of the cursor
