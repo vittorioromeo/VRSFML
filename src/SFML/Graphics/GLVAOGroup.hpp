@@ -20,13 +20,6 @@ struct GLVAOGroup
     GLVertexBufferObject  vbo; //!< Associated vertex buffer object
     GLElementBufferObject ebo; //!< Associated element index buffer object
 
-    [[gnu::always_inline, gnu::flatten]] explicit GLVAOGroup(GraphicsContext& graphicsContext) :
-    vao{graphicsContext},
-    vbo{graphicsContext},
-    ebo{graphicsContext}
-    {
-    }
-
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
         vao.bind();

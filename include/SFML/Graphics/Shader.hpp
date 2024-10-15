@@ -20,7 +20,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class GraphicsContext;
 class InputStream;
 class Path;
 class RenderTarget;
@@ -130,7 +129,7 @@ public:
     /// \see `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext, const Path& filename, Type type);
+    [[nodiscard]] static base::Optional<Shader> loadFromFile(const Path& filename, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from files
@@ -151,9 +150,8 @@ public:
     /// \see `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
-                                                             const Path&      vertexShaderFilename,
-                                                             const Path&      fragmentShaderFilename);
+    [[nodiscard]] static base::Optional<Shader> loadFromFile(const Path& vertexShaderFilename,
+                                                             const Path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from files
@@ -175,10 +173,9 @@ public:
     /// \see `loadFromMemory`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromFile(GraphicsContext& graphicsContext,
-                                                             const Path&      vertexShaderFilename,
-                                                             const Path&      geometryShaderFilename,
-                                                             const Path&      fragmentShaderFilename);
+    [[nodiscard]] static base::Optional<Shader> loadFromFile(const Path& vertexShaderFilename,
+                                                             const Path& geometryShaderFilename,
+                                                             const Path& fragmentShaderFilename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry or fragment shader from a source code in memory
@@ -198,7 +195,7 @@ public:
     /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext, base::StringView shader, Type type);
+    [[nodiscard]] static base::Optional<Shader> loadFromMemory(base::StringView shader, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from source codes in memory
@@ -219,9 +216,7 @@ public:
     /// \see `loadFromFile`, `loadFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromMemory(GraphicsContext& graphicsContext,
-                                                               base::StringView vertexShader,
-                                                               base::StringView fragmentShader);
+    [[nodiscard]] static base::Optional<Shader> loadFromMemory(base::StringView vertexShader, base::StringView fragmentShader);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from source codes in memory
@@ -244,7 +239,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Shader> loadFromMemory(
-        GraphicsContext& graphicsContext,
+
         base::StringView vertexShader,
         base::StringView geometryShader,
         base::StringView fragmentShader);
@@ -267,7 +262,7 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromStream(GraphicsContext& graphicsContext, InputStream& stream, Type type);
+    [[nodiscard]] static base::Optional<Shader> loadFromStream(InputStream& stream, Type type);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load both the vertex and fragment shaders from custom streams
@@ -288,9 +283,8 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> loadFromStream(GraphicsContext& graphicsContext,
-                                                               InputStream&     vertexShaderStream,
-                                                               InputStream&     fragmentShaderStream);
+    [[nodiscard]] static base::Optional<Shader> loadFromStream(InputStream& vertexShaderStream,
+                                                               InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the vertex, geometry and fragment shaders from custom streams
@@ -313,10 +307,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<Shader> loadFromStream(
-        GraphicsContext& graphicsContext,
-        InputStream&     vertexShaderStream,
-        InputStream&     geometryShaderStream,
-        InputStream&     fragmentShaderStream);
+
+        InputStream& vertexShaderStream,
+        InputStream& geometryShaderStream,
+        InputStream& fragmentShaderStream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the location ID of a shader uniform
@@ -631,7 +625,7 @@ public:
     /// \brief Unbind any bound shader
     ///
     ////////////////////////////////////////////////////////////
-    static void unbind(GraphicsContext& graphicsContext);
+    static void unbind();
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the system supports geometry shaders
@@ -646,7 +640,7 @@ public:
     /// \return `true` if geometry shaders are supported, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isGeometryAvailable(GraphicsContext& graphicsContext);
+    [[nodiscard]] static bool isGeometryAvailable();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -654,7 +648,7 @@ public:
     /// \brief Construct from shader program
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Shader(base::PassKey<Shader>&&, GraphicsContext& graphicsContext, unsigned int shaderProgram);
+    [[nodiscard]] explicit Shader(base::PassKey<Shader>&&, unsigned int shaderProgram);
 
 private:
     friend RenderTarget;
@@ -678,8 +672,7 @@ private:
     /// \return Shader on success, `base::nullOpt` if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Shader> compile(GraphicsContext& graphicsContext,
-                                                        base::StringView vertexShaderCode,
+    [[nodiscard]] static base::Optional<Shader> compile(base::StringView vertexShaderCode,
                                                         base::StringView geometryShaderCode,
                                                         base::StringView fragmentShaderCode);
 

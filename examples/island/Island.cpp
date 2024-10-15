@@ -474,14 +474,14 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Load the terrain shader
-    auto terrainShader = sf::Shader::loadFromFile(graphicsContext, "resources/terrain.vert", "resources/terrain.frag").value();
+    auto       terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag").value();
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
 
     // Load the font
-    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window(graphicsContext, {.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
+    sf::RenderWindow window({.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
 
     // Create all of our graphics resources
     sf::Text hudText(font,
@@ -499,7 +499,7 @@ int main()
                          .outlineThickness = 2.0f});
 
     sf::RenderStates terrainStates;
-    sf::VertexBuffer terrain(graphicsContext, sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
+    sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;

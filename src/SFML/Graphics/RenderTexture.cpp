@@ -98,8 +98,6 @@ struct RenderTexture::Impl
 {
     using FramebufferIdMap = std::unordered_map<unsigned int, unsigned int>;
 
-    GraphicsContext* graphicsContext; //!< The graphics context
-
     Texture texture;    //!< Target texture to draw on
     Texture tmpTexture; //!< Temporary texture used for Y-axis flipping
 
@@ -116,10 +114,9 @@ struct RenderTexture::Impl
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Impl(GraphicsContext& theGraphicsContext, Texture&& theTexture) :
-    graphicsContext(&theGraphicsContext),
+    [[nodiscard]] explicit Impl(Texture&& theTexture) :
     texture(SFML_BASE_MOVE(theTexture)),
-    tmpTexture(Texture::create(theGraphicsContext, texture.getSize(), texture.isSrgb()).value())
+    tmpTexture(Texture::create(texture.getSize(), texture.isSrgb()).value())
     {
     }
 
@@ -137,15 +134,17 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool completeAuxFramebufferCreation(GLuint auxFramebufferId)
     {
+        auto& graphicsContext = GraphicsContext::ensureInstalled();
+
         linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
 
         if (!isBoundFramebufferComplete())
             return createFail("failed to link the render buffers to the auxiliary framebuffer");
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
-        const unsigned int glContextId = graphicsContext->getActiveThreadLocalGlContextId();
+        const unsigned int glContextId = graphicsContext.getActiveThreadLocalGlContextId();
         auxFramebuffers.try_emplace(glContextId, auxFramebufferId);
-        graphicsContext->registerUnsharedFrameBuffer(glContextId, auxFramebufferId, &deleteFramebuffer);
+        graphicsContext.registerUnsharedFrameBuffer(glContextId, auxFramebufferId, &deleteFramebuffer);
 
         return true;
     }
@@ -190,6 +189,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createFramebuffer()
     {
+        auto& graphicsContext = GraphicsContext::ensureInstalled();
+
         // Create the framebuffer object
         const GLuint framebufferId = priv::generateAndBindFramebuffer();
         if (!framebufferId)
@@ -206,9 +207,9 @@ private:
             return createFail("failed to link the target texture to the framebuffer");
 
         // Register the FBO in our map and with the current context so it is automatically destroyed
-        const unsigned int glContextId = graphicsContext->getActiveThreadLocalGlContextId();
+        const unsigned int glContextId = graphicsContext.getActiveThreadLocalGlContextId();
         framebuffers.try_emplace(glContextId, framebufferId);
-        graphicsContext->registerUnsharedFrameBuffer(glContextId, framebufferId, &deleteFramebuffer);
+        graphicsContext.registerUnsharedFrameBuffer(glContextId, framebufferId, &deleteFramebuffer);
 
         return multisample ? createAuxMultisampleFramebuffer() : createAuxTempFramebuffer();
     }
@@ -217,6 +218,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool create(const ContextSettings& contextSettings)
     {
+        auto& graphicsContext = GraphicsContext::ensureInstalled();
+
         // OpenGL ES requires that all attachments have identical sizes
 
         const auto fail = [&](const auto&... what)
@@ -228,14 +231,14 @@ public:
             return false;
         };
 
-        SFML_BASE_ASSERT(graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
         const auto size = texture.getSize();
 
         sRgb = contextSettings.sRgbCapable;
 
         // Check if the requested anti-aliasing level is supported
-        if (const auto samples = getMaximumAntiAliasingLevel(*graphicsContext); contextSettings.antiAliasingLevel > samples)
+        if (const auto samples = getMaximumAntiAliasingLevel(); contextSettings.antiAliasingLevel > samples)
             return fail("unsupported anti-aliasing level ", contextSettings.antiAliasingLevel, ", maximum supported is ", samples);
 
         const auto bindRenderbufferAndSetFormat =
@@ -277,7 +280,7 @@ public:
         }
 
         // We can't create an FBO now if there is no active context
-        if (!graphicsContext->hasActiveThreadLocalGlContext())
+        if (!graphicsContext.hasActiveThreadLocalGlContext())
             return true;
 
         // Save the current bindings so we can restore them after we are done
@@ -298,6 +301,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool activate(bool active)
     {
+        auto& graphicsContext = GraphicsContext::ensureInstalled();
+
         // Unbind the FBO if requested
         if (!active)
         {
@@ -305,8 +310,8 @@ public:
             return true;
         }
 
-        SFML_BASE_ASSERT(graphicsContext->hasActiveThreadLocalOrSharedGlContext());
-        const unsigned int glContextId = graphicsContext->getActiveThreadLocalGlContextId();
+        SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+        const unsigned int glContextId = graphicsContext.getActiveThreadLocalGlContextId();
 
         // Lookup the FBO corresponding to the currently active context
         // If none is found, there is no FBO corresponding to the
@@ -335,7 +340,7 @@ public:
         if (size.x == 0u || size.y == 0u || !activate(true))
             return;
 
-        const unsigned int glContextId = graphicsContext->getActiveThreadLocalGlContextId();
+        const unsigned int glContextId = GraphicsContext::ensureInstalled().getActiveThreadLocalGlContextId();
 
         const auto framebufferIt = framebuffers.find(glContextId);
         if (framebufferIt == framebuffers.end())
@@ -358,7 +363,9 @@ public:
 ////////////////////////////////////////////////////////////
 RenderTexture::~RenderTexture()
 {
-    SFML_BASE_ASSERT(m_impl->graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    auto& graphicsContext = GraphicsContext::ensureInstalled();
+
+    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
 
     // Destroy the color buffer
     if (m_impl->colorBuffer)
@@ -370,10 +377,10 @@ RenderTexture::~RenderTexture()
 
     // Unregister FBOs with the contexts if they haven't already been destroyed
     for (const auto& [glContextId, framebufferId] : m_impl->framebuffers)
-        m_impl->graphicsContext->unregisterUnsharedFrameBuffer(glContextId, framebufferId);
+        graphicsContext.unregisterUnsharedFrameBuffer(glContextId, framebufferId);
 
     for (const auto& [glContextId, multisampleFramebufferId] : m_impl->auxFramebuffers)
-        m_impl->graphicsContext->unregisterUnsharedFrameBuffer(glContextId, multisampleFramebufferId);
+        graphicsContext.unregisterUnsharedFrameBuffer(glContextId, multisampleFramebufferId);
 }
 
 
@@ -386,14 +393,12 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graphicsContext,
-                                                    Vector2u               size,
-                                                    const ContextSettings& contextSettings)
+base::Optional<RenderTexture> RenderTexture::create(Vector2u size, const ContextSettings& contextSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(graphicsContext, size, contextSettings.sRgbCapable);
+    auto texture = sf::Texture::create(size, contextSettings.sRgbCapable);
     if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)";
@@ -401,7 +406,7 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
     }
 
     // Use frame-buffer object (FBO)
-    result.emplace(base::PassKey<RenderTexture>{}, graphicsContext, SFML_BASE_MOVE(*texture));
+    result.emplace(base::PassKey<RenderTexture>{}, SFML_BASE_MOVE(*texture));
 
     // Mark the texture as being a framebuffer object attachment
     result->m_impl->texture.m_fboAttachment = true;
@@ -423,9 +428,9 @@ base::Optional<RenderTexture> RenderTexture::create(GraphicsContext&       graph
 
 
 ////////////////////////////////////////////////////////////
-unsigned int RenderTexture::getMaximumAntiAliasingLevel([[maybe_unused]] GraphicsContext& graphicsContext)
+unsigned int RenderTexture::getMaximumAntiAliasingLevel()
 {
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     return static_cast<unsigned int>(priv::getGLInteger(GL_MAX_SAMPLES));
 }
 
@@ -511,9 +516,9 @@ const Texture& RenderTexture::getTexture() const
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture) :
-RenderTarget(graphicsContext, View::fromRect({{0.f, 0.f}, texture.getSize().toVector2f()})),
-m_impl(graphicsContext, SFML_BASE_MOVE(texture))
+RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
+RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVector2f()})),
+m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

@@ -14,6 +14,7 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 
@@ -96,12 +97,8 @@ void ensureWGLExtensionsInit(sf::priv::WglContext& wglContext, HDC deviceContext
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext&         windowContext,
-                       unsigned int           id,
-                       WglContext*            shared,
-                       const ContextSettings& contextSettings,
-                       const SurfaceData&     surfaceData) :
-GlContext(windowContext, id, contextSettings),
+WglContext::WglContext(unsigned int id, WglContext* shared, const ContextSettings& contextSettings, const SurfaceData& surfaceData) :
+GlContext(id, contextSettings),
 m_surfaceData(surfaceData),
 m_context(createContext(m_settings, m_surfaceData, shared))
 {
@@ -117,21 +114,19 @@ m_context(createContext(m_settings, m_surfaceData, shared))
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext&    windowContext,
-                       unsigned int      id,
+WglContext::WglContext(unsigned int      id,
                        WglContext*       shared,
                        ContextSettings   contextSettings,
                        const WindowImpl& owner,
                        unsigned int      bitsPerPixel) :
-WglContext(windowContext, id, shared, contextSettings, createSurface(contextSettings, owner.getNativeHandle(), bitsPerPixel))
+WglContext(id, shared, contextSettings, createSurface(contextSettings, owner.getNativeHandle(), bitsPerPixel))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WglContext::WglContext(WindowContext& windowContext, unsigned int id, WglContext* shared) :
-WglContext(windowContext,
-           id,
+WglContext::WglContext(unsigned int id, WglContext* shared) :
+WglContext(id,
            shared,
            ContextSettings{},
            createSurface(ContextSettings{}, shared, {1u, 1u}, VideoModeUtils::getDesktopMode().bitsPerPixel))
@@ -143,7 +138,7 @@ WglContext(windowContext,
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_windowContext.cleanupUnsharedFrameBuffers(*this);
+    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
 
     // Destroy the OpenGL context
     if (m_context)
@@ -498,7 +493,7 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
             err() << "Warning: The \"Microsoft Corporation GDI Generic\" OpenGL implementation is not "
                      "hardware-accelerated";
 
-        std::abort();
+        base::abort();
     }
 
     if (!GLAD_WGL_ARB_pixel_format)

@@ -13,8 +13,6 @@
 
 namespace sf
 {
-class WindowContext;
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a target for OpenGL rendering
 ///
@@ -34,7 +32,7 @@ public:
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowContext& windowContext, const Settings& windowSettings);
+    [[nodiscard]] explicit Window(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -50,9 +48,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Window(WindowContext&         windowContext,
-                                  WindowHandle           handle,
-                                  const ContextSettings& contextSettings = {});
+    [[nodiscard]] explicit Window(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -159,18 +155,6 @@ public:
     ////////////////////////////////////////////////////////////
     void display();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] WindowContext& getWindowContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const WindowContext& getWindowContext() const;
-
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Construct a window and a GL context, and a window base
@@ -179,10 +163,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... TWindowBaseArgs>
-    [[nodiscard]] explicit Window(WindowContext&  windowContext,
-                                  const Settings& windowSettings,
-                                  unsigned int    bitsPerPixel,
-                                  TWindowBaseArgs&&... windowBaseArg);
+    [[nodiscard]] explicit Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArg);
 
     ////////////////////////////////////////////////////////////
     // Member data

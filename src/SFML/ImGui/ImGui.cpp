@@ -309,7 +309,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Optional<Texture> createImGuiDefaultFontTexture(GraphicsContext& graphicsContext)
+[[nodiscard]] base::Optional<Texture> createImGuiDefaultFontTexture()
 {
     ImGuiIO&       io     = ::ImGui::GetIO();
     unsigned char* pixels = nullptr;
@@ -318,8 +318,7 @@ namespace
 
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-    auto newTexture = Texture::create(graphicsContext,
-                                      {static_cast<unsigned int>(width), static_cast<unsigned int>(height)});
+    auto newTexture = Texture::create({static_cast<unsigned int>(width), static_cast<unsigned int>(height)});
 
     if (!newTexture.hasValue())
     {
@@ -358,10 +357,10 @@ constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned int getConnectedJoystickId(const WindowContext& windowContext)
+[[nodiscard]] unsigned int getConnectedJoystickId()
 {
     for (unsigned int i = 0; i < static_cast<unsigned int>(Joystick::MaxCount); ++i)
-        if (Joystick::query(windowContext, i).hasValue())
+        if (Joystick::query(i).hasValue())
             return i;
 
     return nullJoystickId;
@@ -416,7 +415,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     [[nodiscard]] explicit ImGuiPerWindowContext(const Window& theWindow) :
     window(&theWindow),
     windowHasFocus(theWindow.hasFocus()),
-    joystickId{getConnectedJoystickId(theWindow.getWindowContext())}
+    joystickId{getConnectedJoystickId()}
     {
     }
 
@@ -437,8 +436,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     using GetClipboardTextFn = const char* (*)(void*);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(GraphicsContext&   graphicsContext,
-                            Vector2f           displaySize,
+    [[nodiscard]] bool init(Vector2f           displaySize,
                             bool               loadDefaultFont,
                             SetClipboardTextFn setClipboardTextFn,
                             GetClipboardTextFn getClipboardTextFn)
@@ -451,7 +449,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
         io.BackendPlatformName = "imgui_impl_sfml";
 
-        joystickId = getConnectedJoystickId(window->getWindowContext());
+        joystickId = getConnectedJoystickId();
         initDefaultJoystickMapping();
 
         // init rendering
@@ -475,7 +473,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
         {
             // this will load default font automatically
             // No need to call AddDefaultFont
-            if (!updateFontTexture(graphicsContext))
+            if (!updateFontTexture())
                 return false;
         }
 
@@ -487,9 +485,9 @@ struct [[nodiscard]] ImGuiPerWindowContext
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateFontTexture(GraphicsContext& graphicsContext)
+    [[nodiscard]] bool updateFontTexture()
     {
-        base::Optional<Texture> newTexture = createImGuiDefaultFontTexture(graphicsContext);
+        base::Optional<Texture> newTexture = createImGuiDefaultFontTexture();
         if (!newTexture.hasValue())
         {
             sf::priv::err() << "Failed to create default ImGui font texture";
@@ -520,8 +518,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
             if (key == ImGuiKey_None)
                 continue;
 
-            const bool isPressed = Joystick::query(window->getWindowContext(), joystickId)
-                                       ->isButtonPressed(static_cast<unsigned>(i));
+            const bool isPressed = Joystick::query(joystickId)->isButtonPressed(static_cast<unsigned>(i));
 
             if (windowHasFocus || !isPressed)
                 io.AddKeyEvent(key, isPressed);
@@ -531,7 +528,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     ////////////////////////////////////////////////////////////
     void updateJoystickAxis(ImGuiIO& io, ImGuiKey key, Joystick::Axis axis, float threshold, float maxThreshold, bool inverted = false) const
     {
-        float pos = Joystick::query(window->getWindowContext(), joystickId)->getAxisPosition(axis);
+        float pos = Joystick::query(joystickId)->getAxisPosition(axis);
         if (inverted)
             pos = -pos;
 
@@ -726,7 +723,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
             if (joystickId == joystickDisconnected->joystickId)
             {
                 // used gamepad was disconnected
-                joystickId = getConnectedJoystickId(window->getWindowContext());
+                joystickId = getConnectedJoystickId();
             }
         }
     }
@@ -1046,18 +1043,10 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {
-    GraphicsContext* graphicsContext;
-
     std::vector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
 
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
-
-
-    ////////////////////////////////////////////////////////////
-    explicit Impl(GraphicsContext& theGraphicsContext) : graphicsContext(&theGraphicsContext)
-    {
-    }
 
 
     ////////////////////////////////////////////////////////////
@@ -1080,8 +1069,9 @@ struct ImGuiContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-ImGuiContext::ImGuiContext(GraphicsContext& graphicsContext) : m_impl(graphicsContext)
+ImGuiContext::ImGuiContext()
 {
+    GraphicsContext::ensureInstalled();
 }
 
 
@@ -1126,8 +1116,6 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
     clipboardTextPtr = &m_impl->clipboardText;
 
     return m_impl->currentPerWindowContext->init(
-        *m_impl->graphicsContext,
-
         displaySize,
         loadDefaultFont,
 

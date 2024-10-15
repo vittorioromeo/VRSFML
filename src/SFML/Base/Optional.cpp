@@ -9,7 +9,7 @@
 #include <cstdio>
 
 #ifndef __EXCEPTIONS
-#include <cstdlib>
+#include "SFML/Base/Abort.hpp"
 #endif
 
 namespace sf::base::priv
@@ -23,7 +23,7 @@ void throwIfNotEngaged()
 #ifdef __EXCEPTIONS
     throw BadOptionalAccess{};
 #else
-    std::abort();
+    base::abort();
 #endif
 }
 

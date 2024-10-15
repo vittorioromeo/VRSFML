@@ -7,6 +7,7 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 
 #include <X11/keysym.h>
@@ -16,8 +17,6 @@
 #include <unordered_map>
 
 #include <clocale>
-#include <cstdlib>
-
 
 namespace
 {
@@ -49,7 +48,7 @@ std::shared_ptr<Display> openDisplay()
     if (sharedDisplay == nullptr)
     {
         priv::err() << "Failed to open X11 display; make sure the DISPLAY environment variable is set correctly";
-        std::abort();
+        base::abort();
     }
 
     return sharedDisplay;

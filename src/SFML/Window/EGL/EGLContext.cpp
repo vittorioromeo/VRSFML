@@ -231,8 +231,7 @@ struct EglContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(WindowContext& windowContext, unsigned int id, EglContext* shared) :
-GlContext(windowContext, id, {})
+EglContext::EglContext(unsigned int id, EglContext* shared) : GlContext(id, {})
 {
     EglContextImpl::ensureInit();
 
@@ -263,13 +262,12 @@ GlContext(windowContext, id, {})
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(WindowContext&                     windowContext,
-                       unsigned int                       id,
+EglContext::EglContext(unsigned int                       id,
                        EglContext*                        shared,
                        const ContextSettings&             contextSettings,
                        [[maybe_unused]] const WindowImpl& owner,
                        unsigned int                       bitsPerPixel) :
-GlContext(windowContext, id, contextSettings)
+GlContext(id, contextSettings)
 {
     EglContextImpl::ensureInit();
 
@@ -308,7 +306,7 @@ GlContext(windowContext, id, contextSettings)
 EglContext::~EglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_windowContext.cleanupUnsharedFrameBuffers(*this);
+    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the current context
     const EGLContext currentContext = eglCheck(eglGetCurrentContext());
@@ -401,7 +399,7 @@ void EglContext::destroySurface()
 {
     // Seems to only be called by `WindowImplAndroid`
 
-    if (!m_windowContext.setActiveThreadLocalGlContext(*this, false))
+    if (!WindowContext::ensureInstalled().setActiveThreadLocalGlContext(*this, false))
         err() << "Failure to disable EGL context in `EglContext::destroySurface`";
 
     eglCheck(eglDestroySurface(m_impl->display, m_impl->surface));

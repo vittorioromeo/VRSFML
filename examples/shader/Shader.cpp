@@ -322,62 +322,62 @@ private:
 ////////////////////////////////////////////////////////////
 // Effect loading factory functions
 ////////////////////////////////////////////////////////////
-sf::base::Optional<Pixelate> tryLoadPixelate(sf::GraphicsContext& graphicsContext)
+sf::base::Optional<Pixelate> tryLoadPixelate()
 {
-    auto texture = sf::Texture::loadFromFile(graphicsContext, "resources/background.jpg");
+    auto texture = sf::Texture::loadFromFile("resources/background.jpg");
     if (!texture.hasValue())
         return sf::base::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/pixelate.frag");
+    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/pixelate.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
     return sf::base::makeOptional<Pixelate>(std::move(*texture), std::move(*shader));
 }
 
-sf::base::Optional<WaveBlur> tryLoadWaveBlur(sf::GraphicsContext& graphicsContext, const sf::Font& font)
+sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
 {
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/wave.vert", "resources/blur.frag");
+    auto shader = sf::Shader::loadFromFile("resources/wave.vert", "resources/blur.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
     return sf::base::makeOptional<WaveBlur>(font, std::move(*shader));
 }
 
-sf::base::Optional<StormBlink> tryLoadStormBlink(sf::GraphicsContext& graphicsContext)
+sf::base::Optional<StormBlink> tryLoadStormBlink()
 {
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/storm.vert", "resources/blink.frag");
+    auto shader = sf::Shader::loadFromFile("resources/storm.vert", "resources/blink.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
     return sf::base::makeOptional<StormBlink>(std::move(*shader));
 }
 
-sf::base::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
+sf::base::Optional<Edge> tryLoadEdge()
 {
     // Create the off-screen surface
-    auto surface = sf::RenderTexture::create(graphicsContext, {800, 600});
+    auto surface = sf::RenderTexture::create({800, 600});
     if (!surface.hasValue())
         return sf::base::nullOpt;
 
     surface->setSmooth(true);
 
     // Load the background texture
-    auto backgroundTexture = sf::Texture::loadFromFile(graphicsContext, "resources/sfml.png");
+    auto backgroundTexture = sf::Texture::loadFromFile("resources/sfml.png");
     if (!backgroundTexture.hasValue())
         return sf::base::nullOpt;
 
     backgroundTexture->setSmooth(true);
 
     // Load the entity texture
-    auto entityTexture = sf::Texture::loadFromFile(graphicsContext, "resources/devices.png");
+    auto entityTexture = sf::Texture::loadFromFile("resources/devices.png");
     if (!entityTexture.hasValue())
         return sf::base::nullOpt;
 
     entityTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile(graphicsContext, "resources/billboard.vert", "resources/edge.frag");
+    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/edge.frag");
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -389,22 +389,21 @@ sf::base::Optional<Edge> tryLoadEdge(sf::GraphicsContext& graphicsContext)
                                         std::move(*shader));
 }
 
-sf::base::Optional<Geometry> tryLoadGeometry(sf::GraphicsContext& graphicsContext)
+sf::base::Optional<Geometry> tryLoadGeometry()
 {
     // Check if geometry shaders are supported
-    if (!sf::Shader::isGeometryAvailable(graphicsContext))
+    if (!sf::Shader::isGeometryAvailable())
         return sf::base::nullOpt;
 
     // Load the logo texture
-    auto logoTexture = sf::Texture::loadFromFile(graphicsContext, "resources/logo.png");
+    auto logoTexture = sf::Texture::loadFromFile("resources/logo.png");
     if (!logoTexture.hasValue())
         return sf::base::nullOpt;
 
     logoTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile(graphicsContext,
-                                           "resources/billboard.vert",
+    auto shader = sf::Shader::loadFromFile("resources/billboard.vert",
                                            "resources/billboard.geom",
                                            "resources/billboard.frag");
     if (!shader.hasValue())
@@ -431,14 +430,14 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Open the application font
-    const auto font = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the effects
-    sf::base::Optional pixelateEffect   = tryLoadPixelate(graphicsContext);
-    sf::base::Optional waveBlurEffect   = tryLoadWaveBlur(graphicsContext, font);
-    sf::base::Optional stormBlinkEffect = tryLoadStormBlink(graphicsContext);
-    sf::base::Optional edgeEffect       = tryLoadEdge(graphicsContext);
-    sf::base::Optional geometryEffect   = tryLoadGeometry(graphicsContext);
+    sf::base::Optional pixelateEffect   = tryLoadPixelate();
+    sf::base::Optional waveBlurEffect   = tryLoadWaveBlur(font);
+    sf::base::Optional stormBlinkEffect = tryLoadStormBlink();
+    sf::base::Optional edgeEffect       = tryLoadEdge();
+    sf::base::Optional geometryEffect   = tryLoadGeometry();
 
     const std::array<Effect*, 5> effects{pixelateEffect.asPtr(),
                                          waveBlurEffect.asPtr(),
@@ -453,7 +452,7 @@ int main()
     std::size_t current = 0;
 
     // Create the messages background
-    const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, "resources/text-background.png").value();
+    const auto textBackgroundTexture = sf::Texture::loadFromFile("resources/text-background.png").value();
 
     // Create the description text
     sf::Text description(font,
@@ -475,7 +474,7 @@ int main()
                            .outlineThickness = 1.5f});
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext, {.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
+    sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
 
     // Start the game loop
     const sf::Clock clock;

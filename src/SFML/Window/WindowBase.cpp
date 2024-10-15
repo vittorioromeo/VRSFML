@@ -65,14 +65,13 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowContext& windowContext, const Settings& windowSettings) :
-WindowBase(priv::WindowImpl::create(windowContext, nullifyContextSettings(windowSettings)))
+WindowBase::WindowBase(const Settings& windowSettings) :
+WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
 {
 }
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowContext& windowContext, WindowHandle handle) :
-WindowBase(priv::WindowImpl::create(windowContext, handle))
+WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))
 {
 }
 

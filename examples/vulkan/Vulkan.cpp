@@ -192,8 +192,7 @@ class VulkanExample
 {
 public:
     // Constructor
-    VulkanExample(sf::WindowContext& windowContext) :
-    window{windowContext, {.size{800u, 600u}, .title = "SFML window with Vulkan"}}
+    VulkanExample() : window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}}
     {
         // Vulkan setup procedure
         if (vulkanAvailable)
@@ -2626,7 +2625,5 @@ private:
 int main()
 {
     sf::WindowContext windowContext;
-    VulkanExample     example(windowContext);
-
-    example.run();
+    VulkanExample{}.run();
 }

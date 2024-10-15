@@ -21,7 +21,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class GraphicsContext;
 class Image;
 } // namespace sf
 
@@ -47,7 +46,7 @@ public:
     /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(GraphicsContext& graphicsContext, const Settings& windowSettings);
+    [[nodiscard]] explicit RenderWindow(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -65,9 +64,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderWindow(GraphicsContext&       graphicsContext,
-                                        WindowHandle           handle,
-                                        const ContextSettings& contextSettings = {});
+    [[nodiscard]] explicit RenderWindow(WindowHandle handle, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -181,7 +178,7 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... TWindowArgs>
-    [[nodiscard]] explicit RenderWindow(int /* disambiguator */, GraphicsContext& graphicsContext, TWindowArgs&&... windowArgs);
+    [[nodiscard]] explicit RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized

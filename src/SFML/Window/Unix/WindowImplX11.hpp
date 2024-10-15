@@ -37,7 +37,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplX11(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] explicit WindowImplX11(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -49,7 +49,7 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplX11(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplX11(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

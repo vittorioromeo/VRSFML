@@ -33,7 +33,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Text));
     }
 
-    const auto font = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
 
     SECTION("Construction")
     {
@@ -99,7 +99,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     SECTION("Set/get font")
     {
         sf::Text   text(font, {});
-        const auto otherFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
+        const auto otherFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
     }
@@ -201,9 +201,9 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         SECTION("Return local from function")
         {
-            const auto badFunction = [&graphicsContext]
+            const auto badFunction = []
             {
-                const auto localFont = sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value();
+                const auto localFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
                 return sf::Text(localFont, {});
             };
 
@@ -219,8 +219,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             struct BadStruct
             {
-                BadStruct(sf::GraphicsContext& graphicsContext) :
-                memberFont{sf::Font::openFromFile(graphicsContext, "Graphics/tuffy.ttf").value()},
+                BadStruct() :
+                memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()},
                 memberText{memberFont, {}}
                 {
                 }
@@ -233,7 +233,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(!guard.fatalErrorTriggered());
 
             sf::base::Optional<BadStruct> badStruct0;
-            badStruct0.emplace(graphicsContext);
+            badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 
             const BadStruct badStruct1 = SFML_BASE_MOVE(badStruct0.value());

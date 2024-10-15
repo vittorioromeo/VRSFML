@@ -23,7 +23,6 @@
 namespace sf
 {
 class Event;
-class GraphicsContext;
 class RenderTarget;
 class RenderTexture;
 class RenderWindow;
@@ -42,7 +41,7 @@ public:
     /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ImGuiContext(GraphicsContext& graphicsContext);
+    [[nodiscard]] explicit ImGuiContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

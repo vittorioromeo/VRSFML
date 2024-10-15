@@ -22,13 +22,13 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
     sf::GraphicsContext graphicsContext;
 
     const auto makeColoredTexture = [&](sf::Color color)
-    { return sf::Texture::loadFromImage(graphicsContext, sf::Image::create({64u, 64u}, color).value()).value(); };
+    { return sf::Texture::loadFromImage(sf::Image::create({64u, 64u}, color).value()).value(); };
 
     constexpr sf::Vector2u atlasSize{512u, 512u};
 
     SECTION("Add -- failure case")
     {
-        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, {32u, 32u}).value());
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create({32u, 32u}).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(!p0.hasValue());
@@ -36,7 +36,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
     SECTION("Add -- one texture")
     {
-        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, atlasSize).value());
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(atlasSize).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());
@@ -52,7 +52,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 
     SECTION("Add -- two textures")
     {
-        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(graphicsContext, atlasSize).value());
+        auto textureAtlas = sf::TextureAtlas(sf::Texture::create(atlasSize).value());
 
         const auto p0 = textureAtlas.add(makeColoredTexture(sf::Color::Red));
         CHECK(p0.hasValue());

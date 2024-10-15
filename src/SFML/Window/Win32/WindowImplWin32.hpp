@@ -17,7 +17,6 @@
 namespace sf
 {
 class String;
-class WindowContext;
 struct WindowSettings;
 
 namespace priv
@@ -35,7 +34,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplWin32(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] explicit WindowImplWin32(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -43,7 +42,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplWin32(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplWin32(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

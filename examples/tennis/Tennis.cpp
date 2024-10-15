@@ -8,7 +8,6 @@
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -69,9 +68,8 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the window of the application
-    sf::RenderWindow
-        window(graphicsContext,
-               {.size = gameSize.toVector2u(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false, .vsync = true});
+    sf::RenderWindow window(
+        {.size = gameSize.toVector2u(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false, .vsync = true});
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
@@ -82,7 +80,7 @@ int main()
     sf::Sound  ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
-    const auto sfmlLogoTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "sfml_logo.png").value();
+    const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 
     // Create the left paddle
     sf::RectangleShape leftPaddle{
@@ -104,7 +102,7 @@ int main()
                           .radius           = ballRadius - 3.f}};
 
     // Open the text font
-    const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
     // Initialize the pause message
     sf::Text pauseMessage(font,

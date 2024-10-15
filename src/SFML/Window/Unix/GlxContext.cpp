@@ -91,12 +91,8 @@ namespace sf::priv
 
 ////////////////////////////////////////////////////////////
 template <typename... TSurfaceArgs>
-GlxContext::GlxContext(WindowContext&         windowContext,
-                       unsigned int           id,
-                       GlxContext*            shared,
-                       const ContextSettings& contextSettings,
-                       TSurfaceArgs&&... surfaceArgs) :
-GlContext(windowContext, id, {}),
+GlxContext::GlxContext(unsigned int id, GlxContext* shared, const ContextSettings& contextSettings, TSurfaceArgs&&... surfaceArgs) :
+GlContext(id, {}),
 m_display(openDisplay())
 {
     // Save the creation settings
@@ -114,9 +110,8 @@ m_display(openDisplay())
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext& windowContext, unsigned int id, GlxContext* shared) :
-GlxContext(windowContext,
-           id,
+GlxContext::GlxContext(unsigned int id, GlxContext* shared) :
+GlxContext(id,
            shared,
            ContextSettings{},
            // surface args:
@@ -128,14 +123,12 @@ GlxContext(windowContext,
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(WindowContext&         windowContext,
-                       unsigned int           id,
+GlxContext::GlxContext(unsigned int           id,
                        GlxContext*            shared,
                        const ContextSettings& contextSettings,
                        const WindowImpl&      owner,
                        unsigned int /*bitsPerPixel*/) :
-GlxContext(windowContext,
-           id,
+GlxContext(id,
            shared,
            contextSettings,
            // surface args:
@@ -148,7 +141,7 @@ GlxContext(windowContext,
 GlxContext::~GlxContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    m_windowContext.cleanupUnsharedFrameBuffers(*this);
+    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
 
     // Destroy the context
     if (m_context)

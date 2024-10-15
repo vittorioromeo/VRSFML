@@ -30,7 +30,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Mode and title constructor")
         {
-            const sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -38,7 +38,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and style constructor")
         {
-            const sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -46,7 +46,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, style, and state constructor")
         {
-            const sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -54,7 +54,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Mode, title, and state constructor")
         {
-            const sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
@@ -65,7 +65,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Initialized window")
         {
-            sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             constexpr auto timeout = sf::milliseconds(50);
 
@@ -86,7 +86,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get position")
     {
-        sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+        sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
         windowBase.setPosition({12, 34});
         CHECK(windowBase.getPosition() == sf::Vector2i{});
@@ -96,7 +96,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Uninitialized window")
         {
-            sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setSize({128, 256});
             CHECK(windowBase.getSize() == sf::Vector2u{});
@@ -104,7 +104,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Initialized window")
         {
-            sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setSize({128, 256});
             CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
@@ -112,7 +112,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Minimum size")
         {
-            sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setMinimumSize({128u, 256u});
             windowBase.setSize({100, 100});
@@ -121,7 +121,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         SECTION("Maximum size")
         {
-            sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setMaximumSize({128u, 256u});
             windowBase.setSize({400, 400});
@@ -131,7 +131,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("setMinimumSize()")
     {
-        sf::WindowBase windowBase(windowContext, {.size{100u, 100u}, .title = "WindowBase Tests"});
+        sf::WindowBase windowBase({.size{100u, 100u}, .title = "WindowBase Tests"});
 
         windowBase.setMinimumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
@@ -140,7 +140,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
     SECTION("setMinimumSize()")
     {
-        sf::WindowBase windowBase(windowContext, {.size{400u, 400u}, .title = "WindowBase Tests"});
+        sf::WindowBase windowBase({.size{400u, 400u}, .title = "WindowBase Tests"});
 
         windowBase.setMaximumSize({200u, 300u});
         CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
@@ -150,9 +150,9 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     // Test for compilation but do not run. This code sometimes hangs indefinitely
     // when running on the BuildBot CI pipeline. Because it contains no
     // assertions we have nothing to gain by running it anyways
-    (void)[&windowContext]
+    (void)[]
     {
-        sf::WindowBase windowBase(windowContext, {.size{360u, 240u}, .title = "WindowBase Tests"});
+        sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
         // Should compile if user provides only a specific handler
         windowBase.pollAndHandleEvents([](sf::Event::Closed) {});

@@ -22,7 +22,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplDRM(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] explicit WindowImplDRM(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -30,7 +30,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplDRM(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplDRM(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

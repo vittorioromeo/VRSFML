@@ -1013,11 +1013,11 @@ int main()
     sf::GraphicsContext graphicsContext;
 
     // Create the main window
-    sf::RenderWindow window(graphicsContext,
-                            {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
+    sf::RenderWindow window(
+        {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
 
     // Load the application font and pass it to the Effect class
-    const auto font = sf::Font::openFromFile(graphicsContext, resourcesDir() / "tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
 
     // Exit early if music file not found
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
@@ -1080,8 +1080,7 @@ int main()
     effects[current]->start(getCurrentPlaybackDevice());
 
     // Create the messages background
-    const auto textBackgroundTexture = sf::Texture::loadFromFile(graphicsContext, resourcesDir() / "text-background.png")
-                                           .value();
+    const auto textBackgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
 
     // Create the description text
     sf::Text description(font,

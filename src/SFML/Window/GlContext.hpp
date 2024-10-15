@@ -118,7 +118,7 @@ protected:
     /// This constructor is meant for derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GlContext(WindowContext& windowContext, unsigned int id, const ContextSettings& contextSettings);
+    [[nodiscard]] explicit GlContext(unsigned int id, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
@@ -130,6 +130,7 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the OpenGL context ID for this context
     ///
@@ -140,7 +141,6 @@ protected:
     // Member data
     ////////////////////////////////////////////////////////////
     ContextSettings m_settings; //!< Creation settings of the context
-    WindowContext&  m_windowContext;
 
 private:
     friend WindowContext;

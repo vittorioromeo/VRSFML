@@ -18,7 +18,6 @@
 
 namespace sf
 {
-class GraphicsContext;
 class Texture;
 
 ////////////////////////////////////////////////////////////
@@ -75,9 +74,7 @@ public:
     /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(GraphicsContext&       graphicsContext,
-                                                              Vector2u               size,
-                                                              const ContextSettings& contextSettings = {});
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -85,7 +82,7 @@ public:
     /// \return The maximum anti-aliasing level supported by the system
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static unsigned int getMaximumAntiAliasingLevel(GraphicsContext& graphicsContext);
+    [[nodiscard]] static unsigned int getMaximumAntiAliasingLevel();
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable texture smoothing
@@ -221,7 +218,7 @@ public:
     /// \brief Construct from texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, GraphicsContext& graphicsContext, Texture&& texture);
+    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -257,7 +254,7 @@ private:
 /// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // Create a new render-texture
-/// auto renderTexture = sf::RenderTexture::create(graphicsContext, {500, 500}).value();
+/// auto renderTexture = sf::RenderTexture::create({500, 500}).value();
 ///
 /// // The main loop
 /// while (true)

@@ -10,15 +10,6 @@
 
 
 ////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-namespace sf
-{
-class WindowContext;
-} // namespace sf
-
-
-////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the sensors
 ///
 ////////////////////////////////////////////////////////////
@@ -51,7 +42,7 @@ enum : unsigned int
 /// \return `true` if the sensor is available, `false` otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool isAvailable(WindowContext& windowContext, Type sensor);
+[[nodiscard]] SFML_WINDOW_API bool isAvailable(Type sensor);
 
 ////////////////////////////////////////////////////////////
 /// \brief Enable or disable a sensor
@@ -66,7 +57,7 @@ enum : unsigned int
 /// \param enabled `true` to enable, `false` to disable
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setEnabled(WindowContext& windowContext, Type sensor, bool enabled);
+SFML_WINDOW_API void setEnabled(Type sensor, bool enabled);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current sensor value
@@ -76,7 +67,7 @@ SFML_WINDOW_API void setEnabled(WindowContext& windowContext, Type sensor, bool 
 /// \return The current sensor value
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector3f getValue(WindowContext& windowContext, Type sensor);
+[[nodiscard]] SFML_WINDOW_API Vector3f getValue(Type sensor);
 
 } // namespace sf::Sensor
 

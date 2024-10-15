@@ -46,7 +46,6 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct WindowImpl::Impl
 {
-    WindowContext*    windowContext;                                    //!< Associated window context
     std::queue<Event> events;                                           //!< Queue of available events
     JoystickState     joystickStates[Joystick::MaxCount]{};             //!< Previous state of the joysticks
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
@@ -55,15 +54,11 @@ struct WindowImpl::Impl
         previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
     base::Optional<Vector2u> minimumSize; //!< Minimum window size
     base::Optional<Vector2u> maximumSize; //!< Maximum window size
-
-    explicit Impl(WindowContext& theWindowContext) : windowContext{&theWindowContext}
-    {
-    }
 };
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, WindowSettings windowSettings)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 {
     // Fullscreen style requires some tests
     if (windowSettings.fullscreen)
@@ -103,7 +98,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, Win
         windowSettings.hasTitlebar = true;
 #endif
 
-    auto windowImpl = base::makeUnique<WindowImplType>(windowContext, windowSettings);
+    auto windowImpl = base::makeUnique<WindowImplType>(windowSettings);
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImpl.get();
@@ -113,16 +108,16 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, Win
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowContext& windowContext, WindowHandle handle)
+base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    return base::makeUnique<WindowImplType>(windowContext, handle);
+    return base::makeUnique<WindowImplType>(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(WindowContext& windowContext) : m_impl(windowContext)
+WindowImpl::WindowImpl()
 {
-    auto& joystickManager = m_impl->windowContext->getJoystickManager();
+    auto& joystickManager = WindowContext::ensureInstalled().getJoystickManager();
 
     // Get the initial joystick states
     joystickManager.update();
@@ -245,7 +240,7 @@ void WindowImpl::pushEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 void WindowImpl::processJoystickEvents()
 {
-    auto& joystickManager = m_impl->windowContext->getJoystickManager();
+    auto& joystickManager = WindowContext::ensureInstalled().getJoystickManager();
 
     // First update the global joystick states
     joystickManager.update();
@@ -313,7 +308,7 @@ void WindowImpl::processJoystickEvents()
 void WindowImpl::processSensorEvents()
 {
     // First update the sensor states
-    auto& sensorManager = m_impl->windowContext->getSensorManager();
+    auto& sensorManager = WindowContext::ensureInstalled().getSensorManager();
     sensorManager.update();
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)

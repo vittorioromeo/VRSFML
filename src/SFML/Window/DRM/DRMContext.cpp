@@ -10,6 +10,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <fcntl.h>
@@ -18,7 +19,6 @@
 #include <xf86drm.h>
 
 #include <cerrno>
-#include <cstdlib>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
@@ -626,7 +626,7 @@ void DRMContext::display()
         if (drmModeSetCrtc(drmNode.fileDescriptor, drmNode.crtcId, fb->fbId, 0, 0, &drmNode.connectorId, 1, drmNode.mode))
         {
             priv::err() << "Failed to set mode: " << std::strerror(errno);
-            std::abort();
+            base::abort();
         }
         m_shown = true;
     }

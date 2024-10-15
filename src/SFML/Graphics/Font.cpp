@@ -335,38 +335,30 @@ struct Font::Impl
     using GlyphTable = std::unordered_map</* character size */ unsigned int,
                                           std::unordered_map</* combined key */ base::U64, Glyph>>; //!< Table mapping a codepoint to its glyph
 
-    [[nodiscard]] static Vector2u getMaxTextureSizeVec(GraphicsContext& graphicsContext)
+    [[nodiscard]] static Vector2u getMaxTextureSizeVec()
     {
-        const unsigned int size = Texture::getMaximumSize(graphicsContext);
+        const unsigned int size = Texture::getMaximumSize();
         return {size, size};
     }
 
-    [[nodiscard]] static base::Optional<TextureAtlas> initFallbackTextureAtlas(GraphicsContext& theGraphicsContext,
-                                                                               TextureAtlas*    ptr,
-                                                                               bool             smooth)
+    [[nodiscard]] static base::Optional<TextureAtlas> initFallbackTextureAtlas(TextureAtlas* ptr, bool smooth)
     {
         if (ptr != nullptr)
             return base::nullOpt;
 
-        auto texture = Texture::create(theGraphicsContext, {1024u, 1024u}).value();
+        auto texture = Texture::create({1024u, 1024u}).value();
         texture.setSmooth(smooth);
 
         return base::makeOptional<TextureAtlas>(SFML_BASE_MOVE(texture));
     }
 
-    explicit Impl(GraphicsContext&               theGraphicsContext,
-                  TextureAtlas*                  theTextureAtlasPtr,
-                  std::shared_ptr<FontHandles>&& theFontHandles,
-                  const char*                    theFamilyName) :
-    graphicsContext(&theGraphicsContext),
+    explicit Impl(TextureAtlas* theTextureAtlasPtr, std::shared_ptr<FontHandles>&& theFontHandles, const char* theFamilyName) :
     textureAtlasPtr(theTextureAtlasPtr),
-    fallbackTextureAtlas(initFallbackTextureAtlas(theGraphicsContext, theTextureAtlasPtr, /* smooth */ true)),
+    fallbackTextureAtlas(initFallbackTextureAtlas(theTextureAtlasPtr, /* smooth */ true)),
     fontHandles(SFML_BASE_MOVE(theFontHandles)),
     info{theFamilyName}
     {
     }
-
-    GraphicsContext* graphicsContext; //!< The window context
 
     TextureAtlas*                        textureAtlasPtr;      //!< Texture atlas containing the pixels of the glyphs
     mutable base::Optional<TextureAtlas> fallbackTextureAtlas; //!< TODO P1: docs
@@ -391,12 +383,8 @@ struct Font::Impl
 
 
 ////////////////////////////////////////////////////////////
-Font::Font(base::PassKey<Font>&&,
-           GraphicsContext& graphicsContext,
-           TextureAtlas*    textureAtlas,
-           void*            fontHandlesSharedPtr,
-           const char*      familyName) :
-m_impl(graphicsContext, textureAtlas, SFML_BASE_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr)), familyName)
+Font::Font(base::PassKey<Font>&&, TextureAtlas* textureAtlas, void* fontHandlesSharedPtr, const char* familyName) :
+m_impl(textureAtlas, SFML_BASE_MOVE(*static_cast<std::shared_ptr<FontHandles>*>(fontHandlesSharedPtr)), familyName)
 {
 }
 
@@ -414,7 +402,7 @@ Font& Font::operator=(Font&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const Path& filename, TextureAtlas* textureAtlas)
+base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
 {
     [[maybe_unused]] const auto fail = [&](const char* what)
     {
@@ -447,7 +435,7 @@ base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const 
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
         return fail("failed to set the Unicode character set");
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, textureAtlas, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
 
 #else
 
@@ -464,10 +452,7 @@ base::Optional<Font> Font::openFromFile(GraphicsContext& graphicsContext, const 
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext,
-                                          const void*      data,
-                                          base::SizeT      sizeInBytes,
-                                          TextureAtlas*    textureAtlas)
+base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBytes, TextureAtlas* textureAtlas)
 {
     const auto fail = [&](const char* what)
     {
@@ -502,12 +487,12 @@ base::Optional<Font> Font::openFromMemory(GraphicsContext& graphicsContext,
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
         return fail("failed to set the Unicode character set");
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, textureAtlas, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, InputStream& stream, TextureAtlas* textureAtlas)
+base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
 {
     const auto fail = [&](const char* what)
     {
@@ -556,7 +541,7 @@ base::Optional<Font> Font::openFromStream(GraphicsContext& graphicsContext, Inpu
     if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
         return fail("failed to set the Unicode character set");
 
-    return base::makeOptional<Font>(base::PassKey<Font>{}, graphicsContext, textureAtlas, &fontHandles, face->family_name);
+    return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
 }
 
 

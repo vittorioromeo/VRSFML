@@ -27,9 +27,9 @@ namespace
 namespace sf::Joystick
 {
 ////////////////////////////////////////////////////////////
-void update(WindowContext& windowContext)
+void update()
 {
-    windowContext.getJoystickManager().update();
+    WindowContext::ensureInstalled().getJoystickManager().update();
 }
 
 
@@ -119,9 +119,9 @@ bool Query::isConnected() const
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Query> query(const WindowContext& windowContext, unsigned int joystickId)
+base::Optional<Query> query(unsigned int joystickId)
 {
-    const auto& joystickManager = windowContext.getJoystickManager();
+    const auto& joystickManager = WindowContext::ensureInstalled().getJoystickManager();
 
     if (!isConnectedImpl(joystickManager, joystickId))
         return base::nullOpt;

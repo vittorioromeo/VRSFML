@@ -73,7 +73,9 @@ struct TestContext
 
 TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
 {
+    CHECK(sf::WindowContext::getInstalled() == nullptr);
     sf::WindowContext windowContext;
+    CHECK(sf::WindowContext::getInstalled() == &windowContext);
 
     SECTION("Type traits")
     {

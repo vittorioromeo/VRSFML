@@ -43,41 +43,29 @@ GLenum usageToGlEnum(sf::VertexBuffer::Usage usage)
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext) : m_graphicsContext(&graphicsContext)
+VertexBuffer::VertexBuffer() = default;
+
+
+////////////////////////////////////////////////////////////
+VertexBuffer::VertexBuffer(PrimitiveType type) : m_primitiveType(type)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type) :
-m_graphicsContext(&graphicsContext),
-m_primitiveType(type)
+VertexBuffer::VertexBuffer(Usage usage) : m_usage(usage)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, Usage usage) :
-m_graphicsContext(&graphicsContext),
-m_usage(usage)
+VertexBuffer::VertexBuffer(PrimitiveType type, Usage usage) : m_primitiveType(type), m_usage(usage)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(GraphicsContext& graphicsContext, PrimitiveType type, Usage usage) :
-m_graphicsContext(&graphicsContext),
-m_primitiveType(type),
-m_usage(usage)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-VertexBuffer::VertexBuffer(const VertexBuffer& rhs) :
-m_graphicsContext(rhs.m_graphicsContext),
-m_primitiveType(rhs.m_primitiveType),
-m_usage(rhs.m_usage)
+VertexBuffer::VertexBuffer(const VertexBuffer& rhs) : m_primitiveType(rhs.m_primitiveType), m_usage(rhs.m_usage)
 {
     if (rhs.m_buffer && rhs.m_size)
     {
@@ -98,7 +86,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
         glCheck(glDeleteBuffers(1, &m_buffer));
     }
@@ -108,7 +96,7 @@ VertexBuffer::~VertexBuffer()
 ////////////////////////////////////////////////////////////
 bool VertexBuffer::create(base::SizeT vertexCount)
 {
-    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
     if (!m_buffer)
         glCheck(glGenBuffers(1, &m_buffer));
@@ -159,7 +147,7 @@ bool VertexBuffer::update(const Vertex* vertices, base::SizeT vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
 
@@ -186,12 +174,12 @@ bool VertexBuffer::update(const Vertex* vertices, base::SizeT vertexCount, unsig
 
 
 ////////////////////////////////////////////////////////////
-bool VertexBuffer::update([[maybe_unused]] const VertexBuffer& vertexBuffer)
+bool VertexBuffer::update(const VertexBuffer& vertexBuffer) const
 {
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    SFML_BASE_ASSERT(m_graphicsContext->hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
 
     glCheck(glBindBuffer(GL_COPY_READ_BUFFER, vertexBuffer.m_buffer));
     glCheck(glBindBuffer(GL_COPY_WRITE_BUFFER, m_buffer));
@@ -238,17 +226,17 @@ unsigned int VertexBuffer::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::bind([[maybe_unused]] GraphicsContext& graphicsContext) const
+void VertexBuffer::bind() const
 {
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
 }
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::unbind([[maybe_unused]] GraphicsContext& graphicsContext)
+void VertexBuffer::unbind()
 {
-    SFML_BASE_ASSERT(graphicsContext.hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::ensureInstalled().hasActiveThreadLocalOrSharedGlContext());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0u));
 }
 

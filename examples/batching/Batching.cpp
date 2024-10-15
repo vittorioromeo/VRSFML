@@ -115,23 +115,20 @@ int main()
     // Set up window
     constexpr sf::Vector2f windowSize{1680.f, 1050.f};
 
-    sf::RenderWindow window(graphicsContext,
-                            {.size      = windowSize.toVector2u(),
-                             .title     = "Vittorio's SFML fork: batching example",
-                             .resizable = false,
-                             .vsync     = true});
+    sf::RenderWindow window(
+        {.size = windowSize.toVector2u(), .title = "Vittorio's SFML fork: batching example", .resizable = false, .vsync = true});
 
     //
     //
     // Set up imgui
-    sf::ImGui::ImGuiContext imGuiContext(graphicsContext);
+    sf::ImGui::ImGuiContext imGuiContext;
     if (!imGuiContext.init(window))
         return -1;
 
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create(graphicsContext, {1024u, 1024u}).value()};
+    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}).value()};
     textureAtlas.getTexture().setSmooth(true);
 
     //
@@ -142,8 +139,8 @@ int main()
     //
     //
     // Load fonts
-    const auto fontTuffy = sf::Font::openFromFile(graphicsContext, "resources/tuffy.ttf", &textureAtlas).value();
-    const auto fontMouldyCheese = sf::Font::openFromFile(graphicsContext, "resources/mouldycheese.ttf", &textureAtlas).value();
+    const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
+    const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
 
     //
     //

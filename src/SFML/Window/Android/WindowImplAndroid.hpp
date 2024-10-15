@@ -28,7 +28,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplAndroid(WindowContext& windowContext, WindowHandle handle);
+    [[nodiscard]] explicit WindowImplAndroid(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -36,7 +36,7 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplAndroid(WindowContext& windowContext, const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplAndroid(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

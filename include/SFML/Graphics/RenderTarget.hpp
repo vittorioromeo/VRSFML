@@ -23,7 +23,6 @@
 namespace sf
 {
 class CPUDrawableBatch;
-class GraphicsContext;
 
 template <typename TBufferObject>
 class GLPersistentBuffer;
@@ -543,13 +542,7 @@ protected:
     /// \brief Constructor from graphics context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RenderTarget(GraphicsContext& graphicsContext, const View& currentView);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the window context (used by derived types)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] GraphicsContext& getGraphicsContext();
+    [[nodiscard]] explicit RenderTarget(const View& currentView);
 
 private:
     friend priv::PersistentGPUStorage;
