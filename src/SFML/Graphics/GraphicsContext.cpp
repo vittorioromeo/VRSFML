@@ -63,7 +63,7 @@ void main()
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Shader createBuiltInShader(const char* vertexSrc, const char* fragmentSrc)
 {
-    sf::Shader shader = sf::Shader::loadFromMemory(vertexSrc, fragmentSrc).value();
+    sf::Shader shader = sf::Shader::loadFromMemory(vertexSrc, fragmentSrc).value(); // TODO P1: propagate and use factory?
     SFML_BASE_ASSERT(glCheck(glIsProgram(shader.getNativeHandle())));
 
     if (const sf::base::Optional ulTexture = shader.getUniformLocation("sf_u_texture"))

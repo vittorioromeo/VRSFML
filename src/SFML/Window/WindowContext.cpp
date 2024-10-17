@@ -222,6 +222,7 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(/* id */ 1u, /* s
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
+    // TODO P1: propagate and use factory?
     if (!m_impl->sharedGlContext.initialize(m_impl->sharedGlContext, ContextSettings{}))
         priv::err() << "Could not initialize shared context in WindowContext()";
 
