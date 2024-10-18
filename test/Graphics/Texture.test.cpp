@@ -10,7 +10,6 @@
 
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
-#include <array>
 #include <type_traits>
 
 TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
@@ -274,10 +273,10 @@ TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
 
     SECTION("Copy semantics")
     {
-        static constexpr std::array<std::uint8_t, 8> red = {0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
+        constexpr std::uint8_t red[] = {0xFF, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0xFF};
 
         sf::Texture texture(sf::Vector2u(1, 2));
-        texture.update(red.data());
+        texture.update(red);
 
         SECTION("Construction")
         {
@@ -297,21 +296,21 @@ TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
 
     SECTION("update()")
     {
-        static constexpr std::array<std::uint8_t, 4> yellow = {0xFF, 0xFF, 0x00, 0xFF};
-        static constexpr std::array<std::uint8_t, 4> cyan   = {0x00, 0xFF, 0xFF, 0xFF};
+        constexpr std::uint8_t yellow[] = {0xFF, 0xFF, 0x00, 0xFF};
+        constexpr std::uint8_t cyan[]   = {0x00, 0xFF, 0xFF, 0xFF};
 
         SECTION("Pixels")
         {
             sf::Texture texture(sf::Vector2u(1, 1));
-            texture.update(yellow.data());
+            texture.update(yellow);
             CHECK(texture.copyToImage().getPixel(sf::Vector2u(0, 0)) == sf::Color::Yellow);
         }
 
         SECTION("Pixels, size and destination")
         {
             sf::Texture texture(sf::Vector2u(2, 1));
-            texture.update(yellow.data(), sf::Vector2u(1, 1), sf::Vector2u(0, 0));
-            texture.update(cyan.data(), sf::Vector2u(1, 1), sf::Vector2u(1, 0));
+            texture.update(yellow, sf::Vector2u(1, 1), sf::Vector2u(0, 0));
+            texture.update(cyan, sf::Vector2u(1, 1), sf::Vector2u(1, 0));
             CHECK(texture.copyToImage().getPixel(sf::Vector2u(0, 0)) == sf::Color::Yellow);
             CHECK(texture.copyToImage().getPixel(sf::Vector2u(1, 0)) == sf::Color::Cyan);
         }
@@ -319,7 +318,7 @@ TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
         SECTION("Another texture")
         {
             sf::Texture otherTexture(sf::Vector2u(1, 1));
-            otherTexture.update(cyan.data());
+            otherTexture.update(cyan);
             sf::Texture texture(sf::Vector2u(1, 1));
             texture.update(otherTexture);
             CHECK(texture.copyToImage().getPixel(sf::Vector2u(0, 0)) == sf::Color::Cyan);
@@ -329,9 +328,9 @@ TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
         {
             sf::Texture texture(sf::Vector2u(2, 1));
             sf::Texture otherTexture1(sf::Vector2u(1, 1));
-            otherTexture1.update(cyan.data());
+            otherTexture1.update(cyan);
             sf::Texture otherTexture2(sf::Vector2u(1, 1));
-            otherTexture2.update(yellow.data());
+            otherTexture2.update(yellow);
             texture.update(otherTexture1, sf::Vector2u(0, 0));
             texture.update(otherTexture2, sf::Vector2u(1, 0));
             CHECK(texture.copyToImage().getPixel(sf::Vector2u(0, 0)) == sf::Color::Cyan);
@@ -387,16 +386,16 @@ TEST_CASE("[Graphics] sf::Texture", runDisplayTests())
 
     SECTION("swap()")
     {
-        static constexpr std::array<std::uint8_t, 4> blue  = {0x00, 0x00, 0xFF, 0xFF};
-        static constexpr std::array<std::uint8_t, 8> green = {0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
+        constexpr std::uint8_t blue[]  = {0x00, 0x00, 0xFF, 0xFF};
+        constexpr std::uint8_t green[] = {0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
         sf::Texture texture1(sf::Vector2u(1, 1), true);
-        texture1.update(blue.data());
+        texture1.update(blue);
         texture1.setSmooth(false);
         texture1.setRepeated(true);
 
         sf::Texture texture2(sf::Vector2u(2, 1), false);
-        texture2.update(green.data());
+        texture2.update(green);
         texture2.setSmooth(true);
         texture2.setRepeated(false);
 

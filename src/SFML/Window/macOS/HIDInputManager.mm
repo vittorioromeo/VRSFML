@@ -31,7 +31,6 @@
 #include <SFML/System/Err.hpp>
 
 #include <AppKit/AppKit.h>
-#include <array>
 #include <ostream>
 
 namespace
@@ -869,10 +868,11 @@ void HIDInputManager::buildMappings()
         if (translateToString)
         {
             // Unicode string length is usually less or equal to 4
-            std::array<UniChar, 4> string{};
-            UniCharCount           length       = 0;
-            std::uint32_t          deadKeyState = 0;     // unused value
-            const std::uint32_t    modifiers    = 0x100; // no modifiers
+            const UniCharCount  maxLength = 4;
+            UniChar             string[maxLength];
+            UniCharCount        length       = 0;
+            std::uint32_t       deadKeyState = 0;     // unused value
+            const std::uint32_t modifiers    = 0x100; // no modifiers
 
             // Use current layout for translation
             const OSStatus error = UCKeyTranslate(layout,
@@ -882,9 +882,9 @@ void HIDInputManager::buildMappings()
                                                   LMGetKbdType(),
                                                   kUCKeyTranslateNoDeadKeysMask,
                                                   &deadKeyState,
-                                                  string.size(),
+                                                  maxLength,
                                                   &length,
-                                                  string.data());
+                                                  string);
 
             if (error != noErr)
             {

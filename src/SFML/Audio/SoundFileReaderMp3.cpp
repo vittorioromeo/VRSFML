@@ -56,7 +56,6 @@
 #include <SFML/System/InputStream.hpp>
 
 #include <algorithm>
-#include <array>
 #include <ostream>
 
 #include <cassert>
@@ -91,15 +90,15 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool SoundFileReaderMp3::check(InputStream& stream)
 {
-    std::array<std::uint8_t, 10> header{};
+    std::uint8_t header[10];
 
-    if (stream.read(header.data(), header.size()) != header.size())
+    if (stream.read(header, sizeof(header)) != sizeof(header))
         return false;
 
-    if (hasValidId3Tag(header.data()))
+    if (hasValidId3Tag(header))
         return true;
 
-    if (hdr_valid(header.data()))
+    if (hdr_valid(header))
         return true;
 
     return false;

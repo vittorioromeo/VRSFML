@@ -30,8 +30,6 @@
 #include <SFML/Graphics/Color.hpp>
 #include <SFML/Graphics/Glsl.hpp> // NOLINT(misc-header-include-cycle)
 
-#include <array>
-
 #include <cstddef>
 
 
@@ -76,7 +74,7 @@ struct Matrix
     ////////////////////////////////////////////////////////////
     explicit Matrix(const float* pointer)
     {
-        copyMatrix(pointer, Columns * Rows, array.data());
+        copyMatrix(pointer, Columns * Rows, array);
     }
 
     ////////////////////////////////////////////////////////////
@@ -93,7 +91,7 @@ struct Matrix
         copyMatrix(transform, *this);
     }
 
-    std::array<float, Columns * Rows> array{}; //!< Array holding matrix data
+    float array[Columns * Rows]{}; //!< Array holding matrix data
 };
 
 ////////////////////////////////////////////////////////////

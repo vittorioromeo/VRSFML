@@ -30,7 +30,6 @@
 #include <SFML/Audio/SoundFileWriter.hpp>
 
 #include <FLAC/stream_encoder.h>
-#include <array>
 #include <filesystem>
 #include <memory>
 #include <vector>
@@ -92,8 +91,8 @@ private:
     };
     std::unique_ptr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> m_encoder;        //!< FLAC stream encoder
     unsigned int                                                   m_channelCount{}; //!< Number of channels
-    std::array<std::size_t, 8> m_remapTable{}; //!< Table we use to remap source to target channel order
-    std::vector<std::int32_t>  m_samples32;    //!< Conversion buffer
+    std::size_t               m_remapTable[8]{}; //!< Table we use to remap source to target channel order
+    std::vector<std::int32_t> m_samples32;       //!< Conversion buffer
 };
 
 } // namespace sf::priv

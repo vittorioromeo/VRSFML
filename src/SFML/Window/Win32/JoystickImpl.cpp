@@ -34,7 +34,6 @@
 #include <SFML/System/Win32/WindowsHeader.hpp>
 
 #include <algorithm>
-#include <array>
 #include <iomanip>
 #include <ostream>
 #include <regstr.h>
@@ -113,7 +112,7 @@ struct ConnectionCache
     sf::Clock timer;
 };
 
-std::array<ConnectionCache, sf::Joystick::Count> connectionCache{};
+ConnectionCache connectionCache[sf::Joystick::Count];
 
 // If true, will only update when WM_DEVICECHANGE message is received
 bool lazyUpdates = false;
@@ -122,7 +121,7 @@ bool lazyUpdates = false;
 sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 {
     // Give the joystick a default name
-    static const sf::String joystickDescription = "Unknown Joystick";
+    sf::String joystickDescription = "Unknown Joystick";
 
     LONG                     result     = 0;
     HKEY                     rootKey    = nullptr;
@@ -158,10 +157,10 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
     subkey += indexString.str();
     subkey += REGSTR_VAL_JOYOEMNAME;
 
-    std::array<TCHAR, 256> keyData{};
-    DWORD                  keyDataSize = sizeof(keyData);
+    TCHAR keyData[256];
+    DWORD keyDataSize = sizeof(keyData);
 
-    result = RegQueryValueEx(currentKey, subkey.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(keyData.data()), &keyDataSize);
+    result = RegQueryValueEx(currentKey, subkey.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(keyData), &keyDataSize);
     RegCloseKey(currentKey);
 
     if (result != ERROR_SUCCESS)
@@ -173,7 +172,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
     subkey = REGSTR_PATH_JOYOEM;
     subkey += TEXT('\\');
-    subkey.append(keyData.data(), keyDataSize / sizeof(TCHAR));
+    subkey.append(keyData, keyDataSize / sizeof(TCHAR));
 
     result = RegOpenKeyEx(rootKey, subkey.c_str(), 0, KEY_READ, &currentKey);
 
@@ -186,7 +185,7 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
 
     keyDataSize = sizeof(keyData);
 
-    result = RegQueryValueEx(currentKey, REGSTR_VAL_JOYOEMNAME, nullptr, nullptr, reinterpret_cast<LPBYTE>(keyData.data()), &keyDataSize);
+    result = RegQueryValueEx(currentKey, REGSTR_VAL_JOYOEMNAME, nullptr, nullptr, reinterpret_cast<LPBYTE>(keyData), &keyDataSize);
     RegCloseKey(currentKey);
 
     if (result != ERROR_SUCCESS)
@@ -196,8 +195,10 @@ sf::String getDeviceName(unsigned int index, JOYCAPS caps)
         return joystickDescription;
     }
 
-    keyData.back() = TEXT('\0'); // Ensure null terminator in case the data is too long.
-    return keyData.data();
+    keyData[255]        = TEXT('\0'); // Ensure null terminator in case the data is too long.
+    joystickDescription = keyData;
+
+    return joystickDescription;
 }
 } // namespace
 
@@ -519,8 +520,11 @@ bool JoystickImpl::openDInput(unsigned int index)
     // Initialize DirectInput members
     m_device = nullptr;
 
-    m_axes.fill(-1);
-    m_buttons.fill(-1);
+    for (int& axis : m_axes)
+        axis = -1;
+
+    for (int& button : m_buttons)
+        button = -1;
 
     m_deviceCaps        = {};
     m_deviceCaps.dwSize = sizeof(DIDEVCAPS);
@@ -590,9 +594,9 @@ bool JoystickImpl::openDInput(unsigned int index)
                 const DWORD povType    = DIDFT_POV | DIDFT_OPTIONAL | DIDFT_ANYINSTANCE;
                 const DWORD buttonType = DIDFT_BUTTON | DIDFT_OPTIONAL | DIDFT_ANYINSTANCE;
 
-                static std::array<DIOBJECTDATAFORMAT, 8 * 4 + 4 + sf::Joystick::ButtonCount> data{};
+                static DIOBJECTDATAFORMAT data[8 * 4 + 4 + sf::Joystick::ButtonCount];
 
-                for (std::size_t i = 0; i < 4; ++i)
+                for (int i = 0; i < 4; ++i)
                 {
                     data[8 * i + 0].pguid = &guids::GUID_XAxis;
                     data[8 * i + 1].pguid = &guids::GUID_YAxis;
@@ -637,13 +641,13 @@ bool JoystickImpl::openDInput(unsigned int index)
                 data[30].dwOfs = FIELD_OFFSET(DIJOYSTATE2, rglFSlider[0]);
                 data[31].dwOfs = FIELD_OFFSET(DIJOYSTATE2, rglFSlider[1]);
 
-                for (std::size_t i = 0; i < 8 * 4; ++i)
+                for (int i = 0; i < 8 * 4; ++i)
                 {
                     data[i].dwType  = axisType;
                     data[i].dwFlags = 0;
                 }
 
-                for (std::size_t i = 0; i < 4; ++i)
+                for (int i = 0; i < 4; ++i)
                 {
                     data[8 * 4 + i].pguid   = &guids::GUID_POV;
                     data[8 * 4 + i].dwOfs   = static_cast<DWORD>(DIJOFS_POV(static_cast<unsigned int>(i)));
@@ -664,7 +668,7 @@ bool JoystickImpl::openDInput(unsigned int index)
                 format.dwFlags    = DIDFT_ABSAXIS;
                 format.dwDataSize = sizeof(DIJOYSTATE2);
                 format.dwNumObjs  = 8 * 4 + 4 + sf::Joystick::ButtonCount;
-                format.rgodf      = data.data();
+                format.rgodf      = data;
 
                 formatInitialized = true;
             }
@@ -873,17 +877,17 @@ JoystickState JoystickImpl::updateDInputBuffered()
     if (!m_device)
         return m_state;
 
-    std::array<DIDEVICEOBJECTDATA, directInputEventBufferSize> events{};
-    DWORD                                                      eventCount = directInputEventBufferSize;
+    DIDEVICEOBJECTDATA events[directInputEventBufferSize];
+    DWORD              eventCount = directInputEventBufferSize;
 
     // Try to get the device data
-    HRESULT result = m_device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), events.data(), &eventCount, 0);
+    HRESULT result = m_device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), events, &eventCount, 0);
 
     // If we have not acquired or have lost the device, attempt to (re-)acquire it and get the device data again
     if ((result == DIERR_NOTACQUIRED) || (result == DIERR_INPUTLOST))
     {
         m_device->Acquire();
-        result = m_device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), events.data(), &eventCount, 0);
+        result = m_device->GetDeviceData(sizeof(DIDEVICEOBJECTDATA), events, &eventCount, 0);
     }
 
     // If we still can't get the device data, assume it has been disconnected

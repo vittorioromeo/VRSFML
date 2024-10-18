@@ -468,8 +468,8 @@ void ensureMapping()
     // Phase 2: Get XKB names with key code
     const auto display = sf::priv::openDisplay();
 
-    std::array<char, XkbKeyNameLength + 1> name{};
-    XkbDescPtr                             descriptor = XkbGetMap(display.get(), 0, XkbUseCoreKbd);
+    char       name[XkbKeyNameLength + 1];
+    XkbDescPtr descriptor = XkbGetMap(display.get(), 0, XkbUseCoreKbd);
     XkbGetNames(display.get(), XkbKeyNamesMask, descriptor);
 
     std::unordered_map<std::string, sf::Keyboard::Scancode> nameScancodeMap = getNameScancodeMap();
@@ -481,10 +481,10 @@ void ensureMapping()
             continue;
         }
 
-        std::memcpy(name.data(), descriptor->names->keys[keycode].name, XkbKeyNameLength);
+        std::memcpy(name, descriptor->names->keys[keycode].name, XkbKeyNameLength);
         name[XkbKeyNameLength] = '\0';
 
-        const auto mappedScancode = nameScancodeMap.find(std::string(name.data()));
+        const auto mappedScancode = nameScancodeMap.find(std::string(name));
         auto       scancode       = sf::Keyboard::Scan::Unknown;
 
         if (mappedScancode != nameScancodeMap.end())
@@ -586,8 +586,8 @@ bool isKeyPressedImpl(KeyCode keycode)
         const auto display = sf::priv::openDisplay();
 
         // Get the whole keyboard state
-        std::array<char, 32> keys{};
-        XQueryKeymap(display.get(), keys.data());
+        char keys[32];
+        XQueryKeymap(display.get(), keys);
 
         // Check our keycode
         return (keys[keycode / 8] & (1 << (keycode % 8))) != 0;
