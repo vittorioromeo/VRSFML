@@ -1,18 +1,17 @@
 #pragma once
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <doctest/parts/doctest_fwd.h>
-
-#include <array>
 
 namespace doctest
 {
 
 template <typename T, sf::base::SizeT N>
-struct StringMaker<std::array<T, N>>
+struct StringMaker<sf::base::Array<T, N>>
 {
-    static doctest::String convert(const std::array<T, N>&)
+    static doctest::String convert(const sf::base::Array<T, N>&)
     {
         return ""; // TODO P2:
     }
