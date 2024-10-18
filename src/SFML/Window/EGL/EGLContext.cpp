@@ -247,7 +247,7 @@ EglContext::EglContext(unsigned int id, EglContext* shared) : GlContext(id, {})
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
     // but this is resulting in a segfault. Bug in Android?
-    const EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+    constexpr EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     m_impl->surface = eglCheck(eglCreatePbufferSurface(m_impl->display, m_impl->config, attribList));
     SFML_BASE_ASSERT(m_impl->surface != EGL_NO_SURFACE);
