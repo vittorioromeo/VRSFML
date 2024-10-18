@@ -5,6 +5,8 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Array.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -12,7 +14,7 @@
 #include <SystemUtil.hpp>
 
 #include <StringifyArrayUtil.hpp>
-#include <array>
+
 
 TEST_CASE("[Audio] sf::InputSoundFile")
 {
@@ -199,7 +201,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.read(nullptr, 10) == 0);
         }
 
-        std::array<sf::base::I16, 4> samples{};
+        sf::base::Array<sf::base::I16, 4> samples{};
 
         SECTION("Zero count")
         {
@@ -212,27 +214,27 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             {
                 inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.flac").value();
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{0, 1, -1, 4});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{0, 1, -1, 4});
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{1, 4, 9, 6});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{1, 4, 9, 6});
             }
 
             SECTION("mp3")
             {
                 inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.mp3").value();
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{0, -2, 0, 2});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{0, -2, 0, 2});
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{1, 4, 6, 8});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{1, 4, 6, 8});
             }
 
             SECTION("ogg")
             {
                 inputSoundFile = sf::InputSoundFile::openFromFile("Audio/doodle_pop.ogg").value();
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{-827, -985, -1168, -1319});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{-827, -985, -1168, -1319});
                 CHECK(inputSoundFile.read(samples.data(), samples.size()) == 4);
-                CHECK(samples == std::array<sf::base::I16, 4>{-1738, -1883, -2358, -2497});
+                CHECK(samples == sf::base::Array<sf::base::I16, 4>{-1738, -1883, -2358, -2497});
             }
 
             SECTION("wav")
