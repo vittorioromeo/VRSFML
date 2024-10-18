@@ -319,11 +319,11 @@ private:
 ///           << "sample count: " << file.getSampleCount() << std::endl;
 ///
 /// // Read and process batches of samples until the end of file is reached
-/// std::array<std::int16_t, 1024> samples;
+/// std::int16_t samples[1024];
 /// std::uint64_t count;
 /// do
 /// {
-///     count = file.read(samples.data(), samples.size());
+///     count = file.read(samples, 1024);
 ///
 ///     // process, analyze, play, convert, or whatever
 ///     // you want to do with the samples...

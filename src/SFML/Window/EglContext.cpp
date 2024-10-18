@@ -32,7 +32,6 @@
 #include <SFML/System/Err.hpp>
 #include <SFML/System/Sleep.hpp>
 
-#include <array>
 #include <memory>
 #include <mutex>
 #include <ostream>
@@ -127,9 +126,9 @@ EglContext::EglContext(EglContext* shared)
 
     // Note: The EGL specs say that attribList can be a null pointer when passed to eglCreatePbufferSurface,
     // but this is resulting in a segfault. Bug in Android?
-    static constexpr std::array attribList = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
+    EGLint attribList[] = {EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
-    m_surface = eglCheck(eglCreatePbufferSurface(m_display, m_config, attribList.data()));
+    m_surface = eglCheck(eglCreatePbufferSurface(m_display, m_config, attribList));
 
     // Create EGL context
     createContext(shared);
@@ -252,7 +251,7 @@ void EglContext::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void EglContext::createContext(EglContext* shared)
 {
-    static constexpr std::array contextVersion = {EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
+    const EGLint contextVersion[] = {EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
 
     EGLContext toShared = nullptr;
 
@@ -265,7 +264,7 @@ void EglContext::createContext(EglContext* shared)
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 
     // Create EGL context
-    m_context = eglCheck(eglCreateContext(m_display, m_config, toShared, contextVersion.data()));
+    m_context = eglCheck(eglCreateContext(m_display, m_config, toShared, contextVersion));
 }
 
 
@@ -297,7 +296,6 @@ EGLConfig EglContext::getBestConfig(EGLDisplay display, unsigned int bitsPerPixe
     eglCheck(eglGetConfigs(display, nullptr, 0, &configCount));
 
     // Retrieve the list of available configs
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     const auto configs = std::make_unique<EGLConfig[]>(static_cast<std::size_t>(configCount));
 
     eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount));
@@ -416,7 +414,6 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
 
     // Get X11 visuals compatible with this EGL config
     int visualCount = 0;
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     const auto availableVisuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(xDisplay, VisualIDMask, &vTemplate, &visualCount));
 
     if (visualCount == 0)
