@@ -288,16 +288,16 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
     if (GLAD_WGL_ARB_pixel_format)
     {
         // Define the basic attributes we want for our window
-        int intAttributes[]{WGL_DRAW_TO_WINDOW_ARB,
-                            GL_TRUE,
-                            WGL_SUPPORT_OPENGL_ARB,
-                            GL_TRUE,
-                            WGL_DOUBLE_BUFFER_ARB,
-                            GL_TRUE,
-                            WGL_PIXEL_TYPE_ARB,
-                            WGL_TYPE_RGBA_ARB,
-                            0,
-                            0};
+        constexpr int intAttributes[]{WGL_DRAW_TO_WINDOW_ARB,
+                                      GL_TRUE,
+                                      WGL_SUPPORT_OPENGL_ARB,
+                                      GL_TRUE,
+                                      WGL_DOUBLE_BUFFER_ARB,
+                                      GL_TRUE,
+                                      WGL_PIXEL_TYPE_ARB,
+                                      WGL_TYPE_RGBA_ARB,
+                                      0,
+                                      0};
 
         // Check how many formats are supporting our requirements
         int formats[512];
@@ -314,14 +314,14 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
             for (UINT i = 0; i < nbFormats; ++i)
             {
                 // Extract the components of the current format
-                int       values[7];
-                const int attributes[]{WGL_RED_BITS_ARB,
-                                       WGL_GREEN_BITS_ARB,
-                                       WGL_BLUE_BITS_ARB,
-                                       WGL_ALPHA_BITS_ARB,
-                                       WGL_DEPTH_BITS_ARB,
-                                       WGL_STENCIL_BITS_ARB,
-                                       WGL_ACCELERATION_ARB};
+                int           values[7];
+                constexpr int attributes[]{WGL_RED_BITS_ARB,
+                                           WGL_GREEN_BITS_ARB,
+                                           WGL_BLUE_BITS_ARB,
+                                           WGL_ALPHA_BITS_ARB,
+                                           WGL_DEPTH_BITS_ARB,
+                                           WGL_STENCIL_BITS_ARB,
+                                           WGL_ACCELERATION_ARB};
 
                 if (wglGetPixelFormatAttribivARB(deviceContext, formats[i], PFD_MAIN_PLANE, 7, attributes, values) == FALSE)
                 {
@@ -332,7 +332,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
                 int sampleValues[2] = {0, 0};
                 if (GLAD_WGL_ARB_multisample)
                 {
-                    const int sampleAttributes[]{WGL_SAMPLE_BUFFERS_ARB, WGL_SAMPLES_ARB};
+                    constexpr int sampleAttributes[]{WGL_SAMPLE_BUFFERS_ARB, WGL_SAMPLES_ARB};
 
                     if (wglGetPixelFormatAttribivARB(deviceContext, formats[i], PFD_MAIN_PLANE, 2, sampleAttributes, sampleValues) ==
                         FALSE)
@@ -346,7 +346,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
                 int sRgbCapableValue = 0;
                 if (GLAD_WGL_ARB_framebuffer_sRGB || GLAD_WGL_EXT_framebuffer_sRGB)
                 {
-                    const int sRgbCapableAttribute = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+                    constexpr int sRgbCapableAttribute = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
 
                     if (wglGetPixelFormatAttribivARB(deviceContext, formats[i], PFD_MAIN_PLANE, 1, &sRgbCapableAttribute, &sRgbCapableValue) ==
                         FALSE)
@@ -359,7 +359,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
 
                 if (pbuffer)
                 {
-                    const int pbufferAttributes[]{WGL_DRAW_TO_PBUFFER_ARB};
+                    constexpr int pbufferAttributes[]{WGL_DRAW_TO_PBUFFER_ARB};
 
                     int pbufferValue = 0;
 
@@ -505,8 +505,8 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
         return;
     }
 
-    const int attributes[]{WGL_DEPTH_BITS_ARB, WGL_STENCIL_BITS_ARB};
-    int       values[2];
+    constexpr int attributes[]{WGL_DEPTH_BITS_ARB, WGL_STENCIL_BITS_ARB};
+    int           values[2];
 
     if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 2, attributes, values) == TRUE)
     {
@@ -523,8 +523,8 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
 
     if (GLAD_WGL_ARB_multisample)
     {
-        const int sampleAttributes[]{WGL_SAMPLE_BUFFERS_ARB, WGL_SAMPLES_ARB};
-        int       sampleValues[2];
+        constexpr int sampleAttributes[]{WGL_SAMPLE_BUFFERS_ARB, WGL_SAMPLES_ARB};
+        int           sampleValues[2];
 
         if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 2, sampleAttributes, sampleValues) == TRUE)
         {
@@ -544,8 +544,8 @@ void WglContext::updateSettingsFromPixelFormat(ContextSettings& contextSettings,
 
     if (GLAD_WGL_ARB_framebuffer_sRGB || GLAD_WGL_EXT_framebuffer_sRGB)
     {
-        const int sRgbCapableAttribute = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        int       sRgbCapableValue     = 0;
+        constexpr int sRgbCapableAttribute = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+        int           sRgbCapableValue     = 0;
 
         if (wglGetPixelFormatAttribivARB(deviceContext, format, PFD_MAIN_PLANE, 1, &sRgbCapableAttribute, &sRgbCapableValue) ==
             TRUE)

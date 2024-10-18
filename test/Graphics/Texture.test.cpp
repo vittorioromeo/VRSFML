@@ -168,7 +168,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     SECTION("update()")
     {
         constexpr sf::base::U8 yellow[]{0xFF, 0xFF, 0x00, 0xFF};
-        constexpr sf::base::U8 cyan[] = {0x00, 0xFF, 0xFF, 0xFF};
+        constexpr sf::base::U8 cyan[]{0x00, 0xFF, 0xFF, 0xFF};
 
         SECTION("Pixels")
         {
@@ -237,7 +237,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get smooth")
     {
-        sf::Texture texture = sf::Texture::create({64, 64}).value();
+        auto texture = sf::Texture::create({64, 64}).value();
         CHECK(!texture.isSmooth());
         texture.setSmooth(true);
         CHECK(texture.isSmooth());
@@ -247,7 +247,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get repeated")
     {
-        sf::Texture texture = sf::Texture::create({64, 64}).value();
+        auto texture = sf::Texture::create({64, 64}).value();
         CHECK(!texture.isRepeated());
         texture.setRepeated(true);
         CHECK(texture.isRepeated());
@@ -257,13 +257,13 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("generateMipmap()")
     {
-        sf::Texture texture = sf::Texture::create({100, 100}).value();
+        auto texture = sf::Texture::create({100, 100}).value();
         CHECK(texture.generateMipmap());
     }
 
     SECTION("swap()")
     {
-        constexpr sf::base::U8 blue[] = {0x00, 0x00, 0xFF, 0xFF};
+        constexpr sf::base::U8 blue[]{0x00, 0x00, 0xFF, 0xFF};
         constexpr sf::base::U8 green[]{0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
         auto texture1 = sf::Texture::create(sf::Vector2u{1, 1}, true).value();

@@ -3,8 +3,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/iOS/EaglContext.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/iOS/EaglContext.hpp"
 #include "SFML/Window/iOS/SFView.hpp"
 #include "SFML/Window/iOS/WindowImplUIKit.hpp"
 
@@ -132,12 +132,11 @@ GlFunctionPointer EaglContext::getFunction(const char* name)
 {
     static void* module = nullptr;
 
-    const int   libCount       = 3;
-    const char* libs[libCount] = {"libGLESv1_CM.dylib",
-                                  "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
-                                  "OpenGLES.framework/OpenGLES"};
+    constexpr const char* libs[] = {"libGLESv1_CM.dylib",
+                                    "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
+                                    "OpenGLES.framework/OpenGLES"};
 
-    for (auto& lib : libs)
+    for (const auto& lib : libs)
     {
         if (!module)
             module = dlopen(lib, RTLD_LAZY | RTLD_LOCAL);

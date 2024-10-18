@@ -254,16 +254,16 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
     SFML_BASE_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
 
     // Write the main chunk ID
-    char mainChunkId[]{'R', 'I', 'F', 'F'};
+    constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
     m_impl->file.write(mainChunkId, static_cast<std::streamsize>(base::getArraySize(mainChunkId)));
 
     // Write the main chunk header
     encode(m_impl->file, base::U32{0}); // 0 is a placeholder, will be written later
-    char mainChunkFormat[]{'W', 'A', 'V', 'E'};
+    constexpr const char mainChunkFormat[]{'W', 'A', 'V', 'E'};
     m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(base::getArraySize(mainChunkFormat)));
 
     // Write the sub-chunk 1 ("format") id and size
-    char fmtChunkId[]{'f', 'm', 't', ' '};
+    constexpr const char fmtChunkId[]{'f', 'm', 't', ' '};
     m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(base::getArraySize(fmtChunkId)));
 
     if (channelCount > 2)
