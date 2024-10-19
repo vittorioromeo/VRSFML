@@ -2624,6 +2624,6 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
-    sf::WindowContext windowContext;
+    auto windowContext = sf::WindowContext::create().value();
     VulkanExample{}.run();
 }

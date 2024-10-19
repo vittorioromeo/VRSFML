@@ -43,7 +43,7 @@ struct Window::Window::Impl
 template <typename... TWindowBaseArgs>
 Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArgs) :
 WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
-m_impl(WindowContext::ensureInstalled().createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
+m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
@@ -117,7 +117,7 @@ bool Window::setActive(bool active) const
 {
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
-    if (WindowContext::ensureInstalled().setActiveThreadLocalGlContext(*m_impl->glContext, active))
+    if (WindowContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
         return true;
 
     priv::err() << "Failed to activate the window's context";

@@ -25,7 +25,7 @@ private:
 
 TEST_CASE("[Graphics] sf::RenderTarget")
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {

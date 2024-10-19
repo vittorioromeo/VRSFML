@@ -138,7 +138,7 @@ WglContext(id,
 WglContext::~WglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
+    cleanupUnsharedFrameBuffers();
 
     // Destroy the OpenGL context
     if (m_context)

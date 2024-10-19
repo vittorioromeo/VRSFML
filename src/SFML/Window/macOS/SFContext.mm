@@ -47,7 +47,7 @@ SFContext::~SFContext()
 {
     const AutoreleasePool pool;
     // Notify unshared OpenGL resources of context destruction
-    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
+    cleanupUnsharedFrameBuffers();
 
     [m_context clearDrawable];
 

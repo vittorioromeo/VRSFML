@@ -13,7 +13,7 @@
 
 #if defined(SFML_OPENGL_ES)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #else
@@ -32,7 +32,7 @@ using DerivedGlContextType = sf::priv::DRMContext;
 
 #elif defined(SFML_OPENGL_ES)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #else
@@ -54,12 +54,12 @@ using DerivedGlContextType = sf::priv::EaglContext;
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #endif

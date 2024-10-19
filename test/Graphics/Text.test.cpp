@@ -21,7 +21,7 @@
 
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {

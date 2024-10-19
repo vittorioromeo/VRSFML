@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 

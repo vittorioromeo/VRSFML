@@ -10,7 +10,7 @@
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/Glad.hpp"
 #include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/JoystickAxis.hpp"
+#include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"

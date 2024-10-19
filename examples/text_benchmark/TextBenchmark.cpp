@@ -52,7 +52,7 @@
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow    window(
                                {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
@@ -156,7 +156,7 @@ int main()
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -223,8 +223,8 @@ void main()
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
-    sf::RenderWindow    window({.size{800u, 600u}, .title = L"महसुस"});
+    auto             graphicsContext = sf::GraphicsContext::create().value();
+    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस"});
 
     sf::RectangleShape rs0(
         {.position         = {250.f, 250.f},
@@ -268,7 +268,7 @@ int main()
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस"});
 
@@ -363,7 +363,7 @@ int main()
 
     const sf::Vector2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
 
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     std::cout << sf::Texture::getMaximumSize() << '\n';
     return 0;
@@ -462,7 +462,7 @@ int main()
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     sf::RenderWindow window({.size{800u, 600u}, .title = "Test", .vsync = false, .resizable = false});
 
@@ -540,7 +540,7 @@ int main()
 
 int main()
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     const auto       font         = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::String textContents = "abcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\nabcdefghilmnopqrstuvz\n";

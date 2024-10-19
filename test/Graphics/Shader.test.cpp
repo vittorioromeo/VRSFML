@@ -140,7 +140,7 @@ constexpr bool skipShaderFullTest = true;
 
 TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {

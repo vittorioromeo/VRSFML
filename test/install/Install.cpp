@@ -24,9 +24,9 @@ int main()
     [[maybe_unused]] const auto audioContext = sf::AudioContext::create();
 
     // Graphics
-    [[maybe_unused]] sf::GraphicsContext graphicsContext;
-    [[maybe_unused]] const sf::Color     color{};
-    [[maybe_unused]] const sf::IntRect   rect{};
+    [[maybe_unused]] auto              graphicsContext = sf::GraphicsContext::create().value();
+    [[maybe_unused]] const sf::Color   color{};
+    [[maybe_unused]] const sf::IntRect rect{};
     // [[maybe_unused]] const sf::RenderWindow   renderWindow;
     [[maybe_unused]] const sf::RectangleShape rectangleShape{{}};
     [[maybe_unused]] const sf::Vertex         vertex{};

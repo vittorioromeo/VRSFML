@@ -20,7 +20,7 @@
     <summary>📜 Code example</summary>
 
     ```cpp
-    sf::GraphicsContext     graphicsContext; // Holds all "global" OpenGL state
+    auto graphicsContext = sf::GraphicsContext::create().value(); // Holds all "global" OpenGL state
     sf::ImGui::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
 
     sf::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
@@ -192,7 +192,7 @@
     <summary>📜 Code example</summary>
 
     ```cpp
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
     const auto texture = sf::Texture::loadFromFile("image.png").value();
 
     // ERROR, does not compile -- sprites do not store a texture pointer anymore.
@@ -285,7 +285,7 @@
     ```cpp
     int main()
     {
-        sf::GraphicsContext graphicsContext;
+        auto graphicsContext = sf::GraphicsContext::create().value();
         sf::RenderWindow window(screen, "Example window");
 
         while (true) // `window.isOpen()` does not exist anymore

@@ -8,7 +8,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/Window/JoystickAxis.hpp"
+#include "SFML/Window/Joystick.hpp"
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Time.hpp"

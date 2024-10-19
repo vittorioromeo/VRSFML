@@ -15,7 +15,7 @@
 
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
-    sf::WindowContext windowContext;
+    auto windowContext = sf::WindowContext::create().value();
 
     SECTION("Type traits")
     {

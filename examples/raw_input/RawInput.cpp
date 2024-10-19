@@ -26,7 +26,7 @@
 int main()
 {
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
     sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});

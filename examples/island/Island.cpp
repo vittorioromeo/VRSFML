@@ -471,7 +471,7 @@ void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
 int main()
 {
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Load the terrain shader
     auto       terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag").value();

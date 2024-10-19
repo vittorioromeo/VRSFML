@@ -5,7 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/EGL/EGLCheck.hpp"
+#include "SFML/Window/EGL/EglCheck.hpp"
 #include "SFML/Window/GlContext.hpp"
 
 #include <glad/egl.h>

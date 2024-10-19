@@ -120,7 +120,7 @@ int main()
                               instance,
                               nullptr);
 
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     {
         sf::RenderWindow sfmlView1(view1);

@@ -38,7 +38,7 @@ int main()
     //
     //
     // Set up graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     //
     //
