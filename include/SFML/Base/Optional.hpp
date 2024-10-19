@@ -5,13 +5,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Launder.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/Traits/IsCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsCopyConstructible.hpp"
 #include "SFML/Base/Traits/IsMoveAssignable.hpp"
 #include "SFML/Base/Traits/IsMoveConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyConstructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
@@ -50,7 +50,7 @@ inline constexpr struct FromFunc { } fromFunc;
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))    \
         {                                                         \
             if (engaged)                                          \
-                SFML_BASE_LAUNDER_CAST(T*, buffer)->~T();         \
+                buffer.obj.~T();                                  \
         }                                                         \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
@@ -63,7 +63,7 @@ inline constexpr struct FromFunc { } fromFunc;
     {                                                          \
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T)) \
         {                                                      \
-            SFML_BASE_LAUNDER_CAST(T*, buffer)->~T();          \
+            buffer.obj.~T();                                   \
         }                                                      \
     } while (false)
 // NOLINTEND(bugprone-macro-parentheses)
@@ -75,43 +75,38 @@ class [[nodiscard]] Optional
 {
 public:
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional() noexcept : m_engaged{false}
     {
     }
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(NullOpt) noexcept : m_engaged{false}
     {
     }
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(const T& object) : m_engaged{true}
     {
-        SFML_BASE_PLACEMENT_NEW(m_buffer) T(object);
+        SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(object);
     }
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(T&& object) noexcept : m_engaged{true}
     {
-        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(object));
+        SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(object));
     }
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
         requires(!base::isTriviallyCopyConstructible<T> && base::isCopyConstructible<T>) :
     m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
-            SFML_BASE_PLACEMENT_NEW(m_buffer) T(*SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer));
+            SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(rhs.m_buffer.obj);
     }
 
 
@@ -121,13 +116,12 @@ public:
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
         requires(!base::isTriviallyMoveConstructible<T> && base::isMoveConstructible<T>) :
     m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
-            SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer)));
+            SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(rhs.m_buffer.obj));
     }
 
 
@@ -148,7 +142,6 @@ public:
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
         requires(!base::isTriviallyCopyAssignable<T> && base::isCopyAssignable<T>)
     {
@@ -163,12 +156,12 @@ public:
         else if (!m_engaged && rhs.m_engaged)
         {
             m_engaged = true;
-            SFML_BASE_PLACEMENT_NEW(m_buffer) T(*SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer));
+            SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(rhs.m_buffer.obj);
         }
         else
         {
             SFML_BASE_ASSERT(m_engaged && rhs.m_engaged);
-            *SFML_BASE_LAUNDER_CAST(T*, m_buffer) = *SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer);
+            m_buffer.obj = rhs.m_buffer.obj;
         }
 
         return *this;
@@ -176,13 +169,11 @@ public:
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
         requires(base::isTriviallyCopyAssignable<T>) = default;
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs) noexcept
         requires(!base::isTriviallyMoveAssignable<T> && base::isMoveAssignable<T>)
     {
@@ -197,12 +188,12 @@ public:
         else if (!m_engaged && rhs.m_engaged)
         {
             m_engaged = true;
-            SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer)));
+            SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(rhs.m_buffer.obj));
         }
         else
         {
             SFML_BASE_ASSERT(m_engaged && rhs.m_engaged);
-            *SFML_BASE_LAUNDER_CAST(T*, m_buffer) = SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer));
+            m_buffer.obj = SFML_BASE_MOVE(rhs.m_buffer.obj);
         }
 
         return *this;
@@ -210,7 +201,6 @@ public:
 
 
     //////////////////////////////////////////
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs)
         requires(base::isTriviallyMoveAssignable<T>) = default;
 
@@ -225,43 +215,39 @@ public:
 
     //////////////////////////////////////////
     template <typename... Args>
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(InPlace, Args&&... args) : m_engaged{true}
     {
-        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(args)...);
+        SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(args)...);
     }
 
 
     //////////////////////////////////////////
     template <typename F>
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(FromFunc, F&& func) : m_engaged{true}
     {
-        SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(func)());
+        SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(func)());
     }
 
 
     //////////////////////////////////////////
     template <typename... Args>
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr T& emplace(Args&&... args)
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
         m_engaged = true;
 
-        return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(args)...));
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(args)...));
     }
 
 
     //////////////////////////////////////////
     template <typename F>
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[gnu::always_inline]] constexpr T& emplaceFromFunc(F&& func)
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
         m_engaged = true;
 
-        return *(SFML_BASE_PLACEMENT_NEW(m_buffer) T(SFML_BASE_FORWARD(func)()));
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(func)()));
     }
 
 
@@ -279,7 +265,7 @@ public:
         if (!m_engaged) [[unlikely]]
             priv::throwIfNotEngaged();
 
-        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
+        return m_buffer.obj;
     }
 
 
@@ -289,7 +275,7 @@ public:
         if (!m_engaged) [[unlikely]]
             priv::throwIfNotEngaged();
 
-        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
+        return m_buffer.obj;
     }
 
 
@@ -299,28 +285,28 @@ public:
         if (!m_engaged) [[unlikely]]
             priv::throwIfNotEngaged();
 
-        return SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
+        return SFML_BASE_MOVE(m_buffer.obj);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& valueOr(T& defaultValue) & noexcept
     {
-        return m_engaged ? *SFML_BASE_LAUNDER_CAST(T*, m_buffer) : defaultValue;
+        return m_engaged ? m_buffer.obj : defaultValue;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& valueOr(const T& defaultValue) const& noexcept
     {
-        return m_engaged ? *SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : defaultValue;
+        return m_engaged ? m_buffer.obj : defaultValue;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& valueOr(T&& defaultValue) && noexcept
     {
-        return SFML_BASE_MOVE(m_engaged ? *SFML_BASE_LAUNDER_CAST(T*, m_buffer) : defaultValue);
+        return SFML_BASE_MOVE(m_engaged ? m_buffer.obj : defaultValue);
     }
 
 
@@ -342,7 +328,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
-        return SFML_BASE_LAUNDER_CAST(T*, m_buffer);
+        return &m_buffer.obj;
     }
 
 
@@ -350,7 +336,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
-        return SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
+        return &m_buffer.obj;
     }
 
 
@@ -358,7 +344,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
-        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
+        return m_buffer.obj;
     }
 
 
@@ -366,7 +352,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
-        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
+        return m_buffer.obj;
     }
 
 
@@ -374,21 +360,21 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
-        return SFML_BASE_MOVE(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
+        return SFML_BASE_MOVE(m_buffer.obj);
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* asPtr() noexcept
     {
-        return m_engaged ? SFML_BASE_LAUNDER_CAST(T*, m_buffer) : nullptr;
+        return m_engaged ? &m_buffer.obj : nullptr;
     }
 
 
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* asPtr() const noexcept
     {
-        return m_engaged ? SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : nullptr;
+        return m_engaged ? &m_buffer.obj : nullptr;
     }
 
 
@@ -440,7 +426,25 @@ public:
     }
 
 private:
-    alignas(T) char m_buffer[sizeof(T)];
+    union Buffer
+    {
+        T obj;
+
+        // clang-format off
+        constexpr Buffer() requires(base::isTriviallyConstructible<T>) = default;
+        constexpr Buffer() requires(!base::isTriviallyConstructible<T>) { }
+
+        constexpr ~Buffer() requires(base::isTriviallyDestructible<T>) = default;
+        constexpr ~Buffer() requires(!base::isTriviallyDestructible<T>) { }
+
+        constexpr Buffer(const Buffer&) = default;
+        constexpr Buffer& operator=(const Buffer&) = default;
+
+        constexpr Buffer(Buffer&&) = default;
+        constexpr Buffer& operator=(Buffer&&) = default;
+        // clang-format on
+    } m_buffer;
+
     bool m_engaged;
 };
 

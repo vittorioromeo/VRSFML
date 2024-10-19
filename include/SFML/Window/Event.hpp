@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/JoystickAxis.hpp"
+#include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/Sensor.hpp"

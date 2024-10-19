@@ -71,17 +71,6 @@ namespace
     return result;
 }
 
-////////////////////////////////////////////////////////////
-thread_local constinit struct
-{
-    unsigned int         id{0u};
-    sf::priv::GlContext* ptr{nullptr};
-} activeGlContext;
-
-
-////////////////////////////////////////////////////////////
-constinit WindowContext* installedWindowContext{nullptr};
-
 
 ////////////////////////////////////////////////////////////
 [[maybe_unused]] void GLAPIENTRY debugGLMessageCallback(
@@ -145,25 +134,20 @@ constinit WindowContext* installedWindowContext{nullptr};
     priv::err() << '\n';
 }
 
+
+////////////////////////////////////////////////////////////
+thread_local constinit struct
+{
+    unsigned int     id{0u};
+    priv::GlContext* ptr{nullptr};
+} activeGlContext;
+
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
-struct WindowContext::Impl
+struct WindowContextImpl
 {
-    ////////////////////////////////////////////////////////////
-    struct ClearInstalledGuard
-    {
-        ~ClearInstalledGuard()
-        {
-            SFML_BASE_ASSERT(installedWindowContext != nullptr);
-            installedWindowContext = nullptr;
-        }
-    };
-
-    ////////////////////////////////////////////////////////////
-    ClearInstalledGuard clearInstalledGuard;
-
     ////////////////////////////////////////////////////////////
     std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
@@ -177,9 +161,9 @@ struct WindowContext::Impl
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
     {
-        unsigned int     glContextId{};
-        unsigned int     frameBufferId;
-        UnsharedDeleteFn deleteFn;
+        unsigned int                    glContextId{};
+        unsigned int                    frameBufferId;
+        WindowContext::UnsharedDeleteFn deleteFn;
     };
 
     std::mutex                       unsharedFrameBuffersMutex;
@@ -191,46 +175,77 @@ struct WindowContext::Impl
 
     ////////////////////////////////////////////////////////////
     template <typename... SharedGlContextArgs>
-    explicit Impl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
+    explicit WindowContextImpl(SharedGlContextArgs&&... args) : sharedGlContext(SFML_BASE_FORWARD(args)...)
     {
     }
 };
 
 
-////////////////////////////////////////////////////////////
-WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(/* id */ 1u, /* shared */ nullptr))
+namespace
 {
-    // Install window context:
-    if (installedWindowContext != nullptr)
+////////////////////////////////////////////////////////////
+constinit base::Optional<WindowContextImpl> installedWindowContext;
+constinit std::atomic<unsigned int> windowContextRC{0u};
+
+
+////////////////////////////////////////////////////////////
+WindowContextImpl& ensureInstalled()
+{
+    if (!installedWindowContext.hasValue()) [[unlikely]]
     {
-        priv::err() << "Fatal error creating `sf::WindowContext`: a `sf::WindowContext` object already exists";
+        priv::err() << "`sf::WindowContext` not installed -- did you forget to create one in `main`?";
         base::abort();
     }
 
-    installedWindowContext = this;
+    return *installedWindowContext;
+}
 
-    // Define fatal signal handlers for the user that will display a stack trace:
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+base::Optional<WindowContext> WindowContext::create()
+{
+    const auto fail = [](const char* what)
+    {
+        priv::err() << "Error creating `sf::WindowContext`: " << what;
+        return base::nullOpt;
+    };
+
+    //
+    // Ensure window context is not already installed
+    if (installedWindowContext.hasValue())
+        return fail("a `sf::WindowContext` object already exists");
+
+    //
+    // Install window context
+    auto& wc = installedWindowContext.emplace(/* id */ 1u, /* shared */ nullptr);
+
+    //
+    // Define fatal signal handlers for the user that will display a stack trace
     std::signal(SIGSEGV, [](int) { priv::err() << "FATAL SIGNAL: SIGSEGV"; });
     std::signal(SIGILL, [](int) { priv::err() << "FATAL SIGNAL: SIGILL"; });
     std::signal(SIGABRT, [](int) { priv::err() << "FATAL SIGNAL: SIGABRT"; });
     std::signal(SIGFPE, [](int) { priv::err() << "FATAL SIGNAL: SIGFPE"; });
 
+    //
+    // Enable shader GL context
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
-        priv::err() << "Could not enable shared context in WindowContext()";
+        return fail("could not enable shared context");
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
-    // TODO P1: propagate and use factory?
-    if (!m_impl->sharedGlContext.initialize(m_impl->sharedGlContext, ContextSettings{}))
-        priv::err() << "Could not initialize shared context in WindowContext()";
+    //
+    // Try to initialize shared GL context
+    if (!wc.sharedGlContext.initialize(wc.sharedGlContext, ContextSettings{}))
+        return fail("could not initialize shared context");
 
-    m_impl->extensions = loadExtensions(m_impl->sharedGlContext);
-
+    //
+    // Load extensions and entrypoints
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
-
-    // Load OpenGL or OpenGL ES entry points using glad
+    wc.extensions = loadExtensions(wc.sharedGlContext);
     loadGLEntryPointsViaGLAD();
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN
@@ -245,10 +260,7 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(/* id */ 1u, /* s
     const auto minorVersion = priv::getGLInteger(GL_MINOR_VERSION);
 
     if ((majorVersion < 1) || ((majorVersion == 1) && (minorVersion < 1)))
-    {
-        priv::err() << "sfml-graphics requires support for OpenGL 1.1 or greater" << '\n'
-                    << "Ensure that hardware acceleration is enabled if available";
-    }
+        return fail("support for OpenGL 1.1 or greater required, ensure hardware acceleration is enabled");
 #else
     // Need to drain errors here or subsequent assertion will fail on Emscripten, unsure why
     while (glGetError() != GL_NO_ERROR)
@@ -256,13 +268,37 @@ WindowContext::WindowContext() : m_impl(base::makeUnique<Impl>(/* id */ 1u, /* s
 #endif
 
     SFML_BASE_ASSERT(glGetError() == GL_NO_ERROR);
+
+    return base::makeOptional<WindowContext>(base::PassKey<WindowContext>{});
+}
+
+
+////////////////////////////////////////////////////////////
+WindowContext::WindowContext(base::PassKey<WindowContext>&&)
+{
+    windowContextRC.fetch_add(1u, std::memory_order_relaxed);
+}
+
+
+////////////////////////////////////////////////////////////
+WindowContext::WindowContext(base::PassKey<GraphicsContext>&&) : WindowContext(base::PassKey<WindowContext>{})
+{
+}
+
+
+////////////////////////////////////////////////////////////
+WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(base::PassKey<WindowContext>{})
+{
 }
 
 
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
 {
-    SFML_BASE_ASSERT(m_impl->unsharedFrameBuffers.empty());
+    if (windowContextRC.fetch_sub(1u, std::memory_order_relaxed) > 1u)
+        return;
+
+    SFML_BASE_ASSERT(ensureInstalled().unsharedFrameBuffers.empty());
 
     SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
 
@@ -270,39 +306,45 @@ WindowContext::~WindowContext()
     activeGlContext.ptr = nullptr;
 
     SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
+
+    installedWindowContext.reset();
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
+    auto& wc = ensureInstalled();
+
     SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
 
-    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
-    m_impl->unsharedFrameBuffers.emplace_back(glContextId, frameBufferId, deleteFn);
+    const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
+    wc.unsharedFrameBuffers.emplace_back(glContextId, frameBufferId, deleteFn);
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId)
 {
+    auto& wc = ensureInstalled();
+
     // If we're not on the right context, wait for the cleanup later on
     if (getActiveThreadLocalGlContextId() != glContextId)
         return;
 
-    const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
+    const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
 
     // Find the object in unshared objects and remove it if its associated context is currently active
     // Assume that the object has already been deleted with the right OpenGL delete call
-    const auto iter = base::findIf(m_impl->unsharedFrameBuffers.begin(),
-                                   m_impl->unsharedFrameBuffers.end(),
-                                   [&](const Impl::UnsharedFrameBuffer& obj)
+    const auto iter = base::findIf(wc.unsharedFrameBuffers.begin(),
+                                   wc.unsharedFrameBuffers.end(),
+                                   [&](const WindowContextImpl::UnsharedFrameBuffer& obj)
                                    { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
-    if (iter != m_impl->unsharedFrameBuffers.end())
+    if (iter != wc.unsharedFrameBuffers.end())
     {
         iter->deleteFn(iter->frameBufferId);
-        m_impl->unsharedFrameBuffers.erase(iter);
+        wc.unsharedFrameBuffers.erase(iter);
     }
 }
 
@@ -310,6 +352,8 @@ void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsi
 ////////////////////////////////////////////////////////////
 void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
+    auto& wc = ensureInstalled();
+
     // Save the current context so we can restore it later
     priv::GlContext* glContextToRestore = activeGlContext.ptr;
 
@@ -319,15 +363,15 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 
     // Scope for lock guard
     {
-        const std::lock_guard lock(m_impl->unsharedFrameBuffersMutex);
+        const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
 
         // Destroy the unshared objects contained in this context
-        for (auto iter = m_impl->unsharedFrameBuffers.begin(); iter != m_impl->unsharedFrameBuffers.end();)
+        for (auto iter = wc.unsharedFrameBuffers.begin(); iter != wc.unsharedFrameBuffers.end();)
         {
             if (iter->glContextId == glContext.m_id)
             {
                 iter->deleteFn(iter->frameBufferId);
-                iter = m_impl->unsharedFrameBuffers.erase(iter);
+                iter = wc.unsharedFrameBuffers.erase(iter);
             }
             else
             {
@@ -351,9 +395,9 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
-const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
+const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr()
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
+    ensureInstalled();
     return activeGlContext.ptr;
 }
 
@@ -361,53 +405,39 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr() const
 ////////////////////////////////////////////////////////////
 priv::JoystickManager& WindowContext::getJoystickManager()
 {
-    return const_cast<priv::JoystickManager&>(static_cast<const WindowContext&>(*this).getJoystickManager());
-}
+    auto& wc = ensureInstalled();
 
+    if (!wc.joystickManager.hasValue())
+        wc.joystickManager.emplace();
 
-////////////////////////////////////////////////////////////
-const priv::JoystickManager& WindowContext::getJoystickManager() const
-{
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
-
-    if (!m_impl->joystickManager.hasValue())
-        m_impl->joystickManager.emplace();
-
-    return *m_impl->joystickManager;
+    return *wc.joystickManager;
 }
 
 
 ////////////////////////////////////////////////////////////
 priv::SensorManager& WindowContext::getSensorManager()
 {
-    return const_cast<priv::SensorManager&>(static_cast<const WindowContext&>(*this).getSensorManager());
+    auto& wc = ensureInstalled();
+
+    if (!wc.sensorManager.hasValue())
+        wc.sensorManager.emplace();
+
+    return *wc.sensorManager;
 }
 
 
 ////////////////////////////////////////////////////////////
-const priv::SensorManager& WindowContext::getSensorManager() const
+unsigned int WindowContext::getActiveThreadLocalGlContextId()
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
-
-    if (!m_impl->sensorManager.hasValue())
-        m_impl->sensorManager.emplace();
-
-    return *m_impl->sensorManager;
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int WindowContext::getActiveThreadLocalGlContextId() const
-{
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
+    ensureInstalled();
     return activeGlContext.id;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::hasActiveThreadLocalGlContext() const
+bool WindowContext::hasActiveThreadLocalGlContext()
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
+    ensureInstalled();
     return activeGlContext.id != 0;
 }
 
@@ -415,7 +445,7 @@ bool WindowContext::hasActiveThreadLocalGlContext() const
 ////////////////////////////////////////////////////////////
 bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active)
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
+    ensureInstalled();
 
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
@@ -448,13 +478,16 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bo
 ////////////////////////////////////////////////////////////
 bool WindowContext::setActiveThreadLocalGlContextToSharedContext(bool active)
 {
-    return setActiveThreadLocalGlContext(m_impl->sharedGlContext, active);
+    auto& wc = ensureInstalled();
+    return setActiveThreadLocalGlContext(wc.sharedGlContext, active);
 }
 
 
 ////////////////////////////////////////////////////////////
 void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
 {
+    ensureInstalled();
+
     // If `glContext` is not the active one on this thread, don't do anything
     if (glContext.m_id != activeGlContext.id)
         return;
@@ -468,63 +501,36 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::hasActiveThreadLocalOrSharedGlContext() const
+bool WindowContext::hasActiveThreadLocalOrSharedGlContext()
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
+    ensureInstalled();
     return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::isActiveGlContextSharedContext() const
+bool WindowContext::isActiveGlContextSharedContext()
 {
-    SFML_BASE_ASSERT(installedWindowContext != nullptr);
-    return activeGlContext.id == 1u && activeGlContext.ptr == &m_impl->sharedGlContext;
+    auto& wc = ensureInstalled();
+    return activeGlContext.id == 1u && activeGlContext.ptr == &wc.sharedGlContext;
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext* WindowContext::getInstalled()
+bool WindowContext::isInstalled()
 {
-    return installedWindowContext;
+    return installedWindowContext.hasValue();
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowContext& WindowContext::ensureInstalled()
-{
-    if (installedWindowContext == nullptr) [[unlikely]]
-    {
-        priv::err() << "`sf::WindowContext` not installed -- did you forget to create one in `main`?";
-        base::abort();
-    }
-
-    return *installedWindowContext;
-}
-
-
-////////////////////////////////////////////////////////////
-void WindowContext::loadGLEntryPointsViaGLAD() const
+void WindowContext::loadGLEntryPointsViaGLAD()
 {
 #ifdef SFML_OPENGL_ES
-    gladLoadGLES2(getGLLoadFn());
+    gladLoadGLES2(&getFunction);
 #else
-    gladLoadGL(getGLLoadFn());
+    gladLoadGL(&getFunction);
 #endif
-}
-
-
-////////////////////////////////////////////////////////////
-WindowContext::GLLoadFn WindowContext::getGLLoadFn() const
-{
-    static const sf::WindowContext* lastWindowContext;
-    lastWindowContext = this;
-
-    return [](const char* name)
-    {
-        SFML_BASE_ASSERT(installedWindowContext != nullptr);
-        return lastWindowContext->getFunction(name);
-    };
 }
 
 
@@ -533,13 +539,15 @@ template <typename... GLContextArgs>
 base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const ContextSettings& contextSettings,
                                                                     GLContextArgs&&... args)
 {
-    const std::lock_guard lock(m_impl->sharedGlContextMutex);
+    auto& wc = ensureInstalled();
+
+    const std::lock_guard lock(wc.sharedGlContextMutex);
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
-    auto glContext = base::makeUnique<DerivedGlContextType>(m_impl->nextThreadLocalGlContextId.fetch_add(1u),
-                                                            &m_impl->sharedGlContext,
+    auto glContext = base::makeUnique<DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
+                                                            &wc.sharedGlContext,
                                                             SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContextToSharedContext(false))
@@ -551,7 +559,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
         return nullptr;
     }
 
-    if (!glContext->initialize(m_impl->sharedGlContext, contextSettings))
+    if (!glContext->initialize(wc.sharedGlContext, contextSettings))
     {
         priv::err() << "Error initializing newly created GL context in WindowContext::createGlContext()";
         return nullptr;
@@ -579,16 +587,17 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::isExtensionAvailable(const char* name) const
+bool WindowContext::isExtensionAvailable(const char* name)
 {
-    return base::find(m_impl->extensions.begin(), m_impl->extensions.end(), name) != m_impl->extensions.end();
+    auto& wc = ensureInstalled();
+    return base::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
 }
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer WindowContext::getFunction(const char* name) const
+GlFunctionPointer WindowContext::getFunction(const char* name)
 {
-    return m_impl->sharedGlContext.getFunction(name);
+    return ensureInstalled().sharedGlContext.getFunction(name);
 }
 
 } // namespace sf

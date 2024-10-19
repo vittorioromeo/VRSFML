@@ -117,7 +117,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 ////////////////////////////////////////////////////////////
 WindowImpl::WindowImpl()
 {
-    auto& joystickManager = WindowContext::ensureInstalled().getJoystickManager();
+    auto& joystickManager = WindowContext::getJoystickManager();
 
     // Get the initial joystick states
     joystickManager.update();
@@ -240,7 +240,7 @@ void WindowImpl::pushEvent(const Event& event)
 ////////////////////////////////////////////////////////////
 void WindowImpl::processJoystickEvents()
 {
-    auto& joystickManager = WindowContext::ensureInstalled().getJoystickManager();
+    auto& joystickManager = WindowContext::getJoystickManager();
 
     // First update the global joystick states
     joystickManager.update();
@@ -308,7 +308,7 @@ void WindowImpl::processJoystickEvents()
 void WindowImpl::processSensorEvents()
 {
     // First update the sensor states
-    auto& sensorManager = WindowContext::ensureInstalled().getSensorManager();
+    auto& sensorManager = WindowContext::getSensorManager();
     sensorManager.update();
 
     for (unsigned int i = 0; i < Sensor::Count; ++i)

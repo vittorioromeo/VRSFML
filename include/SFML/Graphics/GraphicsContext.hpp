@@ -8,7 +8,8 @@
 
 #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -17,11 +18,11 @@
 namespace sf::priv
 {
 class GlContext;
-class RenderTextureImplFBO;
 } // namespace sf::priv
 
 namespace sf
 {
+class RenderTarget;
 class Shader;
 class Texture;
 } // namespace sf
@@ -37,10 +38,18 @@ class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext : public WindowContext
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Create a new graphics context TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<GraphicsContext> create();
+
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit GraphicsContext();
+    [[nodiscard]] explicit GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -52,57 +61,60 @@ public:
     GraphicsContext(const GraphicsContext&)            = delete;
     GraphicsContext& operator=(const GraphicsContext&) = delete;
 
-    // Deleted move operations
-    GraphicsContext(GraphicsContext&&)            = delete;
-    GraphicsContext& operator=(GraphicsContext&&) = delete;
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    GraphicsContext(GraphicsContext&& rhs) noexcept;
+
+    // Deleted move assignment
+    GraphicsContext& operator=(GraphicsContext&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns the built-in shader
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Shader& getBuiltInShader();
+    [[nodiscard]] Shader& getBuiltInShader() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns the built-in 1x1 white texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture& getBuiltInWhiteDotTexture();
+    [[nodiscard]] Texture& getBuiltInWhiteDotTexture() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns a pointer to the installed `GraphicsContext` if available, `nullptr` otherwise
+    /// \brief Returns `true` if a `GraphicsContext` is installed
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static GraphicsContext* getInstalled();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Returns the installed `GraphicsContext` if available, aborts the program otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    static GraphicsContext& ensureInstalled();
-
-private:
-    friend Shader;
-    friend priv::RenderTextureImplFBO;
-
-    using WindowContext::createGlContext; // Needed by befriended render texture implementations
+    [[nodiscard]] static bool isInstalled();
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns the built-in vertex shader source code
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const char* getBuiltInShaderVertexSrc() const;
+    [[nodiscard]] static const char* getBuiltInShaderVertexSrc();
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns the built-in fragment shader source code
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const char* getBuiltInShaderFragmentSrc() const;
+    [[nodiscard]] static const char* getBuiltInShaderFragmentSrc();
+
+private:
+    friend Shader;
+    friend RenderTarget;
 
     ////////////////////////////////////////////////////////////
-    // Member data
+    /// \brief Returns the built-in shader (private `static` version)
+    ///
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    [[nodiscard]] static Shader& getInstalledBuiltInShader();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the built-in 1x1 white texture (private `static` version)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static Texture& getInstalledBuiltInWhiteDotTexture();
 };
 
 } // namespace sf

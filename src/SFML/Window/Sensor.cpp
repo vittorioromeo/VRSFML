@@ -8,26 +8,26 @@
 #include "SFML/Window/WindowContext.hpp"
 
 
-namespace sf::Sensor
+namespace sf
 {
 ////////////////////////////////////////////////////////////
-bool isAvailable(Type sensor)
+bool Sensor::isAvailable(Type sensor)
 {
-    return WindowContext::ensureInstalled().getSensorManager().isAvailable(sensor);
+    return WindowContext::getSensorManager().isAvailable(sensor);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setEnabled(Type sensor, bool enabled)
+void Sensor::setEnabled(Type sensor, bool enabled)
 {
-    WindowContext::ensureInstalled().getSensorManager().setEnabled(sensor, enabled);
+    WindowContext::getSensorManager().setEnabled(sensor, enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector3f getValue(Type sensor)
+Vector3f Sensor::getValue(Type sensor)
 {
-    return WindowContext::ensureInstalled().getSensorManager().getValue(sensor);
+    return WindowContext::getSensorManager().getValue(sensor);
 }
 
-} // namespace sf::Sensor
+} // namespace sf

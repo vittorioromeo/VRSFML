@@ -76,9 +76,8 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 ////////////////////////////////////////////////////////////
 // Check if a render target with the given ID is active in the current context
-[[nodiscard]] bool isActive(IdType id)
+[[nodiscard]] bool isActive(const IdType contextId, const IdType id)
 {
-    const IdType contextId = sf::GraphicsContext::ensureInstalled().getActiveThreadLocalGlContextId();
     SFML_BASE_ASSERT(contextId < maxIdCount);
 
     const auto renderTargetId = contextRenderTargetMap[contextId].load();
@@ -695,13 +694,13 @@ bool RenderTarget::isSrgb() const
 ////////////////////////////////////////////////////////////
 bool RenderTarget::setActive(bool active)
 {
+    // Mark this RenderTarget as active or no longer active in the tracking map
+    const RenderTargetImpl::IdType contextId = GraphicsContext::getActiveThreadLocalGlContextId();
+
     // If this RenderTarget is already active on the current GL context, do nothing
-    if (const bool isAlreadyActive = RenderTargetImpl::isActive(m_impl->id);
+    if (const bool isAlreadyActive = RenderTargetImpl::isActive(contextId, m_impl->id);
         (active && isAlreadyActive) || (!active && !isAlreadyActive))
         return true;
-
-    // Mark this RenderTarget as active or no longer active in the tracking map
-    const RenderTargetImpl::IdType contextId = GraphicsContext::ensureInstalled().getActiveThreadLocalGlContextId();
 
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
@@ -923,8 +922,7 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
     }
 
     // Select shader to be used
-    const Shader& usedShader = states.shader != nullptr ? *states.shader
-                                                        : GraphicsContext::ensureInstalled().getBuiltInShader();
+    const Shader& usedShader = states.shader != nullptr ? *states.shader : GraphicsContext::getInstalledBuiltInShader();
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
@@ -989,9 +987,8 @@ void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& vie
 void RenderTarget::setupDrawTexture(const RenderStates& states)
 {
     // Select texture to be used
-    const Texture& usedTexture = states.texture != nullptr
-                                     ? *states.texture
-                                     : GraphicsContext::ensureInstalled().getBuiltInWhiteDotTexture();
+    const Texture& usedTexture = states.texture != nullptr ? *states.texture
+                                                           : GraphicsContext::getInstalledBuiltInWhiteDotTexture();
 
     // If the texture is an FBO attachment, always rebind it in order to inform the OpenGL driver that we
     // want changes made to it in other contexts to be visible here as well. This saves us from having to

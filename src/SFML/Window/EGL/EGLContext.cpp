@@ -4,9 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGL/EGLCheck.hpp"
-#include "SFML/Window/EGL/EGLContext.hpp"
-#include "SFML/Window/EGL/EGLGlad.hpp"
+#include "SFML/Window/EGL/EglCheck.hpp"
+#include "SFML/Window/EGL/EglContext.hpp"
+#include "SFML/Window/EGL/EglGlad.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
@@ -306,7 +306,7 @@ GlContext(id, contextSettings)
 EglContext::~EglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
+    cleanupUnsharedFrameBuffers();
 
     // Deactivate the current context
     const EGLContext currentContext = eglCheck(eglGetCurrentContext());
@@ -399,7 +399,7 @@ void EglContext::destroySurface()
 {
     // Seems to only be called by `WindowImplAndroid`
 
-    if (!WindowContext::ensureInstalled().setActiveThreadLocalGlContext(*this, false))
+    if (!WindowContext::setActiveThreadLocalGlContext(*this, false))
         err() << "Failure to disable EGL context in `EglContext::destroySurface`";
 
     eglCheck(eglDestroySurface(m_impl->display, m_impl->surface));

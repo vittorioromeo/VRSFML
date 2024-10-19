@@ -121,6 +121,12 @@ protected:
     [[nodiscard]] explicit GlContext(unsigned int id, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Notify unshared resources of context destruction
+    ///
+    ////////////////////////////////////////////////////////////
+    void cleanupUnsharedFrameBuffers();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Activate the context as the current target
     ///        for rendering
     ///

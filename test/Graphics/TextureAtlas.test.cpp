@@ -19,7 +19,7 @@
 
 TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     const auto makeColoredTexture = [&](sf::Color color)
     { return sf::Texture::loadFromImage(sf::Image::create({64u, 64u}, color).value()).value(); };

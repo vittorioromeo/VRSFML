@@ -4,6 +4,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Export.hpp"
+
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/VertexBuffer.hpp"
+
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 
@@ -12,6 +19,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf::priv
 {
+class EglContext;
 class GlContext;
 class JoystickManager;
 class SensorManager;
@@ -20,9 +28,16 @@ class WindowImpl;
 
 namespace sf
 {
+class GraphicsContext;
 class RenderTexture;
+class Shader;
+class Texture;
+class VertexBuffer;
 class Window;
 struct ContextSettings;
+struct Joystick;
+struct Sensor;
+struct WindowContextImpl;
 using GlFunctionPointer = void (*)();
 } // namespace sf
 
@@ -32,14 +47,23 @@ struct TestContext;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] WindowContext
+class [[nodiscard]] SFML_WINDOW_API WindowContext
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowContext();
+    [[nodiscard]] static base::Optional<WindowContext> create();
+
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowContext(base::PassKey<WindowContext>&&);
+    [[nodiscard]] explicit WindowContext(base::PassKey<GraphicsContext>&&);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -51,92 +75,40 @@ public:
     WindowContext(const WindowContext&)            = delete;
     WindowContext& operator=(const WindowContext&) = delete;
 
-    // Deleted move operations
-    WindowContext(WindowContext&&)            = delete;
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    WindowContext(WindowContext&&) noexcept;
+
+    // Deleted move assignment
     WindowContext& operator=(WindowContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check whether a given OpenGL extension is available
-    ///
-    /// \param name Name of the extension to check for
-    ///
-    /// \return `true` if available, false if unavailable
+    /// \brief TODO P0: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isExtensionAvailable(const char* name) const;
+    [[nodiscard]] static bool isInstalled();
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the address of an OpenGL function
-    ///
-    /// On Windows when not using OpenGL ES, a context must be
-    /// active for this function to succeed.
-    ///
-    /// \param name Name of the function to get the address of
-    ///
-    /// \return Address of the OpenGL function, 0 on failure
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Notify unshared resources of context destruction
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanupUnsharedFrameBuffers(priv::GlContext& glContext);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context's ID
-    ///
-    /// The context ID is used to identify contexts when
-    /// managing unshareable OpenGL resources.
-    ///
-    /// \return The active context's ID or 0 if no context is currently active
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getActiveThreadLocalGlContextId() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasActiveThreadLocalGlContext() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasActiveThreadLocalOrSharedGlContext() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    using GLLoadFn = GlFunctionPointer (*)(const char*);
-    [[nodiscard]] GLLoadFn getGLLoadFn() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Returns a pointer to the installed `WindowContext` if available, `nullptr` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static WindowContext* getInstalled();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Returns the installed `WindowContext` if available, aborts the program otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    static WindowContext& ensureInstalled();
-
-protected:
+private:
     ////////////////////////////////////////////////////////////
     /// Friend declarations
     ///
     ////////////////////////////////////////////////////////////
-    friend priv::GlContext;
-    friend Window;
-    friend priv::WindowImpl;
-
-    friend TestContext;
-    friend RenderTexture;
+    friend GraphicsContext;   // for `setActiveThreadLocalGlContext`
+    friend Joystick;          // for `getJoystickManager`
+    friend priv::EglContext;  // for `setActiveThreadLocalGlContext`
+    friend priv::GlContext;   // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
+    friend priv::WindowImpl;  // for `getJoystickManager`
+    friend RenderTarget;      // for `getActiveThreadLocalGlContextId`
+    friend RenderTexture;     // for `[un]registerUnsharedFrameBuffer`
+    friend Sensor;            // for `getSensorManager`
+    friend Shader;            // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
+    friend TestContext;       // for `createGlContext`
+    friend Texture;           // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
+    friend VertexBuffer;      // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
+    friend Window;            // for `createGlContext`
+    friend WindowContextImpl; // for `UnsharedDeleteFn`
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -148,8 +120,8 @@ protected:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... GLContextArgs>
-    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
-                                                                       GLContextArgs&&... args);
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContextImpl(const ContextSettings& contextSettings,
+                                                                              GLContextArgs&&... args);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -160,7 +132,7 @@ protected:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext();
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -175,16 +147,44 @@ protected:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
-                                                                   const priv::WindowImpl& owner,
-                                                                   unsigned int            bitsPerPixel);
-
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
+                                                                          const priv::WindowImpl& owner,
+                                                                          unsigned int            bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     using UnsharedDeleteFn = void (*)(unsigned int);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Notify unshared resources of context destruction
+    ///
+    ////////////////////////////////////////////////////////////
+    static void cleanupUnsharedFrameBuffers(priv::GlContext& glContext);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the currently active context's ID
+    ///
+    /// The context ID is used to identify contexts when
+    /// managing unshareable OpenGL resources.
+    ///
+    /// \return The active context's ID or 0 if no context is currently active
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveThreadLocalOrSharedGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
@@ -196,7 +196,7 @@ protected:
     /// \param object Object to be destroyed when its containing context is destroyed
     ///
     ////////////////////////////////////////////////////////////
-    void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
 
     ////////////////////////////////////////////////////////////
     /// \brief Unregister an OpenGL object from its containing context
@@ -204,79 +204,78 @@ protected:
     /// \param object Object to be unregister
     ///
     ////////////////////////////////////////////////////////////
-    void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+    static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void onGlContextDestroyed(priv::GlContext& glContext);
+    static void onGlContextDestroyed(priv::GlContext& glContext);
 
-public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Check whether a given OpenGL extension is available
+    ///
+    /// \param name Name of the extension to check for
+    ///
+    /// \return `true` if available, false if unavailable
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool isExtensionAvailable(const char* name);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the address of an OpenGL function
+    ///
+    /// On Windows when not using OpenGL ES, a context must be
+    /// active for this function to succeed.
+    ///
+    /// \param name Name of the function to get the address of
+    ///
+    /// \return Address of the OpenGL function, 0 on failure
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static GlFunctionPointer getFunction(const char* name);
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
+    [[nodiscard]] static bool setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setActiveThreadLocalGlContextToSharedContext(bool active);
+    [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext(bool active);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isActiveGlContextSharedContext() const;
+    [[nodiscard]] static bool isActiveGlContextSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load OpenGL or OpenGL ES entry points using GLAD
     ///
     ////////////////////////////////////////////////////////////
-    void loadGLEntryPointsViaGLAD() const;
+    static void loadGLEntryPointsViaGLAD();
 
-private:
     ////////////////////////////////////////////////////////////
-    /// \brief Get the currently active context
-    ///
-    /// \return The currently active context or a null pointer if none is active
+    /// \brief Return the currently active context or a null pointer if none is active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::GlContext* getActiveThreadLocalGlContextPtr() const;
-
-public: // TODO P0: to passkey
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the "global" joystick manager
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::JoystickManager& getJoystickManager();
+    [[nodiscard]] static const priv::GlContext* getActiveThreadLocalGlContextPtr();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the "global" joystick manager
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::JoystickManager& getJoystickManager() const;
+    [[nodiscard]] static priv::JoystickManager& getJoystickManager();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the "global" sensor manager
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] priv::SensorManager& getSensorManager();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the "global" sensor manager
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::SensorManager& getSensorManager() const;
-
-private:
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::UniquePtr<Impl> m_impl;
+    [[nodiscard]] static priv::SensorManager& getSensorManager();
 };
 
 } // namespace sf

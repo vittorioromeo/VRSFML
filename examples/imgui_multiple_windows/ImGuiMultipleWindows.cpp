@@ -6,7 +6,6 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 
@@ -16,7 +15,7 @@
 
 int main()
 {
-    sf::GraphicsContext     graphicsContext;
+    auto                    graphicsContext = sf::GraphicsContext::create().value();
     sf::ImGui::ImGuiContext imGuiContext;
 
     sf::RenderWindow window({.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});

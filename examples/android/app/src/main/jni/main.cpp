@@ -91,7 +91,7 @@ int vibrate(sf::Time duration)
 int main(int, char**)
 {
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 

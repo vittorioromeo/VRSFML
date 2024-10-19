@@ -427,7 +427,7 @@ sf::base::Optional<Geometry> tryLoadGeometry()
 int main()
 {
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Open the application font
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();

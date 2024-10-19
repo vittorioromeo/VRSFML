@@ -102,7 +102,7 @@ m_context(nil)
 EaglContext::~EaglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    WindowContext::ensureInstalled().cleanupUnsharedFrameBuffers(*this);
+    cleanupUnsharedFrameBuffers();
 
     if (m_context)
     {

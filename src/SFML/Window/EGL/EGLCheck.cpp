@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGL/EGLCheck.hpp"
-#include "SFML/Window/EGL/EGLGlad.hpp"
+#include "SFML/Window/EGL/EglCheck.hpp"
+#include "SFML/Window/EGL/EglGlad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"

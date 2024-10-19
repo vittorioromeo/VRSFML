@@ -19,7 +19,7 @@ TEST_CASE("[Window] sf::Joystick")
     // no joysticks will be detected. This is how we can ensure these
     // tests are portable and reliable.
 
-    const sf::WindowContext windowContext;
+    auto windowContext = sf::WindowContext::create().value();
 
     for (unsigned int joystickId = 0u; joystickId < sf::Joystick::MaxCount; ++joystickId)
     {

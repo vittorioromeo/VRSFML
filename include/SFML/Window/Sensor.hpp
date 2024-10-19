@@ -9,67 +9,70 @@
 #include "SFML/System/Vector3.hpp"
 
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the sensors
 ///
 ////////////////////////////////////////////////////////////
-namespace sf::Sensor
+struct Sensor
 {
-////////////////////////////////////////////////////////////
-/// \brief Sensor type
-///
-////////////////////////////////////////////////////////////
-enum class Type
-{
-    Accelerometer,    //!< Measures the raw acceleration (m/s^2)
-    Gyroscope,        //!< Measures the raw rotation rates (radians/s)
-    Magnetometer,     //!< Measures the ambient magnetic field (micro-teslas)
-    Gravity,          //!< Measures the direction and intensity of gravity, independent of device acceleration (m/s^2)
-    UserAcceleration, //!< Measures the direction and intensity of device acceleration, independent of the gravity (m/s^2)
-    Orientation       //!< Measures the absolute 3D orientation (radians)
+    ////////////////////////////////////////////////////////////
+    /// \brief Sensor type
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class Type
+    {
+        Accelerometer, //!< Measures the raw acceleration (m/s^2)
+        Gyroscope,     //!< Measures the raw rotation rates (radians/s)
+        Magnetometer,  //!< Measures the ambient magnetic field (micro-teslas)
+        Gravity,       //!< Measures the direction and intensity of gravity, independent of device acceleration (m/s^2)
+        UserAcceleration, //!< Measures the direction and intensity of device acceleration, independent of the gravity (m/s^2)
+        Orientation       //!< Measures the absolute 3D orientation (radians)
+    };
+
+    enum : unsigned int
+    {
+        Count = 6u //!< The total number of sensor types
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if a sensor is available on the underlying platform
+    ///
+    /// \param sensor Sensor to check
+    ///
+    /// \return `true` if the sensor is available, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_WINDOW_API static bool isAvailable(Type sensor);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Enable or disable a sensor
+    ///
+    /// All sensors are disabled by default, to avoid consuming too
+    /// much battery power. Once a sensor is enabled, it starts
+    /// sending events of the corresponding type.
+    ///
+    /// This function does nothing if the sensor is unavailable.
+    ///
+    /// \param sensor  Sensor to enable
+    /// \param enabled `true` to enable, `false` to disable
+    ///
+    ////////////////////////////////////////////////////////////
+    SFML_WINDOW_API static void setEnabled(Type sensor, bool enabled);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the current sensor value
+    ///
+    /// \param sensor Sensor to read
+    ///
+    /// \return The current sensor value
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_WINDOW_API static Vector3f getValue(Type sensor);
 };
 
-enum : unsigned int
-{
-    Count = 6u //!< The total number of sensor types
-};
-
-////////////////////////////////////////////////////////////
-/// \brief Check if a sensor is available on the underlying platform
-///
-/// \param sensor Sensor to check
-///
-/// \return `true` if the sensor is available, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool isAvailable(Type sensor);
-
-////////////////////////////////////////////////////////////
-/// \brief Enable or disable a sensor
-///
-/// All sensors are disabled by default, to avoid consuming too
-/// much battery power. Once a sensor is enabled, it starts
-/// sending events of the corresponding type.
-///
-/// This function does nothing if the sensor is unavailable.
-///
-/// \param sensor  Sensor to enable
-/// \param enabled `true` to enable, `false` to disable
-///
-////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setEnabled(Type sensor, bool enabled);
-
-////////////////////////////////////////////////////////////
-/// \brief Get the current sensor value
-///
-/// \param sensor Sensor to read
-///
-/// \return The current sensor value
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector3f getValue(Type sensor);
-
-} // namespace sf::Sensor
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

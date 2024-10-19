@@ -65,7 +65,7 @@ int main()
     constexpr float        ballRadius = 10.f;
 
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
     sf::RenderWindow window(

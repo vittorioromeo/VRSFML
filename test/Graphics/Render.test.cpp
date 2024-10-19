@@ -15,13 +15,13 @@
 
 TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
 {
-    CHECK(sf::WindowContext::getInstalled() == nullptr);
-    CHECK(sf::GraphicsContext::getInstalled() == nullptr);
+    CHECK(!sf::WindowContext::isInstalled());
+    CHECK(!sf::GraphicsContext::isInstalled());
 
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
-    CHECK(sf::WindowContext::getInstalled() == &static_cast<sf::WindowContext&>(graphicsContext));
-    CHECK(sf::GraphicsContext::getInstalled() == &graphicsContext);
+    CHECK(sf::WindowContext::isInstalled());
+    CHECK(sf::GraphicsContext::isInstalled());
 
     SECTION("Stencil Tests")
     {

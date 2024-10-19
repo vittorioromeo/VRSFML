@@ -6,7 +6,6 @@
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
@@ -19,7 +18,7 @@
 
 int main()
 {
-    sf::GraphicsContext     graphicsContext;
+    auto                    graphicsContext = sf::GraphicsContext::create().value();
     sf::ImGui::ImGuiContext imGuiContext;
 
     sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});

@@ -15,7 +15,7 @@
 // Skip these tests with [.display] because they produce flakey failures in CI when using xvfb-run
 TEST_CASE("[Graphics] sf::VertexBuffer", "[.display]")
 {
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     SECTION("Type traits")
     {

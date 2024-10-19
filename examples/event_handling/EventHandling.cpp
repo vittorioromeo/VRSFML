@@ -361,7 +361,6 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::GraphicsContext m_graphicsContext;
     sf::RenderWindow m_window{{.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false, .vsync = true}};
 
     const sf::Font m_font{sf::Font::openFromFile("resources/tuffy.ttf").value()};
@@ -382,5 +381,6 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
+    auto graphicsContext = sf::GraphicsContext::create().value();
     Application{}.run();
 }

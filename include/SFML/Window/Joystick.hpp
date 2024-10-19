@@ -6,8 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/Window/JoystickAxis.hpp"
-
 #include "SFML/Base/Optional.hpp"
 
 
@@ -26,39 +24,69 @@ struct JoystickIdentification;
 } // namespace sf::priv
 
 
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the joysticks
 ///
 ////////////////////////////////////////////////////////////
-namespace sf::Joystick
+struct Joystick
 {
-////////////////////////////////////////////////////////////
-/// \brief Constants related to joysticks capabilities
-///
-////////////////////////////////////////////////////////////
-enum : unsigned int
-{
-    MaxCount    = 8u,  //!< Maximum number of supported joysticks
-    ButtonCount = 32u, //!< Maximum number of supported buttons
-    AxisCount   = 8u   //!< Maximum number of supported axes
-};
+    ////////////////////////////////////////////////////////////
+    /// \brief Axes supported by SFML joysticks
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class Axis
+    {
+        X,    //!< The X axis
+        Y,    //!< The Y axis
+        Z,    //!< The Z axis
+        R,    //!< The R axis
+        U,    //!< The U axis
+        V,    //!< The V axis
+        PovX, //!< The X axis of the point-of-view hat
+        PovY  //!< The Y axis of the point-of-view hat
+    };
 
-////////////////////////////////////////////////////////////
-/// \brief Update the states of all joysticks
-///
-/// This function is used internally by SFML, so you normally
-/// don't have to call it explicitly. However, you may need to
-/// call it if you have no window yet (or no window at all):
-/// in this case the joystick states are not updated automatically.
-///
-////////////////////////////////////////////////////////////
-SFML_WINDOW_API void update();
+    ////////////////////////////////////////////////////////////
+    /// \brief Constants related to joysticks capabilities
+    ///
+    ////////////////////////////////////////////////////////////
+    enum : unsigned int
+    {
+        MaxCount    = 8u,  //!< Maximum number of supported joysticks
+        ButtonCount = 32u, //!< Maximum number of supported buttons
+        AxisCount   = 8u   //!< Maximum number of supported axes
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Update the states of all joysticks
+    ///
+    /// This function is used internally by SFML, so you normally
+    /// don't have to call it explicitly. However, you may need to
+    /// call it if you have no window yet (or no window at all):
+    /// in this case the joystick states are not updated automatically.
+    ///
+    ////////////////////////////////////////////////////////////
+    SFML_WINDOW_API static void update();
+
+    // Forward declaration for friendship
+    class Query;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    /// \param joystick Index of the joystick to check
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<Query> query(unsigned int joystickId);
+};
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_WINDOW_API Query
+class [[nodiscard]] SFML_WINDOW_API Joystick::Query
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -124,7 +152,7 @@ public:
     [[nodiscard]] float getAxisPosition(Axis axis) const;
 
 private:
-    friend base::Optional<Query> query(unsigned int joystickId);
+    friend base::Optional<Query> Joystick::query(unsigned int joystickId);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a joystick state query
@@ -153,15 +181,7 @@ private:
     unsigned int                 m_joystickId;
 };
 
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-/// \param joystick Index of the joystick to check
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] base::Optional<Query> query(unsigned int joystickId);
-
-} // namespace sf::Joystick
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////

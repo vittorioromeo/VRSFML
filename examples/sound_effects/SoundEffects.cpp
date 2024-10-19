@@ -1010,7 +1010,7 @@ private:
 int main()
 {
     // Create the graphics context
-    sf::GraphicsContext graphicsContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
     sf::RenderWindow window(
