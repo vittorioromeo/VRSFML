@@ -7,9 +7,9 @@
 
 #include <X11/keysym.h>
 
+
 namespace sf::priv
 {
-
 ////////////////////////////////////////////////////////////
 Keyboard::Key keySymToKey(KeySym symbol)
 {
