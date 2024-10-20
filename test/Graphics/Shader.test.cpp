@@ -64,9 +64,11 @@ layout(points) in;
 layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
-layout(location = 1) out vec2 sf_v_texCoord;
+out vec2 sf_v_texCoord;
 
 layout(location = 1) uniform vec3 sf_u_texParams;
+
+out vec4 sf_v_color; // Pass through to fragment
 
 // Main entry point
 void main()

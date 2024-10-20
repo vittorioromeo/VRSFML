@@ -1016,7 +1016,11 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     {
         char log[1024]{};
         glCheck(glGetProgramInfoLog(shaderProgram, sizeof(log), nullptr, log));
-        priv::err() << "Failed to link shader:" << '\n' << static_cast<const char*>(log);
+        priv::err() << "Failed to link shader:" << '\n'
+                    << static_cast<const char*>(log) << "VERTEX SOURCE:\n"
+                    << vertexShaderCode << "\n\nFRAGMENT SOURCE:\n"
+                    << fragmentShaderCode << "\n\nGEOMETRY SOURCE:\n"
+                    << geometryShaderCode;
         glCheck(glDeleteProgram(shaderProgram));
         return base::nullOpt;
     }

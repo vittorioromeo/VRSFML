@@ -48,13 +48,12 @@
 
 ////////////////////////////////////////////////////////////
 
-#if 0
+#if 1
 
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
-    sf::RenderWindow    window(
-                               {.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
+    sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
     const float width     = 128.f;
@@ -69,11 +68,9 @@ int main()
     auto image   = sf::Image::create(size, sf::Color::White).value();
     auto texture = sf::Texture::loadFromImage(image).value();
 
-    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true})
-                                 .value();
+    auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true}).value();
 
-    auto baseRenderTextureAA = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true})
-                                   .value();
+    auto baseRenderTextureAA = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
 
     auto leftInnerRT = sf::RenderTexture::create(size, {.antiAliasingLevel = 4, .sRgbCapable = true}).value();
 
@@ -102,8 +99,8 @@ int main()
         std::cout << "fail " #__VA_ARGS__ << '\n'; \
     }
 
-    sf::Sprite rtSprite{.textureRect=baseRenderTexture.getTexture().getRect()};
-    sf::Sprite rtAASprite{.textureRect=baseRenderTextureAA.getTexture().getRect()};
+    sf::Sprite rtSprite{.textureRect = baseRenderTexture.getTexture().getRect()};
+    sf::Sprite rtAASprite{.textureRect = baseRenderTextureAA.getTexture().getRect()};
 
     while (true)
     {
@@ -147,7 +144,7 @@ int main()
         if (!rc)
             throw 100;
 
-        window.draw(winRT{.position = {256, 256}, .scale = {0.2f, 0.2f}});
+        window.draw(winRT, {.position = {256, 256}, .scale = {0.2f, 0.2f}});
         window.display();
     }
 }
