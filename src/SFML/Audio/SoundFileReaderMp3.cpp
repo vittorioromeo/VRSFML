@@ -42,7 +42,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned long readCallback(void* ptr, unsigned long size, void* data)
+[[nodiscard]] sf::base::SizeT readCallback(void* ptr, sf::base::SizeT size, void* data)
 {
     auto* stream = static_cast<sf::InputStream*>(data);
     return stream->read(ptr, size).valueOr(static_cast<sf::base::SizeT>(-1));
@@ -50,7 +50,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int seekCallback(unsigned long offset, void* data)
+[[nodiscard]] int seekCallback(sf::base::U64 offset, void* data)
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->seek(static_cast<sf::base::SizeT>(offset));
