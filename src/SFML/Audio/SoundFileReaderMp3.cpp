@@ -90,13 +90,7 @@ bool SoundFileReaderMp3::check(InputStream& stream)
         !readResult.hasValue() || *readResult != sizeof(header))
         return false;
 
-    if (hasValidId3Tag(header))
-        return true;
-
-    if (hdr_valid(header))
-        return true;
-
-    return false;
+    return hasValidId3Tag(header) || hdr_valid(header);
 }
 
 

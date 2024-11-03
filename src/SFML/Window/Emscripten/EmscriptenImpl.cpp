@@ -32,8 +32,10 @@
 #include <vector>
 
 
-// TODO P0: fullscreen seems broken
 // TODO P0: focus seems not to work on mobile or unless alt tabbing
+// - this is an an issue caused by the fact that imguiperwindowcontext's window doesn't have
+//   focus on construction
+// - it also seems that the focus cb in emscripten doesn't get triggered at the beginning
 
 namespace
 {
