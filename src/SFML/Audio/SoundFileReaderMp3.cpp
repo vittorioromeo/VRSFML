@@ -38,6 +38,8 @@
 #include "SFML/Base/Builtins/Memcmp.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
+#include <cstdint>
+
 
 namespace
 {
@@ -50,7 +52,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int seekCallback(sf::base::U64 offset, void* data)
+[[nodiscard]] int seekCallback(std::uint64_t offset, void* data) // cannot use base here due to mismatch on unix
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->seek(static_cast<sf::base::SizeT>(offset));
@@ -101,8 +103,8 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 ////////////////////////////////////////////////////////////
 SoundFileReaderMp3::SoundFileReaderMp3()
 {
-    m_impl->io.read = static_cast<MP3D_READ_CB>(&readCallback);
-    m_impl->io.seek = static_cast<MP3D_SEEK_CB>(&seekCallback);
+    m_impl->io.read = readCallback;
+    m_impl->io.seek = seekCallback;
 }
 
 
