@@ -44,14 +44,15 @@
 namespace
 {
 // Width and height of the application window
-constexpr sf::Vector2u windowSize{800u, 600u};
+constexpr sf::Vector2u windowSize(800, 600);
 
 // Resolution of the generated terrain
-constexpr sf::Vector2u resolution{800u, 600u};
+constexpr sf::Vector2u resolution(800, 600);
 
 // Thread pool parameters
-constexpr unsigned int threadCount = 4u;
-constexpr unsigned int blockCount  = 32u;
+constexpr unsigned int threadCount  = 4;
+constexpr unsigned int blockCount   = 32;
+constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
 struct WorkItem
 {
@@ -291,7 +292,7 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 ////////////////////////////////////////////////////////////
 sf::Vertex computeVertex(sf::Vector2u position)
 {
-    constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
+    static constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
 
     return {.position  = position.toVector2f().componentWiseMul(scalingFactors),
             .color     = getTerrainColor(getElevation(position), getMoisture(position)),
@@ -310,8 +311,7 @@ sf::Vertex computeVertex(sf::Vector2u position)
 ////////////////////////////////////////////////////////////
 void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem)
 {
-    const unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
-    const unsigned int rowStart     = rowBlockSize * workItem.index;
+    const unsigned int rowStart = rowBlockSize * workItem.index;
 
     if (rowStart >= resolution.y)
         return;
@@ -385,8 +385,6 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
 ////////////////////////////////////////////////////////////
 void threadFunction(ThreadPool& threadPool)
 {
-    const unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
-
     std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
 
     WorkItem workItem{nullptr, 0};

@@ -388,7 +388,7 @@ Packet& Packet::operator<<(base::U8 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::I16 data)
 {
-    auto toWrite = static_cast<base::I16>(priv::SocketImpl::getHtons(static_cast<base::U16>(data)));
+    const auto toWrite = static_cast<base::I16>(priv::SocketImpl::getHtons(static_cast<base::U16>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -397,7 +397,7 @@ Packet& Packet::operator<<(base::I16 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::U16 data)
 {
-    base::U16 toWrite = priv::SocketImpl::getHtons(data);
+    const base::U16 toWrite = priv::SocketImpl::getHtons(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -406,7 +406,7 @@ Packet& Packet::operator<<(base::U16 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::I32 data)
 {
-    auto toWrite = static_cast<base::I32>(priv::SocketImpl::getHtonl(static_cast<base::U32>(data)));
+    const auto toWrite = static_cast<base::I32>(priv::SocketImpl::getHtonl(static_cast<base::U32>(data)));
     append(&toWrite, sizeof(toWrite));
     return *this;
 }
@@ -415,7 +415,7 @@ Packet& Packet::operator<<(base::I32 data)
 ////////////////////////////////////////////////////////////
 Packet& Packet::operator<<(base::U32 data)
 {
-    base::U32 toWrite = priv::SocketImpl::getHtonl(data);
+    const base::U32 toWrite = priv::SocketImpl::getHtonl(data);
     append(&toWrite, sizeof(toWrite));
     return *this;
 }

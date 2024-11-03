@@ -428,6 +428,7 @@ public:
 private:
     union Buffer
     {
+        char dummy{}; // Needed by GCC for constant expression support
         T obj;
 
         // clang-format off

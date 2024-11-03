@@ -119,7 +119,7 @@ void SensorImpl::setEnabled(bool enabled)
 const ASensor* SensorImpl::getDefaultSensor(Sensor::Type sensor)
 {
     // Find the Android sensor type
-    static base::EnumArray<Sensor::Type, int, Sensor::Count> types =
+    static constexpr base::EnumArray<Sensor::Type, int, Sensor::Count> types =
         {ASENSOR_TYPE_ACCELEROMETER,
          ASENSOR_TYPE_GYROSCOPE,
          ASENSOR_TYPE_MAGNETIC_FIELD,

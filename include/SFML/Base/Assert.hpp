@@ -12,7 +12,7 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-[[gnu::cold, gnu::noinline]] void assertFailure(const char* code, const char* file, int line);
+[[noreturn, gnu::cold, gnu::noinline]] void assertFailure(const char* code, const char* file, int line);
 
 } // namespace sf::base::priv
 

@@ -59,6 +59,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    // TODO P1: add overload to pack multiple rects at once
     [[nodiscard]] base::Optional<Vector2u> pack(Vector2u rectSize);
 
     ////////////////////////////////////////////////////////////

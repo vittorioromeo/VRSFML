@@ -31,7 +31,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplEmscripten(WindowHandle handle);
+    [[nodiscard, noreturn]] explicit WindowImplEmscripten(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
