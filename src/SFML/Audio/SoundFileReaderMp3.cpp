@@ -101,8 +101,8 @@ bool SoundFileReaderMp3::check(InputStream& stream)
 ////////////////////////////////////////////////////////////
 SoundFileReaderMp3::SoundFileReaderMp3()
 {
-    m_impl->io.read = readCallback;
-    m_impl->io.seek = seekCallback;
+    m_impl->io.read = static_cast<MP3D_READ_CB>(&readCallback);
+    m_impl->io.seek = static_cast<MP3D_SEEK_CB>(&seekCallback);
 }
 
 
