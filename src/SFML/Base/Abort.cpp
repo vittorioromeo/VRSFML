@@ -12,7 +12,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-void abort()
+void abort() noexcept
 {
     std::abort();
 }

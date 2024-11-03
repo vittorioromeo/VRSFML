@@ -27,14 +27,14 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastSinIdx(float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastSinIdx(const float radians) noexcept
 {
     return static_cast<U32>(radians * radToIndex);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastCosIdx(float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastCosIdx(const float radians) noexcept
 {
     return fastSinIdx(radians) + 16384u;
 }
@@ -87,7 +87,7 @@ namespace sf::base
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(const float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
     SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
@@ -99,7 +99,7 @@ namespace sf::base
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(const float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
     SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
@@ -111,7 +111,7 @@ namespace sf::base
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto fastSinCos(float radians) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto fastSinCos(const float radians) noexcept
 {
     SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
     SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);

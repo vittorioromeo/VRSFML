@@ -135,16 +135,16 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
     fb     = new DrmFb();
     fb->bo = &bo;
 
-    const base::U32 width  = gbm_bo_get_width(&bo);
-    const base::U32 height = gbm_bo_get_height(&bo);
-    const base::U32 format = gbm_bo_get_format(&bo);
+    const sf::base::U32 width  = gbm_bo_get_width(&bo);
+    const sf::base::U32 height = gbm_bo_get_height(&bo);
+    const sf::base::U32 format = gbm_bo_get_format(&bo);
 
-    base::U32 strides[4]   = {0};
-    base::U32 handles[4]   = {0};
-    base::U32 offsets[4]   = {0};
-    base::U64 modifiers[4] = {0};
-    modifiers[0]           = gbm_bo_get_modifier(&bo);
-    const int numPlanes    = gbm_bo_get_plane_count(&bo);
+    sf::base::U32 strides[4]   = {0};
+    sf::base::U32 handles[4]   = {0};
+    sf::base::U32 offsets[4]   = {0};
+    sf::base::U64 modifiers[4] = {0};
+    modifiers[0]               = gbm_bo_get_modifier(&bo);
+    const int numPlanes        = gbm_bo_get_plane_count(&bo);
     for (int i = 0; i < numPlanes; ++i)
     {
         strides[i]   = gbm_bo_get_stride_for_plane(&bo, i);
@@ -153,11 +153,7 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
         modifiers[i] = modifiers[0];
     }
 
-    base::U32 flags = 0;
-    if (modifiers[0])
-    {
-        flags = DRM_MODE_FB_MODIFIERS;
-    }
+    const sf::base::U32 flags = modifiers[0] ? DRM_MODE_FB_MODIFIERS : 0;
 
     int result = drmModeAddFB2WithModifiers(drmFd, width, height, format, handles, strides, offsets, modifiers, &fb->fbId, flags);
 
@@ -183,14 +179,14 @@ DrmFb* drmFbGetFromBo(gbm_bo& bo)
     return fb;
 }
 
-base::U32 findCrtcForEncoder(const drmModeRes& resources, const drmModeEncoder& encoder)
+sf::base::U32 findCrtcForEncoder(const drmModeRes& resources, const drmModeEncoder& encoder)
 {
     for (int i = 0; i < resources.count_crtcs; ++i)
     {
         // Possible_crtcs is a bitmask as described here:
         // https://dvdhrm.wordpress.com/2012/09/13/linux-drm-mode-setting-api
-        const base::U32 crtcMask = 1u << i;
-        const base::U32 crtcId   = resources.crtcs[i];
+        const sf::base::U32 crtcMask = 1u << i;
+        const sf::base::U32 crtcId   = resources.crtcs[i];
         if (encoder.possible_crtcs & crtcMask)
         {
             return crtcId;
@@ -201,14 +197,14 @@ base::U32 findCrtcForEncoder(const drmModeRes& resources, const drmModeEncoder& 
     return 0;
 }
 
-base::U32 findCrtcForConnector(const sf::priv::Drm& drm, const drmModeRes& resources, const drmModeConnector& connector)
+sf::base::U32 findCrtcForConnector(const sf::priv::Drm& drm, const drmModeRes& resources, const drmModeConnector& connector)
 {
     for (int i = 0; i < connector.count_encoders; ++i)
     {
-        const base::U32 encoderId = connector.encoders[i];
+        const sf::base::U32 encoderId = connector.encoders[i];
         if (auto* encoder = drmModeGetEncoder(drm.fileDescriptor, encoderId))
         {
-            const base::U32 crtcId = findCrtcForEncoder(resources, *encoder);
+            const sf::base::U32 crtcId = findCrtcForEncoder(resources, *encoder);
 
             drmModeFreeEncoder(encoder);
             if (crtcId != 0)
@@ -649,13 +645,7 @@ void DRMContext::createContext(DRMContext* shared)
 {
     constexpr EGLint contextVersion[]{EGL_CONTEXT_CLIENT_VERSION, 1, EGL_NONE};
 
-    EGLContext toShared = nullptr;
-
-    if (shared)
-        toShared = shared->m_context;
-    else
-        toShared = EGL_NO_CONTEXT;
-
+    const EGLContext toShared = shared ? shared->m_context : EGL_NO_CONTEXT;
     if (toShared != EGL_NO_CONTEXT)
         eglCheck(eglMakeCurrent(m_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT));
 

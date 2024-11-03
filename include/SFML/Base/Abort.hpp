@@ -5,6 +5,6 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-[[gnu::cold, gnu::noinline]] void abort();
+[[noreturn, gnu::cold, gnu::noinline]] void abort() noexcept;
 
 } // namespace sf::base
