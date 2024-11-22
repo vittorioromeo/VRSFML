@@ -34,7 +34,7 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<S
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getLocalBounds() const;
+    [[nodiscard, gnu::pure]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -48,7 +48,7 @@ struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<S
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getGlobalBounds() const;
+    [[nodiscard, gnu::pure]] FloatRect getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
