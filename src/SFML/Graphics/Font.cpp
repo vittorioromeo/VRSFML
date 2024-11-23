@@ -79,7 +79,7 @@ template <typename T, typename U>
 
 ////////////////////////////////////////////////////////////
 // Combine outline thickness, boldness and font glyph index into a single 64-bit key
-[[nodiscard, gnu::always_inline]] inline sf::base::U64 combine(float outlineThickness, bool bold, sf::base::U32 index)
+[[nodiscard, gnu::always_inline]] inline sf::base::U64 combine(float outlineThickness, bool bold, char32_t index)
 {
     return (sf::base::U64{reinterpret<sf::base::U32>(outlineThickness)} << 32) | (sf::base::U64{bold} << 31) | index;
 }
@@ -159,7 +159,7 @@ struct FontHandles
 sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
                     sf::TextureAtlas&                      textureAtlas,
                     sf::base::TrivialVector<sf::base::U8>& pixelBuffer,
-                    sf::base::U32                          codePoint,
+                    char32_t                               codePoint,
                     unsigned int                           characterSize,
                     bool                                   bold,
                     float                                  outlineThickness)
@@ -553,7 +553,7 @@ const FontInfo& Font::getInfo() const
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Font::getCharIndex(base::U32 codePoint) const
+unsigned int Font::getCharIndex(char32_t codePoint) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
     return FT_Get_Char_Index(m_impl->fontHandles->face, codePoint);
@@ -561,7 +561,7 @@ unsigned int Font::getCharIndex(base::U32 codePoint) const
 
 
 ////////////////////////////////////////////////////////////
-const Glyph& Font::getGlyph(base::U32 codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
+const Glyph& Font::getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
 
@@ -589,14 +589,14 @@ const Glyph& Font::getGlyph(base::U32 codePoint, unsigned int characterSize, boo
 
 
 ////////////////////////////////////////////////////////////
-bool Font::hasGlyph(base::U32 codePoint) const
+bool Font::hasGlyph(char32_t codePoint) const
 {
     return getCharIndex(codePoint) != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-float Font::getKerning(base::U32 first, base::U32 second, unsigned int characterSize, bool bold) const
+float Font::getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold) const
 {
     SFML_BASE_ASSERT(m_impl->fontHandles != nullptr);
 

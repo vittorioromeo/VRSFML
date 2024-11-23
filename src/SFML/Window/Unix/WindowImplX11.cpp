@@ -1846,7 +1846,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     {
                         // There might be more than 1 characters in this event,
                         // so we must iterate it
-                        base::U32 unicode = 0;
+                        char32_t  unicode = 0;
                         base::U8* iter    = keyBuffer;
                         while (iter < keyBuffer + length)
                         {
@@ -1861,7 +1861,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                     static XComposeStatus status;
                     char                  keyBuffer[16];
                     if (XLookupString(&windowEvent.xkey, keyBuffer, sizeof(keyBuffer), nullptr, &status))
-                        pushEvent(Event::TextEntered{static_cast<base::U32>(keyBuffer[0])});
+                        pushEvent(Event::TextEntered{static_cast<char32_t>(keyBuffer[0])});
                 }
             }
 

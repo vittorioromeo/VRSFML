@@ -266,7 +266,7 @@ std::vector<sf::Vector2i> touchPositions;
 
 
 ////////////////////////////////////////////////////////////
-- (void)notifyCharacter:(base::U32)character
+- (void)notifyCharacter:(char32_t)character
 {
     if (self.sfWindow)
         sfWindow->forwardEvent(sf::Event::TextEntered{character});

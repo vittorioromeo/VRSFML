@@ -405,9 +405,8 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
         {
             forwardKeyEvent(Event::KeyReleased{});
 
-            if (auto unicode = static_cast<base::U32>(getUnicode(inputEvent)))
-                forwardEvent(Event::TextEntered{static_cast<base::U32>(unicode)});
-
+            if (const auto unicode = getUnicode(inputEvent))
+                forwardEvent(Event::TextEntered{unicode});
             return 1;
         }
         case AKEY_EVENT_ACTION_MULTIPLE:
@@ -426,9 +425,9 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
                 return 0;
             }
 
-            if (auto unicode = static_cast<base::U32>(getUnicode(inputEvent))) // This is a repeated sequence
+            if (const auto unicode = getUnicode(inputEvent)) // This is a repeated sequence
             {
-                const Event event(Event::TextEntered{static_cast<base::U32>(unicode)});
+                const Event event(Event::TextEntered{unicode});
 
                 const base::I32 repeats = AKeyEvent_getRepeatCount(inputEvent);
                 for (base::I32 i = 0; i < repeats; ++i)

@@ -170,7 +170,7 @@ public:
     /// \return The glyph corresponding to `codePoint` and `characterSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Glyph& getGlyph(base::U32 codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
+    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Determine if this font has a glyph representing the requested code point
@@ -188,7 +188,7 @@ public:
     /// \return `true` if the codepoint has a glyph representation, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasGlyph(base::U32 codePoint) const;
+    [[nodiscard]] bool hasGlyph(char32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the kerning offset of two glyphs
@@ -207,7 +207,7 @@ public:
     /// \return Kerning value for `first` and `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getKerning(base::U32 first, base::U32 second, unsigned int characterSize, bool bold = false) const;
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold = false) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the line spacing
@@ -296,7 +296,7 @@ private:
     /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getCharIndex(base::U32 codePoint) const;
+    [[nodiscard]] unsigned int getCharIndex(char32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one

@@ -58,8 +58,8 @@
     const char* end = utf8 + SFML_BASE_STRLEN(utf8);
     while (utf8 < end)
     {
-        base::U32 character = 0;
-        utf8                = sf::Utf8::decode(utf8, end, character);
+        char32_t character = 0;
+        utf8               = sf::Utf8::decode(utf8, end, character);
         [[SFAppDelegate getInstance] notifyCharacter:character];
     }
 }

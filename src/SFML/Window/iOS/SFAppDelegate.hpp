@@ -76,7 +76,7 @@
 /// \param character The typed character
 ///
 ////////////////////////////////////////////////////////////
-- (void)notifyCharacter:(base::U32)character;
+- (void)notifyCharacter:(char32_t)character;
 
 ////////////////////////////////////////////////////////////
 /// \brief Tells if the dimensions of the current window must be flipped when switching to a given orientation
