@@ -222,7 +222,7 @@ private:
     /// \return The Unicode value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int getUnicode(AInputEvent* event);
+    [[nodiscard]] static char32_t getUnicode(AInputEvent* event);
 
     Vector2u m_size;
     bool     m_windowBeingCreated{};

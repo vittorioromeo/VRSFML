@@ -11,7 +11,6 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Variant.hpp"
 
 
@@ -63,7 +62,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct TextEntered
     {
-        base::U32 unicode{}; //!< UTF-32 Unicode value of the character
+        char32_t unicode{}; //!< UTF-32 Unicode value of the character
     };
 
     ////////////////////////////////////////////////////////////

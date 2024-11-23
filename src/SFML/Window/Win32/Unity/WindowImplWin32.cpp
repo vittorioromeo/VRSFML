@@ -826,13 +826,13 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             if (m_keyRepeatEnabled || ((lParam & (1 << 30)) == 0))
             {
                 // Get the code of the typed character
-                auto character = static_cast<base::U32>(wParam);
+                auto character = static_cast<char32_t>(wParam);
 
                 // Check if it is the first part of a surrogate pair, or a regular character
                 if ((character >= 0xD800) && (character <= 0xDBFF))
                 {
                     // First part of a surrogate pair: store it and wait for the second one
-                    m_surrogate = static_cast<base::U16>(character);
+                    m_surrogate = static_cast<char16_t>(character);
                 }
                 else
                 {
@@ -840,7 +840,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     if ((character >= 0xDC00) && (character <= 0xDFFF))
                     {
                         // Convert the UTF-16 surrogate pair to a single UTF-32 value
-                        base::U16 utf16[]{m_surrogate, static_cast<base::U16>(character)};
+                        char16_t utf16[]{m_surrogate, static_cast<char16_t>(character)};
                         sf::Utf16::toUtf32(utf16, utf16 + 2, &character);
                         m_surrogate = 0;
                     }

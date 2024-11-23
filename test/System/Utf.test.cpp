@@ -16,7 +16,7 @@ TEST_CASE("[System] sf::Utf8")
     SECTION("decode")
     {
         std::u32string output;
-        sf::base::U32  character = 0;
+        char32_t       character = 0;
         for (std::string_view::const_iterator begin = input.begin(); begin < input.end();)
         {
             begin = sf::Utf8::decode(begin, input.end(), character);
@@ -151,7 +151,7 @@ TEST_CASE("[System] sf::Utf32")
     SECTION("decode")
     {
         std::u32string output;
-        sf::base::U32  character = 0;
+        char32_t       character = 0;
         for (std::u32string_view::const_iterator begin = input.begin(); begin < input.end();)
         {
             begin = sf::Utf32::decode(begin, {}, character);
