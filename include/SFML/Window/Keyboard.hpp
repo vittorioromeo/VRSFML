@@ -313,6 +313,9 @@ enum : unsigned int
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed
 ///
+/// \warning On macOS you're required to grant input monitoring access for
+///          your application in order for `isKeyPressed` to work.
+///
 /// \param key Key to check
 ///
 /// \return `true` if the key is pressed, `false` otherwise
@@ -322,6 +325,9 @@ enum : unsigned int
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a key is pressed
+///
+/// \warning On macOS you're required to grant input monitoring access for
+///          your application in order for `isKeyPressed` to work.
 ///
 /// \param code Scancode to check
 ///
