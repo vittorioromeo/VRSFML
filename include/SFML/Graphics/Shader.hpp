@@ -481,7 +481,7 @@ public:
     /// ...
     /// shader.setUniform("the_texture", texture);
     /// \endcode
-    /// It is important to note that \a `texture` must remain alive as long
+    /// It is important to note that `texture` must remain alive as long
     /// as the shader uses it, no copy is made internally.
     ///
     /// To use the texture of the object being drawn, which cannot be
@@ -728,7 +728,7 @@ private:
 /// for SFML.
 ///
 /// Like any C/C++ program, a GLSL shader has its own variables
-/// called \a `uniforms` that you can set from your C++ application.
+/// called _uniforms_ that you can set from your C++ application.
 /// `sf::Shader` handles different types of uniforms:
 /// \li scalars: \p float, \p int, \p bool
 /// \li vectors (2, 3 or 4 components)

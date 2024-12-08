@@ -56,10 +56,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
     ///
-    /// The \a pixel array is assumed to contain 32-bits RGBA pixels,
-    /// and have the given \a width and \a height. If not, this is
-    /// an undefined behavior.
-    /// If \a pixels is `nullptr` or \a size is zero, the behavior is undefined.
+    /// The pixel array is assumed to contain 32-bits RGBA pixels,
+    /// and have the given `size`. If not, this is an undefined behavior.
+    /// If `pixels` is `nullptr`, an empty image is created.
     ///
     /// \param size   Width and height of the image
     /// \param pixels Array of pixels to copy to the image
@@ -131,7 +130,7 @@ public:
     /// \brief Create a transparency mask from a specified color-key
     ///
     /// This function sets the alpha value of every pixel matching
-    /// the given color to \a `alpha` (0 by default), so that they
+    /// the given color to `alpha` (0 by default), so that they
     /// become transparent.
     ///
     /// \param color Color to make transparent
@@ -148,8 +147,8 @@ public:
     /// static image from several others, but if you need this
     /// kind of feature in real-time you'd better use `sf::RenderTexture`.
     ///
-    /// If \a `sourceRect` is empty, the whole image is copied.
-    /// If \a `applyAlpha` is set to `true`, alpha blending is
+    /// If `sourceRect` is empty, the whole image is copied.
+    /// If `applyAlpha` is set to `true`, alpha blending is
     /// applied from the source pixels to the destination pixels
     /// using the \b over operator. If it is `false`, the source
     /// pixels are copied unchanged with their alpha value.
@@ -158,8 +157,8 @@ public:
     /// details on the \b over operator.
     ///
     /// Note that this function can fail if either image is invalid
-    /// (i.e. zero-sized width or height), or if \a `sourceRect` is
-    /// not within the boundaries of the \a `source` parameter, or
+    /// (i.e. zero-sized width or height), or if `sourceRect` is
+    /// not within the boundaries of the `source` parameter, or
     /// if the destination area is out of the boundaries of this image.
     ///
     /// On failure, the destination image is left unchanged.

@@ -143,7 +143,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return `true` if \a `lhs` is lesser than \a `rhs`
+/// \return `true` if `lhs` is lesser than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<(Time lhs, Time rhs);
@@ -155,7 +155,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return `true` if \a `lhs` is greater than \a `rhs`
+/// \return `true` if `lhs` is greater than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>(Time lhs, Time rhs);
@@ -167,7 +167,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return `true` if \a `lhs` is lesser or equal than \a `rhs`
+/// \return `true` if `lhs` is lesser or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<=(Time lhs, Time rhs);
@@ -179,7 +179,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return `true` if \a `lhs` is greater or equal than \a `rhs`
+/// \return `true` if `lhs` is greater or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>=(Time lhs, Time rhs);
@@ -250,7 +250,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, float rhs);
@@ -262,7 +262,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, base::I64 rhs);
@@ -274,7 +274,7 @@ private:
 /// \param lhs  Left operand (a number)
 /// \param rhs Right operand (a time)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(float lhs, Time rhs);
@@ -286,7 +286,7 @@ private:
 /// \param lhs  Left operand (a number)
 /// \param rhs Right operand (a time)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(base::I64 lhs, Time rhs);
@@ -298,7 +298,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, float rhs);
@@ -310,7 +310,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, base::I64 rhs);
@@ -322,7 +322,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, float rhs);
@@ -334,7 +334,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, base::I64 rhs);
@@ -346,7 +346,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, float rhs);
@@ -358,7 +358,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, base::I64 rhs);
@@ -370,7 +370,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float operator/(Time lhs, Time rhs);
@@ -382,7 +382,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return \a `lhs` modulo \a `rhs`
+/// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator%(Time lhs, Time rhs);
@@ -394,7 +394,7 @@ private:
 /// \param lhs  Left operand (a time)
 /// \param rhs Right operand (a time)
 ///
-/// \return \a `lhs` modulo \a `rhs`
+/// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] constexpr Time& operator%=(Time& lhs, Time rhs);

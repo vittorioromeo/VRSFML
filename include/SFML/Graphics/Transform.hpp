@@ -137,7 +137,7 @@ struct [[nodiscard]] Transform
     /// \brief Combine the current transform with another one
     ///
     /// The result is a transform that is equivalent to applying
-    /// \a `transform` followed by `*this`. Mathematically, it is
+    /// `transform` followed by `*this`. Mathematically, it is
     /// equivalent to a matrix multiplication `(*this) * transform`.
     ///
     /// These two statements are equivalent:
@@ -286,7 +286,7 @@ struct [[nodiscard]] Transform
 };
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Transform`
+/// \relates sf::Transform
 /// \brief Overload of binary `operator*` to combine two transforms
 ///
 /// This call is equivalent to calling `Transform(lhs).combine(rhs)`.
@@ -300,7 +300,7 @@ struct [[nodiscard]] Transform
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Transform`
+/// \relates sf::Transform
 /// \brief Overload of binary `operator*=` to combine two transforms
 ///
 /// This call is equivalent to calling `lhs.combine(rhs)`.
@@ -314,7 +314,7 @@ struct [[nodiscard]] Transform
 constexpr Transform& operator*=(Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Transform`
+/// \relates sf::Transform
 /// \brief Overload of binary `operator*` to transform a point
 ///
 /// This call is equivalent to calling `lhs.transformPoint(rhs)`.

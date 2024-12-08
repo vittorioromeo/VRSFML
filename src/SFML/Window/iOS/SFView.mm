@@ -59,7 +59,7 @@
     while (utf8 < end)
     {
         base::U32 character = 0;
-        utf8                    = sf::Utf8::decode(utf8, end, character);
+        utf8                = sf::Utf8::decode(utf8, end, character);
         [[SFAppDelegate getInstance] notifyCharacter:character];
     }
 }

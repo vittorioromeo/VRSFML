@@ -112,7 +112,6 @@ else()
         add_library(Vorbis::vorbisenc ALIAS vorbisenc)
         add_library(Vorbis::vorbisfile ALIAS vorbisfile)
     endfunction()
-
     sfml_add_audio_dependencies()
 endif()
 

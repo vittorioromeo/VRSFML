@@ -58,10 +58,10 @@ public:
     /// \brief Construct a new window
     ///
     /// This constructor creates the window with the size and pixel
-    /// depth defined in \a `mode`. An optional style can be passed to
+    /// depth defined in `mode`. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
     /// title bar, resizable, closable, ...). An optional state can
-    /// be provided. If \a `state` is `State::Fullscreen`, then \a `mode`
+    /// be provided. If `state` is `State::Fullscreen`, then `mode`
     /// must be a valid video mode.
     ///
     /// \param windowSettings Settings to use
@@ -317,7 +317,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
     ///
-    /// \a `pixels` must be an array of \a `size` pixels
+    /// `pixels` must be an array of `size` pixels
     /// in 32-bits RGBA format.
     ///
     /// The OS default icon is used by default.

@@ -112,7 +112,7 @@ Atom getAtom(base::StringView name, bool onlyIfExists)
         return it->second;
 
     const auto display = openDisplay();
-    const Atom atom = XInternAtom(display.get(), name.data(), onlyIfExists ? True : False);
+    const Atom atom    = XInternAtom(display.get(), name.data(), onlyIfExists ? True : False);
     if (atom)
         atoms[nameStr] = atom;
 

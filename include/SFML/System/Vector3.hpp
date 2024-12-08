@@ -56,7 +56,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise multiplication of `*this` and \a `rhs`.
+    /// \brief Component-wise multiplication of `*this` and `rhs`.
     ///
     /// Computes `(lhs.x*rhs.x, lhs.y*rhs.y, lhs.z*rhs.z)`.
     ///
@@ -68,13 +68,13 @@ public:
         const Vector3& rhs) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise division of `*this` and \a `rhs`.
+    /// \brief Component-wise division of `*this` and `rhs`.
     ///
     /// Computes `(lhs.x/rhs.x, lhs.y/rhs.y, lhs.z/rhs.z)`.
     ///
     /// Scaling is the most common use case for component-wise multiplication/division.
     ///
-    /// \pre Neither component of \a `rhs` is zero.
+    /// \pre Neither component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(
@@ -96,7 +96,7 @@ public:
     ///
     /// \param rhs Right operand
     ///
-    /// \return `true` if \a `lhs` is equal to \a `rhs`
+    /// \return `true` if `lhs` is equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vector3<T>& rhs) const = default;
@@ -126,12 +126,12 @@ template <typename T>
 /// \brief Overload of binary `operator+=`
 ///
 /// This operator performs a member-wise addition of both vectors,
-/// and assigns the result to \a `lhs`.
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -142,12 +142,12 @@ template <typename T>
 /// \brief Overload of binary `operator-=`
 ///
 /// This operator performs a member-wise subtraction of both vectors,
-/// and assigns the result to \a `lhs`.
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -188,7 +188,7 @@ template <typename T>
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise multiplication by \a `rhs`
+/// \return Member-wise multiplication by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -201,7 +201,7 @@ template <typename T>
 /// \param lhs  Left operand (a scalar value)
 /// \param rhs Right operand (a vector)
 ///
-/// \return Member-wise multiplication by \a `lhs`
+/// \return Member-wise multiplication by `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -211,13 +211,13 @@ template <typename T>
 /// \relates Vector3
 /// \brief Overload of binary `operator*=`
 ///
-/// This operator performs a member-wise multiplication by \a `rhs`,
-/// and assigns the result to \a `lhs`.
+/// This operator performs a member-wise multiplication by `rhs`,
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -230,7 +230,7 @@ template <typename T>
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise division by \a `rhs`
+/// \return Member-wise division by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -240,13 +240,13 @@ template <typename T>
 /// \relates Vector3
 /// \brief Overload of binary `operator/=`
 ///
-/// This operator performs a member-wise division by \a `rhs`,
-/// and assigns the result to \a `lhs`.
+/// This operator performs a member-wise division by `rhs`,
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

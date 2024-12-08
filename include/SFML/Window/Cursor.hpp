@@ -122,10 +122,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a cursor with the provided image
     ///
-    /// \a `pixels` must be an array of \a `size` pixels
+    /// `pixels` must be an array of `size` pixels
     /// in 32-bit RGBA format. If not, this will cause undefined behavior.
     ///
-    /// If \a `pixels` is `nullptr` or either of \a `size`'s
+    /// If `pixels` is `nullptr` or either of `size`'s
     /// properties are 0, the current cursor is left unchanged
     /// and the function will return `false`.
     ///

@@ -233,7 +233,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a lhs is less than \a rhs
+/// \return `true` if `lhs` is less than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator<(Angle lhs, Angle rhs);
@@ -246,7 +246,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a lhs is greater than \a rhs
+/// \return `true` if `lhs` is greater than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator>(Angle lhs, Angle rhs);
@@ -259,7 +259,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a lhs is less than or equal to \a rhs
+/// \return `true` if `lhs` is less than or equal to `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator<=(Angle lhs, Angle rhs);
@@ -272,7 +272,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return `true` if \a lhs is greater than or equal to \a rhs
+/// \return `true` if `lhs` is greater than or equal to `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool operator>=(Angle lhs, Angle rhs);
@@ -345,7 +345,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator*(Angle lhs, float rhs);
@@ -357,7 +357,7 @@ private:
 /// \param lhs  Left operand (a number)
 /// \param rhs Right operand (an angle)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator*(float lhs, Angle rhs);
@@ -369,7 +369,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` multiplied by \a `rhs`
+/// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator*=(Angle& lhs, float rhs);
@@ -381,7 +381,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator/(Angle lhs, float rhs);
@@ -393,7 +393,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (a number)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator/=(Angle& lhs, float rhs);
@@ -405,7 +405,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return \a `lhs` divided by \a `rhs`
+/// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float operator/(Angle lhs, Angle rhs);
@@ -425,7 +425,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return \a `lhs` modulo \a `rhs`
+/// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator%(Angle lhs, Angle rhs);
@@ -437,7 +437,7 @@ private:
 /// \param lhs  Left operand (an angle)
 /// \param rhs Right operand (an angle)
 ///
-/// \return \a `lhs` modulo \a `rhs`
+/// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr Angle& operator%=(Angle& lhs, Angle rhs);
@@ -446,8 +446,8 @@ namespace Literals
 {
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Angle`
-/// \brief User defined literal for angles in degrees, e.g. `10.5_deg`
+/// \relates sf::Angle
+/// \brief User defined literal for angles in degrees, e.g.\ `10.5_deg`
 ///
 /// \param angle Angle in degrees
 ///
@@ -457,8 +457,8 @@ namespace Literals
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(long double angle);
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Angle`
-/// \brief User defined literal for angles in degrees, e.g. `90_deg`
+/// \relates sf::Angle
+/// \brief User defined literal for angles in degrees, e.g.\ `90_deg`
 ///
 /// \param angle Angle in degrees
 ///
@@ -468,8 +468,8 @@ namespace Literals
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(unsigned long long int angle);
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Angle`
-/// \brief User defined literal for angles in radians, e.g. `0.1_rad`
+/// \relates sf::Angle
+/// \brief User defined literal for angles in radians, e.g.\ `0.1_rad`
 ///
 /// \param angle Angle in radians
 ///
@@ -479,8 +479,8 @@ namespace Literals
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_rad(long double angle);
 
 ////////////////////////////////////////////////////////////
-/// \relates `sf::Angle`
-/// \brief User defined literal for angles in radians, e.g. `2_rad`
+/// \relates sf::Angle
+/// \brief User defined literal for angles in radians, e.g.\ `2_rad`
 ///
 /// \param angle Angle in radians
 ///

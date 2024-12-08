@@ -7,6 +7,19 @@ This document will walk you through how to upgrade your SFML 2 application to SF
 One of the headline changes in SFML 3 is raising the C++ standard to C++17 thus bringing SFML into the world of modern C++!
 This change has enabled a vast number of internal improvements as well as new opportunities for improving the API that will be discussed in this document.
 
+## Compiler Requirements
+
+Along with the upgrade from C++03 to C++17 you may need to upgrade your compiler.
+C++17 support has been widespread in all major compiler implementations for years prior to SFML 3's release so in all likelihood the compiler you're already using will work.
+In case you do need to upgrade, here are the minimum compiler versions.
+
+| Compiler   | Version      |
+| ---------- | ------------ |
+| MSVC       | 16 (VS 2019) |
+| GCC        | 9            |
+| Clang      | 9            |
+| AppleClang | 12           |
+
 ## CMake Targets
 
 SFML 3 uses modern CMake convention for library targets which entails having a namespace in front of the target name.
@@ -71,6 +84,22 @@ sf::CircleShape circle(10);
 circle.position = {10, 20};
 sf::IntRect rect({250, 400}, {50, 100});
 ```
+
+## Fixed Width Integers
+
+SFML 2 contained various typedefs for fixed width integers.
+Those are now replaced with the fixed width integers provided in the `<cstdint>` header from the standard library.
+
+| v2           | v3              |
+| ------------ | --------------- |
+| `sf::Int8`   | `std::int8_t`   |
+| `sf::Uint8`  | `std::uint8_t`  |
+| `sf::Int16`  | `std::int16_t`  |
+| `sf::Uint16` | `std::uint16_t` |
+| `sf::Int32`  | `std::int32_t`  |
+| `sf::Uint32` | `std::uint32_t` |
+| `sf::Int64`  | `std::int64_t`  |
+| `sf::Uint64` | `std::uint64_t` |
 
 ## `sf::Event`
 
@@ -194,8 +223,7 @@ Here is a complete list of all enumerations which have undergone this change:
 
 ## `sf::Rect<T>`
 
-`sf::Rect<T>` has been refactored from 4 scalar values into 2 `sf::Vector2<T>`s.
-Its two data members are `sf::Vector2<T>`s named `position` and `size`.
+`sf::Rect<T>` has been refactored from the four scalar values `top`, `left`, `width`, and `height` into two `sf::Vector2<T>`s named `position` and `size`.
 This means that `sf::Rect<T>::getPosition()` and `sf::Rect<T>::getSize()` have been removed in favor of directly accessing the `position` and `size` data members.
 The 4-parameter constructor was also removed in favor of the constructor which takes two `sf::Vector2<T>`s.
 
@@ -275,6 +303,19 @@ They can be replaced by the corresponding constructors which accept a resource t
 
 Now that these classes are guaranteed to be holding a reference to their corresponding resource type, the functions used to access to those resources can return a reference instead of a pointer.
 These functions are `sf::Sound::getBuffer()`, `sf::Text::getFont()`, and `sf::Sprite::getTexture()`.
+
+v2:
+```cpp
+const sf::SoundBuffer soundBuffer("sound.flac");
+sf::Sound sound;
+sound.setBuffer(soundBuffer);
+```
+
+v3:
+```cpp
+const sf::SoundBuffer soundBuffer("sound.flac");
+sf::Sound sound(soundBuffer);
+```
 
 ## `std::optional` Usage
 
@@ -429,7 +470,10 @@ SFML 3 includes various smaller changes that ought to be mentioned.
 * Reverted to default value of CMake's `BUILD_SHARED_LIBS` which means SFML now builds static libraries by default
 * Changed `sf::String` interface to use `std::u16string` and `std::u32string`
 * Removed `sf::ContextSettings` constructor in favor of aggregate initialization
-* Removed `sf::View::reset` in favor of `sf::View::operator=`
+* Removed `sf::View::reset` in favor of assigning from a new `sf::View` object
 * Added new `sf::CoordinateType` enumeration to `sf::RenderStates::RenderStates`
 * Removed `sf::Vertex` constructors in favor of aggregate initialization
 * Renamed `sf::Mouse::Button::XButton1` and `sf::Mouse::Button::XButton2` enumerators to `sf::Mouse::Button::Extra1` and `sf::Mouse::Button::Extra2`
+* Removed NonCopyable.hpp header in favor of using built-in language features for disabling copy operators
+* Converted the following classes to namespaces: `sf::Clipboard`, `sf::Keyboard`, `sf::Joystick`, `sf::Listener`, `sf::Mouse`, `sf::Sensor`, `sf::Touch`, `sf::Vulkan`
+* Removed `sf::SoundStream::setProcessingInterval` as miniaudio matches the internal processing rate to the underlying backend
