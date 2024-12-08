@@ -63,12 +63,12 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 normalized() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Signed angle from `*this` to \a `rhs` <i><b>(floating-point)</b></i>.
+    /// \brief Signed angle from `*this` to `rhs` <i><b>(floating-point)</b></i>.
     ///
     /// \return The smallest angle which rotates `*this` in positive
-    /// or negative direction, until it has the same direction as \a `rhs`.
+    /// or negative direction, until it has the same direction as `rhs`.
     /// The result has a sign and lies in the range [-180, 180) degrees.
-    /// \pre Neither `*this` nor \a `rhs` is a zero vector.
+    /// \pre Neither `*this` nor `rhs` is a zero vector.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angleTo(Vector2 rhs) const;
@@ -89,8 +89,8 @@ public:
     ///
     /// Returns a vector with same length but different direction.
     ///
-    /// In SFML's default coordinate system with +X rhs and +Y down,
-    /// this amounts to a clockwise rotation by \a `phi`.
+    /// In SFML's default coordinate system with +X right and +Y down,
+    /// this amounts to a clockwise rotation by `phi`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 rotatedBy(Angle phi) const;
@@ -108,10 +108,10 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 movedTowards(T r, Angle phi) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Projection of this vector onto \a `axis` <i><b>(floating-point)</b></i>.
+    /// \brief Projection of this vector onto `axis` <i><b>(floating-point)</b></i>.
     ///
     /// \param axis Vector being projected onto. Need not be normalized.
-    /// \pre \a `axis` must not have length zero.
+    /// \pre `axis` must not have length zero.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 projectedOnto(Vector2 axis) const;
@@ -144,7 +144,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T cross(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise multiplication of `*this` and \a `rhs`.
+    /// \brief Component-wise multiplication of `*this` and `rhs`.
     ///
     /// Computes `(lhs.x*rhs.x, lhs.y*rhs.y)`.
     ///
@@ -155,13 +155,13 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseMul(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Component-wise division of `*this` and \a `rhs`.
+    /// \brief Component-wise division of `*this` and `rhs`.
     ///
     /// Computes `(lhs.x/rhs.x, lhs.y/rhs.y)`.
     ///
     /// Scaling is the most common use case for component-wise multiplication/division.
     ///
-    /// \pre Neither component of \a `rhs` is zero.
+    /// \pre Neither component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
@@ -190,7 +190,7 @@ public:
     ///
     /// \param rhs Right operand
     ///
-    /// \return `true` if \a `lhs` is equal to \a `rhs`
+    /// \return `true` if `lhs` is equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr bool operator==(const Vector2& rhs) const = default;
@@ -224,12 +224,12 @@ template <typename T>
 /// \brief Overload of binary `operator+=`
 ///
 /// This operator performs a member-wise addition of both vectors,
-/// and assigns the result to \a `lhs`.
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -240,7 +240,7 @@ template <typename T>
 /// \brief Overload of binary `operator-=`
 ///
 /// This operator performs a member-wise subtraction of both vectors,
-/// and assigns the result to \a `lhs.
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a vector)
@@ -284,7 +284,7 @@ template <typename T>
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise multiplication by \a `rhs`
+/// \return Member-wise multiplication by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -297,7 +297,7 @@ template <typename T>
 /// \param lhs  Left operand (a scalar value)
 /// \param rhs Right operand (a vector)
 ///
-/// \return Member-wise multiplication by \a `lhs`
+/// \return Member-wise multiplication by `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -307,13 +307,13 @@ template <typename T>
 /// \relates Vector2
 /// \brief Overload of binary `operator*=`
 ///
-/// This operator performs a member-wise multiplication by \a `rhs`,
-/// and assigns the result to \a `lhs`.
+/// This operator performs a member-wise multiplication by `rhs`,
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -326,7 +326,7 @@ template <typename T>
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise division by \a `rhs`
+/// \return Member-wise division by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -336,13 +336,13 @@ template <typename T>
 /// \relates Vector2
 /// \brief Overload of binary `operator/=`
 ///
-/// This operator performs a member-wise division by \a `rhs`,
-/// and assigns the result to \a `lhs`.
+/// This operator performs a member-wise division by `rhs`,
+/// and assigns the result to `lhs`.
 ///
 /// \param lhs  Left operand (a vector)
 /// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to \a `lhs`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>

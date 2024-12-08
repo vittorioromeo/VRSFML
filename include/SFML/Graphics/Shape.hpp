@@ -101,7 +101,7 @@ public:
     /// This color is modulated (multiplied) with the shape's
     /// texture if any. It can be used to colorize the shape,
     /// or change its global opacity.
-    /// You can use `sf::Color::Transparent to make the inside of
+    /// You can use `sf::Color::Transparent` to make the inside of
     /// the shape transparent, and have the outline alone.
     /// By default, the shape's fill color is opaque white.
     ///
@@ -212,7 +212,7 @@ public:
     /// In other words, this function returns the bounds of the
     /// shape in the global 2D world's coordinate system.
     ///
-    /// This function does not necessarily return the \a `minimal`
+    /// This function does not necessarily return the _minimal_
     /// bounding rectangle. It merely ensures that the returned
     /// rectangle covers all the vertices (but possibly more).
     /// This allows for a fast approximation of the bounds as a

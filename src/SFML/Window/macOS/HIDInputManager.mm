@@ -68,7 +68,7 @@ CFDictionaryRef HIDInputManager::copyDevicesMask(base::U32 page, base::U32 usage
 
 
 ////////////////////////////////////////////////////////
-Keyboard::Key HIDInputManager::localizedKey(UniChar ch)
+Keyboard::Key HIDInputManager::localizedKey(char16_t ch)
 {
     // Apple is using the private range 0xE000 - 0xF8FF for special keys.
     // Otherwise one can refer to the usual Unicode table.
@@ -227,7 +227,7 @@ Keyboard::Key HIDInputManager::localizedKey(UniChar ch)
 
 
 ////////////////////////////////////////////////////////
-UniChar HIDInputManager::toUnicode(Keyboard::Key key)
+char16_t HIDInputManager::toUnicode(Keyboard::Key key)
 {
     // clang-format off
     switch (key)
@@ -356,7 +356,7 @@ UniChar HIDInputManager::toUnicode(Keyboard::Key key)
 
 
 ////////////////////////////////////////////////////////
-Keyboard::Scancode HIDInputManager::nonLocalizedKey(UniChar virtualKeycode)
+Keyboard::Scancode HIDInputManager::nonLocalizedKey(char16_t virtualKeycode)
 {
     // See Chapter 2, esp. Figure 2-10 of
     // https://developer.apple.com/legacy/library/documentation/mac/pdf/MacintoshToolboxEssentials.pdf
@@ -672,9 +672,9 @@ String HIDInputManager::getDescription(Keyboard::Scancode code)
         default:
         {
             // Phase 2: Try to convert the key to unicode
-            const UniChar unicode = toUnicode(localize(code));
+            const char16_t unicode = toUnicode(localize(code));
             if (unicode != 0x00)
-                return {static_cast<char32_t>(unicode)};
+                return {char32_t{unicode}};
         }
 
         // Phase 3: Return final fallback

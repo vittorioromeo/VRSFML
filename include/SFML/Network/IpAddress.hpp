@@ -154,7 +154,7 @@ private:
 /// \param lhs  Left operand (a IP address)
 /// \param rhs Right operand (a IP address)
 ///
-/// \return `true` if \a `lhs` is lesser than \a `rhs`
+/// \return `true` if `lhs` is lesser than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_NETWORK_API bool operator<(IpAddress lhs, IpAddress rhs);
@@ -165,7 +165,7 @@ private:
 /// \param lhs  Left operand (a IP address)
 /// \param rhs Right operand (a IP address)
 ///
-/// \return `true` if \a `lhs` is greater than \a `rhs`
+/// \return `true` if `lhs` is greater than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_NETWORK_API bool operator>(IpAddress lhs, IpAddress rhs);
@@ -187,7 +187,7 @@ private:
 /// \param lhs  Left operand (a IP address)
 /// \param rhs Right operand (a IP address)
 ///
-/// \return `true` if \a `lhs` is greater or equal than \a `rhs`
+/// \return `true` if `lhs` is greater or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_NETWORK_API bool operator>=(IpAddress lhs, IpAddress rhs);

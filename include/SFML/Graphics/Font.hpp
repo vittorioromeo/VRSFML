@@ -105,8 +105,9 @@ public:
     /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
     ///
     /// \warning SFML cannot preload all the font data in this
-    /// function, so the buffer pointed by \a data has to remain
-    /// valid until the sf::Font object is destroyed.
+    /// function, so the buffer pointed by `data` has to remain
+    /// valid until the `sf::Font` object opens a new font or
+    /// is destroyed.
     ///
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
@@ -166,7 +167,7 @@ public:
     /// \param bold             Retrieve the bold version or the regular one?
     /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
     ///
-    /// \return The glyph corresponding to \a `codePoint` and \a `characterSize`
+    /// \return The glyph corresponding to `codePoint` and `characterSize`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Glyph& getGlyph(base::U32 codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
@@ -203,7 +204,7 @@ public:
     /// \param characterSize Reference character size
     /// \param bold          Retrieve the bold version or the regular one?
     ///
-    /// \return Kerning value for \a `first` and \a `second`, in pixels
+    /// \return Kerning value for `first` and `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getKerning(base::U32 first, base::U32 second, unsigned int characterSize, bool bold = false) const;

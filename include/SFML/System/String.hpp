@@ -209,7 +209,7 @@ public:
     /// \brief Convert the Unicode string to an ANSI string
     ///
     /// The UTF-32 string is converted to an ANSI string in
-    /// the encoding defined by \a `locale`.
+    /// the encoding defined by `locale`.
     /// Characters that do not fit in the target encoding are
     /// discarded from the returned string.
     ///
@@ -290,11 +290,11 @@ public:
     /// \brief Overload of `operator[]` to access a character by its position
     ///
     /// This function provides read-only access to characters.
-    /// Note: the behavior is undefined if \a `index` is out of range.
+    /// Note: the behavior is undefined if `index` is out of range.
     ///
     /// \param index Index of the character to get
     ///
-    /// \return Character at position \a `index`
+    /// \return Character at position `index`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] char32_t operator[](base::SizeT index) const;
@@ -303,11 +303,11 @@ public:
     /// \brief Overload of `operator[]` to access a character by its position
     ///
     /// This function provides read and write access to characters.
-    /// Note: the behavior is undefined if \a `index` is out of range.
+    /// Note: the behavior is undefined if `index` is out of range.
     ///
     /// \param index Index of the character to get
     ///
-    /// \return Reference to the character at position \a `index`
+    /// \return Reference to the character at position `index`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] char32_t& operator[](base::SizeT index);
@@ -345,8 +345,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Erase one or more characters from the string
     ///
-    /// This function removes a sequence of \a `count` characters
-    /// starting from \a `position`.
+    /// This function removes a sequence of `count` characters
+    /// starting from `position`.
     ///
     /// \param position Position of the first character to erase
     /// \param count    Number of characters to erase
@@ -357,8 +357,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Insert one or more characters into the string
     ///
-    /// This function inserts the characters of \a `str`
-    /// into the string, starting from \a `position`.
+    /// This function inserts the characters of `str`
+    /// into the string, starting from `position`.
     ///
     /// \param position Position of insertion
     /// \param str      Characters to insert
@@ -369,13 +369,13 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Find a sequence of one or more characters in the string
     ///
-    /// This function searches for the characters of \a `str`
-    /// in the string, starting from \a `start`.
+    /// This function searches for the characters of `str`
+    /// in the string, starting from `start`.
     ///
     /// \param str   Characters to find
     /// \param start Where to begin searching
     ///
-    /// \return Position of \a `str` in the string, or `String::InvalidPos` if not found
+    /// \return Position of `str` in the string, or `String::InvalidPos` if not found
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT find(const String& str, base::SizeT start = 0) const;
@@ -383,8 +383,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Replace a substring with another string
     ///
-    /// This function replaces the substring that starts at index \a `position`
-    /// and spans \a `length` characters with the string \a `replaceWith`.
+    /// This function replaces the substring that starts at index `position`
+    /// and spans `length` characters with the string `replaceWith`.
     ///
     /// \param position    Index of the first character to be replaced
     /// \param length      Number of characters to replace. You can pass InvalidPos to
@@ -397,11 +397,11 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Replace all occurrences of a substring with a replacement string
     ///
-    /// This function replaces all occurrences of \a `searchFor` in this string
-    /// with the string \a `replaceWith`.
+    /// This function replaces all occurrences of `searchFor` in this string
+    /// with the string `replaceWith`.
     ///
     /// \param searchFor   The value being searched for
-    /// \param replaceWith The value that replaces found \a `searchFor` values
+    /// \param replaceWith The value that replaces found `searchFor` values
     ///
     ////////////////////////////////////////////////////////////
     void replace(const String& searchFor, const String& replaceWith);
@@ -409,8 +409,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Return a part of the string
     ///
-    /// This function returns the substring that starts at index \a `position`
-    /// and spans \a `length` characters.
+    /// This function returns the substring that starts at index `position`
+    /// and spans `length` characters.
     ///
     /// \param position Index of the first character
     /// \param length   Number of characters to include in the substring (if
@@ -532,7 +532,7 @@ private:
 /// \param lhs  Left operand (a string)
 /// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `lhs` is lexicographically before \a `rhs`
+/// \return `true` if `lhs` is lexicographically before `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator<(const String& lhs, const String& rhs);
@@ -544,7 +544,7 @@ private:
 /// \param lhs  Left operand (a string)
 /// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `lhs` is lexicographically after \a `rhs`
+/// \return `true` if `lhs` is lexicographically after `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator>(const String& lhs, const String& rhs);
@@ -556,7 +556,7 @@ private:
 /// \param lhs  Left operand (a string)
 /// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `lhs` is lexicographically before or equivalent to \a `rhs`
+/// \return `true` if `lhs` is lexicographically before or equivalent to `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator<=(const String& lhs, const String& rhs);
@@ -568,7 +568,7 @@ private:
 /// \param lhs  Left operand (a string)
 /// \param rhs Right operand (a string)
 ///
-/// \return `true` if \a `lhs` is lexicographically after or equivalent to \a `rhs`
+/// \return `true` if `lhs` is lexicographically after or equivalent to `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API bool operator>=(const String& lhs, const String& rhs);

@@ -54,7 +54,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
 /// \param lhs  Left operand (a video mode)
 /// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `lhs` is lesser than \a `rhs`
+/// \return `true` if `lhs` is lesser than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool operator<(const VideoMode& lhs, const VideoMode& rhs);
@@ -66,7 +66,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
 /// \param lhs  Left operand (a video mode)
 /// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `lhs` is greater than \a `rhs`
+/// \return `true` if `lhs` is greater than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool operator>(const VideoMode& lhs, const VideoMode& rhs);
@@ -78,7 +78,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
 /// \param lhs  Left operand (a video mode)
 /// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `lhs` is lesser or equal than \a `rhs`
+/// \return `true` if `lhs` is lesser or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool operator<=(const VideoMode& lhs, const VideoMode& rhs);
@@ -90,7 +90,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
 /// \param lhs  Left operand (a video mode)
 /// \param rhs Right operand (a video mode)
 ///
-/// \return `true` if \a `lhs` is greater or equal than \a `rhs`
+/// \return `true` if `lhs` is greater or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API bool operator>=(const VideoMode& lhs, const VideoMode& rhs);

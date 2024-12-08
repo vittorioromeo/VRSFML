@@ -64,7 +64,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Start the capture
     ///
-    /// The \a `sampleRate` parameter defines the number of audio samples
+    /// The `sampleRate` parameter defines the number of audio samples
     /// captured per second. The higher, the better the quality
     /// (for example, 44100 samples/sec is CD quality).
     /// This function uses its own thread so that it doesn't block
@@ -92,7 +92,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool stop();
-
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -125,7 +124,7 @@ protected:
     /// it over the network, etc.).
     ///
     /// \param samples     Pointer to the new chunk of recorded samples
-    /// \param sampleCount Number of samples pointed by \a `samples`
+    /// \param sampleCount Number of samples pointed by `samples`
     ///
     /// \return `true` to continue the capture, or `false` to stop it
     ///

@@ -85,11 +85,9 @@ public:
     /// of supported formats.
     ///
     /// \warning Since the music is not loaded at once but rather streamed
-    /// continuously, the \a data buffer must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed
-    /// and until all active `sf::Music` objects linked to this
-    /// `sf::Music` instance are destroyed. You can't deallocate the buffer
-    /// right after calling this function.
+    /// continuously, the `data` buffer must remain accessible until
+    /// the `sf::Music` object loads a new music or is destroyed. That is,
+    /// you can't deallocate the buffer right after calling this function.
     ///
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
@@ -111,10 +109,8 @@ public:
     /// of supported formats.
     ///
     /// \warning Since the music is not loaded at once but rather
-    /// streamed continuously, the \a stream must remain accessible
-    /// until the `sf::Music` object loads a new music or is destroyed
-    /// and until all active `sf::Music` objects linked to this
-    /// `sf::Music` instance are destroyed.
+    /// streamed continuously, the `stream` must remain accessible
+    /// until the `sf::Music` object loads a new music or is destroyed.
     ///
     /// \param stream Source stream to read from
     ///

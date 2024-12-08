@@ -425,6 +425,7 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
                 // https://code.google.com/p/android/issues/detail?id=33998
                 return 0;
             }
+
             if (auto unicode = static_cast<base::U32>(getUnicode(inputEvent))) // This is a repeated sequence
             {
                 const Event event(Event::TextEntered{static_cast<base::U32>(unicode)});
@@ -656,7 +657,7 @@ Keyboard::Key WindowImplAndroid::androidKeyToSF(base::I32 key)
 
 
 ////////////////////////////////////////////////////////////
-int WindowImplAndroid::getUnicode(AInputEvent* event)
+char32_t WindowImplAndroid::getUnicode(AInputEvent* event)
 {
     // Retrieve activity states
     ActivityStates&       states = getActivity();
@@ -716,7 +717,7 @@ int WindowImplAndroid::getUnicode(AInputEvent* event)
     // Detach this thread from the JVM
     lJavaVM->DetachCurrentThread();
 
-    return unicode;
+    return static_cast<char32_t>(unicode);
 }
 
 } // namespace sf::priv
