@@ -42,7 +42,7 @@ else()
             GIT_TAG v1.3.5
             SYSTEM TRUE
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
-            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src -P ${PROJECT_SOURCE_DIR}/tools/ogg/PatchOgg.cmake
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
         )
 
         CPMAddPackage(
@@ -54,7 +54,7 @@ else()
             # - adding unnecessary libraries that aren't even used
             # - installing FLAC++ headers even though BUILD_CXXLIBS is OFF
             # - add CMAKE_DEBUG_POSTFIX
-            PATCH_COMMAND ${CMAKE_COMMAND} -DFLAC_DIR=${FETCHCONTENT_BASE_DIR}/flac-src -P ${PROJECT_SOURCE_DIR}/tools/flac/PatchFLAC.cmake
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/flac/PatchFLAC.cmake
         )
 
         CPMAddPackage(
@@ -65,7 +65,7 @@ else()
             # patch out the annoying parts of the Vorbis CMake configuration:
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
             # - add CMAKE_DEBUG_POSTFIX
-            PATCH_COMMAND ${CMAKE_COMMAND} -DVORBIS_DIR=${FETCHCONTENT_BASE_DIR}/vorbis-src -P ${PROJECT_SOURCE_DIR}/tools/vorbis/PatchVorbis.cmake
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake
         )
 
         set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES FOLDER "Dependencies")
