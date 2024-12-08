@@ -93,7 +93,8 @@ else()
         sfml_set_stdlib(imgui)
         add_library(ImGui::ImGui ALIAS imgui)
 
-        install(TARGETS imgui EXPORT SFMLConfigExport FILE_SET public_headers)
+        # TODO P0: this is hardcoded, should follow same pattern as Macros.cmake
+        install(TARGETS imgui EXPORT SFMLImGuiStaticTargets FILE_SET public_headers)
     endfunction()
 
     sfml_add_imgui_dependencies()
