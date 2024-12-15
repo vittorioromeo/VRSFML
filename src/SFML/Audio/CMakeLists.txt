@@ -32,6 +32,9 @@ else()
         set(BUILD_UTILS OFF)
         set(BUILD_DOCS OFF)
         set(INSTALL_MANPAGES OFF)
+        set(INSTALL_DOCS OFF)
+        set(INSTALL_PKG_CONFIG_MODULE OFF)
+        set(INSTALL_PKGCONFIG_MODULES OFF)
         set(WITH_FORTIFY_SOURCE OFF)
         set(WITH_STACK_PROTECTOR OFF)
         set(WITH_AVX OFF) # LLVM/Clang on Windows has issues with AVX2
@@ -42,7 +45,7 @@ else()
             GIT_TAG v1.3.5
             SYSTEM TRUE
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
-            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
+            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src  -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
         )
 
         CPMAddPackage(
@@ -52,7 +55,7 @@ else()
             SYSTEM TRUE
             # patch out the annoying parts of the FLAC CMake configuration:
             # - adding unnecessary libraries that aren't even used
-            # - installing FLAC++ headers even though BUILD_CXXLIBS is OFF
+            # - installing headers & pkgconfig files
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/flac/PatchFLAC.cmake
         )
@@ -64,6 +67,7 @@ else()
             SYSTEM TRUE
             # patch out the annoying parts of the Vorbis CMake configuration:
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
+            # - installing headers & pkgconfig files
             # - add CMAKE_DEBUG_POSTFIX
             PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake
         )
@@ -130,6 +134,9 @@ target_compile_definitions(sfml-audio PRIVATE MA_NO_MP3 MA_NO_FLAC MA_NO_ENCODIN
 
 # use standard fixed-width integer types
 target_compile_definitions(sfml-audio PRIVATE MA_USE_STDINT)
+
+# detect the endianness as required by Ogg
+target_compile_definitions(sfml-audio PRIVATE SFML_IS_BIG_ENDIAN=$<STREQUAL:${CMAKE_CXX_BYTE_ORDER},BIG_ENDIAN>)
 
 # setup dependencies
 target_link_libraries(sfml-audio

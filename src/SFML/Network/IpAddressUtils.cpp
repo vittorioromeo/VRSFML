@@ -56,7 +56,7 @@ base::Optional<IpAddress> IpAddressUtils::resolve(base::StringView address)
 ////////////////////////////////////////////////////////////
 std::string IpAddressUtils::toString(IpAddress ipAddress)
 {
-    return priv::SocketImpl::addrToString(ipAddress.m_address);
+    return priv::SocketImpl::addrToString(priv::SocketImpl::getNtohl(ipAddress.m_address));
 }
 
 } // namespace sf
