@@ -88,7 +88,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 -   [Windows] Fixed F13-F24 and consumer key names not being returned on Windows (#2873)
 -   [Windows] Changed `sf::Context::getFunction` to return `nullptr` when called on Windows without an active context (#2925)
 -   [Linux] Fixed broken joystick axis mappings under Linux (#3167)
--   [macOS] Fixed how macOS fullscreen video modes are detected (#3151)
+-   [macOS] Fixed how macOS fullscreen video modes are detected (#3151, #3348)
 -   [macOS] Avoided unnecessary permission request prompts (#3232)
 -   [Linux] Fixed DRM mode setting to use SFML window dimensions (#3310)
 
@@ -135,6 +135,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 -   Fixed `sf::SoundStream::play` bug (#2037)
 -   Fixed poor `sf::SoundStream::setPlayingOffset` precision (#3101)
+-   Fixed a bug when reading Ogg files on big endian systems (#3340)
 
 ### Network
 
@@ -142,6 +143,7 @@ For a closer look at breaking changes and how to migrate from SFML 2, check out 
 
 -   Removed invalid internal state from `sf::IpAddress` (#2145)
 -   Fixed sockets not closing before being moved into (#2758)
+-   Fixed how `sf::IpAddress`'s internal representation is stored on big endian systems (#3339)
 
 ## SFML 2.6.2
 

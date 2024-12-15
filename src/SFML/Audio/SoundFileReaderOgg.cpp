@@ -199,7 +199,7 @@ base::U64 SoundFileReaderOgg::read(base::I16* samples, base::U64 maxCount)
     while (count < maxCount)
     {
         const int bytesToRead = static_cast<int>(maxCount - count) * static_cast<int>(sizeof(base::I16));
-        const long bytesRead = ov_read(&m_impl->vorbis, reinterpret_cast<char*>(samples), bytesToRead, 0, 2, 1, nullptr);
+        const long bytesRead = ov_read(&m_impl->vorbis, reinterpret_cast<char*>(samples), bytesToRead, SFML_IS_BIG_ENDIAN, 2, 1, nullptr);
         if (bytesRead > 0)
         {
             const long samplesRead = bytesRead / static_cast<long>(sizeof(base::I16));

@@ -25,13 +25,13 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
-m_address(priv::SocketImpl::getHtonl(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3)))
+m_address(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-IpAddress::IpAddress(base::U32 address) : m_address(priv::SocketImpl::getHtonl(address))
+IpAddress::IpAddress(base::U32 address) : m_address(address)
 {
 }
 
@@ -39,7 +39,7 @@ IpAddress::IpAddress(base::U32 address) : m_address(priv::SocketImpl::getHtonl(a
 ////////////////////////////////////////////////////////////
 base::U32 IpAddress::toInteger() const
 {
-    return priv::SocketImpl::getNtohl(m_address);
+    return m_address;
 }
 
 
