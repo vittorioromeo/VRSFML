@@ -21,7 +21,7 @@ sfml_set_option(CMAKE_BUILD_TYPE Release STRING "Choose the type of build (Debug
 sfml_set_option(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" STRING "The minimal iOS version that will be able to run the built binaries. Cannot be lower than 13.0")
 
 # project name
-project(SFML VERSION 3.0.0)
+project(SFML VERSION 3.1.0)
 
 set(VERSION_IS_RELEASE OFF)
 
@@ -306,13 +306,13 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
 
     # set pkgconfig install directory
     # this could be e.g. macports on mac or msys2 on windows etc.
-    set(SFML_PKGCONFIG_DIR "/${SFML_RELATIVE_INSTALL_LIBDIR}/pkgconfig")
+    set(SFML_PKGCONFIG_DIR "${SFML_RELATIVE_INSTALL_LIBDIR}/pkgconfig")
 
     if(SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
-        set(SFML_PKGCONFIG_DIR "/libdata/pkgconfig")
+        set(SFML_PKGCONFIG_DIR "libdata/pkgconfig")
     endif()
 
-    sfml_set_option(SFML_PKGCONFIG_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/${SFML_PKGCONFIG_DIR}" PATH "Install directory for SFML's pkg-config .pc files")
+    sfml_set_option(SFML_PKGCONFIG_INSTALL_DIR "${SFML_PKGCONFIG_DIR}" PATH "Install directory for SFML's pkg-config .pc files")
 
     foreach(sfml_module IN ITEMS all system window graphics audio network)
         configure_file(
@@ -320,7 +320,7 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
             "tools/pkg-config/sfml-${sfml_module}.pc"
             @ONLY)
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tools/pkg-config/sfml-${sfml_module}.pc"
-            DESTINATION "${SFML_PKGCONFIG_INSTALL_PREFIX}")
+            DESTINATION "${SFML_PKGCONFIG_INSTALL_DIR}")
     endforeach()
 endif()
 
