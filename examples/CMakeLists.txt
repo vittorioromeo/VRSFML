@@ -20,6 +20,7 @@ if(SFML_BUILD_GRAPHICS)
     add_subdirectory(stencil)
 
     if(NOT SFML_OS_IOS)
+        add_subdirectory(arkanoid)
         add_subdirectory(batching)
         add_subdirectory(batching_benchmark)
         add_subdirectory(imgui_minimal)
