@@ -15,7 +15,7 @@
 2. Open a MSYS shell (see [MSYS2 Environments](https://www.msys2.org/docs/environments/)) and run the following command:
 
     ```bash
-    pacman -S mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-clang-tools-extra mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake git mingw-w64-ucrt-x86_64-lld mingw-w64-ucrt-x86_64-ccache mingw-w64-clang-x86_64-ccache 
+    pacman -S mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-clang-tools-extra mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake git mingw-w64-ucrt-x86_64-lld mingw-w64-ucrt-x86_64-ccache mingw-w64-clang-x86_64-ccache
     ```
 
 3. Open a UCRT64 shell (see [MSYS2 Environments](https://www.msys2.org/docs/environments/))
@@ -103,7 +103,7 @@ mkdir -p work
 cd work
 
 # Clone the repo
-git clone https://github.com/vittorioromeo/VRSFML.git 
+git clone https://github.com/vittorioromeo/VRSFML.git
 
 # Cmake Configure and Build
 cd VRSFML
