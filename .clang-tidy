@@ -56,6 +56,7 @@ Checks: >
   -misc-non-private-member-variables-in-classes,
   -modernize-avoid-c-arrays,
   -modernize-macro-to-enum,
+  -modernize-use-designated-initializers,
   -modernize-use-trailing-return-type,
   -performance-avoid-endl,
   -performance-enum-size,
