@@ -1,13 +1,14 @@
-#include <SFML/Window/Clipboard.hpp>
+#include "SFML/Window/Clipboard.hpp"
 
 // Other 1st party headers
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
-TEST_CASE("[Window] sf::Clipboard", runDisplayTests())
+TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
 {
     // Capture current clipboard state
     const auto currentClipboard = sf::Clipboard::getString();

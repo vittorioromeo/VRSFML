@@ -1,43 +1,18 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/Network/Socket.hpp>
+#include "SFML/Network/Socket.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Time.hpp"
 
-#include <optional>
-#include <vector>
-
-#include <cstddef>
-#include <cstdint>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -57,7 +32,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    TcpSocket();
+    [[nodiscard]] explicit TcpSocket(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -82,7 +57,7 @@ public:
     /// \see `getRemotePort`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<IpAddress> getRemoteAddress() const;
+    [[nodiscard]] base::Optional<IpAddress> getRemoteAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port of the connected peer to which
@@ -108,7 +83,7 @@ public:
     ///
     /// \param remoteAddress Address of the remote peer
     /// \param remotePort    Port of the remote peer
-    /// \param timeout       Optional maximum time to wait
+    /// \param timeout       base::Optional maximum time to wait
     ///
     /// \return Status code
     ///
@@ -126,13 +101,13 @@ public:
     /// \see `connect`
     ///
     ////////////////////////////////////////////////////////////
-    void disconnect();
+    [[nodiscard]] bool disconnect();
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
     ///
     /// To be able to handle partial sends over non-blocking
-    /// sockets, use the `send(const void*, std::size_t, std::size_t&)`
+    /// sockets, use the `send(const void*, base::SizeT, base::SizeT&)`
     /// overload instead.
     /// This function will fail if the socket is not connected.
     ///
@@ -144,7 +119,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size);
+    [[nodiscard]] Status send(const void* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to the remote peer
@@ -160,7 +135,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size, std::size_t& sent);
+    [[nodiscard]] Status send(const void* data, base::SizeT size, base::SizeT& sent);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from the remote peer
@@ -178,7 +153,7 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void* data, std::size_t size, std::size_t& received);
+    [[nodiscard]] Status receive(void* data, base::SizeT size, base::SizeT& received);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to the remote peer
@@ -223,16 +198,16 @@ private:
     ////////////////////////////////////////////////////////////
     struct PendingPacket
     {
-        std::uint32_t          size{};         //!< Data of packet size
-        std::size_t            sizeReceived{}; //!< Number of size bytes received so far
-        std::vector<std::byte> data;           //!< Data of the packet
+        base::U32                          size{};         //!< Data of packet size
+        base::SizeT                        sizeReceived{}; //!< Number of size bytes received so far
+        base::TrivialVector<unsigned char> data;           //!< Data of the packet
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    PendingPacket          m_pendingPacket;     //!< Temporary data of the packet currently being received
-    std::vector<std::byte> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+    PendingPacket                      m_pendingPacket;     //!< Temporary data of the packet currently being received
+    base::TrivialVector<unsigned char> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 
 } // namespace sf
@@ -285,10 +260,10 @@ private:
 /// socket.send(message.c_str(), message.size() + 1);
 ///
 /// // Receive an answer from the server
-/// std::array<char, 1024> buffer;
-/// std::size_t received = 0;
-/// socket.receive(buffer.data(), buffer.size(), received);
-/// std::cout << "The server said: " << buffer.data() << std::endl;
+/// char buffer[1024];
+/// base::SizeT received = 0;
+/// socket.receive(buffer, sizeof(buffer), received);
+/// std::cout << "The server said: " << buffer << '\n';
 ///
 /// // ----- The server -----
 ///
@@ -299,13 +274,13 @@ private:
 /// // Wait for a connection
 /// sf::TcpSocket socket;
 /// listener.accept(socket);
-/// std::cout << "New client connected: " << socket.getRemoteAddress().value() << std::endl;
+/// std::cout << "New client connected: " << socket.getRemoteAddress().value() << '\n';
 ///
 /// // Receive a message from the client
-/// std::array<char, 1024> buffer;
-/// std::size_t received = 0;
-/// socket.receive(buffer.data(), buffer.size(), received);
-/// std::cout << "The client said: " << buffer.data() << std::endl;
+/// char buffer[1024];
+/// base::SizeT received = 0;
+/// socket.receive(buffer, sizeof(buffer), received);
+/// std::cout << "The client said: " << buffer << '\n';
 ///
 /// // Send an answer
 /// std::string message = "Welcome, client";

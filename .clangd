@@ -1,0 +1,4 @@
+Diagnostics:
+  Suppress: "pp_including_mainfile_in_preamble"
+CompileFlags:
+  CompilationDatabase: build_vrdev_clang

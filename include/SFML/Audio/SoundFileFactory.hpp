@@ -1,47 +1,29 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <filesystem>
-#include <memory>
-#include <unordered_map>
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class InputStream;
+class Path;
+class SoundFileReader;
+class SoundFileWriter;
+} // namespace sf
 
 
 namespace sf
 {
-class InputStream;
-class SoundFileReader;
-class SoundFileWriter;
-
 ////////////////////////////////////////////////////////////
 /// \brief Manages and instantiates sound file readers and writers
 ///
@@ -109,7 +91,7 @@ public:
     /// \see `createReaderFromMemory`, `createReaderFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromFilename(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in memory
@@ -122,7 +104,7 @@ public:
     /// \see `createReaderFromFilename`, `createReaderFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right codec for the given file in stream
@@ -134,7 +116,7 @@ public:
     /// \see `createReaderFromFilename`, `createReaderFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileReader> createReaderFromStream(InputStream& stream);
+    [[nodiscard]] static base::UniquePtr<SoundFileReader> createReaderFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Instantiate the right writer for the given file on disk
@@ -144,31 +126,33 @@ public:
     /// \return A new sound file writer that can write given file, or null if no writer can handle it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::unique_ptr<SoundFileWriter> createWriterFromFilename(const std::filesystem::path& filename);
+    [[nodiscard]] static base::UniquePtr<SoundFileWriter> createWriterFromFilename(const Path& filename);
 
 private:
     ////////////////////////////////////////////////////////////
     // Types
     ////////////////////////////////////////////////////////////
     template <typename T>
-    using CreateFnPtr = std::unique_ptr<T> (*)();
+    using CreateFnPtr = base::UniquePtr<T> (*)();
 
     using ReaderCheckFnPtr = bool (*)(InputStream&);
-    using WriterCheckFnPtr = bool (*)(const std::filesystem::path&);
-
-    using ReaderFactoryMap = std::unordered_map<CreateFnPtr<SoundFileReader>, ReaderCheckFnPtr>;
-    using WriterFactoryMap = std::unordered_map<CreateFnPtr<SoundFileWriter>, WriterCheckFnPtr>;
+    using WriterCheckFnPtr = bool (*)(const Path&);
 
     ////////////////////////////////////////////////////////////
     // Static member functions
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ReaderFactoryMap& getReaderFactoryMap();
-    [[nodiscard]] static WriterFactoryMap& getWriterFactoryMap();
+    static void               registerReaderImpl(CreateFnPtr<SoundFileReader> key, ReaderCheckFnPtr value);
+    static void               unregisterReaderImpl(CreateFnPtr<SoundFileReader> key);
+    [[nodiscard]] static bool isReaderRegisteredImpl(CreateFnPtr<SoundFileReader> key);
+
+    static void               registerWriterImpl(CreateFnPtr<SoundFileWriter> key, WriterCheckFnPtr value);
+    static void               unregisterWriterImpl(CreateFnPtr<SoundFileWriter> key);
+    [[nodiscard]] static bool isWriterRegisteredImpl(CreateFnPtr<SoundFileWriter> key);
 };
 
 } // namespace sf
 
-#include <SFML/Audio/SoundFileFactory.inl>
+#include "SFML/Audio/SoundFileFactory.inl"
 
 
 ////////////////////////////////////////////////////////////
@@ -189,10 +173,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::SoundFileFactory::registerReader<MySoundFileReader>();
-/// assert(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
+/// SFML_BASE_ASSERT(sf::SoundFileFactory::isReaderRegistered<MySoundFileReader>());
 ///
 /// sf::SoundFileFactory::registerWriter<MySoundFileWriter>();
-/// assert(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
+/// SFML_BASE_ASSERT(sf::SoundFileFactory::isWriterRegistered<MySoundFileWriter>());
 /// \endcode
 ///
 /// \see `sf::InputSoundFile`, `sf::OutputSoundFile`, `sf::SoundFileReader`, `sf::SoundFileWriter`

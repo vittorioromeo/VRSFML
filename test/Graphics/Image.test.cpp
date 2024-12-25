@@ -1,177 +1,73 @@
-#include <SFML/Graphics/Image.hpp>
+#include "SFML/Graphics/Image.hpp"
+
+#include "SFML/Graphics/ImageUtils.hpp"
 
 // Other 1st party headers
-#include <SFML/System/Exception.hpp>
-#include <SFML/System/FileInputStream.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/TrivialVector.hpp"
 
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-#include <array>
-#include <type_traits>
+
 
 TEST_CASE("[Graphics] sf::Image")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Image>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Image>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Image>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Image>);
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Image));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Image));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Image));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Image));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Image));
     }
 
     SECTION("Construction")
     {
-        SECTION("Default constructor")
+        SECTION("Invalid size")
         {
-            const sf::Image image;
-            CHECK(image.getSize() == sf::Vector2u());
-            CHECK(image.getPixelsPtr() == nullptr);
-        }
-
-        SECTION("File constructor")
-        {
-            SECTION("Invalid file")
-            {
-                CHECK_THROWS_AS(sf::Image("."), sf::Exception);
-                CHECK_THROWS_AS(sf::Image("this/does/not/exist.jpg"), sf::Exception);
-            }
-
-            SECTION("Successful load")
-            {
-                SECTION("bmp")
-                {
-                    const sf::Image image("Graphics/sfml-logo-big.bmp");
-                    CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                    CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
-                    CHECK(image.getSize() == sf::Vector2u(1001, 304));
-                    CHECK(image.getPixelsPtr() != nullptr);
-                }
-
-                SECTION("png")
-                {
-                    const sf::Image image("Graphics/sfml-logo-big.png");
-                    CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-                    CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
-                    CHECK(image.getSize() == sf::Vector2u(1001, 304));
-                    CHECK(image.getPixelsPtr() != nullptr);
-                }
-
-                SECTION("jpg")
-                {
-                    const sf::Image image("Graphics/sfml-logo-big.jpg");
-                    CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                    CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
-                    CHECK(image.getSize() == sf::Vector2u(1001, 304));
-                    CHECK(image.getPixelsPtr() != nullptr);
-                }
-
-                SECTION("gif")
-                {
-                    const sf::Image image("Graphics/sfml-logo-big.gif");
-                    CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                    CHECK(image.getPixel({200, 150}) == sf::Color(146, 210, 62));
-                    CHECK(image.getSize() == sf::Vector2u(1001, 304));
-                    CHECK(image.getPixelsPtr() != nullptr);
-                }
-
-                SECTION("psd")
-                {
-                    const sf::Image image("Graphics/sfml-logo-big.psd");
-                    CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                    CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
-                    CHECK(image.getSize() == sf::Vector2u(1001, 304));
-                    CHECK(image.getPixelsPtr() != nullptr);
-                }
-            }
-        }
-
-        SECTION("Memory constructor")
-        {
-            SECTION("Invalid pointer")
-            {
-                CHECK_THROWS_AS(sf::Image(nullptr, 1), sf::Exception);
-            }
-
-            SECTION("Invalid size")
-            {
-                const std::byte testByte{0xAB};
-                CHECK_THROWS_AS(sf::Image(&testByte, 0), sf::Exception);
-            }
-
-            SECTION("Failed load")
-            {
-                std::vector<std::uint8_t> memory;
-
-                SECTION("Empty")
-                {
-                    memory.clear();
-                }
-
-                SECTION("Junk data")
-                {
-                    memory = {1, 2, 3, 4};
-                }
-
-                CHECK_THROWS_AS(sf::Image(memory.data(), memory.size()), sf::Exception);
-            }
-
-            SECTION("Successful load")
-            {
-                const auto      memory = sf::Image({24, 24}, sf::Color::Green).saveToMemory("png").value();
-                const sf::Image image(memory.data(), memory.size());
-                CHECK(image.getSize() == sf::Vector2u(24, 24));
-                CHECK(image.getPixelsPtr() != nullptr);
-                CHECK(image.getPixel({0, 0}) == sf::Color::Green);
-                CHECK(image.getPixel({23, 23}) == sf::Color::Green);
-            }
-        }
-
-        SECTION("Stream constructor")
-        {
-            sf::FileInputStream stream("Graphics/sfml-logo-big.png");
-            const sf::Image     image(stream);
-            CHECK(image.getSize() == sf::Vector2u(1001, 304));
-            CHECK(image.getPixelsPtr() != nullptr);
-            CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-            CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+            CHECK(!sf::Image::create({10, 0}, sf::Color::Magenta).hasValue());
+            CHECK(!sf::Image::create({0, 10}, sf::Color::Magenta).hasValue());
         }
 
         SECTION("Vector2 constructor")
         {
-            const sf::Image image(sf::Vector2u(10, 10));
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}).value();
+            CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Black);
+                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Black);
                 }
             }
         }
 
         SECTION("Vector2 and color constructor")
         {
-            const sf::Image image(sf::Vector2u(10, 10), sf::Color::Red);
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
+            CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Red);
+                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
             }
         }
 
-        SECTION("Vector2 and std::uint8_t* constructor")
+        SECTION("Vector2 and sf::base::U8* constructor")
         {
             // 10 x 10, with 4 color channels array
-            std::array<std::uint8_t, 400> pixels{};
-            for (std::size_t i = 0; i < pixels.size(); i += 4)
+            sf::base::U8 pixels[400]{};
+            for (sf::base::SizeT i = 0; i < 400; i += 4)
             {
                 pixels[i]     = 255; // r
                 pixels[i + 1] = 0;   // g
@@ -179,78 +75,15 @@ TEST_CASE("[Graphics] sf::Image")
                 pixels[i + 3] = 255; // a
             }
 
-            const sf::Image image(sf::Vector2u(10, 10), pixels.data());
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
+            const auto image = sf::Image::create(sf::Vector2u{10, 10}, pixels).value();
+            CHECK(image.getSize() == sf::Vector2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Red);
-                }
-            }
-        }
-    }
-
-    SECTION("Resize")
-    {
-        SECTION("resize(Vector2)")
-        {
-            sf::Image image;
-            image.resize(sf::Vector2u(10, 10));
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
-            CHECK(image.getPixelsPtr() != nullptr);
-
-            for (std::uint32_t i = 0; i < 10; ++i)
-            {
-                for (std::uint32_t j = 0; j < 10; ++j)
-                {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Black);
-                }
-            }
-        }
-
-        SECTION("resize(Vector2, Color)")
-        {
-            sf::Image image;
-            image.resize(sf::Vector2u(10, 10), sf::Color::Red);
-
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
-            CHECK(image.getPixelsPtr() != nullptr);
-
-            for (std::uint32_t i = 0; i < 10; ++i)
-            {
-                for (std::uint32_t j = 0; j < 10; ++j)
-                {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Red);
-                }
-            }
-        }
-
-        SECTION("resize(Vector2, std::uint8_t*)")
-        {
-            // 10 x 10, with 4 colour channels array
-            std::array<std::uint8_t, 400> pixels{};
-            for (std::size_t i = 0; i < pixels.size(); i += 4)
-            {
-                pixels[i]     = 255; // r
-                pixels[i + 1] = 0;   // g
-                pixels[i + 2] = 0;   // b
-                pixels[i + 3] = 255; // a
-            }
-
-            sf::Image image;
-            image.resize(sf::Vector2u(10, 10), pixels.data());
-
-            CHECK(image.getSize() == sf::Vector2u(10, 10));
-            CHECK(image.getPixelsPtr() != nullptr);
-
-            for (std::uint32_t i = 0; i < 10; ++i)
-            {
-                for (std::uint32_t j = 0; j < 10; ++j)
-                {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color::Red);
+                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
             }
         }
@@ -258,77 +91,77 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("loadFromFile()")
     {
-        sf::Image image;
-
         SECTION("Invalid file")
         {
-            CHECK(!image.loadFromFile("."));
-            CHECK(!image.loadFromFile("this/does/not/exist.jpg"));
-
-            CHECK(image.getSize() == sf::Vector2u(0, 0));
-            CHECK(image.getPixelsPtr() == nullptr);
+            CHECK(!sf::Image::loadFromFile(".").hasValue());
+            CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
         }
 
         SECTION("Successful load")
         {
+            sf::base::Optional<sf::Image> image;
+
             SECTION("bmp")
             {
-                REQUIRE(image.loadFromFile("Graphics/sfml-logo-big.bmp"));
-                CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.bmp");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color::White);
+                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
             SECTION("png")
             {
-                REQUIRE(image.loadFromFile("Graphics/sfml-logo-big.png"));
-                CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-                CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.png");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
+                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
             SECTION("jpg")
             {
-                REQUIRE(image.loadFromFile("Graphics/sfml-logo-big.jpg"));
-                CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.jpg");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color::White);
+                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
             SECTION("gif")
             {
-                REQUIRE(image.loadFromFile("Graphics/sfml-logo-big.gif"));
-                CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                CHECK(image.getPixel({200, 150}) == sf::Color(146, 210, 62));
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.gif");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color::White);
+                CHECK(image->getPixel({200, 150}) == sf::Color(146, 210, 62));
             }
 
             SECTION("psd")
             {
-                REQUIRE(image.loadFromFile("Graphics/sfml-logo-big.psd"));
-                CHECK(image.getPixel({0, 0}) == sf::Color::White);
-                CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.psd");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color::White);
+                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
-            CHECK(image.getSize() == sf::Vector2u(1001, 304));
-            CHECK(image.getPixelsPtr() != nullptr);
+            CHECK(image->getSize() == sf::Vector2u{1001, 304});
+            CHECK(image->getPixelsPtr() != nullptr);
         }
     }
 
     SECTION("loadFromMemory()")
     {
-        sf::Image image;
-
         SECTION("Invalid pointer")
         {
-            CHECK(!image.loadFromMemory(nullptr, 1));
+            CHECK(!sf::Image::loadFromMemory(nullptr, 1).hasValue());
         }
 
         SECTION("Invalid size")
         {
             const std::byte testByte{0xAB};
-            CHECK(!image.loadFromMemory(&testByte, 0));
+            CHECK(!sf::Image::loadFromMemory(&testByte, 0).hasValue());
         }
 
         SECTION("Failed load")
         {
-            std::vector<std::uint8_t> memory;
+            sf::base::TrivialVector<sf::base::U8> memory;
 
             SECTION("Empty")
             {
@@ -337,23 +170,19 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("Junk data")
             {
-                memory = {1, 2, 3, 4};
+                memory.pushBackMultiple(sf::base::U8{1}, sf::base::U8{2}, sf::base::U8{3}, sf::base::U8{4});
             }
 
-            CHECK(!image.loadFromMemory(memory.data(), memory.size()));
+            CHECK(!sf::Image::loadFromMemory(memory.data(), memory.size()).hasValue());
         }
 
         SECTION("Successful load")
         {
-            const auto memory = []()
-            {
-                sf::Image savedImage;
-                savedImage.resize({24, 24}, sf::Color::Green);
-                return savedImage.saveToMemory("png").value();
-            }();
+            const auto memory = sf::ImageUtils::saveToMemory(sf::Image::create({24, 24}, sf::Color::Green).value(),
+                                                             sf::ImageUtils::SaveFormat::PNG);
 
-            CHECK(image.loadFromMemory(memory.data(), memory.size()));
-            CHECK(image.getSize() == sf::Vector2u(24, 24));
+            const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
+            CHECK(image.getSize() == sf::Vector2u{24, 24});
             CHECK(image.getPixelsPtr() != nullptr);
             CHECK(image.getPixel({0, 0}) == sf::Color::Green);
             CHECK(image.getPixel({23, 23}) == sf::Color::Green);
@@ -362,110 +191,73 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("loadFromStream()")
     {
-        sf::Image           image;
-        sf::FileInputStream stream;
-
-        SECTION("Invalid stream")
-        {
-            CHECK(!image.loadFromStream(stream));
-        }
-
-        SECTION("Successful load")
-        {
-            CHECK(stream.open("Graphics/sfml-logo-big.png"));
-            REQUIRE(image.loadFromStream(stream));
-            CHECK(image.getSize() == sf::Vector2u(1001, 304));
-            CHECK(image.getPixelsPtr() != nullptr);
-            CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
-            CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
-        }
+        auto       stream = sf::FileInputStream::open("Graphics/sfml-logo-big.png").value();
+        const auto image  = sf::Image::loadFromStream(stream).value();
+        CHECK(image.getSize() == sf::Vector2u{1001, 304});
+        CHECK(image.getPixelsPtr() != nullptr);
+        CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
+        CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
     }
 
     SECTION("saveToFile()")
     {
-        SECTION("Invalid size")
-        {
-            CHECK(!sf::Image({10, 0}, sf::Color::Magenta).saveToFile("test.jpg"));
-            CHECK(!sf::Image({0, 10}, sf::Color::Magenta).saveToFile("test.jpg"));
-        }
-
-        const sf::Image image({256, 256}, sf::Color::Magenta);
+        const auto image = sf::Image::create({256, 256}, sf::Color::Magenta).value();
 
         SECTION("No extension")
         {
-            CHECK(!image.saveToFile("wheresmyextension"));
-            CHECK(!image.saveToFile("pls/add/extension"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "wheresmyextension"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "pls/add/extension"));
         }
 
         SECTION("Invalid extension")
         {
-            CHECK(!image.saveToFile("test.ps"));
-            CHECK(!image.saveToFile("test.foo"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "test.ps"));
+            CHECK(!sf::ImageUtils::saveToFile(image, "test.foo"));
         }
 
         SECTION("Successful save")
         {
-            auto filename = std::filesystem::temp_directory_path();
+            auto filename = sf::Path::tempDirectoryPath();
 
             SECTION("To .bmp")
             {
                 filename /= "test.bmp";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             SECTION("To .tga")
             {
                 filename /= "test.tga";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             SECTION("To .png")
             {
                 filename /= "test.png";
-                CHECK(image.saveToFile(filename));
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
             }
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
 
-            const sf::Image loadedImage(filename);
-            CHECK(loadedImage.getSize() == sf::Vector2u(256, 256));
+            const auto loadedImage = sf::Image::loadFromFile(filename).value();
+            CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
             CHECK(loadedImage.getPixelsPtr() != nullptr);
 
-            CHECK(std::filesystem::remove(filename));
+            CHECK(filename.remove());
         }
     }
 
     SECTION("saveToMemory()")
     {
-        SECTION("Invalid size")
-        {
-            CHECK(!sf::Image({10, 0}, sf::Color::Magenta).saveToMemory("test.jpg"));
-            CHECK(!sf::Image({0, 10}, sf::Color::Magenta).saveToMemory("test.jpg"));
-        }
-
-        const sf::Image image({16, 16}, sf::Color::Magenta);
-
-        SECTION("No extension")
-        {
-            CHECK(!image.saveToMemory(""));
-        }
-
-        SECTION("Invalid extension")
-        {
-            CHECK(!image.saveToMemory("."));
-            CHECK(!image.saveToMemory("gif"));
-            CHECK(!image.saveToMemory(".jpg")); // Supposed to be "jpg"
-        }
+        const auto image = sf::Image::create({16, 16}, sf::Color::Magenta).value();
 
         SECTION("Successful save")
         {
-            std::optional<std::vector<std::uint8_t>> maybeOutput;
+            std::vector<sf::base::U8> output;
 
             SECTION("To bmp")
             {
-                maybeOutput = image.saveToMemory("bmp");
-                REQUIRE(maybeOutput.has_value());
-                const auto& output = *maybeOutput;
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::BMP);
                 REQUIRE(output.size() == 1146);
                 CHECK(output[0] == 66);
                 CHECK(output[1] == 77);
@@ -479,9 +271,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To tga")
             {
-                maybeOutput = image.saveToMemory("tga");
-                REQUIRE(maybeOutput.has_value());
-                const auto& output = *maybeOutput;
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::TGA);
                 REQUIRE(output.size() == 98);
                 CHECK(output[0] == 0);
                 CHECK(output[1] == 0);
@@ -491,9 +281,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To png")
             {
-                maybeOutput = image.saveToMemory("png");
-                REQUIRE(maybeOutput.has_value());
-                const auto& output = *maybeOutput;
+                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::PNG);
                 REQUIRE(output.size() == 92);
                 CHECK(output[0] == 137);
                 CHECK(output[1] == 80);
@@ -507,44 +295,44 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Set/get pixel")
     {
-        sf::Image image(sf::Vector2u(10, 10), sf::Color::Green);
-        CHECK(image.getPixel(sf::Vector2u(2, 2)) == sf::Color::Green);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Green).value();
+        CHECK(image.getPixel(sf::Vector2u{2, 2}) == sf::Color::Green);
 
-        image.setPixel(sf::Vector2u(2, 2), sf::Color::Blue);
-        CHECK(image.getPixel(sf::Vector2u(2, 2)) == sf::Color::Blue);
+        image.setPixel(sf::Vector2u{2, 2}, sf::Color::Blue);
+        CHECK(image.getPixel(sf::Vector2u{2, 2}) == sf::Color::Blue);
     }
 
     SECTION("Copy from Image")
     {
         SECTION("Copy (Image, Vector2u)")
         {
-            const sf::Image image1(sf::Vector2u(10, 10), sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u(10, 10));
-            CHECK(image2.copy(image1, sf::Vector2u(0, 0)));
+            const auto image1 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
+            CHECK(image2.copy(image1, sf::Vector2u{0, 0}));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vector2u(i, j)) == image2.getPixel(sf::Vector2u(i, j)));
+                    CHECK(image1.getPixel(sf::Vector2u{i, j}) == image2.getPixel(sf::Vector2u{i, j}));
                 }
             }
         }
 
         SECTION("Copy (Image, Vector2u, IntRect)")
         {
-            const sf::Image image1(sf::Vector2u(5, 5), sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u(10, 10));
-            CHECK(image2.copy(image1, sf::Vector2u(0, 0), sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(5, 5))));
+            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
+            CHECK(image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{5, 5})));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     if (i <= 4 && j <= 4)
-                        CHECK(image2.getPixel(sf::Vector2u(i, j)) == sf::Color::Blue);
+                        CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Blue);
                     else
-                        CHECK(image2.getPixel(sf::Vector2u(i, j)) == sf::Color::Black);
+                        CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Black);
                 }
             }
         }
@@ -555,39 +343,39 @@ TEST_CASE("[Graphics] sf::Image")
             const sf::Color source(5, 255, 78, 232);
 
             // Create the composited color for via the alpha composite over operation
-            const auto a = static_cast<std::uint8_t>(source.a + (dest.a * (255 - source.a)) / 255);
-            const auto r = static_cast<std::uint8_t>(
+            const auto a = static_cast<sf::base::U8>(source.a + (dest.a * (255 - source.a)) / 255);
+            const auto r = static_cast<sf::base::U8>(
                 ((source.r * source.a) + ((dest.r * dest.a) * (255 - source.a)) / 255) / a);
-            const auto g = static_cast<std::uint8_t>(
+            const auto g = static_cast<sf::base::U8>(
                 ((source.g * source.a) + ((dest.g * dest.a) * (255 - source.a)) / 255) / a);
-            const auto b = static_cast<std::uint8_t>(
+            const auto b = static_cast<sf::base::U8>(
                 ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const sf::Color composite(r, g, b, a);
 
-            sf::Image       image1(sf::Vector2u(10, 10), dest);
-            const sf::Image image2(sf::Vector2u(10, 10), source);
-            CHECK(image1.copy(image2, sf::Vector2u(0, 0), sf::IntRect(sf::Vector2i(0, 0), sf::Vector2i(10, 10)), true));
+            auto       image1 = sf::Image::create(sf::Vector2u{10, 10}, dest).value();
+            const auto image2 = sf::Image::create(sf::Vector2u{10, 10}, source).value();
+            CHECK(image1.copy(image2, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{10, 10}), true));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vector2u(i, j)) == composite);
+                    CHECK(image1.getPixel(sf::Vector2u{i, j}) == composite);
                 }
             }
         }
 
         SECTION("Copy (Out of bounds sourceRect)")
         {
-            const sf::Image image1(sf::Vector2u(5, 5), sf::Color::Blue);
-            sf::Image       image2(sf::Vector2u(10, 10), sf::Color::Red);
-            CHECK(!image2.copy(image1, sf::Vector2u(0, 0), sf::IntRect(sf::Vector2i(5, 5), sf::Vector2i(9, 9))));
+            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
+            CHECK(!image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{5, 5}, sf::Vector2i{9, 9})));
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image2.getPixel(sf::Vector2u(i, j)) == sf::Color::Red);
+                    CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
                 }
             }
         }
@@ -597,28 +385,28 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("createMaskFromColor(Color)")
         {
-            sf::Image image(sf::Vector2u(10, 10), sf::Color::Blue);
+            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color(0, 0, 255, 0));
+                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 0));
                 }
             }
         }
 
-        SECTION("createMaskFromColor(Color, std::uint8_t)")
+        SECTION("createMaskFromColor(Color, sf::base::U8)")
         {
-            sf::Image image(sf::Vector2u(10, 10), sf::Color::Blue);
+            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue, 100);
 
-            for (std::uint32_t i = 0; i < 10; ++i)
+            for (sf::base::U32 i = 0; i < 10; ++i)
             {
-                for (std::uint32_t j = 0; j < 10; ++j)
+                for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u(i, j)) == sf::Color(0, 0, 255, 100));
+                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 100));
                 }
             }
         }
@@ -626,19 +414,19 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Flip horizontally")
     {
-        sf::Image image(sf::Vector2u(10, 10), sf::Color::Red);
-        image.setPixel(sf::Vector2u(0, 0), sf::Color::Green);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
+        image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
         image.flipHorizontally();
 
-        CHECK(image.getPixel(sf::Vector2u(9, 0)) == sf::Color::Green);
+        CHECK(image.getPixel(sf::Vector2u{9, 0}) == sf::Color::Green);
     }
 
     SECTION("Flip vertically")
     {
-        sf::Image image(sf::Vector2u(10, 10), sf::Color::Red);
-        image.setPixel(sf::Vector2u(0, 0), sf::Color::Green);
+        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
+        image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
         image.flipVertically();
 
-        CHECK(image.getPixel(sf::Vector2u(0, 9)) == sf::Color::Green);
+        CHECK(image.getPixel(sf::Vector2u{0, 9}) == sf::Color::Green);
     }
 }

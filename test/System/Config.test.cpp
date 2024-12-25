@@ -1,6 +1,6 @@
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 TEST_CASE("[System] SFML/Config.hpp")
 {

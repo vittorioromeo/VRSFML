@@ -1,30 +1,7 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Network)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Network)
 
-# all source files
-set(SRC
-    ${INCROOT}/Export.hpp
-    ${SRCROOT}/Ftp.cpp
-    ${INCROOT}/Ftp.hpp
-    ${SRCROOT}/Http.cpp
-    ${INCROOT}/Http.hpp
-    ${SRCROOT}/IpAddress.cpp
-    ${INCROOT}/IpAddress.hpp
-    ${SRCROOT}/Packet.cpp
-    ${INCROOT}/Packet.hpp
-    ${SRCROOT}/Socket.cpp
-    ${INCROOT}/Socket.hpp
-    ${SRCROOT}/SocketImpl.hpp
-    ${INCROOT}/SocketHandle.hpp
-    ${SRCROOT}/SocketSelector.cpp
-    ${INCROOT}/SocketSelector.hpp
-    ${SRCROOT}/TcpListener.cpp
-    ${INCROOT}/TcpListener.hpp
-    ${SRCROOT}/TcpSocket.cpp
-    ${INCROOT}/TcpSocket.hpp
-    ${SRCROOT}/UdpSocket.cpp
-    ${INCROOT}/UdpSocket.hpp
-)
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 # add platform specific sources
 if(SFML_OS_WINDOWS)
@@ -36,8 +13,6 @@ else()
         ${SRCROOT}/Unix/SocketImpl.cpp
     )
 endif()
-
-source_group("" FILES ${SRC})
 
 # define the sfml-network target
 sfml_add_library(Network

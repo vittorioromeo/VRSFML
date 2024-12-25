@@ -3,13 +3,22 @@
 ////////////////////////////////////////////////////////////
 #include "Server.hpp"
 
-#include <SFML/Audio.hpp>
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
-#include <SFML/Network.hpp>
+#include "SFML/Network/Packet.hpp"
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/TcpListener.hpp"
+#include "SFML/Network/TcpSocket.hpp"
+
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Optional.hpp"
 
 #include <iostream>
 #include <mutex>
-#include <optional>
 #include <vector>
 
 #include <cstdint>
@@ -31,7 +40,7 @@ public:
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream()
+    NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
     {
         // Set the sound parameters
         initialize(1, 44100, {sf::SoundChannel::Mono});
@@ -41,7 +50,7 @@ public:
     /// Run the server, stream audio data from the client
     ///
     ////////////////////////////////////////////////////////////
-    void start(unsigned short port)
+    void start(sf::PlaybackDevice& playbackDevice, unsigned short port)
     {
         if (!m_hasFinished)
         {
@@ -56,7 +65,7 @@ public:
             std::cout << "Client connected: " << m_client.getRemoteAddress().value() << std::endl;
 
             // Start playback
-            play();
+            play(playbackDevice);
 
             // Start receiving audio data
             receiveLoop();
@@ -64,7 +73,7 @@ public:
         else
         {
             // Start playback
-            play();
+            play(playbackDevice);
         }
     }
 
@@ -174,11 +183,11 @@ private:
 /// a connected client
 ///
 ////////////////////////////////////////////////////////////
-void doServer(unsigned short port)
+void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
 {
     // Build an audio stream to play sound data as it is received through the network
     NetworkAudioStream audioStream;
-    audioStream.start(port);
+    audioStream.start(playbackDevice, port);
 
     // Loop until the sound playback is finished
     while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
@@ -194,7 +203,7 @@ void doServer(unsigned short port)
     std::cin.ignore(10000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
-    audioStream.play();
+    audioStream.play(playbackDevice);
 
     // Loop until the sound playback is finished
     while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)

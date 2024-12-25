@@ -1,86 +1,54 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////////
 /// \brief Blending modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API BlendMode
+struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
 {
     ////////////////////////////////////////////////////////
     /// \brief Enumeration of the blending factors
     ///
     /// The factors are mapped directly to their OpenGL equivalents,
-    /// specified by glBlendFunc() or glBlendFuncSeparate().
+    /// specified by `glBlendFunc` or `glBlendFuncSeparate`.
     ////////////////////////////////////////////////////////
-    enum class Factor
+    enum class [[nodiscard]] Factor : unsigned int
     {
-        Zero,             //!< (0, 0, 0, 0)
-        One,              //!< (1, 1, 1, 1)
-        SrcColor,         //!< (src.r, src.g, src.b, src.a)
-        OneMinusSrcColor, //!< (1, 1, 1, 1) - (src.r, src.g, src.b, src.a)
-        DstColor,         //!< (dst.r, dst.g, dst.b, dst.a)
-        OneMinusDstColor, //!< (1, 1, 1, 1) - (dst.r, dst.g, dst.b, dst.a)
-        SrcAlpha,         //!< (src.a, src.a, src.a, src.a)
-        OneMinusSrcAlpha, //!< (1, 1, 1, 1) - (src.a, src.a, src.a, src.a)
-        DstAlpha,         //!< (dst.a, dst.a, dst.a, dst.a)
-        OneMinusDstAlpha  //!< (1, 1, 1, 1) - (dst.a, dst.a, dst.a, dst.a)
+        Zero             = 0u, //!< (0, 0, 0, 0)
+        One              = 1u, //!< (1, 1, 1, 1)
+        SrcColor         = 2u, //!< (src.r, src.g, src.b, src.a)
+        OneMinusSrcColor = 3u, //!< (1, 1, 1, 1) - (src.r, src.g, src.b, src.a)
+        DstColor         = 4u, //!< (dst.r, dst.g, dst.b, dst.a)
+        OneMinusDstColor = 5u, //!< (1, 1, 1, 1) - (dst.r, dst.g, dst.b, dst.a)
+        SrcAlpha         = 6u, //!< (src.a, src.a, src.a, src.a)
+        OneMinusSrcAlpha = 7u, //!< (1, 1, 1, 1) - (src.a, src.a, src.a, src.a)
+        DstAlpha         = 8u, //!< (dst.a, dst.a, dst.a, dst.a)
+        OneMinusDstAlpha = 9u  //!< (1, 1, 1, 1) - (dst.a, dst.a, dst.a, dst.a)
     };
 
     ////////////////////////////////////////////////////////
     /// \brief Enumeration of the blending equations
     ///
     /// The equations are mapped directly to their OpenGL equivalents,
-    /// specified by glBlendEquation() or glBlendEquationSeparate().
+    /// specified by `glBlendEquation` or `glBlendEquationSeparate`.
     ////////////////////////////////////////////////////////
-    enum class Equation
+    enum class [[nodiscard]] Equation : unsigned int
     {
-        Add,             //!< Pixel = Src * SrcFactor + Dst * DstFactor
-        Subtract,        //!< Pixel = Src * SrcFactor - Dst * DstFactor
-        ReverseSubtract, //!< Pixel = Dst * DstFactor - Src * SrcFactor
-        Min,             //!< Pixel = min(Dst, Src)
-        Max              //!< Pixel = max(Dst, Src)
+        Add             = 0u, //!< Pixel = Src * SrcFactor + Dst * DstFactor
+        Subtract        = 1u, //!< Pixel = Src * SrcFactor - Dst * DstFactor
+        ReverseSubtract = 2u, //!< Pixel = Dst * DstFactor - Src * SrcFactor
+        Min             = 3u, //!< Pixel = min(Dst, Src)
+        Max             = 4u  //!< Pixel = max(Dst, Src)
     };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs a blending mode that does alpha blending.
-    ///
-    ////////////////////////////////////////////////////////////
-    BlendMode() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -93,7 +61,15 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param blendEquation     Specifies how to combine the source and destination colors and alpha.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add);
+    [[nodiscard]] constexpr BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add) :
+    colorSrcFactor(sourceFactor),
+    colorDstFactor(destinationFactor),
+    colorEquation(blendEquation),
+    alphaSrcFactor(sourceFactor),
+    alphaDstFactor(destinationFactor),
+    alphaEquation(blendEquation)
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the blend mode given the factors and equation.
@@ -106,15 +82,34 @@ struct SFML_GRAPHICS_API BlendMode
     /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
     ///
     ////////////////////////////////////////////////////////////
-    BlendMode(Factor   colorSourceFactor,
-              Factor   colorDestinationFactor,
-              Equation colorBlendEquation,
-              Factor   alphaSourceFactor,
-              Factor   alphaDestinationFactor,
-              Equation alphaBlendEquation);
+    [[nodiscard]] constexpr explicit BlendMode(
+        Factor   colorSourceFactor,
+        Factor   colorDestinationFactor,
+        Equation colorBlendEquation,
+        Factor   alphaSourceFactor,
+        Factor   alphaDestinationFactor,
+        Equation alphaBlendEquation) :
+    colorSrcFactor(colorSourceFactor),
+    colorDstFactor(colorDestinationFactor),
+    colorEquation(colorBlendEquation),
+    alphaSrcFactor(alphaSourceFactor),
+    alphaDstFactor(alphaDestinationFactor),
+    alphaEquation(alphaBlendEquation)
+    {
+    }
 
     ////////////////////////////////////////////////////////////
-    // Member Data
+    /// \brief Overload of the `operator==`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if blending modes are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const BlendMode& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
     ////////////////////////////////////////////////////////////
     Factor colorSrcFactor{BlendMode::Factor::SrcAlpha};         //!< Source blending factor for the color channels
     Factor colorDstFactor{BlendMode::Factor::OneMinusSrcAlpha}; //!< Destination blending factor for the color channels
@@ -124,40 +119,42 @@ struct SFML_GRAPHICS_API BlendMode
     Equation alphaEquation{BlendMode::Equation::Add};             //!< Blending equation for the alpha channel
 };
 
-////////////////////////////////////////////////////////////
-/// \relates BlendMode
-/// \brief Overload of the `operator==`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if blending modes are equal, `false` if they are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator==(const BlendMode& left, const BlendMode& right);
-
-////////////////////////////////////////////////////////////
-/// \relates BlendMode
-/// \brief Overload of the `operator!=`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if blending modes are different, `false` if they are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator!=(const BlendMode& left, const BlendMode& right);
 
 ////////////////////////////////////////////////////////////
 // Commonly used blending modes
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(readability-identifier-naming)
-SFML_GRAPHICS_API extern const BlendMode BlendAlpha;    //!< Blend source and dest according to dest alpha
-SFML_GRAPHICS_API extern const BlendMode BlendAdd;      //!< Add source to dest
-SFML_GRAPHICS_API extern const BlendMode BlendMultiply; //!< Multiply source and dest
-SFML_GRAPHICS_API extern const BlendMode BlendMin;      //!< Take minimum between source and dest
-SFML_GRAPHICS_API extern const BlendMode BlendMax;      //!< Take maximum between source and dest
-SFML_GRAPHICS_API extern const BlendMode BlendNone;     //!< Overwrite dest with source
+
+/// Blend source and dest according to dest alpha
+inline constexpr BlendMode BlendAlpha(
+    BlendMode::Factor::SrcAlpha,
+    BlendMode::Factor::OneMinusSrcAlpha,
+    BlendMode::Equation::Add,
+    BlendMode::Factor::One,
+    BlendMode::Factor::OneMinusSrcAlpha,
+    BlendMode::Equation::Add);
+
+/// Add source to dest
+inline constexpr BlendMode BlendAdd(
+    BlendMode::Factor::SrcAlpha,
+    BlendMode::Factor::One,
+    BlendMode::Equation::Add,
+    BlendMode::Factor::One,
+    BlendMode::Factor::One,
+    BlendMode::Equation::Add);
+
+/// Multiply source and dest
+inline constexpr BlendMode BlendMultiply(BlendMode::Factor::DstColor, BlendMode::Factor::Zero, BlendMode::Equation::Add);
+
+/// Take minimum between source and dest
+inline constexpr BlendMode BlendMin(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Min);
+
+/// Take maximum between source and dest
+inline constexpr BlendMode BlendMax(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Max);
+
+/// Overwrite dest with source
+inline constexpr BlendMode BlendNone(BlendMode::Factor::One, BlendMode::Factor::Zero, BlendMode::Equation::Add);
+
 // NOLINTEND(readability-identifier-naming)
 
 } // namespace sf
@@ -211,7 +208,7 @@ SFML_GRAPHICS_API extern const BlendMode BlendNone;     //!< Overwrite dest with
 /// sf::BlendMode noBlending             = sf::BlendNone;
 /// \endcode
 ///
-/// In SFML, a blend mode can be specified every time you draw a `sf::Drawable`
+/// In SFML, a blend mode can be specified every time you draw a drawable
 /// object to a render target. It is part of the `sf::RenderStates` compound
 /// that is passed to the member function `sf::RenderTarget::draw()`.
 ///

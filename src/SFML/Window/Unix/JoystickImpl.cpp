@@ -1,46 +1,24 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
+
+#include "SFML/Base/Builtins/Strstr.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #include <fcntl.h>
 #include <libudev.h>
 #include <linux/joystick.h>
-#include <memory>
-#include <ostream>
 #include <poll.h>
 #include <string>
 #include <unistd.h>
 #include <vector>
 
 #include <cerrno>
-#include <cstring>
 
 namespace
 {
@@ -48,27 +26,31 @@ struct UdevDeleter
 {
     void operator()(udev_device* device) const
     {
-        udev_device_unref(device);
+        if (device != nullptr)
+            udev_device_unref(device);
     }
 
     void operator()(udev_monitor* monitor) const
     {
-        udev_monitor_unref(monitor);
+        if (monitor != nullptr)
+            udev_monitor_unref(monitor);
     }
 
     void operator()(udev_enumerate* enumerate) const
     {
-        udev_enumerate_unref(enumerate);
+        if (enumerate != nullptr)
+            udev_enumerate_unref(enumerate);
     }
 
     void operator()(udev* context) const
     {
-        udev_unref(context);
+        if (context != nullptr)
+            udev_unref(context);
     }
 };
 
 template <typename T>
-using UdevPtr = std::unique_ptr<T, UdevDeleter>;
+using UdevPtr = sf::base::UniquePtr<T, UdevDeleter>;
 
 UdevPtr<udev>         udevContext;
 UdevPtr<udev_monitor> udevMonitor;
@@ -98,7 +80,7 @@ bool isJoystick(udev_device* udevDevice)
         return false;
 
     // SFML doesn't support evdev yet, so make sure we only handle /js nodes
-    if (!std::strstr(devnode, "/js"))
+    if (!SFML_BASE_STRSTR(devnode, "/js"))
         return false;
 
     // Check if this device is a joystick
@@ -123,14 +105,15 @@ bool isJoystick(udev_device* udevDevice)
     if (const char* idClass = udev_device_get_property_value(udevDevice, "ID_CLASS"))
     {
         // Check if the device class matches joystick
-        if (std::strstr(idClass, "joystick"))
+        if (SFML_BASE_STRSTR(idClass, "joystick"))
             return true;
 
         // Check if the device class matches something that isn't a joystick
         // Rationale same as above
-        if (std::strstr(idClass, "accelerometer") || std::strstr(idClass, "key") || std::strstr(idClass, "keyboard") ||
-            std::strstr(idClass, "mouse") || std::strstr(idClass, "tablet") || std::strstr(idClass, "touchpad") ||
-            std::strstr(idClass, "touchscreen"))
+        if (SFML_BASE_STRSTR(idClass, "accelerometer") || SFML_BASE_STRSTR(idClass, "key") ||
+            SFML_BASE_STRSTR(idClass, "keyboard") || SFML_BASE_STRSTR(idClass, "mouse") ||
+            SFML_BASE_STRSTR(idClass, "tablet") || SFML_BASE_STRSTR(idClass, "touchpad") ||
+            SFML_BASE_STRSTR(idClass, "touchscreen"))
             return false;
     }
 
@@ -155,7 +138,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                 {
                     if (recordIt->deviceNode == devnode)
                     {
-                        if (std::strstr(action, "add"))
+                        if (SFML_BASE_STRSTR(action, "add"))
                         {
                             // The system path might have changed so update it
                             const char* syspath = udev_device_get_syspath(udevDevice);
@@ -164,7 +147,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
                             recordIt->systemPath = syspath ? syspath : "";
                             break;
                         }
-                        if (std::strstr(action, "remove"))
+                        if (SFML_BASE_STRSTR(action, "remove"))
                         {
                             recordIt->plugged = false;
                             break;
@@ -174,7 +157,7 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
                 if (recordIt == joystickList.end())
                 {
-                    if (std::strstr(action, "add"))
+                    if (SFML_BASE_STRSTR(action, "add"))
                     {
                         // If not mapped before and it got added, map it now
                         const char* syspath = udev_device_get_syspath(udevDevice);
@@ -186,10 +169,10 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
                         joystickList.push_back(newRecord);
                     }
-                    else if (std::strstr(action, "remove"))
+                    else if (SFML_BASE_STRSTR(action, "remove"))
                     {
                         // Not mapped during the initial scan, and removed (shouldn't happen)
-                        sf::err() << "Trying to disconnect joystick that wasn't connected" << std::endl;
+                        sf::priv::err() << "Trying to disconnect joystick that wasn't connected";
                     }
                 }
             }
@@ -208,19 +191,19 @@ void updatePluggedList(udev_device* udevDevice = nullptr)
 
     if (!udevEnumerator)
     {
-        sf::err() << "Error while creating udev enumerator" << std::endl;
+        sf::priv::err() << "Error while creating udev enumerator";
         return;
     }
 
     if (udev_enumerate_add_match_subsystem(udevEnumerator.get(), "input") < 0)
     {
-        sf::err() << "Error while adding udev enumerator match" << std::endl;
+        sf::priv::err() << "Error while adding udev enumerator match";
         return;
     }
 
     if (udev_enumerate_scan_devices(udevEnumerator.get()) < 0)
     {
-        sf::err() << "Error while enumerating udev devices" << std::endl;
+        sf::priv::err() << "Error while enumerating udev devices";
         return;
     }
 
@@ -319,7 +302,7 @@ unsigned int getJoystickVendorId(unsigned int index)
 {
     if (!udevContext)
     {
-        sf::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << std::endl;
+        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -328,7 +311,7 @@ unsigned int getJoystickVendorId(unsigned int index)
 
     if (!udevDevice)
     {
-        sf::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << std::endl;
+        sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -340,7 +323,7 @@ unsigned int getJoystickVendorId(unsigned int index)
     if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idVendor"))
         return id;
 
-    sf::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode << std::endl;
+    sf::priv::err() << "Failed to get vendor ID of joystick " << joystickList[index].deviceNode;
 
     return 0;
 }
@@ -350,7 +333,7 @@ unsigned int getJoystickProductId(unsigned int index)
 {
     if (!udevContext)
     {
-        sf::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << std::endl;
+        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -359,7 +342,7 @@ unsigned int getJoystickProductId(unsigned int index)
 
     if (!udevDevice)
     {
-        sf::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << std::endl;
+        sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
         return 0;
     }
 
@@ -371,7 +354,7 @@ unsigned int getJoystickProductId(unsigned int index)
     if (const unsigned int id = getUsbAttributeUint(udevDevice.get(), "idProduct"))
         return id;
 
-    sf::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode << std::endl;
+    sf::priv::err() << "Failed to get product ID of joystick " << joystickList[index].deviceNode;
 
     return 0;
 }
@@ -387,13 +370,13 @@ std::string getJoystickName(unsigned int index)
     if (fd >= 0)
     {
         // Get the name
-        std::array<char, 128> name{};
-        const int             result = ioctl(fd, JSIOCGNAME(name.size()), name.data());
+        char      name[128]{};
+        const int result = ioctl(fd, JSIOCGNAME(128), name);
 
         ::close(fd);
 
         if (result >= 0)
-            return name.data();
+            return std::string{name};
     }
 
     // Fall back to manual USB chain walk via udev
@@ -403,7 +386,7 @@ std::string getJoystickName(unsigned int index)
             if (const char* product = getUsbAttribute(udevDevice.get(), "product"))
                 return {product};
 
-    sf::err() << "Unable to get name for joystick " << devnode << std::endl;
+    sf::priv::err() << "Unable to get name for joystick " << devnode;
 
     return "Unknown Joystick";
 }
@@ -419,7 +402,7 @@ void JoystickImpl::initialize()
 
     if (!udevContext)
     {
-        sf::err() << "Failed to create udev context, joystick support not available" << std::endl;
+        priv::err() << "Failed to create udev context, joystick support not available";
         return;
     }
 
@@ -427,7 +410,7 @@ void JoystickImpl::initialize()
 
     if (!udevMonitor)
     {
-        err() << "Failed to create udev monitor, joystick connections and disconnections won't be notified" << std::endl;
+        priv::err() << "Failed to create udev monitor, joystick connections and disconnections won't be notified";
     }
     else
     {
@@ -435,8 +418,9 @@ void JoystickImpl::initialize()
 
         if (error < 0)
         {
-            err() << "Failed to add udev monitor filter, joystick connections and disconnections won't be notified: "
-                  << error << std::endl;
+            priv::err() << "Failed to add udev monitor filter, joystick connections and disconnections won't be "
+                           "notified: "
+                        << error;
 
             udevMonitor.reset();
         }
@@ -446,8 +430,9 @@ void JoystickImpl::initialize()
 
             if (error < 0)
             {
-                err() << "Failed to enable udev monitor, joystick connections and disconnections won't be notified: "
-                      << error << std::endl;
+                priv::err() << "Failed to enable udev monitor, joystick connections and disconnections won't be "
+                               "notified: "
+                            << error;
 
                 udevMonitor.reset();
             }
@@ -511,7 +496,7 @@ bool JoystickImpl::open(unsigned int index)
         if (m_file >= 0)
         {
             // Retrieve the axes mapping
-            ioctl(m_file, JSIOCGAXMAP, m_mapping.data());
+            ioctl(m_file, JSIOCGAXMAP, m_mapping);
 
             // Get info
             m_identification.name = getJoystickName(index);
@@ -528,7 +513,7 @@ bool JoystickImpl::open(unsigned int index)
             return true;
         }
 
-        err() << "Failed to open joystick " << devnode << ": " << errno << std::endl;
+        priv::err() << "Failed to open joystick " << devnode << ": " << errno;
     }
 
     return false;
@@ -544,9 +529,9 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
-    JoystickCaps caps;
+    JoystickCapabilities caps;
 
     if (m_file < 0)
         return caps;
@@ -563,7 +548,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
     ioctl(m_file, JSIOCGAXES, &axesCount);
     for (int i = 0; i < axesCount; ++i)
     {
-        switch (m_mapping[static_cast<std::size_t>(i)])
+        switch (m_mapping[static_cast<base::SizeT>(i)])
         {
                 // clang-format off
             case ABS_X:        caps.axes[Joystick::Axis::X]    = true; break;
@@ -586,7 +571,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     return m_identification;
 }
@@ -613,7 +598,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
             {
                 const float value = joyState.value * 100.f / 32767.f;
 
-                if (joyState.number < m_mapping.size())
+                if (joyState.number < ABS_CNT)
                 {
                     switch (m_mapping[joyState.number])
                     {

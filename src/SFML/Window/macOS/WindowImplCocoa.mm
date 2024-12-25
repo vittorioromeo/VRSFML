@@ -1,45 +1,25 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
+#include "SFML/Window/CursorImpl.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
+
+#include "SFML/System/Err.hpp"
+#include "SFML/System/String.hpp"
+
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFApplicationDelegate.h>
 #import <SFML/Window/macOS/SFKeyboardModifiersHelper.h>
 #import <SFML/Window/macOS/SFViewController.h>
 #import <SFML/Window/macOS/SFWindowController.h>
 #import <SFML/Window/macOS/Scaling.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
-
-#include <SFML/System/Err.hpp>
-#include <SFML/System/String.hpp>
-
 #include <limits>
-#include <ostream>
 
 namespace sf::priv
 {
@@ -57,7 +37,7 @@ bool isCursorHidden = false; // initially, the cursor is visible
 
 NSString* sfStringToNSString(const sf::String& string)
 {
-    const auto  length = static_cast<std::uint32_t>(string.getSize() * sizeof(std::uint32_t));
+    const auto  length = static_cast<base::U32>(string.getSize() * sizeof(base::U32));
     const void* data   = reinterpret_cast<const void*>(string.getData());
 
     NSStringEncoding encoding = 0;
@@ -117,10 +97,9 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
     else
     {
 
-        sf::err() << "Cannot import this Window Handle because it is neither "
-                  << "a <NSWindow*> nor <NSView*> object "
-                  << "(or any of their subclasses). You gave a <" << [[nsHandle className] UTF8String] << "> object."
-                  << std::endl;
+        sf::priv::err() << "Cannot import this Window Handle because it is neither "
+                        << "a <NSWindow*> nor <NSView*> object "
+                        << "(or any of their subclasses). You gave a <" << [[nsHandle className] UTF8String] << "> object.";
         return;
     }
 
@@ -132,14 +111,19 @@ WindowImplCocoa::WindowImplCocoa(WindowHandle handle)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplCocoa::WindowImplCocoa(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& /*settings*/)
+WindowImplCocoa::WindowImplCocoa(const WindowSettings& windowSettings)
 {
     const AutoreleasePool pool;
     // Transform the app process.
     setUpProcess();
 
-    m_delegate = [[SFWindowController alloc] initWithMode:mode andStyle:style andState:state];
-    [m_delegate changeTitle:sfStringToNSString(title)];
+    m_delegate = [[SFWindowController alloc]
+          initWithMode:VideoMode{windowSettings.size, windowSettings.bitsPerPixel}
+        andHasTitlebar:windowSettings.hasTitleBar
+          andResizable:windowSettings.resizable
+           andClosable:windowSettings.closable
+         andFullscreen:windowSettings.fullscreen];
+    [m_delegate changeTitle:sfStringToNSString(windowSettings.title)];
     [m_delegate setRequesterTo:this];
 
     // Finally, set up keyboard helper
@@ -386,7 +370,7 @@ void WindowImplCocoa::setSize(Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+void WindowImplCocoa::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     const AutoreleasePool pool;
@@ -396,7 +380,7 @@ void WindowImplCocoa::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+void WindowImplCocoa::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     const AutoreleasePool pool;
@@ -415,7 +399,7 @@ void WindowImplCocoa::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplCocoa::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplCocoa::setIcon(Vector2u size, const base::U8* pixels)
 {
     const AutoreleasePool pool;
     [m_delegate setIconTo:size with:pixels];

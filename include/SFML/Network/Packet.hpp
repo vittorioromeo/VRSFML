@@ -1,39 +1,15 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <string>
-#include <vector>
-
-#include <cstddef>
-#include <cstdint>
+#include "SFML/Base/FwdStdString.hpp" // used
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -54,7 +30,7 @@ public:
     /// Creates an empty packet.
     ///
     ////////////////////////////////////////////////////////////
-    Packet() = default;
+    [[nodiscard]] Packet() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Virtual destructor
@@ -96,7 +72,7 @@ public:
     /// \see `getReadPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void append(const void* data, std::size_t sizeInBytes);
+    void append(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current reading position in the packet
@@ -108,7 +84,7 @@ public:
     /// \see `append`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getReadPosition() const;
+    [[nodiscard]] base::SizeT getReadPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the packet
@@ -146,7 +122,7 @@ public:
     /// \see `getData`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getDataSize() const;
+    [[nodiscard]] base::SizeT getDataSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the reading position has reached the
@@ -211,42 +187,42 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::int8_t& data);
+    Packet& operator>>(base::I8& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::uint8_t& data);
+    Packet& operator>>(base::U8& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::int16_t& data);
+    Packet& operator>>(base::I16& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::uint16_t& data);
+    Packet& operator>>(base::U16& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::int32_t& data);
+    Packet& operator>>(base::I32& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::uint32_t& data);
+    Packet& operator>>(base::U32& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::int64_t& data);
+    Packet& operator>>(base::I64& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator>>(std::uint64_t& data);
+    Packet& operator>>(base::U64& data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -292,42 +268,42 @@ public:
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::int8_t data);
+    Packet& operator<<(base::I8 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::uint8_t data);
+    Packet& operator<<(base::U8 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::int16_t data);
+    Packet& operator<<(base::I16 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::uint16_t data);
+    Packet& operator<<(base::U16 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::int32_t data);
+    Packet& operator<<(base::I32 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::uint32_t data);
+    Packet& operator<<(base::U32 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::int64_t data);
+    Packet& operator<<(base::I64 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
     ////////////////////////////////////////////////////////////
-    Packet& operator<<(std::uint64_t data);
+    Packet& operator<<(base::U64 data);
 
     ////////////////////////////////////////////////////////////
     /// \overload
@@ -386,7 +362,7 @@ protected:
     /// \see `onReceive`
     ///
     ////////////////////////////////////////////////////////////
-    virtual const void* onSend(std::size_t& size);
+    [[nodiscard]] virtual const void* onSend(base::SizeT& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Called after the packet is received over the network
@@ -405,7 +381,7 @@ protected:
     /// \see `onSend`
     ///
     ////////////////////////////////////////////////////////////
-    virtual void onReceive(const void* data, std::size_t size);
+    virtual void onReceive(const void* data, base::SizeT size);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -418,15 +394,23 @@ private:
     /// \return `true` if \a size bytes can be read from the packet
     ///
     ////////////////////////////////////////////////////////////
-    bool checkSize(std::size_t size);
+    [[nodiscard]] bool checkSize(base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the send position stored in the PImpl
+    ///
+    /// Internally invoked by `TcpSocket`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT& getSendPos();
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::byte> m_data;          //!< Data stored in the packet
-    std::size_t            m_readPos{};     //!< Current reading position in the packet
-    std::size_t            m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
-    bool                   m_isValid{true}; //!< Reading state of the packet
+    base::TrivialVector<unsigned char> m_data;      //!< Data stored in the packet
+    base::SizeT                        m_readPos{}; //!< Current reading position in the packet
+    base::SizeT m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    bool        m_isValid{true}; //!< Reading state of the packet
 };
 
 } // namespace sf
@@ -449,14 +433,14 @@ private:
 /// It is designed to follow the behavior of standard C++ streams,
 /// using operators >> and << to extract and insert data.
 ///
-/// It is recommended to use only fixed-size types (like `std::int32_t`, etc.),
+/// It is recommended to use only fixed-size types (like `base::I32`, etc.),
 /// to avoid possible differences between the sender and the receiver.
 /// Indeed, the native C++ types may have different sizes on two platforms
 /// and your data may be corrupted if that happens.
 ///
 /// Usage example:
 /// \code
-/// std::uint32_t x = 24;
+/// base::U32 x = 24;
 /// std::string s = "hello";
 /// double d = 5.89;
 ///
@@ -474,7 +458,7 @@ private:
 /// socket.receive(packet);
 ///
 /// // Extract the variables contained in the packet
-/// std::uint32_t x;
+/// base::U32 x;
 /// std::string s;
 /// double d;
 /// if (packet >> x >> s >> d)
@@ -498,7 +482,7 @@ private:
 /// struct MyStruct
 /// {
 ///     float       number{};
-///     std::int8_t integer{};
+///     base::I8 integer{};
 ///     std::string str;
 /// };
 ///
@@ -524,17 +508,17 @@ private:
 /// \code
 /// class ZipPacket : public sf::Packet
 /// {
-///     const void* onSend(std::size_t& size) override
+///     const void* onSend(base::SizeT& size) override
 ///     {
 ///         const void* srcData = getData();
-///         std::size_t srcSize = getDataSize();
+///         base::SizeT srcSize = getDataSize();
 ///
 ///         return MySuperZipFunction(srcData, srcSize, &size);
 ///     }
 ///
-///     void onReceive(const void* data, std::size_t size) override
+///     void onReceive(const void* data, base::SizeT size) override
 ///     {
-///         std::size_t dstSize;
+///         base::SizeT dstSize;
 ///         const void* dstData = MySuperUnzipFunction(data, size, &dstSize);
 ///
 ///         append(dstData, dstSize);

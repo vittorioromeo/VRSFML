@@ -1,27 +1,29 @@
-#include <SFML/Network/Http.hpp>
+#include "SFML/Network/Http.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
+
+#include <string>
 
 TEST_CASE("[Network] sf::Http")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Http>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Http>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::Http>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::Http>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Http));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http));
     }
 
     SECTION("Request")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(std::is_copy_constructible_v<sf::Http::Request>);
-            STATIC_CHECK(std::is_copy_assignable_v<sf::Http::Request>);
-            STATIC_CHECK(std::is_move_constructible_v<sf::Http::Request>);
-            STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Http::Request>);
+            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http::Request));
+            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http::Request));
+            STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Http::Request));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http::Request));
         }
     }
 
@@ -29,10 +31,10 @@ TEST_CASE("[Network] sf::Http")
     {
         SECTION("Type traits")
         {
-            STATIC_CHECK(std::is_copy_constructible_v<sf::Http::Response>);
-            STATIC_CHECK(std::is_copy_assignable_v<sf::Http::Response>);
-            STATIC_CHECK(std::is_move_constructible_v<sf::Http::Response>);
-            STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Http::Response>);
+            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Http::Response));
+            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Http::Response));
+            STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Http::Response));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Http::Response));
         }
 
         SECTION("Construction")

@@ -1,49 +1,17 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <array>
 #include <locale>
-
-#include <cstdint>
-#include <cstdlib>
 
 
 namespace sf
 {
-namespace priv
-{
-template <class InputIt, class OutputIt>
-OutputIt copy(InputIt first, InputIt last, OutputIt dFirst);
-}
-
 template <unsigned int N>
 class Utf;
 
@@ -86,7 +54,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Out>
-    static Out encode(char32_t input, Out output, std::uint8_t replacement = 0);
+    static Out encode(char32_t input, Out output, base::U8 replacement = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Advance to the next UTF-8 character
@@ -117,7 +85,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-8
@@ -323,7 +291,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-16
@@ -530,7 +498,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static std::size_t count(In begin, In end);
+    [[nodiscard]] static base::SizeT count(In begin, In end);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert an ANSI characters range to UTF-32
@@ -679,7 +647,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static char32_t decodeAnsi(In input, const std::locale& locale = {});
+    [[nodiscard]] static char32_t decodeAnsi(In input, const std::locale& locale = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Decode a single wide character to UTF-32
@@ -694,7 +662,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename In>
-    static char32_t decodeWide(In input);
+    [[nodiscard]] static char32_t decodeWide(In input);
 
     ////////////////////////////////////////////////////////////
     /// \brief Encode a single UTF-32 character to ANSI
@@ -739,7 +707,7 @@ using Utf32 = Utf<32>;
 
 } // namespace sf
 
-#include <SFML/System/Utf.inl>
+#include "SFML/System/Utf.inl"
 
 
 ////////////////////////////////////////////////////////////

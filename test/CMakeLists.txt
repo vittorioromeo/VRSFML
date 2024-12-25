@@ -1,44 +1,70 @@
-include(FetchContent)
-
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
-set(CATCH_CONFIG_FAST_COMPILE ON CACHE BOOL "")
-set(CATCH_CONFIG_NO_EXPERIMENTAL_STATIC_ANALYSIS_SUPPORT ON CACHE BOOL "")
-FetchContent_Declare(Catch2
-    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v3.7.0
-    GIT_SHALLOW ON)
-FetchContent_MakeAvailable(Catch2)
-include(Catch)
+set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
-# Build Catch2 in C++17 mode to enable C++17 features
-target_compile_features(Catch2 PRIVATE cxx_std_17)
-
-# Ensure that Catch2 sources and headers are not analyzed by any tools
-set_target_properties(Catch2 PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(Catch2WithMain PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
-set_target_properties(Catch2 Catch2WithMain PROPERTIES FOLDER "Dependencies")
-get_target_property(CATCH2_INCLUDE_DIRS Catch2 INTERFACE_INCLUDE_DIRECTORIES)
-target_include_directories(Catch2 SYSTEM INTERFACE ${CATCH2_INCLUDE_DIRS})
-
-add_library(sfml-test-main STATIC
-    TestUtilities/SystemUtil.hpp
-    TestUtilities/SystemUtil.cpp
-    TestUtilities/WindowUtil.hpp
-    TestUtilities/WindowUtil.cpp
-    TestUtilities/GraphicsUtil.hpp
-    TestUtilities/GraphicsUtil.cpp
-    TestUtilities/AudioUtil.hpp
-    TestUtilities/AudioUtil.cpp
+CPMAddPackage(
+    NAME doctest
+    GITHUB_REPOSITORY doctest/doctest
+    GIT_TAG v2.4.11
+    SYSTEM TRUE
 )
+
+include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
+
+# include_directories(${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+# add_definitions(-include Tracy.hpp)
+# add_definitions(-DTRACY_ENABLE)
+#
+# add_library(tracyclient SHARED ${PROJECT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
+# target_link_libraries(tracyclient PRIVATE ws2_32 winmm gdi32 dbghelp)
+
+
+
+# Build doctest in C++20 mode to enable C++20 features
+target_compile_features(doctest INTERFACE cxx_std_20)
+
+# Ensure that doctest sources and headers are not analyzed by any tools
+set_target_properties(doctest PROPERTIES COMPILE_OPTIONS "" EXPORT_COMPILE_COMMANDS OFF)
+set_target_properties(doctest_with_main PROPERTIES EXPORT_COMPILE_COMMANDS OFF)
+set_target_properties(doctest doctest_with_main PROPERTIES FOLDER "Dependencies")
+get_target_property(DOCTEST_INCLUDE_DIRS doctest INTERFACE_INCLUDE_DIRECTORIES)
+target_include_directories(doctest SYSTEM INTERFACE ${DOCTEST_INCLUDE_DIRS})
+target_compile_options(doctest_with_main PRIVATE "-w")
+
+# add flags required for emscripten support (e.g. pthread)
+if(SFML_OS_EMSCRIPTEN)
+    target_compile_definitions(doctest INTERFACE DOCTEST_CONFIG_COLORS_NONE)
+    target_compile_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+    target_link_options(doctest INTERFACE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+endif()
+
+set(TEST_SRCROOT ${PROJECT_SOURCE_DIR}/test)
+file(GLOB TEST_UTILITIES_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/TestUtilities/*.cpp" "${TEST_SRCROOT}/TestUtilities/*.hpp" "${TEST_SRCROOT}/TestUtilities/*.inl")
+
+add_library(sfml-test-main STATIC ${TEST_UTILITIES_SRC})
 target_include_directories(sfml-test-main PUBLIC TestUtilities)
-target_link_libraries(sfml-test-main PUBLIC SFML::System Catch2::Catch2WithMain)
+target_compile_definitions(sfml-test-main PUBLIC DOCTEST_CONFIG_REQUIRE_STRINGIFICATION_FOR_ALL_USED_TYPES)
+
 set_target_warnings(sfml-test-main)
 
+# enable precompiled headers
+if (SFML_ENABLE_PCH)
+    message(VERBOSE "enabling PCH for doctest")
+
+    target_precompile_headers(doctest_with_main REUSE_FROM sfml-system)
+    target_precompile_headers(sfml-test-main REUSE_FROM sfml-system)
+
+    target_include_directories(sfml-system PUBLIC ${DOCTEST_INCLUDE_DIRS})
+    target_link_libraries(sfml-system PUBLIC $<BUILD_INTERFACE:doctest::doctest>)
+    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest)
+else()
+    target_link_libraries(sfml-test-main PUBLIC SFML::System doctest::doctest_with_main)
+endif()
+
 # set the target flags to use the appropriate C++ standard library
-sfml_set_stdlib(Catch2)
-sfml_set_stdlib(Catch2WithMain)
+sfml_set_stdlib(doctest)
+sfml_set_stdlib(doctest_with_main)
 sfml_set_stdlib(sfml-test-main)
 
 sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
@@ -51,21 +77,10 @@ if(SFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
-set(SYSTEM_SRC
-    System/Angle.test.cpp
-    System/Clock.test.cpp
-    System/Config.test.cpp
-    System/Err.test.cpp
-    System/Exception.test.cpp
-    System/FileInputStream.test.cpp
-    System/MemoryInputStream.test.cpp
-    System/Sleep.test.cpp
-    System/String.test.cpp
-    System/Time.test.cpp
-    System/Utf.test.cpp
-    System/Vector2.test.cpp
-    System/Vector3.test.cpp
-)
+file(GLOB BASE_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Base/*.cpp" "${TEST_SRCROOT}/Base/*.hpp" "${TEST_SRCROOT}/Base/*.inl")
+sfml_add_test(test-sfml-base "${BASE_SRC}" "")
+
+file(GLOB SYSTEM_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/System/*.cpp" "${TEST_SRCROOT}/System/*.hpp" "${TEST_SRCROOT}/System/*.inl")
 sfml_add_test(test-sfml-system "${SYSTEM_SRC}" "")
 target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_MAJOR=${SFML_VERSION_MAJOR}
@@ -74,87 +89,37 @@ target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
 )
 
-set(WINDOW_SRC
-    Window/Clipboard.test.cpp
-    Window/Context.test.cpp
-    Window/ContextSettings.test.cpp
-    Window/Cursor.test.cpp
-    Window/Event.test.cpp
-    Window/GlResource.test.cpp
-    Window/Joystick.test.cpp
-    Window/Keyboard.test.cpp
-    Window/VideoMode.test.cpp
-    Window/Vulkan.test.cpp
-    Window/Window.test.cpp
-    Window/WindowBase.test.cpp
-)
+file(GLOB WINDOW_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Window/*.cpp" "${TEST_SRCROOT}/Window/*.hpp" "${TEST_SRCROOT}/Window/*.inl")
 sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window)
 
-set(GRAPHICS_SRC
-    Graphics/BlendMode.test.cpp
-    Graphics/CircleShape.test.cpp
-    Graphics/Color.test.cpp
-    Graphics/ConvexShape.test.cpp
-    Graphics/CoordinateType.test.cpp
-    Graphics/Drawable.test.cpp
-    Graphics/Font.test.cpp
-    Graphics/Glsl.test.cpp
-    Graphics/Glyph.test.cpp
-    Graphics/Image.test.cpp
-    Graphics/Rect.test.cpp
-    Graphics/RectangleShape.test.cpp
-    Graphics/Render.test.cpp
-    Graphics/RenderStates.test.cpp
-    Graphics/RenderTarget.test.cpp
-    Graphics/RenderTexture.test.cpp
-    Graphics/RenderWindow.test.cpp
-    Graphics/Shader.test.cpp
-    Graphics/Shape.test.cpp
-    Graphics/Sprite.test.cpp
-    Graphics/StencilMode.test.cpp
-    Graphics/Text.test.cpp
-    Graphics/Texture.test.cpp
-    Graphics/Transform.test.cpp
-    Graphics/Transformable.test.cpp
-    Graphics/Vertex.test.cpp
-    Graphics/VertexArray.test.cpp
-    Graphics/VertexBuffer.test.cpp
-    Graphics/View.test.cpp
-)
+file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Graphics/*.cpp" "${TEST_SRCROOT}/Graphics/*.hpp" "${TEST_SRCROOT}/Graphics/*.inl")
 sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
+
 if(SFML_RUN_DISPLAY_TESTS)
     target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
 endif()
+if(SFML_OS_EMSCRIPTEN)
+    set(GRAPHICS_TEST_RESOURCES
+        Graphics/invalid_shader.vert
+        Graphics/sfml-logo-big.bmp
+        Graphics/sfml-logo-big.gif
+        Graphics/sfml-logo-big.jpg
+        Graphics/sfml-logo-big.png
+        Graphics/sfml-logo-big.psd
+        Graphics/shader.frag
+        Graphics/shader.geom
+        Graphics/shader.vert
+        Graphics/tuffy.ttf)
 
-set(NETWORK_SRC
-    Network/Ftp.test.cpp
-    Network/Http.test.cpp
-    Network/IpAddress.test.cpp
-    Network/Packet.test.cpp
-    Network/Socket.test.cpp
-    Network/SocketSelector.test.cpp
-    Network/TcpListener.test.cpp
-    Network/TcpSocket.test.cpp
-    Network/UdpSocket.test.cpp
-)
+    foreach(RESOURCE ${GRAPHICS_TEST_RESOURCES})
+        target_link_options(test-sfml-graphics PRIVATE "SHELL:--embed-file ${RESOURCE}")
+    endforeach()
+endif()
+
+file(GLOB NETWORK_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Network/*.cpp" "${TEST_SRCROOT}/Network/*.hpp" "${TEST_SRCROOT}/Network/*.inl")
 sfml_add_test(test-sfml-network "${NETWORK_SRC}" SFML::Network)
 
-set(AUDIO_SRC
-    Audio/AudioResource.test.cpp
-    Audio/InputSoundFile.test.cpp
-    Audio/Listener.test.cpp
-    Audio/Music.test.cpp
-    Audio/OutputSoundFile.test.cpp
-    Audio/Sound.test.cpp
-    Audio/SoundBuffer.test.cpp
-    Audio/SoundBufferRecorder.test.cpp
-    Audio/SoundFileFactory.test.cpp
-    Audio/SoundFileReader.test.cpp
-    Audio/SoundFileWriter.test.cpp
-    Audio/SoundRecorder.test.cpp
-    Audio/SoundSource.test.cpp
-    Audio/SoundStream.test.cpp
-)
+file(GLOB AUDIO_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Audio/*.cpp" "${TEST_SRCROOT}/Audio/*.hpp" "${TEST_SRCROOT}/Audio/*.inl")
 sfml_add_test(test-sfml-audio "${AUDIO_SRC}" SFML::Audio)
 
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
@@ -166,17 +131,19 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         "#!/bin/bash\n\
         adb shell \"mkdir -p ${TARGET_DIR}\"\n\
         adb push $<TARGET_FILE:test-sfml-audio>    ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-base>     ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-graphics> ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-network>  ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-system>   ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-window>   ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Audio>        ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Graphics>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::ImGui>        ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Network>      ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::System>       ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Window>       ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:Catch2>             ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:Catch2WithMain>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest>            ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest_with_main>  ${TARGET_DIR}\n\
         adb push $ENV{LIBCXX_SHARED_SO}            ${TARGET_DIR}\n\
         adb push ${CMAKE_CURRENT_LIST_DIR}         ${TARGET_DIR}\n\
         adb shell \"chmod -R 775 ${TARGET_DIR} && ls -la ${TARGET_DIR}\"\n"
@@ -238,7 +205,7 @@ else()
 endif()
 
 # Convenience for building and running tests in a single command
-add_custom_target(runtests DEPENDS test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
+add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD

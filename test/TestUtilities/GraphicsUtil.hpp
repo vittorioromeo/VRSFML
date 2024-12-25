@@ -6,16 +6,18 @@
 #pragma once
 
 #include <SystemUtil.hpp>
+
 #include <iosfwd>
 
 namespace sf
 {
+enum class StencilComparison : unsigned int;
+enum class StencilUpdateOperation : unsigned int;
+
 struct BlendMode;
-enum class StencilComparison;
-enum class StencilUpdateOperation;
+struct Color;
 struct StencilMode;
-class Color;
-class Transform;
+struct Transform;
 
 template <typename>
 class Rect;

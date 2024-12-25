@@ -6,6 +6,7 @@ include(CMakeFindDependencyMacro)
 set(FIND_SFML_DEPENDENCIES_NOTFOUND)
 
 find_dependency(Threads)
+find_dependency(cpptrace)
 
 if(FIND_SFML_DEPENDENCIES_NOTFOUND)
     set(FIND_SFML_ERROR "SFML found but some of its dependencies are missing (${FIND_SFML_DEPENDENCIES_NOTFOUND})")

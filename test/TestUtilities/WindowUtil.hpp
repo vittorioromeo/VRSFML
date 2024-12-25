@@ -5,15 +5,18 @@
 
 #pragma once
 
-#include <SystemUtil.hpp>
-#include <string>
+#include <iosfwd>
 
-std::string runDisplayTests();
+#ifdef SFML_RUN_DISPLAY_TESTS
+inline constexpr bool skipDisplayTests = false;
+#else
+inline constexpr bool skipDisplayTests = true;
+#endif
 
 // String conversions for Catch2
 namespace sf
 {
-class VideoMode;
+struct VideoMode;
 
 std::ostream& operator<<(std::ostream& os, const VideoMode& videoMode);
 } // namespace sf

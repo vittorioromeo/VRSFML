@@ -1,69 +1,41 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/CursorImpl.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/Sensor.hpp>
-#include <SFML/Window/SensorImpl.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/Vulkan.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/System/EnumArray.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
-
-#include <array>
-#include <memory>
-#include <optional>
-#include <queue>
-
-#include <cstdint>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 namespace sf
 {
 class String;
 class Time;
+struct WindowSettings;
+
+namespace Vulkan
+{
+struct VulkanSurfaceData;
+} // namespace Vulkan
 
 namespace priv
 {
+class CursorImpl;
+class JoystickManager;
+
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for OS-specific window implementation
 ///
 ////////////////////////////////////////////////////////////
-class WindowImpl
+class [[nodiscard]] WindowImpl // TODO P1: Remove and rely on `.cpp` compilation? how to deal with state?
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -78,11 +50,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(VideoMode              mode,
-                                              const String&          title,
-                                              std::uint32_t          style,
-                                              State                  state,
-                                              const ContextSettings& settings);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -92,7 +60,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    static std::unique_ptr<WindowImpl> create(WindowHandle handle);
+    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -129,10 +97,10 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event on success, `std::nullopt` otherwise
+    /// \return The event on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> waitEvent(Time timeout);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the next window event, if available
@@ -140,10 +108,10 @@ public:
     /// If there's no event available, this function calls the
     /// window's internal event processing function.
     ///
-    /// \return The event if available, `std::nullopt` otherwise
+    /// \return The event if available, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> pollEvent();
+    [[nodiscard]] base::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -167,7 +135,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Vector2u> getMinimumSize() const;
+    [[nodiscard]] base::Optional<Vector2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -175,7 +143,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Vector2u> getMaximumSize() const;
+    [[nodiscard]] base::Optional<Vector2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -204,22 +172,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the minimum size
+    /// Pass `base::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+    virtual void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the maximum size
+    /// Pass `base::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMaximumSize(const std::optional<Vector2u>& maximumSize);
+    virtual void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -236,7 +204,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setIcon(Vector2u size, const std::uint8_t* pixels) = 0;
+    virtual void setIcon(Vector2u size, const base::U8* pixels) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -303,14 +271,14 @@ public:
     /// \return `true` if surface creation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    bool createVulkanSurface(const VkInstance& instance, VkSurfaceKHR& surface, const VkAllocationCallbacks* allocator) const;
+    [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const;
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl();
+    [[nodiscard]] explicit WindowImpl();
 
     ////////////////////////////////////////////////////////////
     /// \brief Push a new event into the event queue
@@ -331,13 +299,11 @@ protected:
     virtual void processEvents() = 0;
 
 private:
-    struct JoystickStatesImpl;
-
     ////////////////////////////////////////////////////////////
-    /// \return First event of the queue if available, `std::nullopt` otherwise
+    /// \return First event of the queue if available, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> popEvent();
+    [[nodiscard]] base::Optional<Event> popEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Read the joysticks state and generate the appropriate events
@@ -360,14 +326,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::queue<Event>                                m_events;             //!< Queue of available events
-    std::unique_ptr<JoystickStatesImpl>              m_joystickStatesImpl; //!< Previous state of the joysticks (PImpl)
-    EnumArray<Sensor::Type, Vector3f, Sensor::Count> m_sensorValue;        //!< Previous value of the sensors
-    float m_joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
-    std::array<EnumArray<Joystick::Axis, float, Joystick::AxisCount>, Joystick::Count>
-        m_previousAxes{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
-    std::optional<Vector2u> m_minimumSize; //!< Minimum window size
-    std::optional<Vector2u> m_maximumSize; //!< Maximum window size
+    struct Impl;
+    base::InPlacePImpl<Impl, 1024> m_impl; //!< Implementation details
 };
 
 } // namespace priv

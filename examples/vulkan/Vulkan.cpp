@@ -5,9 +5,21 @@
 #include <vulkan.h>
 
 // Include graphics because we use sf::Image for loading images
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics/Image.hpp"
 
-#include <SFML/Window.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Vulkan.hpp"
+#include "SFML/Window/WindowBase.hpp"
+#include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include <algorithm>
 #include <array>
@@ -26,21 +38,20 @@
 ////////////////////////////////////////////////////////////
 namespace
 {
-using Matrix = std::array<std::array<float, 4>, 4>;
+using Matrix = float[4][4];
 
 // Multiply 2 matrices
-void matrixMultiply(Matrix& result, const Matrix& left, const Matrix& right)
+void matrixMultiply(Matrix& result, const Matrix& lhs, const Matrix& rhs)
 {
     Matrix temp;
 
-    for (std::size_t i = 0; i < temp.size(); ++i)
+    for (int i = 0; i < 4; ++i)
     {
-        for (std::size_t j = 0; j < temp[0].size(); ++j)
-            temp[i][j] = left[0][j] * right[i][0] + left[1][j] * right[i][1] + left[2][j] * right[i][2] +
-                         left[3][j] * right[i][3];
+        for (int j = 0; j < 4; ++j)
+            temp[i][j] = lhs[0][j] * rhs[i][0] + lhs[1][j] * rhs[i][1] + lhs[2][j] * rhs[i][2] + lhs[3][j] * rhs[i][3];
     }
 
-    result = temp;
+    std::memcpy(result, temp, sizeof(Matrix));
 }
 
 // Rotate a matrix around the x-axis
@@ -49,12 +60,12 @@ void matrixRotateX(Matrix& result, sf::Angle angle)
     const float rad = angle.asRadians();
 
     // clang-format off
-    const Matrix matrix = {{
+    const Matrix matrix = {
         {1.f,   0.f,           0.f,           0.f},
         {0.f,   std::cos(rad), std::sin(rad), 0.f},
         {0.f,  -std::sin(rad), std::cos(rad), 0.f},
         {0.f,   0.f,           0.f,           1.f}
-    }};
+    };
     // clang-format on
 
     matrixMultiply(result, result, matrix);
@@ -66,12 +77,12 @@ void matrixRotateY(Matrix& result, sf::Angle angle)
     const float rad = angle.asRadians();
 
     // clang-format off
-    const Matrix matrix = {{
+    const Matrix matrix = {
         { std::cos(rad), 0.f, std::sin(rad), 0.f},
         { 0.f,           1.f, 0.f,           0.f},
         {-std::sin(rad), 0.f, std::cos(rad), 0.f},
         { 0.f,           0.f, 0.f,           1.f}
-    }};
+    };
     // clang-format on
 
     matrixMultiply(result, result, matrix);
@@ -83,12 +94,12 @@ void matrixRotateZ(Matrix& result, sf::Angle angle)
     const float rad = angle.asRadians();
 
     // clang-format off
-    const Matrix matrix = {{
+    const Matrix matrix = {
         { std::cos(rad), std::sin(rad), 0.f, 0.f},
         {-std::sin(rad), std::cos(rad), 0.f, 0.f},
         { 0.f,           0.f,           1.f, 0.f},
         { 0.f,           0.f,           0.f, 1.f}
-    }};
+    };
     // clang-format on
 
     matrixMultiply(result, result, matrix);
@@ -181,7 +192,7 @@ class VulkanExample
 {
 public:
     // Constructor
-    VulkanExample()
+    VulkanExample() : window{{.size{800u, 600u}, .title = "SFML window with Vulkan"}}
     {
         // Vulkan setup procedure
         if (vulkanAvailable)
@@ -459,7 +470,11 @@ public:
         }
 
         // Retrieve the extensions we need to enable in order to use Vulkan with SFML
-        std::vector<const char*> requiredExtensions = sf::Vulkan::getGraphicsRequiredInstanceExtensions();
+        std::vector<const char*> requiredExtensions;
+
+        for (const char* e : sf::Vulkan::getGraphicsRequiredInstanceExtensions())
+            requiredExtensions.push_back(e);
+
         requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
         // Register our application information
@@ -530,7 +545,7 @@ public:
     // Setup the SFML window Vulkan rendering surface
     void setupSurface()
     {
-        if (!window.createVulkanSurface(instance, surface))
+        if (!window.createVulkanSurface(sf::Vulkan::VulkanSurfaceData{instance, surface}))
             vulkanAvailable = false;
     }
 
@@ -685,12 +700,12 @@ public:
 
             if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && (surfaceSupported == VK_TRUE))
             {
-                queueFamilyIndex = static_cast<std::uint32_t>(i);
+                queueFamilyIndex.emplace(static_cast<std::uint32_t>(i));
                 break;
             }
         }
 
-        if (!queueFamilyIndex.has_value())
+        if (!queueFamilyIndex.hasValue())
         {
             vulkanAvailable = false;
             return;
@@ -705,7 +720,7 @@ public:
         deviceQueueCreateInfo.pQueuePriorities        = &queuePriority;
 
         // Enable the swapchain extension
-        static constexpr std::array extensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        const char* extensions[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
 
         // Enable anisotropic filtering
         VkPhysicalDeviceFeatures physicalDeviceFeatures = VkPhysicalDeviceFeatures();
@@ -713,8 +728,8 @@ public:
 
         VkDeviceCreateInfo deviceCreateInfo      = VkDeviceCreateInfo();
         deviceCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        deviceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(extensions.size());
-        deviceCreateInfo.ppEnabledExtensionNames = extensions.data();
+        deviceCreateInfo.enabledExtensionCount   = 1;
+        deviceCreateInfo.ppEnabledExtensionNames = extensions;
         deviceCreateInfo.queueCreateInfoCount    = 1;
         deviceCreateInfo.pQueueCreateInfos       = &deviceQueueCreateInfo;
         deviceCreateInfo.pEnabledFeatures        = &physicalDeviceFeatures;
@@ -907,17 +922,17 @@ public:
 
         // Use the vertex shader SPIR-V code to create a vertex shader module
         {
-            sf::FileInputStream file;
-            if (!file.open("resources/shader.vert.spv"))
+            auto file = sf::FileInputStream::open("resources/shader.vert.spv");
+            if (!file.hasValue())
             {
                 vulkanAvailable = false;
                 return;
             }
 
-            const auto                 fileSize = file.getSize().value();
+            const auto                 fileSize = file->getSize().value();
             std::vector<std::uint32_t> buffer(fileSize / sizeof(std::uint32_t));
 
-            if (file.read(buffer.data(), fileSize) != file.getSize())
+            if (file->read(buffer.data(), fileSize) != file->getSize())
             {
                 vulkanAvailable = false;
                 return;
@@ -935,17 +950,17 @@ public:
 
         // Use the fragment shader SPIR-V code to create a fragment shader module
         {
-            sf::FileInputStream file;
-            if (!file.open("resources/shader.frag.spv"))
+            auto file = sf::FileInputStream::open("resources/shader.frag.spv");
+            if (!file.hasValue())
             {
                 vulkanAvailable = false;
                 return;
             }
 
-            const auto                 fileSize = file.getSize().value();
+            const auto                 fileSize = file->getSize().value();
             std::vector<std::uint32_t> buffer(fileSize / sizeof(std::uint32_t));
 
-            if (file.read(buffer.data(), fileSize) != file.getSize())
+            if (file->read(buffer.data(), fileSize) != file->getSize())
             {
                 vulkanAvailable = false;
                 return;
@@ -978,7 +993,7 @@ public:
     // Setup renderpass and its subpass dependencies
     void setupRenderpass()
     {
-        std::array<VkAttachmentDescription, 2> attachmentDescriptions{};
+        VkAttachmentDescription attachmentDescriptions[2];
 
         // Color attachment
         attachmentDescriptions[0]                = VkAttachmentDescription();
@@ -1027,8 +1042,8 @@ public:
 
         VkRenderPassCreateInfo renderPassCreateInfo = VkRenderPassCreateInfo();
         renderPassCreateInfo.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount        = static_cast<std::uint32_t>(attachmentDescriptions.size());
-        renderPassCreateInfo.pAttachments           = attachmentDescriptions.data();
+        renderPassCreateInfo.attachmentCount        = 2;
+        renderPassCreateInfo.pAttachments           = attachmentDescriptions;
         renderPassCreateInfo.subpassCount           = 1;
         renderPassCreateInfo.pSubpasses             = &subpassDescription;
         renderPassCreateInfo.dependencyCount        = 1;
@@ -1045,7 +1060,7 @@ public:
     // Set up uniform buffer and texture sampler descriptor set layouts
     void setupDescriptorSetLayout()
     {
-        std::array<VkDescriptorSetLayoutBinding, 2> descriptorSetLayoutBindings{};
+        VkDescriptorSetLayoutBinding descriptorSetLayoutBindings[2];
 
         // Layout binding for uniform buffer
         descriptorSetLayoutBindings[0]                 = VkDescriptorSetLayoutBinding();
@@ -1063,8 +1078,8 @@ public:
 
         VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo();
         descriptorSetLayoutCreateInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptorSetLayoutCreateInfo.bindingCount = static_cast<std::uint32_t>(descriptorSetLayoutBindings.size());
-        descriptorSetLayoutCreateInfo.pBindings    = descriptorSetLayoutBindings.data();
+        descriptorSetLayoutCreateInfo.bindingCount = 2;
+        descriptorSetLayoutCreateInfo.pBindings    = descriptorSetLayoutBindings;
 
         // Create descriptor set layout
         if (vkCreateDescriptorSetLayout(device, &descriptorSetLayoutCreateInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS)
@@ -1100,7 +1115,7 @@ public:
         vertexInputBindingDescription.inputRate                       = VK_VERTEX_INPUT_RATE_VERTEX;
 
         // Set up how the vertex buffer data is interpreted as attributes by the vertex shader
-        std::array<VkVertexInputAttributeDescription, 3> vertexInputAttributeDescriptions{};
+        VkVertexInputAttributeDescription vertexInputAttributeDescriptions[3];
 
         // Position attribute
         vertexInputAttributeDescriptions[0]          = VkVertexInputAttributeDescription();
@@ -1127,9 +1142,8 @@ public:
         vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertexInputStateCreateInfo.vertexBindingDescriptionCount   = 1;
         vertexInputStateCreateInfo.pVertexBindingDescriptions      = &vertexInputBindingDescription;
-        vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<std::uint32_t>(
-            vertexInputAttributeDescriptions.size());
-        vertexInputStateCreateInfo.pVertexAttributeDescriptions = vertexInputAttributeDescriptions.data();
+        vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 3;
+        vertexInputStateCreateInfo.pVertexAttributeDescriptions    = vertexInputAttributeDescriptions;
 
         // We want to generate a triangle list with our vertex data
         VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = VkPipelineInputAssemblyStateCreateInfo();
@@ -1205,8 +1219,8 @@ public:
 
         VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = VkGraphicsPipelineCreateInfo();
         graphicsPipelineCreateInfo.sType                        = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-        graphicsPipelineCreateInfo.stageCount                   = static_cast<std::uint32_t>(shaderStages.size());
-        graphicsPipelineCreateInfo.pStages                      = shaderStages.data();
+        graphicsPipelineCreateInfo.stageCount                   = 2;
+        graphicsPipelineCreateInfo.pStages                      = shaderStages;
         graphicsPipelineCreateInfo.pVertexInputState            = &vertexInputStateCreateInfo;
         graphicsPipelineCreateInfo.pInputAssemblyState          = &inputAssemblyStateCreateInfo;
         graphicsPipelineCreateInfo.pViewportState               = &pipelineViewportStateCreateInfo;
@@ -1243,9 +1257,9 @@ public:
         for (std::size_t i = 0; i < swapchainFramebuffers.size(); ++i)
         {
             // Each framebuffer consists of a corresponding swapchain image and the shared depth image
-            const std::array attachments = {swapchainImageViews[i], depthImageView};
+            VkImageView attachments[] = {swapchainImageViews[i], depthImageView};
 
-            framebufferCreateInfo.pAttachments = attachments.data();
+            framebufferCreateInfo.pAttachments = attachments;
 
             // Create the framebuffer
             if (vkCreateFramebuffer(device, &framebufferCreateInfo, nullptr, &swapchainFramebuffers[i]) != VK_SUCCESS)
@@ -1786,12 +1800,15 @@ public:
     void setupTextureImage()
     {
         // Load the image data
-        sf::Image imageData;
-        if (!imageData.loadFromFile("resources/logo.png"))
+        const auto maybeImageData = sf::Image::loadFromFile("resources/logo.png");
+
+        if (!maybeImageData.hasValue())
         {
             vulkanAvailable = false;
             return;
         }
+
+        const auto& imageData = *maybeImageData;
 
         // Create a staging buffer to transfer the data with
         const VkDeviceSize imageSize = imageData.getSize().x * imageData.getSize().y * 4;
@@ -2131,7 +2148,7 @@ public:
     void setupDescriptorPool()
     {
         // We need to allocate as many descriptor sets as we have frames in flight
-        std::array<VkDescriptorPoolSize, 2> descriptorPoolSizes{};
+        VkDescriptorPoolSize descriptorPoolSizes[2];
 
         descriptorPoolSizes[0]                 = VkDescriptorPoolSize();
         descriptorPoolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -2143,8 +2160,8 @@ public:
 
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = VkDescriptorPoolCreateInfo();
         descriptorPoolCreateInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptorPoolCreateInfo.poolSizeCount              = static_cast<std::uint32_t>(descriptorPoolSizes.size());
-        descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes.data();
+        descriptorPoolCreateInfo.poolSizeCount              = 2;
+        descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes;
         descriptorPoolCreateInfo.maxSets                    = static_cast<std::uint32_t>(swapchainImages.size());
 
         // Create the descriptor pool
@@ -2180,7 +2197,7 @@ public:
         // For every descriptor set, set up the bindings to our uniform buffer and texture sampler
         for (std::size_t i = 0; i < descriptorSets.size(); ++i)
         {
-            std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
+            VkWriteDescriptorSet writeDescriptorSets[2];
 
             // Uniform buffer binding information
             VkDescriptorBufferInfo descriptorBufferInfo = VkDescriptorBufferInfo();
@@ -2213,11 +2230,7 @@ public:
             writeDescriptorSets[1].pImageInfo      = &descriptorImageInfo;
 
             // Update the descriptor set
-            vkUpdateDescriptorSets(device,
-                                   static_cast<std::uint32_t>(writeDescriptorSets.size()),
-                                   writeDescriptorSets.data(),
-                                   0,
-                                   nullptr);
+            vkUpdateDescriptorSets(device, 2, writeDescriptorSets, 0, nullptr);
         }
     }
 
@@ -2247,7 +2260,7 @@ public:
     void setupDraw()
     {
         // Set up our clear colors
-        std::array<VkClearValue, 2> clearColors{};
+        VkClearValue clearColors[2];
 
         // Clear color buffer to opaque black
         clearColors[0]                  = VkClearValue();
@@ -2267,8 +2280,8 @@ public:
         renderPassBeginInfo.renderArea.offset.x   = 0;
         renderPassBeginInfo.renderArea.offset.y   = 0;
         renderPassBeginInfo.renderArea.extent     = swapchainExtent;
-        renderPassBeginInfo.clearValueCount       = static_cast<std::uint32_t>(clearColors.size());
-        renderPassBeginInfo.pClearValues          = clearColors.data();
+        renderPassBeginInfo.clearValueCount       = 2;
+        renderPassBeginInfo.pClearValues          = clearColors;
 
         // Simultaneous use: this command buffer can be resubmitted to a queue before a previous submission is completed
         VkCommandBufferBeginInfo commandBufferBeginInfo = VkCommandBufferBeginInfo();
@@ -2385,24 +2398,17 @@ public:
     void updateUniformBuffer(float elapsed)
     {
         // Construct the model matrix
-        // clang-format off
-        Matrix model = {{
-            {1.0f, 0.0f, 0.0f, 0.0f},
-            {0.0f, 1.0f, 0.0f, 0.0f},
-            {0.0f, 0.0f, 1.0f, 0.0f},
-            {0.0f, 0.0f, 0.0f, 1.0f}
-        }};
-        // clang-format on
+        Matrix model = {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}};
 
         matrixRotateX(model, sf::degrees(elapsed * 59.0f));
         matrixRotateY(model, sf::degrees(elapsed * 83.0f));
         matrixRotateZ(model, sf::degrees(elapsed * 109.0f));
 
         // Translate the model based on the mouse position
-        const sf::Vector2f mousePosition = sf::Vector2f(sf::Mouse::getPosition(window));
-        const sf::Vector2f windowSize    = sf::Vector2f(window.getSize());
-        const float        x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
-        const float        y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
+        const auto  mousePosition = sf::Mouse::getPosition(window).toVector2f();
+        const auto  windowSize    = window.getSize().toVector2f();
+        const float x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
+        const float y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;
@@ -2436,9 +2442,9 @@ public:
         }
 
         // Copy the matrix data into the current frame's uniform buffer
-        std::memcpy(ptr + sizeof(Matrix) * 0, model.data(), sizeof(Matrix));
-        std::memcpy(ptr + sizeof(Matrix) * 1, view.data(), sizeof(Matrix));
-        std::memcpy(ptr + sizeof(Matrix) * 2, projection.data(), sizeof(Matrix));
+        std::memcpy(ptr + sizeof(Matrix) * 0, model, sizeof(Matrix));
+        std::memcpy(ptr + sizeof(Matrix) * 1, view, sizeof(Matrix));
+        std::memcpy(ptr + sizeof(Matrix) * 2, projection, sizeof(Matrix));
 
         // Unmap the buffer
         vkUnmapMemory(device, uniformBuffersMemory[currentFrame]);
@@ -2533,26 +2539,20 @@ public:
         const sf::Clock clock;
 
         // Start game loop
-        while (window.isOpen())
+        while (true)
         {
             // Process events
-            while (const std::optional event = window.pollEvent())
+            while (const sf::base::Optional event = window.pollEvent())
             {
-                // Window closed or escape key pressed: exit
-                if (event->is<sf::Event::Closed>() ||
-                    (event->is<sf::Event::KeyPressed>() &&
-                     event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-                {
-                    window.close();
-                }
+                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                    return;
 
                 // Re-create the swapchain when the window is resized
                 if (event->is<sf::Event::Resized>())
                     swapchainOutOfDate = true;
             }
 
-            // Check that window was not closed before drawing to it
-            if (vulkanAvailable && window.isOpen())
+            if (vulkanAvailable)
             {
                 // Update the uniform buffer (matrices)
                 updateUniformBuffer(clock.getElapsedTime().asSeconds());
@@ -2565,7 +2565,7 @@ public:
 
 private:
     // NOLINTBEGIN(readability-identifier-naming)
-    sf::WindowBase window{sf::VideoMode({800, 600}), "SFML window with Vulkan", sf::Style::Default};
+    sf::WindowBase window;
 
     bool vulkanAvailable{sf::Vulkan::isAvailable()};
 
@@ -2573,60 +2573,57 @@ private:
     unsigned int       currentFrame{};
     bool               swapchainOutOfDate{};
 
-    VkInstance                                     instance{};
-    VkDebugReportCallbackEXT                       debugReportCallback{};
-    VkSurfaceKHR                                   surface{};
-    VkPhysicalDevice                               gpu{};
-    std::optional<std::uint32_t>                   queueFamilyIndex;
-    VkDevice                                       device{};
-    VkQueue                                        queue{};
-    VkSurfaceFormatKHR                             swapchainFormat{};
-    VkExtent2D                                     swapchainExtent{};
-    VkSwapchainKHR                                 swapchain{};
-    std::vector<VkImage>                           swapchainImages;
-    std::vector<VkImageView>                       swapchainImageViews;
-    VkFormat                                       depthFormat{VK_FORMAT_UNDEFINED};
-    VkImage                                        depthImage{};
-    VkDeviceMemory                                 depthImageMemory{};
-    VkImageView                                    depthImageView{};
-    VkShaderModule                                 vertexShaderModule{};
-    VkShaderModule                                 fragmentShaderModule{};
-    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages{};
-    VkDescriptorSetLayout                          descriptorSetLayout{};
-    VkPipelineLayout                               pipelineLayout{};
-    VkRenderPass                                   renderPass{};
-    VkPipeline                                     graphicsPipeline{};
-    std::vector<VkFramebuffer>                     swapchainFramebuffers;
-    VkCommandPool                                  commandPool{};
-    VkBuffer                                       vertexBuffer{};
-    VkDeviceMemory                                 vertexBufferMemory{};
-    VkBuffer                                       indexBuffer{};
-    VkDeviceMemory                                 indexBufferMemory{};
-    std::vector<VkBuffer>                          uniformBuffers;
-    std::vector<VkDeviceMemory>                    uniformBuffersMemory;
-    VkImage                                        textureImage{};
-    VkDeviceMemory                                 textureImageMemory{};
-    VkImageView                                    textureImageView{};
-    VkSampler                                      textureSampler{};
-    VkDescriptorPool                               descriptorPool{};
-    std::vector<VkDescriptorSet>                   descriptorSets;
-    std::vector<VkCommandBuffer>                   commandBuffers;
-    std::vector<VkSemaphore>                       imageAvailableSemaphores;
-    std::vector<VkSemaphore>                       renderFinishedSemaphores;
-    std::vector<VkFence>                           fences;
+    VkInstance                        instance{};
+    VkDebugReportCallbackEXT          debugReportCallback{};
+    VkSurfaceKHR                      surface{};
+    VkPhysicalDevice                  gpu{};
+    sf::base::Optional<std::uint32_t> queueFamilyIndex;
+    VkDevice                          device{};
+    VkQueue                           queue{};
+    VkSurfaceFormatKHR                swapchainFormat{};
+    VkExtent2D                        swapchainExtent{};
+    VkSwapchainKHR                    swapchain{};
+    std::vector<VkImage>              swapchainImages;
+    std::vector<VkImageView>          swapchainImageViews;
+    VkFormat                          depthFormat{VK_FORMAT_UNDEFINED};
+    VkImage                           depthImage{};
+    VkDeviceMemory                    depthImageMemory{};
+    VkImageView                       depthImageView{};
+    VkShaderModule                    vertexShaderModule{};
+    VkShaderModule                    fragmentShaderModule{};
+    VkPipelineShaderStageCreateInfo   shaderStages[2]{};
+    VkDescriptorSetLayout             descriptorSetLayout{};
+    VkPipelineLayout                  pipelineLayout{};
+    VkRenderPass                      renderPass{};
+    VkPipeline                        graphicsPipeline{};
+    std::vector<VkFramebuffer>        swapchainFramebuffers;
+    VkCommandPool                     commandPool{};
+    VkBuffer                          vertexBuffer{};
+    VkDeviceMemory                    vertexBufferMemory{};
+    VkBuffer                          indexBuffer{};
+    VkDeviceMemory                    indexBufferMemory{};
+    std::vector<VkBuffer>             uniformBuffers;
+    std::vector<VkDeviceMemory>       uniformBuffersMemory;
+    VkImage                           textureImage{};
+    VkDeviceMemory                    textureImageMemory{};
+    VkImageView                       textureImageView{};
+    VkSampler                         textureSampler{};
+    VkDescriptorPool                  descriptorPool{};
+    std::vector<VkDescriptorSet>      descriptorSets;
+    std::vector<VkCommandBuffer>      commandBuffers;
+    std::vector<VkSemaphore>          imageAvailableSemaphores;
+    std::vector<VkSemaphore>          renderFinishedSemaphores;
+    std::vector<VkFence>              fences;
     // NOLINTEND(readability-identifier-naming)
 };
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
-    VulkanExample example;
-
-    example.run();
+    auto windowContext = sf::WindowContext::create().value();
+    VulkanExample{}.run();
 }

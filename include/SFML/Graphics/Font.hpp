@@ -1,50 +1,23 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Glyph.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/System/LifetimeDependee.hpp"
 
-#include <SFML/System/Vector2.hpp>
-
-#include <filesystem>
-#include <memory>
-#include <string>
-#include <unordered_map>
-#include <vector>
-
-#include <cstddef>
-#include <cstdint>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
 namespace sf::priv
 {
@@ -55,7 +28,17 @@ class ResourceStream;
 namespace sf
 {
 class InputStream;
+class Path;
+class Text;
+class Texture;
+class TextureAtlas;
+struct FontInfo;
+struct Glyph;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading and manipulating character fonts
 ///
@@ -64,86 +47,34 @@ class SFML_GRAPHICS_API Font
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Holds various information about a font
+    /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    struct Info
-    {
-        std::string family; //!< The font family
-    };
+    ~Font();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Construct an empty font that does not contain any glyphs.
+    /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Font() = default;
+    Font(const Font& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the font from a file
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    /// Note that this function knows nothing about the standard
-    /// fonts installed on the user's system, thus you can't
-    /// load them directly.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the file has to remain accessible until
-    /// the `sf::Font` object opens a new font or is destroyed.
-    ///
-    /// \param filename Path of the font file to open
-    ///
-    /// \throws sf::Exception if opening was unsuccessful
-    ///
-    /// \see `openFromFile`, `openFromMemory`, `openFromStream`
+    /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit Font(const std::filesystem::path& filename);
+    Font(Font&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the font from a file in memory
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the buffer pointed by `data` has to remain
-    /// valid until the `sf::Font` object opens a new font or
-    /// is destroyed.
-    ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `openFromFile`, `openFromMemory`, `openFromStream`
+    /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Font(const void* data, std::size_t sizeInBytes);
+    Font& operator=(const Font& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct the font from a custom stream
-    ///
-    /// The supported font formats are: TrueType, Type 1, CFF,
-    /// OpenType, SFNT, X11 PCF, Windows FNT, BDF, PFR and Type 42.
-    /// Warning: SFML cannot preload all the font data in this
-    /// function, so the contents of `stream` have to remain
-    /// valid as long as the font is used.
-    ///
-    /// \warning SFML cannot preload all the font data in this
-    /// function, so the stream has to remain accessible until
-    /// the `sf::Font` object opens a new font or is destroyed.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `openFromFile`, `openFromMemory`, `openFromStream`
+    /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    explicit Font(InputStream& stream);
+    Font& operator=(Font&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file
@@ -156,16 +87,16 @@ public:
     ///
     /// \warning SFML cannot preload all the font data in this
     /// function, so the file has to remain accessible until
-    /// the `sf::Font` object opens a new font or is destroyed.
+    /// the sf::Font object is destroyed.
     ///
     /// \param filename Path of the font file to load
     ///
-    /// \return `true` if opening succeeded, `false` if it failed
+    /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static base::Optional<Font> openFromFile(const Path& filename, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a file in memory
@@ -181,12 +112,14 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return `true` if opening succeeded, `false` if it failed
+    /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<Font> openFromMemory(const void*   data,
+                                                             base::SizeT   sizeInBytes,
+                                                             TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open the font from a custom stream
@@ -196,16 +129,16 @@ public:
     ///
     /// \warning SFML cannot preload all the font data in this
     /// function, so the stream has to remain accessible until
-    /// the `sf::Font` object opens a new font or is destroyed.
+    /// the sf::Font object is destroyed.
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return `true` if opening succeeded, `false` if it failed
+    /// \return Font if opening succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<Font> openFromStream(InputStream& stream, TextureAtlas* textureAtlas = nullptr);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the font information
@@ -213,7 +146,7 @@ public:
     /// \return A structure that holds the font information
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Info& getInfo() const;
+    [[nodiscard]] const FontInfo& getInfo() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve a glyph of the font
@@ -274,7 +207,7 @@ public:
     /// \return Kerning value for `first` and `second`, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getKerning(std::uint32_t first, std::uint32_t second, unsigned int characterSize, bool bold = false) const;
+    [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold = false) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the line spacing
@@ -325,12 +258,10 @@ public:
     /// are requested, thus it is not very relevant. It is mainly
     /// used internally by `sf::Text`.
     ///
-    /// \param characterSize Reference character size
-    ///
     /// \return Texture containing the glyphs of the requested size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Texture& getTexture(unsigned int characterSize) const;
+    [[nodiscard]] const Texture& getTexture() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter
@@ -360,78 +291,12 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a row of glyphs
+    /// \brief Return the index of the internal representation a character
+    ///
+    /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    struct Row
-    {
-        Row(unsigned int rowTop, unsigned int rowHeight) : top(rowTop), height(rowHeight)
-        {
-        }
-
-        unsigned int width{}; //!< Current width of the row
-        unsigned int top;     //!< Y position of the row into the texture
-        unsigned int height;  //!< Height of the row
-    };
-
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
-    using GlyphTable = std::unordered_map<std::uint64_t, Glyph>; //!< Table mapping a codepoint to its glyph
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a page of glyphs
-    ///
-    ////////////////////////////////////////////////////////////
-    struct Page
-    {
-        explicit Page(bool smooth);
-
-        GlyphTable       glyphs;     //!< Table mapping code points to their corresponding glyph
-        Texture          texture;    //!< Texture containing the pixels of the glyphs
-        unsigned int     nextRow{3}; //!< Y position of the next new row in the texture
-        std::vector<Row> rows;       //!< List containing the position of all the existing rows
-    };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Free all the internal resources
-    ///
-    ////////////////////////////////////////////////////////////
-    void cleanup();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Find or create the glyphs page corresponding to the given character size
-    ///
-    /// \param characterSize Reference character size
-    ///
-    /// \return The glyphs page corresponding to \a characterSize
-    ///
-    ////////////////////////////////////////////////////////////
-    Page& loadPage(unsigned int characterSize) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Load a new glyph and store it in the cache
-    ///
-    /// \param codePoint        Unicode code point of the character to load
-    /// \param characterSize    Reference character size
-    /// \param bold             Retrieve the bold version or the regular one?
-    /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
-    ///
-    /// \return The glyph corresponding to `codePoint` and `characterSize`
-    ///
-    ////////////////////////////////////////////////////////////
-    Glyph loadGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Find a suitable rectangle within the texture for a glyph
-    ///
-    /// \param page Page of glyphs to search in
-    /// \param size Width and height of the rectangle
-    ///
-    /// \return Found rectangle within the texture
-    ///
-    ////////////////////////////////////////////////////////////
-    IntRect findGlyphRect(Page& page, Vector2u size) const;
+    [[nodiscard]] unsigned int getCharIndex(char32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one
@@ -443,23 +308,30 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
 
+public:
     ////////////////////////////////////////////////////////////
-    // Types
+    /// \private
+    ///
+    /// \brief Create a font from font handles and a family name
+    ///
     ////////////////////////////////////////////////////////////
-    struct FontHandles;
-    using PageTable = std::unordered_map<unsigned int, Page>; //!< Table mapping a character size to its page (texture)
+    [[nodiscard]] explicit Font(base::PassKey<Font>&&,
 
+                                TextureAtlas* textureAtlas,
+                                void*         fontHandlesSharedPtr,
+                                const char*   familyName);
+
+private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::shared_ptr<FontHandles> m_fontHandles;    //!< Shared information about the internal font instance
-    bool                         m_isSmooth{true}; //!< Status of the smooth filter
-    Info                         m_info;           //!< Information about the font
-    mutable PageTable            m_pages;          //!< Table containing the glyphs pages by character size
-    mutable std::vector<std::uint8_t> m_pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
-#ifdef SFML_SYSTEM_ANDROID
-    std::shared_ptr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
-#endif
+    struct Impl;
+    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDEE(Font, Text);
 };
 
 } // namespace sf
@@ -502,17 +374,17 @@ private:
 /// Usage example:
 /// \code
 /// // Open a new font
-/// const sf::Font font("arial.ttf");
+/// const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///
 /// // Create a text which uses our font
 /// sf::Text text1(font);
 /// text1.setCharacterSize(30);
-/// text1.setStyle(sf::Text::Regular);
+/// text1.setStyle(sf::Text::Style::Regular);
 ///
 /// // Create another text using the same font, but with different parameters
 /// sf::Text text2(font);
 /// text2.setCharacterSize(50);
-/// text2.setStyle(sf::Text::Italic);
+/// text2.setStyle(sf::Text::Style::Italic);
 /// \endcode
 ///
 /// Apart from opening font files, and passing them to instances

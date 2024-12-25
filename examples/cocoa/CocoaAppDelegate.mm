@@ -1,33 +1,10 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #import "CocoaAppDelegate.h"
 
 #import "NSString+stdstring.h"
 
-#include <filesystem>
+#include "SFML/System/Path.hpp"
+
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"
@@ -43,20 +20,20 @@ struct SFMLmainWindow
     {
         logo.setSmooth(true);
 
-        sprite.setOrigin(sprite.getLocalBounds().getCenter());
-        sprite.scale({0.3f, 0.3f});
-        sprite.setPosition(sf::Vector2f(renderWindow.getSize()) / 2.f);
+        sprite.origin = sprite.getLocalBounds().getCenter();
+        sprite.scale *= 0.3f;
+        sprite.position = sf::Vector2f(renderWindow.getSize()) / 2.f;
 
         text.setFillColor(sf::Color::White);
     }
 
-    std::filesystem::path resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
-    sf::RenderWindow      renderWindow;
-    sf::Font              font{resPath / "tuffy.ttf"};
-    sf::Text              text{font};
-    sf::Texture           logo{resPath / "logo.png"};
-    sf::Sprite            sprite{logo};
-    sf::Color             background{sf::Color::Blue};
+    sf::Path         resPath{[[[NSBundle mainBundle] resourcePath] tostdstring]};
+    sf::RenderWindow renderWindow;
+    sf::Font         font{sf::Font::openFromFile(resPath / "tuffy.ttf").value()};
+    sf::Text         text{font};
+    sf::Texture      logo{sf::Texture::loadFromFile(resPath / "logo.png").value()};
+    sf::Sprite       sprite{logo};
+    sf::Color        background{sf::Color::Blue};
 };
 
 // Private stuff
@@ -151,17 +128,17 @@ struct SFMLmainWindow
     // Scaling
     /* /!\ we do this at 60fps so choose low scaling factor! /!\ */
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up))
-        self.mainWindow->sprite.scale({1.01f, 1.01f});
+        self.mainWindow->sprite.scale *= 1.01f;
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down))
-        self.mainWindow->sprite.scale({0.99f, 0.99f});
+        self.mainWindow->sprite.scale *= 0.99f;
 
     // Clear the window, display some stuff and display it into our view.
 
     self.mainWindow->renderWindow.clear(self.mainWindow->background);
 
     if (self.visible)
-        self.mainWindow->renderWindow.draw(self.mainWindow->sprite);
+        self.mainWindow->renderWindow.draw(self.mainWindow->sprite, self.mainWindow.logo);
 
     self.mainWindow->renderWindow.draw(self.mainWindow->text);
 
@@ -187,8 +164,8 @@ struct SFMLmainWindow
 {
     if (self.initialized)
     {
-        float angle = [sender floatValue];
-        self.mainWindow->sprite.setRotation(sf::degrees(angle));
+        float angle                      = [sender floatValue];
+        self.mainWindow->sprite.rotation = sf::degrees(angle);
     }
 }
 

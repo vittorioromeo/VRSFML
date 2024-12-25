@@ -1,61 +1,127 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Socket.hpp>
-#include <SFML/Network/SocketHandle.hpp>
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketHandle.hpp"
+
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-#include <SFML/System/Win32/WindowsHeader.hpp>
-
-#include <winsock2.h>
-#include <ws2tcpip.h>
+// TODO P1: cleanup
 
 #else
 
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
+#include "SFML/Base/SizeT.hpp"
+
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <unistd.h>
-
-#include <cstddef>
 
 #endif
 
-#include <cstdint>
+#ifdef htons
+#undef htons
+#endif
 
+#ifdef htonl
+#undef htonl
+#endif
+
+
+struct sockaddr_in;
+
+/*
+// NOLINTBEGIN
+typedef struct in_addr
+{
+    union
+    {
+        struct
+        {
+            unsigned char s_b1, s_b2, s_b3, s_b4;
+        } S_un_b;
+        struct
+        {
+            unsigned short s_w1, s_w2;
+        } S_un_w;
+        unsigned long S_addr;
+    } S_un;
+} IN_ADDR, *PIN_ADDR, *LPIN_ADDR;
+
+struct sockaddr_in
+{
+    short          sin_family;
+    unsigned short sin_port;
+    struct in_addr sin_addr;
+    char           sin_zero[8];
+};
+// NOLINTEND
+*/
 
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
+// Types
+////////////////////////////////////////////////////////////
+#if defined(SFML_SYSTEM_WINDOWS)
+using AddrLength    = int;
+using NetworkLong   = unsigned long;
+using NetworkShort  = unsigned short;
+using NetworkSSizeT = int;
+#else
+using AddrLength    = socklen_t;
+using NetworkLong   = base::U32;
+using NetworkShort  = base::U16;
+using NetworkSSizeT = ssize_t;
+#endif
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class SockAddrIn
+{
+public:
+    SockAddrIn();
+    ~SockAddrIn();
+
+    SockAddrIn(const SockAddrIn&);
+    SockAddrIn(const sockaddr_in&);
+
+    [[nodiscard]] NetworkShort sinPort() const;
+    [[nodiscard]] NetworkLong  sAddr() const;
+
+    [[nodiscard]] AddrLength size() const;
+
+    base::InPlacePImpl<sockaddr_in, 64> m_impl;
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class FDSet
+{
+public:
+    FDSet();
+    ~FDSet();
+
+    FDSet(const FDSet&);
+    FDSet& operator=(const FDSet&);
+
+    [[nodiscard]] void*       asPtr();
+    [[nodiscard]] const void* asPtr() const;
+
+private:
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl;
+};
+
 ////////////////////////////////////////////////////////////
 /// \brief Helper class implementing all the non-portable
 ///        socket stuff
@@ -64,15 +130,13 @@ namespace sf::priv
 class SocketImpl
 {
 public:
-    ////////////////////////////////////////////////////////////
-    // Types
-    ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+// Types
+////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
-    using AddrLength = int;
-    using Size       = int;
+    using Size = int;
 #else
-    using AddrLength = socklen_t;
-    using Size       = std::size_t;
+    using Size = base::SizeT;
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -84,7 +148,115 @@ public:
     /// \return sockaddr_in ready to be used by socket functions
     ///
     ////////////////////////////////////////////////////////////
-    static sockaddr_in createAddress(std::uint32_t address, unsigned short port);
+    [[nodiscard]] static SockAddrIn createAddress(base::U32 address, unsigned short port);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::U32 inaddrAny();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::U32 inaddrLoopback();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SocketHandle accept(SocketHandle handle, SockAddrIn& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool listen(SocketHandle handle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool getSockName(SocketHandle handle, SockAddrIn& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool getPeerName(SocketHandle handle, SockAddrIn& address, AddrLength& length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool bind(SocketHandle handle, SockAddrIn& address);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool connect(SocketHandle handle, SockAddrIn& address);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkLong getNtohl(NetworkLong netlong);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkShort getNtohs(NetworkShort netshort);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkLong getNtohl(SockAddrIn addr);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkShort getHtons(NetworkShort hostshort);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkLong getHtonl(NetworkLong hostlong);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static int select(SocketHandle handle, long long timeoutUs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<base::U32> inetAddr(const char* data);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static const char* addrToString(base::U32 addr);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SocketHandle tcpSocket();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SocketHandle udpSocket();
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the value of the invalid socket
@@ -92,7 +264,61 @@ public:
     /// \return Special value of the invalid socket
     ///
     ////////////////////////////////////////////////////////////
-    static SocketHandle invalidSocket();
+    [[nodiscard]] static SocketHandle invalidSocket();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool disableNagle(SocketHandle handle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool disableSigpipe(SocketHandle handle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool enableBroadcast(SocketHandle handle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkSSizeT send(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkSSizeT sendTo(SocketHandle handle, const char* buf, SocketImpl::Size len, int flags, SockAddrIn& address);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkSSizeT recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static NetworkSSizeT recvFrom(
+        SocketHandle     handle,
+        char*            buf,
+        SocketImpl::Size len,
+        int              flags,
+        SockAddrIn&      address,
+        AddrLength&      length);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<NetworkLong> convertToHostname(const char* address);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close and destroy a socket
@@ -117,7 +343,43 @@ public:
     /// \return Status corresponding to the last socket error
     ///
     ////////////////////////////////////////////////////////////
-    static Socket::Status getErrorStatus();
+    [[nodiscard]] static Socket::Status getErrorStatus();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool fdIsSet(SocketHandle handle, const FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void fdClear(SocketHandle handle, FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void fdZero(FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static int getFDSetSize();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void fdSet(SocketHandle handle, FDSet& fdSet);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static int select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptfds, long long timeoutUs);
 };
 
 } // namespace sf::priv

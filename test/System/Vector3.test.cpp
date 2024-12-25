@@ -1,18 +1,25 @@
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Vector3.hpp"
 
-#include <catch2/catch_template_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-#include <type_traits>
 
 TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Vector3<TestType>>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Vector3<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Vector3<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Vector3<TestType>>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Vector3<TestType>));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Vector3<TestType>)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Vector3<TestType>, sf::Vector3<TestType>));
     }
 
     SECTION("Construction")
@@ -31,18 +38,6 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
             STATIC_CHECK(vector.x == 1);
             STATIC_CHECK(vector.y == 2);
             STATIC_CHECK(vector.z == 3);
-        }
-
-        SECTION("Conversion operator")
-        {
-            STATIC_CHECK(!std::is_convertible_v<sf::Vector3f, sf::Vector3i>);
-
-            constexpr sf::Vector3f sourceVector(1.0f, 2.0f, 3.0f);
-            constexpr sf::Vector3i vector(sourceVector);
-
-            STATIC_CHECK(vector.x == static_cast<int>(sourceVector.x));
-            STATIC_CHECK(vector.y == static_cast<int>(sourceVector.y));
-            STATIC_CHECK(vector.z == static_cast<int>(sourceVector.z));
         }
     }
 
@@ -183,7 +178,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(std::is_same_v<decltype(x), decltype(vector.x)>);
+            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vector.x)));
 
             x = 3;
 
@@ -199,7 +194,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
             CHECK(y == 2);
             CHECK(z == 3);
 
-            STATIC_CHECK(std::is_same_v<decltype(x), decltype(vector.x)>);
+            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vector.x)));
 
             x = 3;
 

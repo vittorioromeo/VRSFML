@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <filesystem>
-#include <iosfwd>
-#include <vector>
+#include "SFML/System/Rect.hpp"
 
-#include <cstddef>
+#include "SFML/Base/UniquePtr.hpp"
+
+#include <iosfwd>
 
 // String conversions for Catch2
 namespace sf
@@ -35,6 +35,12 @@ std::ostream& operator<<(std::ostream& os, Vector2<T> vector);
 
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector);
+
+template <typename T, typename Del>
+std::ostream& operator<<(std::ostream& os, const sf::base::UniquePtr<T, Del>&)
+{
+    return os;
+}
 } // namespace sf
 
 ////////////////////////////////////////////////////////////
@@ -56,11 +62,7 @@ bool operator==(const float& lhs, const Approx<float>& rhs);
 bool operator==(sf::Vector2<float> lhs, const Approx<sf::Vector2<float>>& rhs);
 bool operator==(const sf::Vector3<float>& lhs, const Approx<sf::Vector3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
+bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Approx<T>& approx)
-{
-    return os << approx.value;
-}
-
-[[nodiscard]] std::vector<std::byte> loadIntoMemory(const std::filesystem::path& path);
+std::ostream& operator<<(std::ostream& os, const Approx<T>& approx);

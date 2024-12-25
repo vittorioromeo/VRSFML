@@ -1,41 +1,17 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/Network/IpAddress.hpp>
-#include <SFML/Network/Socket.hpp>
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/Socket.hpp"
 
-#include <optional>
-#include <vector>
-
-#include <cstddef>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
@@ -52,14 +28,16 @@ public:
     ////////////////////////////////////////////////////////////
     // Constants
     ////////////////////////////////////////////////////////////
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static constexpr std::size_t MaxDatagramSize{65507}; //!< The maximum number of bytes that can be sent in a single UDP datagram
+    enum : base::SizeT
+    {
+        MaxDatagramSize = 65507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    UdpSocket();
+    [[nodiscard]] explicit UdpSocket(bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the port to which the socket is bound locally
@@ -111,7 +89,7 @@ public:
     /// \see `bind`
     ///
     ////////////////////////////////////////////////////////////
-    void unbind();
+    [[nodiscard]] bool unbind();
 
     ////////////////////////////////////////////////////////////
     /// \brief Send raw data to a remote peer
@@ -130,7 +108,7 @@ public:
     /// \see `receive`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status send(const void* data, std::size_t size, IpAddress remoteAddress, unsigned short remotePort);
+    [[nodiscard]] Status send(const void* data, base::SizeT size, IpAddress remoteAddress, unsigned short remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Receive raw data from a remote peer
@@ -153,11 +131,11 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(void*                     data,
-                                 std::size_t               size,
-                                 std::size_t&              received,
-                                 std::optional<IpAddress>& remoteAddress,
-                                 unsigned short&           remotePort);
+    [[nodiscard]] Status receive(void*                      data,
+                                 base::SizeT                size,
+                                 base::SizeT&               received,
+                                 base::Optional<IpAddress>& remoteAddress,
+                                 unsigned short&            remotePort);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a formatted packet of data to a remote peer
@@ -192,13 +170,13 @@ public:
     /// \see `send`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status receive(Packet& packet, std::optional<IpAddress>& remoteAddress, unsigned short& remotePort);
+    [[nodiscard]] Status receive(Packet& packet, base::Optional<IpAddress>& remoteAddress, unsigned short& remotePort);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::byte> m_buffer{MaxDatagramSize}; //!< Temporary buffer holding the received data in Receive(Packet)
+    base::TrivialVector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace sf
@@ -262,12 +240,12 @@ private:
 /// socket.send(message.c_str(), message.size() + 1, "192.168.1.50", 55002);
 ///
 /// // Receive an answer (most likely from 192.168.1.50, but could be anyone else)
-/// std::array<char, 1024> buffer;
-/// std::size_t received = 0;
-/// std::optional<sf::IpAddress> sender;
+/// char buffer[1024];
+/// base::SizeT received = 0;
+/// sf::base::Optional<sf::IpAddress> sender;
 /// unsigned short port;
-/// if (socket.receive(buffer.data(), buffer.size(), received, sender, port) == sf::Socket::Status::Done)
-///     std::cout << sender->toString() << " said: " << buffer.data() << std::endl;
+/// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
+///     std::cout << sender->toString() << " said: " << buffer << '\n';
 ///
 /// // ----- The server -----
 ///
@@ -276,12 +254,12 @@ private:
 /// socket.bind(55002);
 ///
 /// // Receive a message from anyone
-/// std::array<char, 1024> buffer;
-/// std::size_t received = 0;
-/// std::optional<sf::IpAddress> sender;
+/// char buffer[1024];
+/// base::SizeT received = 0;
+/// sf::base::Optional<sf::IpAddress> sender;
 /// unsigned short port;
-/// if (socket.receive(buffer.data(), buffer.size(), received, sender, port) == sf::Socket::Status::Done)
-///     std::cout << sender->toString() << " said: " << buffer.data() << std::endl;
+/// if (socket.receive(buffer, sizeof(buffer), received, sender, port) == sf::Socket::Status::Done)
+///     std::cout << sender->toString() << " said: " << buffer << '\n';
 ///
 /// // Send an answer
 /// std::string message = "Welcome " + sender.toString();

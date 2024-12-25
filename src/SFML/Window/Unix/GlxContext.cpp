@@ -1,48 +1,28 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/Unix/GlxContext.hpp"
+#include "SFML/Window/Unix/Utils.hpp"
+#include "SFML/Window/Unix/WindowImplX11.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/Unix/GlxContext.hpp>
-#include <SFML/Window/Unix/Utils.hpp>
-#include <SFML/Window/Unix/WindowImplX11.hpp>
-
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <array>
 #include <mutex>
-#include <ostream>
 #include <vector>
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
-#ifndef SF_GLAD_GLX_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_GLX_IMPLEMENTATION_INCLUDED
-#define SF_GLAD_GLX_IMPLEMENTATION
+#ifndef GLAD_GLX_IMPLEMENTATION_INCLUDED
+#define GLAD_GLX_IMPLEMENTATION_INCLUDED
+#define GLAD_GLX_IMPLEMENTATION
 #include <glad/glx.h>
 #endif
 
@@ -61,16 +41,18 @@ bool                 glxErrorOccurred = false;
 void ensureExtensionsInit(::Display* display, int screen)
 {
     static bool initialized = false;
-    if (!initialized)
-    {
-        initialized = true;
+    if (initialized)
+        return;
 
-        // We don't check the return value since the extension
-        // flags are cleared even if loading fails
-        gladLoaderLoadGLX(display, screen);
+    initialized = true;
 
-        gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction);
-    }
+    // We don't check the return value since the extension
+    // flags are cleared even if loading fails
+    gladLoaderLoadGLX(display, screen);
+
+    auto f = [](const char* name) { return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name)); };
+    gladLoadGLX(display, screen, f);
+    // gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction); // TODO P0:
 }
 
 
@@ -106,26 +88,21 @@ private:
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-GlxContext::GlxContext(GlxContext* shared) : GlxContext(shared, {}, {1, 1})
-{
-}
-
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int /*bitsPerPixel*/)
+template <typename... TSurfaceArgs>
+GlxContext::GlxContext(unsigned int id, GlxContext* shared, const ContextSettings& contextSettings, TSurfaceArgs&&... surfaceArgs) :
+GlContext(id, {}),
+m_display(openDisplay())
 {
     // Save the creation settings
-    m_settings = settings;
-
-    // Open the connection with the X server
-    m_display = openDisplay();
+    GlContext::m_settings = contextSettings;
 
     // Make sure that extensions are initialized
     ensureExtensionsInit(m_display.get(), DefaultScreen(m_display.get()));
 
     // Create the rendering surface from the owner window
-    createSurface(owner.getNativeHandle());
+    createSurface(SFML_BASE_FORWARD(surfaceArgs)...);
 
     // Create the context
     createContext(shared);
@@ -133,22 +110,30 @@ GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, cons
 
 
 ////////////////////////////////////////////////////////////
-GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, Vector2u size)
+GlxContext::GlxContext(unsigned int id, GlxContext* shared) :
+GlxContext(id,
+           shared,
+           ContextSettings{},
+           // surface args:
+           shared,
+           Vector2u{1u, 1u},
+           VideoModeUtils::getDesktopMode().bitsPerPixel)
 {
-    // Save the creation settings
-    m_settings = settings;
+}
 
-    // Open the connection with the X server
-    m_display = openDisplay();
 
-    // Make sure that extensions are initialized
-    ensureExtensionsInit(m_display.get(), DefaultScreen(m_display.get()));
-
-    // Create the rendering surface (window or pbuffer if supported)
-    createSurface(shared, size, VideoMode::getDesktopMode().bitsPerPixel);
-
-    // Create the context
-    createContext(shared);
+////////////////////////////////////////////////////////////
+GlxContext::GlxContext(unsigned int           id,
+                       GlxContext*            shared,
+                       const ContextSettings& contextSettings,
+                       const WindowImpl&      owner,
+                       unsigned int /*bitsPerPixel*/) :
+GlxContext(id,
+           shared,
+           contextSettings,
+           // surface args:
+           owner.getNativeHandle())
+{
 }
 
 
@@ -156,7 +141,7 @@ GlxContext::GlxContext(GlxContext* shared, const ContextSettings& settings, Vect
 GlxContext::~GlxContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    cleanupUnsharedFrameBuffers();
 
     // Destroy the context
     if (m_context)
@@ -171,7 +156,7 @@ GlxContext::~GlxContext()
 
 #if defined(GLX_DEBUGGING)
         if (glxErrorOccurred)
-            err() << "GLX error in GlxContext::~GlxContext()" << std::endl;
+            priv::err() << "GLX error in GlxContext::~GlxContext()";
 #endif
     }
 
@@ -190,7 +175,7 @@ GlxContext::~GlxContext()
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer GlxContext::getFunction(const char* name)
+GlFunctionPointer GlxContext::getFunction(const char* name) const
 {
     return glXGetProcAddress(reinterpret_cast<const GLubyte*>(name));
 }
@@ -226,7 +211,7 @@ bool GlxContext::makeCurrent(bool current)
 
 #if defined(GLX_DEBUGGING)
     if (glxErrorOccurred)
-        err() << "GLX error in GlxContext::makeCurrent()" << std::endl;
+        priv::err() << "GLX error in GlxContext::makeCurrent()";
 #endif
 
     return result;
@@ -247,7 +232,7 @@ void GlxContext::display()
 
 #if defined(GLX_DEBUGGING)
     if (glxErrorOccurred)
-        err() << "GLX error in GlxContext::display()" << std::endl;
+        priv::err() << "GLX error in GlxContext::display()";
 #endif
 }
 
@@ -261,15 +246,15 @@ void GlxContext::setVerticalSyncEnabled(bool enabled)
     // We use the direct pointer to the MESA entry point instead of the alias
     // because glx.h declares the entry point as an external function
     // which would require us to link in an additional library
-    if (SF_GLAD_GLX_EXT_swap_control)
+    if (GLAD_GLX_EXT_swap_control)
     {
         glXSwapIntervalEXT(m_display.get(), m_pbuffer ? m_pbuffer : m_window, enabled);
     }
-    else if (SF_GLAD_GLX_MESA_swap_control)
+    else if (GLAD_GLX_MESA_swap_control)
     {
         result = glXSwapIntervalMESA(enabled);
     }
-    else if (SF_GLAD_GLX_SGI_swap_control)
+    else if (GLAD_GLX_SGI_swap_control)
     {
         result = glXSwapIntervalSGI(enabled);
     }
@@ -279,19 +264,18 @@ void GlxContext::setVerticalSyncEnabled(bool enabled)
 
         if (!warned)
         {
-            err() << "Setting vertical sync not supported" << std::endl;
-
+            priv::err() << "Setting vertical sync not supported";
             warned = true;
         }
     }
 
     if (result != 0)
-        err() << "Setting vertical sync failed" << std::endl;
+        priv::err() << "Setting vertical sync failed";
 }
 
 
 ////////////////////////////////////////////////////////////
-XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& settings)
+XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     // Make sure that extensions are initialized
     ensureExtensionsInit(display, DefaultScreen(display));
@@ -300,21 +284,22 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
 
     // Retrieve all the visuals
     int count = 0;
-    // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
     if (const auto visuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(display, 0, nullptr, &count)))
     {
         // Evaluate all the returned visuals, and pick the best one
         int         bestScore  = 0x7FFFFFFF;
         XVisualInfo bestVisual = XVisualInfo();
-        for (std::size_t i = 0; i < static_cast<std::size_t>(count); ++i)
+        for (base::SizeT i = 0; i < static_cast<base::SizeT>(count); ++i)
         {
+            auto& visual = visuals.get()[i];
+
             // Filter by screen
-            if (visuals[i].screen != screen)
+            if (visual.screen != screen)
                 continue;
 
             // Check mandatory attributes
             int doubleBuffer = 0;
-            glXGetConfig(display, &visuals[i], GLX_DOUBLEBUFFER, &doubleBuffer);
+            glXGetConfig(display, &visual, GLX_DOUBLEBUFFER, &doubleBuffer);
             if (!doubleBuffer)
                 continue;
 
@@ -328,17 +313,17 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
             int multiSampling = 0;
             int samples       = 0;
             int sRgb          = 0;
-            glXGetConfig(display, &visuals[i], GLX_RED_SIZE, &red);
-            glXGetConfig(display, &visuals[i], GLX_GREEN_SIZE, &green);
-            glXGetConfig(display, &visuals[i], GLX_BLUE_SIZE, &blue);
-            glXGetConfig(display, &visuals[i], GLX_ALPHA_SIZE, &alpha);
-            glXGetConfig(display, &visuals[i], GLX_DEPTH_SIZE, &depth);
-            glXGetConfig(display, &visuals[i], GLX_STENCIL_SIZE, &stencil);
+            glXGetConfig(display, &visual, GLX_RED_SIZE, &red);
+            glXGetConfig(display, &visual, GLX_GREEN_SIZE, &green);
+            glXGetConfig(display, &visual, GLX_BLUE_SIZE, &blue);
+            glXGetConfig(display, &visual, GLX_ALPHA_SIZE, &alpha);
+            glXGetConfig(display, &visual, GLX_DEPTH_SIZE, &depth);
+            glXGetConfig(display, &visual, GLX_STENCIL_SIZE, &stencil);
 
-            if (SF_GLAD_GLX_ARB_multisample)
+            if (GLAD_GLX_ARB_multisample)
             {
-                glXGetConfig(display, &visuals[i], GLX_SAMPLE_BUFFERS_ARB, &multiSampling);
-                glXGetConfig(display, &visuals[i], GLX_SAMPLES_ARB, &samples);
+                glXGetConfig(display, &visual, GLX_SAMPLE_BUFFERS_ARB, &multiSampling);
+                glXGetConfig(display, &visual, GLX_SAMPLES_ARB, &samples);
             }
             else
             {
@@ -346,34 +331,34 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
                 samples       = 0;
             }
 
-            if (SF_GLAD_GLX_EXT_framebuffer_sRGB || SF_GLAD_GLX_ARB_framebuffer_sRGB)
+            if (GLAD_GLX_EXT_framebuffer_sRGB || GLAD_GLX_ARB_framebuffer_sRGB)
             {
-                glXGetConfig(display, &visuals[i], GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &sRgb);
+                glXGetConfig(display, &visual, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &sRgb);
             }
             else
             {
                 sRgb = 0;
             }
 
-            // TODO: Replace this with proper acceleration detection
+            // TODO P2: Replace this with proper acceleration detection
             const bool accelerated = true;
 
             // Evaluate the visual
             const int color = red + green + blue + alpha;
-            const int score = evaluateFormat(bitsPerPixel,
-                                             settings,
-                                             color,
-                                             depth,
-                                             stencil,
-                                             multiSampling ? samples : 0,
-                                             accelerated,
-                                             sRgb == True);
+            const int score = GlContext::evaluateFormat(bitsPerPixel,
+                                                        contextSettings,
+                                                        color,
+                                                        depth,
+                                                        stencil,
+                                                        multiSampling ? samples : 0,
+                                                        accelerated,
+                                                        sRgb == True);
 
             // If it's better than the current best, make it the new best
             if (score < bestScore)
             {
                 bestScore  = score;
-                bestVisual = visuals[i];
+                bestVisual = visual;
             }
         }
 
@@ -381,8 +366,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
     }
 
     // Should never happen...
-    err() << "No GLX visual found. You should check your graphics driver" << std::endl;
-
+    priv::err() << "No GLX visual found. You should check your graphics driver";
     return {};
 }
 
@@ -390,7 +374,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
 ////////////////////////////////////////////////////////////
 void GlxContext::updateSettingsFromVisualInfo(XVisualInfo* visualInfo)
 {
-    // Update the creation settings from the chosen format
+    // Update the creation contextSettings from the chosen format
     int depth         = 0;
     int stencil       = 0;
     int multiSampling = 0;
@@ -399,7 +383,7 @@ void GlxContext::updateSettingsFromVisualInfo(XVisualInfo* visualInfo)
     glXGetConfig(m_display.get(), visualInfo, GLX_DEPTH_SIZE, &depth);
     glXGetConfig(m_display.get(), visualInfo, GLX_STENCIL_SIZE, &stencil);
 
-    if (SF_GLAD_GLX_ARB_multisample)
+    if (GLAD_GLX_ARB_multisample)
     {
         glXGetConfig(m_display.get(), visualInfo, GLX_SAMPLE_BUFFERS_ARB, &multiSampling);
         glXGetConfig(m_display.get(), visualInfo, GLX_SAMPLES_ARB, &samples);
@@ -410,7 +394,7 @@ void GlxContext::updateSettingsFromVisualInfo(XVisualInfo* visualInfo)
         samples       = 0;
     }
 
-    if (SF_GLAD_GLX_EXT_framebuffer_sRGB || SF_GLAD_GLX_ARB_framebuffer_sRGB)
+    if (GLAD_GLX_EXT_framebuffer_sRGB || GLAD_GLX_ARB_framebuffer_sRGB)
     {
         glXGetConfig(m_display.get(), visualInfo, GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB, &sRgb);
     }
@@ -433,7 +417,7 @@ void GlxContext::updateSettingsFromWindow()
     XWindowAttributes windowAttributes;
     if (XGetWindowAttributes(m_display.get(), m_window, &windowAttributes) == 0)
     {
-        err() << "Failed to get the window attributes" << std::endl;
+        priv::err() << "Failed to get the window attributes";
         return;
     }
 
@@ -459,7 +443,7 @@ void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int b
     XVisualInfo visualInfo = selectBestVisual(m_display.get(), bitsPerPixel, m_settings);
 
     // Check if the shared context already exists and pbuffers are supported
-    if (shared && SF_GLAD_GLX_SGIX_pbuffer)
+    if (shared && GLAD_GLX_SGIX_pbuffer)
     {
         // There are no GLX versions prior to 1.0
         int major = 0;
@@ -478,28 +462,27 @@ void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int b
             // We don't supply attributes to match against, since
             // the visual we are matching against was already
             // deemed suitable in selectBestVisual()
-            int nbConfigs = 0;
-            // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
-            const auto configs = X11Ptr<GLXFBConfig[]>(
+            int        nbConfigs = 0;
+            const auto configs   = X11Ptr<GLXFBConfig[]>(
                 glXChooseFBConfig(m_display.get(), DefaultScreen(m_display.get()), nullptr, &nbConfigs));
 
-            for (std::size_t i = 0; configs && (i < static_cast<std::size_t>(nbConfigs)); ++i)
+            for (base::SizeT i = 0; configs && (i < static_cast<base::SizeT>(nbConfigs)); ++i)
             {
-                const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs[i]));
+                const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs.get()[i]));
 
                 if (!visual)
                     continue;
 
                 if (visual->visualid == visualInfo.visualid)
                 {
-                    config = &configs[i];
+                    config = &configs.get()[i];
                     break;
                 }
             }
 
             if (config)
             {
-                const std::array attributes =
+                std::array attributes =
                     {GLX_PBUFFER_WIDTH, static_cast<int>(size.x), GLX_PBUFFER_HEIGHT, static_cast<int>(size.y), 0, 0};
 
                 m_pbuffer = glXCreatePbuffer(m_display.get(), *config, attributes.data());
@@ -554,7 +537,7 @@ void GlxContext::createSurface(::Window window)
 void GlxContext::createContext(GlxContext* shared)
 {
     // Get a working copy of the context settings
-    const ContextSettings settings = m_settings;
+    const ContextSettings contextSettings = m_settings;
 
     X11Ptr<XVisualInfo> visualInfo;
 
@@ -564,7 +547,7 @@ void GlxContext::createContext(GlxContext* shared)
 
         glXQueryDrawable(m_display.get(), m_pbuffer, GLX_FBCONFIG_ID, &fbConfigId);
 
-        const std::array attributes = {GLX_FBCONFIG_ID, static_cast<int>(fbConfigId), 0, 0};
+        std::array attributes = {GLX_FBCONFIG_ID, static_cast<int>(fbConfigId), 0, 0};
 
         int        count    = 0;
         const auto fbconfig = X11Ptr<GLXFBConfig>(
@@ -579,7 +562,7 @@ void GlxContext::createContext(GlxContext* shared)
         XWindowAttributes windowAttributes;
         if (XGetWindowAttributes(m_display.get(), m_window, &windowAttributes) == 0)
         {
-            err() << "Failed to get the window attributes" << std::endl;
+            priv::err() << "Failed to get the window attributes";
             return;
         }
 
@@ -593,7 +576,7 @@ void GlxContext::createContext(GlxContext* shared)
 
     if (!visualInfo)
     {
-        err() << "Failed to get visual info" << std::endl;
+        priv::err() << "Failed to get visual info";
         return;
     }
 
@@ -605,10 +588,10 @@ void GlxContext::createContext(GlxContext* shared)
     int minor = 0;
 
     if (!glXQueryVersion(m_display.get(), &major, &minor))
-        err() << "Failed to query GLX version, limited to legacy context creation" << std::endl;
+        priv::err() << "Failed to query GLX version, limited to legacy context creation";
 
     // Check if glXCreateContextAttribsARB is available (requires GLX 1.3 or greater)
-    const bool hasCreateContextArb = SF_GLAD_GLX_ARB_create_context && ((major > 1) || (minor >= 3));
+    const bool hasCreateContextArb = GLAD_GLX_ARB_create_context && ((major > 1) || (minor >= 3));
 
     // Create the OpenGL context -- first try using glXCreateContextAttribsARB
     if (hasCreateContextArb)
@@ -619,27 +602,26 @@ void GlxContext::createContext(GlxContext* shared)
         // We don't supply attributes to match against, since
         // the visual we are matching against was already
         // deemed suitable in selectBestVisual()
-        int nbConfigs = 0;
-        // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
-        const auto configs = X11Ptr<GLXFBConfig[]>(
+        int        nbConfigs = 0;
+        const auto configs   = X11Ptr<GLXFBConfig[]>(
             glXChooseFBConfig(m_display.get(), DefaultScreen(m_display.get()), nullptr, &nbConfigs));
 
-        for (std::size_t i = 0; configs && (i < static_cast<std::size_t>(nbConfigs)); ++i)
+        for (base::SizeT i = 0; configs && (i < static_cast<base::SizeT>(nbConfigs)); ++i)
         {
-            const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs[i]));
+            const auto visual = X11Ptr<XVisualInfo>(glXGetVisualFromFBConfig(m_display.get(), configs.get()[i]));
 
             if (!visual)
                 continue;
 
             if (visual->visualid == visualInfo->visualid)
             {
-                config = &configs[i];
+                config = &configs.get()[i];
                 break;
             }
         }
 
         if (!config)
-            err() << "Failed to get GLXFBConfig which corresponds to the window's visual" << std::endl;
+            priv::err() << "Failed to get GLXFBConfig which corresponds to the window's visual";
 
         while (config && !m_context && m_settings.majorVersion)
         {
@@ -655,12 +637,14 @@ void GlxContext::createContext(GlxContext* shared)
             }
 
             // Check if setting the profile is supported
-            if (SF_GLAD_GLX_ARB_create_context_profile)
+            if (GLAD_GLX_ARB_create_context_profile)
             {
-                const int profile = (m_settings.attributeFlags & ContextSettings::Core)
+                const int profile = !!(m_settings.attributeFlags & ContextSettings::Attribute::Core)
                                         ? GLX_CONTEXT_CORE_PROFILE_BIT_ARB
                                         : GLX_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB;
-                const int debug = (m_settings.attributeFlags & ContextSettings::Debug) ? GLX_CONTEXT_DEBUG_BIT_ARB : 0;
+                const int debug   = !!(m_settings.attributeFlags & ContextSettings::Attribute::Debug)
+                                        ? GLX_CONTEXT_DEBUG_BIT_ARB
+                                        : 0;
 
                 attributes.push_back(GLX_CONTEXT_PROFILE_MASK_ARB);
                 attributes.push_back(profile);
@@ -669,12 +653,12 @@ void GlxContext::createContext(GlxContext* shared)
             }
             else
             {
-                if ((m_settings.attributeFlags & ContextSettings::Core) ||
-                    (m_settings.attributeFlags & ContextSettings::Debug))
-                    err() << "Selecting a profile during context creation is not supported,"
-                          << "disabling compatibility and debug" << std::endl;
+                if (!!(m_settings.attributeFlags & ContextSettings::Attribute::Core) ||
+                    !!(m_settings.attributeFlags & ContextSettings::Attribute::Debug))
+                    priv::err() << "Selecting a profile during context creation is not supported,"
+                                << "disabling compatibility and debug";
 
-                m_settings.attributeFlags = ContextSettings::Default;
+                m_settings.attributeFlags = ContextSettings::Attribute::Default;
             }
 
             // Append the terminating 0
@@ -689,7 +673,7 @@ void GlxContext::createContext(GlxContext* shared)
             {
                 if (!glXMakeCurrent(m_display.get(), None, nullptr))
                 {
-                    err() << "Failed to deactivate shared context before sharing" << std::endl;
+                    priv::err() << "Failed to deactivate shared context before sharing";
                     return;
                 }
             }
@@ -702,16 +686,16 @@ void GlxContext::createContext(GlxContext* shared)
                 // If we couldn't create the context, first try disabling flags,
                 // then lower the version number and try again -- stop at 0.0
                 // Invalid version numbers will be generated by this algorithm (like 3.9), but we really don't care
-                if (m_settings.attributeFlags != ContextSettings::Default)
+                if (m_settings.attributeFlags != ContextSettings::Attribute::Default)
                 {
-                    m_settings.attributeFlags = ContextSettings::Default;
+                    m_settings.attributeFlags = ContextSettings::Attribute::Default;
                 }
                 else if (m_settings.minorVersion > 0)
                 {
                     // If the minor version is not 0, we decrease it and try again
                     --m_settings.minorVersion;
 
-                    m_settings.attributeFlags = settings.attributeFlags;
+                    m_settings.attributeFlags = contextSettings.attributeFlags;
                 }
                 else
                 {
@@ -719,7 +703,7 @@ void GlxContext::createContext(GlxContext* shared)
                     --m_settings.majorVersion;
                     m_settings.minorVersion = 9;
 
-                    m_settings.attributeFlags = settings.attributeFlags;
+                    m_settings.attributeFlags = contextSettings.attributeFlags;
                 }
             }
         }
@@ -731,7 +715,7 @@ void GlxContext::createContext(GlxContext* shared)
         // set the context version to 2.1 (arbitrary) and disable flags
         m_settings.majorVersion   = 2;
         m_settings.minorVersion   = 1;
-        m_settings.attributeFlags = ContextSettings::Default;
+        m_settings.attributeFlags = ContextSettings::Attribute::Default;
 
 #if defined(GLX_DEBUGGING)
         GlxErrorHandler handler(m_display.get());
@@ -741,7 +725,7 @@ void GlxContext::createContext(GlxContext* shared)
         {
             if (!glXMakeCurrent(m_display.get(), None, nullptr))
             {
-                err() << "Failed to deactivate shared context before sharing" << std::endl;
+                priv::err() << "Failed to deactivate shared context before sharing";
                 return;
             }
         }
@@ -751,12 +735,12 @@ void GlxContext::createContext(GlxContext* shared)
 
 #if defined(GLX_DEBUGGING)
         if (glxErrorOccurred)
-            err() << "GLX error in GlxContext::createContext()" << std::endl;
+            priv::err() << "GLX error in GlxContext::createContext()";
 #endif
     }
 
     if (!m_context)
-        err() << "Failed to create an OpenGL context for this window" << std::endl;
+        priv::err() << "Failed to create an OpenGL context for this window";
 }
 
 } // namespace sf::priv

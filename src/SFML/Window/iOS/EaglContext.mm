@@ -1,44 +1,21 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/iOS/EaglContext.hpp>
-#include <SFML/Window/iOS/SFView.hpp>
-#include <SFML/Window/iOS/WindowImplUIKit.hpp>
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/iOS/EaglContext.hpp"
+#include "SFML/Window/iOS/SFView.hpp"
+#include "SFML/Window/iOS/WindowImplUIKit.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <OpenGLES/EAGL.h>
 #include <OpenGLES/EAGLDrawable.h>
 #include <QuartzCore/CAEAGLLayer.h>
-#include <array>
 #include <dlfcn.h>
-#include <ostream>
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -107,25 +84,17 @@ EaglContext::EaglContext(EaglContext* shared) : m_context(nil)
 
 
 ////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel) :
+EaglContext::EaglContext(EaglContext*           shared,
+                         const ContextSettings& contextSettings,
+                         const WindowImpl&      owner,
+                         unsigned int           bitsPerPixel) :
 m_context(nil)
 {
     ensureInit();
 
     const auto& window = static_cast<const WindowImplUIKit&>(owner);
 
-    createContext(shared, window, bitsPerPixel, settings);
-}
-
-
-////////////////////////////////////////////////////////////
-EaglContext::EaglContext(EaglContext* /* shared */, const ContextSettings& /* settings */, Vector2u /* size */) :
-m_context(nil)
-{
-    ensureInit();
-
-    // This constructor should never be used by implementation
-    err() << "Calling bad EaglContext constructor, please contact your developer :)" << std::endl;
+    createContext(shared, window, bitsPerPixel, contextSettings);
 }
 
 
@@ -133,7 +102,7 @@ m_context(nil)
 EaglContext::~EaglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    cleanupUnsharedFrameBuffers();
 
     if (m_context)
     {
@@ -163,9 +132,9 @@ GlFunctionPointer EaglContext::getFunction(const char* name)
 {
     static void* module = nullptr;
 
-    static constexpr std::array libs = {"libGLESv1_CM.dylib",
-                                        "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
-                                        "OpenGLES.framework/OpenGLES"};
+    constexpr const char* libs[] = {"libGLESv1_CM.dylib",
+                                    "/System/Library/Frameworks/OpenGLES.framework/OpenGLES",
+                                    "OpenGLES.framework/OpenGLES"};
 
     for (const auto& lib : libs)
     {
@@ -229,7 +198,7 @@ void EaglContext::recreateRenderBuffers(SFView* glView)
     // Make sure that everything's ok
     const GLenum status = glCheckFramebufferStatusOESFunc(GL_FRAMEBUFFER_OES);
     if (status != GL_FRAMEBUFFER_COMPLETE_OES)
-        err() << "Failed to create a valid frame buffer (error code: " << status << ")" << std::endl;
+        priv::err() << "Failed to create a valid frame buffer (error code: " << status << ")" priv::errEndl;
 
     // Restore the previous context
     [EAGLContext setCurrentContext:previousContext];
@@ -275,10 +244,10 @@ void EaglContext::setVerticalSyncEnabled(bool enabled)
 void EaglContext::createContext(EaglContext*           shared,
                                 const WindowImplUIKit& window,
                                 unsigned int /* bitsPerPixel */,
-                                const ContextSettings& settings)
+                                const ContextSettings& contextSettings)
 {
     // Save the settings
-    m_settings = settings;
+    m_settings = contextSettings;
 
     // Adjust the depth buffer format to those available
     if (m_settings.depthBits > 16)

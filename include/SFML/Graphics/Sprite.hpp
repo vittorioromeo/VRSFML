@@ -1,177 +1,27 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/Vertex.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 
-#include <array>
+#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/Rect.hpp"
 
 
 namespace sf
 {
-class Texture;
-
 ////////////////////////////////////////////////////////////
-/// \brief Drawable representation of a texture, with its
+/// \brief Geometry that can render a texture, with its
 ///        own transformations, color, etc.
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Sprite : public Drawable, public Transformable
+struct SFML_GRAPHICS_API Sprite : TransformableMixin<Sprite>, AnchorPointMixin<Sprite>
 {
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the sprite from a source texture
-    ///
-    /// \param texture Source texture
-    ///
-    /// \see `setTexture`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Sprite(const Texture& texture);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Disallow construction from a temporary texture
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Sprite(const Texture&& texture) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the sprite from a sub-rectangle of a source texture
-    ///
-    /// \param texture   Source texture
-    /// \param rectangle Sub-rectangle of the texture to assign to the sprite
-    ///
-    /// \see `setTexture`, `setTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    Sprite(const Texture& texture, const IntRect& rectangle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Disallow construction from a temporary texture
-    ///
-    ////////////////////////////////////////////////////////////
-    Sprite(const Texture&& texture, const IntRect& rectangle) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Change the source texture of the sprite
-    ///
-    /// The `texture` argument refers to a texture that must
-    /// exist as long as the sprite uses it. Indeed, the sprite
-    /// doesn't store its own copy of the texture, but rather keeps
-    /// a pointer to the one that you passed to this function.
-    /// If the source texture is destroyed and the sprite tries to
-    /// use it, the behavior is undefined.
-    /// If `resetRect` is `true`, the `TextureRect` property of
-    /// the sprite is automatically adjusted to the size of the new
-    /// texture. If it is `false`, the texture rect is left unchanged.
-    ///
-    /// \param texture   New texture
-    /// \param resetRect Should the texture rect be reset to the size of the new texture?
-    ///
-    /// \see `getTexture`, `setTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setTexture(const Texture& texture, bool resetRect = false);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Disallow setting from a temporary texture
-    ///
-    ////////////////////////////////////////////////////////////
-    void setTexture(const Texture&& texture, bool resetRect = false) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the sub-rectangle of the texture that the sprite will display
-    ///
-    /// The texture rect is useful when you don't want to display
-    /// the whole texture, but rather a part of it.
-    /// By default, the texture rect covers the entire texture.
-    ///
-    /// \param rectangle Rectangle defining the region of the texture to display
-    ///
-    /// \see `getTextureRect`, `setTexture`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setTextureRect(const IntRect& rectangle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the global color of the sprite
-    ///
-    /// This color is modulated (multiplied) with the sprite's
-    /// texture. It can be used to colorize the sprite, or change
-    /// its global opacity.
-    /// By default, the sprite's color is opaque white.
-    ///
-    /// \param color New color of the sprite
-    ///
-    /// \see `getColor`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setColor(Color color);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the source texture of the sprite
-    ///
-    /// The returned reference is const, which means that you can't
-    /// modify the texture when you retrieve it with this function.
-    ///
-    /// \return Reference to the sprite's texture
-    ///
-    /// \see `setTexture`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Texture& getTexture() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the sub-rectangle of the texture displayed by the sprite
-    ///
-    /// \return Texture rectangle of the sprite
-    ///
-    /// \see `setTextureRect`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const IntRect& getTextureRect() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the global color of the sprite
-    ///
-    /// \return Global color of the sprite
-    ///
-    /// \see `setColor`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Color getColor() const;
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
     ///
@@ -184,7 +34,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getLocalBounds() const;
+    [[nodiscard, gnu::pure]] FloatRect getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -198,30 +48,14 @@ public:
     /// \return Global bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getGlobalBounds() const;
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw the sprite to a render target
-    ///
-    /// \param target Render target to draw to
-    /// \param states Current render states
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the vertices' positions and texture coordinates
-    ///
-    ////////////////////////////////////////////////////////////
-    void updateVertices();
+    [[nodiscard, gnu::pure]] FloatRect getGlobalBounds() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::array<Vertex, 4> m_vertices;    //!< Vertices defining the sprite's geometry
-    const Texture*        m_texture;     //!< Texture of the sprite
-    IntRect               m_textureRect; //!< Rectangle defining the area of the source texture to display
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+    FloatRect textureRect;         //!< Rectangle defining the area of the source texture to display
+    Color     color{Color::White}; //!< Color of the sprite
 };
 
 } // namespace sf
@@ -251,26 +85,23 @@ private:
 /// it with its own transformation/color/blending attributes.
 ///
 /// It is important to note that the `sf::Sprite` instance doesn't
-/// copy the texture that it uses, it only keeps a reference to it.
-/// Thus, a `sf::Texture` must not be destroyed while it is
-/// used by a `sf::Sprite` (i.e. never write a function that
-/// uses a local `sf::Texture` instance for creating a sprite).
+/// even keep a reference to the `sf::Texture` it uses, the texture
+/// must be provided prior to drawing the sprite via `sf::RenderStates`.
 ///
 /// See also the note on coordinates and undistorted rendering in `sf::Transformable`.
 ///
 /// Usage example:
 /// \code
 /// // Load a texture
-/// const sf::Texture texture("texture.png");
+/// const auto texture = sf::Texture::loadFromFile("texture.png").value();
 ///
 /// // Create a sprite
-/// sf::Sprite sprite(texture);
-/// sprite.setTextureRect({{10, 10}, {50, 30}});
-/// sprite.setColor({255, 255, 255, 200});
-/// sprite.setPosition({100.f, 25.f});
+/// sprite.textureRect = {{10, 10}, {50, 30}};
+/// sprite.color = {255, 255, 255, 200};
+/// sprite.position = {100.f, 25.f};
 ///
 /// // Draw it
-/// window.draw(sprite);
+/// window.draw(sprite, texture);
 /// \endcode
 ///
 /// \see `sf::Texture`, `sf::Transformable`

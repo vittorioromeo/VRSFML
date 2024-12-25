@@ -1,57 +1,45 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/AudioResource.hpp>
+#include "SFML/Audio/Listener.hpp"
 
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Vector3.hpp"
 
-#include <functional>
+#include "SFML/Base/InPlacePImpl.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+struct ma_sound;
+
+namespace sf
+{
+class EffectProcessor;
+class PlaybackDevice;
+class Time;
+} // namespace sf
 
 
 namespace sf
 {
-// NOLINTBEGIN(readability-make-member-function-const)
 ////////////////////////////////////////////////////////////
 /// \brief Base class defining a sound's properties
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API SoundSource : protected AudioResource
+class SFML_AUDIO_API SoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Enumeration of the sound source states
     ///
     ////////////////////////////////////////////////////////////
-    enum class Status
+    enum class [[nodiscard]] Status
     {
         Stopped, //!< Sound is not playing
         Paused,  //!< Sound is paused
@@ -69,114 +57,31 @@ public:
     /// listener moves from the inner angle to the outer angle.
     ///
     ////////////////////////////////////////////////////////////
-    struct Cone
-    {
-        Angle innerAngle;  //!< Inner angle
-        Angle outerAngle;  //!< Outer angle
-        float outerGain{}; //!< Outer gain
-    };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Callable that is provided with sound data for processing
-    ///
-    /// When the audio engine sources sound data from sound
-    /// sources it will pass the data through an effects
-    /// processor if one is set. The sound data will already be
-    /// converted to the internal floating point format.
-    ///
-    /// Sound data that is processed this way is provided in
-    /// frames. Each frame contains 1 floating point sample per
-    /// channel. If e.g. the data source provides stereo data,
-    /// each frame will contain 2 floats.
-    ///
-    /// The effects processor function takes 4 parameters:
-    ///   - The input data frames, channels interleaved
-    ///   - The number of input data frames available
-    ///   - The buffer to write output data frames to, channels interleaved
-    ///   - The number of output data frames that the output buffer can hold
-    ///   - The channel count
-    ///
-    /// The input and output frame counts are in/out parameters.
-    ///
-    /// When this function is called, the input count will
-    /// contain the number of frames available in the input
-    /// buffer. The output count will contain the size of the
-    /// output buffer i.e. the maximum number of frames that
-    /// can be written to the output buffer.
-    ///
-    /// Attempting to read more frames than the input frame
-    /// count or write more frames than the output frame count
-    /// will result in undefined behaviour.
-    ///
-    /// It is important to note that the channel count of the
-    /// audio engine currently sourcing data from this sound
-    /// will always be provided in `frameChannelCount`. This can
-    /// be different from the channel count of the sound source
-    /// so make sure to size necessary processing buffers
-    /// according to the engine channel count and not the sound
-    /// source channel count.
-    ///
-    /// When done processing the frames, the input and output
-    /// frame counts must be updated to reflect the actual
-    /// number of frames that were read from the input and
-    /// written to the output.
-    ///
-    /// The processing function should always try to process as
-    /// much sound data as possible i.e. always try to fill the
-    /// output buffer to the maximum. In certain situations for
-    /// specific effects it can be possible that the input frame
-    /// count and output frame count aren't equal. As long as
-    /// the frame counts are updated accordingly this is
-    /// perfectly valid.
-    ///
-    /// If the audio engine determines that no audio data is
-    /// available from the data source, the input data frames
-    /// pointer is set to `nullptr` and the input frame count is
-    /// set to 0. In this case it is up to the function to
-    /// decide how to handle the situation. For specific effects
-    /// e.g. Echo/Delay buffered data might still be able to be
-    /// written to the output buffer even if there is no longer
-    /// any input data.
-    ///
-    /// An important thing to remember is that this function is
-    /// directly called by the audio engine. Because the audio
-    /// engine runs on an internal thread of its own, make sure
-    /// access to shared data is synchronized appropriately.
-    ///
-    /// Because this function is stored by the `SoundSource`
-    /// object it will be able to be called as long as the
-    /// `SoundSource` object hasn't yet been destroyed. Make sure
-    /// that any data this function references outlives the
-    /// SoundSource object otherwise use-after-free errors will
-    /// occur.
-    ///
-    ////////////////////////////////////////////////////////////
-    using EffectProcessor = std::function<
-        void(const float* inputFrames, unsigned int& inputFrameCount, float* outputFrames, unsigned int& outputFrameCount, unsigned int frameChannelCount)>;
+    using Cone = Listener::Cone;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource(const SoundSource&) = default;
+    SoundSource(const SoundSource&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource(SoundSource&&) noexcept = default;
+    SoundSource(SoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource& operator=(SoundSource&&) noexcept = default;
+    SoundSource& operator=(SoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~SoundSource() = default;
+    virtual ~SoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pitch of the sound
@@ -433,6 +338,36 @@ public:
     virtual void setEffectProcessor(EffectProcessor effectProcessor);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set whether or not the sound should loop after reaching the end
+    ///
+    /// If set, the sound will restart from beginning after
+    /// reaching the end and so on, until it is stopped or
+    /// setLooping(false) is called.
+    /// The default looping state for sound is false.
+    ///
+    /// \param loop True to play in loop, false to play once
+    ///
+    /// \see getLoop
+    ///
+    ////////////////////////////////////////////////////////////
+    void setLooping(bool loop);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Change the current playing position of the sound
+    ///
+    /// The playing position can be changed when the sound is
+    /// either paused or playing. Changing the playing position
+    /// when the sound is stopped has no effect, since playing
+    /// the sound would reset its position.
+    ///
+    /// \param playingOffset New playing position, from the beginning of the sound
+    ///
+    /// \see getPlayingOffset
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual void setPlayingOffset(Time playingOffset);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the pitch of the sound
     ///
     /// \return Pitch of the sound
@@ -594,6 +529,36 @@ public:
     [[nodiscard]] float getAttenuation() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the effect processor of the sound
+    ///
+    /// \return Effect processor of the sound
+    ///
+    /// \see setEffectProcessor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] EffectProcessor getEffectProcessor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell whether or not the sound is in loop mode
+    ///
+    /// \return `true` if the sound is looping, `false` otherwise
+    ///
+    /// \see setLoop
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isLooping() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the current playing position of the sound
+    ///
+    /// \return Current playing position, from the beginning of the sound
+    ///
+    /// \see setPlayingOffset
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual Time getPlayingOffset() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator
     ///
     /// \param right Instance to assign
@@ -613,7 +578,7 @@ public:
     /// \see `pause`, `stop`
     ///
     ////////////////////////////////////////////////////////////
-    virtual void play() = 0;
+    virtual void play(PlaybackDevice& playbackDevice) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound source
@@ -653,7 +618,13 @@ protected:
     /// This constructor is meant to be called by derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource() = default;
+    [[nodiscard]] SoundSource();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply the stored settings onto `sound`
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyStoredSettings(ma_sound& sound) const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -663,9 +634,14 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual void* getSound() const = 0;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
 };
 
-// NOLINTEND(readability-make-member-function-const)
 } // namespace sf
 
 

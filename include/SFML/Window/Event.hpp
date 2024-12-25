@@ -1,40 +1,17 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Joystick.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/Mouse.hpp>
-#include <SFML/Window/Sensor.hpp>
+#include "SFML/Window/Joystick.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/Sensor.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <variant>
+#include "SFML/Base/Variant.hpp"
 
 
 namespace sf
@@ -211,7 +188,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickButtonPressed
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
         unsigned int button{}; //!< Index of the button that has been pressed (in range [0 .. Joystick::ButtonCount - 1])
     };
 
@@ -221,7 +198,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickButtonReleased
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
         unsigned int button{}; //!< Index of the button that has been released (in range [0 .. Joystick::ButtonCount - 1])
     };
 
@@ -231,7 +208,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickMoved
     {
-        unsigned int   joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int   joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
         Joystick::Axis axis{};       //!< Axis on which the joystick moved
         float          position{};   //!< New position on the axis (in range [-100 .. 100])
     };
@@ -242,7 +219,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickConnected
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -251,7 +228,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct JoystickDisconnected
     {
-        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::Count - 1])
+        unsigned int joystickId{}; //!< Index of the joystick (in range [0 .. Joystick::MaxCount - 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -295,6 +272,12 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Event() = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct from a given `sf::Event` subtype
     ///
     /// \tparam `TEventSubtype` Type of event subtype used to construct the event
@@ -303,7 +286,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
-    Event(const TEventSubtype& eventSubtype);
+    [[nodiscard]] Event(const TEventSubtype& eventSubtype);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check current event subtype
@@ -321,68 +304,92 @@ public:
     ///
     /// \tparam `TEventSubtype` Type of the desired event subtype
     ///
-    /// \return Address of current event subtype, otherwise `nullptr`
+    /// \return Address of current event subtype on success, `nullptr` otherwise
     ///
     ////////////////////////////////////////////////////////////
     template <typename TEventSubtype>
     [[nodiscard]] const TEventSubtype* getIf() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply a visitor to the event
+    /// \brief Applies the specified `visitor` to the event
     ///
-    /// \param visitor The visitor to apply
-    ///
-    /// \return The result of applying the visitor to the event
+    /// \return Transparently forwards whatever `visitor` returns
     ///
     ////////////////////////////////////////////////////////////
-    template <typename T>
-    decltype(auto) visit(T&& visitor) const;
+    template <typename Visitor>
+    decltype(auto) visit(Visitor&& visitor) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invokes `visit` with an overload created from `handlers...`
+    ///
+    /// \return Transparently forwards whatever `visit` returns
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Handlers>
+    decltype(auto) match(Handlers&&... handlers) const;
 
 private:
+    // clang-format off
+
+    #define SFML_PRIV_EVENTS_X_MACRO(x, xSep)         \
+        x(::sf::Event::Closed)                 xSep() \
+        x(::sf::Event::Resized)                xSep() \
+        x(::sf::Event::FocusLost)              xSep() \
+        x(::sf::Event::FocusGained)            xSep() \
+        x(::sf::Event::TextEntered)            xSep() \
+        x(::sf::Event::KeyPressed)             xSep() \
+        x(::sf::Event::KeyReleased)            xSep() \
+        x(::sf::Event::MouseWheelScrolled)     xSep() \
+        x(::sf::Event::MouseButtonPressed)     xSep() \
+        x(::sf::Event::MouseButtonReleased)    xSep() \
+        x(::sf::Event::MouseMoved)             xSep() \
+        x(::sf::Event::MouseMovedRaw)          xSep() \
+        x(::sf::Event::MouseEntered)           xSep() \
+        x(::sf::Event::MouseLeft)              xSep() \
+        x(::sf::Event::JoystickButtonPressed)  xSep() \
+        x(::sf::Event::JoystickButtonReleased) xSep() \
+        x(::sf::Event::JoystickMoved)          xSep() \
+        x(::sf::Event::JoystickConnected)      xSep() \
+        x(::sf::Event::JoystickDisconnected)   xSep() \
+        x(::sf::Event::TouchBegan)             xSep() \
+        x(::sf::Event::TouchMoved)             xSep() \
+        x(::sf::Event::TouchEnded)             xSep() \
+        x(::sf::Event::SensorChanged)
+
+    // clang-format on
+
+#define SFML_PRIV_EVENT_X_EXPAND(x) x
+#define SFML_PRIV_EVENT_X_COMMA()   ,
+
+#define SFML_PRIV_EVENT_VARIANT_TYPE \
+    ::sfvr::tinyvariant<SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXPAND, SFML_PRIV_EVENT_X_COMMA)>
+
+    using VariantType = SFML_PRIV_EVENT_VARIANT_TYPE;
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::variant<Closed,
-                 Resized,
-                 FocusLost,
-                 FocusGained,
-                 TextEntered,
-                 KeyPressed,
-                 KeyReleased,
-                 MouseWheelScrolled,
-                 MouseButtonPressed,
-                 MouseButtonReleased,
-                 MouseMoved,
-                 MouseMovedRaw,
-                 MouseEntered,
-                 MouseLeft,
-                 JoystickButtonPressed,
-                 JoystickButtonReleased,
-                 JoystickMoved,
-                 JoystickConnected,
-                 JoystickDisconnected,
-                 TouchBegan,
-                 TouchMoved,
-                 TouchEnded,
-                 SensorChanged>
-        m_data; //!< Event data
-
-    ////////////////////////////////////////////////////////////
-    // Helper functions
-    ////////////////////////////////////////////////////////////
-    template <typename T, typename... Ts>
-    [[nodiscard]] static constexpr bool isInParameterPack(const std::variant<Ts...>*)
-    {
-        return (std::is_same_v<T, Ts> || ...);
-    }
-
-    template <typename T>
-    static constexpr bool isEventSubtype = isInParameterPack<T>(decltype (&m_data)(nullptr));
+    VariantType m_data; //!< Event data
 };
 
 } // namespace sf
 
-#include <SFML/Window/Event.inl>
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
+////////////////////////////////////////////////////////////
+extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
+
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_CTOR(x)  extern template sf::Event::Event(const x&);
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_IS(x)    extern template bool sf::Event::is<x>() const;
+#define SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF(x) extern template const x* sf::Event::getIf<x>() const;
+
+#define SFML_PRIV_EVENT_X_SEMICOLON() ;
+
+SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVENT_X_SEMICOLON);
+
+
+#include "SFML/Window/Event.inl"
 
 
 ////////////////////////////////////////////////////////////
@@ -390,7 +397,7 @@ private:
 /// \ingroup window
 ///
 /// `sf::Event` holds all the information about a system event
-/// that just happened. Events are retrieved using the
+/// that just happened. Events are  using the
 /// `sf::Window::pollEvent` and `sf::Window::waitEvent` functions.
 ///
 /// A `sf::Event` instance contains the subtype of the event
@@ -399,7 +406,7 @@ private:
 /// corresponds to a different subtype struct which contains
 /// the data required to process that event.
 ///
-/// Event subtypes are event types belonging to `sf::Event`,
+/// Event subtype are event types belonging to `sf::Event`,
 /// such as `sf::Event::Closed` or `sf::Event::MouseMoved`.
 ///
 /// The way to access the current active event subtype is via
@@ -411,13 +418,11 @@ private:
 /// without actually reading any of the corresponding event data.
 ///
 /// \code
-/// while (const std::optional event = window.pollEvent())
+/// while (const sf::base::Optional event = window.pollEvent())
 /// {
 ///     // Window closed or escape key pressed: exit
-///     if (event->is<sf::Event::Closed>() ||
-///         (event->is<sf::Event::KeyPressed>() &&
-///          event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-///         window.close();
+///     if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+///         return 0; // break out of both event and main loops
 ///
 ///     // The window was resized
 ///     if (const auto* resized = event->getIf<sf::Event::Resized>())

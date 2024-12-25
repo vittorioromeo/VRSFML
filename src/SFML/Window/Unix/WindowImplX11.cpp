@@ -1,47 +1,36 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/CursorImpl.hpp"
+#include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/Unix/ClipboardImpl.hpp"
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/Unix/KeyboardImpl.hpp"
+#include "SFML/Window/Unix/Utils.hpp"
+#include "SFML/Window/Unix/WindowImplX11.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/Window/InputImpl.hpp>
-#include <SFML/Window/Unix/ClipboardImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/Unix/KeyboardImpl.hpp>
-#include <SFML/Window/Unix/Utils.hpp>
-#include <SFML/Window/Unix/WindowImplX11.hpp>
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Utf.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Utf.hpp>
+#include "SFML/Base/Algorithm.hpp"
 
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
+
+#include "SFML/System/Path.hpp"
+
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
@@ -49,29 +38,23 @@
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
 
-#include <algorithm>
 #include <array>
 #include <bitset>
 #include <fcntl.h>
-#include <filesystem>
 #include <libgen.h>
 #include <mutex>
-#include <ostream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <vector>
 
-#include <cassert>
-#include <cstring>
-
 #ifdef SFML_OPENGL_ES
-#include <SFML/Window/EglContext.hpp>
-using ContextType = sf::priv::EglContext;
+#include "SFML/Window/EGL/EGLContext.hpp"
+using DerivedGlContextType = sf::priv::EglContext;
 #else
-#include <SFML/Window/Unix/GlxContext.hpp>
-using ContextType = sf::priv::GlxContext;
+#include "SFML/Window/Unix/GlxContext.hpp"
+using DerivedGlContextType = sf::priv::GlxContext;
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -117,7 +100,7 @@ Bool checkEvent(::Display*, XEvent* event, XPointer userData)
 }
 
 // Find the name of the current executable
-std::filesystem::path findExecutableName()
+sf::Path findExecutableName()
 {
     // We use /proc/self/cmdline to get the command line
     // the user used to invoke this instance of the application
@@ -127,13 +110,13 @@ std::filesystem::path findExecutableName()
         return "sfml";
 
     std::vector<char> buffer(256, 0);
-    std::size_t       offset = 0;
+    sf::base::SizeT   offset = 0;
     ssize_t           result = 0;
 
     while ((result = read(file, &buffer[offset], 256)) > 0)
     {
-        buffer.resize(buffer.size() + static_cast<std::size_t>(result), 0);
-        offset += static_cast<std::size_t>(result);
+        buffer.resize(buffer.size() + static_cast<sf::base::SizeT>(result), 0);
+        offset += static_cast<sf::base::SizeT>(result);
     }
 
     ::close(file);
@@ -143,7 +126,7 @@ std::filesystem::path findExecutableName()
         buffer[offset] = 0;
 
         // Remove the path to keep the executable name only
-        return basename(buffer.data());
+        return static_cast<const char*>(basename(buffer.data()));
     }
 
     // Default fallback name
@@ -277,7 +260,7 @@ bool ewmhSupported()
         // length to build a proper string
         const char* begin = reinterpret_cast<const char*>(data);
         const char* end   = begin + numItems;
-        windowManagerName = sf::String::fromUtf8(begin, end);
+        windowManagerName = sf::StringUtfUtils::fromUtf8(begin, end);
     }
 
     if (result == Success)
@@ -363,10 +346,10 @@ bool isWMAbsolutePositionGood()
     if (!ewmhSupported())
         return false;
 
-    static const std::array<sf::String, 3> wmAbsPosGood = {"Enlightenment", "FVWM", "i3"};
-    return std::any_of(wmAbsPosGood.begin(),
-                       wmAbsPosGood.end(),
-                       [](const sf::String& name) { return name == windowManagerName; });
+    static const sf::String wmAbsPosGood[]{"Enlightenment", "FVWM", "i3"};
+    return sf::base::anyOf(wmAbsPosGood,
+                           wmAbsPosGood + 3,
+                           [](const sf::String& name) { return name == windowManagerName; });
 }
 
 // Initialize raw mouse input
@@ -410,7 +393,8 @@ struct XDeleter<XImage>
 {
     void operator()(XImage* image) const
     {
-        XDestroyImage(image);
+        if (image != nullptr)
+            XDestroyImage(image);
     }
 };
 
@@ -421,7 +405,8 @@ struct XDeleter<XRRScreenResources>
 {
     void operator()(XRRScreenResources* res) const
     {
-        XRRFreeScreenResources(res);
+        if (res != nullptr)
+            XRRFreeScreenResources(res);
     }
 };
 
@@ -432,7 +417,8 @@ struct XDeleter<XRROutputInfo>
 {
     void operator()(XRROutputInfo* outputInfo) const
     {
-        XRRFreeOutputInfo(outputInfo);
+        if (outputInfo != nullptr)
+            XRRFreeOutputInfo(outputInfo);
     }
 };
 
@@ -443,7 +429,8 @@ struct XDeleter<XRRCrtcInfo>
 {
     void operator()(XRRCrtcInfo* crtcInfo) const
     {
-        XRRFreeCrtcInfo(crtcInfo);
+        if (crtcInfo != nullptr)
+            XRRFreeCrtcInfo(crtcInfo);
     }
 };
 
@@ -482,8 +469,8 @@ WindowImplX11::WindowImplX11(WindowHandle handle) : m_isExternal(true)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplX11::WindowImplX11(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings) :
-m_fullscreen(state == State::Fullscreen),
+WindowImplX11::WindowImplX11(const WindowSettings& windowSettings) :
+m_fullscreen(windowSettings.fullscreen),
 m_cursorGrabbed(m_fullscreen)
 {
     using namespace WindowImplX11Impl;
@@ -505,17 +492,17 @@ m_cursorGrabbed(m_fullscreen)
     else
     {
         const Vector2i displaySize(DisplayWidth(m_display.get(), m_screen), DisplayHeight(m_display.get(), m_screen));
-        windowPosition = displaySize - Vector2i(mode.size) / 2;
+        windowPosition = displaySize - windowSettings.size.toVector2i() / 2;
     }
 
-    const unsigned int width  = mode.size.x;
-    const unsigned int height = mode.size.y;
+    const unsigned int width  = windowSettings.size.x;
+    const unsigned int height = windowSettings.size.y;
 
     Visual* visual = nullptr;
     int     depth  = 0;
 
-    // Check if the user chose to not create an OpenGL context (settings.attributeFlags will be 0xFFFFFFFF)
-    if (settings.attributeFlags == 0xFFFFFFFF)
+    // Check if the user chose to not create an OpenGL context (windowSettings.contextSettings.attributeFlags will be 0xFFFFFFFF) // TODO: P0?
+    if (windowSettings.contextSettings.attributeFlags == ContextSettings::Attribute{0xFFFFFFFF})
     {
         // Choose default visual since the user is going to use their own rendering API
         visual = DefaultVisual(m_display.get(), m_screen);
@@ -523,8 +510,12 @@ m_cursorGrabbed(m_fullscreen)
     }
     else
     {
+        // TODO P1: is this path ever reached? If not, we can get rid of `const ContextSettings&` from all window impls
+
         // Choose the visual according to the context settings
-        const XVisualInfo visualInfo = ContextType::selectBestVisual(m_display.get(), mode.bitsPerPixel, settings);
+        const XVisualInfo visualInfo = DerivedGlContextType::selectBestVisual(m_display.get(),
+                                                                              windowSettings.bitsPerPixel,
+                                                                              windowSettings.contextSettings);
 
         visual = visualInfo.visual;
         depth  = visualInfo.depth;
@@ -551,7 +542,7 @@ m_cursorGrabbed(m_fullscreen)
 
     if (!m_window)
     {
-        err() << "Failed to create window" << std::endl;
+        priv::err() << "Failed to create window";
         return;
     }
 
@@ -601,17 +592,19 @@ m_cursorGrabbed(m_fullscreen)
                 unsigned long state{};
             } hints;
 
-            if (style & Style::Titlebar)
+            if (windowSettings.hasTitlebar)
             {
                 hints.decorations |= MWM_DECOR_BORDER | MWM_DECOR_TITLE | MWM_DECOR_MINIMIZE | MWM_DECOR_MENU;
                 hints.functions |= MWM_FUNC_MOVE | MWM_FUNC_MINIMIZE;
             }
-            if (style & Style::Resize)
+
+            if (windowSettings.resizable)
             {
                 hints.decorations |= MWM_DECOR_MAXIMIZE | MWM_DECOR_RESIZEH;
                 hints.functions |= MWM_FUNC_MAXIMIZE | MWM_FUNC_RESIZE;
             }
-            if (style & Style::Close)
+
+            if (windowSettings.closable)
             {
                 hints.decorations |= 0;
                 hints.functions |= MWM_FUNC_CLOSE;
@@ -629,7 +622,7 @@ m_cursorGrabbed(m_fullscreen)
     }
 
     // This is a hack to force some windows managers to disable resizing
-    if (!(style & Style::Resize))
+    if (!windowSettings.resizable)
     {
         m_useSizeHints = true;
         XSizeHints sizeHints{};
@@ -647,23 +640,23 @@ m_cursorGrabbed(m_fullscreen)
     // The instance name should be something unique to this invocation
     // of the application but is rarely if ever used these days.
     // For simplicity, we retrieve it via the base executable name.
-    std::string       executableName = findExecutableName().string();
+    auto              executableName = findExecutableName().to<std::string>();
     std::vector<char> windowInstance(executableName.size() + 1, 0);
-    std::copy(executableName.begin(), executableName.end(), windowInstance.begin());
+    base::copy(executableName.begin(), executableName.end(), windowInstance.begin());
     hint.res_name = windowInstance.data();
 
     // The class name identifies a class of windows that
     // "are of the same type". We simply use the initial window name as
     // the class name.
-    std::string       ansiTitle = title.toAnsiString();
+    std::string       ansiTitle = windowSettings.title.toAnsiString<std::string>();
     std::vector<char> windowClass(ansiTitle.size() + 1, 0);
-    std::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
+    base::copy(ansiTitle.begin(), ansiTitle.end(), windowClass.begin());
     hint.res_class = windowClass.data();
 
     XSetClassHint(m_display.get(), m_window, &hint);
 
     // Set the window's name
-    setTitle(title);
+    setTitle(windowSettings.title);
 
     // Do some common initializations
     initialize();
@@ -679,7 +672,7 @@ m_cursorGrabbed(m_fullscreen)
         sizeHints.flags &= ~(PMinSize | PMaxSize);
         XSetWMNormalHints(m_display.get(), m_window, &sizeHints);
 
-        setVideoMode(mode);
+        setVideoMode(VideoMode{windowSettings.size, windowSettings.bitsPerPixel});
         switchToFullscreen();
     }
 }
@@ -718,7 +711,7 @@ WindowImplX11::~WindowImplX11()
 
     // Remove this window from the global list of windows (required for focus request)
     const std::lock_guard lock(allWindowsMutex);
-    allWindows.erase(std::find(allWindows.begin(), allWindows.end(), this));
+    allWindows.erase(base::find(allWindows.begin(), allWindows.end(), this));
 }
 
 
@@ -882,7 +875,7 @@ Vector2u WindowImplX11::getSize() const
 {
     XWindowAttributes attributes;
     XGetWindowAttributes(m_display.get(), m_window, &attributes);
-    return Vector2u(Vector2i(attributes.width, attributes.height));
+    return Vector2i(attributes.width, attributes.height).toVector2u();
 }
 
 
@@ -905,7 +898,7 @@ void WindowImplX11::setSize(Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMinimumSize(const std::optional<Vector2u>& minimumSize)
+void WindowImplX11::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     WindowImpl::setMinimumSize(minimumSize);
     setWindowSizeConstraints();
@@ -913,7 +906,7 @@ void WindowImplX11::setMinimumSize(const std::optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setMaximumSize(const std::optional<Vector2u>& maximumSize)
+void WindowImplX11::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     WindowImpl::setMaximumSize(maximumSize);
     setWindowSizeConstraints();
@@ -927,7 +920,7 @@ void WindowImplX11::setTitle(const String& title)
     // There is however an option to tell the window manager your Unicode title via hints.
 
     // Convert to UTF-8 encoding.
-    const auto utf8Title = title.toUtf8();
+    const auto utf8Title = title.toUtf8<std::u8string>();
 
     const Atom useUtf8 = getAtom("UTF8_STRING", false);
 
@@ -939,7 +932,7 @@ void WindowImplX11::setTitle(const String& title)
                     useUtf8,
                     8,
                     PropModeReplace,
-                    utf8Title.c_str(),
+                    reinterpret_cast<const unsigned char*>(utf8Title.c_str()),
                     static_cast<int>(utf8Title.size()));
 
     // Set the _NET_WM_ICON_NAME atom, which specifies a UTF-8 encoded window title.
@@ -950,14 +943,14 @@ void WindowImplX11::setTitle(const String& title)
                     useUtf8,
                     8,
                     PropModeReplace,
-                    utf8Title.c_str(),
+                    reinterpret_cast<const unsigned char*>(utf8Title.c_str()),
                     static_cast<int>(utf8Title.size()));
 
     // Set the non-Unicode title as a fallback for window managers who don't support _NET_WM_NAME.
     Xutf8SetWMProperties(m_display.get(),
                          m_window,
-                         title.toAnsiString().c_str(),
-                         title.toAnsiString().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
+                         title.toAnsiString<std::string>().c_str(),
                          nullptr,
                          0,
                          nullptr,
@@ -967,14 +960,14 @@ void WindowImplX11::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
+void WindowImplX11::setIcon(Vector2u size, const base::U8* pixels)
 {
     // X11 wants BGRA pixels: swap red and blue channels
     // Note: this memory will be freed by X11Ptr<XImage> deleter
     // NOLINTBEGIN(cppcoreguidelines-no-malloc)
-    auto* iconPixels = static_cast<std::uint8_t*>(std::malloc(std::size_t{size.x} * std::size_t{size.y} * 4));
+    auto* iconPixels = static_cast<base::U8*>(std::malloc(base::SizeT{size.x} * base::SizeT{size.y} * 4));
     // NOLINTEND(cppcoreguidelines-no-malloc)
-    for (std::size_t i = 0; i < std::size_t{size.x} * std::size_t{size.y}; ++i)
+    for (base::SizeT i = 0; i < base::SizeT{size.x} * base::SizeT{size.y}; ++i)
     {
         iconPixels[i * 4 + 0] = pixels[i * 4 + 2];
         iconPixels[i * 4 + 1] = pixels[i * 4 + 1];
@@ -989,7 +982,7 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
         XCreateImage(m_display.get(), defVisual, defDepth, ZPixmap, 0, reinterpret_cast<char*>(iconPixels), size.x, size.y, 32, 0));
     if (!iconImage)
     {
-        err() << "Failed to set the window's icon" << std::endl;
+        priv::err() << "Failed to set the window's icon";
         return;
     }
 
@@ -1006,18 +999,18 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     XFreeGC(m_display.get(), iconGC);
 
     // Create the mask pixmap (must have 1 bit depth)
-    const std::size_t         pitch = (size.x + 7) / 8;
-    std::vector<std::uint8_t> maskPixels(pitch * size.y, 0);
-    for (std::size_t j = 0; j < size.y; ++j)
+    const base::SizeT     pitch = (size.x + 7) / 8;
+    std::vector<base::U8> maskPixels(pitch * size.y, 0);
+    for (base::SizeT j = 0; j < size.y; ++j)
     {
-        for (std::size_t i = 0; i < pitch; ++i)
+        for (base::SizeT i = 0; i < pitch; ++i)
         {
-            for (std::size_t k = 0; k < 8; ++k)
+            for (base::SizeT k = 0; k < 8; ++k)
             {
                 if (i * 8 + k < size.x)
                 {
-                    const std::uint8_t opacity = pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0;
-                    maskPixels[i + j * pitch] |= static_cast<std::uint8_t>(opacity << k);
+                    const base::U8 opacity = pixels[(i * 8 + k + j * size.x) * 4 + 3] > 0;
+                    maskPixels[i + j * pitch] |= static_cast<base::U8>(opacity << k);
                 }
             }
         }
@@ -1049,7 +1042,7 @@ void WindowImplX11::setIcon(Vector2u size, const std::uint8_t* pixels)
     *ptr++ = size.y;
 #pragma GCC diagnostic pop
 
-    for (std::size_t i = 0; i < std::size_t{size.x} * std::size_t{size.y}; ++i)
+    for (base::SizeT i = 0; i < base::SizeT{size.x} * base::SizeT{size.y}; ++i)
     {
         *ptr++ = static_cast<unsigned long>(
             (pixels[i * 4 + 2] << 0) | (pixels[i * 4 + 1] << 8) | (pixels[i * 4 + 0] << 16) | (pixels[i * 4 + 3] << 24));
@@ -1145,7 +1138,7 @@ void WindowImplX11::setMouseCursorGrabbed(bool grabbed)
         }
 
         if (!m_cursorGrabbed)
-            err() << "Failed to grab mouse cursor" << std::endl;
+            priv::err() << "Failed to grab mouse cursor";
     }
     else
     {
@@ -1186,11 +1179,11 @@ void WindowImplX11::requestFocus()
     }
 
     // Check if window is viewable (not on other desktop, ...)
-    // TODO: Check also if minimized
+    // TODO P2: Check also if minimized
     XWindowAttributes attributes;
     if (XGetWindowAttributes(m_display.get(), m_window, &attributes) == 0)
     {
-        sf::err() << "Failed to check if window is viewable while requesting focus" << std::endl;
+        sf::priv::err() << "Failed to check if window is viewable while requesting focus";
         return; // error getting attribute
     }
 
@@ -1266,7 +1259,7 @@ void WindowImplX11::grabFocus()
         XFlush(m_display.get());
 
         if (!result)
-            err() << "Setting fullscreen failed, could not send \"_NET_ACTIVE_WINDOW\" event" << std::endl;
+            priv::err() << "Setting fullscreen failed, could not send \"_NET_ACTIVE_WINDOW\" event";
     }
     else
     {
@@ -1283,14 +1276,14 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     using namespace WindowImplX11Impl;
 
     // Skip mode switching if the new mode is equal to the desktop mode
-    if (mode == VideoMode::getDesktopMode())
+    if (mode == VideoModeUtils::getDesktopMode())
         return;
 
     // Check if the XRandR extension is present
     if (!checkXRandR())
     {
         // XRandR extension is not supported: we cannot use fullscreen mode
-        err() << "Fullscreen is not supported, switching to window mode" << std::endl;
+        priv::err() << "Fullscreen is not supported, switching to window mode";
         return;
     }
 
@@ -1301,7 +1294,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     const auto res = X11Ptr<XRRScreenResources>(XRRGetScreenResources(m_display.get(), rootWindow));
     if (!res)
     {
-        err() << "Failed to get the current screen resources for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to get the current screen resources for fullscreen mode, switching to window mode";
         return;
     }
 
@@ -1311,7 +1304,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     const auto outputInfo = X11Ptr<XRROutputInfo>(XRRGetOutputInfo(m_display.get(), res.get(), output));
     if (!outputInfo || outputInfo->connection == RR_Disconnected)
     {
-        err() << "Failed to get output info for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to get output info for fullscreen mode, switching to window mode";
         return;
     }
 
@@ -1319,7 +1312,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
     const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), outputInfo->crtc));
     if (!crtcInfo)
     {
-        err() << "Failed to get crtc info for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to get crtc info for fullscreen mode, switching to window mode";
         return;
     }
 
@@ -1342,7 +1335,7 @@ void WindowImplX11::setVideoMode(const VideoMode& mode)
 
     if (!modeFound)
     {
-        err() << "Failed to find a matching RRMode for fullscreen mode, switching to window mode" << std::endl;
+        priv::err() << "Failed to find a matching RRMode for fullscreen mode, switching to window mode";
         return;
     }
 
@@ -1382,7 +1375,7 @@ void WindowImplX11::resetVideoMode()
                 XRRGetScreenResources(m_display.get(), DefaultRootWindow(m_display.get())));
             if (!res)
             {
-                err() << "Failed to get the current screen resources to reset the video mode" << std::endl;
+                priv::err() << "Failed to get the current screen resources to reset the video mode";
                 return;
             }
 
@@ -1390,7 +1383,7 @@ void WindowImplX11::resetVideoMode()
             const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), m_oldRRCrtc));
             if (!crtcInfo)
             {
-                err() << "Failed to get crtc info to reset the video mode" << std::endl;
+                priv::err() << "Failed to get crtc info to reset the video mode";
                 return;
             }
 
@@ -1447,7 +1440,7 @@ void WindowImplX11::switchToFullscreen()
 
         if (!netWmState || !netWmStateFullscreen)
         {
-            err() << "Setting fullscreen failed. Could not get required atoms" << std::endl;
+            priv::err() << "Setting fullscreen failed. Could not get required atoms";
             return;
         }
 
@@ -1468,7 +1461,7 @@ void WindowImplX11::switchToFullscreen()
                                       &event);
 
         if (!result)
-            err() << "Setting fullscreen failed, could not send \"_NET_WM_STATE\" event" << std::endl;
+            priv::err() << "Setting fullscreen failed, could not send \"_NET_WM_STATE\" event";
     }
 }
 
@@ -1483,7 +1476,7 @@ void WindowImplX11::setProtocols()
 
     if (!wmProtocols)
     {
-        err() << "Failed to request WM_PROTOCOLS atom." << std::endl;
+        priv::err() << "Failed to request WM_PROTOCOLS atom.";
         return;
     }
 
@@ -1495,7 +1488,7 @@ void WindowImplX11::setProtocols()
     }
     else
     {
-        err() << "Failed to request WM_DELETE_WINDOW atom." << std::endl;
+        priv::err() << "Failed to request WM_DELETE_WINDOW atom.";
     }
 
     Atom netWmPing = None;
@@ -1536,7 +1529,7 @@ void WindowImplX11::setProtocols()
     }
     else
     {
-        err() << "Didn't set any window protocols" << std::endl;
+        priv::err() << "Didn't set any window protocols";
     }
 }
 
@@ -1566,8 +1559,7 @@ void WindowImplX11::initialize()
     }
 
     if (!m_inputContext)
-        err() << "Failed to create input context for window -- TextEntered event won't be able to return unicode"
-              << std::endl;
+        priv::err() << "Failed to create input context for window -- TextEntered event won't be able to return unicode";
 
     const Atom wmWindowType       = getAtom("_NET_WM_WINDOW_TYPE", false);
     Atom       wmWindowTypeNormal = getAtom("_NET_WM_WINDOW_TYPE_NORMAL", false);
@@ -1588,7 +1580,7 @@ void WindowImplX11::initialize()
     if (allWindows.empty())
     {
         if (!initRawMouse(m_display.get()))
-            sf::err() << "Failed to initialize raw mouse input" << std::endl;
+            sf::priv::err() << "Failed to initialize raw mouse input";
     }
 
     // Show the window
@@ -1714,7 +1706,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 }
 
                 if (!m_cursorGrabbed)
-                    err() << "Failed to grab mouse cursor" << std::endl;
+                    priv::err() << "Failed to grab mouse cursor";
             }
 
             pushEvent(Event::FocusGained{});
@@ -1752,7 +1744,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             // ConfigureNotify can be triggered for other reasons, check if the size has actually changed
             if ((windowEvent.xconfigure.width != m_previousSize.x) || (windowEvent.xconfigure.height != m_previousSize.y))
             {
-                pushEvent(Event::Resized{Vector2u(Vector2(windowEvent.xconfigure.width, windowEvent.xconfigure.height))});
+                pushEvent(Event::Resized{Vector2{windowEvent.xconfigure.width, windowEvent.xconfigure.height}.toVector2u()});
 
                 m_previousSize.x = windowEvent.xconfigure.width;
                 m_previousSize.y = windowEvent.xconfigure.height;
@@ -1801,7 +1793,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
         case KeyPress:
         {
             // Fill the event parameters
-            // TODO: if modifiers are wrong, use XGetModifierMapping to retrieve the actual modifiers mapping
+            // TODO P2: if modifiers are wrong, use XGetModifierMapping to retrieve the actual modifiers mapping
             Event::KeyPressed event;
             event.code     = KeyboardImpl::getKeyFromEvent(windowEvent.xkey);
             event.scancode = KeyboardImpl::getScancodeFromEvent(windowEvent.xkey);
@@ -1836,30 +1828,29 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
             {
                 if (m_inputContext)
                 {
-                    Status                       status = 0;
-                    std::array<std::uint8_t, 64> keyBuffer{};
+                    Status   status = 0;
+                    base::U8 keyBuffer[64];
 
                     const int length = Xutf8LookupString(m_inputContext,
                                                          &windowEvent.xkey,
-                                                         reinterpret_cast<char*>(keyBuffer.data()),
-                                                         keyBuffer.size(),
+                                                         reinterpret_cast<char*>(keyBuffer),
+                                                         sizeof(keyBuffer),
                                                          nullptr,
                                                          &status);
 
                     if (status == XBufferOverflow)
-                        err() << "A TextEntered event has more than 64 bytes of UTF-8 input, and "
-                                 "has been discarded\nThis means either you have typed a very long string "
-                                 "(more than 20 chars), or your input method is broken in obscure ways."
-                              << std::endl;
+                        priv::err() << "A TextEntered event has more than 64 bytes of UTF-8 input, and "
+                                       "has been discarded\nThis means either you have typed a very long string "
+                                       "(more than 20 chars), or your input method is broken in obscure ways.";
                     else if (status == XLookupChars)
                     {
                         // There might be more than 1 characters in this event,
                         // so we must iterate it
-                        char32_t      unicode = 0;
-                        std::uint8_t* iter    = keyBuffer.data();
-                        while (iter < keyBuffer.data() + length)
+                        char32_t  unicode = 0;
+                        base::U8* iter    = keyBuffer;
+                        while (iter < keyBuffer + length)
                         {
-                            iter = Utf8::decode(iter, keyBuffer.data() + length, unicode, 0);
+                            iter = Utf8::decode(iter, keyBuffer + length, unicode, 0);
                             if (unicode != 0)
                                 pushEvent(Event::TextEntered{unicode});
                         }
@@ -1868,8 +1859,8 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 else
                 {
                     static XComposeStatus status;
-                    std::array<char, 16>  keyBuffer{};
-                    if (XLookupString(&windowEvent.xkey, keyBuffer.data(), keyBuffer.size(), nullptr, &status))
+                    char                  keyBuffer[16];
+                    if (XLookupString(&windowEvent.xkey, keyBuffer, sizeof(keyBuffer), nullptr, &status))
                         pushEvent(Event::TextEntered{static_cast<char32_t>(keyBuffer[0])});
                 }
             }
@@ -1906,7 +1897,7 @@ bool WindowImplX11::processEvent(XEvent& windowEvent)
                 event.position = {windowEvent.xbutton.x, windowEvent.xbutton.y};
 
                 // clang-format off
-                switch(button)
+                switch (button)
                 {
                     case Button1: event.button = Mouse::Button::Left;     break;
                     case Button2: event.button = Mouse::Button::Middle;   break;
@@ -2081,7 +2072,7 @@ bool WindowImplX11::checkXRandR()
     int version = 0;
     if (!XQueryExtension(m_display.get(), "RANDR", &version, &version, &version))
     {
-        err() << "XRandR extension is not supported" << std::endl;
+        priv::err() << "XRandR extension is not supported";
         return false;
     }
 
@@ -2114,7 +2105,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto res = X11Ptr<XRRScreenResources>(XRRGetScreenResources(m_display.get(), rootWindow));
     if (!res)
     {
-        err() << "Failed to get the current screen resources for primary monitor position" << std::endl;
+        priv::err() << "Failed to get the current screen resources for primary monitor position";
         return monitorPosition;
     }
 
@@ -2124,7 +2115,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto outputInfo = X11Ptr<XRROutputInfo>(XRRGetOutputInfo(m_display.get(), res.get(), output));
     if (!outputInfo || outputInfo->connection == RR_Disconnected)
     {
-        err() << "Failed to get output info for primary monitor position" << std::endl;
+        priv::err() << "Failed to get output info for primary monitor position";
         return monitorPosition;
     }
 
@@ -2132,7 +2123,7 @@ Vector2i WindowImplX11::getPrimaryMonitorPosition()
     const auto crtcInfo = X11Ptr<XRRCrtcInfo>(XRRGetCrtcInfo(m_display.get(), res.get(), outputInfo->crtc));
     if (!crtcInfo)
     {
-        err() << "Failed to get crtc info for primary monitor position" << std::endl;
+        priv::err() << "Failed to get crtc info for primary monitor position";
         return monitorPosition;
     }
 
