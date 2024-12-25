@@ -1,0 +1,43 @@
+with sin cos
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.787 s ±  0.490 s    [User: 4.330 s, System: 0.215 s]
+  Range (min … max):    4.152 s …  5.503 s    10 runs
+
+
+
+with FastSinCos.hpp
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.156 s ±  0.042 s    [User: 2.859 s, System: 0.197 s]
+  Range (min … max):    4.117 s …  4.230 s    10 runs
+
+
+
+with map(...) trig table
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.164 s ±  0.052 s    [User: 3.028 s, System: 0.170 s]
+  Range (min … max):    4.099 s …  4.278 s    10 runs
+
+
+
+same as first but not inlined
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.132 s ±  0.035 s    [User: 2.832 s, System: 0.169 s]
+  Range (min … max):    4.084 s …  4.192 s    10 runs
+
+
+same as above but 4 bits
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.130 s ±  0.055 s    [User: 2.836 s, System: 0.228 s]
+  Range (min … max):    4.075 s …  4.240 s    10 runs
+
+
+new FastSinCos.hpp with 16 bits (instead of 14)
+
+Benchmark 1: C:/OHWorkspace/SFML/examples/batching_benchmark/../../build_vrdev_clang_rel/bin/batching_benchmark.exe
+  Time (mean ± σ):      4.125 s ±  0.018 s    [User: 2.812 s, System: 0.182 s]
+  Range (min … max):    4.094 s …  4.148 s    10 runs

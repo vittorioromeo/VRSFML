@@ -1,41 +1,18 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Android/WindowImplAndroid.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowEnums.hpp>
+#include "SFML/Window/Android/WindowImplAndroid.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <android/looper.h>
 
 #include <mutex>
-#include <ostream>
 
 // Define missing constants for older API levels
 #if __ANDROID_API__ < 13
@@ -57,17 +34,12 @@ WindowImplAndroid::WindowImplAndroid(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplAndroid::WindowImplAndroid(VideoMode mode,
-                                     const String& /* title */,
-                                     std::uint32_t /* style */,
-                                     State state,
-                                     const ContextSettings& /* settings */) :
-m_size(mode.size)
+WindowImplAndroid::WindowImplAndroid(const WindowSettings& windowSettings) : m_size(windowSettings.size)
 {
     ActivityStates&       states = getActivity();
     const std::lock_guard lock(states.mutex);
 
-    if (state == State::Fullscreen)
+    if (windowSettings.fullscreen)
         states.fullscreen = true;
 
     WindowImplAndroid::singleInstance = this;
@@ -109,7 +81,7 @@ void WindowImplAndroid::processEvents()
 
     if (m_windowBeingCreated)
     {
-        states.context->createSurface(states.window);
+        states.context->createSurface(&states.window);
         m_windowBeingCreated = false;
     }
 
@@ -152,14 +124,14 @@ void WindowImplAndroid::setSize(Vector2u /* size */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+void WindowImplAndroid::setMinimumSize(const base::Optional<Vector2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
+void WindowImplAndroid::setMaximumSize(const base::Optional<Vector2u>& /* maximumSize */)
 {
     // Not applicable
 }
@@ -173,7 +145,7 @@ void WindowImplAndroid::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplAndroid::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
+void WindowImplAndroid::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }
@@ -268,12 +240,12 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
 
         int handled = 0;
 
-        const std::int32_t type = AInputEvent_getType(inputEvent);
+        const base::I32 type = AInputEvent_getType(inputEvent);
 
         if (type == AINPUT_EVENT_TYPE_KEY)
         {
-            const std::int32_t action = AKeyEvent_getAction(inputEvent);
-            const std::int32_t key    = AKeyEvent_getKeyCode(inputEvent);
+            const base::I32 action = AKeyEvent_getAction(inputEvent);
+            const base::I32 key    = AKeyEvent_getKeyCode(inputEvent);
 
             if ((action == AKEY_EVENT_ACTION_DOWN || action == AKEY_EVENT_ACTION_UP || action == AKEY_EVENT_ACTION_MULTIPLE) &&
                 key != AKEYCODE_VOLUME_UP && key != AKEYCODE_VOLUME_DOWN)
@@ -283,7 +255,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
         }
         else if (type == AINPUT_EVENT_TYPE_MOTION)
         {
-            const std::int32_t action = AMotionEvent_getAction(inputEvent);
+            const base::I32 action = AMotionEvent_getAction(inputEvent);
 
             switch (action & AMOTION_EVENT_ACTION_MASK)
             {
@@ -293,7 +265,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
                     break;
                 }
 
-                // TODO: should hover_move indeed trigger the event?
+                // TODO P2: should hover_move indeed trigger the event?
                 // case AMOTION_EVENT_ACTION_HOVER_MOVE:
                 case AMOTION_EVENT_ACTION_MOVE:
                 {
@@ -301,7 +273,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
                     break;
                 }
 
-                // TODO: investigate AMOTION_EVENT_OUTSIDE
+                // TODO P2: investigate AMOTION_EVENT_OUTSIDE
                 case AMOTION_EVENT_ACTION_POINTER_DOWN:
                 case AMOTION_EVENT_ACTION_DOWN:
                 {
@@ -329,7 +301,7 @@ int WindowImplAndroid::processEvent(int /* fd */, int /* events */, void* /* dat
 ////////////////////////////////////////////////////////////
 int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityStates& states)
 {
-    // Prepare the Java virtual machine
+    // Prepare the Java VM
     jint lResult = 0;
 
     JavaVM* lJavaVM = states.activity->vm;
@@ -344,23 +316,23 @@ int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityState
 
     if (lResult == JNI_ERR)
     {
-        err() << "Failed to initialize JNI, couldn't get the Unicode value" << std::endl;
+        priv::err() << "Failed to initialize JNI, couldn't get the Unicode value";
         return 0;
     }
 
     // Retrieve everything we need to create this MotionEvent in Java
-    const std::int64_t downTime   = AMotionEvent_getDownTime(inputEvent);
-    const std::int64_t eventTime  = AMotionEvent_getEventTime(inputEvent);
-    const std::int32_t action     = AMotionEvent_getAction(inputEvent);
-    const float        x          = AMotionEvent_getX(inputEvent, 0);
-    const float        y          = AMotionEvent_getY(inputEvent, 0);
-    const float        pressure   = AMotionEvent_getPressure(inputEvent, 0);
-    const float        size       = AMotionEvent_getSize(inputEvent, 0);
-    const std::int32_t metaState  = AMotionEvent_getMetaState(inputEvent);
-    const float        xPrecision = AMotionEvent_getXPrecision(inputEvent);
-    const float        yPrecision = AMotionEvent_getYPrecision(inputEvent);
-    const std::int32_t deviceId   = AInputEvent_getDeviceId(inputEvent);
-    const std::int32_t edgeFlags  = AMotionEvent_getEdgeFlags(inputEvent);
+    const base::I64 downTime   = AMotionEvent_getDownTime(inputEvent);
+    const base::I64 eventTime  = AMotionEvent_getEventTime(inputEvent);
+    const base::I32 action     = AMotionEvent_getAction(inputEvent);
+    const float     x          = AMotionEvent_getX(inputEvent, 0);
+    const float     y          = AMotionEvent_getY(inputEvent, 0);
+    const float     pressure   = AMotionEvent_getPressure(inputEvent, 0);
+    const float     size       = AMotionEvent_getSize(inputEvent, 0);
+    const base::I32 metaState  = AMotionEvent_getMetaState(inputEvent);
+    const float     xPrecision = AMotionEvent_getXPrecision(inputEvent);
+    const float     yPrecision = AMotionEvent_getYPrecision(inputEvent);
+    const base::I32 deviceId   = AInputEvent_getDeviceId(inputEvent);
+    const base::I32 edgeFlags  = AMotionEvent_getEdgeFlags(inputEvent);
 
     // Create the MotionEvent object in Java through its static constructor obtain()
     jclass    classMotionEvent   = lJNIEnv->FindClass("android/view/MotionEvent");
@@ -409,10 +381,10 @@ int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityState
 ////////////////////////////////////////////////////////////
 int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& /* states */)
 {
-    const std::int32_t action = AKeyEvent_getAction(inputEvent);
+    const base::I32 action = AKeyEvent_getAction(inputEvent);
 
-    const std::int32_t key     = AKeyEvent_getKeyCode(inputEvent);
-    const std::int32_t metakey = AKeyEvent_getMetaState(inputEvent);
+    const base::I32 key     = AKeyEvent_getKeyCode(inputEvent);
+    const base::I32 metakey = AKeyEvent_getMetaState(inputEvent);
 
     const auto forwardKeyEvent = [&](auto keyEvent)
     {
@@ -425,15 +397,20 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
     switch (action)
     {
         case AKEY_EVENT_ACTION_DOWN:
+        {
             forwardKeyEvent(Event::KeyPressed{});
             return 1;
+        }
         case AKEY_EVENT_ACTION_UP:
+        {
             forwardKeyEvent(Event::KeyReleased{});
 
             if (const auto unicode = getUnicode(inputEvent))
                 forwardEvent(Event::TextEntered{unicode});
             return 1;
+        }
         case AKEY_EVENT_ACTION_MULTIPLE:
+        {
             // Since complex inputs don't get separate key down/up events
             // both have to be faked at once
             forwardKeyEvent(Event::KeyPressed{});
@@ -447,16 +424,19 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
                 // https://code.google.com/p/android/issues/detail?id=33998
                 return 0;
             }
+
             if (const auto unicode = getUnicode(inputEvent)) // This is a repeated sequence
             {
                 const Event event(Event::TextEntered{unicode});
 
-                const std::int32_t repeats = AKeyEvent_getRepeatCount(inputEvent);
-                for (std::int32_t i = 0; i < repeats; ++i)
+                const base::I32 repeats = AKeyEvent_getRepeatCount(inputEvent);
+                for (base::I32 i = 0; i < repeats; ++i)
                     forwardEvent(event);
                 return 1;
             }
+
             break;
+        }
     }
     return 0;
 }
@@ -465,12 +445,12 @@ int WindowImplAndroid::processKeyEvent(AInputEvent* inputEvent, ActivityStates& 
 ////////////////////////////////////////////////////////////
 int WindowImplAndroid::processMotionEvent(AInputEvent* inputEvent, ActivityStates& states)
 {
-    const std::int32_t device       = AInputEvent_getSource(inputEvent);
-    const std::size_t  pointerCount = AMotionEvent_getPointerCount(inputEvent);
+    const base::I32   device       = AInputEvent_getSource(inputEvent);
+    const base::SizeT pointerCount = AMotionEvent_getPointerCount(inputEvent);
 
-    for (std::size_t p = 0; p < pointerCount; ++p)
+    for (base::SizeT p = 0; p < pointerCount; ++p)
     {
-        const std::int32_t id = AMotionEvent_getPointerId(inputEvent, p);
+        const base::I32 id = AMotionEvent_getPointerId(inputEvent, p);
 
         const int x = static_cast<int>(AMotionEvent_getX(inputEvent, p));
         const int y = static_cast<int>(AMotionEvent_getY(inputEvent, p));
@@ -482,7 +462,7 @@ int WindowImplAndroid::processMotionEvent(AInputEvent* inputEvent, ActivityState
 
             states.mousePosition = mouseMoved.position;
         }
-        else if (static_cast<std::uint32_t>(device) & AINPUT_SOURCE_TOUCHSCREEN)
+        else if (static_cast<base::U32>(device) & AINPUT_SOURCE_TOUCHSCREEN)
         {
             if (states.touchEvents[id].x == x && states.touchEvents[id].y == y)
                 continue;
@@ -501,12 +481,12 @@ int WindowImplAndroid::processMotionEvent(AInputEvent* inputEvent, ActivityState
 ////////////////////////////////////////////////////////////
 int WindowImplAndroid::processPointerEvent(bool isDown, AInputEvent* inputEvent, ActivityStates& states)
 {
-    const std::int32_t device = AInputEvent_getSource(inputEvent);
-    const std::int32_t action = AMotionEvent_getAction(inputEvent);
+    const base::I32 device = AInputEvent_getSource(inputEvent);
+    const base::I32 action = AMotionEvent_getAction(inputEvent);
 
-    const std::size_t index = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
-    const std::int32_t id     = AMotionEvent_getPointerId(inputEvent, index);
-    const auto         button = static_cast<Mouse::Button>(id);
+    const base::SizeT index = (action & AMOTION_EVENT_ACTION_POINTER_INDEX_MASK) >> AMOTION_EVENT_ACTION_POINTER_INDEX_SHIFT;
+    const base::I32 id     = AMotionEvent_getPointerId(inputEvent, index);
+    const auto      button = static_cast<Mouse::Button>(id);
 
     int x = static_cast<int>(AMotionEvent_getX(inputEvent, index));
     int y = static_cast<int>(AMotionEvent_getY(inputEvent, index));
@@ -540,7 +520,7 @@ int WindowImplAndroid::processPointerEvent(bool isDown, AInputEvent* inputEvent,
 
             forwardEvent(Event::MouseButtonReleased{button, {x, y}});
         }
-        else if (static_cast<std::uint32_t>(device) & AINPUT_SOURCE_TOUCHSCREEN)
+        else if (static_cast<base::U32>(device) & AINPUT_SOURCE_TOUCHSCREEN)
         {
             states.touchEvents.erase(id);
             forwardEvent(Event::TouchEnded{static_cast<unsigned int>(id), {x, y}});
@@ -552,7 +532,7 @@ int WindowImplAndroid::processPointerEvent(bool isDown, AInputEvent* inputEvent,
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key WindowImplAndroid::androidKeyToSF(std::int32_t key)
+Keyboard::Key WindowImplAndroid::androidKeyToSF(base::I32 key)
 {
     // clang-format off
     switch (key)
@@ -696,7 +676,7 @@ char32_t WindowImplAndroid::getUnicode(AInputEvent* event)
     lResult = lJavaVM->AttachCurrentThread(&lJNIEnv, &lJavaVMAttachArgs);
 
     if (lResult == JNI_ERR)
-        err() << "Failed to initialize JNI, couldn't get the Unicode value" << std::endl;
+        priv::err() << "Failed to initialize JNI, couldn't get the Unicode value";
 
     // Retrieve key data from the input event
     const jlong downTime  = AKeyEvent_getDownTime(event);

@@ -42,6 +42,9 @@ if(NOT FIND_SFML_OS_ANDROID AND NOT FIND_SFML_OS_IOS)
     find_dependency(OpenGL COMPONENTS OpenGL)
 endif()
 
+find_dependency(EGL)
+find_dependency(GLES)
+
 if(FIND_SFML_DEPENDENCIES_NOTFOUND)
     set(FIND_SFML_ERROR "SFML found but some of its dependencies are missing (${FIND_SFML_DEPENDENCIES_NOTFOUND})")
     set(SFML_FOUND OFF)

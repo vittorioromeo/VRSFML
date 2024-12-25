@@ -1,51 +1,27 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
+#include "SFML/Graphics/Color.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <filesystem>
-#include <optional>
-#include <string_view>
-#include <vector>
-
-#include <cstddef>
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
 {
 class InputStream;
+class Path;
 
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading, manipulating and saving images
@@ -55,23 +31,27 @@ class SFML_GRAPHICS_API Image
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs an image with width 0 and height 0.
-    ///
-    /// \see `resize`
+    /// \brief Supported image saving formats
     ///
     ////////////////////////////////////////////////////////////
-    Image() = default;
+    enum class [[nodiscard]] SaveFormat
+    {
+        BMP,
+        TGA,
+        PNG,
+        JPG
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image and fill it with a unique color
+    ///
+    /// If \a size is zero, the behavior is undefined.
     ///
     /// \param size  Width and height of the image
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    explicit Image(Vector2u size, Color color = Color::Black);
+    [[nodiscard]] static base::Optional<Image> create(Vector2u size, Color color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -84,78 +64,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    Image(Vector2u size, const std::uint8_t* pixels);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the image from a file on disk
-    ///
-    /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    ///
-    /// \param filename Path of the image file to load
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Image(const std::filesystem::path& filename);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the image from a file in memory
-    ///
-    /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    ///
-    /// \param data Pointer to the file data in memory
-    /// \param size Size of the data to load, in bytes
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
-    ///
-    ////////////////////////////////////////////////////////////
-    Image(const void* data, std::size_t size);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the image from a custom stream
-    ///
-    /// The supported image formats are bmp, png, tga, jpg, gif,
-    /// psd, hdr, pic and pnm. Some format options are not supported,
-    /// like jpeg with arithmetic coding or ASCII pnm.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `loadFromFile`, `loadFromMemory`, `loadFromStream`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Image(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Resize the image and fill it with a unique color
-    ///
-    /// \param size  Width and height of the image
-    /// \param color Fill color
-    ///
-    ////////////////////////////////////////////////////////////
-    void resize(Vector2u size, Color color = Color::Black);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Resize the image from an array of pixels
-    ///
-    /// The pixel array is assumed to contain 32-bits RGBA pixels,
-    /// and have the given `size`. If not, this is an undefined behavior.
-    /// If `pixels` is `nullptr`, an empty image is created.
-    ///
-    /// \param size   Width and height of the image
-    /// \param pixels Array of pixels to copy to the image
-    ///
-    ////////////////////////////////////////////////////////////
-    void resize(Vector2u size, const std::uint8_t* pixels);
+    [[nodiscard]] static base::Optional<Image> create(Vector2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -167,12 +76,12 @@ public:
     ///
     /// \param filename Path of the image file to load
     ///
-    /// \return `true` if loading was successful
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
     /// \see `loadFromMemory`, `loadFromStream`, `saveToFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static base::Optional<Image> loadFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file in memory
@@ -185,12 +94,12 @@ public:
     /// \param data Pointer to the file data in memory
     /// \param size Size of the data to load, in bytes
     ///
-    /// \return `true` if loading was successful
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
-    /// \see `loadFromFile`, `loadFromStream`, `saveToMemory`
+    /// \see loadFromFile, loadFromStream
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromMemory(const void* data, std::size_t size);
+    [[nodiscard]] static base::Optional<Image> loadFromMemory(const void* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a custom stream
@@ -202,47 +111,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return `true` if loading was successful
+    /// \return Image if loading was successful, `base::nullOpt` otherwise
     ///
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromStream(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Save the image to a file on disk
-    ///
-    /// The format of the image is automatically deduced from
-    /// the extension. The supported image formats are bmp, png,
-    /// tga and jpg. The destination file is overwritten
-    /// if it already exists. This function fails if the image is empty.
-    ///
-    /// \param filename Path of the file to save
-    ///
-    /// \return `true` if saving was successful
-    ///
-    /// \see `saveToMemory`, `loadFromFile`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool saveToFile(const std::filesystem::path& filename) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Save the image to a buffer in memory
-    ///
-    /// The format of the image must be specified.
-    /// The supported image formats are bmp, png, tga and jpg.
-    /// This function fails if the image is empty, or if
-    /// the format was invalid.
-    ///
-    /// \param format Encoding format to use
-    ///
-    /// \return Buffer with encoded data if saving was successful,
-    ///     otherwise `std::nullopt`
-    ///
-    /// \see `saveToFile`, `loadFromMemory`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<std::vector<std::uint8_t>> saveToMemory(std::string_view format) const;
+    [[nodiscard]] static base::Optional<Image> loadFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size (width and height) of the image
@@ -263,7 +137,7 @@ public:
     /// \param alpha Alpha value to assign to transparent pixels
     ///
     ////////////////////////////////////////////////////////////
-    void createMaskFromColor(Color color, std::uint8_t alpha = 0);
+    void createMaskFromColor(Color color, base::U8 alpha = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy pixels from another image onto this one
@@ -343,7 +217,7 @@ public:
     /// \return Read-only pointer to the array of pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::uint8_t* getPixelsPtr() const;
+    [[nodiscard]] const base::U8* getPixelsPtr() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flip the image horizontally (left <-> right)
@@ -357,12 +231,21 @@ public:
     ////////////////////////////////////////////////////////////
     void flipVertically();
 
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Directly initialize data members
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd);
+
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u                  m_size;   //!< Image size
-    std::vector<std::uint8_t> m_pixels; //!< Pixels of the image
+    Vector2u                      m_size;   //!< Image size
+    base::TrivialVector<base::U8> m_pixels; //!< Pixels of the image
 };
 
 } // namespace sf
@@ -393,7 +276,7 @@ private:
 /// Usage example:
 /// \code
 /// // Load an image file from a file
-/// const sf::Image background("background.jpg");
+/// const auto background = sf::Image::loadFromFile("background.jpg").value();
 ///
 /// // Create a 20x20 image filled with black color
 /// sf::Image image({20, 20}, sf::Color::Black);
@@ -408,7 +291,7 @@ private:
 /// image.setPixel({0, 0}, color);
 ///
 /// // Save the image to a file
-/// if (!image.saveToFile("result.png"))
+/// if (!sf::ImageUtils::saveToFile(image, "result.png"))
 ///     return -1;
 /// \endcode
 ///

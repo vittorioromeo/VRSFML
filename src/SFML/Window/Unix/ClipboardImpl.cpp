@@ -1,40 +1,19 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/ClipboardImpl.hpp>
-#include <SFML/Window/Unix/Display.hpp>
+#include "SFML/Window/Unix/ClipboardImpl.hpp"
+#include "SFML/Window/Unix/Display.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <X11/Xatom.h>
 
-#include <ostream>
+#include <string>
 #include <vector>
 
 
@@ -110,7 +89,6 @@ ClipboardImpl::~ClipboardImpl()
 ClipboardImpl& ClipboardImpl::getInstance()
 {
     static ClipboardImpl instance;
-
     return instance;
 }
 
@@ -164,7 +142,7 @@ void ClipboardImpl::setStringImpl(const String& text)
 
     // Check if setting the selection owner was successful
     if (XGetSelectionOwner(m_display.get(), m_clipboard) != m_window)
-        err() << "Cannot set clipboard string: Unable to get ownership of X selection" << std::endl;
+        priv::err() << "Cannot set clipboard string: Unable to get ownership of X selection";
 }
 
 
@@ -247,7 +225,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                     // Only copy the data if the format is what we expect
                     if ((type == m_utf8String) && (format == 8))
                     {
-                        m_clipboardContents = String::fromUtf8(data, data + items);
+                        m_clipboardContents = StringUtfUtils::fromUtf8(data, data + items);
                     }
                     else if ((type == XA_STRING) && (format == 8))
                     {
@@ -318,7 +296,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                     ((m_utf8String == None) && (selectionRequestEvent.target == m_text)))
                 {
                     // Respond to a request for conversion to a Latin-1 string
-                    const std::string data = m_clipboardContents.toAnsiString();
+                    const std::string data = m_clipboardContents.toAnsiString<std::string>();
 
                     XChangeProperty(m_display.get(),
                                     selectionRequestEvent.requestor,
@@ -345,7 +323,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                 {
                     // Respond to a request for conversion to a UTF-8 string
                     // or an encoding of our choosing (we always choose UTF-8)
-                    const auto data = m_clipboardContents.toUtf8();
+                    const auto data = m_clipboardContents.toUtf8<std::u8string>();
 
                     XChangeProperty(m_display.get(),
                                     selectionRequestEvent.requestor,
@@ -353,7 +331,7 @@ void ClipboardImpl::processEvent(XEvent& windowEvent)
                                     m_utf8String,
                                     8,
                                     PropModeReplace,
-                                    data.c_str(),
+                                    reinterpret_cast<const unsigned char*>(data.c_str()),
                                     static_cast<int>(data.size()));
 
                     // Notify the requestor that they can read the data from their window property

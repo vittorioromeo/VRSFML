@@ -5,10 +5,14 @@ include(${CMAKE_CURRENT_LIST_DIR}/CompilerWarnings.cmake)
 
 # helper function to tweak visibility of public symbols
 function(set_public_symbols_hidden target)
-    # ensure public symbols are hidden by default (exported ones are explicitly marked)
-    set_target_properties(${target} PROPERTIES
-                          CXX_VISIBILITY_PRESET hidden
-                          VISIBILITY_INLINES_HIDDEN YES)
+    # this breaks explicit template instantiations, see GCC bug #109387
+    # checking test suite macro for Catch PCH
+    if (NOT MINGW AND NOT SFML_BUILD_TEST_SUITE)
+        # ensure public symbols are hidden by default (exported ones are explicitly marked)
+        set_target_properties(${target} PROPERTIES
+                              CXX_VISIBILITY_PRESET hidden
+                              VISIBILITY_INLINES_HIDDEN YES)
+    endif()
 endfunction()
 
 # This little macro lets you set any Xcode specific property
@@ -73,8 +77,19 @@ macro(sfml_add_library module)
     endif()
     add_library(SFML::${module} ALIAS ${target})
 
-    # enable C++17 support
-    target_compile_features(${target} PUBLIC cxx_std_17)
+    # set required compile/link options for emscripten
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+        set_target_properties(${target} PROPERTIES SUFFIX ".html")
+    endif()
+
+    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
+    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
+
+    # enable C++20 support
+    target_compile_features(${target} PUBLIC cxx_std_20)
 
     # Add required flags for GCC if coverage reporting is enabled
     if(SFML_ENABLE_COVERAGE AND (SFML_COMPILER_GCC OR SFML_COMPILER_CLANG))
@@ -124,7 +139,6 @@ macro(sfml_add_library module)
                 @ONLY
             )
             target_sources(${target} PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
-            source_group("" FILES "${CMAKE_CURRENT_BINARY_DIR}/${target}.rc")
 
             if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
                 # on Windows + gcc/clang get rid of "lib" prefix for shared libraries,
@@ -284,11 +298,18 @@ endmacro()
 #                           RESOURCES_DIR resources)             # A directory to install next to the executable and sources
 macro(sfml_add_example target)
 
+    # list and copy resources for emscripten support
+    if(SFML_OS_EMSCRIPTEN)
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/resources)
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/../..)
+            file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/resources DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+        endif()
+
+        file(GLOB GLOBBED_RESOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} resources/*)
+    endif()
+
     # parse the arguments
     cmake_parse_arguments(THIS "GUI_APP" "RESOURCES_DIR" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
-
-    # set a source group for the source files
-    source_group("" FILES ${THIS_SOURCES})
 
     # check whether resources must be added in target
     set(target_input ${THIS_SOURCES})
@@ -299,7 +320,9 @@ macro(sfml_add_example target)
     # create the target
     if(THIS_GUI_APP AND SFML_OS_WINDOWS AND NOT DEFINED CMAKE_CONFIGURATION_TYPES AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
         add_executable(${target} WIN32 ${target_input})
-        target_link_libraries(${target} PRIVATE SFML::Main)
+        target_link_libraries(${target} PRIVATE SFML::Main
+        #tracyclient
+        )
     elseif(THIS_GUI_APP AND SFML_OS_IOS)
 
         # For iOS apps we need the launch screen storyboard,
@@ -313,7 +336,9 @@ macro(sfml_add_example target)
         set_target_properties(${target} PROPERTIES RESOURCE "${RESOURCES}"
                                                    MACOSX_BUNDLE_INFO_PLIST ${INFO_PLIST}
                                                    MACOSX_BUNDLE_ICON_FILE icon.icns)
-        target_link_libraries(${target} PRIVATE SFML::Main)
+        target_link_libraries(${target} PRIVATE SFML::Main
+        #tracyclient
+        )
     else()
         add_executable(${target} ${target_input})
     endif()
@@ -323,6 +348,10 @@ macro(sfml_add_example target)
         message(VERBOSE "enabling PCH for SFML example '${target}'")
         target_precompile_headers(${target} REUSE_FROM sfml-system)
     endif()
+
+    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
+    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
@@ -341,9 +370,21 @@ macro(sfml_add_example target)
 
     # link the target to its SFML dependencies
     if(THIS_DEPENDS)
-        target_link_libraries(${target} PRIVATE ${THIS_DEPENDS})
+        target_link_libraries(${target} PRIVATE ${THIS_DEPENDS}
+        #tracyclient
+        )
     endif()
 
+    # set required compile/link options for emscripten and preload resource files
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+        set_target_properties(${target} PROPERTIES SUFFIX ".html")
+
+        foreach(RESOURCE ${GLOBBED_RESOURCES})
+            target_link_options(${target} PRIVATE "SHELL:--embed-file ${RESOURCE}")
+        endforeach()
+    endif()
     if(SFML_OS_IOS)
         sfml_set_common_ios_properties(${target})
     endif()
@@ -359,17 +400,30 @@ endmacro()
 #                           SFML::Network)
 function(sfml_add_test target SOURCES DEPENDS)
 
-    # set a source group for the source files
-    source_group("" FILES ${SOURCES})
-
     # create the target
     add_executable(${target} ${SOURCES})
+
+    # set required compile/link options for emscripten
+    if(SFML_OS_EMSCRIPTEN)
+        target_compile_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
+        target_link_options(${target} PRIVATE ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS})
+
+        if (${target} STREQUAL "test-sfml-graphics")
+            set_target_properties(${target} PROPERTIES SUFFIX ".html")
+        else()
+            set_target_properties(${target} PROPERTIES SUFFIX ".js")
+        endif()
+    endif()
 
     # enable precompiled headers
     if (SFML_ENABLE_PCH)
         message(VERBOSE "enabling PCH for SFML test '${target}'")
         target_precompile_headers(${target} REUSE_FROM sfml-system)
     endif()
+
+    # target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/tracy/public/tracy/)
+    # target_compile_options(${target} PUBLIC -include Tracy.hpp)
+    # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
     # set the target's folder (for IDEs that support it, e.g. Visual Studio)
     set_target_properties(${target} PROPERTIES FOLDER "Tests")
@@ -381,7 +435,9 @@ function(sfml_add_test target SOURCES DEPENDS)
     set_target_properties(${target} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
     # link the target to its SFML dependencies
-    target_link_libraries(${target} PRIVATE ${DEPENDS} sfml-test-main)
+    target_link_libraries(${target} PRIVATE ${DEPENDS} sfml-test-main
+    #tracyclient
+    )
 
     set_target_warnings(${target})
     set_public_symbols_hidden(${target})
@@ -409,7 +465,9 @@ function(sfml_add_test target SOURCES DEPENDS)
     endif()
 
     # Add the test
-    catch_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    if(NOT SFML_OS_EMSCRIPTEN)
+        doctest_discover_tests(${target} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    endif()
 endfunction()
 
 # Generate a SFMLConfig.cmake file (and associated files) from the targets registered

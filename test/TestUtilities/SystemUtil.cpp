@@ -1,17 +1,19 @@
-#include <SFML/System/Angle.hpp>
-#include <SFML/System/String.hpp>
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Vector3.hpp>
+#include "SFML/System/Angle.hpp"
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vector3.hpp"
 
-#include <catch2/catch_approx.hpp>
+#include <Doctest.hpp>
 
+#include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
-#include <fstream>
+
 #include <iomanip>
 #include <limits>
-
-#include <cassert>
+#include <ostream>
+#include <string>
 
 
 namespace sf
@@ -29,7 +31,7 @@ std::ostream& operator<<(std::ostream& os, const Angle& angle)
 
 std::ostream& operator<<(std::ostream& os, const String& string)
 {
-    return os << string.toAnsiString();
+    return os << string.toAnsiString<std::string>();
 }
 
 std::ostream& operator<<(std::ostream& os, Time time)
@@ -62,7 +64,7 @@ template std::ostream& operator<<(std::ostream&, const Vector3<float>&);
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
 {
-    return lhs == Catch::Approx(rhs.value).margin(1e-5);
+    return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
 }
 
 bool operator==(sf::Vector2f lhs, const Approx<sf::Vector2f>& rhs)
@@ -80,15 +82,22 @@ bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs)
     return lhs.asRadians() == Approx(rhs.value.asRadians());
 }
 
-std::vector<std::byte> loadIntoMemory(const std::filesystem::path& path)
+bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs)
 {
-    std::ifstream file(path, std::ios::binary | std::ios::ate);
-    assert(file);
-    const auto size = file.tellg();
-    file.seekg(0, std::ios::beg);
-    std::vector<std::byte>       buffer(static_cast<std::size_t>(size));
-    [[maybe_unused]] const auto& result = file.read(reinterpret_cast<char*>(buffer.data()),
-                                                    static_cast<std::streamsize>(size));
-    assert(result);
-    return buffer;
+    return lhs.position == Approx(rhs.value.position) && lhs.size == Approx(rhs.value.size);
 }
+
+
+template <typename T>
+std::ostream& operator<<(std::ostream& os, const Approx<T>& approx)
+{
+    return os << approx.value;
+}
+
+template std::ostream& operator<<(std::ostream&, const Approx<float>&);
+template std::ostream& operator<<(std::ostream&, const Approx<double>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector2<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector3<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Transform>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Rect<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Angle>&);

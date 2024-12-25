@@ -1,7 +1,10 @@
-#include <SFML/System/Utf.hpp>
+#include "SFML/System/Utf.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/IntTypes.hpp"
 
+#include <Doctest.hpp>
+
+#include <limits>
 #include <string_view>
 
 using namespace std::string_view_literals;
@@ -19,7 +22,8 @@ TEST_CASE("[System] sf::Utf8")
             begin = sf::Utf8::decode(begin, input.end(), character);
             output.push_back(character);
         }
-        CHECK(output == U"Hello, World!"sv);
+
+        CHECK((output == U"Hello, World!"sv));
     }
 
     SECTION("encode")
@@ -62,7 +66,7 @@ TEST_CASE("[System] sf::Utf8")
     {
         std::string output;
         sf::Utf8::toUtf8(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("toUtf16")
@@ -106,7 +110,7 @@ TEST_CASE("[System] sf::Utf16")
     {
         std::u16string output;
         sf::Utf16::fromLatin1(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("toAnsi")
@@ -121,7 +125,7 @@ TEST_CASE("[System] sf::Utf16")
     {
         std::string output;
         sf::Utf16::toLatin1(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == "Hello, World!"sv);
+        CHECK((output == "Hello, World!"sv));
     }
 
     SECTION("toUtf8")
@@ -132,7 +136,7 @@ TEST_CASE("[System] sf::Utf16")
     {
         std::u16string output;
         sf::Utf16::toUtf16(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("toUtf32")
@@ -153,7 +157,7 @@ TEST_CASE("[System] sf::Utf32")
             begin = sf::Utf32::decode(begin, {}, character);
             output.push_back(character);
         }
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("encode")
@@ -161,7 +165,7 @@ TEST_CASE("[System] sf::Utf32")
         std::u32string output;
         for (const auto character : input)
             sf::Utf32::encode(character, std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("next")
@@ -186,7 +190,7 @@ TEST_CASE("[System] sf::Utf32")
     {
         std::u32string output;
         sf::Utf32::fromLatin1(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("toAnsi")
@@ -201,7 +205,7 @@ TEST_CASE("[System] sf::Utf32")
     {
         std::string output;
         sf::Utf32::toLatin1(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == "Hello, World!");
+        CHECK((output == "Hello, World!"));
     }
 
     SECTION("toUtf8")
@@ -216,7 +220,7 @@ TEST_CASE("[System] sf::Utf32")
     {
         std::u32string output;
         sf::Utf32::toUtf32(input.begin(), input.end(), std::back_inserter(output));
-        CHECK(output == input);
+        CHECK((output == input));
     }
 
     SECTION("decodeAnsi")
@@ -227,7 +231,7 @@ TEST_CASE("[System] sf::Utf32")
     {
         CHECK(sf::Utf32::decodeWide(0) == 0);
         CHECK(sf::Utf32::decodeWide(1) == 1);
-        CHECK(sf::Utf32::decodeWide(-1) == std::numeric_limits<std::uint32_t>::max());
+        CHECK(sf::Utf32::decodeWide(-1) == std::numeric_limits<sf::base::U32>::max());
     }
 
     SECTION("encodeAnsi")

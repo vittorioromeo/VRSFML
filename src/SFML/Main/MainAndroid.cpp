@@ -1,26 +1,4 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
@@ -34,12 +12,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Config.hpp>
+#include "SFML/Config.hpp"
 
-#include <SFML/System/Android/Activity.hpp>
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Android/Activity.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 #include <android/native_activity.h>
 #include <android/window.h>
@@ -47,10 +27,7 @@
 #include <mutex>
 #include <thread>
 
-#include <cassert>
-#include <cstring>
-
-#define SF_GLAD_EGL_IMPLEMENTATION
+#define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
 
 
@@ -452,7 +429,7 @@ void onConfigurationChanged(ANativeActivity* /* activity */)
 }
 
 ////////////////////////////////////////////////////////////
-void* onSaveInstanceState(ANativeActivity* /* activity */, std::size_t* outLen)
+void* onSaveInstanceState(ANativeActivity* /* activity */, base::SizeT* outLen)
 {
     *outLen = 0;
     return nullptr;
@@ -490,7 +467,7 @@ void* main(ActivityStates* states)
 
 
 ////////////////////////////////////////////////////////////
-JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, std::size_t savedStateSize)
+JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, base::SizeT savedStateSize)
 {
     // Create an activity states (will keep us in the know, about events we care)
     auto* states = new sf::priv::ActivityStates();
@@ -552,7 +529,7 @@ JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedSt
     getFullScreenSizeInPixels(*activity, states->fullScreenSize.x, states->fullScreenSize.y);
 
     // Redirect error messages to logcat
-    sf::err().rdbuf(&states->logcat);
+    sf::priv::err().rdbuf(&states->logcat);
 
     // Launch the main thread
     std::thread(sf::priv::main, states).detach();

@@ -1,29 +1,5 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -34,10 +10,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief sf::priv::InputImpl helper
+/// \brief `sf::priv::InputImpl` helper
 ///
 /// This class manage as a singleton instance the joysticks.
-/// It's only purpose is to help sf::priv::JoystickImpl class.
+/// It's only purpose is to help `sf::priv::JoystickImpl` class.
 ///
 ////////////////////////////////////////////////////////////
 class HIDJoystickManager
@@ -55,7 +31,6 @@ public:
     ////////////////////////////////////////////////////////////
     HIDJoystickManager& operator=(const HIDJoystickManager&) = delete;
 
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the unique instance of the class
     ///
@@ -64,13 +39,13 @@ public:
     /// \return Reference to the HIDJoystickManager instance
     ///
     ////////////////////////////////////////////////////////////
-    static HIDJoystickManager& getInstance();
+    [[nodiscard]] static HIDJoystickManager& getInstance();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of currently connected joystick
     ///
     ////////////////////////////////////////////////////////////
-    unsigned int getJoystickCount();
+    [[nodiscard]] unsigned int getJoystickCount();
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the devices associated with this HID manager
@@ -78,7 +53,7 @@ public:
     /// \return a retained CFSetRef of IOHIDDeviceRef or a null pointer
     ///
     ////////////////////////////////////////////////////////////
-    CFSetRef copyJoysticks();
+    [[nodiscard]] CFSetRef copyJoysticks();
 
 private:
     ////////////////////////////////////////////////////////////

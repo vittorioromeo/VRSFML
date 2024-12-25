@@ -1,46 +1,23 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Vector2.hpp>
-#include <SFML/System/Win32/WindowsHeader.hpp>
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
 {
 class String;
+struct WindowSettings;
 
 namespace priv
 {
@@ -48,7 +25,7 @@ namespace priv
 /// \brief Windows implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplWin32 : public WindowImpl
+class [[nodiscard]] WindowImplWin32 : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -57,19 +34,15 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplWin32(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplWin32(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
     ///
-    /// \param mode  Video mode to use
-    /// \param title Title of the window
-    /// \param style Window style
-    /// \param state Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplWin32(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
+    [[nodiscard]] explicit WindowImplWin32(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -132,7 +105,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -256,7 +229,7 @@ private:
     /// \return Converted size including window chrome
     ///
     ////////////////////////////////////////////////////////////
-    Vector2i contentSizeToWindowSize(Vector2u size);
+    [[nodiscard]] Vector2i contentSizeToWindowSize(Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Win32 virtual key code to a SFML key code
@@ -267,7 +240,7 @@ private:
     /// \return SFML key code corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
+    [[nodiscard]] static Keyboard::Key virtualKeyCodeToSF(WPARAM key, LPARAM flags);
 
     ////////////////////////////////////////////////////////////
     /// \brief Function called whenever one of our windows receives a message
@@ -280,7 +253,7 @@ private:
     /// \return `true` to discard the event after it has been processed
     ///
     ////////////////////////////////////////////////////////////
-    static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
+    [[nodiscard]] static LRESULT CALLBACK globalOnEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Win32 scancode to an sfml scancode
@@ -290,7 +263,7 @@ private:
     /// \return SFML scancode corresponding to the key
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Scancode toScancode(WPARAM wParam, LPARAM lParam);
+    [[nodiscard]] static Keyboard::Scancode toScancode(WPARAM wParam, LPARAM lParam);
 
     ////////////////////////////////////////////////////////////
     // Member data

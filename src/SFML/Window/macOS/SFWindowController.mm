@@ -1,48 +1,27 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
+
+#include "SFML/System/Err.hpp"
+
+#include "SFML/Base/Algorithm.hpp"
+
+#include <ApplicationServices/ApplicationServices.h>
+#import <OpenGL/OpenGL.h>
 #import <SFML/Window/macOS/NSImage+raw.h>
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #import <SFML/Window/macOS/SFWindow.h>
 #import <SFML/Window/macOS/SFWindowController.h>
 #import <SFML/Window/macOS/Scaling.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
 
-#include <SFML/System/Err.hpp>
-
-#include <ApplicationServices/ApplicationServices.h>
-#import <OpenGL/OpenGL.h>
-#include <algorithm>
-#include <ostream>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -110,7 +89,7 @@
 
         if (m_window == nil)
         {
-            sf::err() << "No window was given to -[SFWindowController initWithWindow:]." << std::endl;
+            sf::priv::err() << "No window was given to -[SFWindowController initWithWindow:].";
             return self;
         }
 
@@ -119,8 +98,8 @@
 
         if (m_oglView == nil)
         {
-            sf::err() << "Could not create an instance of NSOpenGLView "
-                      << "in -[SFWindowController initWithWindow:]." << std::endl;
+            sf::priv::err() << "Could not create an instance of NSOpenGLView "
+                            << "in -[SFWindowController initWithWindow:].";
             return self;
         }
 
@@ -135,7 +114,11 @@
 
 
 ////////////////////////////////////////////////////////
-- (id)initWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style andState:(sf::State)state
+- (id)initWithMode:(const sf::VideoMode&)mode
+    andHasTitlebar:(bool)hasTitleBar
+      andResizable:(bool)resizable
+       andClosable:(bool)closable
+     andFullscreen:(bool)fullscreen
 {
     // If we are not on the main thread we stop here and advice the user.
     if ([NSThread currentThread] != [NSThread mainThread])
@@ -144,7 +127,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::err() << "Cannot create a window from a worker thread. (OS X limitation)" << std::endl;
+        sf::priv::err() << "Cannot create a window from a worker thread. (OS X limitation)";
 
         return nil;
     }
@@ -154,14 +137,14 @@
         m_window        = nil;
         m_oglView       = nil;
         m_requester     = nil;
-        m_fullscreen    = (state == sf::State::Fullscreen) ? YES : NO;
+        m_fullscreen    = fullscreen ? YES : NO;
         m_restoreResize = NO;
         m_highDpi       = NO;
 
         if (m_fullscreen)
             [self setupFullscreenViewWithMode:mode];
         else
-            [self setupWindowWithMode:mode andStyle:style];
+            [self setupWindowWithMode:mode andHasTitlebar:hasTitleBar andResizable:resizable andClosable:closable];
 
         [m_oglView finishInit];
     }
@@ -173,7 +156,7 @@
 - (void)setupFullscreenViewWithMode:(const sf::VideoMode&)mode
 {
     // Create a screen-sized window on the main display
-    const sf::VideoMode desktop    = sf::VideoMode::getDesktopMode();
+    const sf::VideoMode desktop    = sf::VideoModeUtils::getDesktopMode();
     NSRect              windowRect = NSMakeRect(0, 0, desktop.size.x, desktop.size.y);
     m_window                       = [[SFWindow alloc]
         initWithContentRect:windowRect
@@ -183,8 +166,8 @@
 
     if (m_window == nil)
     {
-        sf::err() << "Could not create an instance of NSWindow "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+        sf::priv::err() << "Could not create an instance of NSWindow "
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
@@ -207,14 +190,14 @@
 
     if (masterView == nil)
     {
-        sf::err() << "Could not create an instance of SFBlackView "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+        sf::priv::err() << "Could not create an instance of SFBlackView "
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
     // Create our OpenGL view size and the view
-    CGFloat width   = std::min(mode.size.x, desktop.size.x);
-    CGFloat height  = std::min(mode.size.y, desktop.size.y);
+    CGFloat width   = sf::base::min(mode.size.x, desktop.size.x);
+    CGFloat height  = sf::base::min(mode.size.y, desktop.size.y);
     CGFloat x       = (desktop.size.x - width) / 2.0;
     CGFloat y       = (desktop.size.y - height) / 2.0;
     NSRect  oglRect = NSMakeRect(x, y, width, height);
@@ -223,8 +206,8 @@
 
     if (m_oglView == nil)
     {
-        sf::err() << "Could not create an instance of NSOpenGLView "
-                  << "in -[SFWindowController setupFullscreenViewWithMode:]." << std::endl;
+        sf::priv::err() << "Could not create an instance of NSOpenGLView "
+                        << "in -[SFWindowController setupFullscreenViewWithMode:].";
         return;
     }
 
@@ -235,7 +218,10 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setupWindowWithMode:(const sf::VideoMode&)mode andStyle:(std::uint32_t)style
+- (void)setupWindowWithMode:(const sf::VideoMode&)mode
+             andHasTitlebar:(bool)hasTitleBar
+               andResizable:(bool)resizable
+                andClosable:(bool)closable
 {
     // We know that sf::State is not Fullscreen
 
@@ -244,11 +230,11 @@
 
     // Convert the SFML window style to Cocoa window style.
     unsigned int nsStyle = NSBorderlessWindowMask;
-    if (style & sf::Style::Titlebar)
+    if (hasTitleBar)
         nsStyle |= NSTitledWindowMask | NSMiniaturizableWindowMask;
-    if (style & sf::Style::Resize)
+    if (resizable)
         nsStyle |= NSResizableWindowMask;
-    if (style & sf::Style::Close)
+    if (closable)
         nsStyle |= NSClosableWindowMask;
 
     // Create the window.
@@ -269,8 +255,8 @@
 
     if (m_window == nil)
     {
-        sf::err() << "Could not create an instance of NSWindow "
-                  << "in -[SFWindowController setupWindowWithMode:andStyle:]." << std::endl;
+        sf::priv::err() << "Could not create an instance of NSWindow "
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:].";
 
         return;
     }
@@ -280,8 +266,8 @@
 
     if (m_oglView == nil)
     {
-        sf::err() << "Could not create an instance of NSOpenGLView "
-                  << "in -[SFWindowController setupWindowWithMode:andStyle:]." << std::endl;
+        sf::priv::err() << "Could not create an instance of NSOpenGLView "
+                        << "in -[SFWindowController setupWindowWithMode:andStyle:].";
 
         return;
     }
@@ -432,10 +418,10 @@
     {
         // Special case when fullscreen: only resize the opengl view
         // and make sure the requested size is not bigger than the window.
-        const sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+        const sf::VideoMode desktop = sf::VideoModeUtils::getDesktopMode();
 
-        size.x = std::min(size.x, desktop.size.x);
-        size.y = std::min(size.y, desktop.size.y);
+        size.x = sf::base::min(size.x, desktop.size.x);
+        size.y = sf::base::min(size.y, desktop.size.y);
 
         const auto origin  = sf::Vector2<CGFloat>(desktop.size - size) / CGFloat{2};
         NSRect     oglRect = NSMakeRect(origin.x, origin.y, size.x, size.y);
@@ -552,7 +538,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const std::uint8_t*)pixels
+- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
 {
     // Load image and set app icon.
     NSImage* icon = [NSImage imageWithRawData:pixels andSize:NSMakeSize(size.x, size.y)];
@@ -573,7 +559,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << std::endl;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)";
 
         return;
     }

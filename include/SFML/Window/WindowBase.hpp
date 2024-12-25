@@ -1,75 +1,58 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Window/Export.hpp"
 
-#include <SFML/Window/Vulkan.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Time.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <memory>
-#include <optional>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class Cursor;
+} // namespace sf
+
+namespace sf::priv
+{
+class WindowImpl;
+} // namespace sf::priv
+
+namespace sf::Vulkan
+{
+struct VulkanSurfaceData;
+} // namespace sf::Vulkan
 
 
 namespace sf
 {
-class Cursor;
-class String;
-class VideoMode;
-
-namespace priv
-{
-class WindowImpl;
-}
-
-class Event;
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that serves as a base for other windows
 ///
 ////////////////////////////////////////////////////////////
-class SFML_WINDOW_API WindowBase
+class SFML_WINDOW_API WindowBase : public AnchorPointMixin<WindowBase>
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor doesn't actually create the window,
-    /// use the other constructors or call `create()` to do so.
+    /// \brief Window creation settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase();
+    using Settings = WindowSettings;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
@@ -81,26 +64,10 @@ public:
     /// be provided. If `state` is `State::Fullscreen`, then `mode`
     /// must be a valid video mode.
     ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param style %Window style, a bitwise OR combination of `sf::Style` enumerators
-    /// \param state %Window state
+    /// \param windowSettings Settings to use
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
-    ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in `mode`.
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    WindowBase(VideoMode mode, const String& title, State state);
+    [[nodiscard]] explicit WindowBase(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -108,7 +75,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    explicit WindowBase(WindowHandle handle);
+    [[nodiscard]] explicit WindowBase(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -116,7 +83,7 @@ public:
     /// Closes the window and frees all the resources attached to it.
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~WindowBase();
+    ~WindowBase();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -134,96 +101,35 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(WindowBase&&) noexcept;
+    WindowBase(WindowBase&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase& operator=(WindowBase&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// If the window was already created, it closes it first.
-    /// If `state` is `State::Fullscreen`, then `mode` must be
-    /// a valid video mode.
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param style %Window style, a bitwise OR combination of `sf::Style` enumerators
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, std::uint32_t style = Style::Default, State state = State::Windowed);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window
-    ///
-    /// If the window was already created, it closes it first.
-    /// If `state` is `State::Fullscreen`, then `mode` must be
-    /// a valid video mode.
-    ///
-    /// \param mode  Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title Title of the window
-    /// \param state %Window state
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(VideoMode mode, const String& title, State state);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create (or recreate) the window from an existing control
-    ///
-    /// \param handle Platform-specific handle of the control
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void create(WindowHandle handle);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Close the window and destroy all the attached resources
-    ///
-    /// After calling this function, the `sf::Window` instance remains
-    /// valid and you can call `create()` to recreate the window.
-    /// All other functions such as `pollEvent()` or `display()` will
-    /// still work (i.e. you don't have to test `isOpen()` every time),
-    /// and will have no effect on closed windows.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void close();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the window is open
-    ///
-    /// This function returns whether or not the window exists.
-    /// Note that a hidden window (`setVisible(false)`) is open
-    /// (therefore this function would return `true`).
-    ///
-    /// \return `true` if the window is open, `false` if it has been closed
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isOpen() const;
+    WindowBase& operator=(WindowBase&&) noexcept = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
     ///
     /// This function is not blocking: if there's no pending event then
-    /// it will return a `std::nullopt`. Note that more than one event
+    /// it will return a `base::nullOpt`. Note that more than one event
     /// may be present in the event queue, thus you should always call
     /// this function in a loop to make sure that you process every
     /// pending event.
     /// \code
-    /// while (const std::optional event = window.pollEvent())
+    /// while (const sf::base::Optional event = window.pollEvent())
     /// {
     ///    // process event...
     /// }
     /// \endcode
     ///
-    /// \return The event, otherwise `std::nullopt` if no events are pending
+    /// \return The potentially pending event, `base::nullOpt` otherwise
     ///
-    /// \see `waitEvent`, `handleEvents`
+    /// \see `waitEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> pollEvent();
+    [[nodiscard]] base::Optional<Event> pollEvent();
 
     ////////////////////////////////////////////////////////////
     /// \brief Wait for an event and return it
@@ -231,12 +137,12 @@ public:
     /// This function is blocking: if there's no pending event then
     /// it will wait until an event is received or until the provided
     /// timeout elapses. Only if an error or a timeout occurs the
-    /// returned event will be `std::nullopt`.
+    /// returned event will be `base::nullOpt`.
     /// This function is typically used when you have a thread that is
     /// dedicated to events handling: you want to make this thread sleep
     /// as long as no new event is received.
     /// \code
-    /// while (const std::optional event = window.waitEvent())
+    /// while (const sf::base::Optional event = window.waitEvent())
     /// {
     ///    // process event...
     /// }
@@ -244,12 +150,12 @@ public:
     ///
     /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
     ///
-    /// \return The event, otherwise `std::nullopt` on timeout or if window was closed
+    /// \return The event on success, `base::nullOpt` on timeout or if window was closed
     ///
-    /// \see `pollEvent`, `handleEvents`
+    /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -275,14 +181,14 @@ public:
     ///
     /// \code
     /// // Only provide handlers for concrete event types
-    /// window.handleEvents(
-    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    /// window.pollAndHandleEvents(
+    ///     [&](sf::Event::Closed) { /* handle event */ },
     ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ }
     /// );
     /// \endcode
     /// \code
     /// // Provide a generic event handler
-    /// window.handleEvents(
+    /// window.pollAndHandleEvents(
     ///     [&](const auto& event)
     ///     {
     ///         if constexpr (std::is_same_v<std::decay_t<decltype(event)>, sf::Event::Closed>)
@@ -305,8 +211,8 @@ public:
     /// \endcode
     /// \code
     /// // Provide handlers for concrete types and fall back to generic handler
-    /// window.handleEvents(
-    ///     [&](const sf::Event::Closed&) { /* handle event */ },
+    /// window.pollAndHandleEvents(
+    ///     [&](sf::Event::Closed) { /* handle event */ },
     ///     [&](const sf::Event::KeyPressed& keyPress) { /* handle event */ },
     ///     [&](const auto& event) { /* handle all other events */ }
     /// );
@@ -316,7 +222,7 @@ public:
     /// expressions.
     /// \code
     /// // Provide a generic event handler
-    /// window.handleEvents(
+    /// window.pollAndHandleEvents(
     ///     [this](const auto& event) { handle(event); }
     /// );
     /// \endcode
@@ -326,8 +232,8 @@ public:
     /// \see `waitEvent`, `pollEvent`
     ///
     ////////////////////////////////////////////////////////////
-    template <typename... Ts>
-    void handleEvents(Ts&&... handlers);
+    template <typename... Handlers, auto PollEventFn = &WindowBase::pollEvent>
+    void pollAndHandleEvents(Handlers&&... handlers);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -379,22 +285,24 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the minimum size
+    /// Pass `base::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const std::optional<Vector2u>& minimumSize);
+    void setMinimumSize(const Vector2u& minimumSize);
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the maximum size
+    /// Pass `base::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const std::optional<Vector2u>& maximumSize);
+    void setMaximumSize(const Vector2u& maximumSize);
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -422,7 +330,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels);
+    void setIcon(Vector2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -473,7 +381,7 @@ public:
     ///
     /// \param cursor Native system cursor type to display
     ///
-    /// \see `sf::Cursor::createFromSystem`, `sf::Cursor::createFromPixels`
+    /// \see `sf::Cursor::loadFromSystem`, `sf::Cursor::loadFromPixels`
     ///
     ////////////////////////////////////////////////////////////
     void setMouseCursor(const Cursor& cursor);
@@ -558,32 +466,22 @@ public:
     /// \return `true` if surface creation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool createVulkanSurface(const VkInstance&            instance,
-                                           VkSurfaceKHR&                surface,
-                                           const VkAllocationCallbacks* allocator = nullptr);
-
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been created
-    ///
-    /// This function is called so that derived classes can
-    /// perform their own specific initialization as soon as
-    /// the window is created.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void onCreate();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been resized
-    ///
-    /// This function is called so that derived classes can
-    /// perform custom actions when the size of the window changes.
-    ///
-    ////////////////////////////////////////////////////////////
-    virtual void onResize();
+    [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData);
 
 private:
     friend class Window;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    priv::WindowImpl& getWindowImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a window base from the inner implementation
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::WindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -597,24 +495,18 @@ private:
     /// \param event Event to filter
     ///
     ////////////////////////////////////////////////////////////
-    void filterEvent(const Event& event);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Perform some common internal initializations
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
+    [[nodiscard]] base::Optional<Event> filterEvent(base::Optional<Event> event);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
+    base::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
     Vector2u                          m_size; //!< Current size of the window
 };
 
 } // namespace sf
 
-#include <SFML/Window/WindowBase.inl>
+#include "SFML/Window/WindowBase.inl"
 
 ////////////////////////////////////////////////////////////
 /// \class sf::WindowBase
@@ -633,17 +525,17 @@ private:
 /// Usage example:
 /// \code
 /// // Declare and create a new window
-/// sf::WindowBase window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::WindowBase window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // The main loop - ends as soon as the window is closed
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
-///    while (const std::optional event = window.pollEvent())
+///    while (const sf::base::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///            window.close();
+///        return 0; // break out of both loops
 ///    }
 ///
 ///    // Do things with the window here...

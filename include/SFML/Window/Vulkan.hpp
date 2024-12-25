@@ -1,35 +1,12 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Window/Export.hpp"
 
-#include <vector>
+#include "SFML/Base/Span.hpp"
 
 
 using VkInstance = struct VkInstance_T*;
@@ -41,10 +18,9 @@ using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
 
-#include <cstdint>
+#include "SFML/Base/IntTypes.hpp"
 
-
-using VkSurfaceKHR = std::uint64_t;
+using VkSurfaceKHR = sf::base::U64;
 
 #endif
 
@@ -62,6 +38,26 @@ using VulkanFunctionPointer = void (*)();
 ////////////////////////////////////////////////////////////
 namespace Vulkan
 {
+////////////////////////////////////////////////////////////
+/// \brief Data associated with a Vulkan surface
+///
+////////////////////////////////////////////////////////////
+struct VulkanSurfaceData
+{
+    explicit VulkanSurfaceData(const VkInstance&            theInstance,
+                               VkSurfaceKHR&                theSurface,
+                               const VkAllocationCallbacks* theAllocator = nullptr) :
+    instance{theInstance},
+    surface{theSurface},
+    allocator{theAllocator}
+    {
+    }
+
+    const VkInstance&            instance;
+    VkSurfaceKHR&                surface;
+    const VkAllocationCallbacks* allocator;
+};
+
 ////////////////////////////////////////////////////////////
 /// \brief Tell whether or not the system supports Vulkan
 ///
@@ -96,9 +92,9 @@ namespace Vulkan
 /// \return Vulkan instance extensions required for graphics
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API const std::vector<const char*>& getGraphicsRequiredInstanceExtensions();
-} // namespace Vulkan
+[[nodiscard]] SFML_WINDOW_API base::Span<const char* const> getGraphicsRequiredInstanceExtensions();
 
+} // namespace Vulkan
 } // namespace sf
 
 

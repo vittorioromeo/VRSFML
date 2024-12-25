@@ -1,38 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #import <SFML/Window/macOS/SFOpenGLView+mouse_priv.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <algorithm>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Optional.hpp"
 
-#include <cmath>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -133,7 +111,7 @@
 ////////////////////////////////////////////////////////
 - (void)handleMouseDown:(NSEvent*)theEvent
 {
-    const std::optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const base::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -178,7 +156,7 @@
 ////////////////////////////////////////////////////////////
 - (void)handleMouseUp:(NSEvent*)theEvent
 {
-    const std::optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
+    const base::Optional<sf::Mouse::Button> button = [SFOpenGLView mouseButtonFromEvent:theEvent];
 
     if (m_requester != nil)
     {
@@ -371,13 +349,13 @@
                 if (m_deltaXBuffer <= 0)
                     rawPos.x += deltaX / factor;
                 else
-                    m_deltaXBuffer -= std::abs(deltaX / factorBuffer);
+                    m_deltaXBuffer -= base::fabs(deltaX / factorBuffer);
 
                 // Rinse and repeat for Y.
                 if (m_deltaYBuffer <= 0)
                     rawPos.y -= deltaY / factor;
                 else
-                    m_deltaYBuffer -= std::abs(deltaY / factorBuffer);
+                    m_deltaYBuffer -= base::fabs(deltaY / factorBuffer);
             }
         }
 
@@ -385,16 +363,16 @@
         NSSize  size   = [self frame].size;
         NSPoint origin = [self frame].origin;
         NSPoint oldPos = rawPos;
-        rawPos.x       = std::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
-        rawPos.y       = std::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
+        rawPos.x       = base::clamp(rawPos.x, origin.x, origin.x + size.width - 1);
+        rawPos.y       = base::clamp(rawPos.y, origin.y + 1, origin.y + size.height);
         // Note: the `-1` and `+1` on the two lines above prevent the user to click
         // on the left or below the window, respectively, and therefore prevent the
         // application to lose focus by accident. The sign of this offset is determined
         // by the direction of the x and y axis.
 
         // Increase X and Y buffer with the distance of the projection
-        m_deltaXBuffer += std::abs(rawPos.x - oldPos.x);
-        m_deltaYBuffer += std::abs(rawPos.y - oldPos.y);
+        m_deltaXBuffer += base::fabs(rawPos.x - oldPos.x);
+        m_deltaYBuffer += base::fabs(rawPos.y - oldPos.y);
     }
 
     NSPoint loc = [self convertPoint:rawPos fromView:nil];
@@ -408,7 +386,7 @@
 
 
 ////////////////////////////////////////////////////////
-+ (std::optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
++ (base::Optional<sf::Mouse::Button>)mouseButtonFromEvent:(NSEvent*)event
 {
     switch ([event buttonNumber])
     {
@@ -423,7 +401,7 @@
         case 4:
             return sf::Mouse::Button::Extra2;
         default:
-            return std::nullopt; // Never happens! (hopefully)
+            return base::nullOpt; // Never happens! (hopefully)
     }
 }
 

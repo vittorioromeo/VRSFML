@@ -1,64 +1,7 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Audio)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Audio)
 
-# all source files
-set(SRC
-    ${SRCROOT}/AudioResource.cpp
-    ${INCROOT}/AudioResource.hpp
-    ${SRCROOT}/AudioDevice.cpp
-    ${SRCROOT}/AudioDevice.hpp
-    ${INCROOT}/Export.hpp
-    ${SRCROOT}/Listener.cpp
-    ${INCROOT}/Listener.hpp
-    ${SRCROOT}/Miniaudio.cpp
-    ${SRCROOT}/MiniaudioUtils.hpp
-    ${SRCROOT}/MiniaudioUtils.cpp
-    ${SRCROOT}/Music.cpp
-    ${INCROOT}/Music.hpp
-    ${SRCROOT}/PlaybackDevice.cpp
-    ${INCROOT}/PlaybackDevice.hpp
-    ${SRCROOT}/Sound.cpp
-    ${INCROOT}/Sound.hpp
-    ${SRCROOT}/SoundBuffer.cpp
-    ${INCROOT}/SoundBuffer.hpp
-    ${SRCROOT}/SoundBufferRecorder.cpp
-    ${INCROOT}/SoundBufferRecorder.hpp
-    ${INCROOT}/SoundChannel.hpp
-    ${SRCROOT}/InputSoundFile.cpp
-    ${INCROOT}/InputSoundFile.hpp
-    ${SRCROOT}/OutputSoundFile.cpp
-    ${INCROOT}/OutputSoundFile.hpp
-    ${SRCROOT}/SoundRecorder.cpp
-    ${INCROOT}/SoundRecorder.hpp
-    ${SRCROOT}/SoundSource.cpp
-    ${INCROOT}/SoundSource.hpp
-    ${SRCROOT}/SoundStream.cpp
-    ${INCROOT}/SoundStream.hpp
-)
-source_group("" FILES ${SRC})
-
-set(CODECS_SRC
-    ${SRCROOT}/SoundFileFactory.cpp
-    ${INCROOT}/SoundFileFactory.hpp
-    ${INCROOT}/SoundFileFactory.inl
-    ${INCROOT}/SoundFileReader.hpp
-    ${SRCROOT}/SoundFileReaderFlac.hpp
-    ${SRCROOT}/SoundFileReaderFlac.cpp
-    ${SRCROOT}/SoundFileReaderMp3.hpp
-    ${SRCROOT}/SoundFileReaderMp3.cpp
-    ${SRCROOT}/SoundFileReaderOgg.hpp
-    ${SRCROOT}/SoundFileReaderOgg.cpp
-    ${SRCROOT}/SoundFileReaderWav.hpp
-    ${SRCROOT}/SoundFileReaderWav.cpp
-    ${INCROOT}/SoundFileWriter.hpp
-    ${SRCROOT}/SoundFileWriterFlac.hpp
-    ${SRCROOT}/SoundFileWriterFlac.cpp
-    ${SRCROOT}/SoundFileWriterOgg.hpp
-    ${SRCROOT}/SoundFileWriterOgg.cpp
-    ${SRCROOT}/SoundFileWriterWav.hpp
-    ${SRCROOT}/SoundFileWriterWav.cpp
-)
-source_group("codecs" FILES ${CODECS_SRC})
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp")
 
 # Ensure certain files are compiled as Objective-C++
 # See: https://miniaud.io/docs/manual/index.html#Building
@@ -74,8 +17,6 @@ if(SFML_USE_SYSTEM_DEPS)
 else()
     # use an immediately invoked function to scope option variables we have to set
     function(sfml_add_audio_dependencies)
-        include(FetchContent)
-
         # remember whether we are building SFML as a shared library
         if(BUILD_SHARED_LIBS)
             set(SFML_BUILD_SHARED_LIBS ON)
@@ -98,33 +39,38 @@ else()
         set(WITH_STACK_PROTECTOR OFF)
         set(WITH_AVX OFF) # LLVM/Clang on Windows has issues with AVX2
 
-        FetchContent_Declare(ogg
-            GIT_REPOSITORY https://github.com/xiph/ogg.git
+        CPMAddPackage(
+            NAME ogg
+            GITHUB_REPOSITORY xiph/ogg
             GIT_TAG v1.3.5
-            GIT_SHALLOW ON
-            # patch out parts we don't want of the Ogg CMake configuration
-            # - installing headers & pkgconfig files
-            # - add CMAKE_DEBUG_POSTFIX
-            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src -P ${PROJECT_SOURCE_DIR}/tools/ogg/PatchOgg.cmake)
-        FetchContent_Declare(flac
-            GIT_REPOSITORY https://github.com/xiph/flac.git
+            SYSTEM TRUE
+            # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
+            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src  -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
+        )
+
+        CPMAddPackage(
+            NAME flac
+            GITHUB_REPOSITORY xiph/flac
             GIT_TAG 1.4.3
-            GIT_SHALLOW ON
-            # patch out parts we don't want of the FLAC CMake configuration:
+            SYSTEM TRUE
+            # patch out the annoying parts of the FLAC CMake configuration:
             # - adding unnecessary libraries that aren't even used
             # - installing headers & pkgconfig files
             # - add CMAKE_DEBUG_POSTFIX
-            PATCH_COMMAND ${CMAKE_COMMAND} -DFLAC_DIR=${FETCHCONTENT_BASE_DIR}/flac-src -P ${PROJECT_SOURCE_DIR}/tools/flac/PatchFLAC.cmake)
-        FetchContent_Declare(vorbis
-            GIT_REPOSITORY https://github.com/xiph/vorbis.git
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/flac/PatchFLAC.cmake
+        )
+
+        CPMAddPackage(
+            NAME vorbis
+            GITHUB_REPOSITORY xiph/vorbis
             GIT_TAG v1.3.7
-            GIT_SHALLOW ON
-            # patch out parts we don't want of the Vorbis CMake configuration:
+            SYSTEM TRUE
+            # patch out the annoying parts of the Vorbis CMake configuration:
             # - Vorbis doesn't check if the Ogg::ogg target exists before calling find_package
             # - installing headers & pkgconfig files
             # - add CMAKE_DEBUG_POSTFIX
-            PATCH_COMMAND ${CMAKE_COMMAND} -DVORBIS_DIR=${FETCHCONTENT_BASE_DIR}/vorbis-src -P ${PROJECT_SOURCE_DIR}/tools/vorbis/PatchVorbis.cmake)
-        FetchContent_MakeAvailable(ogg flac vorbis)
+            PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/vorbis/PatchVorbis.cmake
+        )
 
         set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES FOLDER "Dependencies")
 
@@ -137,11 +83,21 @@ else()
         # disable building dependencies as part of a unity build, they don't support it
         set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD OFF)
 
+        if(TARGET benchmark_residual)
+            set_target_properties(benchmark_residual PROPERTIES UNITY_BUILD OFF)
+        endif()
+
         sfml_set_stdlib(ogg)
         sfml_set_stdlib(FLAC)
         sfml_set_stdlib(vorbis)
         sfml_set_stdlib(vorbisenc)
         sfml_set_stdlib(vorbisfile)
+
+        target_compile_options(ogg PRIVATE "-w")
+        target_compile_options(FLAC PRIVATE "-w")
+        target_compile_options(vorbis PRIVATE "-w")
+        target_compile_options(vorbisenc PRIVATE "-w")
+        target_compile_options(vorbisfile PRIVATE "-w")
 
         # define NDEBUG when building FLAC to suppress console debug output
         target_compile_definitions(FLAC PRIVATE NDEBUG)
@@ -149,6 +105,10 @@ else()
         # _FILE_OFFSET_BITS=64 is not supported with older (<24) Android API levels
         if(SFML_OS_ANDROID)
             target_compile_definitions(FLAC PRIVATE _FILE_OFFSET_BITS=32)
+        endif()
+
+        if(SFML_COMPILER_GCC OR SFML_COMPILER_CLANG)
+            target_compile_options(FLAC PRIVATE -Wno-cast-function-type)
         endif()
 
         # aliases were introduced only after 1.3.7 was released
@@ -188,6 +148,11 @@ endif()
 
 # miniaudio sources
 target_include_directories(sfml-audio SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/miniaudio")
+
+# needed because PCH is defined in the System module
+if(SFML_ENABLE_PCH)
+    target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/miniaudio")
+endif()
 
 # minimp3 sources
 target_include_directories(sfml-audio SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/minimp3")

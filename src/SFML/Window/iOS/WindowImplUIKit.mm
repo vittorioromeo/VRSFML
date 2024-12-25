@@ -1,37 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/iOS/SFAppDelegate.hpp>
-#include <SFML/Window/iOS/SFView.hpp>
-#include <SFML/Window/iOS/SFViewController.hpp>
-#include <SFML/Window/iOS/WindowImplUIKit.hpp>
+#include "SFML/Window/WindowEnums.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/iOS/SFAppDelegate.hpp"
+#include "SFML/Window/iOS/SFView.hpp"
+#include "SFML/Window/iOS/SFViewController.hpp"
+#include "SFML/Window/iOS/WindowImplUIKit.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <UIKit/UIKit.h>
 
@@ -47,19 +26,15 @@ WindowImplUIKit::WindowImplUIKit(WindowHandle /* handle */)
 
 
 ////////////////////////////////////////////////////////////
-WindowImplUIKit::WindowImplUIKit(VideoMode mode,
-                                 const String& /* title */,
-                                 std::uint32_t style,
-                                 State         state,
-                                 const ContextSettings& /* settings */)
+WindowImplUIKit::WindowImplUIKit(const WindowSettings& windowSettings)
 {
     m_backingScale = static_cast<float>([SFAppDelegate getInstance].backingScaleFactor);
 
     // Apply the fullscreen flag
-    [UIApplication sharedApplication].statusBarHidden = !(style & Style::Titlebar) || (state == State::Fullscreen);
+    [UIApplication sharedApplication].statusBarHidden = !windowSettings.hasTitlebar || (windowSettings.fullscreen);
 
     // Set the orientation according to the requested size
-    if (mode.size.x > mode.size.y)
+    if (windowSettings.size.x > windowSettings.size.y)
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeLeft];
     else
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait];
@@ -81,7 +56,7 @@ WindowImplUIKit::WindowImplUIKit(VideoMode mode,
     // Create the view controller
     m_viewController                      = [SFViewController alloc];
     m_viewController.view                 = m_view;
-    m_viewController.orientationCanChange = style & Style::Resize;
+    m_viewController.orientationCanChange = windowSettings.resizable;
     m_window.rootViewController           = m_viewController;
 
     // Make it the current window
@@ -136,7 +111,7 @@ Vector2u WindowImplUIKit::getSize() const
 ////////////////////////////////////////////////////////////
 void WindowImplUIKit::setSize(Vector2u size)
 {
-    // TODO ...
+    // TODO P2: ...
 
     // if these sizes are required one day, don't forget to scale them!
     // size.x /= m_backingScale;
@@ -151,14 +126,14 @@ void WindowImplUIKit::setSize(Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMinimumSize(const std::optional<Vector2u>& /* minimumSize */)
+void WindowImplUIKit::setMinimumSize(const base::Optional<Vector2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMaximumSize(const std::optional<Vector2u>& /* maximumSize */)
+void WindowImplUIKit::setMaximumSize(const base::Optional<Vector2u>& /* maximumSize */)
 {
     // Not applicable
 }
@@ -172,7 +147,7 @@ void WindowImplUIKit::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(Vector2u /* size */, const std::uint8_t* /* pixels */)
+void WindowImplUIKit::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }

@@ -1,32 +1,13 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-#include <SFML/Config.hpp>
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
 
-#include <cstdint>
+#include "SFML/Base/EnumClassBitwiseOps.hpp"
+
 
 namespace sf
 {
@@ -41,25 +22,46 @@ struct ContextSettings
     /// \brief Enumeration of the context attribute flags
     ///
     ////////////////////////////////////////////////////////////
-    enum Attribute
+    enum class [[nodiscard]] Attribute : unsigned int
     {
         Default = 0,      //!< Non-debug, compatibility context (this and the core attribute are mutually exclusive)
         Core    = 1 << 0, //!< Core attribute
-        Debug   = 1 << 2  //!< Debug attribute
+        Debug   = 1 << 2, //!< Debug attribute
+
+        DefaultAndDebug = Default | Debug,
+        CoreAndDebug    = Core | Debug,
     };
 
+#ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+#endif
+
+#if defined(SFML_SYSTEM_EMSCRIPTEN)
+    static inline constexpr auto defaultMajorVersion = 2u;
+    static inline constexpr auto defaultMinorVersion = 0u;
+#elif defined(SFML_OPENGL_ES)
+    static inline constexpr auto defaultMajorVersion = 3u;
+    static inline constexpr auto defaultMinorVersion = 1u;
+#else
+    static inline constexpr auto defaultMajorVersion = 4u;
+    static inline constexpr auto defaultMinorVersion = 1u;
+#endif
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    unsigned int  depthBits{};                        //!< Bits of the depth buffer
-    unsigned int  stencilBits{};                      //!< Bits of the stencil buffer
-    unsigned int  antiAliasingLevel{};                //!< Level of anti-aliasing
-    unsigned int  majorVersion{1};                    //!< Major number of the context version to create
-    unsigned int  minorVersion{1};                    //!< Minor number of the context version to create
-    std::uint32_t attributeFlags{Attribute::Default}; //!< The attribute flags to create the context with
-    bool          sRgbCapable{};                      //!< Whether the context framebuffer is sRGB capable
+    unsigned int depthBits{};                           //!< Bits of the depth buffer
+    unsigned int stencilBits{};                         //!< Bits of the stencil buffer
+    unsigned int antiAliasingLevel{};                   //!< Level of antialiasing
+    unsigned int majorVersion{defaultMajorVersion};     //!< Major number of the context version to create
+    unsigned int minorVersion{defaultMinorVersion};     //!< Minor number of the context version to create
+    Attribute    attributeFlags{defaultAttributeFlags}; //!< Whether the context framebuffer is sRGB capable
+    bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
 };
+
+SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
 
 } // namespace sf
 

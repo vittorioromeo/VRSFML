@@ -1,7 +1,27 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Shader.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexBuffer.hpp"
+
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Keyboard.hpp"
+
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Time.hpp"
+#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vector3.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
@@ -40,12 +60,31 @@ struct WorkItem
     unsigned int index{};
 };
 
-std::deque<WorkItem>     workQueue;
-std::vector<std::thread> threads;
-int                      pendingWorkCount    = 0;
-bool                     workPending         = true;
-bool                     bufferUploadPending = false;
-std::recursive_mutex     workQueueMutex;
+struct ThreadPool
+{
+    std::mutex               poolMutex;
+    std::vector<std::thread> threads;
+    std::deque<WorkItem>     workQueue;
+    unsigned int             pendingWorkCount    = 0u;
+    bool                     bufferUploadPending = false;
+    bool                     finished            = false;
+
+    explicit ThreadPool() = default;
+
+    ThreadPool(const ThreadPool&) = delete;
+    ThreadPool(ThreadPool&&)      = delete;
+
+    ~ThreadPool()
+    {
+        {
+            const std::lock_guard lock(poolMutex);
+            finished = true;
+        }
+
+        for (std::thread& t : threads)
+            t.join();
+    }
+};
 
 struct Setting
 {
@@ -78,7 +117,7 @@ float lightFactor   = 0.7f;
 ////////////////////////////////////////////////////////////
 float getElevation(sf::Vector2u position)
 {
-    const sf::Vector2f normalized = sf::Vector2f(position).componentWiseDiv(sf::Vector2f(resolution)) -
+    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
                                     sf::Vector2f(0.5f, 0.5f);
 
     float elevation = 0.0f;
@@ -106,7 +145,7 @@ float getElevation(sf::Vector2u position)
 ////////////////////////////////////////////////////////////
 float getMoisture(sf::Vector2u position)
 {
-    const sf::Vector2f normalized = sf::Vector2f(position).componentWiseDiv(sf::Vector2f(resolution)) -
+    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
                                     sf::Vector2f(0.5f, 0.5f);
     const sf::Vector2f transformed = normalized * 4.f + sf::Vector2f(0.5f, 0.5f);
 
@@ -129,20 +168,26 @@ sf::Color getLowlandsTerrainColor(float moisture)
 {
     if (moisture < 0.27f)
         return colorFromFloats(240, 240, 180);
+
     if (moisture < 0.3f)
         return colorFromFloats(240 - (240 * (moisture - 0.27f) / 0.03f),
                                240 - (40 * (moisture - 0.27f) / 0.03f),
                                180 - (180 * (moisture - 0.27f) / 0.03f));
+
     if (moisture < 0.4f)
         return colorFromFloats(0, 200, 0);
+
     if (moisture < 0.48f)
         return colorFromFloats(0, 200 - (40 * (moisture - 0.4f) / 0.08f), 0);
+
     if (moisture < 0.6f)
         return colorFromFloats(0, 160, 0);
+
     if (moisture < 0.7f)
         return colorFromFloats((34 * (moisture - 0.6f) / 0.1f),
                                160 - (60 * (moisture - 0.6f) / 0.1f),
                                (34 * (moisture - 0.6f) / 0.1f));
+
     return colorFromFloats(34, 100, 34);
 }
 
@@ -178,13 +223,11 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 {
     const sf::Color highlandsColor = getHighlandsTerrainColor(elevation, moisture);
 
-    const sf::Color color = sf::Color::White;
-
     const float factor = std::min((elevation - snowcapHeight) / 0.05f, 1.f);
 
-    return colorFromFloats(highlandsColor.r * (1.f - factor) + color.r * factor,
-                           highlandsColor.g * (1.f - factor) + color.g * factor,
-                           highlandsColor.b * (1.f - factor) + color.b * factor);
+    return {static_cast<std::uint8_t>(highlandsColor.r * (1.f - factor) + 255 * factor),
+            static_cast<std::uint8_t>(highlandsColor.g * (1.f - factor) + 255 * factor),
+            static_cast<std::uint8_t>(highlandsColor.b * (1.f - factor) + 255 * factor)};
 }
 
 
@@ -197,20 +240,26 @@ sf::Color getTerrainColor(float elevation, float moisture)
 {
     if (elevation < 0.11f)
         return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.0f)};
+
     if (elevation < 0.14f)
         return {static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
                 static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
                 255};
+
     if (elevation < 0.16f)
         return {static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
                 static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
                 static_cast<std::uint8_t>(127.0f + (0.16f - elevation) * 128.f / 0.02f)};
+
     if (elevation < 0.17f)
         return {240, 230, 140};
+
     if (elevation < 0.4f)
         return getLowlandsTerrainColor(moisture);
+
     if (elevation < snowcapHeight)
         return getHighlandsTerrainColor(elevation, moisture);
+
     return getSnowcapTerrainColor(elevation, moisture);
 }
 
@@ -243,15 +292,14 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 ////////////////////////////////////////////////////////////
 sf::Vertex computeVertex(sf::Vector2u position)
 {
-    static constexpr auto scalingFactors = sf::Vector2f(windowSize).componentWiseDiv(sf::Vector2f(resolution));
-    sf::Vertex            vertex;
-    vertex.position  = sf::Vector2f(position).componentWiseMul(scalingFactors);
-    vertex.color     = getTerrainColor(getElevation(position), getMoisture(position));
-    vertex.texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
-                                     getElevation(position + sf::Vector2u(1, 0)),
-                                     getElevation(position + sf::Vector2u(0, 1)),
-                                     getElevation(position - sf::Vector2u(0, 1)));
-    return vertex;
+    static constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
+
+    return {.position  = position.toVector2f().componentWiseMul(scalingFactors),
+            .color     = getTerrainColor(getElevation(position), getMoisture(position)),
+            .texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
+                                       getElevation(position + sf::Vector2u(1, 0)),
+                                       getElevation(position + sf::Vector2u(0, 1)),
+                                       getElevation(position - sf::Vector2u(0, 1)))};
 }
 
 
@@ -335,11 +383,11 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
 /// new threads whenever we need to regenerate the terrain.
 ///
 ////////////////////////////////////////////////////////////
-void threadFunction()
+void threadFunction(ThreadPool& threadPool)
 {
     std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
 
-    WorkItem workItem = {nullptr, 0};
+    WorkItem workItem{nullptr, 0};
 
     // Loop until the application exits
     for (;;)
@@ -348,32 +396,30 @@ void threadFunction()
 
         // Check if there are new work items in the queue
         {
-            const std::lock_guard lock(workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
 
-            if (!workPending)
+            if (threadPool.finished)
                 return;
 
-            if (!workQueue.empty())
+            if (!threadPool.workQueue.empty())
             {
-                workItem = workQueue.front();
-                workQueue.pop_front();
+                workItem = threadPool.workQueue.front();
+                threadPool.workQueue.pop_front();
             }
         }
 
         // If we didn't receive a new work item, keep looping
-        if (!workItem.targetBuffer)
+        if (workItem.targetBuffer == nullptr)
         {
             sf::sleep(sf::milliseconds(10));
-
             continue;
         }
 
         processWorkItem(vertices, workItem);
 
         {
-            const std::lock_guard lock(workQueueMutex);
-
-            --pendingWorkCount;
+            const std::lock_guard lock(threadPool.poolMutex);
+            --threadPool.pendingWorkCount;
         }
     }
 }
@@ -385,17 +431,17 @@ void threadFunction()
 /// and process.
 ///
 ////////////////////////////////////////////////////////////
-void generateTerrain(sf::Vertex* buffer)
+void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
 {
-    bufferUploadPending = true;
+    threadPool.bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
     for (;;)
     {
         {
-            const std::lock_guard lock(workQueueMutex);
+            const std::lock_guard lock(threadPool.poolMutex);
 
-            if (pendingWorkCount == 0u)
+            if (threadPool.pendingWorkCount == 0u)
                 break;
         }
 
@@ -404,94 +450,83 @@ void generateTerrain(sf::Vertex* buffer)
 
     // Queue all the new work items
     {
-        const std::lock_guard lock(workQueueMutex);
+        const std::lock_guard lock(threadPool.poolMutex);
 
-        for (unsigned int i = 0; i < blockCount; ++i)
-        {
-            const WorkItem workItem = {buffer, i};
-            workQueue.push_back(workItem);
-        }
+        for (unsigned int i = 0u; i < blockCount; ++i)
+            threadPool.workQueue.emplace_back(buffer, i);
 
-        pendingWorkCount = blockCount;
+        threadPool.pendingWorkCount = blockCount;
     }
 }
+
 } // namespace
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // Create the window of the application
-    sf::RenderWindow window(sf::VideoMode(windowSize), "SFML Island", sf::Style::Titlebar | sf::Style::Close);
-    window.setVerticalSyncEnabled(true);
+    // Create the graphics context
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
-    const sf::Font font("resources/tuffy.ttf");
+    // Load the terrain shader
+    auto       terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag").value();
+    const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
+
+    // Load the font
+    const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
+
+    // Create the window of the application
+    sf::RenderWindow window({.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
 
     // Create all of our graphics resources
-    sf::Text         hudText(font);
-    sf::Text         statusText(font);
-    sf::Shader       terrainShader;
+    sf::Text hudText(font,
+                     {.position         = {5.0f, 5.0f},
+                      .characterSize    = 14,
+                      .fillColor        = sf::Color::White,
+                      .outlineColor     = sf::Color::Black,
+                      .outlineThickness = 2.0f});
+
+    sf::Text statusText(font,
+                        {.string           = "Generating Terrain...",
+                         .characterSize    = 28,
+                         .fillColor        = sf::Color::White,
+                         .outlineColor     = sf::Color::Black,
+                         .outlineThickness = 2.0f});
+
     sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
-
-    // Set up our text drawables
-    statusText.setCharacterSize(28);
-    statusText.setFillColor(sf::Color::White);
-    statusText.setOutlineColor(sf::Color::Black);
-    statusText.setOutlineThickness(2.0f);
-
-    hudText.setCharacterSize(14);
-    hudText.setFillColor(sf::Color::White);
-    hudText.setOutlineColor(sf::Color::Black);
-    hudText.setOutlineThickness(2.0f);
-    hudText.setPosition({5.0f, 5.0f});
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
 
-    // Set up our graphics resources and set the status text accordingly
-    if (!sf::VertexBuffer::isAvailable() || !sf::Shader::isAvailable())
+    // Create a thread pool
+    ThreadPool threadPool;
+
+    // Start up our thread pool
+    for (unsigned int i = 0; i < threadCount; ++i)
+        threadPool.threads.emplace_back([&threadPool] { threadFunction(threadPool); });
+
+    // Create our VertexBuffer with enough space to hold all the terrain geometry
+    if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        statusText.setString("Shaders and/or Vertex Buffers Unsupported");
+        std::cerr << "Failed to create vertex buffer" << std::endl;
+        return EXIT_FAILURE;
     }
-    else if (!terrainShader.loadFromFile("resources/terrain.vert", "resources/terrain.frag"))
-    {
-        statusText.setString("Failed to load shader program");
-    }
-    else
-    {
-        // Start up our thread pool
-        for (unsigned int i = 0; i < threadCount; ++i)
-        {
-            threads.emplace_back(threadFunction);
-        }
 
-        // Create our VertexBuffer with enough space to hold all the terrain geometry
-        if (!terrain.create(resolution.x * resolution.y * 6))
-        {
-            std::cerr << "Failed to create vertex buffer" << std::endl;
-            return EXIT_FAILURE;
-        }
+    // Resize the staging buffer to be able to hold all the terrain geometry
+    terrainStagingBuffer.resize(resolution.x * resolution.y * 6);
 
-        // Resize the staging buffer to be able to hold all the terrain geometry
-        terrainStagingBuffer.resize(resolution.x * resolution.y * 6);
+    // Generate the initial terrain
+    generateTerrain(threadPool, terrainStagingBuffer.data());
 
-        // Generate the initial terrain
-        generateTerrain(terrainStagingBuffer.data());
-
-        statusText.setString("Generating Terrain...");
-
-        // Set up the render states
-        terrainStates = sf::RenderStates(&terrainShader);
-    }
+    // Set up the render states
+    terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
-    statusText.setPosition((sf::Vector2f(windowSize) - statusText.getLocalBounds().size) / 2.f);
+    statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
     constexpr std::array<Setting, 9> settings = {
@@ -507,31 +542,24 @@ int main()
 
     std::size_t currentSetting = 0;
 
-    std::ostringstream osstr;
+    std::ostringstream oss;
     sf::Clock          clock;
 
-    while (window.isOpen())
+    while (true)
     {
         // Handle events
-        while (const std::optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
-            // Window closed or escape key pressed: exit
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
-                window.close();
-                break;
-            }
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
 
             // Arrow key pressed:
-            // TODO Replace use of getNativeHandle() when validity function is added
-            if (terrainShader.getNativeHandle() != 0 && event->is<sf::Event::KeyPressed>())
+            if (event->is<sf::Event::KeyPressed>())
             {
                 switch (event->getIf<sf::Event::KeyPressed>()->code)
                 {
                     case sf::Keyboard::Key::Enter:
-                        generateTerrain(terrainStagingBuffer.data());
+                        generateTerrain(threadPool, terrainStagingBuffer.data());
                         break;
                     case sf::Keyboard::Key::Down:
                         currentSetting = (currentSetting + 1) % settings.size();
@@ -556,59 +584,44 @@ int main()
 
         window.draw(statusText);
 
-        if (terrainShader.getNativeHandle() != 0)
         {
+            const std::lock_guard lock(threadPool.poolMutex);
+
+            // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
+            if (threadPool.pendingWorkCount == 0u)
             {
-                const std::lock_guard lock(workQueueMutex);
-
-                // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-                if (!pendingWorkCount)
+                // If there is new data pending to be uploaded to the VertexBuffer, do it now
+                if (threadPool.bufferUploadPending)
                 {
-                    // If there is new data pending to be uploaded to the VertexBuffer, do it now
-                    if (bufferUploadPending)
+                    if (!terrain.update(terrainStagingBuffer.data()))
                     {
-                        if (!terrain.update(terrainStagingBuffer.data()))
-                        {
-                            std::cerr << "Failed to update vertex buffer" << std::endl;
-                            return EXIT_FAILURE;
-                        }
-
-                        bufferUploadPending = false;
+                        std::cerr << "Failed to update vertex buffer" << std::endl;
+                        return EXIT_SUCCESS;
                     }
 
-                    terrainShader.setUniform("lightFactor", lightFactor);
-                    window.draw(terrain, terrainStates);
+                    threadPool.bufferUploadPending = false;
                 }
+
+                terrainShader.setUniform(ulLightFactor, lightFactor);
+                window.draw(terrain, terrainStates);
             }
-
-            // Update and draw the HUD text
-            osstr.str("");
-            osstr << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
-                  << "perlinOctaves:  " << perlinOctaves << "\n\n"
-                  << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
-
-            for (std::size_t i = 0; i < settings.size(); ++i)
-                osstr << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  "
-                      << *(settings[i].value) << '\n';
-
-            hudText.setString(osstr.str());
-
-            window.draw(hudText);
         }
+
+        // Update and draw the HUD text
+        oss.str("");
+        oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
+            << "perlinOctaves:  " << perlinOctaves << "\n\n"
+            << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
+
+        for (std::size_t i = 0; i < settings.size(); ++i)
+            oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
+                << '\n';
+
+        hudText.setString(oss.str());
+
+        window.draw(hudText);
 
         // Display things on screen
         window.display();
-    }
-
-    // Shut down our thread pool
-    {
-        const std::lock_guard lock(workQueueMutex);
-        workPending = false;
-    }
-
-    while (!threads.empty())
-    {
-        threads.back().join();
-        threads.pop_back();
     }
 }

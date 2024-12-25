@@ -1,161 +1,187 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Export.hpp>
+#include "SFML/Window/Export.hpp"
 
-#include <SFML/System/String.hpp>
+#include "SFML/Base/Optional.hpp"
 
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class String;
+} // namespace sf
+
+namespace sf::priv
+{
+class JoystickManager;
+struct JoystickIdentification;
+} // namespace sf::priv
+
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Give access to the real-time state of the joysticks
 ///
 ////////////////////////////////////////////////////////////
-namespace sf::Joystick
+struct Joystick
 {
-////////////////////////////////////////////////////////////
-/// \brief Constants related to joysticks capabilities
-///
-////////////////////////////////////////////////////////////
-// NOLINTBEGIN(readability-identifier-naming)
-static constexpr unsigned int Count{8};        //!< Maximum number of supported joysticks
-static constexpr unsigned int ButtonCount{32}; //!< Maximum number of supported buttons
-static constexpr unsigned int AxisCount{8};    //!< Maximum number of supported axes
-// NOLINTEND(readability-identifier-naming)
+    ////////////////////////////////////////////////////////////
+    /// \brief Axes supported by SFML joysticks
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class Axis
+    {
+        X,    //!< The X axis
+        Y,    //!< The Y axis
+        Z,    //!< The Z axis
+        R,    //!< The R axis
+        U,    //!< The U axis
+        V,    //!< The V axis
+        PovX, //!< The X axis of the point-of-view hat
+        PovY  //!< The Y axis of the point-of-view hat
+    };
 
-////////////////////////////////////////////////////////////
-/// \brief Axes supported by SFML joysticks
-///
-////////////////////////////////////////////////////////////
-enum class Axis
-{
-    X,    //!< The X axis
-    Y,    //!< The Y axis
-    Z,    //!< The Z axis
-    R,    //!< The R axis
-    U,    //!< The U axis
-    V,    //!< The V axis
-    PovX, //!< The X axis of the point-of-view hat
-    PovY  //!< The Y axis of the point-of-view hat
+    ////////////////////////////////////////////////////////////
+    /// \brief Constants related to joysticks capabilities
+    ///
+    ////////////////////////////////////////////////////////////
+    enum : unsigned int
+    {
+        MaxCount    = 8u,  //!< Maximum number of supported joysticks
+        ButtonCount = 32u, //!< Maximum number of supported buttons
+        AxisCount   = 8u   //!< Maximum number of supported axes
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Update the states of all joysticks
+    ///
+    /// This function is used internally by SFML, so you normally
+    /// don't have to call it explicitly. However, you may need to
+    /// call it if you have no window yet (or no window at all):
+    /// in this case the joystick states are not updated automatically.
+    ///
+    ////////////////////////////////////////////////////////////
+    SFML_WINDOW_API static void update();
+
+    // Forward declaration for friendship
+    class Query;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    /// \param joystick Index of the joystick to check
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<Query> query(unsigned int joystickId);
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief Structure holding a joystick's identification
+/// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_WINDOW_API Identification
+class [[nodiscard]] SFML_WINDOW_API Joystick::Query
 {
-    String       name{"No Joystick"}; //!< Name of the joystick
-    unsigned int vendorId{};          //!< Manufacturer identifier
-    unsigned int productId{};         //!< Product identifier
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the index of the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getIndex() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the name of the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const String& getName() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the manufacturer identifier of the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getVendorId() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the product identifier of the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getProductId() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the number of buttons supported by a joystick
+    ///
+    /// \return Number of buttons supported by the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getButtonCount() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if a joystick supports a given axis
+    ///
+    /// \param axis Axis to check
+    ///
+    /// \return `true` if the joystick supports the axis, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool hasAxis(Axis axis) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if a joystick button is pressed
+    ///
+    /// \param button Button to check
+    ///
+    /// \return `true` if the button is pressed, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isButtonPressed(unsigned int button) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the current position of a joystick axis
+    ///
+    /// \param axis Axis to check
+    ///
+    /// \return Current position of the axis, in range [-100 .. 100]
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getAxisPosition(Axis axis) const;
+
+private:
+    friend base::Optional<Query> Joystick::query(unsigned int joystickId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a joystick state query
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Query(const priv::JoystickManager& joystickManager, unsigned int joystickId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if a joystick is connected
+    ///
+    /// \return `true` if the joystick is connected, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isConnected() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the identification of the joystick
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const priv::JoystickIdentification& getIdentification() const;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    const priv::JoystickManager& m_joystickManager;
+    unsigned int                 m_joystickId;
 };
 
-////////////////////////////////////////////////////////////
-/// \brief Check if a joystick is connected
-///
-/// \param joystick Index of the joystick to check
-///
-/// \return `true` if the joystick is connected, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool isConnected(unsigned int joystick);
-
-////////////////////////////////////////////////////////////
-/// \brief Return the number of buttons supported by a joystick
-///
-/// If the joystick is not connected, this function returns 0.
-///
-/// \param joystick Index of the joystick
-///
-/// \return Number of buttons supported by the joystick
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API unsigned int getButtonCount(unsigned int joystick);
-
-////////////////////////////////////////////////////////////
-/// \brief Check if a joystick supports a given axis
-///
-/// If the joystick is not connected, this function returns `false`.
-///
-/// \param joystick Index of the joystick
-/// \param axis     Axis to check
-///
-/// \return `true` if the joystick supports the axis, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool hasAxis(unsigned int joystick, Axis axis);
-
-////////////////////////////////////////////////////////////
-/// \brief Check if a joystick button is pressed
-///
-/// If the joystick is not connected, this function returns `false`.
-///
-/// \param joystick Index of the joystick
-/// \param button   Button to check
-///
-/// \return `true` if the button is pressed, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API bool isButtonPressed(unsigned int joystick, unsigned int button);
-
-////////////////////////////////////////////////////////////
-/// \brief Get the current position of a joystick axis
-///
-/// If the joystick is not connected, this function returns 0.
-///
-/// \param joystick Index of the joystick
-/// \param axis     Axis to check
-///
-/// \return Current position of the axis, in range [-100 .. 100]
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API float getAxisPosition(unsigned int joystick, Axis axis);
-
-////////////////////////////////////////////////////////////
-/// \brief Get the joystick information
-///
-/// \param joystick Index of the joystick
-///
-/// \return Structure containing joystick information.
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Identification getIdentification(unsigned int joystick);
-
-////////////////////////////////////////////////////////////
-/// \brief Update the states of all joysticks
-///
-/// This function is used internally by SFML, so you normally
-/// don't have to call it explicitly. However, you may need to
-/// call it if you have no window yet (or no window at all):
-/// in this case the joystick states are not updated automatically.
-///
-////////////////////////////////////////////////////////////
-SFML_WINDOW_API void update();
-} // namespace sf::Joystick
+} // namespace sf
 
 
 ////////////////////////////////////////////////////////////
@@ -178,7 +204,7 @@ SFML_WINDOW_API void update();
 /// and no event is triggered.
 ///
 /// SFML supports:
-/// \li 8 joysticks (`sf::Joystick::Count`)
+/// \li 8 joysticks (`sf::Joystick::MaxCount`)
 /// \li 32 buttons per joystick (`sf::Joystick::ButtonCount`)
 /// \li 8 axes per joystick (`sf::Joystick::AxisCount`)
 ///
@@ -192,20 +218,22 @@ SFML_WINDOW_API void update();
 ///
 /// Usage example:
 /// \code
-/// // Is joystick #0 connected?
-/// bool connected = sf::Joystick::isConnected(0);
+/// const auto query = sf::Joystick::query(0);
+///
+/// if (!query.hasValue()) // Is joystick #0 disconnected?
+///     return;
 ///
 /// // How many buttons does joystick #0 support?
-/// unsigned int buttons = sf::Joystick::getButtonCount(0);
+/// const unsigned int buttonCount = query.getButtonCount();
 ///
 /// // Does joystick #0 define a X axis?
-/// bool hasX = sf::Joystick::hasAxis(0, sf::Joystick::Axis::X);
+/// const bool hasX = query.hasAxis(sf::Joystick::Axis::X);
 ///
 /// // Is button #2 pressed on joystick #0?
-/// bool pressed = sf::Joystick::isButtonPressed(0, 2);
+/// const bool pressed = query.isButtonPressed(2);
 ///
 /// // What's the current position of the Y axis on joystick #0?
-/// float position = sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::Y);
+/// const float position = query.getAxisPosition(sf::Joystick::Axis::Y);
 /// \endcode
 ///
 /// \see `sf::Keyboard`, `sf::Mouse`

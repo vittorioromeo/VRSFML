@@ -1,72 +1,68 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Vertex.hpp>
-#include <SFML/Graphics/View.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <array>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class CPUDrawableBatch;
+
+template <typename TBufferObject>
+class GLPersistentBuffer;
+
+class PersistentGPUDrawableBatch;
+class Shader;
+class Shape;
+class Texture;
+class VertexBuffer;
+struct BlendMode;
+struct GLElementBufferObject;
+struct GLVertexBufferObject;
+struct Sprite;
+struct StencilMode;
+struct StencilValue;
+struct Transform;
+struct Vertex;
+struct View;
+} // namespace sf
+
+namespace sf::priv
+{
+struct PersistentGPUStorage;
+} // namespace sf::priv
 
 
 namespace sf
 {
-class Drawable;
-class Shader;
-class Texture;
-class Transform;
-class VertexBuffer;
-
 ////////////////////////////////////////////////////////////
 /// \brief Base class for all render targets (window, texture, ...)
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API RenderTarget
+class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~RenderTarget() = default;
+    virtual ~RenderTarget();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -84,13 +80,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget(RenderTarget&&) noexcept = default;
+    RenderTarget(RenderTarget&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget& operator=(RenderTarget&&) noexcept = default;
+    RenderTarget& operator=(RenderTarget&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Clear the entire target with a single color
@@ -137,12 +133,10 @@ public:
     /// The render target keeps its own copy of the view object,
     /// so it is not necessary to keep the original one alive
     /// after calling this function.
-    /// To restore the original view of the target, you can pass
-    /// the result of `getDefaultView()` to this function.
     ///
     /// \param view New view to use
     ///
-    /// \see `getView`, `getDefaultView`
+    /// \see `getView`
     ///
     ////////////////////////////////////////////////////////////
     void setView(const View& view);
@@ -152,23 +146,10 @@ public:
     ///
     /// \return The view object that is currently used
     ///
-    /// \see `setView`, `getDefaultView`
+    /// \see `setView`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const View& getView() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the default view of the render target
-    ///
-    /// The default view has the initial size of the render target,
-    /// and never changes after the target has been created.
-    ///
-    /// \return The default view of the render target
-    ///
-    /// \see `setView`, `getView`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const View& getDefaultView() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -305,21 +286,173 @@ public:
     /// \param states   Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Drawable& drawable, const RenderStates& states = RenderStates::Default);
+    template <typename DrawableObject>
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+        requires(requires { drawableObject.draw(*this, states); })
+    {
+        drawableObject.draw(*this, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct TextureDrawParams
+    {
+        Vector2f position{};      //!< Position of the object in the 2D world
+        Vector2f scale{1.f, 1.f}; //!< Scale of the object
+        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        Angle rotation{}; //!< Orientation of the object
+
+        FloatRect textureRect{};       //!< Rectangle defining the area of the source texture to display
+        Color     color{Color::White}; //!< Color of the sprite
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
+    /// rotation, scale, and color
+    ///
+    /// \param sprite Texture to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture& texture, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// \param sprite Texture to draw
+    /// \param params Drawing parameters
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a sprite object to the render target
+    ///
+    /// The texture associated with a sprite must be passed while drawing.
+    ///
+    /// \param sprite  Sprite to draw
+    /// \param texture Texture associated with the sprite
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted overload of `draw` for sprites without a texture
+    ///
+    /// The texture associated with a sprite must be passed while drawing.
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Sprite&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a shape object to the render target
+    ///
+    /// A texture associated with a shape can be passed while drawing.
+    ///
+    /// \param shape   Shape to draw
+    /// \param texture Texture associated with the shape
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
     ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawVertices(const Vertex*       vertexData,
+                      base::SizeT         vertexCount,
+                      PrimitiveType       type,
+                      const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedVertices(const Vertex*       vertexData,
+                             base::SizeT         vertexCount,
+                             const unsigned int* indexData,
+                             base::SizeT         indexCount,
+                             PrimitiveType       type,
+                             const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of vertices
+    ///
+    /// \brief TODO P1: docs
     /// \param vertices    Pointer to the vertices
     /// \param vertexCount Number of vertices in the array
     /// \param type        Type of primitives to draw
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Vertex*       vertices,
-              std::size_t         vertexCount,
-              PrimitiveType       type,
-              const RenderStates& states = RenderStates::Default);
+    void drawPersistentMappedVertices(base::SizeT         vertexCount,
+                                      PrimitiveType       type,
+                                      const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawPersistentMappedIndexedVertices(base::SizeT         indexCount,
+                                             PrimitiveType       type,
+                                             const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a contiguous container of vertices
+    ///
+    /// \tparam ContiguousVertexRange Type of the contiguous container,
+    ///         must support `.data()` and `.size()` operations.
+    ///
+    /// \param vertices    Reference to the contiguous vertex container
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename ContiguousVertexRange>
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = RenderStates::Default)
+        requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
+    {
+        drawVertices(vertices.data(), vertices.size(), type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a C-style array of vertices
+    ///
+    /// \param vertices    Reference to the C-style vertex array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <base::SizeT N>
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
+    {
+        drawVertices(vertices, N, type, states);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -340,8 +473,8 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const VertexBuffer& vertexBuffer,
-              std::size_t         firstVertex,
-              std::size_t         vertexCount,
+              base::SizeT         firstVertex,
+              base::SizeT         vertexCount,
               const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
@@ -383,56 +516,10 @@ public:
     [[nodiscard]] virtual bool setActive(bool active = true);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Save the current OpenGL render states and matrices
-    ///
-    /// This function can be used when you mix SFML drawing
-    /// and direct OpenGL rendering. Combined with popGLStates,
-    /// it ensures that:
-    /// \li SFML's internal states are not messed up by your OpenGL code
-    /// \li your OpenGL states are not modified by a call to a SFML function
-    ///
-    /// More specifically, it must be used around code that
-    /// calls `draw` functions. Example:
-    /// \code
-    /// // OpenGL code here...
-    /// window.pushGLStates();
-    /// window.draw(...);
-    /// window.draw(...);
-    /// window.popGLStates();
-    /// // OpenGL code here...
-    /// \endcode
-    ///
-    /// Note that this function is quite expensive: it saves all the
-    /// possible OpenGL states and matrices, even the ones you
-    /// don't care about. Therefore it should be used wisely.
-    /// It is provided for convenience, but the best results will
-    /// be achieved if you handle OpenGL states yourself (because
-    /// you know which states have really changed, and need to be
-    /// saved and restored). Take a look at the resetGLStates
-    /// function if you do so.
-    ///
-    /// \see `popGLStates`
-    ///
-    ////////////////////////////////////////////////////////////
-    void pushGLStates();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Restore the previously saved OpenGL render states and matrices
-    ///
-    /// See the description of `pushGLStates` to get a detailed
-    /// description of these functions.
-    ///
-    /// \see `pushGLStates`
-    ///
-    ////////////////////////////////////////////////////////////
-    void popGLStates();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Reset the internal OpenGL states so that the target is ready for drawing
     ///
     /// This function can be used when you mix SFML drawing
-    /// and direct OpenGL rendering, if you choose not to use
-    /// `pushGLStates`/`popGLStates`. It makes sure that all OpenGL
+    /// and direct OpenGL rendering. It makes sure that all OpenGL
     /// states needed by SFML are set, so that subsequent `draw()`
     /// calls will work as expected.
     ///
@@ -452,26 +539,37 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
+    /// \brief Constructor from graphics context
     ///
     ////////////////////////////////////////////////////////////
-    RenderTarget() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Performs the common initialization step after creation
-    ///
-    /// The derived classes must call this function after the
-    /// target is created and ready for drawing.
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize();
+    [[nodiscard]] explicit RenderTarget(const View& currentView);
 
 private:
+    friend priv::PersistentGPUStorage;
+
     ////////////////////////////////////////////////////////////
-    /// \brief Apply the current view
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void applyCurrentView();
+    [[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& getVBOPersistentBuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& getEBOPersistentBuffer();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Perform common cleaning operations prior to GL calls
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool clearImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply a view
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyView(const View& view);
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply a new blending mode
@@ -490,48 +588,53 @@ private:
     void applyStencilMode(const StencilMode& mode);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Apply a new transform
-    ///
-    /// \param transform Transform to apply
+    /// \brief Unbind any bound texture
     ///
     ////////////////////////////////////////////////////////////
-    void applyTransform(const Transform& transform);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Apply a new texture
-    ///
-    /// \param texture        Texture to apply
-    /// \param coordinateType The texture coordinate type to use
-    ///
-    ////////////////////////////////////////////////////////////
-    void applyTexture(const Texture* texture, CoordinateType coordinateType = CoordinateType::Pixels);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Apply a new shader
-    ///
-    /// \param shader Shader to apply
-    ///
-    ////////////////////////////////////////////////////////////
-    void applyShader(const Shader* shader);
+    void unapplyTexture();
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
-    /// \param useVertexCache Are we going to use the vertex cache?
-    /// \param states         Render states to use for drawing
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(bool useVertexCache, const RenderStates& states);
+    void setupDraw(bool persistent, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw the primitives
+    /// \brief Setup environment for drawing: MVP matrix
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: texture
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawTexture(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw non-indexed primitives
     ///
     /// \param type        Type of primitives to draw
     /// \param firstVertex Index of the first vertex to use when drawing
     /// \param vertexCount Number of vertices to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawPrimitives(PrimitiveType type, std::size_t firstVertex, std::size_t vertexCount);
+    void drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw indexed primitives
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param indexCount  Number of indices to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing
@@ -542,32 +645,10 @@ private:
     void cleanupDraw(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Render states cache
-    ///
-    ////////////////////////////////////////////////////////////
-    struct StatesCache
-    {
-        bool                  enable{};                //!< Is the cache enabled?
-        bool                  glStatesSet{};           //!< Are our internal GL states set yet?
-        bool                  viewChanged{};           //!< Has the current view changed since last draw?
-        bool                  scissorEnabled{};        //!< Is scissor testing enabled?
-        bool                  stencilEnabled{};        //!< Is stencil testing enabled?
-        BlendMode             lastBlendMode;           //!< Cached blending mode
-        StencilMode           lastStencilMode;         //!< Cached stencil
-        std::uint64_t         lastTextureId{};         //!< Cached texture
-        CoordinateType        lastCoordinateType{};    //!< Texture coordinate type
-        bool                  texCoordsArrayEnabled{}; //!< Is `GL_TEXTURE_COORD_ARRAY` client state enabled?
-        bool                  useVertexCache{};        //!< Did we previously use the vertex cache?
-        std::array<Vertex, 4> vertexCache{};           //!< Pre-transformed vertices cache
-    };
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    View          m_defaultView; //!< Default view
-    View          m_view;        //!< Current view
-    StatesCache   m_cache{};     //!< Render states cache
-    std::uint64_t m_id{};        //!< Unique number that identifies the RenderTarget
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -592,8 +673,7 @@ private:
 /// On top of that, render targets are still able to render direct
 /// OpenGL stuff. It is even possible to mix together OpenGL calls
 /// and regular SFML drawing commands. When doing so, make sure that
-/// OpenGL states are not messed up by calling the
-/// `pushGLStates`/`popGLStates` functions.
+/// OpenGL states are not messed up by calling `resetGLStates`.
 ///
 /// While render targets are moveable, it is not valid to move them
 /// between threads. This will cause your program to crash. The

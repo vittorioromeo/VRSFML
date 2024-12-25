@@ -13,29 +13,45 @@
 // function `resourcePath()` from ResourcePath.hpp
 //
 
-#include <SFML/Graphics.hpp>
+#include <SFML/Graphics/Font.hpp>
+#include <SFML/Graphics/Image.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Graphics/Sprite.hpp>
+#include <SFML/Graphics/Text.hpp>
+#include <SFML/Graphics/Texture.hpp>
 
-#include <SFML/Audio.hpp>
+#include <SFML/Audio/Music.hpp>
+
+#include <SFML/Window/Event.hpp>
+#include <SFML/Window/GraphicsContext.hpp>
+#include <SFML/Window/VideoMode.hpp>
+
+#include <cstdlib>
 
 // Here is a small helper for you! Have a look.
 #include "ResourcePath.hpp"
+#include <SFML/Window/EventUtils.hpp>
+
 
 int main()
 {
+    // Create the graphics context
+    sf::GraphicsContext graphicsContext;
+
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+    sf::RenderWindow window(graphicsContext, sf::VideoMode({800, 600}), "SFML window");
 
     // Set the Icon
-    const sf::Image icon(resourcePath() / "icon.png");
+    const auto icon = sf::Image::loadFromFile(resourcePath() / "icon.png").value();
     window.setIcon(icon);
 
     // Load a sprite to display
-    const sf::Texture texture(resourcePath() / "background.jpg");
-    sf::Sprite        sprite(texture);
+    const auto texture = sf::Texture::loadFromFile(graphicsContext, resourcePath() / "background.jpg").value();
+    sf::Sprite sprite(texture.getRect());
 
     // Create a graphical text to display
-    const sf::Font font(resourcePath() / "tuffy.ttf");
-    sf::Text       text(font, "Hello SFML", 50);
+    const auto font = sf::Font::openFromFile(graphicsContext, resourcePath() / "tuffy.ttf").value();
+    sf::Text   text(font, "Hello SFML", 50);
     text.setFillColor(sf::Color::Black);
 
     // Load a music to play
@@ -49,30 +65,20 @@ int main()
     music.play();
 
     // Start the game loop
-    while (window.isOpen())
+    while (true)
     {
         // Process events
-        while (const auto event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
-            // Close window: exit
-            if (event.is<sf::Event::Closed>())
-            {
-                window.close();
-            }
-
-            // Escape pressed: exit
-            if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>();
-                keyPressed && keyPressed->code == sf::Keyboard::Key::Escape)
-            {
-                window.close();
-            }
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
         }
 
         // Clear screen
         window.clear();
 
         // Draw the sprite
-        window.draw(sprite);
+        window.draw(sprite, texture);
 
         // Draw the string
         window.draw(text);

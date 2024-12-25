@@ -1,45 +1,32 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundSource.hpp>
+#include "SFML/Audio/SoundSource.hpp"
 
-#include <memory>
+#include "SFML/System/LifetimeDependant.hpp"
 
-#include <cstdlib>
+#include "SFML/Base/UniquePtr.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class EffectProcessor;
+class PlaybackDevice;
+class SoundBuffer;
+class Time;
+} // namespace sf
+
 
 namespace sf
 {
-class Time;
-class SoundBuffer;
-
 ////////////////////////////////////////////////////////////
 /// \brief Regular sound that can be played in the audio environment
 ///
@@ -53,7 +40,7 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    explicit Sound(const SoundBuffer& buffer);
+    [[nodiscard]] explicit Sound(const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
@@ -64,10 +51,26 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Copy constructor
     ///
-    /// \param copy Instance to copy
+    ////////////////////////////////////////////////////////////
+    Sound(const Sound& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Sound(const Sound& copy);
+    Sound& operator=(const Sound& rhs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Sound(Sound&& rhs) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Sound& operator=(Sound&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -87,7 +90,7 @@ public:
     /// \see `pause`, `stop`
     ///
     ////////////////////////////////////////////////////////////
-    void play() override;
+    void play(PlaybackDevice&) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound
@@ -133,21 +136,6 @@ public:
     void setBuffer(const SoundBuffer&& buffer) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set whether or not the sound should loop after reaching the end
-    ///
-    /// If set, the sound will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// `setLooping(false)` is called.
-    /// The default looping state for sound is `false`.
-    ///
-    /// \param loop `true` to play in loop, `false` to play once
-    ///
-    /// \see `isLooping`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setLooping(bool loop);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
     ///
     /// The playing position can be changed when the sound is
@@ -155,12 +143,12 @@ public:
     /// when the sound is stopped has no effect, since playing
     /// the sound will reset its position.
     ///
-    /// \param timeOffset New playing position, from the beginning of the sound
+    /// \param playingOffset New playing position, from the beginning of the sound
     ///
     /// \see `getPlayingOffset`
     ///
     ////////////////////////////////////////////////////////////
-    void setPlayingOffset(Time timeOffset);
+    void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the effect processor to be applied to the sound
@@ -182,16 +170,6 @@ public:
     [[nodiscard]] const SoundBuffer& getBuffer() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the sound is in loop mode
-    ///
-    /// \return `true` if the sound is looping, `false` otherwise
-    ///
-    /// \see `setLooping`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isLooping() const;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the current playing position of the sound
     ///
     /// \return Current playing position, from the beginning of the sound
@@ -199,7 +177,7 @@ public:
     /// \see `setPlayingOffset`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const;
+    [[nodiscard]] Time getPlayingOffset() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the sound (stopped, paused, playing)
@@ -208,16 +186,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status getStatus() const override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Overload of assignment operator
-    ///
-    /// \param right Instance to assign
-    ///
-    /// \return Reference to self
-    ///
-    ////////////////////////////////////////////////////////////
-    Sound& operator=(const Sound& right);
 
 private:
     friend class SoundBuffer;
@@ -243,7 +211,12 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(SoundBuffer);
 };
 
 } // namespace sf
@@ -274,7 +247,7 @@ private:
 ///
 /// Usage example:
 /// \code
-/// const sf::SoundBuffer buffer("sound.wav");
+/// const auto buffer = sf::SoundBuffer::loadFromFile("sound.wav").value();
 /// sf::Sound sound(buffer);
 /// sound.play();
 /// \endcode

@@ -1,27 +1,35 @@
-#include <SFML/Graphics/Color.hpp>
+#include "SFML/Graphics/Color.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/TrivialVector.hpp"
 
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
-#include <type_traits>
-#include <vector>
+
 
 TEST_CASE("[Graphics] sf::Color")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Color>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Color>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Color>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Color>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Color>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Color));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Color)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Color));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Color, sf::Color));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Color color;
+            constexpr sf::Color color{};
             STATIC_CHECK(color.r == 0);
             STATIC_CHECK(color.g == 0);
             STATIC_CHECK(color.b == 0);
@@ -46,11 +54,11 @@ TEST_CASE("[Graphics] sf::Color")
             STATIC_CHECK(color.a == 4);
         }
 
-        SECTION("std::int32_t constructor")
+        SECTION("sf::base::I32 constructor")
         {
-            STATIC_CHECK(sf::Color(0x00000000) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color(0x01020304) == sf::Color(1, 2, 3, 4));
-            STATIC_CHECK(sf::Color(0xFFFFFFFF) == sf::Color(255, 255, 255, 255));
+            STATIC_CHECK(sf::Color::fromRGBA(0x00000000) == sf::Color(0, 0, 0, 0));
+            STATIC_CHECK(sf::Color::fromRGBA(0x01020304) == sf::Color(1, 2, 3, 4));
+            STATIC_CHECK(sf::Color::fromRGBA(0xFFFFFFFF) == sf::Color(255, 255, 255, 255));
         }
     }
 
@@ -151,13 +159,17 @@ TEST_CASE("[Graphics] sf::Color")
         STATIC_CHECK(sf::Color::Transparent == sf::Color(0, 0, 0, 0));
     }
 
-    SECTION("Reinterpret as std::uint8_t*")
+    SECTION("Reinterpret as sf::base::U8*")
     {
         STATIC_CHECK(sizeof(sf::Color) == 4);
         STATIC_CHECK(alignof(sf::Color) == 1);
 
-        const std::vector<sf::Color> pixels = {{10, 11, 12, 13}, {14, 15, 16, 17}, {18, 19, 20, 21}};
-        const auto*                  begin  = reinterpret_cast<const std::uint8_t*>(pixels.data());
+        sf::base::TrivialVector<sf::Color> pixels(3);
+        pixels[0] = {10, 11, 12, 13};
+        pixels[1] = {14, 15, 16, 17};
+        pixels[2] = {18, 19, 20, 21};
+
+        const auto* begin = reinterpret_cast<const sf::base::U8*>(pixels.data());
         CHECK(begin[0] == pixels[0].r);
         CHECK(begin[1] == pixels[0].g);
         CHECK(begin[2] == pixels[0].b);

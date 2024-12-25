@@ -1,52 +1,25 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Vulkan.hpp>
+#include "SFML/Window/Vulkan.hpp"
 
-#include <cassert>
+#include "SFML/Base/Assert.hpp"
 
-#if defined(SFML_SYSTEM_WINDOWS)
+#ifdef SFML_SYSTEM_WINDOWS
 
-#include <SFML/Window/VulkanImpl.hpp>
+#include "SFML/Window/VulkanImpl.hpp"
 
-#elif defined(SFML_SYSTEM_LINUX) || defined(SFML_SYSTEM_FREEBSD) || defined(SFML_SYSTEM_OPENBSD) || \
-    defined(SFML_SYSTEM_NETBSD)
+#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
-#if defined(SFML_USE_DRM)
-
+#ifdef SFML_USE_DRM
 #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-
 #else
-
-#include <SFML/Window/VulkanImpl.hpp>
-
+#include "SFML/Window/VulkanImpl.hpp"
 #endif
 
-#else
+#else // not Windows nor Unix
 
 #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
@@ -58,7 +31,7 @@ namespace sf::Vulkan
 ////////////////////////////////////////////////////////////
 bool isAvailable([[maybe_unused]] bool requireGraphics)
 {
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
     return false;
 
@@ -73,9 +46,9 @@ bool isAvailable([[maybe_unused]] bool requireGraphics)
 ////////////////////////////////////////////////////////////
 VulkanFunctionPointer getFunction([[maybe_unused]] const char* name)
 {
-    assert(name && "Name cannot be a null pointer");
+    SFML_BASE_ASSERT(name != nullptr && "Name cannot be a null pointer");
 
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
     return nullptr;
 
@@ -88,13 +61,11 @@ VulkanFunctionPointer getFunction([[maybe_unused]] const char* name)
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<const char*>& getGraphicsRequiredInstanceExtensions()
+base::Span<const char* const> getGraphicsRequiredInstanceExtensions()
 {
-#if defined(SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE)
+#ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
-    static const std::vector<const char*> empty;
-
-    return empty;
+    return {};
 
 #else
 

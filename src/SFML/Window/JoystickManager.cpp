@@ -1,101 +1,81 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickManager.hpp>
+#include "SFML/Window/JoystickIdentification.hpp"
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/JoystickManager.hpp"
 
-#include <cassert>
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-JoystickManager& JoystickManager::getInstance()
+struct JoystickManager::Impl
 {
-    static JoystickManager instance;
-    return instance;
+    JoystickImpl           impls[Joystick::MaxCount];           //!< Joystick implementations
+    JoystickState          states[Joystick::MaxCount];          //!< Joystick states
+    JoystickCapabilities   capabilities[Joystick::MaxCount];    //!< Joystick capabilities
+    JoystickIdentification identifications[Joystick::MaxCount]; //!< Joystick identifications
+};
+
+
+////////////////////////////////////////////////////////////
+const JoystickCapabilities& JoystickManager::getCapabilities(unsigned int joystickId) const
+{
+    SFML_BASE_ASSERT(joystickId < Joystick::MaxCount && "Joystick index must be less than `Joystick::MaxCount`");
+    return m_impl->capabilities[joystickId];
 }
 
 
 ////////////////////////////////////////////////////////////
-const JoystickCaps& JoystickManager::getCapabilities(unsigned int joystick) const
+const JoystickState& JoystickManager::getState(unsigned int joystickId) const
 {
-    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
-    return m_joysticks[joystick].capabilities;
+    SFML_BASE_ASSERT(joystickId < Joystick::MaxCount && "Joystick index must be less than `Joystick::MaxCount`");
+    return m_impl->states[joystickId];
 }
 
 
 ////////////////////////////////////////////////////////////
-const JoystickState& JoystickManager::getState(unsigned int joystick) const
+const JoystickIdentification& JoystickManager::getIdentification(unsigned int joystickId) const
 {
-    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
-    return m_joysticks[joystick].state;
-}
-
-
-////////////////////////////////////////////////////////////
-const Joystick::Identification& JoystickManager::getIdentification(unsigned int joystick) const
-{
-    assert(joystick < Joystick::Count && "Joystick index must be less than Joystick::Count");
-    return m_joysticks[joystick].identification;
+    SFML_BASE_ASSERT(joystickId < Joystick::MaxCount && "Joystick index must be less than `Joystick::MaxCount`");
+    return m_impl->identifications[joystickId];
 }
 
 
 ////////////////////////////////////////////////////////////
 void JoystickManager::update()
 {
-    for (unsigned int i = 0; i < Joystick::Count; ++i)
+    for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        Item& item = m_joysticks[i];
+        auto& [impls, states, capabilities, identifications] = *m_impl;
 
-        if (item.state.connected)
+        if (states[i].connected)
         {
             // Get the current state of the joystick
-            item.state = item.joystick.update();
+            states[i] = impls[i].update();
 
             // Check if it's still connected
-            if (!item.state.connected)
+            if (!states[i].connected)
             {
-                item.joystick.close();
-                item.capabilities   = JoystickCaps();
-                item.state          = JoystickState();
-                item.identification = Joystick::Identification();
+                impls[i].close();
+
+                capabilities[i]    = {};
+                states[i]          = {};
+                identifications[i] = {};
             }
         }
         else
         {
             // Check if the joystick was connected since last update
-            if (JoystickImpl::isConnected(i))
+            if (JoystickImpl::isConnected(i) && impls[i].open(i))
             {
-                if (item.joystick.open(i))
-                {
-                    item.capabilities   = item.joystick.getCapabilities();
-                    item.state          = item.joystick.update();
-                    item.identification = item.joystick.getIdentification();
-                }
+                capabilities[i]    = impls[i].getCapabilities();
+                states[i]          = impls[i].update();
+                identifications[i] = impls[i].getIdentification();
             }
         }
     }
@@ -112,11 +92,9 @@ JoystickManager::JoystickManager()
 ////////////////////////////////////////////////////////////
 JoystickManager::~JoystickManager()
 {
-    for (Item& item : m_joysticks)
-    {
-        if (item.state.connected)
-            item.joystick.close();
-    }
+    for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
+        if (m_impl->states[i].connected)
+            m_impl->impls[i].close();
 
     JoystickImpl::cleanup();
 }

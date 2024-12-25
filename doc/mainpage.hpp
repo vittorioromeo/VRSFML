@@ -12,8 +12,17 @@
 ///
 /// \code
 ///
-/// #include <SFML/Audio.hpp>
-/// #include <SFML/Graphics.hpp>
+/// #include <SFML/Audio/Music.hpp>
+///
+/// #include <SFML/Graphics/RenderWindow.hpp>
+/// #include <SFML/Graphics/Text.hpp>
+/// #include <SFML/Graphics/Texture.hpp>
+/// #include <SFML/Graphics/Sprite.hpp>
+///
+/// #include <SFML/Window/Event.hpp>
+/// #include <SFML/Window/VideoMode.hpp>
+///
+/// #include <SFML/Base/Optional.hpp>
 ///
 /// int main()
 /// {
@@ -21,35 +30,35 @@
 ///     sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
 ///
 ///     // Load a sprite to display
-///     const sf::Texture texture("cute_image.jpg");
-///     sf::Sprite sprite(texture);
+///     const auto texture = sf::Texture::loadFromFile("cute_image.jpg").value();
+///     sf::Sprite sprite(texture.getRect());
 ///
 ///     // Create a graphical text to display
-///     const sf::Font font("arial.ttf");
+///     const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///     sf::Text text(font, "Hello SFML", 50);
 ///
 ///     // Load a music to play
-///     sf::Music music("nice_music.ogg");
+///     auto music = sf::Music::openFromFile("nice_music.ogg").value();
 ///
 ///     // Play the music
 ///     music.play();
 ///
 ///     // Start the game loop
-///     while (window.isOpen())
+///     while (true)
 ///     {
 ///         // Process events
-///         while (const std::optional event = window.pollEvent())
+///         while (const sf::base::Optional event = window.pollEvent())
 ///         {
 ///             // Close window: exit
 ///             if (event->is<sf::Event::Closed>())
-///                 window.close();
+///                 return 0;
 ///         }
 ///
 ///         // Clear screen
 ///         window.clear();
 ///
 ///         // Draw the sprite
-///         window.draw(sprite);
+///         window.draw(sprite, texture);
 ///
 ///         // Draw the string
 ///         window.draw(text);

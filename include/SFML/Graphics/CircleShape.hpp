@@ -1,39 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Shape.hpp>
+#include "SFML/Graphics/Shape.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf
@@ -46,13 +23,25 @@ class SFML_GRAPHICS_API CircleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// \param radius     Radius of the circle
-    /// \param pointCount Number of points composing the circle
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    explicit CircleShape(float radius = 0, std::size_t pointCount = 30);
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        float        radius{0.f};     //!< Radius of the circle
+        unsigned int pointCount{30u}; //!< Number of points composing the circle
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// \param settings Settings of the circle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit CircleShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
@@ -77,12 +66,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the circle
     ///
-    /// \param count New number of points of the circle
+    /// \param pointCount New number of points of the circle
     ///
     /// \see `getPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    void setPointCount(std::size_t count);
+    void setPointCount(unsigned int pointCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points of the circle
@@ -92,7 +81,7 @@ public:
     /// \see `setPointCount`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const override;
+    [[nodiscard]] unsigned int getPointCount() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the circle
@@ -107,7 +96,7 @@ public:
     /// \return `index`-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the circle
@@ -119,14 +108,20 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const override;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Recompute the circle geometry
+    ///
+    ////////////////////////////////////////////////////////////
+    void updateCircleGeometry();
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float       m_radius;     //!< Radius of the circle
-    std::size_t m_pointCount; //!< Number of points composing the circle
+    float        m_radius;     //!< Radius of the circle
+    unsigned int m_pointCount; //!< Number of points composing the circle
 };
 
 } // namespace sf
@@ -142,11 +137,10 @@ private:
 ///
 /// Usage example:
 /// \code
-/// sf::CircleShape circle;
-/// circle.setRadius(150);
+/// sf::CircleShape circle(150.f);
 /// circle.setOutlineColor(sf::Color::Red);
 /// circle.setOutlineThickness(5);
-/// circle.setPosition({10, 20});
+/// circle.position = {10, 20};
 /// ...
 /// window.draw(circle);
 /// \endcode

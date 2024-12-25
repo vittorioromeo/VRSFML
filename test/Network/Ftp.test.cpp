@@ -1,27 +1,29 @@
-#include <SFML/Network/Ftp.hpp>
+#include "SFML/Network/Ftp.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
+#include <StringifyPathUtil.hpp>
+#include <StringifyVectorUtil.hpp>
 
 TEST_CASE("[Network] sf::Ftp")
 {
     SECTION("Type traits")
     {
-        static_assert(!std::is_copy_constructible_v<sf::Ftp>);
-        static_assert(!std::is_copy_assignable_v<sf::Ftp>);
-        static_assert(!std::is_nothrow_move_constructible_v<sf::Ftp>);
-        static_assert(!std::is_nothrow_move_assignable_v<sf::Ftp>);
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Ftp));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Ftp));
     }
 
     SECTION("Response")
     {
         SECTION("Type traits")
         {
-            static_assert(std::is_copy_constructible_v<sf::Ftp::Response>);
-            static_assert(std::is_copy_assignable_v<sf::Ftp::Response>);
-            static_assert(std::is_nothrow_move_constructible_v<sf::Ftp::Response>);
-            static_assert(std::is_nothrow_move_assignable_v<sf::Ftp::Response>);
+            STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Ftp::Response));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Ftp::Response));
         }
 
         SECTION("Construction")
@@ -96,7 +98,9 @@ TEST_CASE("[Network] sf::Ftp")
         {
             const sf::Ftp::ListingResponse listingResponse(sf::Ftp::Response(sf::Ftp::Response::Status::Ok),
                                                            "foo\r\nbar\r\nbaz");
-            CHECK(listingResponse.getListing() == std::vector<std::string>{"foo", "bar"});
+
+            const std::vector<std::string> vec{"foo", "bar"};
+            CHECK(listingResponse.getListing().valueEquals(vec.data(), vec.size()));
         }
     }
 }

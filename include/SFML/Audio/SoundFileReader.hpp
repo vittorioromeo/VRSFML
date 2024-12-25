@@ -1,46 +1,28 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
 
-#include <optional>
-#include <vector>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class InputStream;
+} // namespace sf
 
 
 namespace sf
 {
-class InputStream;
-
 ////////////////////////////////////////////////////////////
 /// \brief Abstract base class for sound file decoding
 ///
@@ -54,10 +36,10 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        std::uint64_t             sampleCount{};  //!< Total number of samples in the file
-        unsigned int              channelCount{}; //!< Number of channels of the sound
-        unsigned int              sampleRate{};   //!< Samples rate of the sound, in samples per second
-        std::vector<SoundChannel> channelMap;     //!< Map of position in sample frame to sound channel
+        base::U64    sampleCount{};  //!< Total number of samples in the file
+        unsigned int channelCount{}; //!< Number of channels of the sound
+        unsigned int sampleRate{};   //!< Samples rate of the sound, in samples per second
+        ChannelMap   channelMap;     //!< Map of position in sample frame to sound channel
     };
 
     ////////////////////////////////////////////////////////////
@@ -75,10 +57,10 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return Properties of the loaded sound if the file was successfully opened
+    /// \return Properties of the loaded sound on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual std::optional<Info> open(InputStream& stream) = 0;
+    [[nodiscard]] virtual base::Optional<Info> open(InputStream& stream) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -93,7 +75,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    virtual void seek(std::uint64_t sampleOffset) = 0;
+    virtual void seek(base::U64 sampleOffset) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -104,7 +86,7 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) = 0;
+    [[nodiscard]] virtual base::U64 read(base::I16* samples, base::U64 maxCount) = 0;
 };
 
 } // namespace sf
@@ -137,20 +119,20 @@ public:
 ///         // return true if the reader can handle the format
 ///     }
 ///
-///     [[nodiscard]] std::optional<sf::SoundFileReader::Info> open(sf::InputStream& stream) override
+///     [[nodiscard]] sf::base::Optional<sf::SoundFileReader::Info> open(sf::InputStream& stream) override
 ///     {
 ///         // read the sound file header and fill the sound attributes
 ///         // (channel count, sample count and sample rate)
 ///         // return true on success
 ///     }
 ///
-///     void seek(std::uint64_t sampleOffset) override
+///     void seek(base::U64 sampleOffset) override
 ///     {
 ///         // advance to the sampleOffset-th sample from the beginning of the
 ///         sound
 ///     }
 ///
-///     std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override
+///     base::U64 read(base::I16* samples, base::U64 maxCount) override
 ///     {
 ///         // read up to 'maxCount' samples into the 'samples' array,
 ///         // convert them (for example from normalized float) if they are not stored
