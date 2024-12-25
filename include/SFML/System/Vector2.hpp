@@ -1,32 +1,14 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-#include <SFML/System/Export.hpp>
 
-#include <SFML/System/Angle.hpp>
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class Angle;
+} // namespace sf
 
 
 namespace sf
@@ -37,33 +19,9 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class Vector2
+class [[nodiscard]] Vector2
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates a `Vector2(0, 0)`.
-    ///
-    ////////////////////////////////////////////////////////////
-    constexpr Vector2() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the vector from cartesian coordinates
-    ///
-    /// \param x X coordinate
-    /// \param y Y coordinate
-    ///
-    ////////////////////////////////////////////////////////////
-    constexpr Vector2(T x, T y);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Converts the vector to another type of vector
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename U>
-    constexpr explicit operator Vector2<U>() const;
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct the vector from polar coordinates <i><b>(floating-point)</b></i>
     ///
@@ -78,7 +36,7 @@ public:
     /// * `Vector2(r, phi) == Vector2(r, phi + n * 360_deg)`
     ///
     ////////////////////////////////////////////////////////////
-    SFML_SYSTEM_API Vector2(T r, Angle phi);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] static inline constexpr Vector2 fromAngle(T r, Angle phi);
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
@@ -86,7 +44,7 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API T length() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T length() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -94,7 +52,7 @@ public:
     /// Suitable for comparisons, more efficient than `length()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr T lengthSquared() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T lengthSquared() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -102,7 +60,7 @@ public:
     /// \pre `*this` is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API Vector2 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 normalized() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from `*this` to `rhs` <i><b>(floating-point)</b></i>.
@@ -113,7 +71,7 @@ public:
     /// \pre Neither `*this` nor `rhs` is a zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API Angle angleTo(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angleTo(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from +X or (1,0) vector <i><b>(floating-point)</b></i>.
@@ -124,7 +82,7 @@ public:
     /// \pre This vector is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API Angle angle() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Rotate by angle \c phi <i><b>(floating-point)</b></i>.
@@ -135,7 +93,19 @@ public:
     /// this amounts to a clockwise rotation by `phi`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API Vector2 rotatedBy(Angle phi) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 rotatedBy(Angle phi) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move towards angle \c phi <i><b>(floating-point)</b></i> by \c r.
+    ///
+    /// Returns a vector starting at the position of the original, but moved by \c r
+    /// units in the direction of \c phi.
+    ///
+    /// In SFML's default coordinate system with +X rhs and +Y down,
+    /// this amounts to a clockwise rotation by \c phi.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 movedTowards(T r, Angle phi) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Projection of this vector onto `axis` <i><b>(floating-point)</b></i>.
@@ -144,7 +114,7 @@ public:
     /// \pre `axis` must not have length zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_SYSTEM_API Vector2 projectedOnto(Vector2 axis) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 projectedOnto(Vector2 axis) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a perpendicular vector.
@@ -152,17 +122,17 @@ public:
     /// Returns `*this` rotated by +90 degrees; (x,y) becomes (-y,x).
     /// For example, the vector (1,0) is transformed to (0,1).
     ///
-    /// In SFML's default coordinate system with +X right and +Y down,
+    /// In SFML's default coordinate system with +X rhs and +Y down,
     /// this amounts to a clockwise rotation.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 perpendicular() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 perpendicular() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 2D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr T dot(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T dot(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Z component of the cross product of two 2D vectors.
@@ -171,7 +141,7 @@ public:
     /// and returns the result's Z component (X and Y components are always zero).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr T cross(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T cross(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of `*this` and `rhs`.
@@ -182,7 +152,7 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 componentWiseMul(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseMul(Vector2 rhs) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of `*this` and `rhs`.
@@ -194,8 +164,36 @@ public:
     /// \pre Neither component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert to another `Vector2` of type `OtherVector2`
+    ///
+    /// `OtherVector2` must be a `Vector2<...>` type.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename OtherVector2>
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector2 to() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief More convenient conversion functions
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int>   toVector2i() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<float> toVector2f() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator==`
+    ///
+    /// This operator compares strict equality between two vectors.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if `lhs` is equal to `rhs`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr bool operator==(const Vector2& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -213,176 +211,157 @@ using Vector2f = Vector2<float>;
 /// \relates Vector2
 /// \brief Overload of unary `operator-`
 ///
-/// \param right Vector to negate
+/// \param rhs Vector to negate
 ///
 /// \return Member-wise opposite of the vector
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator-(Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator+=`
 ///
 /// This operator performs a member-wise addition of both vectors,
-/// and assigns the result to `left`.
+/// and assigns the result to `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Reference to `left`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator+=(Vector2<T>& left, Vector2<T> right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator+=(Vector2<T>& lhs, Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator-=`
 ///
 /// This operator performs a member-wise subtraction of both vectors,
-/// and assigns the result to `left`.
+/// and assigns the result to `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Reference to \c left
+/// \return Reference to \c lhs
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator-=(Vector2<T>& left, Vector2<T> right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator-=(Vector2<T>& lhs, Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator+`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
 /// \return Member-wise addition of both vectors
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator+(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator+(Vector2<T> lhs, Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator-`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a vector)
 ///
 /// \return Member-wise subtraction of both vectors
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator-(Vector2<T> left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> lhs, Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator*`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise multiplication by `right`
+/// \return Member-wise multiplication by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator*(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(Vector2<T> lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator*`
 ///
-/// \param left  Left operand (a scalar value)
-/// \param right Right operand (a vector)
+/// \param lhs  Left operand (a scalar value)
+/// \param rhs Right operand (a vector)
 ///
-/// \return Member-wise multiplication by `left`
+/// \return Member-wise multiplication by `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator*(T left, Vector2<T> right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(T lhs, Vector2<T> rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator*=`
 ///
-/// This operator performs a member-wise multiplication by `right`,
-/// and assigns the result to `left`.
+/// This operator performs a member-wise multiplication by `rhs`,
+/// and assigns the result to `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to `left`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-constexpr Vector2<T>& operator*=(Vector2<T>& left, T right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator*=(Vector2<T>& lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator/`
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Member-wise division by `right`
+/// \return Member-wise division by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr Vector2<T> operator/(Vector2<T> left, T right);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator/(Vector2<T> lhs, T rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
 /// \brief Overload of binary `operator/=`
 ///
-/// This operator performs a member-wise division by `right`,
-/// and assigns the result to `left`.
+/// This operator performs a member-wise division by `rhs`,
+/// and assigns the result to `lhs`.
 ///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a scalar value)
+/// \param lhs  Left operand (a vector)
+/// \param rhs Right operand (a scalar value)
 ///
-/// \return Reference to `left`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-constexpr Vector2<T>& operator/=(Vector2<T>& left, T right);
-
-////////////////////////////////////////////////////////////
-/// \relates Vector2
-/// \brief Overload of binary `operator==`
-///
-/// This operator compares strict equality between two vectors.
-///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
-///
-/// \return `true` if `left` is equal to `right`
+/// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] constexpr bool operator==(Vector2<T> left, Vector2<T> right);
-
-////////////////////////////////////////////////////////////
-/// \relates Vector2
-/// \brief Overload of binary `operator!=`
-///
-/// This operator compares strict difference between two vectors.
-///
-/// \param left  Left operand (a vector)
-/// \param right Right operand (a vector)
-///
-/// \return `true` if `left` is not equal to `right`
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard]] constexpr bool operator!=(Vector2<T> left, Vector2<T> right);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator/=(Vector2<T>& lhs, T rhs);
 
 } // namespace sf
 
-#include <SFML/System/Vector2.inl>
+
+////////////////////////////////////////////////////////////
+// Explicit instantiation declarations
+////////////////////////////////////////////////////////////
+extern template class sf::Vector2<float>;
+extern template class sf::Vector2<double>;
+extern template class sf::Vector2<long double>;
+extern template class sf::Vector2<bool>;
+extern template class sf::Vector2<int>;
+extern template class sf::Vector2<unsigned int>;
+
+#include "SFML/System/Vector2.inl"
 
 
 ////////////////////////////////////////////////////////////

@@ -1,50 +1,24 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
+#include "SFML/Window/ContextSettings.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <memory>
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 namespace sf
 {
-namespace priv
-{
-class RenderTextureImpl;
-}
+class Texture;
 
 ////////////////////////////////////////////////////////////
 /// \brief Target for off-screen 2D rendering into a texture
@@ -53,35 +27,6 @@ class RenderTextureImpl;
 class SFML_GRAPHICS_API RenderTexture : public RenderTarget
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructs a render-texture with width 0 and height 0.
-    ///
-    /// \see `resize`
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderTexture();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a render-texture
-    ///
-    /// The last parameter, `settings`, is useful if you want to enable
-    /// multi-sampling or use the render-texture for OpenGL rendering that
-    /// requires a depth or stencil buffer. Otherwise it is unnecessary, and
-    /// you should leave this parameter at its default value.
-    ///
-    /// After creation, the contents of the render-texture are undefined.
-    /// Call `RenderTexture::clear` first to ensure a single color fill.
-    ///
-    /// \param size     Width and height of the render-texture
-    /// \param settings Additional settings for the underlying OpenGL texture and context
-    ///
-    /// \throws sf::Exception if creation was unsuccessful
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderTexture(Vector2u size, const ContextSettings& settings = {});
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -113,23 +58,23 @@ public:
     RenderTexture& operator=(RenderTexture&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Resize the render-texture
+    /// \brief Create the render-texture
     ///
     /// The last parameter, `settings`, is useful if you want to enable
     /// multi-sampling or use the render-texture for OpenGL rendering that
     /// requires a depth or stencil buffer. Otherwise it is unnecessary, and
     /// you should leave this parameter at its default value.
     ///
-    /// After resizing, the contents of the render-texture are undefined.
+    /// After creation, the contents of the render-texture are undefined.
     /// Call `RenderTexture::clear` first to ensure a single color fill.
     ///
     /// \param size     Width and height of the render-texture
     /// \param settings Additional settings for the underlying OpenGL texture and context
     ///
-    /// \return `true` if resizing has been successful, `false` if it failed
+    /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool resize(Vector2u size, const ContextSettings& settings = {});
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -267,12 +212,20 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Texture& getTexture() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Construct from texture
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture);
+
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::unique_ptr<priv::RenderTextureImpl> m_impl;    //!< Platform/hardware specific implementation
-    Texture                                  m_texture; //!< Target texture to draw on
+    struct Impl;
+    base::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -298,34 +251,32 @@ private:
 ///
 /// \code
 /// // Create a new render-window
-/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // Create a new render-texture
-/// sf::RenderTexture texture({500, 500});
+/// auto renderTexture = sf::RenderTexture::create({500, 500}).value();
 ///
 /// // The main loop
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
 ///    // ...
 ///
 ///    // Clear the whole texture with red color
-///    texture.clear(sf::Color::Red);
+///    renderTexture.clear(sf::Color::Red);
 ///
 ///    // Draw stuff to the texture
-///    texture.draw(sprite);  // sprite is a sf::Sprite
-///    texture.draw(shape);   // shape is a sf::Shape
-///    texture.draw(text);    // text is a sf::Text
+///    renderTexture.draw(shape);   // shape is a sf::Shape
+///    renderTexture.draw(text);    // text is a sf::Text
 ///
 ///    // We're done drawing to the texture
-///    texture.display();
+///    renderTexture.display();
 ///
 ///    // Now we start rendering to the window, clear it first
 ///    window.clear();
 ///
 ///    // Draw the texture
-///    sf::Sprite sprite(texture.getTexture());
-///    window.draw(sprite);
+///    window.draw(renderTexture.getTexture());
 ///
 ///    // End the current frame and display its contents on screen
 ///    window.display();

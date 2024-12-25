@@ -1,53 +1,33 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Sensor.hpp>
-#include <SFML/Window/SensorManager.hpp>
+#include "SFML/Window/Sensor.hpp"
+#include "SFML/Window/SensorManager.hpp"
+#include "SFML/Window/WindowContext.hpp"
 
 
-namespace sf::Sensor
+namespace sf
 {
-
 ////////////////////////////////////////////////////////////
-bool isAvailable(Type sensor)
+bool Sensor::isAvailable(Type sensor)
 {
-    return priv::SensorManager::getInstance().isAvailable(sensor);
+    return WindowContext::getSensorManager().isAvailable(sensor);
 }
 
-////////////////////////////////////////////////////////////
-void setEnabled(Type sensor, bool enabled)
-{
-    priv::SensorManager::getInstance().setEnabled(sensor, enabled);
-}
 
 ////////////////////////////////////////////////////////////
-Vector3f getValue(Type sensor)
+void Sensor::setEnabled(Type sensor, bool enabled)
 {
-    return priv::SensorManager::getInstance().getValue(sensor);
+    WindowContext::getSensorManager().setEnabled(sensor, enabled);
 }
 
-} // namespace sf::Sensor
+
+////////////////////////////////////////////////////////////
+Vector3f Sensor::getValue(Type sensor)
+{
+    return WindowContext::getSensorManager().getValue(sensor);
+}
+
+} // namespace sf

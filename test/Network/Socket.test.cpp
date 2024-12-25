@@ -1,13 +1,15 @@
-#include <SFML/Network/Socket.hpp>
+#include "SFML/Network/Socket.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/Macros.hpp"
 
-#include <type_traits>
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
 
 class TestSocket : public sf::Socket
 {
 public:
-    TestSocket() : sf::Socket(sf::Socket::Type::Udp)
+    TestSocket() : sf::Socket(sf::Socket::Type::Udp, /* isBlocking */ true)
     {
     }
 
@@ -20,11 +22,12 @@ TEST_CASE("[Network] sf::Socket")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::Socket>);
-        STATIC_CHECK(!std::is_copy_constructible_v<sf::Socket>);
-        STATIC_CHECK(!std::is_copy_assignable_v<sf::Socket>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Socket>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Socket>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Socket));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Socket));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Socket));
+        STATIC_CHECK(!SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Socket));
     }
 
     SECTION("Constants")
@@ -47,8 +50,8 @@ TEST_CASE("[Network] sf::Socket")
         {
             TestSocket movedTestSocket;
             movedTestSocket.setBlocking(false);
-            movedTestSocket.create();
-            const TestSocket testSocket(std::move(movedTestSocket));
+            CHECK(movedTestSocket.create());
+            const TestSocket testSocket(SFML_BASE_MOVE(movedTestSocket));
             CHECK(!testSocket.isBlocking());
             CHECK(testSocket.getNativeHandle() != invalidHandle);
         }
@@ -57,9 +60,9 @@ TEST_CASE("[Network] sf::Socket")
         {
             TestSocket movedTestSocket;
             movedTestSocket.setBlocking(false);
-            movedTestSocket.create();
+            CHECK(movedTestSocket.create());
             TestSocket testSocket;
-            testSocket = std::move(movedTestSocket);
+            testSocket = SFML_BASE_MOVE(movedTestSocket);
             CHECK(!testSocket.isBlocking());
             CHECK(testSocket.getNativeHandle() != invalidHandle);
         }
@@ -75,12 +78,12 @@ TEST_CASE("[Network] sf::Socket")
     SECTION("create()")
     {
         TestSocket testSocket;
-        testSocket.create();
+        CHECK(testSocket.create());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
 
         // Recreate socket to ensure nothing changed
-        testSocket.create();
+        CHECK(!testSocket.create()); // Fails because socket was already created
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
     }
@@ -88,15 +91,15 @@ TEST_CASE("[Network] sf::Socket")
     SECTION("close()")
     {
         TestSocket testSocket;
-        testSocket.create();
+        CHECK(testSocket.create());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() != invalidHandle);
-        testSocket.close();
+        CHECK(testSocket.close());
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() == invalidHandle);
 
         // Reclose socket to ensure nothing changed
-        testSocket.close();
+        CHECK(!testSocket.close()); // Fails because socket was already closed
         CHECK(testSocket.isBlocking());
         CHECK(testSocket.getNativeHandle() == invalidHandle);
     }

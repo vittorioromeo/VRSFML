@@ -1,89 +1,109 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/Shape.hpp>
-#include <SFML/Graphics/Texture.hpp>
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/Shape.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/Transformable.hpp"
 
-#include <algorithm>
+#include "SFML/System/Vector2.hpp"
 
-#include <cassert>
-#include <cstddef>
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
+
 
 namespace
 {
+////////////////////////////////////////////////////////////
 // Compute the normal of a segment
-sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
 {
-    sf::Vector2f normal = (p2 - p1).perpendicular();
-    const float  length = normal.length();
-    if (length != 0.f)
-        normal /= length;
-    return normal;
+    const sf::Vector2f normal = (p2 - p1).perpendicular();
+    const float        length = normal.length();
+
+    return length != 0.f ? normal / length : normal;
 }
+
+////////////////////////////////////////////////////////////
+// Get bounds of a vertex range
+[[nodiscard]] sf::FloatRect getVertexRangeBounds(const sf::base::TrivialVector<sf::Vertex>& data)
+{
+    if (data.empty())
+        return {};
+
+    float left   = data[0].position.x;
+    float top    = data[0].position.y;
+    float right  = data[0].position.x;
+    float bottom = data[0].position.y;
+
+    for (sf::base::SizeT i = 1; i < data.size(); ++i)
+    {
+        const sf::Vector2f position = data[i].position;
+
+        // Update left and right
+        if (position.x < left)
+            left = position.x;
+        else if (position.x > right)
+            right = position.x;
+
+        // Update top and bottom
+        if (position.y < top)
+            top = position.y;
+        else if (position.y > bottom)
+            bottom = position.y;
+    }
+
+    return {{left, top}, {right - left, bottom - top}};
+}
+
 } // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-void Shape::setTexture(const Texture* texture, bool resetRect)
+Shape::Shape(const Settings& settings) :
+Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
+m_textureRect{settings.textureRect},
+m_outlineTextureRect{settings.outlineTextureRect},
+m_fillColor{settings.fillColor},
+m_outlineColor{settings.outlineColor},
+m_outlineThickness{settings.outlineThickness}
 {
-    if (texture)
-    {
-        // Recompute the texture area if requested, or if there was no texture & rect before
-        if (resetRect || (!m_texture && (m_textureRect == IntRect())))
-            setTextureRect(IntRect({0, 0}, Vector2i(texture->getSize())));
-    }
-
-    // Assign the new texture
-    m_texture = texture;
 }
 
 
 ////////////////////////////////////////////////////////////
-const Texture* Shape::getTexture() const
-{
-    return m_texture;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shape::setTextureRect(const IntRect& rect)
+void Shape::setTextureRect(const FloatRect& rect)
 {
     m_textureRect = rect;
-    updateTexCoords();
+    updateTexCoords(m_vertices);
 }
 
 
 ////////////////////////////////////////////////////////////
-const IntRect& Shape::getTextureRect() const
+void Shape::setOutlineTextureRect(const FloatRect& rect)
+{
+    m_outlineTextureRect = rect;
+    updateOutlineTexCoords(m_outlineVertices);
+}
+
+
+////////////////////////////////////////////////////////////
+const FloatRect& Shape::getTextureRect() const
 {
     return m_textureRect;
+}
+
+
+////////////////////////////////////////////////////////////
+const FloatRect& Shape::getOutlineTextureRect() const
+{
+    return m_outlineTextureRect;
 }
 
 
@@ -91,7 +111,7 @@ const IntRect& Shape::getTextureRect() const
 void Shape::setFillColor(Color color)
 {
     m_fillColor = color;
-    updateFillColors();
+    updateFillColors(m_vertices);
 }
 
 
@@ -106,7 +126,7 @@ Color Shape::getFillColor() const
 void Shape::setOutlineColor(Color color)
 {
     m_outlineColor = color;
-    updateOutlineColors();
+    updateOutlineColors(m_outlineVertices);
 }
 
 
@@ -121,7 +141,16 @@ Color Shape::getOutlineColor() const
 void Shape::setOutlineThickness(float thickness)
 {
     m_outlineThickness = thickness;
-    update(); // recompute everything because the whole shape must be offset
+
+    const base::SizeT pointCount = m_vertices.size() - 2;
+
+    base::TrivialVector<Vector2f> points;
+    points.reserve(pointCount);
+
+    for (base::SizeT i = 0; i < pointCount; ++i)
+        points.unsafeEmplaceBack(m_vertices[i + 1].position);
+
+    update(points.data(), pointCount); // recompute everything because the whole shape must be offset
 }
 
 
@@ -133,57 +162,7 @@ float Shape::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f Shape::getGeometricCenter() const
-{
-    const auto count = getPointCount();
-
-    switch (count)
-    {
-        case 0:
-            assert(false && "Cannot calculate geometric center of shape with no points");
-            return Vector2f{};
-        case 1:
-            return getPoint(0);
-        case 2:
-            return (getPoint(0) + getPoint(1)) / 2.f;
-        default: // more than two points
-            Vector2f centroid;
-            float    twiceArea = 0;
-
-            auto previousPoint = getPoint(count - 1);
-            for (std::size_t i = 0; i < count; ++i)
-            {
-                const auto  currentPoint = getPoint(i);
-                const float product      = previousPoint.cross(currentPoint);
-                twiceArea += product;
-                centroid += (currentPoint + previousPoint) * product;
-
-                previousPoint = currentPoint;
-            }
-
-            if (twiceArea != 0.f)
-            {
-                return centroid / 3.f / twiceArea;
-            }
-
-            // Fallback for no area - find the center of the bounding box
-            auto minPoint = getPoint(0);
-            auto maxPoint = minPoint;
-            for (std::size_t i = 1; i < count; ++i)
-            {
-                const auto currentPoint = getPoint(i);
-                minPoint.x              = std::min(minPoint.x, currentPoint.x);
-                maxPoint.x              = std::max(maxPoint.x, currentPoint.x);
-                minPoint.y              = std::min(minPoint.y, currentPoint.y);
-                maxPoint.y              = std::max(maxPoint.y, currentPoint.y);
-            }
-            return (maxPoint + minPoint) / 2.f;
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-FloatRect Shape::getLocalBounds() const
+const FloatRect& Shape::getLocalBounds() const
 {
     return m_bounds;
 }
@@ -197,108 +176,138 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::update()
+[[nodiscard]] base::Span<const Vertex> Shape::getFillVertices() const
 {
-    // Get the total number of points of the shape
-    const std::size_t count = getPointCount();
-    if (count < 3)
+    return {m_vertices.data(), m_vertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] base::Span<const Vertex> Shape::getOutlineVertices() const
+{
+    return {m_outlineVertices.data(), m_outlineVertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
+void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
+{
+    if (!updateImplResizeVerticesVector(pointCount))
+        return;
+
+    // Position
+    for (base::SizeT i = 0; i < pointCount; ++i)
+        m_vertices[i + 1].position = points[i];
+
+    updateImplFromVerticesPositions(pointCount);
+}
+
+
+////////////////////////////////////////////////////////////
+bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
+{
+    if (pointCount < 3u)
     {
         m_vertices.clear();
         m_outlineVertices.clear();
-        return;
+        return false;
     }
 
-    m_vertices.resize(count + 2); // + 2 for center and repeated first point
+    m_vertices.resize(pointCount + 2u); // + 2 for center and repeated first point
+    return true;
+}
 
-    // Position
-    for (std::size_t i = 0; i < count; ++i)
-        m_vertices[i + 1].position = getPoint(i);
-    m_vertices[count + 1].position = m_vertices[1].position;
+
+////////////////////////////////////////////////////////////
+void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
+{
+    m_vertices[pointCount + 1].position = m_vertices[1].position;
 
     // Update the bounding rectangle
     m_vertices[0]  = m_vertices[1]; // so that the result of getBounds() is correct
-    m_insideBounds = m_vertices.getBounds();
+    m_insideBounds = getVertexRangeBounds(m_vertices);
 
     // Compute the center and make it the first vertex
     m_vertices[0].position = m_insideBounds.getCenter();
 
-    // Color
-    updateFillColors();
-
-    // Texture coordinates
-    updateTexCoords();
-
-    // Outline
-    updateOutline();
+    // Updates
+    updateFillColors(m_vertices);
+    updateTexCoords(m_vertices);
+    updateOutline(m_outlineVertices, m_vertices);
+    updateOutlineTexCoords(m_outlineVertices);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::draw(RenderTarget& target, RenderStates states) const
+void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const
 {
     states.transform *= getTransform();
     states.coordinateType = CoordinateType::Pixels;
+    states.texture        = texture;
 
     // Render the inside
-    states.texture = m_texture;
-    target.draw(m_vertices, states);
+    renderTarget.draw(m_vertices, PrimitiveType::TriangleFan, states);
 
     // Render the outline
     if (m_outlineThickness != 0)
-    {
-        states.texture = nullptr;
-        target.draw(m_outlineVertices, states);
-    }
+        renderTarget.draw(m_outlineVertices, PrimitiveType::TriangleStrip, states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateFillColors()
+void Shape::updateFillColors(base::TrivialVector<Vertex>& vertices) const
 {
-    for (std::size_t i = 0; i < m_vertices.getVertexCount(); ++i)
-        m_vertices[i].color = m_fillColor;
+    for (Vertex& vertex : vertices)
+        vertex.color = m_fillColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateTexCoords()
+void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices) const
 {
-    const FloatRect convertedTextureRect(m_textureRect);
-
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_insideBounds.size.x > 0 ? m_insideBounds.size.x : 1.f,
                                   m_insideBounds.size.y > 0 ? m_insideBounds.size.y : 1.f);
 
-    for (std::size_t i = 0; i < m_vertices.getVertexCount(); ++i)
+    for (Vertex& vertex : vertices)
     {
-        const Vector2f ratio    = (m_vertices[i].position - m_insideBounds.position).componentWiseDiv(safeInsideSize);
-        m_vertices[i].texCoords = convertedTextureRect.position + convertedTextureRect.size.componentWiseMul(ratio);
+        const Vector2f ratio = (vertex.position - m_insideBounds.position).componentWiseDiv(safeInsideSize);
+        vertex.texCoords     = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
     }
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutline()
+void Shape::updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const
+{
+    // TODO P0:
+    for (Vertex& vertex : outlineVertices)
+        vertex.texCoords = m_outlineTextureRect.position;
+}
+
+
+////////////////////////////////////////////////////////////
+void Shape::updateOutline(base::TrivialVector<Vertex>& outlineVertices, const base::TrivialVector<Vertex>& vertices)
 {
     // Return if there is no outline
     if (m_outlineThickness == 0.f)
     {
-        m_outlineVertices.clear();
+        outlineVertices.clear();
         m_bounds = m_insideBounds;
         return;
     }
 
-    const std::size_t count = m_vertices.getVertexCount() - 2;
-    m_outlineVertices.resize((count + 1) * 2);
+    const base::SizeT count = vertices.size() - 2;
+    outlineVertices.resize((count + 1) * 2);
 
-    for (std::size_t i = 0; i < count; ++i)
+    for (base::SizeT i = 0; i < count; ++i)
     {
-        const std::size_t index = i + 1;
+        const base::SizeT index = i + 1;
 
         // Get the two segments shared by the current point
-        const Vector2f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
-        const Vector2f p1 = m_vertices[index].position;
-        const Vector2f p2 = m_vertices[index + 1].position;
+        const Vector2f p0 = (i == 0) ? vertices[count].position : vertices[index - 1].position;
+        const Vector2f p1 = vertices[index].position;
+        const Vector2f p2 = vertices[index + 1].position;
 
         // Compute their normal
         Vector2f n1 = computeNormal(p0, p1);
@@ -306,9 +315,9 @@ void Shape::updateOutline()
 
         // Make sure that the normals point towards the outside of the shape
         // (this depends on the order in which the points were defined)
-        if (n1.dot(m_vertices[0].position - p1) > 0)
+        if (n1.dot(vertices[0].position - p1) > 0)
             n1 = -n1;
-        if (n2.dot(m_vertices[0].position - p1) > 0)
+        if (n2.dot(vertices[0].position - p1) > 0)
             n2 = -n2;
 
         // Combine them to get the extrusion direction
@@ -316,27 +325,27 @@ void Shape::updateOutline()
         const Vector2f normal = (n1 + n2) / factor;
 
         // Update the outline points
-        m_outlineVertices[i * 2 + 0].position = p1;
-        m_outlineVertices[i * 2 + 1].position = p1 + normal * m_outlineThickness;
+        outlineVertices[i * 2 + 0].position = p1;
+        outlineVertices[i * 2 + 1].position = p1 + normal * m_outlineThickness;
     }
 
     // Duplicate the first point at the end, to close the outline
-    m_outlineVertices[count * 2 + 0].position = m_outlineVertices[0].position;
-    m_outlineVertices[count * 2 + 1].position = m_outlineVertices[1].position;
+    outlineVertices[count * 2 + 0].position = outlineVertices[0].position;
+    outlineVertices[count * 2 + 1].position = outlineVertices[1].position;
 
     // Update outline colors
-    updateOutlineColors();
+    updateOutlineColors(outlineVertices);
 
     // Update the shape's bounds
-    m_bounds = m_outlineVertices.getBounds();
+    m_bounds = getVertexRangeBounds(outlineVertices);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutlineColors()
+void Shape::updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const
 {
-    for (std::size_t i = 0; i < m_outlineVertices.getVertexCount(); ++i)
-        m_outlineVertices[i].color = m_outlineColor;
+    for (Vertex& outlineVertex : outlineVertices)
+        outlineVertex.color = m_outlineColor;
 }
 
 } // namespace sf

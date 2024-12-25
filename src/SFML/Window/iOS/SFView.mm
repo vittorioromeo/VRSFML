@@ -1,38 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/iOS/SFAppDelegate.hpp>
-#include <SFML/Window/iOS/SFView.hpp>
+#include "SFML/Window/iOS/SFAppDelegate.hpp"
+#include "SFML/Window/iOS/SFView.hpp"
 
-#include <SFML/System/Utf.hpp>
+#include "SFML/System/Utf.hpp"
+
+#include "SFML/Base/Builtins/Strlen.hpp"
 
 #include <QuartzCore/CAEAGLLayer.h>
-
-#include <cstring>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -77,7 +55,7 @@
     const char* utf8 = [text UTF8String];
 
     // Then convert to UTF-32 and notify the application delegate of each new character
-    const char* end = utf8 + std::strlen(utf8);
+    const char* end = utf8 + SFML_BASE_STRLEN(utf8);
     while (utf8 < end)
     {
         char32_t character = 0;

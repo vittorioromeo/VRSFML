@@ -1,12 +1,4 @@
-if(CMAKE_HOST_WIN32)
-    # We require a CMake version greater than or equal to 3.24 on Windows in order to
-    # support specifying target_include_directories with SYSTEM for Visual Studio Generators
-    # see: https://cmake.org/cmake/help/latest/release/3.24.html#generators
-    cmake_minimum_required(VERSION 3.24)
-else()
-    # For all other systems, 3.22 will suffice
-    cmake_minimum_required(VERSION 3.22)
-endif()
+cmake_minimum_required(VERSION 3.24)
 
 # define a macro that helps defining an option
 macro(sfml_set_option var default type docstring)
@@ -46,11 +38,93 @@ if(SFML_OS_ANDROID)
     set(BUILD_SHARED_LIBS ON)
 endif()
 
+# suppress annoying warnings on windows
+if(SFML_OS_WINDOWS)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+endif()
+
+# avoid transitive includes with libc++
+add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
+
+# download CPM to manage external dependencies
+file(
+    DOWNLOAD
+    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake
+    EXPECTED_HASH SHA256=c8cdc32c03816538ce22781ed72964dc864b2a34a310d3b7104812a5ca2d835d
+)
+
+include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+
+# add an option to enable stack traces on assertions
+sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+if(SFML_ENABLE_STACK_TRACES)
+    add_definitions(-DSFML_ENABLE_STACK_TRACES)
+
+    if (NOT SFML_OS_EMSCRIPTEN)
+        CPMAddPackage(
+            NAME cpptrace
+            GITHUB_REPOSITORY vittorioromeo/cpptrace
+            GIT_TAG 26c981f7fa89f20ee351df8faba26dc1a4598783
+            SYSTEM TRUE
+        )
+
+        if(TARGET libzstd_static)
+            target_compile_options(libzstd_static PRIVATE "-w")
+            set_target_properties(libzstd_static PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        if(TARGET dwarf)
+            target_compile_options(dwarf PRIVATE "-w")
+            set_target_properties(dwarf PROPERTIES UNITY_BUILD OFF)
+        endif()
+
+        target_compile_options(cpptrace-lib PRIVATE "-w")
+
+        # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
+        # install(TARGETS dwarf EXPORT SFMLConfigExport)
+    endif()
+endif()
+
+# add an option to enable lifetime tracking
+sfml_set_option(SFML_ENABLE_LIFETIME_TRACKING $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
+if(SFML_ENABLE_LIFETIME_TRACKING)
+    add_definitions(-DSFML_ENABLE_LIFETIME_TRACKING)
+endif()
+
+# option to enable precompiled headers
+sfml_set_option(SFML_ENABLE_PCH OFF BOOL "TRUE to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
+
+if(SFML_ENABLE_PCH)
+    add_definitions(-DSFML_ENABLE_PCH)
+endif()
+
 # add options to select which modules to build
 sfml_set_option(SFML_BUILD_WINDOW ON BOOL "ON to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS ON BOOL "ON to build SFML's Graphics module.")
+sfml_set_option(SFML_BUILD_IMGUI ON BOOL "ON to build SFML's ImGui module.")
 sfml_set_option(SFML_BUILD_AUDIO ON BOOL "ON to build SFML's Audio module.")
 sfml_set_option(SFML_BUILD_NETWORK ON BOOL "ON to build SFML's Network module.")
+
+if(SFML_BUILD_WINDOW)
+    add_definitions(-DSFML_BUILD_WINDOW)
+endif()
+
+if(SFML_BUILD_GRAPHICS)
+    add_definitions(-DSFML_BUILD_GRAPHICS)
+endif()
+
+if(SFML_BUILD_IMGUI)
+    add_definitions(-DSFML_BUILD_IMGUI)
+endif()
+
+if(SFML_BUILD_AUDIO)
+    add_definitions(-DSFML_BUILD_AUDIO)
+endif()
+
+if(SFML_BUILD_NETWORK)
+    add_definitions(-DSFML_BUILD_NETWORK)
+endif()
 
 if(SFML_BUILD_WINDOW)
     # add an option for choosing the OpenGL implementation
@@ -106,8 +180,14 @@ if(SFML_BUILD_GRAPHICS AND NOT SFML_BUILD_WINDOW)
     set(SFML_BUILD_WINDOW ON)
 endif()
 
+# force building sfml-graphics, if sfml-imgui module is built
+if(SFML_BUILD_IMGUI AND NOT SFML_BUILD_GRAPHICS)
+    message(WARNING "You're trying to build SFML's ImGui module without the Graphics module. Forcing building of the Graphics module as a dependency.")
+    set(SFML_BUILD_GRAPHICS TRUE)
+endif()
+
 # use bundled dependencies by default on these systems and system dependencies by default on all others (maintains old behavior)
-if(SFML_OS_WINDOWS OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID)
+if(SFML_OS_WINDOWS OR SFML_OS_LINUX OR SFML_OS_MACOS OR SFML_OS_IOS OR SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN)
     set(SFML_USE_SYSTEM_DEPS_DEFAULT OFF)
 else()
     set(SFML_USE_SYSTEM_DEPS_DEFAULT ON)
@@ -131,7 +211,6 @@ endif()
 # define SFML_OPENGL_ES if needed
 if(SFML_OPENGL_ES)
     add_definitions(-DSFML_OPENGL_ES)
-    add_definitions(-DGL_GLEXT_PROTOTYPES)
 endif()
 
 # define an option for choosing between static and dynamic C runtime (Windows only)
@@ -179,6 +258,20 @@ endif()
 option(SFML_ENABLE_SANITIZERS "Enable sanitizers" OFF)
 if(SFML_ENABLE_SANITIZERS)
     string(APPEND CMAKE_CXX_FLAGS " -fno-omit-frame-pointer -fno-sanitize-recover=all -fsanitize=undefined")
+endif()
+
+if(SFML_BUILD_EXAMPLES)
+    add_definitions(-DSFML_BUILD_EXAMPLES)
+endif()
+
+if(SFML_BUILD_TEST_SUITE)
+    # this definition is used in the PCH file to speed up compilation of tests
+    # `add_definitions` must be called before `add_subdirectory`
+    add_definitions(-DSFML_BUILD_TEST_SUITE)
+    # add_definitions(-DDOCTEST_CONFIG_NO_INCLUDE_IOSTREAM=1)
+    add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS)
+
+    set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
 endif()
 
 option(SFML_ENABLE_STDLIB_ASSERTIONS "Enable standard library assertions" OFF)
@@ -231,9 +324,6 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
     endforeach()
 endif()
 
-# option to enable precompiled headers
-sfml_set_option(SFML_ENABLE_PCH OFF BOOL "ON to enable precompiled headers for SFML builds -- only supported on Windows/Linux and for static library builds")
-
 if(SFML_ENABLE_PCH AND BUILD_SHARED_LIBS)
     message(FATAL_ERROR "Precompiled headers are currently not supported for shared library builds")
 endif()
@@ -281,8 +371,8 @@ else()
     # create SFML.framework
     add_library(SFML ${SFML_SOURCES})
 
-    # enable C++17 support
-    target_compile_features(SFML PUBLIC cxx_std_17)
+    # enable C++20 support
+    target_compile_features(SFML PUBLIC cxx_std_20)
 
     # set the target flags to use the appropriate C++ standard library
     sfml_set_stdlib(SFML)
@@ -301,7 +391,6 @@ else()
                        ${PROJECT_SOURCE_DIR}/include/SFML/Config.hpp
                        ${PROJECT_SOURCE_DIR}/include/SFML/OpenGL.hpp
                        ${PROJECT_SOURCE_DIR}/include/SFML/GpuPreference.hpp
-                       ${PROJECT_SOURCE_DIR}/include/SFML/System.hpp
                        ${PROJECT_SOURCE_DIR}/include/SFML/Main.hpp
                        ${PROJECT_SOURCE_DIR}/include/SFML/System
                        $<TARGET_FILE_DIR:SFML>/Headers
@@ -310,7 +399,6 @@ else()
     # add window module headers if enabled
     if(SFML_BUILD_WINDOW)
         add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/SFML/Window.hpp
                            ${PROJECT_SOURCE_DIR}/include/SFML/Window
                            $<TARGET_FILE_DIR:SFML>/Headers
                            VERBATIM)
@@ -319,7 +407,6 @@ else()
     # add network module headers if enabled
     if(SFML_BUILD_NETWORK)
         add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/SFML/Network.hpp
                            ${PROJECT_SOURCE_DIR}/include/SFML/Network
                            $<TARGET_FILE_DIR:SFML>/Headers
                            VERBATIM)
@@ -328,8 +415,15 @@ else()
      # add graphics module headers if enabled
     if(SFML_BUILD_GRAPHICS)
         add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/SFML/Graphics.hpp
                            ${PROJECT_SOURCE_DIR}/include/SFML/Graphics
+                           $<TARGET_FILE_DIR:SFML>/Headers
+                           VERBATIM)
+    endif()
+
+    # add imgui module headers if enabled
+    if(SFML_BUILD_IMGUI)
+        add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
+                           ${PROJECT_SOURCE_DIR}/include/SFML/ImGui
                            $<TARGET_FILE_DIR:SFML>/Headers
                            VERBATIM)
     endif()
@@ -337,7 +431,6 @@ else()
      # add audio module headers if enabled
     if(SFML_BUILD_AUDIO)
         add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
-                           ${PROJECT_SOURCE_DIR}/include/SFML/Audio.hpp
                            ${PROJECT_SOURCE_DIR}/include/SFML/Audio
                            $<TARGET_FILE_DIR:SFML>/Headers
                            VERBATIM)
@@ -422,7 +515,7 @@ sfml_set_option(SFML_BUILD_TEST_SUITE OFF BOOL "ON to build the SFML test suite,
 sfml_set_option(SFML_ENABLE_COVERAGE OFF BOOL "ON to enable coverage reporting, OFF to ignore it")
 
 if(SFML_BUILD_TEST_SUITE)
-    if(SFML_BUILD_WINDOW AND SFML_BUILD_GRAPHICS AND SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)
+    if(SFML_BUILD_WINDOW AND SFML_BUILD_GRAPHICS AND SFML_BUILD_IMGUI AND SFML_BUILD_NETWORK AND SFML_BUILD_AUDIO)
         enable_testing()
         add_subdirectory(test)
     else()

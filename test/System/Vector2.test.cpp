@@ -1,11 +1,13 @@
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <catch2/catch_template_test_macros.hpp>
+#include "SFML/System/Angle.hpp"
 
+#include "SFML/Base/Math/Sqrt.hpp"
+
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-#include <type_traits>
-
-#include <cmath>
 
 using namespace sf::Literals;
 
@@ -13,18 +15,24 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Vector2<TestType>>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Vector2<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Vector2<TestType>>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Vector2<TestType>>);
-        STATIC_CHECK(std::is_trivially_copyable_v<sf::Vector2<TestType>>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Vector2<TestType>));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Vector2<TestType>)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Vector2<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Vector2<TestType>, sf::Vector2<TestType>));
     }
 
     SECTION("Construction")
     {
         SECTION("Default constructor")
         {
-            constexpr sf::Vector2<TestType> vector;
+            constexpr sf::Vector2<TestType> vector{};
             STATIC_CHECK(vector.x == 0);
             STATIC_CHECK(vector.y == 0);
         }
@@ -36,68 +44,61 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
             STATIC_CHECK(vector.y == 2);
         }
 
-        SECTION("Conversion operator")
-        {
-            STATIC_CHECK(!std::is_convertible_v<sf::Vector2f, sf::Vector2i>);
-
-            constexpr sf::Vector2f sourceVector(1.0f, 2.0f);
-            constexpr sf::Vector2i vector(sourceVector);
-
-            STATIC_CHECK(vector.x == static_cast<int>(sourceVector.x));
-            STATIC_CHECK(vector.y == static_cast<int>(sourceVector.y));
-        }
-
         SECTION("Length and angle constructor")
         {
-            CHECK(sf::Vector2f(0, 0_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 45_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 90_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 135_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 180_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 270_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, 360_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, -90_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, -180_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, -270_deg) == sf::Vector2f(0, 0));
-            CHECK(sf::Vector2f(0, -360_deg) == sf::Vector2f(0, 0));
+            CHECK(sf::Vector2f::fromAngle(0, 0_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 45_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 90_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 135_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 180_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 270_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, 360_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, -90_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, -180_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, -270_deg) == sf::Vector2f{0, 0});
+            CHECK(sf::Vector2f::fromAngle(0, -360_deg) == sf::Vector2f{0, 0});
 
-            CHECK(sf::Vector2f(1, 0_deg) == sf::Vector2f(1, 0));
-            CHECK(sf::Vector2f(1, 45_deg) == Approx(sf::Vector2f(std::sqrt(2.f) / 2.f, std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(1, 90_deg) == Approx(sf::Vector2f(0, 1)));
-            CHECK(sf::Vector2f(1, 135_deg) == Approx(sf::Vector2f(-std::sqrt(2.f) / 2.f, std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(1, 180_deg) == Approx(sf::Vector2f(-1, 0)));
-            CHECK(sf::Vector2f(1, 270_deg) == Approx(sf::Vector2f(0, -1)));
-            CHECK(sf::Vector2f(1, 360_deg) == Approx(sf::Vector2f(1, 0)));
-            CHECK(sf::Vector2f(1, -90_deg) == Approx(sf::Vector2f(0, -1)));
-            CHECK(sf::Vector2f(1, -180_deg) == Approx(sf::Vector2f(-1, 0)));
-            CHECK(sf::Vector2f(1, -270_deg) == Approx(sf::Vector2f(0, 1)));
-            CHECK(sf::Vector2f(1, -360_deg) == Approx(sf::Vector2f(1, 0)));
+            CHECK(sf::Vector2f::fromAngle(1, 0_deg) == sf::Vector2f{1, 0});
+            CHECK(sf::Vector2f::fromAngle(1, 45_deg) ==
+                  Approx(sf::Vector2f(sf::base::sqrt(2.f) / 2.f, sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(1, 90_deg) == Approx(sf::Vector2f{0, 1}));
+            CHECK(sf::Vector2f::fromAngle(1, 135_deg) ==
+                  Approx(sf::Vector2f(-sf::base::sqrt(2.f) / 2.f, sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(1, 180_deg) == Approx(sf::Vector2f(-1, 0)));
+            CHECK(sf::Vector2f::fromAngle(1, 270_deg) == Approx(sf::Vector2f(0, -1)));
+            CHECK(sf::Vector2f::fromAngle(1, 360_deg) == Approx(sf::Vector2f{1, 0}));
+            CHECK(sf::Vector2f::fromAngle(1, -90_deg) == Approx(sf::Vector2f(0, -1)));
+            CHECK(sf::Vector2f::fromAngle(1, -180_deg) == Approx(sf::Vector2f(-1, 0)));
+            CHECK(sf::Vector2f::fromAngle(1, -270_deg) == Approx(sf::Vector2f{0, 1}));
+            CHECK(sf::Vector2f::fromAngle(1, -360_deg) == Approx(sf::Vector2f{1, 0}));
 
-            CHECK(sf::Vector2f(-1, 0_deg) == sf::Vector2f(-1, 0));
-            CHECK(sf::Vector2f(-1, 45_deg) == Approx(sf::Vector2f(-std::sqrt(2.f) / 2.f, -std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(-1, 90_deg) == Approx(sf::Vector2f(0, -1)));
-            CHECK(sf::Vector2f(-1, 135_deg) == Approx(sf::Vector2f(std::sqrt(2.f) / 2.f, -std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(-1, 180_deg) == Approx(sf::Vector2f(1, 0)));
-            CHECK(sf::Vector2f(-1, 270_deg) == Approx(sf::Vector2f(0, 1)));
-            CHECK(sf::Vector2f(-1, 360_deg) == Approx(sf::Vector2f(-1, 0)));
-            CHECK(sf::Vector2f(-1, -90_deg) == Approx(sf::Vector2f(0, 1)));
-            CHECK(sf::Vector2f(-1, -180_deg) == Approx(sf::Vector2f(1, 0)));
-            CHECK(sf::Vector2f(-1, -270_deg) == Approx(sf::Vector2f(0, -1)));
-            CHECK(sf::Vector2f(-1, -360_deg) == Approx(sf::Vector2f(-1, 0)));
+            CHECK(sf::Vector2f::fromAngle(-1, 0_deg) == sf::Vector2f(-1, 0));
+            CHECK(sf::Vector2f::fromAngle(-1, 45_deg) ==
+                  Approx(sf::Vector2f(-sf::base::sqrt(2.f) / 2.f, -sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(-1, 90_deg) == Approx(sf::Vector2f(0, -1)));
+            CHECK(sf::Vector2f::fromAngle(-1, 135_deg) ==
+                  Approx(sf::Vector2f(sf::base::sqrt(2.f) / 2.f, -sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(-1, 180_deg) == Approx(sf::Vector2f{1, 0}));
+            CHECK(sf::Vector2f::fromAngle(-1, 270_deg) == Approx(sf::Vector2f{0, 1}));
+            CHECK(sf::Vector2f::fromAngle(-1, 360_deg) == Approx(sf::Vector2f(-1, 0)));
+            CHECK(sf::Vector2f::fromAngle(-1, -90_deg) == Approx(sf::Vector2f{0, 1}));
+            CHECK(sf::Vector2f::fromAngle(-1, -180_deg) == Approx(sf::Vector2f{1, 0}));
+            CHECK(sf::Vector2f::fromAngle(-1, -270_deg) == Approx(sf::Vector2f(0, -1)));
+            CHECK(sf::Vector2f::fromAngle(-1, -360_deg) == Approx(sf::Vector2f(-1, 0)));
 
-            CHECK(sf::Vector2f(4.2f, 0_deg) == sf::Vector2f(4.2f, 0));
-            CHECK(sf::Vector2f(4.2f, 45_deg) ==
-                  Approx(sf::Vector2f(4.2f * std::sqrt(2.f) / 2.f, 4.2f * std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(4.2f, 90_deg) == Approx(sf::Vector2f(0, 4.2f)));
-            CHECK(sf::Vector2f(4.2f, 135_deg) ==
-                  Approx(sf::Vector2f(-4.2f * std::sqrt(2.f) / 2.f, 4.2f * std::sqrt(2.f) / 2.f)));
-            CHECK(sf::Vector2f(4.2f, 180_deg) == Approx(sf::Vector2f(-4.2f, 0)));
-            CHECK(sf::Vector2f(4.2f, 270_deg) == Approx(sf::Vector2f(0, -4.2f)));
-            CHECK(sf::Vector2f(4.2f, 360_deg) == Approx(sf::Vector2f(4.2f, 0)));
-            CHECK(sf::Vector2f(4.2f, -90_deg) == Approx(sf::Vector2f(0, -4.2f)));
-            CHECK(sf::Vector2f(4.2f, -180_deg) == Approx(sf::Vector2f(-4.2f, 0)));
-            CHECK(sf::Vector2f(4.2f, -270_deg) == Approx(sf::Vector2f(0, 4.2f)));
-            CHECK(sf::Vector2f(4.2f, -360_deg) == Approx(sf::Vector2f(4.2f, 0)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 0_deg) == sf::Vector2f(4.2f, 0));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 45_deg) ==
+                  Approx(sf::Vector2f(4.2f * sf::base::sqrt(2.f) / 2.f, 4.2f * sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 90_deg) == Approx(sf::Vector2f(0, 4.2f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 135_deg) ==
+                  Approx(sf::Vector2f(-4.2f * sf::base::sqrt(2.f) / 2.f, 4.2f * sf::base::sqrt(2.f) / 2.f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 180_deg) == Approx(sf::Vector2f(-4.2f, 0)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 270_deg) == Approx(sf::Vector2f(0, -4.2f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, 360_deg) == Approx(sf::Vector2f(4.2f, 0)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, -90_deg) == Approx(sf::Vector2f(0, -4.2f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, -180_deg) == Approx(sf::Vector2f(-4.2f, 0)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, -270_deg) == Approx(sf::Vector2f(0, 4.2f)));
+            CHECK(sf::Vector2f::fromAngle(4.2f, -360_deg) == Approx(sf::Vector2f(4.2f, 0)));
         }
     }
 
@@ -227,7 +228,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
             CHECK(x == 1);
             CHECK(y == 2);
 
-            STATIC_CHECK(std::is_same_v<decltype(x), decltype(vector.x)>);
+            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vector.x)));
 
             x = 3;
 
@@ -242,7 +243,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
             CHECK(x == 1);
             CHECK(y == 2);
 
-            STATIC_CHECK(std::is_same_v<decltype(x), decltype(vector.x)>);
+            STATIC_CHECK(SFML_BASE_IS_SAME(decltype(x), decltype(vector.x)));
 
             x = 3;
 
@@ -271,14 +272,14 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         constexpr sf::Vector2f v(2.4f, 3.0f);
 
         CHECK(v.angle() == Approx(51.3402_deg));
-        CHECK(sf::Vector2f(1.f, 0.f).angleTo(v) == Approx(51.3402_deg));
-        CHECK(sf::Vector2f(0.f, 1.f).angleTo(v) == Approx(-38.6598_deg));
+        CHECK(sf::Vector2f{1.f, 0.f}.angleTo(v) == Approx(51.3402_deg));
+        CHECK(sf::Vector2f{0.f, 1.f}.angleTo(v) == Approx(-38.6598_deg));
 
         constexpr sf::Vector2f w(-0.7f, -2.2f);
 
         CHECK(w.angle() == Approx(-107.65_deg));
-        CHECK(sf::Vector2f(1.f, 0.f).angleTo(w) == Approx(-107.65_deg));
-        CHECK(sf::Vector2f(0.f, 1.f).angleTo(w) == Approx(162.35_deg));
+        CHECK(sf::Vector2f{1.f, 0.f}.angleTo(w) == Approx(-107.65_deg));
+        CHECK(sf::Vector2f{0.f, 1.f}.angleTo(w) == Approx(162.35_deg));
 
         CHECK(v.angleTo(w) == Approx(-158.9902_deg));
         CHECK(w.angleTo(v) == Approx(158.9902_deg));
@@ -323,8 +324,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         CHECK(w.projectedOnto(v) == Approx(sf::Vector2f(-1.346342f, -1.682927f)));
         CHECK(w.projectedOnto(v) == Approx(-0.560976f * v));
 
-        CHECK(v.projectedOnto(sf::Vector2f(1.f, 0.f)) == Approx(sf::Vector2f(2.4f, 0.0f)));
-        CHECK(v.projectedOnto(sf::Vector2f(0.f, 1.f)) == Approx(sf::Vector2f(0.0f, 3.0f)));
+        CHECK(v.projectedOnto(sf::Vector2f{1.f, 0.f}) == Approx(sf::Vector2f(2.4f, 0.0f)));
+        CHECK(v.projectedOnto(sf::Vector2f{0.f, 1.f}) == Approx(sf::Vector2f(0.0f, 3.0f)));
     }
 
     SECTION("Constexpr support")
@@ -343,5 +344,13 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         STATIC_CHECK(v.cross(w) == -10);
         STATIC_CHECK(v.componentWiseMul(w) == sf::Vector2<TestType>(2, -12));
         STATIC_CHECK(w.componentWiseDiv(v) == sf::Vector2<TestType>(2, -3));
+    }
+
+    SECTION("Moved towards")
+    {
+        CHECK(sf::Vector2f{}.rotatedBy(-158.9902_deg) == sf::Vector2f{}.movedTowards(0.f, -158.9902_deg));
+
+        constexpr sf::Vector2f v(2.4f, 3.0f);
+        CHECK(v + sf::Vector2f::fromAngle(10.f, -158.9902_deg) == v.movedTowards(10.f, -158.9902_deg));
     }
 }

@@ -1,42 +1,18 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Time.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/System/Time.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <ratio>
-
-#include <cassert>
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-template <typename Rep, typename Period>
-constexpr Time::Time(const std::chrono::duration<Rep, Period>& duration) : m_microseconds(duration)
+constexpr Time::Time(base::I64 microseconds) : m_microseconds(microseconds)
 {
 }
 
@@ -44,34 +20,19 @@ constexpr Time::Time(const std::chrono::duration<Rep, Period>& duration) : m_mic
 ////////////////////////////////////////////////////////////
 constexpr float Time::asSeconds() const
 {
-    return std::chrono::duration<float>(m_microseconds).count();
+    return static_cast<float>(m_microseconds) / 1'000'000.f;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr std::int32_t Time::asMilliseconds() const
+constexpr base::I32 Time::asMilliseconds() const
 {
-    return std::chrono::duration_cast<std::chrono::duration<std::int32_t, std::milli>>(m_microseconds).count();
+    return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1'000.f);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr std::int64_t Time::asMicroseconds() const
-{
-    return m_microseconds.count();
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr std::chrono::microseconds Time::toDuration() const
-{
-    return m_microseconds;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename Rep, typename Period>
-constexpr Time::operator std::chrono::duration<Rep, Period>() const
+constexpr base::I64 Time::asMicroseconds() const
 {
     return m_microseconds;
 }
@@ -80,196 +41,196 @@ constexpr Time::operator std::chrono::duration<Rep, Period>() const
 ////////////////////////////////////////////////////////////
 constexpr Time seconds(float amount)
 {
-    return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::duration<float>(amount));
+    return Time(static_cast<base::I64>(amount * 1'000'000.f));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time milliseconds(std::int32_t amount)
+constexpr Time milliseconds(base::I32 amount)
 {
-    return std::chrono::milliseconds(amount);
+    return Time(amount * 1'000);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time microseconds(std::int64_t amount)
+constexpr Time microseconds(base::I64 amount)
 {
-    return std::chrono::microseconds(amount);
+    return Time(amount);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator==(Time left, Time right)
+constexpr bool operator==(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() == right.asMicroseconds();
+    return lhs.asMicroseconds() == rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator!=(Time left, Time right)
+constexpr bool operator!=(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() != right.asMicroseconds();
+    return lhs.asMicroseconds() != rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<(Time left, Time right)
+constexpr bool operator<(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() < right.asMicroseconds();
+    return lhs.asMicroseconds() < rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>(Time left, Time right)
+constexpr bool operator>(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() > right.asMicroseconds();
+    return lhs.asMicroseconds() > rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<=(Time left, Time right)
+constexpr bool operator<=(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() <= right.asMicroseconds();
+    return lhs.asMicroseconds() <= rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>=(Time left, Time right)
+constexpr bool operator>=(Time lhs, Time rhs)
 {
-    return left.asMicroseconds() >= right.asMicroseconds();
+    return lhs.asMicroseconds() >= rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator-(Time right)
+constexpr Time operator-(Time rhs)
 {
-    return microseconds(-right.asMicroseconds());
+    return microseconds(-rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator+(Time left, Time right)
+constexpr Time operator+(Time lhs, Time rhs)
 {
-    return microseconds(left.asMicroseconds() + right.asMicroseconds());
+    return microseconds(lhs.asMicroseconds() + rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator+=(Time& left, Time right)
+constexpr Time& operator+=(Time& lhs, Time rhs)
 {
-    return left = left + right;
+    return lhs = lhs + rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator-(Time left, Time right)
+constexpr Time operator-(Time lhs, Time rhs)
 {
-    return microseconds(left.asMicroseconds() - right.asMicroseconds());
+    return microseconds(lhs.asMicroseconds() - rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator-=(Time& left, Time right)
+constexpr Time& operator-=(Time& lhs, Time rhs)
 {
-    return left = left - right;
+    return lhs = lhs - rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(Time left, float right)
+constexpr Time operator*(Time lhs, float rhs)
 {
-    return seconds(left.asSeconds() * right);
+    return seconds(lhs.asSeconds() * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(Time left, std::int64_t right)
+constexpr Time operator*(Time lhs, base::I64 rhs)
 {
-    return microseconds(left.asMicroseconds() * right);
+    return microseconds(lhs.asMicroseconds() * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(float left, Time right)
+constexpr Time operator*(float lhs, Time rhs)
 {
-    return right * left;
+    return rhs * lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(std::int64_t left, Time right)
+constexpr Time operator*(base::I64 lhs, Time rhs)
 {
-    return right * left;
+    return rhs * lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator*=(Time& left, float right)
+constexpr Time& operator*=(Time& lhs, float rhs)
 {
-    return left = left * right;
+    return lhs = lhs * rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator*=(Time& left, std::int64_t right)
+constexpr Time& operator*=(Time& lhs, base::I64 rhs)
 {
-    return left = left * right;
+    return lhs = lhs * rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator/(Time left, float right)
+constexpr Time operator/(Time lhs, float rhs)
 {
-    assert(right != 0 && "Time::operator/ cannot divide by 0");
-    return seconds(left.asSeconds() / right);
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
+    return seconds(lhs.asSeconds() / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator/(Time left, std::int64_t right)
+constexpr Time operator/(Time lhs, base::I64 rhs)
 {
-    assert(right != 0 && "Time::operator/ cannot divide by 0");
-    return microseconds(left.asMicroseconds() / right);
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
+    return microseconds(lhs.asMicroseconds() / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator/=(Time& left, float right)
+constexpr Time& operator/=(Time& lhs, float rhs)
 {
-    assert(right != 0 && "Time::operator/= cannot divide by 0");
-    return left = left / right;
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
+    return lhs = lhs / rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator/=(Time& left, std::int64_t right)
+constexpr Time& operator/=(Time& lhs, base::I64 rhs)
 {
-    assert(right != 0 && "Time::operator/= cannot divide by 0");
-    return left = left / right;
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
+    return lhs = lhs / rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr float operator/(Time left, Time right)
+constexpr float operator/(Time lhs, Time rhs)
 {
-    assert(right.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
-    return left.asSeconds() / right.asSeconds();
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
+    return lhs.asSeconds() / rhs.asSeconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator%(Time left, Time right)
+constexpr Time operator%(Time lhs, Time rhs)
 {
-    assert(right.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
-    return microseconds(left.asMicroseconds() % right.asMicroseconds());
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
+    return microseconds(lhs.asMicroseconds() % rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator%=(Time& left, Time right)
+constexpr Time& operator%=(Time& lhs, Time rhs)
 {
-    assert(right.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
-    return left = left % right;
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
+    return lhs = lhs % rhs;
 }
 
 

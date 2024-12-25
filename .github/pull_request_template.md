@@ -32,19 +32,24 @@ This PR is related to the issue #
 <!-- Please provide a [minimal, complete and verifiable example](https://stackoverflow.com/help/mcve) if possible, you can use the following template as a start: -->
 
 ```cpp
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics/RenderWindow.hpp"
+
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/Base/Optional.hpp"
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Minimal, complete and verifiable example");
-    window.setFramerateLimit(60);
+    sf::RenderWindow window(
+        {.size{1280u, 720u}, .title = "Minimal, complete and verifiable example", .framerateLimit = 60});
 
-    while (window.isOpen())
+    while (true)
     {
-        while (const std::optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
-                window.close();
+                return 0;
         }
 
         window.clear();

@@ -1,39 +1,14 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Shape.hpp>
+#include "SFML/Graphics/Shape.hpp"
 
-#include <SFML/System/Vector2.hpp>
-
-#include <cstddef>
+#include "SFML/System/Vector2.hpp"
 
 
 namespace sf
@@ -46,12 +21,24 @@ class SFML_GRAPHICS_API RectangleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// \param size Size of the rectangle
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    explicit RectangleShape(Vector2f size = {});
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
+
+        Vector2f size{}; //!< Size of the rectangle
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    /// \param settings Settings of the rectangle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit RectangleShape(const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the rectangle
@@ -80,7 +67,10 @@ public:
     ///         shapes, this number is always 4.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t getPointCount() const override;
+    [[nodiscard, gnu::always_inline]] constexpr base::SizeT getPointCount() const
+    {
+        return 4u;
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a point of the rectangle
@@ -95,7 +85,7 @@ public:
     /// \return `index`-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(std::size_t index) const override;
+    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle
@@ -107,7 +97,7 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const override;
+    [[nodiscard]] Vector2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
@@ -130,10 +120,10 @@ private:
 /// Usage example:
 /// \code
 /// sf::RectangleShape rectangle;
-/// rectangle.setSize(sf::Vector2f(100, 50));
+/// rectangle.setSize(sf::Vector2f{100, 50});
 /// rectangle.setOutlineColor(sf::Color::Red);
 /// rectangle.setOutlineThickness(5);
-/// rectangle.setPosition({10, 20});
+/// rectangle.position = {10, 20};
 /// ...
 /// window.draw(rectangle);
 /// \endcode

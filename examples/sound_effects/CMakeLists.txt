@@ -8,8 +8,8 @@ if(SFML_OS_IOS)
     set_source_files_properties(${RESOURCES} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif()
 
-# define the sound-effects target
-sfml_add_example(sound-effects GUI_APP
+# define the sound_effects target
+sfml_add_example(sound_effects GUI_APP
                  SOURCES ${SRC}
                  BUNDLE_RESOURCES ${RESOURCES}
                  DEPENDS SFML::Audio SFML::Graphics

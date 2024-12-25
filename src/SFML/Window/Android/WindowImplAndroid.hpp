@@ -1,37 +1,14 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/EglContext.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/EGL/EGLContext.hpp"
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
-#include <SFML/System/Android/Activity.hpp>
+#include "SFML/System/Android/Activity.hpp"
 
 #include <android/input.h>
 
@@ -42,7 +19,7 @@ namespace sf::priv
 /// \brief Android implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplAndroid : public WindowImpl
+class [[nodiscard]] WindowImplAndroid : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -51,19 +28,15 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplAndroid(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplAndroid(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
     ///
-    /// \param mode     Video mode to use
-    /// \param title    Title of the window
-    /// \param style    Window style
-    /// \param state    Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplAndroid(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
+    [[nodiscard]] explicit WindowImplAndroid(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -114,22 +87,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the minimum size
+    /// Pass `base::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const std::optional<Vector2u>& minimumSize) override;
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the maximum size
+    /// Pass `base::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const std::optional<Vector2u>& maximumSize) override;
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -146,7 +119,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -224,12 +197,12 @@ private:
     /// \return Whether it should continue (1) or unregister the callback (0)
     ///
     ////////////////////////////////////////////////////////////
-    static int processEvent(int fd, int events, void* data);
+    [[nodiscard]] static int processEvent(int fd, int events, void* data);
 
-    static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
-    static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
+    [[nodiscard]] static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
+    [[nodiscard]] static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a Android key to SFML key code
@@ -239,7 +212,7 @@ private:
     /// \return Corresponding SFML key code
     ///
     ////////////////////////////////////////////////////////////
-    static Keyboard::Key androidKeyToSF(std::int32_t key);
+    [[nodiscard]] static Keyboard::Key androidKeyToSF(base::I32 key);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get Unicode decoded from the input event
@@ -249,7 +222,7 @@ private:
     /// \return The Unicode value
     ///
     ////////////////////////////////////////////////////////////
-    static char32_t getUnicode(AInputEvent* event);
+    [[nodiscard]] static char32_t getUnicode(AInputEvent* event);
 
     Vector2u m_size;
     bool     m_windowBeingCreated{};

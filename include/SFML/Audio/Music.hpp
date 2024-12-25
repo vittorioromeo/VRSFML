@@ -1,144 +1,38 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundStream.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
-#include <filesystem>
-#include <memory>
-#include <optional>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
-#include <cstddef>
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class InputSoundFile;
+class InputStream;
+class Path;
+class Time;
+} // namespace sf
 
 
 namespace sf
 {
-class Time;
-class InputStream;
-class InputSoundFile;
-
-////////////////////////////////////////////////////////////
-/// \brief Streamed music played from an audio file
-///
-////////////////////////////////////////////////////////////
 class SFML_AUDIO_API Music : public SoundStream
 {
 public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Structure defining a time range using the template type
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    struct Span
-    {
-        T offset{}; //!< The beginning offset of the time range
-        T length{}; //!< The length of the time range
-    };
-
-    // Associated `Span` type
-    using TimeSpan = Span<Time>;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Construct an empty music that does not contain any data.
-    ///
-    ////////////////////////////////////////////////////////////
-    Music();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a music from an audio file
-    ///
-    /// This function doesn't start playing the music (call `play()`
-    /// to do so).
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather
-    /// streamed continuously, the file must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed.
-    ///
-    /// \param filename Path of the music file to open
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `openFromMemory`, `openFromStream`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Music(const std::filesystem::path& filename);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a music from an audio file in memory
-    ///
-    /// This function doesn't start playing the music (call `play()`
-    /// to do so).
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather streamed
-    /// continuously, the \a data buffer must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed. That is,
-    /// you can't deallocate the buffer right after calling this function.
-    ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `openFromFile`, `openFromStream`
-    ///
-    ////////////////////////////////////////////////////////////
-    Music(const void* data, std::size_t sizeInBytes);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a music from an audio file in a custom stream
-    ///
-    /// This function doesn't start playing the music (call `play()`
-    /// to do so).
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather
-    /// streamed continuously, the `stream` must remain accessible
-    /// until the `sf::Music` object loads a new music or is destroyed.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \throws sf::Exception if loading was unsuccessful
-    ///
-    /// \see `openFromFile`, `openFromMemory`
-    ///
-    ////////////////////////////////////////////////////////////
-    explicit Music(InputStream& stream);
-
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -158,31 +52,35 @@ public:
     Music& operator=(Music&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open a music from an audio file
+    /// \brief Open a music source from an audio file
     ///
-    /// This function doesn't start playing the music (call `play()`
+    /// This function doesn't start playing the music (use `play`
     /// to do so).
+    ///
     /// See the documentation of `sf::InputSoundFile` for the list
     /// of supported formats.
     ///
     /// \warning Since the music is not loaded at once but rather
     /// streamed continuously, the file must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed.
+    /// the `sf::Music` object loads a new music or is destroyed
+    /// and until all active `sf::Music` objects linked to this
+    /// `sf::Music` instance are destroyed.
     ///
     /// \param filename Path of the music file to open
     ///
-    /// \return `true` if loading succeeded, `false` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromFile(const std::filesystem::path& filename);
+    [[nodiscard]] static base::Optional<Music> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in memory
     ///
-    /// This function doesn't start playing the music (call `play()`
+    /// This function doesn't start playing the music (use `play`
     /// to do so).
+    ///
     /// See the documentation of `sf::InputSoundFile` for the list
     /// of supported formats.
     ///
@@ -194,18 +92,19 @@ public:
     /// \param data        Pointer to the file data in memory
     /// \param sizeInBytes Size of the data to load, in bytes
     ///
-    /// \return `true` if loading succeeded, `false` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromMemory(const void* data, std::size_t sizeInBytes);
+    [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music from an audio file in a custom stream
     ///
-    /// This function doesn't start playing the music (call `play()`
+    /// This function doesn't start playing the music (use `play`
     /// to do so).
+    ///
     /// See the documentation of `sf::InputSoundFile` for the list
     /// of supported formats.
     ///
@@ -215,12 +114,12 @@ public:
     ///
     /// \param stream Source stream to read from
     ///
-    /// \return `true` if loading succeeded, `false` if it failed
+    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
     ///
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool openFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<Music> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music
@@ -231,16 +130,87 @@ public:
     [[nodiscard]] Time getDuration() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the positions of the of the sound's looping sequence
+    /// \brief Return the number of channels of the stream
     ///
-    /// \return Loop Time position class.
+    /// 1 channel means a mono sound, 2 means stereo, etc.
+    ///
+    /// \return Number of channels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getChannelCount() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the stream sample rate of the stream
+    ///
+    /// The sample rate is the number of audio samples played per
+    /// second. The higher, the better the quality.
+    ///
+    /// \return Sample rate, in number of samples per second
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getSampleRate() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialization.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] ChannelMap getChannelMap() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the total number of audio samples in the source file
+    ///
+    /// \return Number of samples
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::U64 getSampleCount() const;
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Try opening the music file from an optional input sound file
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<Music> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+                                                                         const char*                      errorContext);
+
+public:
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Initialize the internal state after loading a new music
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Music(base::PassKey<Music>&&, InputSoundFile&& file);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Structure template defining a time range
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename T>
+    struct [[nodiscard]] Span
+    {
+        T offset{}; //!< The beginning offset of the time range
+        T length{}; //!< The length of the time range
+    };
+
+    // Define the relevant `Span` types
+    using TimeSpan = Span<Time>;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the positions of the of the music's looping sequence
+    ///
+    /// \return `TimeSpan` containing looping sequence positions
     ///
     /// \warning Since `setLoopPoints()` performs some adjustments on the
     /// provided values and rounds them to internal samples, a call to
     /// `getLoopPoints()` is not guaranteed to return the same times passed
     /// into a previous call to `setLoopPoints()`. However, it is guaranteed
     /// to return times that will map to the valid internal samples of
-    /// this Music if they are later passed to `setLoopPoints()`.
+    /// this music stream if they are later passed to `setLoopPoints()`.
     ///
     /// \see `setLoopPoints`
     ///
@@ -248,18 +218,18 @@ public:
     [[nodiscard]] TimeSpan getLoopPoints() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Sets the beginning and duration of the sound's looping sequence using `sf::Time`
+    /// \brief Sets the beginning and duration of the sound's looping sequence using `TimeSpan`
     ///
-    /// `setLoopPoints()` allows for specifying the beginning offset and the duration of the loop such that,
-    /// when the music is enabled for looping, it will seamlessly seek to the beginning whenever it
+    /// `setLoopPoints()` allows for specifying the beginning offset and the duration of the loop such that, when the music
+    /// is enabled for looping, it will seamlessly seek to the beginning whenever it
     /// encounters the end of the duration. Valid ranges for `timePoints.offset` and `timePoints.length` are
-    /// [0, Dur) and (0, Dur-offset] respectively, where Dur is the value returned by `getDuration()`.
+    /// `[0, Dur)` and `(0, Dur-offset]` respectively, where Dur is the value returned by `getDuration()`.
     /// Note that the EOF "loop point" from the end to the beginning of the stream is still honored,
     /// in case the caller seeks to a point after the end of the loop range. This function can be
     /// safely called at any point after a stream is opened, and will be applied to a playing sound
     /// without affecting the current playing offset.
     ///
-    /// \warning Setting the loop points while the stream's status is Paused
+    /// \warning Setting the loop points while the stream's status is `Paused`
     /// will set its status to Stopped. The playing offset will be unaffected.
     ///
     /// \param timePoints The definition of the loop. Can be any time points within the sound's length
@@ -298,37 +268,17 @@ protected:
     /// the seek position for a loop. We then determine whether we are looping on a
     /// loop point or the end-of-file, perform the seek, and return the new position.
     ///
-    /// \return The seek position after looping (or `std::nullopt` if there's no loop)
+    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    std::optional<std::uint64_t> onLoop() override;
+    [[nodiscard]] base::Optional<base::U64> onLoop() override;
 
 private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert an `sf::Time` to a sample position
-    ///
-    /// \param position Time to convert to samples
-    ///
-    /// \return The number of samples elapsed at the given time
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t timeToSamples(Time position) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Helper to convert a sample position to an `sf::Time`
-    ///
-    /// \param samples Sample count to convert to Time
-    ///
-    /// \return The Time position of the given sample
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time samplesToTime(std::uint64_t samples) const;
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -360,7 +310,7 @@ private:
 /// Usage example:
 /// \code
 /// // Open a music from an audio file
-/// sf::Music music("music.ogg");
+/// auto music = sf::Music::openFromFile("music.ogg").value();
 ///
 /// // Change some parameters
 /// music.setPosition({0, 1, 10}); // change its 3D position
@@ -368,8 +318,12 @@ private:
 /// music.setVolume(50);           // reduce the volume
 /// music.setLooping(true);        // make it loop
 ///
+/// // Create an audio context and get the default playback device
+/// auto audioContext = sf::AudioContext::create().value();
+/// auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+///
 /// // Play it
-/// music.play();
+/// music.play(playbackDevice);
 /// \endcode
 ///
 /// \see `sf::Sound`, `sf::SoundStream`

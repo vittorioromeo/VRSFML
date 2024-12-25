@@ -1,125 +1,59 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/VideoModeImpl.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
-#include <algorithm>
-#include <functional>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-VideoMode::VideoMode(Vector2u modeSize, unsigned int modeBitsPerPixel) : size(modeSize), bitsPerPixel(modeBitsPerPixel)
-{
-}
-
-
-////////////////////////////////////////////////////////////
-VideoMode VideoMode::getDesktopMode()
-{
-    // Directly forward to the OS-specific implementation
-    return priv::VideoModeImpl::getDesktopMode();
-}
-
-
-////////////////////////////////////////////////////////////
-const std::vector<VideoMode>& VideoMode::getFullscreenModes()
-{
-    static const auto modes = []
-    {
-        std::vector<VideoMode> result = priv::VideoModeImpl::getFullscreenModes();
-        std::sort(result.begin(), result.end(), std::greater<>());
-        return result;
-    }();
-
-    return modes;
-}
-
-
-////////////////////////////////////////////////////////////
 bool VideoMode::isValid() const
 {
-    const std::vector<VideoMode>& modes = getFullscreenModes();
+    const base::Span<const VideoMode> modes = VideoModeUtils::getFullscreenModes();
 
-    return std::find(modes.begin(), modes.end(), *this) != modes.end();
+    return base::find(modes.begin(), modes.end(), *this) != modes.end();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator==(const VideoMode& left, const VideoMode& right)
+bool operator<(const VideoMode& lhs, const VideoMode& rhs)
 {
-    return (left.size == right.size) && (left.bitsPerPixel == right.bitsPerPixel);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator!=(const VideoMode& left, const VideoMode& right)
-{
-    return !(left == right);
-}
-
-
-////////////////////////////////////////////////////////////
-bool operator<(const VideoMode& left, const VideoMode& right)
-{
-    if (left.bitsPerPixel == right.bitsPerPixel)
+    if (lhs.bitsPerPixel == rhs.bitsPerPixel)
     {
-        if (left.size.x == right.size.x)
-        {
-            return left.size.y < right.size.y;
-        }
+        if (lhs.size.x == rhs.size.x)
+            return lhs.size.y < rhs.size.y;
 
-        return left.size.x < right.size.x;
+        return lhs.size.x < rhs.size.x;
     }
 
-    return left.bitsPerPixel < right.bitsPerPixel;
+    return lhs.bitsPerPixel < rhs.bitsPerPixel;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>(const VideoMode& left, const VideoMode& right)
+bool operator>(const VideoMode& lhs, const VideoMode& rhs)
 {
-    return right < left;
+    return rhs < lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator<=(const VideoMode& left, const VideoMode& right)
+bool operator<=(const VideoMode& lhs, const VideoMode& rhs)
 {
-    return !(right < left);
+    return !(rhs < lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool operator>=(const VideoMode& left, const VideoMode& right)
+bool operator>=(const VideoMode& lhs, const VideoMode& rhs)
 {
-    return !(left < right);
+    return !(lhs < rhs);
 }
 
 } // namespace sf

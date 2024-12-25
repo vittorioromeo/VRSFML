@@ -1,52 +1,32 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/RenderTarget.hpp>
+#include "SFML/Graphics/RenderTarget.hpp"
 
-#include <SFML/Window/ContextSettings.hpp>
-#include <SFML/Window/VideoMode.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowEnums.hpp>
-#include <SFML/Window/WindowHandle.hpp>
+#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/Vector2.hpp"
 
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class Image;
+} // namespace sf
 
 
 namespace sf
 {
-class Image;
-class String;
-
 ////////////////////////////////////////////////////////////
 /// \brief Window that can serve as a target for 2D drawing
 ///
@@ -55,58 +35,18 @@ class SFML_GRAPHICS_API RenderWindow : public Window, public RenderTarget
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// This constructor doesn't actually create the window,
-    /// use the other constructors or call `create()` to do so.
+    /// \brief Window creation settings
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow() = default;
+    using Settings = WindowSettings;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a new window
     ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in `mode`. An optional style can be passed to
-    /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...).
-    ///
-    /// The last parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as anti-aliasing,
-    /// depth-buffer bits, etc. You shouldn't care about these
-    /// parameters for a regular usage of the graphics module.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param style    %Window style, a bitwise OR combination of `sf::Style` enumerators
-    /// \param state    %Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// Creates the render window with the specified \a windowSettings.
     ///
     ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode              mode,
-                 const String&          title,
-                 std::uint32_t          style    = Style::Default,
-                 State                  state    = State::Windowed,
-                 const ContextSettings& settings = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a new window
-    ///
-    /// This constructor creates the window with the size and pixel
-    /// depth defined in `mode`. If `state` is `State::Fullscreen`,
-    /// then `mode` must be a valid video mode.
-    ///
-    /// The last parameter is an optional structure specifying
-    /// advanced OpenGL context settings such as anti-aliasing,
-    /// depth-buffer bits, etc.
-    ///
-    /// \param mode     Video mode to use (defines the width, height and depth of the rendering area of the window)
-    /// \param title    Title of the window
-    /// \param state    %Window state
-    /// \param settings Additional settings for the underlying OpenGL context
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings = {});
+    [[nodiscard]] explicit RenderWindow(const Settings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the window from an existing control
@@ -124,7 +64,37 @@ public:
     /// \param settings Additional settings for the underlying OpenGL context
     ///
     ////////////////////////////////////////////////////////////
-    explicit RenderWindow(WindowHandle handle, const ContextSettings& settings = {});
+    [[nodiscard]] explicit RenderWindow(WindowHandle handle, const ContextSettings& contextSettings = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderWindow(const RenderWindow&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderWindow& operator=(const RenderWindow&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderWindow(RenderWindow&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderWindow& operator=(RenderWindow&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    ~RenderWindow() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window
@@ -178,16 +148,37 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setActive(bool active = true) override;
 
-protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Function called after the window has been created
+    /// \brief Sets the size of the window and forwards to `WindowBase::setSize`
     ///
-    /// This function is called so that derived classes can
-    /// perform their own specific initialization as soon as
-    /// the window is created.
+    /// \see WindowBase::setSize
     ///
     ////////////////////////////////////////////////////////////
-    void onCreate() override;
+    void setSize(const Vector2u& size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Polls the next event and forwards to `WindowBase::pollEvent`
+    ///
+    /// \see WindowBase::pollEvent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Optional<Event> pollEvent();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Waits for the next event and forwards to `WindowBase::waitEvent`
+    ///
+    /// \see WindowBase::waitEvent
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a new window
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... TWindowArgs>
+    [[nodiscard]] explicit RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Function called after the window has been resized
@@ -196,9 +187,22 @@ protected:
     /// perform custom actions when the size of the window changes.
     ///
     ////////////////////////////////////////////////////////////
-    void onResize() override;
+    void onResize();
 
-private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Processes an event before it is sent to the user
+    ///
+    /// This function is called every time an event is received
+    /// from the internal window (through pollEvent or waitEvent).
+    /// It filters out unwanted events, and performs whatever internal
+    /// stuff the window needs before the event is returned to the
+    /// user.
+    ///
+    /// \param event Event to filter
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Optional<Event> filterEvent(base::Optional<Event> event);
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -228,20 +232,20 @@ private:
 ///
 /// \code
 /// // Declare and create a new render-window
-/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML window");
+/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Window"});
 ///
 /// // Limit the framerate to 60 frames per second (this step is optional)
 /// window.setFramerateLimit(60);
 ///
 /// // The main loop - ends as soon as the window is closed
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///    // Event processing
-///    while (const std::optional event = window.pollEvent())
+///    while (const sf::base::Optional event = window.pollEvent())
 ///    {
 ///        // Request for closing the window
 ///        if (event->is<sf::Event::Closed>())
-///            window.close();
+///            return 0; // break out of both loops
 ///    }
 ///
 ///    // Clear the whole window before rendering a new frame
@@ -263,12 +267,12 @@ private:
 ///
 /// \code
 /// // Create the render window
-/// sf::RenderWindow window(sf::VideoMode({800, 600}), "SFML OpenGL");
+/// sf::RenderWindow window({.size{800u, 600u}, .title = "SFML OpenGL"});
 ///
 /// // Create a sprite and a text to display
-/// const sf::Texture texture("circle.png");
+/// const auto texture = sf::Texture::loadFromFile("circle.png").value();
 /// sf::Sprite sprite(texture);
-/// const sf::Font font("arial.ttf");
+/// const auto font = sf::Font::openFromFile("arial.ttf").value();
 /// sf::Text text(font);
 /// ...
 ///
@@ -277,15 +281,14 @@ private:
 /// ...
 ///
 /// // Start the rendering loop
-/// while (window.isOpen())
+/// while (true)
 /// {
 ///     // Process events
 ///     ...
 ///
 ///     // Draw a background sprite
-///     window.pushGLStates();
-///     window.draw(sprite);
-///     window.popGLStates();
+///     window.resetGLStates();
+///     window.draw(sprite, texture);
 ///
 ///     // Draw a 3D object using OpenGL
 ///     glBegin(GL_TRIANGLES);
@@ -294,9 +297,8 @@ private:
 ///     glEnd();
 ///
 ///     // Draw text on top of the 3D object
-///     window.pushGLStates();
+///     window.resetGLStates();
 ///     window.draw(text);
-///     window.popGLStates();
 ///
 ///     // Finally, display the rendered frame on screen
 ///     window.display();

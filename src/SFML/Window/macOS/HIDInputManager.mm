@@ -1,42 +1,17 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/HIDInputManager.hpp>
+#include "SFML/Window/macOS/HIDInputManager.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <AppKit/AppKit.h>
-#include <array>
-#include <ostream>
 
 namespace
 {
-const std::uint8_t unknownVirtualCode = 0xff;
+const base::U8 unknownVirtualCode = 0xff;
 const bool         isIsoKeyboard      = (KBGetLayoutType(LMGetKbdType()) == kKeyboardISO);
 } // namespace
 
@@ -70,7 +45,7 @@ long HIDInputManager::getLocationID(IOHIDDeviceRef device)
 
 
 ////////////////////////////////////////////////////////////
-CFDictionaryRef HIDInputManager::copyDevicesMask(std::uint32_t page, std::uint32_t usage)
+CFDictionaryRef HIDInputManager::copyDevicesMask(base::U32 page, base::U32 usage)
 {
     // Create the dictionary.
     CFMutableDictionaryRef dict = CFDictionaryCreateMutable(kCFAllocatorDefault,
@@ -469,7 +444,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(char16_t virtualKeycode)
         case 0x50: return Keyboard::Scan::F19;
         case 0x5A: return Keyboard::Scan::F20;
 
-        /* TODO Those are missing:
+        /* TODO P2: Those are missing:
          * case 0x: return Keyboard::Scan::F21;
          * case 0x: return Keyboard::Scan::F22;
          * case 0x: return Keyboard::Scan::F23;
@@ -478,7 +453,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(char16_t virtualKeycode)
 
         case 0x39: return Keyboard::Scan::CapsLock;
 
-        /* TODO Those are missing:
+        /* TODO P2: Those are missing:
          * case 0x: return Keyboard::Scan::PrintScreen;
          * case 0x: return Keyboard::Scan::ScrollLock;
          * case 0x: return Keyboard::Scan::Pause;
@@ -516,7 +491,7 @@ Keyboard::Scancode HIDInputManager::nonLocalizedKey(char16_t virtualKeycode)
         case 0x5c: return Keyboard::Scan::Numpad9;
         case 0x52: return Keyboard::Scan::Numpad0;
 
-        /* TODO Those are missing:
+        /* TODO P2: Those are missing:
          * case 0x: return Keyboard::Scan::Application;
          * case 0x: return Keyboard::Scan::Execute;
          * case 0x: return Keyboard::Scan::Help;
@@ -718,7 +693,7 @@ HIDInputManager::HIDInputManager()
 
     if (openStatus != kIOReturnSuccess)
     {
-        err() << "Error when opening the HID manager" << std::endl;
+        priv::err() << "Error when opening the HID manager";
         freeUp();
         return;
     }
@@ -756,7 +731,7 @@ void HIDInputManager::initializeKeyboard()
     CFSetRef underlying = copyDevices(kHIDPage_GenericDesktop, kHIDUsage_GD_Keyboard);
     if (underlying == nullptr)
     {
-        err() << "No keyboard detected by the HID manager!" << std::endl;
+        priv::err() << "No keyboard detected by the HID manager!";
         freeUp();
         return;
     }
@@ -778,7 +753,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
     CFArrayRef underlying = IOHIDDeviceCopyMatchingElements(keyboard, nullptr, kIOHIDOptionsTypeNone);
     if ((underlying == nullptr) || (CFArrayGetCount(underlying) == 0))
     {
-        err() << "Detected a keyboard without any keys." << std::endl;
+        priv::err() << "Detected a keyboard without any keys.";
         return;
     }
 
@@ -797,7 +772,7 @@ void HIDInputManager::loadKeyboard(IOHIDDeviceRef keyboard)
 ////////////////////////////////////////////////////////////
 void HIDInputManager::loadKey(IOHIDElementRef key)
 {
-    const std::uint32_t      usage = IOHIDElementGetUsage(key);
+    const base::U32      usage = IOHIDElementGetUsage(key);
     const Keyboard::Scancode code  = usageToScancode(usage);
     if (code != Keyboard::Scan::Unknown)
     {
@@ -820,19 +795,19 @@ void HIDInputManager::buildMappings()
 
     if (layoutData == nullptr)
     {
-        err() << "Cannot get the keyboard layout\n";
+        priv::err() << "Cannot get the keyboard layout\n";
         CFRelease(tis);
         return;
     }
 
-    auto* layout = reinterpret_cast<UCKeyboardLayout*>(const_cast<std::uint8_t*>(CFDataGetBytePtr(layoutData)));
+    auto* layout = reinterpret_cast<UCKeyboardLayout*>(const_cast<base::U8*>(CFDataGetBytePtr(layoutData)));
 
     // For each scancode having a IOHIDElement, we translate the corresponding
     // virtual code to a localized Key.
     for (unsigned int i = 0; i < Keyboard::ScancodeCount; ++i)
     {
         const auto         scan        = static_cast<Keyboard::Scancode>(i);
-        const std::uint8_t virtualCode = scanToVirtualCode(scan);
+        const base::U8 virtualCode = scanToVirtualCode(scan);
 
         if (virtualCode == unknownVirtualCode)
             continue;
@@ -869,10 +844,11 @@ void HIDInputManager::buildMappings()
         if (translateToString)
         {
             // Unicode string length is usually less or equal to 4
-            std::array<UniChar, 4> string{};
-            UniCharCount           length       = 0;
-            std::uint32_t          deadKeyState = 0;     // unused value
-            const std::uint32_t    modifiers    = 0x100; // no modifiers
+            const UniCharCount  maxLength = 4;
+            UniChar             string[maxLength];
+            UniCharCount        length       = 0;
+            base::U32       deadKeyState = 0;     // unused value
+            const base::U32 modifiers    = 0x100; // no modifiers
 
             // Use current layout for translation
             const OSStatus error = UCKeyTranslate(layout,
@@ -882,13 +858,13 @@ void HIDInputManager::buildMappings()
                                                   LMGetKbdType(),
                                                   kUCKeyTranslateNoDeadKeysMask,
                                                   &deadKeyState,
-                                                  string.size(),
+                                                  maxLength,
                                                   &length,
-                                                  string.data());
+                                                  string);
 
             if (error != noErr)
             {
-                err() << "Cannot translate the virtual key code, error: " << error << "\n";
+                priv::err() << "Cannot translate the virtual key code, error: " << error << "\n";
                 continue;
             }
 
@@ -945,7 +921,7 @@ void HIDInputManager::freeUp()
 
 
 ////////////////////////////////////////////////////////////
-CFSetRef HIDInputManager::copyDevices(std::uint32_t page, std::uint32_t usage)
+CFSetRef HIDInputManager::copyDevices(base::U32 page, base::U32 usage)
 {
     // Filter and keep only the requested devices
     CFDictionaryRef mask = copyDevicesMask(page, usage);
@@ -999,7 +975,7 @@ bool HIDInputManager::isPressed(IOHIDElements& elements) const
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode HIDInputManager::usageToScancode(std::uint32_t usage)
+Keyboard::Scancode HIDInputManager::usageToScancode(base::U32 usage)
 {
     // clang-format off
     switch (usage)
@@ -1206,7 +1182,7 @@ Keyboard::Scancode HIDInputManager::usageToScancode(std::uint32_t usage)
 
 
 ////////////////////////////////////////////////////////
-std::uint8_t HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
+base::U8 HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
 {
     // clang-format off
     switch (code)
@@ -1285,7 +1261,7 @@ std::uint8_t HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
 
         case Keyboard::Scan::CapsLock: return 0x39;
 
-        /* TODO Those are missing:
+        /* TODO P2: Those are missing:
          * case Keyboard::Scan::PrintScreen: return 0;
          * case Keyboard::Scan::ScrollLock:  return 0;
          * case Keyboard::Scan::Pause:    return 0;
@@ -1324,7 +1300,7 @@ std::uint8_t HIDInputManager::scanToVirtualCode(Keyboard::Scancode code)
 
         case Keyboard::Scan::NonUsBackslash: return 0x32;
 
-        /* TODO Those are missing:
+        /* TODO P2: Those are missing:
          * case Keyboard::Scan::Application: return 0;
          * case Keyboard::Scan::Execute:     return 0;
          * case Keyboard::Scan::Help:        return 0;

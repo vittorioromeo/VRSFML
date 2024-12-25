@@ -1,43 +1,23 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Socket.hpp>
-#include <SFML/Network/SocketImpl.hpp>
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/SocketImpl.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <ostream>
-#include <utility>
+#include "SFML/Base/Algorithm.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Socket::Socket(Type type) : m_type(type), m_socket(priv::SocketImpl::invalidSocket())
+Socket::Socket(Type type, bool isBlocking) :
+m_type(type),
+m_socket(priv::SocketImpl::invalidSocket()),
+m_isBlocking(isBlocking)
 {
 }
 
@@ -45,31 +25,39 @@ Socket::Socket(Type type) : m_type(type), m_socket(priv::SocketImpl::invalidSock
 ////////////////////////////////////////////////////////////
 Socket::~Socket()
 {
-    // Close the socket before it gets destructed
-    close();
+    if (m_socket != priv::SocketImpl::invalidSocket())
+    {
+        [[maybe_unused]] const bool rc = close();
+        SFML_BASE_ASSERT(rc);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-Socket::Socket(Socket&& socket) noexcept :
-m_type(socket.m_type),
-m_socket(std::exchange(socket.m_socket, priv::SocketImpl::invalidSocket())),
-m_isBlocking(socket.m_isBlocking)
+Socket::Socket(Socket&& rhs) noexcept :
+m_type(rhs.m_type),
+m_socket(base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
+m_isBlocking(rhs.m_isBlocking)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Socket& Socket::operator=(Socket&& socket) noexcept
+Socket& Socket::operator=(Socket&& rhs) noexcept
 {
-    if (&socket == this)
+    if (&rhs == this)
         return *this;
 
-    close();
+    if (m_socket != priv::SocketImpl::invalidSocket())
+    {
+        [[maybe_unused]] const bool rc = close();
+        SFML_BASE_ASSERT(rc);
+    }
 
-    m_type       = socket.m_type;
-    m_socket     = std::exchange(socket.m_socket, priv::SocketImpl::invalidSocket());
-    m_isBlocking = socket.m_isBlocking;
+    m_type       = rhs.m_type;
+    m_socket     = base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket());
+    m_isBlocking = rhs.m_isBlocking;
+
     return *this;
 }
 
@@ -100,76 +88,100 @@ SocketHandle Socket::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-void Socket::create()
+bool Socket::create()
 {
-    // Don't create the socket if it already exists
-    if (m_socket == priv::SocketImpl::invalidSocket())
+    if (m_socket != priv::SocketImpl::invalidSocket())
     {
-        const SocketHandle handle = socket(PF_INET, m_type == Type::Tcp ? SOCK_STREAM : SOCK_DGRAM, 0);
-
-        if (handle == priv::SocketImpl::invalidSocket())
-        {
-            err() << "Failed to create socket" << std::endl;
-            return;
-        }
-
-        create(handle);
+        priv::err() << "Attempted to create a previously created socket";
+        return false;
     }
+
+    const SocketHandle handle = m_type == Type::Tcp ? priv::SocketImpl::tcpSocket() : priv::SocketImpl::udpSocket();
+
+    if (handle == priv::SocketImpl::invalidSocket())
+    {
+        priv::err() << "Failed to create socket";
+        return false;
+    }
+
+    return create(handle);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Socket::create(SocketHandle handle)
+bool Socket::create(SocketHandle handle)
 {
-    // Don't create the socket if it already exists
-    if (m_socket == priv::SocketImpl::invalidSocket())
+    if (m_socket != priv::SocketImpl::invalidSocket())
     {
-        // Assign the new handle
-        m_socket = handle;
+        priv::err() << "Attempted to create a previously created socket (from handle)";
+        return false;
+    }
 
-        // Set the current blocking state
-        setBlocking(m_isBlocking);
+    // Assign the new handle
+    m_socket = handle;
 
-        if (m_type == Type::Tcp)
-        {
-            // Disable the Nagle algorithm (i.e. removes buffering of TCP packets)
-            int yes = 1;
-            if (setsockopt(m_socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
-                err() << "Failed to set socket option \"TCP_NODELAY\" ; "
-                      << "all your TCP packets will be buffered" << std::endl;
-            }
+    // Set the current blocking state
+    setBlocking(m_isBlocking);
+
+    if (m_type == Type::Tcp)
+    {
+        // Disable the Nagle algorithm (i.e. removes buffering of TCP packets)
+        if (!priv::SocketImpl::disableNagle(m_socket))
+            priv::err() << "Failed to set socket option \"TCP_NODELAY\" ; all your TCP packets will be buffered";
 
 // On macOS, disable the SIGPIPE signal on disconnection
 #ifdef SFML_SYSTEM_MACOS
-            if (setsockopt(m_socket, SOL_SOCKET, SO_NOSIGPIPE, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
-                err() << "Failed to set socket option \"SO_NOSIGPIPE\"" << std::endl;
-            }
+        if (!priv::SocketImpl::disableSigpipe(m_socket))
+            priv::err() << "Failed to set socket option \"SO_NOSIGPIPE\"";
 #endif
-        }
-        else
-        {
-            // Enable broadcast by default for UDP sockets
-            int yes = 1;
-            if (setsockopt(m_socket, SOL_SOCKET, SO_BROADCAST, reinterpret_cast<char*>(&yes), sizeof(yes)) == -1)
-            {
-                err() << "Failed to enable broadcast on UDP socket" << std::endl;
-            }
-        }
     }
+    else
+    {
+        // Enable broadcast by default for UDP sockets
+        if (!priv::SocketImpl::enableBroadcast(m_socket))
+            priv::err() << "Failed to enable broadcast on UDP socket";
+    }
+
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Socket::close()
+bool Socket::close()
 {
-    // Close the socket
-    if (m_socket != priv::SocketImpl::invalidSocket())
+    if (m_socket == priv::SocketImpl::invalidSocket())
     {
-        priv::SocketImpl::close(m_socket);
-        m_socket = priv::SocketImpl::invalidSocket();
+        priv::err() << "Attempted to close an invalid socket";
+        return false;
     }
+
+    priv::SocketImpl::close(m_socket);
+    m_socket = priv::SocketImpl::invalidSocket();
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned short Socket::getLocalPortImpl(const char* socketTypeStr) const
+{
+    if (getNativeHandle() == priv::SocketImpl::invalidSocket())
+    {
+        priv::err() << "Attempted to get local port of invalid " << socketTypeStr;
+        return 0;
+    }
+
+    // Retrieve information about the local end of the socket
+    priv::SockAddrIn address{};
+    auto             size = address.size();
+
+    if (!priv::SocketImpl::getSockName(getNativeHandle(), address, size))
+    {
+        priv::err() << "Failed to retrieve local port of" << socketTypeStr;
+        return 0;
+    }
+
+    return priv::SocketImpl::getNtohs(address.sinPort());
 }
 
 } // namespace sf

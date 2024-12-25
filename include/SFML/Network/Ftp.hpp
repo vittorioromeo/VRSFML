@@ -1,39 +1,18 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/Network/TcpSocket.hpp>
+#include "SFML/Network/TcpSocket.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <filesystem>
+#include "SFML/Base/Span.hpp"
+
 #include <string>
 #include <vector>
 
@@ -143,7 +122,7 @@ public:
         /// \param message Response message
         ///
         ////////////////////////////////////////////////////////////
-        explicit Response(Status code = Status::InvalidResponse, std::string message = "");
+        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, std::string message = "");
 
         ////////////////////////////////////////////////////////////
         /// \brief Check if the status code means a success
@@ -193,7 +172,7 @@ public:
         /// \param response Source response
         ///
         ////////////////////////////////////////////////////////////
-        DirectoryResponse(const Response& response);
+        [[nodiscard]] DirectoryResponse(const Response& response);
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the directory returned in the response
@@ -201,15 +180,14 @@ public:
         /// \return Directory name
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::filesystem::path& getDirectory() const;
+        [[nodiscard]] const Path& getDirectory() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        std::filesystem::path m_directory; //!< Directory extracted from the response message
+        Path m_directory; //!< Directory extracted from the response message
     };
-
 
     ////////////////////////////////////////////////////////////
     /// \brief Specialization of FTP response returning a
@@ -225,15 +203,15 @@ public:
         /// \param data      Data containing the raw listing
         ///
         ////////////////////////////////////////////////////////////
-        ListingResponse(const Response& response, const std::string& data);
+        [[nodiscard]] ListingResponse(const Response& response, const std::string& data);
 
         ////////////////////////////////////////////////////////////
         /// \brief Return the array of directory/file names
         ///
-        /// \return Array containing the requested listing
+        /// \return Span containing the requested listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::vector<std::string>& getListing() const;
+        [[nodiscard]] base::Span<const std::string> getListing() const;
 
     private:
         ////////////////////////////////////////////////////////////
@@ -246,7 +224,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Ftp() = default;
+    [[nodiscard]] explicit Ftp();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -438,7 +416,7 @@ public:
     /// \see `deleteFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response renameFile(const std::filesystem::path& file, const std::filesystem::path& newName);
+    [[nodiscard]] Response renameFile(const Path& file, const Path& newName);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing file
@@ -455,7 +433,7 @@ public:
     /// \see `renameFile`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response deleteFile(const std::filesystem::path& name);
+    [[nodiscard]] Response deleteFile(const Path& name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Download a file from the server
@@ -477,9 +455,7 @@ public:
     /// \see `upload`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response download(const std::filesystem::path& remoteFile,
-                                    const std::filesystem::path& localPath,
-                                    TransferMode                 mode = TransferMode::Binary);
+    [[nodiscard]] Response download(const Path& remoteFile, const Path& localPath, TransferMode mode = TransferMode::Binary);
 
     ////////////////////////////////////////////////////////////
     /// \brief Upload a file to the server
@@ -502,10 +478,10 @@ public:
     /// \see `download`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response upload(const std::filesystem::path& localFile,
-                                  const std::filesystem::path& remotePath,
-                                  TransferMode                 mode   = TransferMode::Binary,
-                                  bool                         append = false);
+    [[nodiscard]] Response upload(const Path&  localFile,
+                                  const Path&  remotePath,
+                                  TransferMode mode   = TransferMode::Binary,
+                                  bool         append = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a command to the FTP server
@@ -535,7 +511,7 @@ private:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    Response getResponse();
+    [[nodiscard]] Response getResponse();
 
     ////////////////////////////////////////////////////////////
     /// \brief Utility class for exchanging data with the server
@@ -595,32 +571,32 @@ private:
 /// // Connect to the server
 /// sf::Ftp::Response response = ftp.connect("ftp://ftp.myserver.com");
 /// if (response.isOk())
-///     std::cout << "Connected" << std::endl;
+///     std::cout << "Connected" << '\n';
 ///
 /// // Log in
 /// response = ftp.login("laurent", "dF6Zm89D");
 /// if (response.isOk())
-///     std::cout << "Logged in" << std::endl;
+///     std::cout << "Logged in" << '\n';
 ///
 /// // Print the working directory
 /// sf::Ftp::DirectoryResponse directory = ftp.getWorkingDirectory();
 /// if (directory.isOk())
-///     std::cout << "Working directory: " << directory.getDirectory() << std::endl;
+///     std::cout << "Working directory: " << directory.getDirectory() << '\n';
 ///
 /// // Create a new directory
 /// response = ftp.createDirectory("files");
 /// if (response.isOk())
-///     std::cout << "Created new directory" << std::endl;
+///     std::cout << "Created new directory" << '\n';
 ///
 /// // Upload a file to this new directory
 /// response = ftp.upload("local-path/file.txt", "files", sf::Ftp::TransferMode::Ascii);
 /// if (response.isOk())
-///     std::cout << "File uploaded" << std::endl;
+///     std::cout << "File uploaded" << '\n';
 ///
 /// // Send specific commands (here: FEAT to list supported FTP features)
 /// response = ftp.sendCommand("FEAT");
 /// if (response.isOk())
-///     std::cout << "Feature list:\n" << response.getMessage() << std::endl;
+///     std::cout << "Feature list:\n" << response.getMessage() << '\n';
 ///
 /// // Disconnect from the server (optional)
 /// ftp.disconnect();

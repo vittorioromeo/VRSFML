@@ -1,40 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/HIDInputManager.hpp>
-#include <SFML/Window/macOS/HIDJoystickManager.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/HIDInputManager.hpp"
+#include "SFML/Window/macOS/HIDJoystickManager.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <algorithm>
-#include <ostream>
+#include <algorithm> // std::sort
 
 
 namespace
@@ -44,7 +20,7 @@ namespace
 std::string stringFromCFString(CFStringRef cfString)
 {
     const CFIndex     length = CFStringGetLength(cfString);
-    std::vector<char> str(static_cast<std::size_t>(length));
+    std::vector<char> str(static_cast<base::SizeT>(length));
     const CFIndex     maxSize = CFStringGetMaximumSizeForEncoding(length, kCFStringEncodingUTF8);
     CFStringGetCString(cfString, str.data(), maxSize, kCFStringEncodingUTF8);
     return str.data();
@@ -60,8 +36,8 @@ std::string getDeviceString(IOHIDDeviceRef ref, CFStringRef prop, unsigned int i
         return stringFromCFString(str);
     }
 
-    sf::err() << "Unable to read string value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+    sf::priv::err() << "Unable to read string value for property '" << stringFromCFString(prop)
+                    << "' for joystick at index " << index;
     return "Unknown Joystick";
 }
 
@@ -77,8 +53,8 @@ unsigned int getDeviceUint(IOHIDDeviceRef ref, CFStringRef prop, unsigned int in
         return static_cast<unsigned int>(value);
     }
 
-    sf::err() << "Unable to read uint value for property '" << stringFromCFString(prop) << "' for joystick at index "
-              << index << std::endl;
+    sf::priv::err() << "Unable to read uint value for property '" << stringFromCFString(prop)
+                    << "' for joystick at index " << index;
     return 0;
 }
 } // namespace
@@ -126,20 +102,20 @@ bool JoystickImpl::isConnected(unsigned int index)
                 ++openedCount;
         }
 
-
-        const unsigned int connectedCount = HIDJoystickManager::getInstance().getJoystickCount();
+        auto&              hidJoystickManager = HIDJoystickManager::getInstance();
+        const unsigned int connectedCount     = hidJoystickManager.getJoystickCount();
 
         if (connectedCount > openedCount)
         {
             // Get all devices
-            CFSetRef devices = HIDJoystickManager::getInstance().copyJoysticks();
+            CFSetRef devices = hidJoystickManager.copyJoysticks();
 
             if (devices != nullptr)
             {
                 const CFIndex size = CFSetGetCount(devices);
                 if (size > 0)
                 {
-                    std::vector<CFTypeRef> array(static_cast<std::size_t>(size)); // array of IOHIDDeviceRef
+                    std::vector<CFTypeRef> array(static_cast<base::SizeT>(size)); // array of IOHIDDeviceRef
                     CFSetGetValues(devices, array.data());
 
                     // If there exists a device d s.t. there is no j s.t.
@@ -147,11 +123,11 @@ bool JoystickImpl::isConnected(unsigned int index)
 
                     for (CFIndex didx(0); !state && didx < size; ++didx)
                     {
-                        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(array[static_cast<std::size_t>(didx)]));
+                        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(array[static_cast<base::SizeT>(didx)]));
                         const Location dloc = HIDInputManager::getLocationID(d);
 
                         bool foundJ = false;
-                        for (unsigned int j(0); !foundJ && j < Joystick::Count; ++j)
+                        for (unsigned int j(0); !foundJ && j < Joystick::MaxCount; ++j)
                         {
                             if (m_locationIDs[j] == dloc)
                                 foundJ = true;
@@ -191,14 +167,14 @@ bool JoystickImpl::open(unsigned int index)
 
     // Get a usable copy of the joysticks devices.
     const CFIndex          joysticksCount = CFSetGetCount(devices);
-    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    std::vector<CFTypeRef> devicesArray(static_cast<base::SizeT>(joysticksCount));
     CFSetGetValues(devices, devicesArray.data());
 
     // Get the desired joystick.
     IOHIDDeviceRef self = nil;
     for (CFIndex i(0); self == nil && i < joysticksCount; ++i)
     {
-        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
+        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<base::SizeT>(i)]));
         if (deviceLoc == HIDInputManager::getLocationID(d))
             self = d;
     }
@@ -268,9 +244,10 @@ bool JoystickImpl::open(unsigned int index)
 
                             if (min != 0 || max != 7)
                             {
-                                sf::err() << std::hex << "Joystick (vendor/product id: 0x" << m_identification.vendorId
-                                          << "/0x" << m_identification.productId << std::dec
-                                          << ") range is an unexpected one: [" << min << ", " << max << "]" << std::endl;
+                                sf::priv::err()
+                                    << std::hex << "Joystick (vendor/product id: 0x" << m_identification.vendorId
+                                    << "/0x" << m_identification.productId << std::dec
+                                    << ") range is an unexpected one: [" << min << ", " << max << "]";
                             }
                             else
                             {
@@ -285,16 +262,17 @@ bool JoystickImpl::open(unsigned int index)
                         // See §3.4.3 Usage Types (Collection) of HUT v1.12
                         if (IOHIDElementGetCollectionType(element) != kIOHIDElementCollectionTypeApplication)
                         {
-                            sf::err() << std::hex << "Gamepage (vendor/product id: 0x" << m_identification.vendorId
-                                      << "/0x" << m_identification.productId << ") is not an CA but a 0x"
-                                      << IOHIDElementGetCollectionType(element) << std::dec << std::endl;
+                            sf::priv::err()
+                                << std::hex << "Gamepage (vendor/product id: 0x" << m_identification.vendorId << "/0x"
+                                << m_identification.productId << ") is not an CA but a 0x"
+                                << IOHIDElementGetCollectionType(element) << std::dec;
                         }
                         break;
 
                     default:
 #ifdef SFML_DEBUG
-                        sf::err() << "Unexpected usage for element of Page Generic Desktop: 0x" << std::hex
-                                  << IOHIDElementGetUsage(element) << std::dec << std::endl;
+                        sf::priv::err() << "Unexpected usage for element of Page Generic Desktop: 0x" << std::hex
+                                        << IOHIDElementGetUsage(element) << std::dec;
 #endif
                         break;
                 }
@@ -364,10 +342,10 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
     const AutoreleasePool pool;
-    JoystickCaps          caps;
+    JoystickCapabilities  caps;
 
     // Buttons:
     caps.buttonCount = static_cast<unsigned int>(m_buttons.size());
@@ -384,7 +362,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     const AutoreleasePool pool;
     return m_identification;
@@ -412,14 +390,14 @@ JoystickState JoystickImpl::update()
 
     // Get a usable copy of the joysticks devices.
     const CFIndex          joysticksCount = CFSetGetCount(devices);
-    std::vector<CFTypeRef> devicesArray(static_cast<std::size_t>(joysticksCount));
+    std::vector<CFTypeRef> devicesArray(static_cast<base::SizeT>(joysticksCount));
     CFSetGetValues(devices, devicesArray.data());
 
     // Search for it
     bool found = false;
     for (CFIndex i(0); !found && i < joysticksCount; ++i)
     {
-        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<std::size_t>(i)]));
+        auto* d = static_cast<IOHIDDeviceRef>(const_cast<void*>(devicesArray[static_cast<base::SizeT>(i)]));
         if (selfLoc == HIDInputManager::getLocationID(d))
             found = true;
     }

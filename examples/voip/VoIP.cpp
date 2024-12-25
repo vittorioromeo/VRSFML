@@ -4,13 +4,15 @@
 #include "Client.hpp"
 #include "Server.hpp"
 
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/CaptureDevice.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+
 #include <iostream>
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
@@ -25,13 +27,21 @@ int main()
 
     if (who == 's')
     {
+        // Create an audio context and get the default playback device
+        auto audioContext   = sf::AudioContext::create().value();
+        auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
         // Run as a server
-        doServer(port);
+        doServer(playbackDevice, port);
     }
     else
     {
+        // Create an audio context and get the default capture device
+        auto audioContext  = sf::AudioContext::create().value();
+        auto captureDevice = sf::CaptureDevice::createDefault(audioContext).value();
+
         // Run as a client
-        doClient(port);
+        doClient(captureDevice, port);
     }
 
     // Wait until the user presses 'enter' key

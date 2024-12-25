@@ -1,35 +1,27 @@
-#include <SFML/System/MemoryInputStream.hpp>
+#include "SFML/System/MemoryInputStream.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/StringView.hpp"
 
-#include <array>
-#include <ostream>
-#include <string_view>
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
+#include <StringifyStringViewUtil.hpp>
 
 TEST_CASE("[System] sf::MemoryInputStream")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::MemoryInputStream>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::MemoryInputStream>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::MemoryInputStream));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::MemoryInputStream));
     }
 
-    using namespace std::literals::string_view_literals;
+    using namespace sf::base::literals;
 
-    SECTION("Construction")
+    SECTION("open()")
     {
-        SECTION("Null data")
-        {
-            sf::MemoryInputStream memoryInputStream(nullptr, 0);
-            CHECK(memoryInputStream.read(nullptr, 0) == std::nullopt);
-            CHECK(memoryInputStream.seek(0) == std::nullopt);
-            CHECK(memoryInputStream.tell() == std::nullopt);
-            CHECK(memoryInputStream.getSize() == std::nullopt);
-        }
-
-        static constexpr auto input = "hello world"sv;
+        static constexpr auto input = "hello world"_sv;
 
         SECTION("Zero length")
         {
@@ -48,28 +40,28 @@ TEST_CASE("[System] sf::MemoryInputStream")
 
     SECTION("read()")
     {
-        static constexpr auto input = "hello world"sv;
+        static constexpr auto input = "hello world"_sv;
         sf::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read within input
-        std::array<char, 32> output{};
-        CHECK(memoryInputStream.read(output.data(), 5).value() == 5);
-        CHECK(std::string_view(output.data(), 5) == "hello"sv);
+        char output[32]{};
+        CHECK(memoryInputStream.read(output, 5).value() == 5);
+        CHECK(sf::base::StringView(output, 5) == "hello"_sv);
         CHECK(memoryInputStream.tell().value() == 5);
         CHECK(memoryInputStream.getSize().value() == input.size());
 
         // Read beyond input
-        CHECK(memoryInputStream.read(output.data(), 100).value() == 6);
-        CHECK(std::string_view(output.data(), 6) == " world"sv);
+        CHECK(memoryInputStream.read(output, 100).value() == 6);
+        CHECK(sf::base::StringView(output, 6) == " world"_sv);
         CHECK(memoryInputStream.tell().value() == 11);
         CHECK(memoryInputStream.getSize().value() == input.size());
     }
 
     SECTION("seek()")
     {
-        static constexpr auto input = "We Love SFML!"sv;
+        static constexpr auto input = "We Love SFML!"_sv;
         sf::MemoryInputStream memoryInputStream(input.data(), input.size());
         CHECK(memoryInputStream.tell().value() == 0);
         CHECK(memoryInputStream.getSize().value() == input.size());

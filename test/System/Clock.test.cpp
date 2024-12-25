@@ -1,22 +1,21 @@
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Clock.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-#include <thread>
-#include <type_traits>
 
 TEST_CASE("[System] sf::Clock")
 {
-    using namespace std::chrono_literals;
-
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Clock>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Clock>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Clock>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Clock>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Clock));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Clock));
     }
 
     SECTION("Construction")
@@ -31,7 +30,7 @@ TEST_CASE("[System] sf::Clock")
         const sf::Clock clock;
         CHECK(clock.getElapsedTime() >= sf::microseconds(0));
         const auto elapsed = clock.getElapsedTime();
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         CHECK(clock.getElapsedTime() > elapsed);
     }
 
@@ -41,7 +40,7 @@ TEST_CASE("[System] sf::Clock")
         clock.stop();
         CHECK(!clock.isRunning());
         const auto elapsed = clock.getElapsedTime();
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         CHECK(elapsed == clock.getElapsedTime());
 
         clock.start();
@@ -54,7 +53,7 @@ TEST_CASE("[System] sf::Clock")
         sf::Clock clock;
         CHECK(clock.restart() >= sf::microseconds(0));
         CHECK(clock.isRunning());
-        std::this_thread::sleep_for(1ms);
+        sf::sleep(sf::milliseconds(1));
         const auto elapsed = clock.restart();
         CHECK(clock.restart() < elapsed);
     }

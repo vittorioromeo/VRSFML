@@ -1,28 +1,5 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
@@ -52,13 +29,9 @@
 #include "TargetConditionals.h"
 
 #if TARGET_OS_IPHONE || TARGET_IPHONE_SIMULATOR
-
-// iOS
 #define SFML_SYSTEM_IOS
 
 #elif TARGET_OS_MAC
-
-// macOS
 #define SFML_SYSTEM_MACOS
 
 #else
@@ -72,29 +45,26 @@
 
 // UNIX system, see which one it is
 #if defined(__ANDROID__)
-
-// Android
 #define SFML_SYSTEM_ANDROID
 
 #elif defined(__linux__)
-
-// Linux
 #define SFML_SYSTEM_LINUX
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
-
-// FreeBSD
 #define SFML_SYSTEM_FREEBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__OpenBSD__)
-
-// OpenBSD
 #define SFML_SYSTEM_OPENBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
 
 #elif defined(__NetBSD__)
-
-// NetBSD
 #define SFML_SYSTEM_NETBSD
+#define SFML_SYSTEM_LINUX_OR_BSD
+
+#elif defined(__EMSCRIPTEN__)
+#define SFML_SYSTEM_EMSCRIPTEN
 
 #else
 

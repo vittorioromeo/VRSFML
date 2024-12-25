@@ -1,12 +1,21 @@
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Audio.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
-#include <SFML/Network.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
 
-#include <SFML/Window.hpp>
+#include "SFML/Base/Optional.hpp"
 
-#include <SFML/System.hpp>
+#include <cstdlib>
 
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
@@ -20,7 +29,7 @@
 
 // Since we want to get the native activity from SFML, we'll have to use an
 // extra header here:
-#include <SFML/System/NativeActivity.hpp>
+#include "SFML/System/NativeActivity.hpp"
 
 // NDK/JNI sub example - call Java code from native code
 int vibrate(sf::Time duration)
@@ -79,26 +88,29 @@ int vibrate(sf::Time duration)
 // This is the actual Android example. You don't have to write any platform
 // specific code, unless you want to use things not directly exposed.
 // ('vibrate()' in this example; undefine 'USE_JNI' above to disable it)
-int main(int argc, char* argv[])
+int main(int, char**)
 {
-    sf::VideoMode screen(sf::VideoMode::getDesktopMode());
+    // Create the graphics context
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
-    sf::RenderWindow window(screen, "");
-    window.setFramerateLimit(30);
+    const auto [size, bitsPerPixel] = sf::VideoModeUtils::getDesktopMode();
 
-    const sf::Texture texture("image.png");
+    sf::RenderWindow window({.size = size, .bitsPerPixel = bitsPerPixel, .framerateLimit = 30});
+    const auto       defaultView = window.getView();
 
-    sf::Sprite image(texture);
-    image.setPosition(sf::Vector2f(screen.size) / 2.f);
-    image.setOrigin(sf::Vector2f(texture.getSize()) / 2.f);
+    const auto texture = sf::Texture::loadFromFile("image.png").value();
 
-    const sf::Font font("tuffy.ttf");
+    sf::Sprite image{.textureRect = texture.getRect()};
+    image.position = size.toVector2f() / 2.f;
+    image.origin   = texture.getSize().toVector2f() / 2.f;
 
-    sf::Text text(font, "Tap anywhere to move the logo.", 64);
+    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
+
+    sf::Text text(font, {.string = "Tap anywhere to move the logo.", .characterSize = 64u});
     text.setFillColor(sf::Color::Black);
-    text.setPosition({10, 10});
+    text.position = {10, 10};
 
-    sf::View view = window.getDefaultView();
+    sf::View view = defaultView;
 
     sf::Color background = sf::Color::White;
 
@@ -107,22 +119,18 @@ int main(int argc, char* argv[])
     // work, but keep battery life in mind.
     bool active = true;
 
-    while (window.isOpen())
+    while (true)
     {
-        while (const std::optional event = active ? window.pollEvent() : window.waitEvent())
+        while (const sf::base::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
-            if (event->is<sf::Event::Closed>() ||
-                (event->is<sf::Event::KeyPressed>() &&
-                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape))
-            {
-                window.close();
-            }
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
 
-            else if (const auto* resized = event->getIf<sf::Event::Resized>())
+            if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
-                const auto size = sf::Vector2f(resized->size);
-                view.setSize(size);
-                view.setCenter(size / 2.f);
+                const auto fSize = resized->size.toVector2f();
+                view.size        = fSize;
+                view.center      = fSize / 2.f;
                 window.setView(view);
             }
             else if (event->is<sf::Event::FocusLost>())
@@ -147,7 +155,7 @@ int main(int argc, char* argv[])
             {
                 if (touchBegan->finger == 0)
                 {
-                    image.setPosition(sf::Vector2f(touchBegan->position));
+                    image.position = touchBegan->position.toVector2f();
 #if defined(USE_JNI)
                     vibrate(sf::milliseconds(10));
 #endif
@@ -158,7 +166,7 @@ int main(int argc, char* argv[])
         if (active)
         {
             window.clear(background);
-            window.draw(image);
+            window.draw(image, texture);
             window.draw(text);
             window.display();
         }

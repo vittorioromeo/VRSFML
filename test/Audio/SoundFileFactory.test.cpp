@@ -1,19 +1,23 @@
-#include <SFML/Audio/SoundFileFactory.hpp>
+#include "SFML/Audio/SoundFileFactory.hpp"
 
 // Other 1st party headers
-#include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundFileReader.hpp>
-#include <SFML/Audio/SoundFileWriter.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundFileReader.hpp"
+#include "SFML/Audio/SoundFileWriter.hpp"
 
-#include <SFML/System/FileInputStream.hpp>
-#include <SFML/System/InputStream.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/InputStream.hpp"
+#include "SFML/System/Path.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 
-#include <filesystem>
-#include <type_traits>
+#include <Doctest.hpp>
 
-#include <cstdint>
+#include <CommonTraits.hpp>
+#include <StringifyOptionalUtil.hpp>
+#include <SystemUtil.hpp>
 
 namespace
 {
@@ -25,16 +29,16 @@ struct NoopSoundFileReader : sf::SoundFileReader
         return false;
     }
 
-    std::optional<Info> open(sf::InputStream&) override
+    sf::base::Optional<Info> open(sf::InputStream&) override
     {
-        return {};
+        return sf::base::nullOpt;
     }
 
-    void seek(std::uint64_t) override
+    void seek(sf::base::U64) override
     {
     }
 
-    std::uint64_t read(std::int16_t*, std::uint64_t) override
+    sf::base::U64 read(sf::base::I16*, sf::base::U64) override
     {
         return 0;
     }
@@ -42,17 +46,17 @@ struct NoopSoundFileReader : sf::SoundFileReader
 
 struct NoopSoundFileWriter : sf::SoundFileWriter
 {
-    static bool check(const std::filesystem::path&)
+    static bool check(const sf::Path&)
     {
         return false;
     }
 
-    bool open(const std::filesystem::path&, unsigned int, unsigned int, const std::vector<sf::SoundChannel>&) override
+    bool open(const sf::Path&, unsigned int, unsigned int, const sf::ChannelMap&) override
     {
         return false;
     }
 
-    void write(const std::int16_t*, std::uint64_t) override
+    void write(const sf::base::I16*, sf::base::U64) override
     {
     }
 };
@@ -63,10 +67,10 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::SoundFileFactory>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::SoundFileFactory>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::SoundFileFactory>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::SoundFileFactory>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundFileFactory));
     }
 
     SECTION("isReaderRegistered()")
@@ -109,29 +113,30 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
 
     SECTION("createReaderFromStream()")
     {
-        sf::FileInputStream stream;
+        sf::base::Optional<sf::FileInputStream> stream;
 
         SECTION("flac")
         {
-            REQUIRE(stream.open("Audio/ding.flac"));
+            stream = sf::FileInputStream::open("Audio/ding.flac");
         }
 
         SECTION("mp3")
         {
-            REQUIRE(stream.open("Audio/ding.mp3"));
+            stream = sf::FileInputStream::open("Audio/ding.mp3");
         }
 
         SECTION("ogg")
         {
-            REQUIRE(stream.open("Audio/doodle_pop.ogg"));
+            stream = sf::FileInputStream::open("Audio/doodle_pop.ogg");
         }
 
         SECTION("wav")
         {
-            REQUIRE(stream.open("Audio/killdeer.wav"));
+            stream = sf::FileInputStream::open("Audio/killdeer.wav");
         }
 
-        CHECK(sf::SoundFileFactory::createReaderFromStream(stream));
+        REQUIRE(stream.hasValue());
+        CHECK(sf::SoundFileFactory::createReaderFromStream(*stream));
     }
 
     SECTION("createWriterFromFilename()")

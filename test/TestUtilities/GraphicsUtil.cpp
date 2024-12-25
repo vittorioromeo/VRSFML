@@ -1,11 +1,13 @@
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Transform.hpp"
+
+#include "SFML/System/Rect.hpp"
 
 #include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
+
 #include <limits>
 #include <ostream>
 
@@ -80,10 +82,19 @@ std::ostream& operator<<(std::ostream& os, Color color)
 
 std::ostream& operator<<(std::ostream& os, const Transform& transform)
 {
-    const auto& matrix = transform.getMatrix();
+    // clang-format off
+    float matrix[]{{},  {},  0.f, 0.f,
+                   {},  {},  0.f, 0.f,
+                   0.f, 0.f, 1.f, 0.f,
+                   {},  {},  0.f, 1.f};
+    // clang-format on
+
+    transform.getMatrix(matrix);
+
     os << matrix[0] << ", " << matrix[4] << ", " << matrix[12] << ", ";
     os << matrix[1] << ", " << matrix[5] << ", " << matrix[13] << ", ";
     os << matrix[3] << ", " << matrix[7] << ", " << matrix[15];
+
     return os;
 }
 
@@ -103,13 +114,24 @@ template std::ostream& operator<<(std::ostream&, const Rect<float>&);
 
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
 {
-    return lhs.getMatrix()[0] == Approx(rhs.value.getMatrix()[0]) &&
-           lhs.getMatrix()[4] == Approx(rhs.value.getMatrix()[4]) &&
-           lhs.getMatrix()[12] == Approx(rhs.value.getMatrix()[12]) &&
-           lhs.getMatrix()[1] == Approx(rhs.value.getMatrix()[1]) &&
-           lhs.getMatrix()[5] == Approx(rhs.value.getMatrix()[5]) &&
-           lhs.getMatrix()[13] == Approx(rhs.value.getMatrix()[13]) &&
-           lhs.getMatrix()[3] == Approx(rhs.value.getMatrix()[3]) &&
-           lhs.getMatrix()[7] == Approx(rhs.value.getMatrix()[7]) &&
-           lhs.getMatrix()[15] == Approx(rhs.value.getMatrix()[15]);
+    // clang-format off
+    float lhsMatrix[]{{},  {},  0.f, 0.f,
+                      {},  {},  0.f, 0.f,
+                      0.f, 0.f, 1.f, 0.f,
+                      {},  {},  0.f, 1.f};
+
+    float rhsMatrix[]{{},  {},  0.f, 0.f,
+                      {},  {},  0.f, 0.f,
+                      0.f, 0.f, 1.f, 0.f,
+                      {},  {},  0.f, 1.f};
+    // clang-format on
+
+    lhs.getMatrix(lhsMatrix);
+    rhs.value.getMatrix(rhsMatrix);
+
+    return lhsMatrix[0] == Approx(rhsMatrix[0]) && lhsMatrix[4] == Approx(rhsMatrix[4]) &&
+           lhsMatrix[12] == Approx(rhsMatrix[12]) && lhsMatrix[1] == Approx(rhsMatrix[1]) &&
+           lhsMatrix[5] == Approx(rhsMatrix[5]) && lhsMatrix[13] == Approx(rhsMatrix[13]) &&
+           lhsMatrix[3] == Approx(rhsMatrix[3]) && lhsMatrix[7] == Approx(rhsMatrix[7]) &&
+           lhsMatrix[15] == Approx(rhsMatrix[15]);
 }

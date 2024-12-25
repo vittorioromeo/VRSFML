@@ -1,124 +1,35 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/BlendMode.hpp>
-#include <SFML/Graphics/CoordinateType.hpp>
-#include <SFML/Graphics/StencilMode.hpp>
-#include <SFML/Graphics/Transform.hpp>
+#include "SFML/Graphics/BlendMode.hpp"
+#include "SFML/Graphics/CoordinateType.hpp"
+#include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Transform.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Shader;
 class Texture;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Define the states used for drawing to a `RenderTarget`
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API RenderStates
+struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
-    ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Constructing a default set of render states is equivalent
-    /// to using `sf::RenderStates::Default`.
-    /// The default set defines:
-    /// \li the `BlendAlpha` blend mode
-    /// \li the default `StencilMode` (no stencil)
-    /// \li the identity transform
-    /// \li a `nullptr` texture
-    /// \li a `nullptr` shader
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates() = default;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom blend mode
-    ///
-    /// \param theBlendMode Blend mode to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode& theBlendMode);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom stencil mode
-    ///
-    /// \param theStencilMode Stencil mode to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const StencilMode& theStencilMode);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom transform
-    ///
-    /// \param theTransform Transform to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const Transform& theTransform);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom texture
-    ///
-    /// \param theTexture Texture to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const Texture* theTexture);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a default set of render states with a custom shader
-    ///
-    /// \param theShader Shader to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const Shader* theShader);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a set of render states with all its attributes
-    ///
-    /// \param theBlendMode      Blend mode to use
-    /// \param theStencilMode    Stencil mode to use
-    /// \param theTransform      Transform to use
-    /// \param theCoordinateType Texture coordinate type to use
-    /// \param theTexture        Texture to use
-    /// \param theShader         Shader to use
-    ///
-    ////////////////////////////////////////////////////////////
-    RenderStates(const BlendMode&   theBlendMode,
-                 const StencilMode& theStencilMode,
-                 const Transform&   theTransform,
-                 CoordinateType     theCoordinateType,
-                 const Texture*     theTexture,
-                 const Shader*      theShader);
-
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
@@ -128,13 +39,19 @@ struct SFML_GRAPHICS_API RenderStates
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode      blendMode{BlendAlpha};                  //!< Blending mode
-    StencilMode    stencilMode;                            //!< Stencil mode
-    Transform      transform;                              //!< Transform
+    BlendMode   blendMode{BlendAlpha}; //!< Blending mode
+    StencilMode stencilMode{};         //!< Stencil mode
+
+    // NOLINTNEXTLINE(readability-redundant-member-init)
+    Transform transform{}; //!< Transform
+
+    const Texture* texture{}; //!< Texture
+    const Shader*  shader{};  //!< Shader
+
     CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
-    const Texture* texture{};                              //!< Texture
-    const Shader*  shader{};                               //!< Shader
 };
+
+inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};
 
 } // namespace sf
 
@@ -178,14 +95,13 @@ struct SFML_GRAPHICS_API RenderStates
 /// window.draw(sprite, shader);
 /// \endcode
 ///
-/// When you're inside the Draw function of a drawable
-/// object (inherited from `sf::Drawable`), you can
-/// either pass the render states unmodified, or change
-/// some of them.
+/// When you're inside the `draw` function of a drawable
+/// object, you can either pass the render states unmodified,
+/// or change some of them.
 /// For example, a transformable object will combine the
 /// current transform with its own transform. A sprite will
 /// set its texture. Etc.
 ///
-/// \see `sf::RenderTarget`, `sf::Drawable`
+/// \see `sf::RenderTarget`
 ///
 ////////////////////////////////////////////////////////////

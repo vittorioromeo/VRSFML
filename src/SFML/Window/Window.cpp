@@ -1,69 +1,84 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/Window.hpp>
-#include <SFML/Window/WindowImpl.hpp>
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
-#include <SFML/System/Err.hpp>
-#include <SFML/System/Sleep.hpp>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Err.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <ostream>
+#include "SFML/Base/Macros.hpp"
+
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+#include <emscripten.h>
+#include <emscripten/html5.h>
+#endif
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Window::Window() = default;
+struct Window::Window::Impl
+{
+    base::UniquePtr<priv::GlContext> glContext;      //!< Platform-specific implementation of the OpenGL context
+    Clock                            clock;          //!< Clock for measuring the elapsed time between frames
+    Time                             frameTimeLimit; //!< Current framerate limit
+
+    explicit Impl(base::UniquePtr<priv::GlContext>&& theContext) : glContext(SFML_BASE_MOVE(theContext))
+    {
+    }
+};
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings)
+template <typename... TWindowBaseArgs>
+Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArgs) :
+WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
+m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
-    Window::create(mode, title, style, state, settings);
+    // Perform common initializations
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
+
+    // Setup default behaviors (to get a consistent behavior across different implementations)
+    setVerticalSyncEnabled(windowSettings.vsync);
+    setFramerateLimit(windowSettings.frametimeLimit);
+
+    // Activate the window
+    if (!setActive())
+        priv::err() << "Failed to set window as active during initialization";
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(VideoMode mode, const String& title, State state, const ContextSettings& settings)
+Window::Window(const Settings& windowSettings) :
+Window(windowSettings, windowSettings.bitsPerPixel, priv::WindowImpl::create(windowSettings))
 {
-    Window::create(mode, title, sf::Style::Default, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(WindowHandle handle, const ContextSettings& settings)
+Window::Window(WindowHandle handle, const ContextSettings& contextSettings) :
+Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUtils::getDesktopMode().bitsPerPixel, handle)
 {
-    Window::create(handle, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-Window::~Window() = default;
+Window::~Window()
+{
+    // Need to activate window context during destruction to avoid GL errors
+    [[maybe_unused]] const bool rc = setActive(true);
+    SFML_BASE_ASSERT(rc);
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -75,81 +90,10 @@ Window& Window::operator=(Window&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, std::uint32_t style, State state)
-{
-    Window::create(mode, title, style, state, ContextSettings{});
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings)
-{
-    // Ensure the open window is closed first
-    close();
-
-    // Recreate the window implementation
-    m_impl = priv::WindowImpl::create(mode, title, style, state, settings);
-
-    // Recreate the context
-    m_context = priv::GlContext::create(settings, *m_impl, mode.bitsPerPixel);
-
-    // Perform common initializations
-    initialize();
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, State state)
-{
-    Window::create(mode, title, sf::Style::Default, state, ContextSettings{});
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(VideoMode mode, const String& title, State state, const ContextSettings& settings)
-{
-    Window::create(mode, title, sf::Style::Default, state, settings);
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(WindowHandle handle)
-{
-    Window::create(handle, ContextSettings{});
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::create(WindowHandle handle, const ContextSettings& settings)
-{
-    // Recreate the window implementation
-    WindowBase::create(handle);
-
-    // Recreate the context
-    m_context = priv::GlContext::create(settings, *m_impl, VideoMode::getDesktopMode().bitsPerPixel);
-
-    // Perform common initializations
-    initialize();
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::close()
-{
-    // Delete the context
-    m_context.reset();
-
-    // Close the base window
-    WindowBase::close();
-}
-
-
-////////////////////////////////////////////////////////////
 const ContextSettings& Window::getSettings() const
 {
-    static constexpr ContextSettings empty{/* depthBits */ 0, /* stencilBits */ 0, /* antiAliasingLevel */ 0};
-
-    return m_context ? m_context->getSettings() : empty;
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
+    return m_impl->glContext->getSettings();
 }
 
 
@@ -157,34 +101,26 @@ const ContextSettings& Window::getSettings() const
 void Window::setVerticalSyncEnabled(bool enabled)
 {
     if (setActive())
-        m_context->setVerticalSyncEnabled(enabled);
+        m_impl->glContext->setVerticalSyncEnabled(enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    if (limit > 0)
-        m_frameTimeLimit = seconds(1.f / static_cast<float>(limit));
-    else
-        m_frameTimeLimit = Time::Zero;
+    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
 }
 
 
 ////////////////////////////////////////////////////////////
 bool Window::setActive(bool active) const
 {
-    if (m_context)
-    {
-        if (m_context->setActive(active))
-        {
-            return true;
-        }
+    SFML_BASE_ASSERT(m_impl->glContext != nullptr);
 
-        err() << "Failed to activate the window's context" << std::endl;
-        return false;
-    }
+    if (WindowContext::setActiveThreadLocalGlContext(*m_impl->glContext, active))
+        return true;
 
+    priv::err() << "Failed to activate the window's context";
     return false;
 }
 
@@ -194,34 +130,18 @@ void Window::display()
 {
     // Display the backbuffer on screen
     if (setActive())
-        m_context->display();
+        m_impl->glContext->display();
 
     // Limit the framerate if needed
-    if (m_frameTimeLimit != Time::Zero)
+    if (m_impl->frameTimeLimit != Time::Zero)
     {
-        sleep(m_frameTimeLimit - m_clock.getElapsedTime());
-        m_clock.restart();
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-void Window::initialize()
-{
-    // Setup default behaviors (to get a consistent behavior across different implementations)
-    setVerticalSyncEnabled(false);
-    setFramerateLimit(0);
-
-    // Reset frame time
-    m_clock.restart();
-
-    // Activate the window
-    if (!setActive())
-    {
-        err() << "Failed to set window as active during initialization" << std::endl;
+        sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
+        m_impl->clock.restart();
     }
 
-    WindowBase::initialize();
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    emscripten_sleep(0u);
+#endif
 }
 
 } // namespace sf
