@@ -28,8 +28,13 @@ if(SFML_BUILD_NETWORK)
 endif()
 
 # sfml-graphics
-if(SFML_BUILD_GRAPHICS)
+if(SFML_BUILD_GRAPHICS OR SFML_BUILD_IMGUI)
     add_subdirectory(Graphics)
+endif()
+
+# sfml-imgui
+if(SFML_BUILD_IMGUI)
+    add_subdirectory(ImGui)
 endif()
 
 # sfml-audio
@@ -46,6 +51,9 @@ if(SFML_COMPILER_GCC)
     if(NOT ATOMIC_TEST)
         if(SFML_BUILD_GRAPHICS)
             target_link_libraries(sfml-graphics PRIVATE atomic)
+        endif()
+        if(SFML_BUILD_IMGUI)
+            target_link_libraries(sfml-imgui PRIVATE atomic)
         endif()
         if(SFML_BUILD_AUDIO)
             target_link_libraries(sfml-audio PRIVATE atomic)

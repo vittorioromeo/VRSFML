@@ -1,9 +1,29 @@
+// TODO P0: fix
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
 
-#include <SFML/Audio.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Text.hpp"
+
+#include "SFML/Window/EventUtils.hpp"
+
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
+
+#include <string>
+#include <unordered_set>
+
+#include <cstddef>
+#include <cstdio>
 
 #ifdef SFML_SYSTEM_IOS
 #include <SFML/Main.hpp>
@@ -17,7 +37,7 @@
 
 namespace
 {
-std::filesystem::path resourcesDir()
+sf::Path resourcesDir()
 {
 #ifdef SFML_SYSTEM_IOS
     return "";
@@ -306,7 +326,7 @@ std::string scancodeIdentifier(sf::Keyboard::Scancode scancode)
 ////////////////////////////////////////////////////////////
 // Entity showing keyboard events and real-time state on a keyboard
 ////////////////////////////////////////////////////////////
-class KeyboardView : public sf::Drawable, public sf::Transformable
+class KeyboardView : public sf::Transformable
 {
 public:
     explicit KeyboardView(const sf::Font& font) : m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, "", 14))
@@ -339,7 +359,7 @@ public:
 
                 sf::Text& label = m_labels[scancodeIndex];
                 label.setString(sf::Keyboard::getDescription(scancode));
-                label.setPosition(rect.position + rect.size / 2.f);
+                label.position = {rect.position + rect.size / 2.f};
 
                 if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
                 {
@@ -351,8 +371,8 @@ public:
                     label.setCharacterSize(label.getCharacterSize() - 2);
 
                 const sf::FloatRect bounds = label.getLocalBounds();
-                label.setOrigin({std::round(bounds.position.x + bounds.size.x / 2.f),
-                                 std::round(static_cast<float>(label.getCharacterSize()) / 2.f)});
+                label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
+                                              std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
             });
     }
 
@@ -680,7 +700,7 @@ ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vect
     ShinyText text(font, string, textSize);
     text.setLineSpacing(getSpacingFactor(font));
     text.setOutlineThickness(2.f);
-    text.setPosition(position);
+    text.position = position;
 
     return text;
 }
@@ -689,7 +709,7 @@ sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vector2f p
 {
     sf::Text text(font, string, textSize);
     text.setLineSpacing(getSpacingFactor(font));
-    text.setPosition(position);
+    text.position = position;
 
     return text;
 }
@@ -744,15 +764,13 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
     // Create the main window
-    sf::RenderWindow window(sf::VideoMode({1280, 720}), "Keyboard", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window({.size = {1280u, 720u}, .title = "Keyboard", .resizable = false, .vsync = true});
     window.setFramerateLimit(25);
 
     // Load sound buffers

@@ -1,31 +1,12 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/System/Utf.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/System/Utf.hpp" // NOLINT(misc-header-include-cycle)
+
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -41,22 +22,12 @@
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-template <typename InputIt, typename OutputIt>
-OutputIt priv::copy(InputIt first, InputIt last, OutputIt dFirst)
-{
-    while (first != last)
-        *dFirst++ = static_cast<typename OutputIt::container_type::value_type>(*first++);
-
-    return dFirst;
-}
-
 template <typename In>
 In Utf<8>::decode(In begin, In end, char32_t& output, char32_t replacement)
 {
     // clang-format off
     // Some useful precomputed data
-    static constexpr std::array<std::uint8_t, 256> trailing =
+    static constexpr base::U8 trailing[256] =
     {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -68,14 +39,14 @@ In Utf<8>::decode(In begin, In end, char32_t& output, char32_t replacement)
         2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
     };
 
-    static constexpr std::array<std::uint32_t, 6> offsets =
+    static constexpr base::U32 offsets[6] =
     {
         0x00000000, 0x00003080, 0x000E2080, 0x03C82080, 0xFA082080, 0x82082080
     };
     // clang-format on
 
     // decode the character
-    const auto trailingBytes = trailing[static_cast<std::uint8_t>(*begin)];
+    const auto trailingBytes = trailing[static_cast<base::U8>(*begin)];
     if (trailingBytes < std::distance(begin, end))
     {
         output = 0;
@@ -83,12 +54,12 @@ In Utf<8>::decode(In begin, In end, char32_t& output, char32_t replacement)
         // clang-format off
         switch (trailingBytes)
         {
-            case 5: output += static_cast<std::uint8_t>(*begin++); output <<= 6; [[fallthrough]];
-            case 4: output += static_cast<std::uint8_t>(*begin++); output <<= 6; [[fallthrough]];
-            case 3: output += static_cast<std::uint8_t>(*begin++); output <<= 6; [[fallthrough]];
-            case 2: output += static_cast<std::uint8_t>(*begin++); output <<= 6; [[fallthrough]];
-            case 1: output += static_cast<std::uint8_t>(*begin++); output <<= 6; [[fallthrough]];
-            case 0: output += static_cast<std::uint8_t>(*begin++);
+            case 5: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
+            case 4: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
+            case 3: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
+            case 2: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
+            case 1: output += static_cast<base::U8>(*begin++); output <<= 6; [[fallthrough]];
+            case 0: output += static_cast<base::U8>(*begin++);
         }
         // clang-format on
 
@@ -107,10 +78,10 @@ In Utf<8>::decode(In begin, In end, char32_t& output, char32_t replacement)
 
 ////////////////////////////////////////////////////////////
 template <typename Out>
-Out Utf<8>::encode(char32_t input, Out output, std::uint8_t replacement)
+Out Utf<8>::encode(char32_t input, Out output, base::U8 replacement)
 {
     // Some useful precomputed data
-    static constexpr std::array<std::uint8_t, 7> firstBytes = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
+    static constexpr base::U8 firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
 
     // encode the character
     if ((input > 0x0010FFFF) || ((input >= 0xD800) && (input <= 0xDBFF)))
@@ -124,7 +95,7 @@ Out Utf<8>::encode(char32_t input, Out output, std::uint8_t replacement)
         // Valid character
 
         // Get the number of bytes to write
-        std::size_t bytestoWrite = 1;
+        base::SizeT bytestoWrite = 1;
 
         // clang-format off
         if      (input <  0x80)       bytestoWrite = 1;
@@ -134,20 +105,20 @@ Out Utf<8>::encode(char32_t input, Out output, std::uint8_t replacement)
         // clang-format on
 
         // Extract the bytes to write
-        std::array<std::byte, 4> bytes{};
+        unsigned char bytes[4]{};
 
         // clang-format off
         switch (bytestoWrite)
         {
-            case 4: bytes[3] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 3: bytes[2] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 2: bytes[1] = static_cast<std::byte>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
-            case 1: bytes[0] = static_cast<std::byte> (input | firstBytes[bytestoWrite]);
+            case 4: bytes[3] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 3: bytes[2] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 2: bytes[1] = static_cast<unsigned char>((input | 0x80) & 0xBF); input >>= 6; [[fallthrough]];
+            case 1: bytes[0] = static_cast<unsigned char> (input | firstBytes[bytestoWrite]);
         }
         // clang-format on
 
         // Add them to the output
-        output = priv::copy(bytes.data(), bytes.data() + bytestoWrite, output);
+        output = base::copy(bytes, bytes + bytestoWrite, output);
     }
 
     return output;
@@ -165,9 +136,9 @@ In Utf<8>::next(In begin, In end)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<8>::count(In begin, In end)
+base::SizeT Utf<8>::count(In begin, In end)
 {
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin != end)
     {
         begin = next(begin, end);
@@ -270,7 +241,7 @@ Out Utf<8>::toLatin1(In begin, In end, Out output, char replacement)
 template <typename In, typename Out>
 Out Utf<8>::toUtf8(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -315,7 +286,7 @@ In Utf<16>::decode(In begin, In end, char32_t& output, char32_t replacement)
     {
         if (begin != end)
         {
-            const std::uint32_t second = *begin++;
+            const base::U32 second = *begin++;
             if ((second >= 0xDC00) && (second <= 0xDFFF))
             {
                 // The second element is valid: convert the two elements to a UTF-32 character
@@ -392,9 +363,9 @@ In Utf<16>::next(In begin, In end)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<16>::count(In begin, In end)
+base::SizeT Utf<16>::count(In begin, In end)
 {
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin != end)
     {
         begin = next(begin, end);
@@ -439,7 +410,7 @@ Out Utf<16>::fromLatin1(In begin, In end, Out output)
 {
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -508,7 +479,7 @@ Out Utf<16>::toUtf8(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::toUtf16(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -547,7 +518,7 @@ Out Utf<32>::encode(char32_t input, Out output, char32_t /*replacement*/)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-In Utf<32>::next(In begin, In /*end*/)
+In Utf<32>::next(In begin, In /* end */)
 {
     return ++begin;
 }
@@ -555,9 +526,9 @@ In Utf<32>::next(In begin, In /*end*/)
 
 ////////////////////////////////////////////////////////////
 template <typename In>
-std::size_t Utf<32>::count(In begin, In end)
+base::SizeT Utf<32>::count(In begin, In end)
 {
-    return static_cast<std::size_t>(end - begin);
+    return static_cast<base::SizeT>(end - begin);
 }
 
 
@@ -589,7 +560,7 @@ Out Utf<32>::fromLatin1(In begin, In end, Out output)
 {
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 
@@ -656,7 +627,7 @@ Out Utf<32>::toUtf16(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::toUtf32(In begin, In end, Out output)
 {
-    return priv::copy(begin, end, output);
+    return base::copy(begin, end, output);
 }
 
 

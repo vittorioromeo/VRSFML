@@ -1,39 +1,15 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/GlContext.hpp>
-#include <SFML/Window/iOS/ObjCType.hpp>
+#include "SFML/Window/GlContext.hpp"
+#include "SFML/Window/Glad.hpp"
+#include "SFML/Window/iOS/ObjCType.hpp"
 
-#include <SFML/System/Clock.hpp>
-#include <SFML/System/Vector2.hpp>
-
-#include <glad/gl.h>
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -69,17 +45,7 @@ public:
     /// \param bitsPerPixel Pixel depth, in bits per pixel
     ///
     ////////////////////////////////////////////////////////////
-    EaglContext(EaglContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new context that embeds its own rendering target
-    ///
-    /// \param shared   Context to share the new one with
-    /// \param settings Creation parameters
-    /// \param size     Back buffer width and height, in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    EaglContext(EaglContext* shared, const ContextSettings& settings, Vector2u size);
+    EaglContext(EaglContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -95,7 +61,7 @@ public:
     /// \return Address of the OpenGL function, 0 on failure
     ///
     ////////////////////////////////////////////////////////////
-    static GlFunctionPointer getFunction(const char* name);
+    GlFunctionPointer getFunction(const char* name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Recreate the render buffers of the context
@@ -152,7 +118,7 @@ private:
     void createContext(EaglContext*           shared,
                        const WindowImplUIKit& window,
                        unsigned int           bitsPerPixel,
-                       const ContextSettings& settings);
+                       const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     // Member data

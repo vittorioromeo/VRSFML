@@ -1,49 +1,58 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/CircleShape.hpp>
+#include "SFML/Graphics/CircleShape.hpp"
 
-#include <SFML/System/Angle.hpp>
+#include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/Constants.hpp"
+#include "SFML/Base/FastSinCos.hpp"
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vector2f computeCirclePoint(
+    const sf::base::SizeT index,
+    const unsigned int    pointCount,
+    const float           radius)
+{
+    const float radians       = static_cast<float>(index) / static_cast<float>(pointCount) * sf::base::tau;
+    const auto [sine, cosine] = sf::base::fastSinCos(radians);
+
+    SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
+    SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+
+    return {radius * (1.f + sine), radius * (1.f + cosine)};
+}
+
+} // namespace
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(float radius, std::size_t pointCount) : m_radius(radius), m_pointCount(pointCount)
+CircleShape::CircleShape(const Settings& settings) :
+Shape(priv::toShapeSettings(settings)),
+m_radius{settings.radius},
+m_pointCount{settings.pointCount}
 {
-    update();
+    updateCircleGeometry();
 }
 
 
 ////////////////////////////////////////////////////////////
 void CircleShape::setRadius(float radius)
 {
+    if (radius == m_radius)
+        return;
+
     m_radius = radius;
-    update();
+    updateCircleGeometry();
 }
 
 
@@ -55,24 +64,28 @@ float CircleShape::getRadius() const
 
 
 ////////////////////////////////////////////////////////////
-void CircleShape::setPointCount(std::size_t count)
+void CircleShape::setPointCount(unsigned int pointCount)
 {
-    m_pointCount = count;
-    update();
+    if (pointCount == m_pointCount)
+        return;
+
+    m_pointCount = pointCount;
+    updateCircleGeometry();
 }
 
+
 ////////////////////////////////////////////////////////////
-std::size_t CircleShape::getPointCount() const
+unsigned int CircleShape::getPointCount() const
 {
     return m_pointCount;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f CircleShape::getPoint(std::size_t index) const
+Vector2f CircleShape::getPoint(base::SizeT index) const
 {
-    const Angle angle = static_cast<float>(index) / static_cast<float>(m_pointCount) * degrees(360.f) - degrees(90.f);
-    return Vector2f(m_radius, m_radius) + Vector2f(m_radius, angle);
+    SFML_BASE_ASSERT(index < m_pointCount && "Index is out of bounds");
+    return computeCirclePoint(index, m_pointCount, m_radius);
 }
 
 
@@ -80,6 +93,20 @@ Vector2f CircleShape::getPoint(std::size_t index) const
 Vector2f CircleShape::getGeometricCenter() const
 {
     return {m_radius, m_radius};
+}
+
+
+////////////////////////////////////////////////////////////
+void CircleShape::updateCircleGeometry()
+{
+    if (!Shape::updateImplResizeVerticesVector(m_pointCount)) [[unlikely]]
+        return;
+
+    // Position
+    for (unsigned int i = 0u; i < m_pointCount; ++i)
+        m_vertices[i + 1].position = computeCirclePoint(i, m_pointCount, m_radius);
+
+    Shape::updateImplFromVerticesPositions(m_pointCount);
 }
 
 } // namespace sf

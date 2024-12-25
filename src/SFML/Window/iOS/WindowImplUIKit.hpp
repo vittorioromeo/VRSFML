@@ -1,35 +1,12 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/WindowImpl.hpp>
-#include <SFML/Window/iOS/ObjCType.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/WindowImpl.hpp"
+#include "SFML/Window/iOS/ObjCType.hpp"
 
 
 SFML_DECLARE_OBJC_CLASS(UIWindow);
@@ -43,7 +20,7 @@ namespace sf::priv
 /// \brief iOS (UIKit) implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class WindowImplUIKit : public WindowImpl
+class [[nodiscard]] WindowImplUIKit : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -52,19 +29,15 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplUIKit(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
     ///
-    /// \param mode     Video mode to use
-    /// \param title    Title of the window
-    /// \param style    Window style
-    /// \param state    Window state
-    /// \param settings Additional settings for the underlying OpenGL context
+    /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    WindowImplUIKit(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings);
+    [[nodiscard]] explicit WindowImplUIKit(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -109,22 +82,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the minimum size
+    /// Pass `base::nullOpt` to unset the minimum size
     ///
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const std::optional<Vector2u>& minimumSize) override;
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
     ///
-    /// Pass `std::nullopt` to unset the maximum size
+    /// Pass `base::nullOpt` to unset the maximum size
     ///
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const std::optional<Vector2u>& maximumSize) override;
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -141,7 +114,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const std::uint8_t* pixels) override;
+    void setIcon(Vector2u size, const base::U8* pixels) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

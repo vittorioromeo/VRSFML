@@ -78,7 +78,7 @@ v2:
 ```cpp
 sf::VideoMode videoMode(480, 640, 24);
 sf::CircleShape circle(10);
-circle.setPosition(10, 20);
+circle.position = 10, 20;
 sf::IntRect rect(250, 400, 50, 100);
 ```
 
@@ -86,7 +86,7 @@ v3:
 ```cpp
 sf::VideoMode videoMode({480, 640}, 24);
 sf::CircleShape circle(10);
-circle.setPosition({10, 20});
+circle.position = {10, 20};
 sf::IntRect rect({250, 400}, {50, 100});
 ```
 
@@ -235,7 +235,7 @@ The 4-parameter constructor was also removed in favor of the constructor which t
 v2:
 ```cpp
 sf::FloatRect rect(10, 20, 30, 40);
-sf::Vector2f position = rect.getPosition();
+sf::Vector2f position = rect.position;;
 sf::Vector2f size = rect.getSize();
 ```
 
@@ -267,15 +267,15 @@ If you need access to the raw angle as a `float` then you can use either `sf::An
 v2:
 ```cpp
 sf::RectangleShape shape(sf::Vector2f(50, 50));
-shape.setRotation(90);
-std::cout << "Rotation: " << shape.getRotation() << '\n';
+shape.rotation = 90;
+std::cout << "Rotation: " << shape.rotation << '\n';
 ```
 
 v3:
 ```cpp
 sf::RectangleShape shape({50, 50});
-shape.setRotation(sf::degrees(90));
-std::cout << "Rotation: " << shape.getRotation().asDegrees() << '\n';
+shape.rotation = sf::degrees(90);
+std::cout << "Rotation: " << shape.rotation.asDegrees() << '\n';
 ```
 
 ## Renamed Functions
@@ -337,6 +337,22 @@ Instead of returning `-1` to signal an error, `std::nullopt` can be returned.
 
 LearnCpp.com is a great place to learn more about using `std::optional`.
 Read more about that [here](https://www.learncpp.com/cpp-tutorial/stdoptional/).
+
+## Fixed Width Integers
+
+SFML 2 contained various typedefs for fixed width integers.
+Those are now replaced with the fixed width integers provided in the `<cstdint>` header from the standard library.
+
+| v2           | v3              |
+| ------------ | --------------- |
+| `sf::Int8`   | `base::I8`   |
+| `sf::Uint8`  | `base::U8`  |
+| `sf::Int16`  | `base::I16`  |
+| `sf::Uint16` | `base::U16` |
+| `sf::Int32`  | `base::I32`  |
+| `sf::Uint32` | `base::U32` |
+| `sf::Int64`  | `base::I64`  |
+| `sf::Uint64` | `base::U64` |
 
 ## New Constructors for Loading Resources
 
@@ -480,7 +496,7 @@ One viable option is to use `sf::PrimitiveType::Triangles` where two adjacent tr
 SFML 3 capitalizes the `A` of `aliasing` for all the APIs.
 
 * `sf::RenderTexture::getMaximumAntialiasingLevel()` becomes `sf::RenderTexture::getMaximumAntiAliasingLevel()`
-* `sf::ContextSettings::antialiasingLevel` becomes `sf::ContextSettings::antiAliasingLevel`
+* `sf::ContextSettings::antiAliasingLevel` becomes `sf::ContextSettings::antiAliasingLevel`
 
 ## Other Minor Changes
 

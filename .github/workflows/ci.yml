@@ -51,7 +51,7 @@ jobs:
         - { name: Shared, flags: -DBUILD_SHARED_LIBS=ON }
         - { name: Static, flags: -DBUILD_SHARED_LIBS=OFF }
         type:
-        - { name: Release }
+        - { name: Release, flags: -DSFML_ENABLE_LIFETIME_TRACKING=TRUE }
         - { name: Debug, flags: -DCMAKE_BUILD_TYPE=Debug -DSFML_ENABLE_COVERAGE=ON }
 
         include:
@@ -228,7 +228,7 @@ jobs:
         # Make sure the build/bin directory exists so that the find command does not fail if no executables are built
         mkdir -p build/bin
         # Make use of a test to print OpenGL vendor/renderer/version info to the console
-        find build/bin -name test-sfml-window -or -name test-sfml-window.exe -exec sh -c "{} *sf::Context* --section=\"Version String\" --success | grep OpenGL" \;
+        find $(echo $GITHUB_WORKSPACE | sed 's/\\\\/\\//g')/build/bin -name test-sfml-window.exe -exec sh -c "{} --test-case=\"[Window] sf::Context\" --subcase=\"Version String\" | grep OpenGL" \;
 
     - name: Test (Windows)
       if: runner.os == 'Windows' && !contains(matrix.platform.name, 'MinGW') && !contains(matrix.platform.name, 'arm64')

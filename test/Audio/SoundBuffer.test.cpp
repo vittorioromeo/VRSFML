@@ -1,93 +1,34 @@
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio/SoundBuffer.hpp"
 
 // Other 1st party headers
-#include <SFML/System/Exception.hpp>
-#include <SFML/System/FileInputStream.hpp>
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <CommonTraits.hpp>
+#include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
-#include <array>
-#include <type_traits>
 
-TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
+
+TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_move_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::SoundBuffer>);
-        STATIC_CHECK(std::is_move_assignable_v<sf::SoundBuffer>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::SoundBuffer>);
-    }
-
-    SECTION("Construction")
-    {
-        SECTION("Default constructor")
-        {
-            const sf::SoundBuffer soundBuffer;
-            CHECK(soundBuffer.getSamples() == nullptr);
-            CHECK(soundBuffer.getSampleCount() == 0);
-            CHECK(soundBuffer.getSampleRate() == 44100);
-            CHECK(soundBuffer.getChannelCount() == 1);
-            CHECK(soundBuffer.getDuration() == sf::Time::Zero);
-        }
-
-        SECTION("File")
-        {
-            SECTION("Invalid filename")
-            {
-                CHECK_THROWS_AS(sf::SoundBuffer("does/not/exist.wav"), sf::Exception);
-            }
-
-            SECTION("Valid file")
-            {
-                const sf::SoundBuffer soundBuffer("Audio/ding.flac");
-                CHECK(soundBuffer.getSamples() != nullptr);
-                CHECK(soundBuffer.getSampleCount() == 87798);
-                CHECK(soundBuffer.getSampleRate() == 44100);
-                CHECK(soundBuffer.getChannelCount() == 1);
-                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
-            }
-        }
-
-        SECTION("Memory")
-        {
-            SECTION("Invalid memory")
-            {
-                constexpr std::array<std::byte, 5> memory{};
-                CHECK_THROWS_AS(sf::SoundBuffer(memory.data(), memory.size()), sf::Exception);
-            }
-
-            SECTION("Valid memory")
-            {
-                const auto            memory = loadIntoMemory("Audio/ding.flac");
-                const sf::SoundBuffer soundBuffer(memory.data(), memory.size());
-                CHECK(soundBuffer.getSamples() != nullptr);
-                CHECK(soundBuffer.getSampleCount() == 87798);
-                CHECK(soundBuffer.getSampleRate() == 44100);
-                CHECK(soundBuffer.getChannelCount() == 1);
-                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
-            }
-        }
-
-        SECTION("Stream")
-        {
-            sf::FileInputStream   stream("Audio/ding.flac");
-            const sf::SoundBuffer soundBuffer(stream);
-            CHECK(soundBuffer.getSamples() != nullptr);
-            CHECK(soundBuffer.getSampleCount() == 87798);
-            CHECK(soundBuffer.getSampleRate() == 44100);
-            CHECK(soundBuffer.getChannelCount() == 1);
-            CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
-        }
+        STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::SoundBuffer));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundBuffer));
     }
 
     SECTION("Copy semantics")
     {
-        const sf::SoundBuffer soundBuffer("Audio/ding.flac");
+        const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
         SECTION("Construction")
         {
@@ -101,8 +42,8 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
 
         SECTION("Assignment")
         {
-            sf::SoundBuffer soundBufferCopy("Audio/doodle_pop.ogg");
-            soundBufferCopy = soundBuffer;
+            sf::SoundBuffer soundBufferCopy = sf::SoundBuffer::loadFromFile("Audio/doodle_pop.ogg").value();
+            soundBufferCopy                 = soundBuffer;
             CHECK(soundBufferCopy.getSamples() != nullptr);
             CHECK(soundBufferCopy.getSampleCount() == 87798);
             CHECK(soundBufferCopy.getSampleRate() == 44100);
@@ -113,16 +54,14 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
 
     SECTION("loadFromFile()")
     {
-        sf::SoundBuffer soundBuffer;
-
         SECTION("Invalid filename")
         {
-            CHECK(!soundBuffer.loadFromFile("does/not/exist.wav"));
+            CHECK(!sf::SoundBuffer::loadFromFile("does/not/exist.wav").hasValue());
         }
 
         SECTION("Valid file")
         {
-            REQUIRE(soundBuffer.loadFromFile("Audio/ding.flac"));
+            const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             CHECK(soundBuffer.getSamples() != nullptr);
             CHECK(soundBuffer.getSampleCount() == 87798);
             CHECK(soundBuffer.getSampleRate() == 44100);
@@ -133,19 +72,16 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
 
     SECTION("loadFromMemory()")
     {
-        sf::SoundBuffer soundBuffer;
-
         SECTION("Invalid memory")
         {
-            CHECK(!soundBuffer.loadFromMemory(nullptr, 0));
-            constexpr std::array<std::byte, 5> memory{};
-            CHECK(!soundBuffer.loadFromMemory(memory.data(), memory.size()));
+            constexpr unsigned char memory[5]{};
+            CHECK(!sf::SoundBuffer::loadFromMemory(memory, 5).hasValue());
         }
 
         SECTION("Valid memory")
         {
-            const auto memory = loadIntoMemory("Audio/ding.flac");
-            REQUIRE(soundBuffer.loadFromMemory(memory.data(), memory.size()));
+            const auto memory      = loadIntoMemory("Audio/ding.flac");
+            const auto soundBuffer = sf::SoundBuffer::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(soundBuffer.getSamples() != nullptr);
             CHECK(soundBuffer.getSampleCount() == 87798);
             CHECK(soundBuffer.getSampleRate() == 44100);
@@ -156,42 +92,31 @@ TEST_CASE("[Audio] sf::SoundBuffer", runAudioDeviceTests())
 
     SECTION("loadFromStream()")
     {
-        sf::FileInputStream stream;
-        sf::SoundBuffer     soundBuffer;
-
-        SECTION("Invalid stream")
-        {
-            CHECK(!soundBuffer.loadFromStream(stream));
-        }
-
-        SECTION("Valid stream")
-        {
-            REQUIRE(stream.open("Audio/ding.flac"));
-            REQUIRE(soundBuffer.loadFromStream(stream));
-            CHECK(soundBuffer.getSamples() != nullptr);
-            CHECK(soundBuffer.getSampleCount() == 87798);
-            CHECK(soundBuffer.getSampleRate() == 44100);
-            CHECK(soundBuffer.getChannelCount() == 1);
-            CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
-        }
+        auto       stream      = sf::FileInputStream::open("Audio/ding.flac").value();
+        const auto soundBuffer = sf::SoundBuffer::loadFromStream(stream).value();
+        CHECK(soundBuffer.getSamples() != nullptr);
+        CHECK(soundBuffer.getSampleCount() == 87798);
+        CHECK(soundBuffer.getSampleRate() == 44100);
+        CHECK(soundBuffer.getChannelCount() == 1);
+        CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
     }
 
     SECTION("saveToFile()")
     {
-        const auto filename = std::filesystem::temp_directory_path() / "ding.flac";
+        const auto filename = sf::Path::tempDirectoryPath() / "ding.flac";
 
         {
-            const sf::SoundBuffer soundBuffer("Audio/ding.flac");
+            const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             REQUIRE(soundBuffer.saveToFile(filename));
         }
 
-        const sf::SoundBuffer soundBuffer(filename);
+        const auto soundBuffer = sf::SoundBuffer::loadFromFile(filename).value();
         CHECK(soundBuffer.getSamples() != nullptr);
         CHECK(soundBuffer.getSampleCount() == 87798);
         CHECK(soundBuffer.getSampleRate() == 44100);
         CHECK(soundBuffer.getChannelCount() == 1);
         CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
 
-        CHECK(std::filesystem::remove(filename));
+        CHECK(filename.remove());
     }
 }

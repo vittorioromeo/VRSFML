@@ -1,62 +1,62 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/GLCheck.hpp>
-#include <SFML/Graphics/GLExtensions.hpp>
-#include <SFML/Graphics/Image.hpp>
-#include <SFML/Graphics/RenderTextureImplFBO.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/View.hpp"
 
-#include <SFML/Window/VideoMode.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/GLCheck.hpp"
+#include "SFML/Window/Glad.hpp"
+#include "SFML/Window/WindowBase.hpp"
+
+#include "SFML/Base/Macros.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(VideoMode mode, const String& title, std::uint32_t style, State state, const ContextSettings& settings)
+template <typename... TWindowArgs>
+RenderWindow::RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs) :
+Window(SFML_BASE_FORWARD(windowArgs)...),
+RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVector2f()}))
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(mode, title, style, state, settings);
+    // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
+    // We assume that this window's context is still active at this point
+    glCheck(glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(VideoMode mode, const String& title, State state, const ContextSettings& settings)
+RenderWindow::RenderWindow(const Settings& windowSettings) : RenderWindow(int{}, windowSettings)
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(mode, title, sf::Style::Default, state, settings);
 }
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& settings)
+RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& contextSettings) :
+RenderWindow(int{}, handle, contextSettings)
 {
-    // Don't call the base class constructor because it contains virtual function calls
-    Window::create(handle, settings);
+}
+
+
+////////////////////////////////////////////////////////////
+RenderWindow::RenderWindow(RenderWindow&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderWindow& RenderWindow::operator=(RenderWindow&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderWindow::~RenderWindow()
+{
+    // Need to activate window context during destruction to avoid GL errors
+    [[maybe_unused]] const bool rc = setActive(true);
+    SFML_BASE_ASSERT(rc);
 }
 
 
@@ -92,10 +92,9 @@ bool RenderWindow::setActive(bool active)
 
     // If FBOs are available, make sure none are bound when we
     // try to draw to the default framebuffer of the RenderWindow
-    if (active && result && priv::RenderTextureImplFBO::isAvailable())
+    if (active && result)
     {
-        glCheck(GLEXT_glBindFramebuffer(GLEXT_GL_FRAMEBUFFER, m_defaultFrameBuffer));
-
+        glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFrameBuffer));
         return true;
     }
 
@@ -104,17 +103,34 @@ bool RenderWindow::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-void RenderWindow::onCreate()
+base::Optional<Event> RenderWindow::filterEvent(base::Optional<Event> event)
 {
-    if (priv::RenderTextureImplFBO::isAvailable())
-    {
-        // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
-        // We assume that this window's context is still active at this point
-        glCheck(glGetIntegerv(GLEXT_GL_FRAMEBUFFER_BINDING, reinterpret_cast<GLint*>(&m_defaultFrameBuffer)));
-    }
+    if (event.hasValue() && event->getIf<Event::Resized>())
+        onResize();
 
-    // Just initialize the render target part
-    RenderTarget::initialize();
+    return event;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Event> RenderWindow::pollEvent()
+{
+    return filterEvent(WindowBase::pollEvent());
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Event> RenderWindow::waitEvent(Time timeout)
+{
+    return filterEvent(WindowBase::waitEvent(timeout));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderWindow::setSize(const Vector2u& size)
+{
+    WindowBase::setSize(size);
+    onResize();
 }
 
 

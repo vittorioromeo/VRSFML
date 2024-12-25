@@ -1,27 +1,4 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -29,11 +6,9 @@
 #import <SFML/Window/macOS/SFApplication.h>
 #import <SFML/Window/macOS/SFOpenGLView.h>
 #import <SFML/Window/macOS/SFViewController.h>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
-
-#include <ostream>
+#include "SFML/System/Err.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -52,7 +27,7 @@
 
         if (m_view == nil)
         {
-            sf::err() << "No view was given to initWithWindow:." << std::endl;
+            sf::priv::err() << "No view was given to initWithWindow:." ;
             return self;
         }
 
@@ -64,8 +39,8 @@
 
         if (m_oglView == nil)
         {
-            sf::err() << "Could not create an instance of NSOpenGLView "
-                      << "in (SFViewController -initWithView:)." << std::endl;
+            sf::priv::err() << "Could not create an instance of NSOpenGLView "
+                            << "in (SFViewController -initWithView:)." ;
 
             return self;
         }
@@ -150,8 +125,9 @@
 - (void)setWindowPositionTo:(sf::Vector2i)position
 {
     (void)position;
-    sf::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly instead."
-              << std::endl;
+    sf::priv::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly "
+                       "instead."
+                    ;
 }
 
 
@@ -188,7 +164,7 @@
 - (void)changeTitle:(NSString*)title
 {
     (void)title;
-    sf::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." << std::endl;
+    sf::priv::err() << "Cannot change the title of the SFML area when SFML is integrated in a NSView." ;
 }
 
 
@@ -248,11 +224,11 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const std::uint8_t*)pixels
+- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
 {
     (void)size;
     (void)pixels;
-    sf::err() << "Cannot set an icon when SFML is integrated in a NSView." << std::endl;
+    sf::priv::err() << "Cannot set an icon when SFML is integrated in a NSView." ;
 }
 
 
@@ -266,7 +242,7 @@
          * See https://lists.apple.com/archives/cocoa-dev/2011/Feb/msg00460.html
          * for more information.
          */
-        sf::err() << "Cannot fetch event from a worker thread. (OS X restriction)" << std::endl;
+        sf::priv::err() << "Cannot fetch event from a worker thread. (OS X restriction)" ;
 
         return;
     }

@@ -1,42 +1,25 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundChannel.hpp>
+#include "SFML/System/LifetimeDependant.hpp"
 
-#include <memory>
-#include <string>
-#include <vector>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class CaptureDevice;
+class Time;
+} // namespace sf
 
 
 namespace sf
@@ -55,6 +38,30 @@ public:
     virtual ~SoundRecorder();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundRecorder(const SoundRecorder&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundRecorder& operator=(const SoundRecorder&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundRecorder(SoundRecorder&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundRecorder& operator=(SoundRecorder&&) = delete;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Start the capture
     ///
     /// The `sampleRate` parameter defines the number of audio samples
@@ -64,7 +71,7 @@ public:
     /// the rest of the program while the capture runs.
     /// Please note that only one capture can happen at the same time.
     /// You can select which capture device will be used by passing
-    /// the name to the `setDevice()` method. If none was selected
+    /// the name to the `setCurrentDevice()` method. If none was selected
     /// before, the default capture device will be used. You can get a
     /// list of the names of all available capture devices by calling
     /// `getAvailableDevices()`.
@@ -76,7 +83,7 @@ public:
     /// \see `stop`, `getAvailableDevices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool start(unsigned int sampleRate = 44100);
+    [[nodiscard]] bool start(CaptureDevice& captureDevice, unsigned int sampleRate = 44100);
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop the capture
@@ -84,119 +91,7 @@ public:
     /// \see `start`
     ///
     ////////////////////////////////////////////////////////////
-    void stop();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the sample rate
-    ///
-    /// The sample rate defines the number of audio samples
-    /// captured per second. The higher, the better the quality
-    /// (for example, 44100 samples/sec is CD quality).
-    ///
-    /// \return Sample rate, in samples per second
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get a list of the names of all available audio capture devices
-    ///
-    /// This function returns a vector of strings, containing
-    /// the names of all available audio capture devices.
-    ///
-    /// \return A vector of strings containing the names
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<std::string> getAvailableDevices();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the default audio capture device
-    ///
-    /// This function returns the name of the default audio
-    /// capture device. If none is available, an empty string
-    /// is returned.
-    ///
-    /// \return The name of the default audio capture device
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::string getDefaultDevice();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the audio capture device
-    ///
-    /// This function sets the audio capture device to the device
-    /// with the given `name`. It can be called on the fly (i.e:
-    /// while recording). If you do so while recording and
-    /// opening the device fails, it stops the recording.
-    ///
-    /// \param name The name of the audio capture device
-    ///
-    /// \return `true`, if it was able to set the requested device
-    ///
-    /// \see `getAvailableDevices`, `getDefaultDevice`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setDevice(const std::string& name);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the name of the current audio capture device
-    ///
-    /// \return The name of the current audio capture device
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::string& getDevice() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the channel count of the audio capture device
-    ///
-    /// This method allows you to specify the number of channels
-    /// used for recording. Currently only 16-bit mono and
-    /// 16-bit stereo are supported.
-    ///
-    /// \param channelCount Number of channels. Currently only
-    ///                     mono (1) and stereo (2) are supported.
-    ///
-    /// \see `getChannelCount`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setChannelCount(unsigned int channelCount);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the number of channels used by this recorder
-    ///
-    /// Currently only mono and stereo are supported, so the
-    /// value is either 1 (for mono) or 2 (for stereo).
-    ///
-    /// \return Number of channels
-    ///
-    /// \see `setChannelCount`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the map of position in sample frame to sound channel
-    ///
-    /// This is used to map a sample in the sample stream to a
-    /// position during spatialization.
-    ///
-    /// \return Map of position in sample frame to sound channel
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const std::vector<SoundChannel>& getChannelMap() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Check if the system supports audio capture
-    ///
-    /// This function should always be called before using
-    /// the audio capture features. If it returns `false`, then
-    /// any attempt to use `sf::SoundRecorder` or one of its derived
-    /// classes will fail.
-    ///
-    /// \return `true` if audio capture is supported, `false` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool isAvailable();
+    [[nodiscard]] bool stop();
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -205,7 +100,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    SoundRecorder();
+    [[nodiscard]] explicit SoundRecorder();
 
     ////////////////////////////////////////////////////////////
     /// \brief Start capturing audio data
@@ -218,7 +113,7 @@ protected:
     /// \return `true` to start the capture, or `false` to abort it
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool onStart();
+    [[nodiscard]] virtual bool onStart(CaptureDevice& captureDevice);
 
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
@@ -234,7 +129,7 @@ protected:
     /// \return `true` to continue the capture, or `false` to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) = 0;
+    [[nodiscard]] virtual bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data
@@ -245,14 +140,18 @@ protected:
     /// implementation does nothing.
     ///
     ////////////////////////////////////////////////////////////
-    virtual void onStop();
+    [[nodiscard]] virtual bool onStop(CaptureDevice& captureDevice);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    const std::unique_ptr<Impl> m_impl; //!< Implementation details
+    CaptureDevice* m_lastCaptureDevice{};
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(CaptureDevice);
 };
 
 } // namespace sf
@@ -278,16 +177,17 @@ private:
 /// \li `onStart` is called before the capture happens, to perform custom initializations
 /// \li `onStop` is called after the capture ends, to perform custom cleanup
 ///
-/// The audio capture feature may not be supported or activated
-/// on every platform, thus it is recommended to check its
-/// availability with the isAvailable() function. If it returns
-/// `false`, then any attempt to use an audio recorder will fail.
+/// A derived class can also control the frequency of the onProcessSamples
+/// calls, with the `setProcessingInterval` protected function. The default
+/// interval is chosen so that recording thread doesn't consume too much
+/// CPU, but it can be changed to a smaller value if you need to process
+/// the recorded data in real time, for example.
 ///
 /// If you have multiple sound input devices connected to your
 /// computer (for example: microphone, external sound card, webcam mic, ...)
 /// you can get a list of all available devices through the
-/// `getAvailableDevices()` function. You can then select a device
-/// by calling `setDevice()` with the appropriate device. Otherwise
+/// getAvailableDevices() function. You can then select a device
+/// by calling `setCurrentDevice()` with the appropriate device. Otherwise
 /// the default capturing device will be used.
 ///
 /// By default the recording is in 16-bit mono. Using the
@@ -328,7 +228,7 @@ private:
 ///         return true;
 ///     }
 ///
-///     [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override
+///     [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override
 ///     {
 ///         // Do something with the new chunk of samples (store them, send them, ...)
 ///         ...

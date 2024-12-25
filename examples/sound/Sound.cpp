@@ -1,7 +1,17 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio.hpp>
+#include "SFML/Audio/Sound.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
+
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Sleep.hpp"
+#include "SFML/System/Time.hpp"
 
 #include <iostream>
 
@@ -12,10 +22,10 @@ namespace
 /// Play a sound
 ///
 ////////////////////////////////////////////////////////////
-void playSound()
+void playSound(sf::PlaybackDevice& playbackDevice)
 {
     // Load a sound buffer from a wav file
-    const sf::SoundBuffer buffer("resources/killdeer.wav");
+    const auto buffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
 
     // Display sound information
     std::cout << "killdeer.wav:" << '\n'
@@ -25,7 +35,7 @@ void playSound()
 
     // Create a sound instance and play it
     sf::Sound sound(buffer);
-    sound.play();
+    sound.play(playbackDevice);
 
     // Loop while the sound is playing
     while (sound.getStatus() == sf::Sound::Status::Playing)
@@ -45,10 +55,10 @@ void playSound()
 /// Play a music
 ///
 ////////////////////////////////////////////////////////////
-void playMusic(const std::filesystem::path& filename)
+void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 {
     // Load an ogg music file
-    sf::Music music("resources" / filename);
+    auto music = sf::Music::openFromFile("resources" / filename).value();
 
     // Display music information
     std::cout << filename << ":" << '\n'
@@ -57,7 +67,7 @@ void playMusic(const std::filesystem::path& filename)
               << " " << music.getChannelCount() << " channels" << '\n';
 
     // Play it
-    music.play();
+    music.play(playbackDevice);
 
     // Loop while the music is playing
     while (music.getStatus() == sf::Music::Status::Playing)
@@ -75,24 +85,26 @@ void playMusic(const std::filesystem::path& filename)
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create an audio context and get the default playback device
+    auto audioContext   = sf::AudioContext::create().value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
     // Play a sound
-    playSound();
+    playSound(playbackDevice);
 
     // Play music from an ogg file
-    playMusic("doodle_pop.ogg");
+    playMusic(playbackDevice, "doodle_pop.ogg");
 
     // Play music from a flac file
-    playMusic("ding.flac");
+    playMusic(playbackDevice, "ding.flac");
 
     // Play music from a mp3 file
-    playMusic("ding.mp3");
+    playMusic(playbackDevice, "ding.mp3");
 
     // Wait until the user presses 'enter' key
     std::cout << "Press enter to exit..." << std::endl;

@@ -1,42 +1,21 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2024 Andrew Mickelson
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/InputImpl.hpp>
+#include "SFML/Window/Event.hpp"
+#include "SFML/Window/InputImpl.hpp"
 
-#include <SFML/System/EnumArray.hpp>
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
-#include <algorithm>
-#include <array>
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/EnumArray.hpp"
+#include "SFML/Base/Optional.hpp"
+
 #include <fcntl.h>
 #include <linux/input.h>
 #include <mutex>
-#include <optional>
 #include <queue>
 #include <sstream>
 #include <sys/stat.h>
@@ -47,24 +26,23 @@
 #include <cerrno>
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
 
 
 namespace
 {
 struct TouchSlot
 {
-    std::optional<unsigned int> oldId;
-    std::optional<unsigned int> id;
-    sf::Vector2i                pos;
+    base::Optional<unsigned int> oldId;
+    base::Optional<unsigned int> id;
+    sf::Vector2i                 pos;
 };
 
 std::recursive_mutex inputMutex; // threadsafe? maybe...
 sf::Vector2i         mousePos;   // current mouse position
 
 std::vector<int> fileDescriptors; // list of open file descriptors for /dev/input
-sf::priv::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
-sf::priv::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
+sf::base::EnumArray<sf::Mouse::Button, bool, sf::Mouse::ButtonCount> mouseMap{}; // track whether mouse buttons are down
+sf::base::EnumArray<sf::Keyboard::Key, bool, sf::Keyboard::KeyCount> keyMap{};   // track whether keys are down
 
 int                    touchFd = -1;    // file descriptor we have seen MT events on; assumes only 1
 std::vector<TouchSlot> touchSlots;      // track the state of each touch "slot"
@@ -99,7 +77,7 @@ void uninitFileDescriptors()
 }
 
 #define BITS_PER_LONG        (sizeof(unsigned long) * 8)
-#define NBITS(x)             ((((x)-1) / BITS_PER_LONG) + 1)
+#define NBITS(x)             ((((x) - 1) / BITS_PER_LONG) + 1)
 #define OFF(x)               ((x) % BITS_PER_LONG)
 #define LONG(x)              ((x) / BITS_PER_LONG)
 #define TEST_BIT(bit, array) (((array)[LONG(bit)] >> OFF(bit)) & 1)
@@ -108,15 +86,15 @@ void uninitFileDescriptors()
 // Joysticks are handled in /src/SFML/Window/Unix/JoystickImpl.cpp
 bool keepFileDescriptor(int fileDesc)
 {
-    std::array<unsigned long, NBITS(EV_MAX)>  bitmaskEv{};
-    std::array<unsigned long, NBITS(KEY_MAX)> bitmaskKey{};
-    std::array<unsigned long, NBITS(ABS_MAX)> bitmaskAbs{};
-    std::array<unsigned long, NBITS(REL_MAX)> bitmaskRel{};
+    unsigned long bitmaskEv[NBITS(EV_MAX)];
+    unsigned long bitmaskKey[NBITS(KEY_MAX)];
+    unsigned long bitmaskAbs[NBITS(ABS_MAX)];
+    unsigned long bitmaskRel[NBITS(REL_MAX)];
 
-    ioctl(fileDesc, EVIOCGBIT(0, sizeof(bitmaskEv)), bitmaskEv.data());
-    ioctl(fileDesc, EVIOCGBIT(EV_KEY, sizeof(bitmaskKey)), bitmaskKey.data());
-    ioctl(fileDesc, EVIOCGBIT(EV_ABS, sizeof(bitmaskAbs)), bitmaskAbs.data());
-    ioctl(fileDesc, EVIOCGBIT(EV_REL, sizeof(bitmaskRel)), bitmaskRel.data());
+    ioctl(fileDesc, EVIOCGBIT(0, sizeof(bitmaskEv)), &bitmaskEv);
+    ioctl(fileDesc, EVIOCGBIT(EV_KEY, sizeof(bitmaskKey)), &bitmaskKey);
+    ioctl(fileDesc, EVIOCGBIT(EV_ABS, sizeof(bitmaskAbs)), &bitmaskAbs);
+    ioctl(fileDesc, EVIOCGBIT(EV_REL, sizeof(bitmaskRel)), &bitmaskRel);
 
     // This is the keyboard test used by SDL.
     // The first 32 bits are ESC, numbers and Q to D;  If we have any of those,
@@ -154,7 +132,7 @@ void initFileDescriptors()
         if (tempFD < 0)
         {
             if (errno != ENOENT)
-                sf::err() << "Error opening " << name << ": " << std::strerror(errno) << std::endl;
+                sf::priv::err() << "Error opening " << name << ": " << std::strerror(errno);
 
             continue;
         }
@@ -168,7 +146,7 @@ void initFileDescriptors()
     std::atexit(uninitFileDescriptors);
 }
 
-std::optional<sf::Mouse::Button> toMouseButton(int code)
+base::Optional<sf::Mouse::Button> toMouseButton(int code)
 {
     switch (code)
     {
@@ -184,7 +162,7 @@ std::optional<sf::Mouse::Button> toMouseButton(int code)
             return sf::Mouse::Button::Extra2;
 
         default:
-            return std::nullopt;
+            return base::nullOpt;
     }
 }
 
@@ -318,8 +296,8 @@ void pushEvent(const sf::Event& event)
 TouchSlot& atSlot(int idx)
 {
     if (idx >= static_cast<int>(touchSlots.size()))
-        touchSlots.resize(static_cast<std::size_t>(idx + 1));
-    return touchSlots.at(static_cast<std::size_t>(idx));
+        touchSlots.resize(static_cast<base::SizeT>(idx + 1));
+    return touchSlots.at(static_cast<base::SizeT>(idx));
 }
 
 void processSlots()
@@ -332,9 +310,9 @@ void processSlots()
         }
         else
         {
-            if (slot.oldId.has_value())
+            if (slot.oldId.hasValue())
                 pushEvent(sf::Event::TouchEnded{*slot.oldId, slot.pos});
-            if (slot.id.has_value())
+            if (slot.id.hasValue())
                 pushEvent(sf::Event::TouchBegan{*slot.id, slot.pos});
 
             slot.oldId = slot.id;
@@ -342,7 +320,7 @@ void processSlots()
     }
 }
 
-std::optional<sf::Event> eventProcess()
+sf::base::Optional<sf::Event> eventProcess()
 {
     const std::lock_guard lock(inputMutex);
 
@@ -372,7 +350,7 @@ std::optional<sf::Event> eventProcess()
         {
             if (inputEvent.type == EV_KEY)
             {
-                if (const std::optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
+                if (const sf::base::Optional<sf::Mouse::Button> mb = toMouseButton(inputEvent.code))
                 {
                     mouseMap[*mb] = inputEvent.value;
 
@@ -409,7 +387,7 @@ std::optional<sf::Event> eventProcess()
                     const auto makeKeyEvent = [&](auto keyEvent)
                     {
                         keyEvent.code     = kb;
-                        keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO: not implemented
+                        keyEvent.scancode = sf::Keyboard::Scan::Unknown; // TODO P2: not implemented
                         keyEvent.alt      = altDown();
                         keyEvent.control  = controlDown();
                         keyEvent.shift    = shiftDown();
@@ -458,8 +436,8 @@ std::optional<sf::Event> eventProcess()
                         touchFd     = fileDescriptor;
                         break;
                     case ABS_MT_TRACKING_ID:
-                        atSlot(currentSlot).id = inputEvent.value >= 0 ? std::optional(inputEvent.value) : std::nullopt;
-                        touchFd                = fileDescriptor;
+                        atSlot(currentSlot).id = inputEvent.value >= 0 ? base::Optional(inputEvent.value) : base::nullOpt;
+                        touchFd = fileDescriptor;
                         break;
                     case ABS_MT_POSITION_X:
                         atSlot(currentSlot).pos.x = inputEvent.value;
@@ -482,7 +460,7 @@ std::optional<sf::Event> eventProcess()
         }
 
         if ((bytesRead < 0) && (errno != EAGAIN))
-            sf::err() << " Error: " << std::strerror(errno) << std::endl;
+            sf::priv::err() << " Error: " << std::strerror(errno);
     }
     // Finally check if there is a Text event on stdin
     //
@@ -515,8 +493,8 @@ std::optional<sf::Event> eventProcess()
         ready = select(STDIN_FILENO + 1, &readFDSet, nullptr, nullptr, &timeout);
         if (ready > 0 && FD_ISSET(STDIN_FILENO, &readFDSet))
         {
-            std::array<unsigned char, 16> tempBuffer{};
-            bytesRead = read(STDIN_FILENO, tempBuffer.data(), tempBuffer.size());
+            unsigned char tempBuffer[16];
+            bytesRead = read(STDIN_FILENO, tempBuffer, 16);
             code      = 0;
         }
     }
@@ -528,18 +506,18 @@ std::optional<sf::Event> eventProcess()
 
     if (code > 0)
     {
-        // TODO: Proper unicode handling
+        // TODO P2: Proper unicode handling
         return sf::Event::TextEntered{code};
     }
 
     // No events available
-    return std::nullopt;
+    return base::nullOpt;
 }
 
 // assumes inputMutex is locked
 void update()
 {
-    while (const std::optional event = eventProcess())
+    while (const base::Optional event = eventProcess())
         pushEvent(*event);
 }
 } // namespace
@@ -561,8 +539,8 @@ bool isKeyPressed(Keyboard::Key key)
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(Keyboard::Scancode /* code */)
 {
-    // TODO: not implemented
-    err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM." << std::endl;
+    // TODO P2: not implemented
+    priv::err() << "sf::Keyboard::isKeyPressed(Keyboard::Scancode) is not implemented for DRM.";
     return false;
 }
 
@@ -570,8 +548,8 @@ bool isKeyPressed(Keyboard::Scancode /* code */)
 ////////////////////////////////////////////////////////////
 Keyboard::Key localize(Keyboard::Scancode /* code */)
 {
-    // TODO: not implemented
-    err() << "sf::Keyboard::localize is not implemented for DRM." << std::endl;
+    // TODO P2: not implemented
+    priv::err() << "sf::Keyboard::localize is not implemented for DRM.";
     return Keyboard::Key::Unknown;
 }
 
@@ -579,8 +557,8 @@ Keyboard::Key localize(Keyboard::Scancode /* code */)
 ////////////////////////////////////////////////////////////
 Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 {
-    // TODO: not implemented
-    err() << "sf::Keyboard::delocalize is not implemented for DRM." << std::endl;
+    // TODO P2: not implemented
+    priv::err() << "sf::Keyboard::delocalize is not implemented for DRM.";
     return Keyboard::Scan::Unknown;
 }
 
@@ -588,8 +566,8 @@ Keyboard::Scancode delocalize(Keyboard::Key /* key */)
 ////////////////////////////////////////////////////////////
 String getDescription(Keyboard::Scancode /* code */)
 {
-    // TODO: not implemented
-    err() << "sf::Keyboard::getDescription is not implemented for DRM." << std::endl;
+    // TODO P2: not implemented
+    priv::err() << "sf::Keyboard::getDescription is not implemented for DRM.";
     return "";
 }
 
@@ -646,7 +624,7 @@ void setMousePosition(Vector2i position, const WindowBase& /*relativeTo*/)
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int finger)
 {
-    return std::any_of(touchSlots.cbegin(),
+    return base::anyOf(touchSlots.cbegin(),
                        touchSlots.cend(),
                        [finger](const TouchSlot& slot) { return slot.id == finger; });
 }
@@ -673,19 +651,19 @@ Vector2i getTouchPosition(unsigned int finger, const WindowBase& /*relativeTo*/)
 
 
 ////////////////////////////////////////////////////////////
-std::optional<Event> checkEvent()
+base::Optional<Event> checkEvent()
 {
     const std::lock_guard lock(inputMutex);
 
     if (!eventQueue.empty())
     {
-        auto event = std::make_optional(eventQueue.front());
+        auto event = base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    if (const std::optional event = eventProcess())
+    if (const base::Optional event = eventProcess())
     {
         return event;
     }
@@ -695,13 +673,13 @@ std::optional<Event> checkEvent()
     // sure of a good way to handle generating multiple events at once.)
     if (!eventQueue.empty())
     {
-        auto event = std::make_optional(eventQueue.front());
+        auto event = base::makeOptional(eventQueue.front());
         eventQueue.pop();
 
         return event;
     }
 
-    return std::nullopt;
+    return base::nullOpt;
 }
 
 

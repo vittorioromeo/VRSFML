@@ -1,72 +1,71 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Drawable.hpp>
-#include <SFML/Graphics/PrimitiveType.hpp>
-#include <SFML/Graphics/Rect.hpp>
-#include <SFML/Graphics/RenderStates.hpp>
-#include <SFML/Graphics/Transformable.hpp>
-#include <SFML/Graphics/VertexArray.hpp>
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Vertex.hpp"
 
-#include <SFML/System/String.hpp>
-#include <SFML/System/Vector2.hpp>
+#include "SFML/System/AnchorPointMixin.hpp"
+#include "SFML/System/LifetimeDependant.hpp"
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/String.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <cstddef>
-#include <cstdint>
+#include "SFML/Base/EnumClassBitwiseOps.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Span.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf
 {
 class Font;
 class RenderTarget;
+struct RenderStates;
 
 ////////////////////////////////////////////////////////////
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Drawable, public Transformable
+class SFML_GRAPHICS_API Text : public Transformable, public AnchorPointMixin<Text>
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum Style
+    enum class [[nodiscard]] Style : base::U8
     {
         Regular       = 0,      //!< Regular characters, no style
         Bold          = 1 << 0, //!< Bold characters
         Italic        = 1 << 1, //!< Italic characters
         Underlined    = 1 << 2, //!< Underlined characters
         StrikeThrough = 1 << 3  //!< Strike through characters
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] Settings
+    {
+        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        String       string{};                   //!< String to display
+        unsigned int characterSize{30u};         //!< Base size of characters, in pixels
+        float        letterSpacing{1.f};         //!< Spacing factor between letters
+        float        lineSpacing{1.f};           //!< Spacing factor between lines
+        Color        fillColor{Color::White};    //!< Text fill color
+        Color        outlineColor{Color::Black}; //!< Text outline color
+        float        outlineThickness{0.f};      //!< Thickness of the text's outline
+        Style        style{Style::Regular};      //!< Text style (see Style enum)
     };
 
     ////////////////////////////////////////////////////////////
@@ -79,18 +78,46 @@ public:
     /// of a certain size, make sure the corresponding bitmap
     /// font that supports that size is used.
     ///
-    /// \param string         Text assigned to the string
-    /// \param font           Font used to draw the string
-    /// \param characterSize  Base size of characters, in pixels
+    /// \param settings       Settings of the text
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font& font, String string = "", unsigned int characterSize = 30);
+    [[nodiscard]] Text(const Font& font, const Settings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    Text(const Font&& font, String string = "", unsigned int characterSize = 30) = delete;
+    [[nodiscard]] Text(const Font&& font, const Settings& settings) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Text();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Text(const Text&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Text& operator=(const Text&);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    Text(Text&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    Text& operator=(Text&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the text's string
@@ -134,7 +161,7 @@ public:
     /// \brief Disallow setting from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    void setFont(const Font&& font) = delete;
+    void setFont(Font&& font) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the character size
@@ -192,15 +219,15 @@ public:
     /// \brief Set the text's style
     ///
     /// You can pass a combination of one or more styles, for
-    /// example `sf::Text::Bold | sf::Text::Italic`.
-    /// The default style is `sf::Text::Regular`.
+    /// example `sf::Text::Style::Bold | sf::Text::Style::Italic`.
+    /// The default style is `sf::Text::Style::Regular`.
     ///
     /// \param style New style
     ///
     /// \see `getStyle`
     ///
     ////////////////////////////////////////////////////////////
-    void setStyle(std::uint32_t style);
+    void setStyle(Text::Style style);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the fill color of the text
@@ -313,7 +340,7 @@ public:
     /// \see `setStyle`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint32_t getStyle() const;
+    [[nodiscard]] Style getStyle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the fill color of the text
@@ -360,7 +387,7 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f findCharacterPos(std::size_t index) const;
+    [[nodiscard]] Vector2f findCharacterPos(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -374,7 +401,7 @@ public:
     /// \return Local bounding rectangle of the entity
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] FloatRect getLocalBounds() const;
+    [[nodiscard]] const FloatRect& getLocalBounds() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the global bounding rectangle of the entity
@@ -390,7 +417,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getGlobalBounds() const;
 
-private:
     ////////////////////////////////////////////////////////////
     /// \brief Draw the text to a render target
     ///
@@ -398,8 +424,15 @@ private:
     /// \param states Current render states
     ///
     ////////////////////////////////////////////////////////////
-    void draw(RenderTarget& target, RenderStates states) const override;
+    void draw(RenderTarget& target, RenderStates states) const;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<const Vertex> getVertices() const;
+
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Make sure the text's geometry is updated
     ///
@@ -407,26 +440,33 @@ private:
     /// that the geometry is only updated when necessary.
     ///
     ////////////////////////////////////////////////////////////
-    void ensureGeometryUpdate() const;
+    void ensureGeometryUpdate(const Font& font) const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    String                m_string;                                    //!< String to display
-    const Font*           m_font{};                                    //!< Font used to display the string
-    unsigned int          m_characterSize{30};                         //!< Base size of characters, in pixels
-    float                 m_letterSpacingFactor{1.f};                  //!< Spacing factor between letters
-    float                 m_lineSpacingFactor{1.f};                    //!< Spacing factor between lines
-    std::uint32_t         m_style{Regular};                            //!< Text style (see Style enum)
-    Color                 m_fillColor{Color::White};                   //!< Text fill color
-    Color                 m_outlineColor{Color::Black};                //!< Text outline color
-    float                 m_outlineThickness{0.f};                     //!< Thickness of the text's outline
-    mutable VertexArray   m_vertices{PrimitiveType::Triangles};        //!< Vertex array containing the fill geometry
-    mutable VertexArray   m_outlineVertices{PrimitiveType::Triangles}; //!< Vertex array containing the outline geometry
-    mutable FloatRect     m_bounds;               //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool          m_geometryNeedUpdate{}; //!< Does the geometry need to be recomputed?
-    mutable std::uint64_t m_fontTextureId{};      //!< The font texture id
+    const Font*  m_font{};                     //!< Font used to display the string
+    String       m_string;                     //!< String to display
+    unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
+    float        m_letterSpacing{1.f};         //!< Spacing factor between letters
+    float        m_lineSpacing{1.f};           //!< Spacing factor between lines
+    Color        m_fillColor{Color::White};    //!< Text fill color
+    Color        m_outlineColor{Color::Black}; //!< Text outline color
+    float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
+    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
+
+    mutable base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the outline and fill geometry
+    mutable base::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
+    mutable FloatRect   m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
+    mutable bool        m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(Font);
 };
+
+SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(Text::Style);
 
 } // namespace sf
 
@@ -469,12 +509,12 @@ private:
 /// Usage example:
 /// \code
 /// // Open a font
-/// const sf::Font font("arial.ttf");
+/// const auto font = sf::Font::openFromFile("arial.ttf").value();
 ///
 /// // Create a text
 /// sf::Text text(font, "hello");
 /// text.setCharacterSize(30);
-/// text.setStyle(sf::Text::Bold);
+/// text.setStyle(sf::Text::Style::Bold);
 /// text.setFillColor(sf::Color::Red);
 ///
 /// // Draw it

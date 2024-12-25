@@ -1,32 +1,42 @@
-#include <SFML/Audio/Sound.hpp>
+#include "SFML/Audio/Sound.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
-#include <SFML/Audio/SoundBuffer.hpp>
+#include "SFML/Audio/SoundBuffer.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/System/Path.hpp"
+#include "SFML/System/Time.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
+
+#include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
+#include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-#include <type_traits>
 
-TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
+TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
+    auto audioContext   = sf::AudioContext::create().value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
     SECTION("Type traits")
     {
-        STATIC_CHECK(!std::is_constructible_v<sf::Sound, sf::SoundBuffer&&>);
-        STATIC_CHECK(!std::is_constructible_v<sf::Sound, const sf::SoundBuffer&&>);
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Sound>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Sound>);
-        STATIC_CHECK(std::is_move_constructible_v<sf::Sound>);
-        STATIC_CHECK(!std::is_nothrow_move_constructible_v<sf::Sound>);
-        STATIC_CHECK(std::is_move_assignable_v<sf::Sound>);
-        STATIC_CHECK(!std::is_nothrow_move_assignable_v<sf::Sound>);
-        STATIC_CHECK(std::has_virtual_destructor_v<sf::Sound>);
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, sf::SoundBuffer&&));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, const sf::SoundBuffer&&));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Sound));
     }
 
-    const sf::SoundBuffer soundBuffer("Audio/ding.flac");
+    const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
     SECTION("Construction")
     {
@@ -52,7 +62,7 @@ TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
 
         SECTION("Assignment")
         {
-            const sf::SoundBuffer otherSoundBuffer("Audio/ding.flac");
+            const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             sf::Sound             soundCopy(otherSoundBuffer);
             soundCopy = sound;
             CHECK(&soundCopy.getBuffer() == &soundBuffer);
@@ -64,7 +74,7 @@ TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
 
     SECTION("Set/get buffer")
     {
-        const sf::SoundBuffer otherSoundBuffer("Audio/ding.flac");
+        const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
         sf::Sound             sound(soundBuffer);
         sound.setBuffer(otherSoundBuffer);
         CHECK(&sound.getBuffer() == &otherSoundBuffer);
@@ -83,4 +93,53 @@ TEST_CASE("[Audio] sf::Sound", runAudioDeviceTests())
         sound.setPlayingOffset(sf::seconds(10));
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
+
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+    SECTION("Lifetime tracking")
+    {
+        SECTION("Return local from function")
+        {
+            const auto badFunction = []
+            {
+                const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+                return sf::Sound(localSoundBuffer);
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            badFunction();
+
+            CHECK(guard.fatalErrorTriggered());
+        }
+
+        SECTION("Move struct holding both dependee and dependant")
+        {
+            struct BadStruct
+            {
+                explicit BadStruct() :
+                memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
+                memberSound{memberSoundBuffer}
+                {
+                }
+
+                sf::SoundBuffer memberSoundBuffer;
+                sf::Sound       memberSound;
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::base::Optional<BadStruct> badStruct0;
+            badStruct0.emplace();
+            CHECK(!guard.fatalErrorTriggered());
+
+            const BadStruct badStruct1 = SFML_BASE_MOVE(badStruct0.value());
+            CHECK(!guard.fatalErrorTriggered());
+
+            badStruct0.reset();
+            CHECK(guard.fatalErrorTriggered());
+        }
+    }
+#endif
 }

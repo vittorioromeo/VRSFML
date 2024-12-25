@@ -1,43 +1,15 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/Network/IpAddress.hpp>
-#include <SFML/Network/TcpSocket.hpp>
+#include "SFML/System/Time.hpp"
 
-#include <SFML/System/Time.hpp>
-
-#include <iosfwd>
-#include <map>
-#include <optional>
-#include <string>
+#include "SFML/Base/FwdStdString.hpp" // used
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 namespace sf
@@ -80,7 +52,40 @@ public:
         /// \param body   Content of the request's body
         ///
         ////////////////////////////////////////////////////////////
-        Request(const std::string& uri = "/", Method method = Method::Get, const std::string& body = "");
+        [[nodiscard]] Request(const std::string& uri, Method method, const std::string& body);
+        [[nodiscard]] Request(const std::string& uri, Method method);
+        [[nodiscard]] Request(const std::string& uri);
+        [[nodiscard]] Request();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Destructor
+        ///
+        ////////////////////////////////////////////////////////////
+        ~Request();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Request(const Request&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Request& operator=(const Request&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Request(Request&&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Request& operator=(Request&&) noexcept = default;
 
         ////////////////////////////////////////////////////////////
         /// \brief Set the value of a field
@@ -171,19 +176,10 @@ public:
         [[nodiscard]] bool hasField(const std::string& field) const;
 
         ////////////////////////////////////////////////////////////
-        // Types
-        ////////////////////////////////////////////////////////////
-        using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
-
-        ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        FieldTable   m_fields;          //!< Fields of the header associated to their value
-        Method       m_method;          //!< Method to use for the request
-        std::string  m_uri;             //!< Target URI of the request
-        unsigned int m_majorVersion{1}; //!< Major HTTP version
-        unsigned int m_minorVersion{};  //!< Minor HTTP version
-        std::string  m_body;            //!< Body of the request
+        struct Impl;
+        base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -232,6 +228,42 @@ public:
             InvalidResponse  = 1000, //!< Response is not a valid HTTP one
             ConnectionFailed = 1001  //!< Connection with server failed
         };
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Default constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] Response();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Destructor
+        ///
+        ////////////////////////////////////////////////////////////
+        ~Response();
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Response(const Response&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Copy assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Response& operator=(const Response&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move constructor
+        ///
+        ////////////////////////////////////////////////////////////
+        Response(Response&&) noexcept = default;
+
+        ////////////////////////////////////////////////////////////
+        /// \brief Move assignment
+        ///
+        ////////////////////////////////////////////////////////////
+        Response& operator=(Response&&) noexcept = default;
 
         ////////////////////////////////////////////////////////////
         /// \brief Get the value of a field
@@ -308,38 +340,24 @@ public:
         ////////////////////////////////////////////////////////////
         void parse(const std::string& data);
 
-
-        ////////////////////////////////////////////////////////////
-        /// \brief Read values passed in the answer header
-        ///
-        /// This function is used by `Http` to extract values passed
-        /// in the response.
-        ///
-        /// \param in String stream containing the header values
-        ///
-        ////////////////////////////////////////////////////////////
-        void parseFields(std::istream& in);
-
-        ////////////////////////////////////////////////////////////
-        // Types
-        ////////////////////////////////////////////////////////////
-        using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
-
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        FieldTable   m_fields;                           //!< Fields of the header
-        Status       m_status{Status::ConnectionFailed}; //!< Status code
-        unsigned int m_majorVersion{};                   //!< Major HTTP version
-        unsigned int m_minorVersion{};                   //!< Minor HTTP version
-        std::string  m_body;                             //!< Body of the response
+        struct Impl;
+        base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    Http() = default;
+    [[nodiscard]] Http();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Http();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the HTTP client with the target host
@@ -355,7 +373,7 @@ public:
     /// \param port Port to use for connection
     ///
     ////////////////////////////////////////////////////////////
-    Http(const std::string& host, unsigned short port = 0);
+    [[nodiscard]] Http(const std::string& host, unsigned short port = 0);
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -410,10 +428,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    TcpSocket                m_connection; //!< Connection to the host
-    std::optional<IpAddress> m_host;       //!< Web host address
-    std::string              m_hostName;   //!< Web host name
-    unsigned short           m_port{};     //!< Port used for connection with host
+    struct Impl;
+    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
 };
 
 } // namespace sf
@@ -469,11 +485,11 @@ private:
 /// sf::Http::Response::Status status = response.getStatus();
 /// if (status == sf::Http::Response::Status::Ok)
 /// {
-///     std::cout << response.getBody() << std::endl;
+///     std::cout << response.getBody() << '\n';
 /// }
 /// else
 /// {
-///     std::cout << "Error " << status << std::endl;
+///     std::cout << "Error " << status << '\n';
 /// }
 /// \endcode
 ///

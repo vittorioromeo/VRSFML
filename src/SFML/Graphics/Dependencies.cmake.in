@@ -10,8 +10,10 @@ set(FIND_SFML_DEPENDENCIES_NOTFOUND)
 
 if(SFML_BUILT_USING_SYSTEM_DEPS)
     find_dependency(Freetype)
+    find_dependency(ImGui)
 else()
     find_dependency(Freetype CONFIG PATHS "${CMAKE_CURRENT_LIST_DIR}/../../../")
+    find_dependency(ImGui CONFIG PATHS "${CMAKE_CURRENT_LIST_DIR}/../../../")
 endif()
 
 if(FIND_SFML_DEPENDENCIES_NOTFOUND)

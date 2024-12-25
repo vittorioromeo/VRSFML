@@ -1,41 +1,25 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundBuffer.hpp>
-#include <SFML/Audio/SoundRecorder.hpp>
+#include "SFML/Audio/SoundRecorder.hpp"
 
-#include <vector>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <cstddef>
-#include <cstdint>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class SoundBuffer;
+} // namespace sf
 
 
 namespace sf
@@ -49,7 +33,13 @@ class SFML_AUDIO_API SoundBufferRecorder : public SoundRecorder
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief destructor
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SoundBufferRecorder();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
     ~SoundBufferRecorder() override;
@@ -74,7 +64,7 @@ protected:
     /// \return `true` to start the capture, or `false` to abort it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onStart() override;
+    [[nodiscard]] bool onStart(CaptureDevice& captureDevice) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Process a new chunk of recorded samples
@@ -85,20 +75,20 @@ protected:
     /// \return `true` to continue the capture, or `false` to stop it
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override;
+    [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop capturing audio data
     ///
     ////////////////////////////////////////////////////////////
-    void onStop() override;
+    [[nodiscard]] bool onStop(CaptureDevice& captureDevice) override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::vector<std::int16_t> m_samples; //!< Temporary sample buffer to hold the recorded data
-    SoundBuffer               m_buffer;  //!< Sound buffer that will contain the recorded data
+    struct Impl;
+    base::InPlacePImpl<Impl, 384> m_impl; //!< Implementation details
 };
 
 } // namespace sf

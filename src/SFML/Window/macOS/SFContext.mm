@@ -1,39 +1,17 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Marco Antognini (antognini.marco@gmail.com),
-//                         Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/macOS/AutoreleasePoolWrapper.hpp>
-#include <SFML/Window/macOS/SFContext.hpp>
-#include <SFML/Window/macOS/WindowImplCocoa.hpp>
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/macOS/AutoreleasePoolWrapper.hpp"
+#include "SFML/Window/macOS/SFContext.hpp"
+#include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include <SFML/System/Err.hpp>
+#include "SFML/System/Err.hpp"
 
 #include <dlfcn.h>
-#include <ostream>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 
@@ -46,17 +24,17 @@ SFContext::SFContext(SFContext* shared)
     const AutoreleasePool pool;
     // Create the context
     createContext(shared,
-                  VideoMode::getDesktopMode().bitsPerPixel,
-                  ContextSettings{0 /* depthBits */, 0 /* stencilBits */, 0 /* antiAliasingLevel */});
+                  VideoModeUtils::getDesktopMode().bitsPerPixel,
+                  ContextSettings{.depthBits = 0, .stencilBits = 0, .antiAliasingLevel = 0});
 }
 
 
 ////////////////////////////////////////////////////////////
-SFContext::SFContext(SFContext* shared, const ContextSettings& settings, const WindowImpl& owner, unsigned int bitsPerPixel)
+SFContext::SFContext(SFContext* shared, const ContextSettings& contextSettings, const WindowImpl& owner, unsigned int bitsPerPixel)
 {
     const AutoreleasePool pool;
     // Create the context.
-    createContext(shared, bitsPerPixel, settings);
+    createContext(shared, bitsPerPixel, contextSettings);
 
     // Apply context.
     const auto& ownerCocoa = static_cast<const WindowImplCocoa&>(owner);
@@ -65,34 +43,11 @@ SFContext::SFContext(SFContext* shared, const ContextSettings& settings, const W
 
 
 ////////////////////////////////////////////////////////////
-SFContext::SFContext(SFContext* shared, const ContextSettings& settings, Vector2u size)
-{
-    const AutoreleasePool pool;
-    // Ensure the process is setup in order to create a valid window.
-    WindowImplCocoa::setUpProcess();
-
-    // Create the context.
-    createContext(shared, VideoMode::getDesktopMode().bitsPerPixel, settings);
-
-    // Create a dummy window/view pair (hidden) and assign it our context.
-    m_window = [[NSWindow alloc]
-        initWithContentRect:NSMakeRect(0, 0, size.x, size.y)
-                  styleMask:NSBorderlessWindowMask
-                    backing:NSBackingStoreBuffered
-                      defer:NO]; // Don't defer it!
-    m_view   = [[NSOpenGLView alloc] initWithFrame:NSMakeRect(0, 0, size.x, size.y)];
-    [m_window setContentView:m_view];
-    [m_view setOpenGLContext:m_context];
-    [m_context setView:m_view];
-}
-
-
-////////////////////////////////////////////////////////////
 SFContext::~SFContext()
 {
     const AutoreleasePool pool;
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedResources();
+    cleanupUnsharedFrameBuffers();
 
     [m_context clearDrawable];
 
@@ -153,11 +108,11 @@ void SFContext::setVerticalSyncEnabled(bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& settings)
+void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
 {
     const AutoreleasePool pool;
-    // Save the settings. (OpenGL version is updated elsewhere.)
-    m_settings = settings;
+    // Save the contextSettings. (OpenGL version is updated elsewhere.)
+    m_settings = contextSettings;
 
     // Choose the attributes of OGL context.
     std::vector<NSOpenGLPixelFormatAttribute> attrs;
@@ -217,7 +172,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     // >=3.0 are mapped to a 3.2 core profile.
     if (m_settings.majorVersion < 3)
     {
-        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Core);
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Attribute::Core);
         m_settings.majorVersion = 2;
         m_settings.minorVersion = 1;
         attrs.push_back(NSOpenGLPFAOpenGLProfile);
@@ -225,10 +180,10 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
     }
     else
     {
-        if (!(m_settings.attributeFlags & ContextSettings::Core))
+        if (!(m_settings.attributeFlags & ContextSettings::Attribute::Core))
         {
-            err() << "Warning. Compatibility profile not supported on this platform." << std::endl;
-            m_settings.attributeFlags |= ContextSettings::Core;
+            priv::err() << "Warning. Compatibility profile not supported on this platform.";
+            m_settings.attributeFlags |= ContextSettings::Attribute::Core;
         }
         m_settings.majorVersion = 3;
         m_settings.minorVersion = 2;
@@ -236,10 +191,10 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
         attrs.push_back(NSOpenGLProfileVersion3_2Core);
     }
 
-    if (m_settings.attributeFlags & ContextSettings::Debug)
+    if (!!(m_settings.attributeFlags & ContextSettings::Attribute::Debug))
     {
-        err() << "Warning. OpenGL debugging not supported on this platform." << std::endl;
-        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Debug);
+        priv::err() << "Warning. OpenGL debugging not supported on this platform.";
+        m_settings.attributeFlags &= ~static_cast<unsigned int>(ContextSettings::Attribute::Debug);
     }
 
     attrs.push_back(static_cast<NSOpenGLPixelFormatAttribute>(0)); // end of array
@@ -252,7 +207,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (pixFmt == nil)
     {
-        err() << "Error. Unable to find a suitable pixel format." << std::endl;
+        priv::err() << "Error. Unable to find a suitable pixel format.";
         return;
     }
 
@@ -265,7 +220,7 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
         if (sharedContext == [NSOpenGLContext currentContext])
         {
-            err() << "Failed to deactivate shared context before sharing" << std::endl;
+            priv::err() << "Failed to deactivate shared context before sharing";
             return;
         }
     }
@@ -275,13 +230,13 @@ void SFContext::createContext(SFContext* shared, unsigned int bitsPerPixel, cons
 
     if (m_context == nil)
     {
-        err() << "Error. Unable to create the context. Retrying without shared context." << std::endl;
+        priv::err() << "Error. Unable to create the context. Retrying without shared context.";
         m_context = [[NSOpenGLContext alloc] initWithFormat:pixFmt shareContext:nil];
 
         if (m_context == nil)
-            err() << "Error. Unable to create the context." << std::endl;
+            priv::err() << "Error. Unable to create the context.";
         else
-            err() << "Warning. New context created without shared context." << std::endl;
+            priv::err() << "Warning. New context created without shared context.";
     }
 
     // Free up.

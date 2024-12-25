@@ -1,23 +1,23 @@
-#include <SFML/Network/SocketSelector.hpp>
+#include "SFML/Network/SocketSelector.hpp"
 
 // Other 1st party headers
-#include <SFML/Network/UdpSocket.hpp>
+#include "SFML/Network/UdpSocket.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
-#include <type_traits>
+#include <CommonTraits.hpp>
 
 TEST_CASE("[Network] sf::SocketSelector")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::SocketSelector>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::SocketSelector>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::SocketSelector>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::SocketSelector>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SocketSelector));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SocketSelector));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SocketSelector));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SocketSelector));
     }
 
-    sf::UdpSocket socket;
+    sf::UdpSocket socket(/* isBlocking */ true);
 
     SECTION("Construction")
     {

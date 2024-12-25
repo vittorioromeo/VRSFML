@@ -1,53 +1,51 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics.hpp>
+#include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderWindow.hpp"
+
+#include "SFML/Window/EventUtils.hpp"
+
+#include "SFML/System/Angle.hpp"
 
 #include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
-/// Entry point of application
-///
-/// \return Application exit code
+/// Main
 ///
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create the graphics context
+    auto graphicsContext = sf::GraphicsContext::create().value();
+
     // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(sf::VideoMode({600, 600}),
-                            "SFML Stencil",
-                            sf::Style::Titlebar | sf::Style::Close,
-                            sf::State::Windowed,
-                            sf::ContextSettings{0 /* depthBits */, 8 /* stencilBits */});
-    window.setVerticalSyncEnabled(true);
+    sf::RenderWindow window(
+        {.size{600u, 600u},
+         .title     = "SFML Stencil",
+         .resizable = false,
+         .vsync     = true,
+         .contextSettings{.depthBits = 0, .stencilBits = 8}});
 
-    sf::RectangleShape red({500, 50});
-    red.setFillColor(sf::Color::Red);
-    red.setPosition({270, 70});
-    red.setRotation(sf::degrees(60));
+    const sf::RectangleShape red(
+        {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red, .size = {500.f, 50.f}});
 
-    sf::RectangleShape green({500, 50});
-    green.setFillColor(sf::Color::Green);
-    green.setPosition({370, 100});
-    green.setRotation(sf::degrees(120));
+    const sf::RectangleShape green(
+        {.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green, .size = {500.f, 50.f}});
 
-    sf::RectangleShape blue({500, 50});
-    blue.setFillColor(sf::Color::Blue);
-    blue.setPosition({550, 470});
-    blue.setRotation(sf::degrees(180));
+    const sf::RectangleShape blue(
+        {.position{550.f, 470.f}, .rotation = sf::degrees(180.f), .fillColor = sf::Color::Blue, .size = {500.f, 50.f}});
 
-    while (window.isOpen())
+    while (true)
     {
         // Handle events
-        while (const std::optional event = window.pollEvent())
+        while (const sf::base::Optional event = window.pollEvent())
         {
-            // Window closed: exit
-            if (event->is<sf::Event::Closed>())
-            {
-                window.close();
-                break;
-            }
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return EXIT_SUCCESS;
         }
 
         // When drawing using a 2D API, we normally resort to what is known as the "painter's algorithm".
@@ -107,21 +105,31 @@ int main()
         // make sure the reference value of 2 is greater than 0.
 
         // Clear the window color to black and the initial stencil buffer values to 0
-        window.clear(sf::Color::Black, 0);
+        window.clear(sf::Color::Black, sf::StencilValue{0u});
 
         // Draw rectangles
 
         // We draw the first rectangle with comparison set to always so that it will definitely draw and update (Replace)
         // the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
-                    sf::StencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 3, ~0u, false});
+                    /* texture */ nullptr,
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{3u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Just like the first, we draw the second rectangle with comparison set to always so that it will definitely
         // draw and update (Replace) the stencil buffer values of its pixels to the specified reference value.
         // In the case of pixels overlapping the first rectangle, because we specify Always as the comparison, it is
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
-                    sf::StencilMode{sf::StencilComparison::Always, sf::StencilUpdateOperation::Replace, 1, ~0u, false});
+                    /* texture */ nullptr,
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Always,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{1u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Now comes the magic. We want to draw the third rectangle so it is behind i.e. does not overwrite pixels of the
         // first rectangle but in front of i.e. overwrites pixels of the second rectangle. We already set the reference
@@ -131,7 +139,12 @@ int main()
         // second rectangle. The stencil update operation for this draw operation is not significant in any way since this is
         // the last draw call in the frame.
         window.draw(blue,
-                    sf::StencilMode{sf::StencilComparison::Greater, sf::StencilUpdateOperation::Replace, 2, ~0u, false});
+                    /* texture */ nullptr,
+                    sf::RenderStates{.stencilMode{sf::StencilComparison::Greater,
+                                                  sf::StencilUpdateOperation::Replace,
+                                                  sf::StencilValue{2u},
+                                                  sf::StencilValue{~0u},
+                                                  false}});
 
         // Display things on screen
         window.display();

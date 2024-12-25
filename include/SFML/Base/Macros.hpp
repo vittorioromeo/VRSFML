@@ -1,0 +1,14 @@
+#pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Base/Traits/RemoveReference.hpp"
+
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_MOVE(...) static_cast<SFML_BASE_REMOVE_REFERENCE(decltype(__VA_ARGS__)) &&>(__VA_ARGS__)
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_FORWARD(...) static_cast<decltype(__VA_ARGS__)&&>(__VA_ARGS__)

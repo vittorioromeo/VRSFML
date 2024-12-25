@@ -1,16 +1,21 @@
-#include <SFML/Network/Packet.hpp>
+#include "SFML/Network/Packet.hpp"
 
 // Other 1st party headers
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/SizeT.hpp"
 
-#include <array>
+#include <Doctest.hpp>
+
+#include <CommonTraits.hpp>
+#include <StringifyVectorUtil.hpp>
+#include <SystemUtil.hpp>
+
 #include <limits>
-#include <type_traits>
+#include <string>
 #include <vector>
 
-#include <cstddef>
 #include <cwchar>
 
 #define CHECK_PACKET_STREAM_OPERATORS(expected)              \
@@ -65,10 +70,10 @@ TEST_CASE("[Network] sf::Packet")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(std::is_copy_constructible_v<sf::Packet>);
-        STATIC_CHECK(std::is_copy_assignable_v<sf::Packet>);
-        STATIC_CHECK(std::is_nothrow_move_constructible_v<sf::Packet>);
-        STATIC_CHECK(std::is_nothrow_move_assignable_v<sf::Packet>);
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Packet));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Packet));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Packet));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Packet));
     }
 
     SECTION("Default constructor")
@@ -81,15 +86,15 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(bool{packet});
     }
 
-    static constexpr std::array data = {1, 2, 3, 4, 5, 6};
+    static constexpr int data[]{1, 2, 3, 4, 5, 6};
 
     SECTION("Append and clear")
     {
         sf::Packet packet;
-        packet.append(data.data(), data.size());
+        packet.append(data, 6);
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() != nullptr);
-        CHECK(packet.getDataSize() == data.size());
+        CHECK(packet.getDataSize() == 6);
         CHECK(!packet.endOfPacket());
         CHECK(bool{packet});
 
@@ -107,7 +112,7 @@ TEST_CASE("[Network] sf::Packet")
 
         SECTION("16 bit int")
         {
-            packet << std::uint16_t{12'345};
+            packet << sf::base::U16{12'345};
             const auto*       dataPtr = static_cast<const std::byte*>(packet.getData());
             const std::vector bytes(dataPtr, dataPtr + packet.getDataSize());
             const std::vector expectedBytes{std::byte{0x30}, std::byte{0x39}};
@@ -116,7 +121,7 @@ TEST_CASE("[Network] sf::Packet")
 
         SECTION("32 bit int")
         {
-            packet << std::uint32_t{1'234'567'890};
+            packet << sf::base::U32{1'234'567'890};
             const auto*       dataPtr = static_cast<const std::byte*>(packet.getData());
             const std::vector bytes(dataPtr, dataPtr + packet.getDataSize());
             const std::vector expectedBytes{std::byte{0x49}, std::byte{0x96}, std::byte{0x02}, std::byte{0xD2}};
@@ -157,68 +162,68 @@ TEST_CASE("[Network] sf::Packet")
             CHECK_PACKET_STREAM_OPERATORS(false);
         }
 
-        SECTION("std::int8_t")
+        SECTION("sf::base::I8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::int8_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::int8_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int8_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int8_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I8(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I8>::max());
         }
 
-        SECTION("std::uint8_t")
+        SECTION("sf::base::U8")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::uint8_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::uint8_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint8_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint8_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U8(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U8(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U8>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U8>::max());
         }
 
-        SECTION("std::int16_t")
+        SECTION("sf::base::I16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::int16_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::int16_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int16_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int16_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I16(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I16>::max());
         }
 
-        SECTION("std::uint16_t")
+        SECTION("sf::base::U16")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::uint16_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::uint16_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint16_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint16_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U16(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U16(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U16>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U16>::max());
         }
 
-        SECTION("std::int32_t")
+        SECTION("sf::base::I32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::int32_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::int32_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int32_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int32_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I32(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I32>::max());
         }
 
-        SECTION("std::uint32_t")
+        SECTION("sf::base::U32")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::uint32_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::uint32_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint32_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint32_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U32(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U32(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U32>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U32>::max());
         }
 
-        SECTION("std::int64_t")
+        SECTION("sf::base::I64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::int64_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::int64_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int64_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::int64_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I64(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::I64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::I64>::max());
         }
 
-        SECTION("std::uint64_t")
+        SECTION("sf::base::U64")
         {
-            CHECK_PACKET_STREAM_OPERATORS(std::uint64_t(0));
-            CHECK_PACKET_STREAM_OPERATORS(std::uint64_t(1));
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint64_t>::min());
-            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<std::uint64_t>::max());
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U64(0));
+            CHECK_PACKET_STREAM_OPERATORS(sf::base::U64(1));
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U64>::min());
+            CHECK_PACKET_STREAM_OPERATORS(std::numeric_limits<sf::base::U64>::max());
         }
 
         SECTION("float")
@@ -239,8 +244,8 @@ TEST_CASE("[Network] sf::Packet")
 
         SECTION("char*")
         {
-            const char string[] = "testing"; // NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
-            CHECK_PACKET_STRING_STREAM_OPERATORS(string, std::strlen(string) + 4);
+            const char string[] = "testing";
+            CHECK_PACKET_STRING_STREAM_OPERATORS(string, SFML_BASE_STRLEN(string) + 4);
         }
 
         SECTION("std::string")
@@ -251,7 +256,7 @@ TEST_CASE("[Network] sf::Packet")
 
         SECTION("wchar_t*")
         {
-            const wchar_t string[] = L"testing"; // NOLINT(cppcoreguidelines-avoid-c-arrays,modernize-avoid-c-arrays)
+            const wchar_t string[] = L"testing";
             CHECK_PACKET_STRING_STREAM_OPERATORS(string, 4 * std::wcslen(string) + 4);
         }
 
@@ -270,22 +275,22 @@ TEST_CASE("[Network] sf::Packet")
 
     SECTION("onSend")
     {
-        Packet      packet;
-        std::size_t size = 0;
+        Packet          packet;
+        sf::base::SizeT size = 0;
         CHECK(packet.onSend(size) == nullptr);
         CHECK(size == 0);
 
-        packet.append(data.data(), data.size());
+        packet.append(data, 6);
         CHECK(packet.onSend(size) != nullptr);
-        CHECK(size == data.size());
+        CHECK(size == 6);
     }
 
     SECTION("onReceive")
     {
         Packet packet;
-        packet.onReceive(data.data(), data.size());
+        packet.onReceive(data, 6);
         CHECK(packet.getReadPosition() == 0);
         CHECK(packet.getData() != nullptr);
-        CHECK(packet.getDataSize() == data.size());
+        CHECK(packet.getDataSize() == 6);
     }
 }

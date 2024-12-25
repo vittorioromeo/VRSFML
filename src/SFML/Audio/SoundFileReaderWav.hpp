@@ -1,39 +1,14 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/SoundFileReader.hpp>
+#include "SFML/Audio/SoundFileReader.hpp"
 
-#include <miniaudio.h>
-
-#include <optional>
-
-#include <cstdint>
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 namespace sf
@@ -61,6 +36,12 @@ public:
     [[nodiscard]] static bool check(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Default constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundFileReaderWav();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
@@ -71,10 +52,10 @@ public:
     ///
     /// \param stream Stream to open
     ///
-    /// \return Properties of the loaded sound if the file was successfully opened
+    /// \return Properties of the loaded sound on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::optional<Info> open(InputStream& stream) override;
+    [[nodiscard]] base::Optional<Info> open(InputStream& stream) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -89,7 +70,7 @@ public:
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
     ////////////////////////////////////////////////////////////
-    void seek(std::uint64_t sampleOffset) override;
+    void seek(base::U64 sampleOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -100,14 +81,14 @@ public:
     /// \return Number of samples actually read (may be less than \a maxCount)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::uint64_t read(std::int16_t* samples, std::uint64_t maxCount) override;
+    [[nodiscard]] base::U64 read(base::I16* samples, base::U64 maxCount) override;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    std::optional<ma_decoder> m_decoder;        //!< wav decoder
-    std::uint32_t             m_channelCount{}; //!< Number of channels
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

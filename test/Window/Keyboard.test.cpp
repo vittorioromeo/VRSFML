@@ -1,10 +1,11 @@
-#include <SFML/Window/Keyboard.hpp>
+#include "SFML/Window/Keyboard.hpp"
 
 // Other 1st party headers
-#include <SFML/System/String.hpp>
+#include "SFML/System/String.hpp"
 
-#include <catch2/catch_test_macros.hpp>
+#include <Doctest.hpp>
 
+#include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
 // We're limited on what can be tested. Without control over the hardware and the
@@ -15,7 +16,7 @@
 // Regardless this test case represents a best faith effort to cover some of this
 // code in a way that is hopefully not prone to fail on different machines.
 
-TEST_CASE("[Window] sf::Keyboard", runDisplayTests())
+TEST_CASE("[Window] sf::Keyboard" * doctest::skip(skipDisplayTests))
 {
     SECTION("isKeyPressed(Key)")
     {

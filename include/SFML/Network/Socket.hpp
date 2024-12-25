@@ -1,35 +1,12 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Network/Export.hpp>
+#include "SFML/Network/Export.hpp"
 
-#include <SFML/Network/SocketHandle.hpp>
+#include "SFML/Network/SocketHandle.hpp"
 
 
 namespace sf
@@ -58,14 +35,16 @@ public:
     /// \brief Some special values used by sockets
     ///
     ////////////////////////////////////////////////////////////
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static constexpr unsigned short AnyPort{0}; //!< Special value that tells the system to pick any available port
+    enum : unsigned short
+    {
+        AnyPort = 0u //!< Special value that tells the system to pick any available port
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~Socket();
+    ~Socket();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -83,19 +62,19 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Socket(Socket&& socket) noexcept;
+    Socket(Socket&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Socket& operator=(Socket&& socket) noexcept;
+    Socket& operator=(Socket&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the blocking state of the socket
     ///
     /// In blocking mode, calls will not return until they have
-    /// completed their task. For example, a call to Receive in
+    /// completed their task. For example, a call to `receive` in
     /// blocking mode won't return until some data was actually
     /// received.
     /// In non-blocking mode, calls will always return immediately,
@@ -136,10 +115,11 @@ protected:
     ///
     /// This constructor can only be accessed by derived classes.
     ///
+    /// \param isBlocking Blocking mode enabled?
     /// \param type Type of the socket (TCP or UDP)
     ///
     ////////////////////////////////////////////////////////////
-    explicit Socket(Type type);
+    [[nodiscard]] explicit Socket(Type type, bool isBlocking);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the internal handle of the socket
@@ -159,7 +139,7 @@ protected:
     /// This function can only be accessed by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    void create();
+    [[nodiscard]] bool create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the internal representation of the socket
@@ -170,7 +150,7 @@ protected:
     /// \param handle OS-specific handle of the socket to wrap
     ///
     ////////////////////////////////////////////////////////////
-    void create(SocketHandle handle);
+    [[nodiscard]] bool create(SocketHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Close the socket gracefully
@@ -178,7 +158,13 @@ protected:
     /// This function can only be accessed by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    void close();
+    [[nodiscard]] bool close();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the port to which the socket is bound locally
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned short getLocalPortImpl(const char* socketTypeStr) const;
 
 private:
     friend class SocketSelector;
@@ -186,9 +172,9 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Type         m_type;             //!< Type of the socket (TCP or UDP)
-    SocketHandle m_socket;           //!< Socket descriptor
-    bool         m_isBlocking{true}; //!< Current blocking mode of the socket
+    Type         m_type;       //!< Type of the socket (TCP or UDP)
+    SocketHandle m_socket;     //!< Socket descriptor
+    bool         m_isBlocking; //!< Current blocking mode of the socket
 };
 
 } // namespace sf

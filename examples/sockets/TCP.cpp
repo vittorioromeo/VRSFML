@@ -3,12 +3,14 @@
 ////////////////////////////////////////////////////////////
 #include "TCP.hpp"
 
-#include <SFML/Network.hpp>
+#include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/Socket.hpp"
+#include "SFML/Network/TcpListener.hpp"
+#include "SFML/Network/TcpSocket.hpp"
 
-#include <iomanip>
+#include "SFML/Base/Optional.hpp"
+
 #include <iostream>
-#include <optional>
-#include <string_view>
 
 #include <cstddef>
 
@@ -21,7 +23,7 @@
 void runTcpServer(unsigned short port)
 {
     // Create a server socket to accept new connections
-    sf::TcpListener listener;
+    sf::TcpListener listener(/* isBlocking */ true);
 
     // Listen to the given port for incoming connections
     if (listener.listen(port) != sf::Socket::Status::Done)
@@ -29,23 +31,23 @@ void runTcpServer(unsigned short port)
     std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
 
     // Wait for a connection
-    sf::TcpSocket socket;
+    sf::TcpSocket socket(/* isBlocking */ true);
     if (listener.accept(socket) != sf::Socket::Status::Done)
         return;
     std::cout << "Client connected: " << socket.getRemoteAddress().value() << std::endl;
 
     // Send a message to the connected client
-    static constexpr std::string_view out = "Hi, I'm the server";
-    if (socket.send(out.data(), out.size()) != sf::Socket::Status::Done)
+    const char out[] = "Hi, I'm the server";
+    if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the client: " << std::quoted(out.data()) << std::endl;
+    std::cout << "Message sent to the client: \"" << out << '"' << std::endl;
 
     // Receive a message back from the client
-    std::array<char, 128> in{};
-    std::size_t           received = 0;
-    if (socket.receive(in.data(), in.size(), received) != sf::Socket::Status::Done)
+    char        in[128];
+    std::size_t received = 0;
+    if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    std::cout << "Answer received from the client: " << std::quoted(in.data()) << std::endl;
+    std::cout << "Answer received from the client: \"" << in << '"' << std::endl;
 }
 
 
@@ -57,15 +59,15 @@ void runTcpServer(unsigned short port)
 void runTcpClient(unsigned short port)
 {
     // Ask for the server address
-    std::optional<sf::IpAddress> server;
+    sf::base::Optional<sf::IpAddress> server;
     do
     {
         std::cout << "Type the address or name of the server to connect to: ";
         std::cin >> server;
-    } while (!server.has_value());
+    } while (!server.hasValue());
 
     // Create a socket for communicating with the server
-    sf::TcpSocket socket;
+    sf::TcpSocket socket(/* isBlocking */ true);
 
     // Connect to the server
     if (socket.connect(server.value(), port) != sf::Socket::Status::Done)
@@ -73,15 +75,15 @@ void runTcpClient(unsigned short port)
     std::cout << "Connected to server " << server.value() << std::endl;
 
     // Receive a message from the server
-    std::array<char, 128> in{};
-    std::size_t           received = 0;
-    if (socket.receive(in.data(), in.size(), received) != sf::Socket::Status::Done)
+    char        in[128];
+    std::size_t received = 0;
+    if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from the server: " << std::quoted(in.data()) << std::endl;
+    std::cout << "Message received from the server: \"" << in << '"' << std::endl;
 
     // Send an answer to the server
-    static constexpr std::string_view out = "Hi, I'm a client";
-    if (socket.send(out.data(), out.size()) != sf::Socket::Status::Done)
+    const char out[] = "Hi, I'm a client";
+    if (socket.send(out, sizeof(out)) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the server: " << std::quoted(out.data()) << std::endl;
+    std::cout << "Message sent to the server: \"" << out << '"' << std::endl;
 }

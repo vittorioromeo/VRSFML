@@ -1,77 +1,113 @@
-[![SFML logo](https://www.sfml-dev.org/images/logo.png)](https://www.sfml-dev.org)
+# VRSFML — Vittorio Romeo's SFML Fork
 
-# SFML — Simple and Fast Multimedia Library
+> *(This is a fork of SFML by Vittorio Romeo.)*
 
-SFML is a simple, fast, cross-platform and object-oriented multimedia API. It provides access to windowing, graphics, audio and network. It is written in C++, and has bindings for various languages such as C, .Net, Ruby, Python.
+- [**Major changes and design rationale**](DESIGN.md)
 
-## State of Development
+- [**Upstream SFML repository**](https://github.com/SFML/SFML)
 
-Development is focused on version 3 in the `master` branch.
-No more features are planned for the 2.x release series.
+## How to build
 
-## CMake Template
+### Windows
 
-The easiest way to get started with SFML is our [CMake-based project template](https://github.com/SFML/cmake-sfml-project/blob/master/README.md).
-This template will automatically download and build SFML alongside your own application.
-Read the README for full instructions on how to use it.
+1. Get and install [MSYS2](https://www.msys2.org/)
 
-## Download
+2. Open a MSYS shell (see [MSYS2 Environments](https://www.msys2.org/docs/environments/)) and run the following command:
 
--   You can get the latest official release on [SFML's website](https://www.sfml-dev.org/download.php).
--   You can also get the source code of the current development version from the [Git repository](https://github.com/SFML/SFML).
--   Alternatively, you can get the latest snapshot / artifact builds from the [artifacts storage](https://artifacts.sfml-dev.org/by-branch/master/).
+    ```bash
+    pacman -S mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-clang mingw-w64-ucrt-x86_64-clang-tools-extra mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-cmake git mingw-w64-ucrt-x86_64-lld mingw-w64-ucrt-x86_64-ccache mingw-w64-clang-x86_64-ccache
+    ```
 
-## Install
+3. Open a UCRT64 shell (see [MSYS2 Environments](https://www.msys2.org/docs/environments/))
 
-Follow the instructions of the [tutorials](https://www.sfml-dev.org/tutorials/), there is one for each platform/compiler that SFML supports.
+4. Clone this repository:
 
-## Learn
+    ```bash
+    git clone https://github.com/vittorioromeo/VRSFML
+    ```
 
-There are several places to learn SFML:
+5. Enter the directory and run CMake with one of the presets:
 
--   The [official tutorials](https://www.sfml-dev.org/tutorials/)
--   The [online API documentation](https://www.sfml-dev.org/documentation/)
--   The [community wiki](https://github.com/SFML/SFML/wiki/)
+    ```bash
+    cd VRSFML
+    cmake --preset vrdev_clang
+    ```
 
-## Community
+6. Enter the preset build directory and run `ninja`:
 
-Here are some useful community links:
+    ```bash
+    cd build_vrdev_clang
+    ninja
+    ```
 
--   [Discord](https://discord.gg/nr4X7Fh)
--   [Twitter](https://twitter.com/sfmldev)
--   [Forum](https://en.sfml-dev.org/forums/) ([French](https://fr.sfml-dev.org/forums/))
+7. If the build succeeded, you should now be able to run examples directly from the build directory using the `run_example.sh` script:
 
-## Contribute
+    ```bash
+    ../run_example.sh island
+    ```
 
-SFML is an open-source project, and it needs your help to go on growing and improving. If you want to get involved and suggest some additional features, file a bug report or submit a patch, please have a look at the [contribution guidelines](https://www.sfml-dev.org/contribute.php).
+8. For Emscripten support, run the following command:
 
-## Authors
+    ```bash
+    pacman -S mingw-w64-clang-x86_64-ninja mingw-w64-clang-x86_64-clang mingw-w64-clang-x86_64-clang-tools-extra mingw-w64-clang-x86_64-gcc mingw-w64-clang-x86_64-cmake mingw-w64-clang-x86_64-emscripten
+    ```
 
--   Laurent Gomila (laurent@sfml-dev.org)
--   Marco Antognini (hiura@sfml-dev.org)
--   binary1248 (binary1248@hotmail.com)
--   Lukas Dürrenberger (eXpl0it3r@sfml-dev.org)
--   Jonathan De Wachter (dewachter.jonathan@gmail.com)
--   Jan Haller (bromeon@sfml-dev.org)
--   Mario Liebisch (mario@sfml-dev.org)
--   Stefan Schindler (tank@sfml-dev.org)
--   Artur Moreira (artturmoreira@gmail.com)
--   Vittorio Romeo (vittorioromeo@sfml-dev.org)
--   Chris Thrasher (thrasher@sfml-dev.org)
--   And many other members of the SFML community
+9. Open a CLANG64 shell (UCRT64 is bugged with Emscripten at the moment) (see [MSYS2 Environments](https://www.msys2.org/docs/environments/))
 
-## License
+10. In the main repository directory, run:
 
-The SFML libraries and source code are distributed under the [zlib/libpng license](https://opensource.org/licenses/Zlib). See [license.md](license.md). External libraries used by SFML are distributed under their own licenses.
+    ```bash
+    cmake --preset vrdev_emcc
+    cd build_vrdev_emcc
+    ninja
+    ```
 
-In short, SFML is free for any use (commercial or personal, proprietary or open-source). You can use SFML in your project without any restriction. You can even omit to mention that you use SFML -- although it would be appreciated.
+11. If the build succeeded, you should now be able to run examples directly from the build directory using the `run_emscripten_example.sh` script:
 
-## External libraries used by SFML
+    ```bash
+    ../run_emscripten_example.sh island
+    ```
 
--   [_stb_image_ and _stb_image_write_](https://github.com/nothings/stb) are [public domain](https://github.com/nothings/stb/blob/master/LICENSE)
--   [_freetype_](https://gitlab.freedesktop.org/freetype/freetype) is under the [FreeType license or the GPL license](https://gitlab.freedesktop.org/freetype/freetype/-/blob/master/LICENSE.TXT)
--   [_libogg_](https://gitlab.xiph.org/xiph/ogg) is under the [BSD license](https://gitlab.xiph.org/xiph/ogg/-/blob/master/COPYING)
--   [_libvorbis_](https://gitlab.xiph.org/xiph/vorbis) is under the [BSD license](https://gitlab.xiph.org/xiph/vorbis/-/blob/master/COPYING)
--   [_libflac_](https://gitlab.xiph.org/xiph/flac) is under the [BSD license](https://gitlab.xiph.org/xiph/flac/-/blob/master/COPYING.Xiph)
--   [_minimp3_](https://github.com/lieff/minimp3) is under the [CC0 license](https://github.com/lieff/minimp3/blob/master/LICENSE)
--   [_miniaudio_](https://github.com/mackron/miniaudio) is [public domain or under the MIT No Attribution license](https://github.com/mackron/miniaudio/blob/master/LICENSE)
+
+### Ubuntu 24.04
+
+> Contributed by @menuet.
+
+```
+COMPILER=gcc-14
+PRESET=vrdev_gcc
+
+# Install necessary tools and dependencies
+sudo apt-get update
+sudo apt-get install -y --no-install-recommends nodejs npm git mesa-utils lld
+sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxcursor-dev libglfw3-dev libudev-dev libfreetype-dev libogg-dev libvorbis-dev libflac-dev
+sudo npm install -g setup-cpp@v0.38.3
+sudo setup-cpp --compiler ${COMPILER} --cmake true --ninja true --ccache true --make true
+
+# Export env vars for using tools
+sudo -s
+source .cpprc
+exit
+source .cpprc
+
+# Verify tools availability
+glxinfo | head -n10
+git --version
+g++ --version
+cmake --version
+ninja --version
+ccache --version
+
+# Create a working directory
+mkdir -p work
+cd work
+
+# Clone the repo
+git clone https://github.com/vittorioromeo/VRSFML.git
+
+# Cmake Configure and Build
+cd VRSFML
+git checkout try-fix-build
+cmake --preset ${PRESET}
+cmake --build build_${PRESET}
+```

@@ -1,75 +1,77 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Rect.hpp>
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
 
-#include <SFML/System/Vector2.hpp>
+#include "SFML/Base/Builtins/Assume.hpp"
 
-#include <array>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class Angle;
+class RenderTarget;
+struct Transform;
+struct Sprite;
+struct Vertex;
+} // namespace sf
 
 
 namespace sf
 {
-class Angle;
-
 ////////////////////////////////////////////////////////////
-/// \brief 3x3 transform matrix
+/// \brief 2D transformation convertible to 4x4 matrix
 ///
 ////////////////////////////////////////////////////////////
-class Transform
+struct [[nodiscard]] Transform
 {
-public:
     ////////////////////////////////////////////////////////////
-    /// \brief Default constructor
-    ///
-    /// Creates an identity transform (a transform that does nothing).
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform() = default;
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(const Vector2f position,
+                                                                                    const Vector2f scale,
+                                                                                    const Vector2f origin)
+    {
+        return {/* a00 */ scale.x,
+                /* a01 */ 0.f,
+                /* a02 */ -origin.x * scale.x - +position.x,
+                -/* a10 */ 0.f,
+                /* a11 */ scale.y,
+                /* a12 */ -origin.y * scale.y + position.y};
+    }
 
     ////////////////////////////////////////////////////////////
-    /// \brief Construct a transform from a 3x3 matrix
-    ///
-    /// \param a00 Element (0, 0) of the matrix
-    /// \param a01 Element (0, 1) of the matrix
-    /// \param a02 Element (0, 2) of the matrix
-    /// \param a10 Element (1, 0) of the matrix
-    /// \param a11 Element (1, 1) of the matrix
-    /// \param a12 Element (1, 2) of the matrix
-    /// \param a20 Element (2, 0) of the matrix
-    /// \param a21 Element (2, 1) of the matrix
-    /// \param a22 Element (2, 2) of the matrix
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform(float a00, float a01, float a02, float a10, float a11, float a12, float a20, float a21, float a22);
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(
+        const Vector2f position,
+        const Vector2f scale,
+        const Vector2f origin,
+        const float    sine,
+        const float    cosine)
+    {
+        SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
+        SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+
+        const float sxc = scale.x * cosine;
+        const float syc = scale.y * cosine;
+        const float sxs = scale.x * -sine;
+        const float sys = scale.y * -sine;
+        const float tx  = -origin.x * sxc - origin.y * sys + position.x;
+        const float ty  = origin.x * sxs - origin.y * syc + position.y;
+
+        return {/* a00 */ sxc, /* a01 */ sys, /* a02 */ tx, -/* a10 */ sxs, /* a11 */ syc, /* a12 */ ty};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
@@ -86,7 +88,7 @@ public:
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr const float* getMatrix() const;
+    [[gnu::always_inline]] constexpr void getMatrix(float (&target)[16]) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the inverse of the transform
@@ -97,7 +99,7 @@ public:
     /// \return A new transform which is the inverse of self
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Transform getInverse() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getInverse() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point
@@ -113,7 +115,7 @@ public:
     /// \return Transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr Vector2f transformPoint(Vector2f point) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2f transformPoint(Vector2f point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a rectangle
@@ -129,7 +131,7 @@ public:
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with another one
@@ -140,8 +142,8 @@ public:
     ///
     /// These two statements are equivalent:
     /// \code
-    /// left.combine(right);
-    /// left *= right;
+    /// lhs.combine(rhs);
+    /// lhs *= rhs;
     /// \endcode
     ///
     /// \param transform Transform to combine with this transform
@@ -149,7 +151,7 @@ public:
     /// \return Reference to `*this`
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& combine(const Transform& transform);
+    [[gnu::always_inline]] constexpr Transform& combine(const Transform& transform);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a translation
@@ -158,7 +160,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.translate(sf::Vector2f(100, 200)).rotate(sf::degrees(45));
+    /// transform.translate(sf::Vector2f{100, 200}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param offset Translation offset to apply
@@ -168,7 +170,7 @@ public:
     /// \see `rotate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& translate(Vector2f offset);
+    [[gnu::always_inline]] constexpr Transform& translate(Vector2f offset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -201,7 +203,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(sf::degrees(90), sf::Vector2f(8, 3)).translate(sf::Vector2f(50, 20));
+    /// transform.rotate(sf::degrees(90), sf::Vector2f{8, 3}).translate(sf::Vector2f{50, 20});
     /// \endcode
     ///
     /// \param angle Rotation angle
@@ -221,7 +223,7 @@ public:
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f(2, 1)).rotate(sf::degrees(45));
+    /// transform.scaleBy(sf::Vector2f{2, 1}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -231,7 +233,7 @@ public:
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& scale(Vector2f factors);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors);
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -239,13 +241,13 @@ public:
     /// The center of scaling is provided for convenience as a second
     /// argument, so that you can build scaling around arbitrary points
     /// more easily (and efficiently) than the usual
-    /// `translate(-center).scale(factors).translate(center)`.
+    /// `translate(-center).scaleBy(factors).translate(center)`.
     ///
     /// This function returns a reference to `*this`, so that calls
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scale(sf::Vector2f(2, 1), sf::Vector2f(8, 3)).rotate(45);
+    /// transform.scaleBy(sf::Vector2f{2, 1}, sf::Vector2f{8, 3}).rotate(45);
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -256,7 +258,20 @@ public:
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Transform& scale(Vector2f factors, Vector2f center);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors, Vector2f center);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of binary `operator==` to compare two transforms
+    ///
+    /// Performs an element-wise comparison of the elements of the
+    /// lhs transform with the elements of the rhs transform.
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if the transforms are equal, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Transform& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     // Static member data
@@ -264,92 +279,57 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Transform Identity; //!< The identity transform (does nothing)
 
-private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    // clang-format off
-    std::array<float, 16> m_matrix{1.f, 0.f, 0.f, 0.f,
-                                   0.f, 1.f, 0.f, 0.f,
-                                   0.f, 0.f, 1.f, 0.f,
-                                   0.f, 0.f, 0.f, 1.f}; //!< 4x4 matrix defining the transformation
-    // clang-format off
+    float a00{1.f}, a01{0.f}, a02{0.f}, a10{0.f}, a11{1.f}, a12{0.f};
 };
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
 /// \brief Overload of binary `operator*` to combine two transforms
 ///
-/// This call is equivalent to calling `Transform(left).combine(right)`.
+/// This call is equivalent to calling `Transform(lhs).combine(rhs)`.
 ///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
+/// \param lhs Left operand (the first transform)
+/// \param rhs Right operand (the second transform)
 ///
 /// \return New combined transform
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Transform operator*(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
 /// \brief Overload of binary `operator*=` to combine two transforms
 ///
-/// This call is equivalent to calling `left.combine(right)`.
+/// This call is equivalent to calling `lhs.combine(rhs)`.
 ///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
+/// \param lhs Left operand (the first transform)
+/// \param rhs Right operand (the second transform)
 ///
 /// \return The combined transform
 ///
 ////////////////////////////////////////////////////////////
-constexpr Transform& operator*=(Transform& left, const Transform& right);
+constexpr Transform& operator*=(Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Transform
 /// \brief Overload of binary `operator*` to transform a point
 ///
-/// This call is equivalent to calling `left.transformPoint(right)`.
+/// This call is equivalent to calling `lhs.transformPoint(rhs)`.
 ///
-/// \param left Left operand (the transform)
-/// \param right Right operand (the point to transform)
+/// \param lhs Left operand (the transform)
+/// \param rhs Right operand (the point to transform)
 ///
 /// \return New transformed point
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr Vector2f operator*(const Transform& left, Vector2f right);
-
-////////////////////////////////////////////////////////////
-/// \relates sf::Transform
-/// \brief Overload of binary `operator==` to compare two transforms
-///
-/// Performs an element-wise comparison of the elements of the
-/// left transform with the elements of the right transform.
-///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
-///
-/// \return `true` if the transforms are equal, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator==(const Transform& left, const Transform& right);
-
-////////////////////////////////////////////////////////////
-/// \relates sf::Transform
-/// \brief Overload of binary `operator!=` to compare two transforms
-///
-/// This call is equivalent to `!(left == right)`.
-///
-/// \param left Left operand (the first transform)
-/// \param right Right operand (the second transform)
-///
-/// \return `true` if the transforms are not equal, `false` otherwise
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr bool operator!=(const Transform& left, const Transform& right);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs);
 
 } // namespace sf
 
-#include <SFML/Graphics/Transform.inl>
+#include "SFML/Graphics/Transform.inl"
 
 
 ////////////////////////////////////////////////////////////

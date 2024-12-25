@@ -1,83 +1,36 @@
 set(INCROOT ${PROJECT_SOURCE_DIR}/include/SFML/Window)
 set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
-# all source files
-set(SRC
-    ${INCROOT}/Clipboard.hpp
-    ${SRCROOT}/Clipboard.cpp
-    ${SRCROOT}/ClipboardImpl.hpp
-    ${SRCROOT}/Context.cpp
-    ${INCROOT}/Context.hpp
-    ${SRCROOT}/Cursor.cpp
-    ${INCROOT}/Cursor.hpp
-    ${SRCROOT}/CursorImpl.hpp
-    ${INCROOT}/Export.hpp
-    ${SRCROOT}/GlContext.cpp
-    ${SRCROOT}/GlContext.hpp
-    ${SRCROOT}/GlResource.cpp
-    ${INCROOT}/GlResource.hpp
-    ${INCROOT}/ContextSettings.hpp
-    ${INCROOT}/Event.hpp
-    ${INCROOT}/Event.inl
-    ${SRCROOT}/InputImpl.hpp
-    ${INCROOT}/Joystick.hpp
-    ${SRCROOT}/Joystick.cpp
-    ${SRCROOT}/JoystickImpl.hpp
-    ${SRCROOT}/JoystickManager.cpp
-    ${SRCROOT}/JoystickManager.hpp
-    ${INCROOT}/Keyboard.hpp
-    ${SRCROOT}/Keyboard.cpp
-    ${INCROOT}/Mouse.hpp
-    ${SRCROOT}/Mouse.cpp
-    ${INCROOT}/Touch.hpp
-    ${SRCROOT}/Touch.cpp
-    ${INCROOT}/Sensor.hpp
-    ${SRCROOT}/Sensor.cpp
-    ${SRCROOT}/SensorImpl.hpp
-    ${SRCROOT}/SensorManager.cpp
-    ${SRCROOT}/SensorManager.hpp
-    ${SRCROOT}/VideoMode.cpp
-    ${INCROOT}/VideoMode.hpp
-    ${SRCROOT}/VideoModeImpl.hpp
-    ${SRCROOT}/Vulkan.cpp
-    ${INCROOT}/Vulkan.hpp
-    ${SRCROOT}/VulkanImpl.hpp
-    ${SRCROOT}/Window.cpp
-    ${INCROOT}/Window.hpp
-    ${SRCROOT}/WindowBase.cpp
-    ${INCROOT}/WindowBase.hpp
-    ${INCROOT}/WindowBase.inl
-    ${INCROOT}/WindowEnums.hpp
-    ${INCROOT}/WindowHandle.hpp
-    ${SRCROOT}/WindowImpl.cpp
-    ${SRCROOT}/WindowImpl.hpp
-)
-source_group("" FILES ${SRC})
+file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
 # add platform specific sources
 if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
-        ${SRCROOT}/Win32/CursorImpl.hpp
-        ${SRCROOT}/Win32/CursorImpl.cpp
         ${SRCROOT}/Win32/ClipboardImpl.hpp
-        ${SRCROOT}/Win32/ClipboardImpl.cpp
-        ${SRCROOT}/Win32/InputImpl.cpp
-        ${SRCROOT}/Win32/JoystickImpl.cpp
+        ${SRCROOT}/Win32/CursorImpl.hpp
         ${SRCROOT}/Win32/JoystickImpl.hpp
-        ${SRCROOT}/Win32/SensorImpl.hpp
-        ${SRCROOT}/Win32/SensorImpl.cpp
         ${SRCROOT}/Win32/Utils.hpp
-        ${SRCROOT}/Win32/VideoModeImpl.cpp
-        ${SRCROOT}/Win32/VulkanImplWin32.cpp
-        ${SRCROOT}/Win32/WindowImplWin32.cpp
         ${SRCROOT}/Win32/WindowImplWin32.hpp
+
+        ${SRCROOT}/Win32/Win32ImplUnity.cpp
+
+        # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
+        # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
+        # ${SRCROOT}/Win32/Unity/InputImpl.cpp
+        # ${SRCROOT}/Win32/Unity/JoystickImpl.cpp
+        # ${SRCROOT}/Win32/Unity/Utils.cpp
+        # ${SRCROOT}/Win32/Unity/VideoModeImpl.cpp
+        # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
+        # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
     if(SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/EGLCheck.cpp
-            ${SRCROOT}/EGLCheck.hpp
-            ${SRCROOT}/EglContext.cpp
-            ${SRCROOT}/EglContext.hpp
+            ${SRCROOT}/EGL/EglCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.hpp
+            ${SRCROOT}/EGL/EglContext.cpp
+            ${SRCROOT}/EGL/EGLContext.hpp
+            ${SRCROOT}/EGL/EglGlad.cpp
+            ${SRCROOT}/EGL/EGLGlad.hpp
         )
     else()
         list(APPEND PLATFORM_SRC
@@ -85,19 +38,12 @@ if(SFML_OS_WINDOWS)
             ${SRCROOT}/Win32/WglContext.hpp
         )
     endif()
-    source_group("windows" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
-            ${SRCROOT}/EGLCheck.cpp
-            ${SRCROOT}/EGLCheck.hpp
-            ${SRCROOT}/DRM/CursorImpl.hpp
-            ${SRCROOT}/DRM/CursorImpl.cpp
-            ${SRCROOT}/DRM/ClipboardImpl.hpp
-            ${SRCROOT}/DRM/ClipboardImpl.cpp
-            ${SRCROOT}/Unix/SensorImpl.cpp
-            ${SRCROOT}/Unix/SensorImpl.hpp
+            ${SRCROOT}/EGL/EglCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.hpp
             ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/VideoModeImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
@@ -118,8 +64,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
             ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
             ${SRCROOT}/Unix/KeySymToUnicodeMapping.cpp
-            ${SRCROOT}/Unix/SensorImpl.cpp
-            ${SRCROOT}/Unix/SensorImpl.hpp
             ${SRCROOT}/Unix/Display.cpp
             ${SRCROOT}/Unix/Display.hpp
             ${SRCROOT}/Unix/Utils.hpp
@@ -130,10 +74,10 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         )
         if(SFML_OPENGL_ES)
             list(APPEND PLATFORM_SRC
-                ${SRCROOT}/EGLCheck.cpp
-                ${SRCROOT}/EGLCheck.hpp
-                ${SRCROOT}/EglContext.cpp
-                ${SRCROOT}/EglContext.hpp
+                ${SRCROOT}/EGL/EglCheck.cpp
+                ${SRCROOT}/EGL/EGLCheck.hpp
+                ${SRCROOT}/EGL/EglContext.cpp
+                ${SRCROOT}/EGL/EGLContext.hpp
             )
         else()
              list(APPEND PLATFORM_SRC
@@ -152,18 +96,12 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/FreeBSD/JoystickImpl.cpp
             ${SRCROOT}/FreeBSD/JoystickImpl.hpp
         )
-    elseif(SFML_OS_OPENBSD)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/OpenBSD/JoystickImpl.cpp
-            ${SRCROOT}/OpenBSD/JoystickImpl.hpp
-        )
     elseif(SFML_OS_NETBSD)
         list(APPEND PLATFORM_SRC
             ${SRCROOT}/NetBSD/JoystickImpl.cpp
             ${SRCROOT}/NetBSD/JoystickImpl.hpp
         )
     endif()
-    source_group("unix" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
@@ -178,7 +116,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/HIDInputManager.mm
         ${SRCROOT}/macOS/HIDJoystickManager.hpp
         ${SRCROOT}/macOS/HIDJoystickManager.cpp
-        ${SRCROOT}/macOS/JoystickImpl.cpp
         ${SRCROOT}/macOS/JoystickImpl.hpp
         ${SRCROOT}/macOS/NSImage+raw.h
         ${SRCROOT}/macOS/NSImage+raw.mm
@@ -214,19 +151,14 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
     )
-    source_group("mac" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
     set(PLATFORM_SRC
-        ${SRCROOT}/iOS/CursorImpl.hpp
-        ${SRCROOT}/iOS/CursorImpl.cpp
         ${SRCROOT}/iOS/ClipboardImpl.mm
         ${SRCROOT}/iOS/ClipboardImpl.hpp
         ${SRCROOT}/iOS/EaglContext.mm
         ${SRCROOT}/iOS/EaglContext.hpp
         ${SRCROOT}/iOS/InputImpl.mm
-        ${SRCROOT}/iOS/JoystickImpl.mm
-        ${SRCROOT}/iOS/JoystickImpl.hpp
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
         ${SRCROOT}/iOS/VideoModeImpl.mm
@@ -242,27 +174,29 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/SFMain.hpp
         ${SRCROOT}/iOS/SFMain.mm
     )
-    source_group("ios" FILES ${PLATFORM_SRC})
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGLCheck.cpp
-        ${SRCROOT}/EGLCheck.hpp
-        ${SRCROOT}/EglContext.cpp
-        ${SRCROOT}/EglContext.hpp
-        ${SRCROOT}/Android/CursorImpl.hpp
-        ${SRCROOT}/Android/CursorImpl.cpp
-        ${SRCROOT}/Android/ClipboardImpl.hpp
-        ${SRCROOT}/Android/ClipboardImpl.cpp
+        ${SRCROOT}/EGL/EglCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.hpp
+        ${SRCROOT}/EGL/EglContext.cpp
+        ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/VideoModeImpl.cpp
         ${SRCROOT}/Android/InputImpl.cpp
-        ${SRCROOT}/Android/JoystickImpl.hpp
-        ${SRCROOT}/Android/JoystickImpl.cpp
         ${SRCROOT}/Android/SensorImpl.hpp
         ${SRCROOT}/Android/SensorImpl.cpp
     )
-    source_group("android" FILES ${PLATFORM_SRC})
+elseif(SFML_OS_EMSCRIPTEN)
+    set(PLATFORM_SRC
+        ${SRCROOT}/EGL/EglCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.hpp
+        ${SRCROOT}/EGL/EglContext.cpp
+        ${SRCROOT}/EGL/EGLContext.hpp
+        ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
+        ${SRCROOT}/Emscripten/JoystickImpl.hpp
+        ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
+    )
 endif()
 
 # define the sfml-window target
@@ -303,7 +237,7 @@ endif()
 
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")
-elseif(SFML_OS_ANDROID)
+elseif(SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN OR SFML_OPENGL_ES)
     find_package(EGL REQUIRED)
     find_package(GLES REQUIRED)
     target_link_libraries(sfml-window PRIVATE EGL::EGL GLES::GLES)

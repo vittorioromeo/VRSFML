@@ -1,45 +1,29 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Audio/Export.hpp>
+#include "SFML/Audio/Export.hpp"
 
-#include <SFML/Audio/SoundChannel.hpp>
-#include <SFML/Audio/SoundSource.hpp>
+#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/SoundSource.hpp"
 
-#include <SFML/System/Time.hpp>
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
-#include <memory>
-#include <optional>
-#include <vector>
 
-#include <cstddef>
-#include <cstdint>
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class EffectProcessor;
+class PlaybackDevice;
+class Time;
+} // namespace sf
 
 
 namespace sf
@@ -55,10 +39,10 @@ public:
     /// \brief Structure defining a chunk of audio data to stream
     ///
     ////////////////////////////////////////////////////////////
-    struct Chunk
+    struct [[nodiscard]] Chunk
     {
-        const std::int16_t* samples{};     //!< Pointer to the audio samples
-        std::size_t         sampleCount{}; //!< Number of samples pointed by Samples
+        const base::I16* samples{};     //!< Pointer to the audio samples
+        base::SizeT      sampleCount{}; //!< Number of samples pointed by Samples
     };
 
     ////////////////////////////////////////////////////////////
@@ -91,7 +75,7 @@ public:
     /// \see `pause`, `stop`
     ///
     ////////////////////////////////////////////////////////////
-    void play() override;
+    void play(PlaybackDevice& playbackDevice) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the audio stream
@@ -146,7 +130,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::vector<SoundChannel> getChannelMap() const;
+    [[nodiscard]] ChannelMap getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the stream (stopped, paused, playing)
@@ -164,12 +148,12 @@ public:
     /// when the stream is stopped has no effect, since playing
     /// the stream would reset its position.
     ///
-    /// \param timeOffset New playing position, from the beginning of the stream
+    /// \param playingOffset New playing position, from the beginning of the stream
     ///
     /// \see `getPlayingOffset`
     ///
     ////////////////////////////////////////////////////////////
-    void setPlayingOffset(Time timeOffset);
+    void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current playing position of the stream
@@ -179,32 +163,7 @@ public:
     /// \see `setPlayingOffset`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set whether or not the stream should loop after reaching the end
-    ///
-    /// If set, the stream will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// `setLooping(false)` is called.
-    /// The default looping state for streams is `false`.
-    ///
-    /// \param loop `true` to play in loop, `false` to play once
-    ///
-    /// \see `isLooping`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setLooping(bool loop);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tell whether or not the stream is in loop mode
-    ///
-    /// \return `true` if the stream is looping, `false` otherwise
-    ///
-    /// \see `setLooping`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isLooping() const;
+    [[nodiscard]] Time getPlayingOffset() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the effect processor to be applied to the sound
@@ -224,7 +183,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    SoundStream();
+    [[nodiscard]] explicit SoundStream();
 
     ////////////////////////////////////////////////////////////
     /// \brief Define the audio stream parameters
@@ -241,7 +200,7 @@ protected:
     /// \param channelMap   Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    void initialize(unsigned int channelCount, unsigned int sampleRate, const std::vector<SoundChannel>& channelMap);
+    void initialize(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
@@ -280,10 +239,16 @@ protected:
     /// allow implementation of custom loop points. Otherwise,
     /// it just calls `onSeek(Time::Zero)` and returns 0.
     ///
-    /// \return The seek position after looping (or `std::nullopt` if there's no loop)
+    /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
     ////////////////////////////////////////////////////////////
-    virtual std::optional<std::uint64_t> onLoop();
+    [[nodiscard]] virtual base::Optional<base::U64> onLoop();
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    // TODO P1: probably needs to go in SoundBase to support transferring
+    PlaybackDevice* m_lastPlaybackDevice{nullptr}; //!< Last used playback device
 
 private:
     ////////////////////////////////////////////////////////////
@@ -298,7 +263,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    std::unique_ptr<Impl> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

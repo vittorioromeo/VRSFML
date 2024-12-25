@@ -1,38 +1,16 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/Unix/Display.hpp>
-#include <SFML/Window/VulkanImpl.hpp>
+#include "SFML/Window/Unix/Display.hpp"
+#include "SFML/Window/VulkanImpl.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/StringView.hpp"
 
 #include <dlfcn.h>
-#include <string_view>
 #include <vector>
-
-#include <cstdint>
 
 #define VK_USE_PLATFORM_XLIB_KHR
 #define VK_NO_PROTOTYPES
@@ -127,7 +105,7 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
             // Retrieve the available instance extensions
             std::vector<VkExtensionProperties> extensionProperties;
 
-            std::uint32_t extensionCount = 0;
+            base::U32 extensionCount = 0;
 
             wrapper.vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
 
@@ -141,11 +119,11 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
 
             for (const VkExtensionProperties& properties : extensionProperties)
             {
-                if (std::string_view(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
+                if (base::StringView(properties.extensionName) == VK_KHR_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrSurface = true;
                 }
-                else if (std::string_view(properties.extensionName) == VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
+                else if (base::StringView(properties.extensionName) == VK_KHR_XLIB_SURFACE_EXTENSION_NAME)
                 {
                     hasVkKhrPlatformSurface = true;
                 }
@@ -174,10 +152,10 @@ VulkanFunctionPointer VulkanImpl::getFunction(const char* name)
 
 
 ////////////////////////////////////////////////////////////
-const std::vector<const char*>& VulkanImpl::getGraphicsRequiredInstanceExtensions()
+base::Span<const char* const> VulkanImpl::getGraphicsRequiredInstanceExtensions()
 {
-    static const std::vector<const char*> extensions{VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME};
-    return extensions;
+    static constexpr const char* extensions[]{VK_KHR_SURFACE_EXTENSION_NAME, VK_KHR_XLIB_SURFACE_EXTENSION_NAME};
+    return {extensions, 2u};
 }
 
 

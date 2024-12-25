@@ -1,43 +1,19 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Glsl.hpp> // NOLINT(misc-header-include-cycle)
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/Glsl.hpp" // NOLINT(misc-header-include-cycle)
 
-#include <array>
-
-#include <cstddef>
+#include "SFML/Base/Builtins/Memcpy.hpp"
 
 
 namespace sf
 {
-class Transform;
+struct Transform;
 } // namespace sf
 
 namespace sf::priv
@@ -52,19 +28,19 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 ////////////////////////////////////////////////////////////
 /// \brief Copy array-based matrix with given number of elements
 ///
-/// Indirection to `std::copy()` to avoid inclusion of
-/// <algorithm> and MSVC's annoying 4996 warning in header
-///
 ////////////////////////////////////////////////////////////
-void SFML_GRAPHICS_API copyMatrix(const float* source, std::size_t elements, float* dest);
+[[gnu::always_inline]] inline void SFML_GRAPHICS_API copyMatrix(const float* source, base::SizeT elements, float* dest)
+{
+    SFML_BASE_MEMCPY(dest, source, elements * sizeof(float));
+}
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Matrix type, used to set uniforms in GLSL
 ///
 ////////////////////////////////////////////////////////////
-template <std::size_t Columns, std::size_t Rows>
-struct Matrix
+template <base::SizeT Columns, base::SizeT Rows>
+struct [[nodiscard]] Matrix
 {
     ////////////////////////////////////////////////////////////
     /// \brief Construct from raw data
@@ -74,9 +50,9 @@ struct Matrix
     ///                are copied to the instance.
     ///
     ////////////////////////////////////////////////////////////
-    explicit Matrix(const float* pointer)
+    [[nodiscard, gnu::always_inline]] explicit Matrix(const float* pointer)
     {
-        copyMatrix(pointer, Columns * Rows, array.data());
+        copyMatrix(pointer, Columns * Rows, array);
     }
 
     ////////////////////////////////////////////////////////////
@@ -88,12 +64,12 @@ struct Matrix
     /// \param transform Object containing a transform.
     ///
     ////////////////////////////////////////////////////////////
-    Matrix(const Transform& transform)
+    [[gnu::always_inline]] Matrix(const Transform& transform)
     {
         copyMatrix(transform, *this);
     }
 
-    std::array<float, Columns * Rows> array{}; //!< Array holding matrix data
+    float array[Columns * Rows]{}; //!< Array holding matrix data
 };
 
 ////////////////////////////////////////////////////////////
@@ -101,13 +77,13 @@ struct Matrix
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct Vector4
+struct [[nodiscard]] Vector4
 {
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor, creates a zero vector
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector4() = default;
+    [[nodiscard]] constexpr Vector4() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct from 4 vector components
@@ -122,7 +98,7 @@ struct Vector4
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 #endif
-    constexpr Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
+    [[nodiscard, gnu::always_inline]] constexpr Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
     {
     }
 #if defined(__GNUC__)
@@ -134,9 +110,12 @@ struct Vector4
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    constexpr explicit operator Vector4<U>() const
+    [[nodiscard, gnu::always_inline]] constexpr explicit Vector4(const Vector4<U>& other) :
+    x(static_cast<T>(other.x)),
+    y(static_cast<T>(other.y)),
+    z(static_cast<T>(other.z)),
+    w(static_cast<T>(other.w))
     {
-        return Vector4<U>(static_cast<U>(x), static_cast<U>(y), static_cast<U>(z), static_cast<U>(w));
     }
 
     ////////////////////////////////////////////////////////////
@@ -148,7 +127,7 @@ struct Vector4
     /// \param color Color instance
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Vector4(Color color);
+    [[nodiscard]] constexpr Vector4(Color color);
 
     T x{}; //!< 1st component (X) of the 4D vector
     T y{}; //!< 2nd component (Y) of the 4D vector

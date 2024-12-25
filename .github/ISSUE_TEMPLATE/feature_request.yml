@@ -45,19 +45,24 @@ body:
           description: Please provide an example how the new API could be used
           value: |
               ```cpp
-              #include <SFML/Graphics.hpp>
+              #include "SFML/Graphics/RenderWindow.hpp"
+
+              #include "SFML/Window/Event.hpp"
+              #include "SFML/Window/WindowSettings.hpp"
+
+              #include "SFML/Base/Optional.hpp"
 
               int main()
               {
-                  sf::RenderWindow window(sf::VideoMode({1280, 720}), "Minimal, complete and verifiable example");
-                  window.setFramerateLimit(60);
+                  sf::RenderWindow window(
+                      {.size{1280u, 720u}, .title = "Minimal, complete and verifiable example", .framerateLimit = 60});
 
-                  while (window.isOpen())
+                  while (true)
                   {
-                      while (const std::optional event = window.pollEvent())
+                      while (const sf::base::Optional event = window.pollEvent())
                       {
                           if (event->is<sf::Event::Closed>())
-                              window.close();
+                              return 0;
                       }
 
                       window.clear();

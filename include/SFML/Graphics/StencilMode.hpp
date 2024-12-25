@@ -1,54 +1,33 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2023 Laurent Gomila (laurent@sfml-dev.org)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
-
 #pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Graphics/Export.hpp>
+#include "SFML/Graphics/Export.hpp"
 
+#ifdef Always // Might be defined by X11
+#undef Always
+#endif
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////
 /// \brief Enumeration of the stencil test comparisons that can be performed
 ///
 /// The comparisons are mapped directly to their OpenGL equivalents,
 /// specified by `glStencilFunc()`.
 ////////////////////////////////////////////////////////
-enum class StencilComparison
+enum class [[nodiscard]] StencilComparison : unsigned int
 {
-    Never,        //!< The stencil test never passes
-    Less,         //!< The stencil test passes if the new value is less than the value in the stencil buffer
-    LessEqual,    //!< The stencil test passes if the new value is less than or equal to the value in the stencil buffer
-    Greater,      //!< The stencil test passes if the new value is greater than the value in the stencil buffer
-    GreaterEqual, //!< The stencil test passes if the new value is greater than or equal to the value in the stencil buffer
-    Equal,        //!< The stencil test passes if the new value is strictly equal to the value in the stencil buffer
-    NotEqual,     //!< The stencil test passes if the new value is strictly unequal to the value in the stencil buffer
-    Always        //!< The stencil test always passes
+    Never = 0u,     //!< The stencil test never passes
+    Less  = 1u,     //!< The stencil test passes if the new value is less than the value in the stencil buffer
+    LessEqual = 2u, //!< The stencil test passes if the new value is less than or equal to the value in the stencil buffer
+    Greater = 3u,   //!< The stencil test passes if the new value is greater than the value in the stencil buffer
+    GreaterEqual = 4u, //!< The stencil test passes if the new value is greater than or equal to the value in the stencil buffer
+    Equal    = 5u, //!< The stencil test passes if the new value is strictly equal to the value in the stencil buffer
+    NotEqual = 6u, //!< The stencil test passes if the new value is strictly unequal to the value in the stencil buffer
+    Always   = 7u  //!< The stencil test always passes
 };
 
 ////////////////////////////////////////////////////////
@@ -57,37 +36,31 @@ enum class StencilComparison
 /// The update operations are mapped directly to their OpenGL equivalents,
 /// specified by `glStencilOp()`.
 ////////////////////////////////////////////////////////
-enum class StencilUpdateOperation
+enum class [[nodiscard]] StencilUpdateOperation : unsigned int
 {
-    Keep,      //!< If the stencil test passes, the value in the stencil buffer is not modified
-    Zero,      //!< If the stencil test passes, the value in the stencil buffer is set to zero
-    Replace,   //!< If the stencil test passes, the value in the stencil buffer is set to the new value
-    Increment, //!< If the stencil test passes, the value in the stencil buffer is incremented and if required clamped
-    Decrement, //!< If the stencil test passes, the value in the stencil buffer is decremented and if required clamped
-    Invert,    //!< If the stencil test passes, the value in the stencil buffer is bitwise inverted
+    Keep    = 0u, //!< If the stencil test passes, the value in the stencil buffer is not modified
+    Zero    = 1u, //!< If the stencil test passes, the value in the stencil buffer is set to zero
+    Replace = 2u, //!< If the stencil test passes, the value in the stencil buffer is set to the new value
+    Increment = 3u, //!< If the stencil test passes, the value in the stencil buffer is incremented and if required clamped
+    Decrement = 4u, //!< If the stencil test passes, the value in the stencil buffer is decremented and if required clamped
+    Invert = 5u     //!< If the stencil test passes, the value in the stencil buffer is bitwise inverted
 };
 
 ////////////////////////////////////////////////////////
 /// \brief Stencil value type (also used as a mask)
 ///
 ////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilValue
+struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 {
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct a stencil value from a signed integer
-    ///
-    /// \param theValue Signed integer value to use
-    ///
-    ////////////////////////////////////////////////////////////
-    StencilValue(int theValue);
-
     ////////////////////////////////////////////////////////////
     /// \brief Construct a stencil value from an unsigned integer
     ///
     /// \param theValue Unsigned integer value to use
     ///
     ////////////////////////////////////////////////////////////
-    StencilValue(unsigned int theValue);
+    [[nodiscard]] constexpr explicit StencilValue(unsigned int theValue) : value(theValue)
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Disable construction from any other type
@@ -96,6 +69,16 @@ struct SFML_GRAPHICS_API StencilValue
     template <typename T>
     StencilValue(T) = delete;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator==`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil values are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilValue& rhs) const = default;
+
     unsigned int value{}; //!< The stored stencil value
 };
 
@@ -103,39 +86,25 @@ struct SFML_GRAPHICS_API StencilValue
 /// \brief Stencil modes for drawing
 ///
 ////////////////////////////////////////////////////////////
-struct SFML_GRAPHICS_API StencilMode
+struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 {
     StencilComparison stencilComparison{StencilComparison::Always}; //!< The comparison we're performing the stencil test with
     StencilUpdateOperation stencilUpdateOperation{
         StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
-    StencilValue stencilReference{0};  //!< The reference value we're performing the stencil test with
+    StencilValue stencilReference{0u}; //!< The reference value we're performing the stencil test with
     StencilValue stencilMask{~0u}; //!< The mask to apply to both the reference value and the value in the stencil buffer
     bool stencilOnly{};            //!< Whether we should update the color buffer in addition to the stencil buffer
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Overload of the `operator==`
+    ///
+    /// \param rhs Right operand
+    ///
+    /// \return `true` if stencil modes are equal, `false` if they are different
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const StencilMode& rhs) const = default;
 };
-
-////////////////////////////////////////////////////////////
-/// \relates StencilMode
-/// \brief Overload of the `operator==`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if stencil modes are equal, `false` if they are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator==(const StencilMode& left, const StencilMode& right);
-
-////////////////////////////////////////////////////////////
-/// \relates StencilMode
-/// \brief Overload of the `operator!=`
-///
-/// \param left  Left operand
-/// \param right Right operand
-///
-/// \return `true` if stencil modes are different, `false` if they are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_GRAPHICS_API bool operator!=(const StencilMode& left, const StencilMode& right);
 
 } // namespace sf
 
@@ -207,31 +176,20 @@ struct SFML_GRAPHICS_API StencilMode
 /// buffer and not the color buffer during a draw. The written stencil buffer
 /// value can then be used in subsequent draws as a masking region.
 ///
-/// In SFML, a stencil mode can be specified every time you draw a `sf::Drawable`
-/// object to a render target. It is part of the `sf::RenderStates` compound
+/// In SFML, a stencil mode can be specified every time you draw a drawable
+/// object to a render target. It is part of the sf::RenderStates compound
 /// that is passed to the member function `sf::RenderTarget::draw()`.
 ///
 /// Usage example:
 /// \code
 /// // Make sure we create a RenderTarget with a stencil buffer by specifying it via the context settings
-/// sf::RenderWindow window(sf::VideoMode({250, 200}), "Stencil Window", sf::Style::Default, sf::ContextSettings{0, 8});
+/// sf::RenderWindow window({.size{250u, 200u}, .title = "Stencil Window", .contextSettings{.depthBits = 0, .stencilBits = 8});
 ///
 /// ...
 ///
-/// // Left circle
-/// sf::CircleShape left(100.f);
-/// left.setFillColor(sf::Color::Green);
-/// left.setPosition({0, 0});
-///
-/// // Middle circle
-/// sf::CircleShape middle(100.f);
-/// middle.setFillColor(sf::Color::Yellow);
-/// middle.setPosition({25, 0});
-///
-/// // Right circle
-/// sf::CircleShape right(100.f);
-/// right.setFillColor(sf::Color::Red);
-/// right.setPosition({50, 0});
+/// const sf::CircleShape left{{.position = {0, 0}, .fillColor = sf::Color::Green, .radius = 100.f}};
+/// const sf::CircleShape middle{{.position = {25, 0}, .fillColor = sf::Color::Yellow, .radius = 100.f}};
+/// const sf::CircleShape right{{.position = {50, 0}, .fillColor = sf::Color::Red, .radius = 100.f}};
 ///
 /// ...
 ///

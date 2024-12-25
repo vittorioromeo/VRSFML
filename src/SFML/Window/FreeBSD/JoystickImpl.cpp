@@ -1,43 +1,20 @@
-////////////////////////////////////////////////////////////
-//
-// SFML - Simple and Fast Multimedia Library
-// Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
-//               2013-2013 David Demelier (demelier.david@gmail.com)
-//
-// This software is provided 'as-is', without any express or implied warranty.
-// In no event will the authors be held liable for any damages arising from the use of this software.
-//
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it freely,
-// subject to the following restrictions:
-//
-// 1. The origin of this software must not be misrepresented;
-//    you must not claim that you wrote the original software.
-//    If you use this software in a product, an acknowledgment
-//    in the product documentation would be appreciated but is not required.
-//
-// 2. Altered source versions must be plainly marked as such,
-//    and must not be misrepresented as being the original software.
-//
-// 3. This notice may not be removed or altered from any source distribution.
-//
-////////////////////////////////////////////////////////////
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include <SFML/Window/JoystickImpl.hpp>
+#include "SFML/Window/JoystickImpl.hpp"
+
+#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Optional.hpp"
 
 #include <dirent.h>
 #include <fcntl.h>
-#include <optional>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <unordered_map>
 #include <utility>
-
-#include <cstring>
 
 ////////////////////////////////////////////////////////////
 /// \brief This file implements FreeBSD driver joystick
@@ -116,7 +93,7 @@ void updatePluggedList()
         unsigned int   joystickCount  = 0;
         struct dirent* directoryEntry = readdir(directory);
 
-        while (directoryEntry && joystickCount < sf::Joystick::Count)
+        while (directoryEntry && joystickCount < sf::Joystick::MaxCount)
         {
             if (!std::strncmp(directoryEntry->d_name, "uhid", 4))
             {
@@ -134,7 +111,7 @@ void updatePluggedList()
     }
 }
 
-std::optional<sf::Joystick::Axis> usageToAxis(int usage)
+base::Optional<sf::Joystick::Axis> usageToAxis(int usage)
 {
     switch (usage)
     {
@@ -151,7 +128,7 @@ std::optional<sf::Joystick::Axis> usageToAxis(int usage)
         case HUG_RY:
             return sf::Joystick::Axis::V;
         default:
-            return std::nullopt;
+            return base::nullOpt;
     }
 }
 
@@ -226,7 +203,7 @@ bool JoystickImpl::open(unsigned int index)
 
             // Then allocate a buffer for data retrieval
             m_length = hid_report_size(m_desc, hid_input, m_id);
-            m_buffer.resize(static_cast<std::size_t>(m_length));
+            m_buffer.resize(static_cast<base::SizeT>(m_length));
 
             m_state.connected = true;
 
@@ -247,10 +224,10 @@ void JoystickImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-JoystickCaps JoystickImpl::getCapabilities() const
+JoystickCapabilities JoystickImpl::getCapabilities() const
 {
-    JoystickCaps caps;
-    hid_item_t   item;
+    JoystickCapabilities caps;
+    hid_item_t           item;
 
     hid_data_t data = hid_start_parse(m_desc, 1 << hid_input, m_id);
 
@@ -272,7 +249,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
                     caps.axes[Joystick::Axis::PovX] = true;
                     caps.axes[Joystick::Axis::PovY] = true;
                 }
-                else if (const std::optional<Joystick::Axis> axis = usageToAxis(usage))
+                else if (const base::Optional<Joystick::Axis> axis = usageToAxis(usage))
                 {
                     caps.axes[*axis] = true;
                 }
@@ -287,7 +264,7 @@ JoystickCaps JoystickImpl::getCapabilities() const
 
 
 ////////////////////////////////////////////////////////////
-Joystick::Identification JoystickImpl::getIdentification() const
+const JoystickIdentification& JoystickImpl::getIdentification() const
 {
     return m_identification;
 }
@@ -296,7 +273,7 @@ Joystick::Identification JoystickImpl::getIdentification() const
 ////////////////////////////////////////////////////////////
 JoystickState JoystickImpl::JoystickImpl::update()
 {
-    while (read(m_file, m_buffer.data(), static_cast<std::size_t>(m_length)) == m_length)
+    while (read(m_file, m_buffer.data(), static_cast<base::SizeT>(m_length)) == m_length)
     {
         hid_data_t data = hid_start_parse(m_desc, 1 << hid_input, m_id);
 
@@ -325,7 +302,7 @@ JoystickState JoystickImpl::JoystickImpl::update()
                     {
                         hatValueToSfml(value, m_state);
                     }
-                    else if (const std::optional<Joystick::Axis> axis = usageToAxis(usage))
+                    else if (const base::Optional<Joystick::Axis> axis = usageToAxis(usage))
                     {
                         int minimum = item.logical_minimum;
                         int maximum = item.logical_maximum;
