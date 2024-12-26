@@ -8,9 +8,15 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
 
@@ -19,6 +25,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include <iomanip>
 #include <string>
 #include <unordered_set>
 
@@ -29,7 +36,9 @@
 #include <SFML/Main.hpp>
 #endif
 
+#include <array>
 #include <sstream>
+#include <vector>
 
 #include <cassert>
 #include <cmath>
@@ -329,7 +338,8 @@ std::string scancodeIdentifier(sf::Keyboard::Scancode scancode)
 class KeyboardView : public sf::Transformable
 {
 public:
-    explicit KeyboardView(const sf::Font& font) : m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, "", 14))
+    explicit KeyboardView(const sf::Font& font) :
+    m_labels(sf::Keyboard::ScancodeCount, sf::Text(font, {.characterSize = 14u}))
     {
         // Check all the scancodes are in the matrix exactly once
         {
@@ -338,7 +348,7 @@ public:
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    assert(scancodesInMatrix.count(scancode) == 0);
+                    assert(!scancodesInMatrix.contains(scancode));
                     scancodesInMatrix.insert(scancode);
                 }
             }
@@ -407,13 +417,14 @@ public:
             {
                 const auto scancodeIndex = static_cast<std::size_t>(scancode);
 
-                static constexpr std::array square = {
-                    sf::Vector2f(0.f, 0.f),
-                    sf::Vector2f(1.f, 0.f),
-                    sf::Vector2f(1.f, 1.f),
-                    sf::Vector2f(0.f, 1.f),
+                static constexpr sf::Vector2f square[]{
+                    {0.f, 0.f},
+                    {1.f, 0.f},
+                    {1.f, 1.f},
+                    {0.f, 1.f},
                 };
-                static constexpr std::array cornerIndexes = {0u, 1u, 3u, 3u, 1u, 2u};
+
+                static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
 
                 const float        moveFactor = m_moveFactors[scancodeIndex];
                 const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
@@ -428,19 +439,20 @@ public:
                     vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
                     vertex.color.a  = pressed ? 96 : 48;
                 }
-                m_labels[scancodeIndex].setPosition(rect.position + rect.size / 2.f + move);
+
+                m_labels[scancodeIndex].position = rect.position + rect.size / 2.f + move;
             });
     }
 
-private:
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    void drawOnto(sf::RenderTarget& target, sf::RenderStates states) const
     {
         states.transform *= getTransform();
-        target.draw(m_triangles, states);
+        target.draw(m_triangles, sf::PrimitiveType::Triangles, states);
         for (const sf::Text& label : m_labels)
             target.draw(label, states);
     }
 
+private:
     // Template to iterate on scancodes and the corresponding computed rectangle in local coordinates
     template <typename F>
     void forEachKey(F function) const
@@ -643,8 +655,8 @@ private:
           {sf::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 
-    sf::VertexArray       m_triangles{sf::PrimitiveType::Triangles, sf::Keyboard::ScancodeCount * 6};
-    std::vector<sf::Text> m_labels;
+    std::vector<sf::Vertex>                        m_triangles{sf::Keyboard::ScancodeCount * 6};
+    std::vector<sf::Text>                          m_labels;
     std::array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
 };
 
@@ -670,7 +682,7 @@ public:
         const float alpha = std::max(0.f, ratio * (2.f - ratio)) * 0.5f;
 
         sf::Color color = getOutlineColor();
-        color.a         = static_cast<std::uint8_t>(255 * alpha);
+        color.a         = static_cast<sf::base::U8>(255 * alpha);
         setOutlineColor(color);
 
         if (m_remaining > sf::Time::Zero)
@@ -697,7 +709,7 @@ float getSpacingFactor(const sf::Font& font)
 
 ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vector2f position)
 {
-    ShinyText text(font, string, textSize);
+    ShinyText text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
     text.setOutlineThickness(2.f);
     text.position = position;
@@ -707,7 +719,7 @@ ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vect
 
 sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vector2f position)
 {
-    sf::Text text(font, string, textSize);
+    sf::Text text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
     text.position = position;
 
@@ -754,7 +766,7 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
     text += "\nU+";
 
     std::ostringstream oss;
-    oss << std::hex << std::setw(4) << std::setfill('0') << textEntered.unicode;
+    oss << std::hex << std::setw(4) << std::setfill('0') << static_cast<int>(textEntered.unicode);
     text += oss.str();
 
     return text;
@@ -769,14 +781,21 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // Create an audio context and get the default playback device
+    auto audioContext   = sf::AudioContext::create().value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+
+    // Create the graphics context
+    auto graphicsContext = sf::GraphicsContext::create().value();
+
     // Create the main window
     sf::RenderWindow window({.size = {1280u, 720u}, .title = "Keyboard", .resizable = false, .vsync = true});
     window.setFramerateLimit(25);
 
     // Load sound buffers
-    const sf::SoundBuffer errorSoundBuffer(resourcesDir() / "error_005.ogg");
-    const sf::SoundBuffer pressedSoundBuffer(resourcesDir() / "mouseclick1.ogg");
-    const sf::SoundBuffer releasedSoundBuffer(resourcesDir() / "mouserelease1.ogg");
+    const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
+    const auto pressedSoundBuffer  = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouseclick1.ogg").value();
+    const auto releasedSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
 
     // Create sound objects to play them upon keyboard events
     sf::Sound errorSound(errorSoundBuffer);
@@ -784,11 +803,11 @@ int main()
     sf::Sound releasedSound(releasedSoundBuffer);
 
     // Open the font used for all texts
-    const sf::Font font(resourcesDir() / "Tuffy.ttf");
+    const auto font = sf::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();
 
     // Create object to display all scancodes descriptions, related events and real-time state
     KeyboardView keyboardView(font);
-    keyboardView.setPosition({16, 16});
+    keyboardView.position = {16.f, 16.f};
 
     // Create text to display information about keyboard events and key codes real-time state
     ShinyText keyPressedText(makeShinyText(font, "Key Pressed", {16, 575}));
@@ -797,21 +816,18 @@ int main()
     sf::Text  keyPressedCheckText(makeText(font, "", {900, 575}));
 
     sf::Clock clock;
-    while (window.isOpen())
+    while (true)
     {
         // Handle events
-        while (const std::optional event = window.pollEvent())
+        while (sf::base::Optional event = window.pollEvent())
         {
             // Window closed: exit
-            if (event->is<sf::Event::Closed>())
-            {
-                window.close();
-                break;
-            }
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return 0;
 
             // Window size changed: adjust view appropriately
             if (const auto* resized = event->getIf<sf::Event::Resized>())
-                window.setView(sf::View(sf::FloatRect({}, sf::Vector2f(resized->size))));
+                window.setView({.center = resized->size.toVector2f() / 2.f, .size = resized->size.toVector2f()});
 
             // Key events: update text and play sound
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
@@ -820,12 +836,12 @@ int main()
                 if (somethingIsOdd(*keyPressed))
                 {
                     keyPressedText.shine(sf::Color::Red);
-                    errorSound.play();
+                    errorSound.play(playbackDevice);
                 }
                 else
                 {
                     keyPressedText.shine(sf::Color::Green);
-                    pressedSound.play();
+                    pressedSound.play(playbackDevice);
                 }
             }
             if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
@@ -834,12 +850,12 @@ int main()
                 if (somethingIsOdd(*keyReleased))
                 {
                     keyReleasedText.shine(sf::Color::Red);
-                    errorSound.play();
+                    errorSound.play(playbackDevice);
                 }
                 else
                 {
                     keyReleasedText.shine(sf::Color::Green);
-                    releasedSound.play();
+                    releasedSound.play(playbackDevice);
                 }
             }
             if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())
@@ -871,7 +887,7 @@ int main()
 
         // Render frame
         window.clear();
-        window.draw(keyboardView);
+        keyboardView.drawOnto(window, sf::RenderStates::Default);
         window.draw(keyPressedText);
         window.draw(keyReleasedText);
         window.draw(textEnteredText);
