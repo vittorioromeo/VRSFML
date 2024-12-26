@@ -25,11 +25,11 @@ if(SFML_OS_WINDOWS)
     )
     if(SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/EGL/EglCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.cpp
             ${SRCROOT}/EGL/EGLCheck.hpp
-            ${SRCROOT}/EGL/EglContext.cpp
+            ${SRCROOT}/EGL/EGLContext.cpp
             ${SRCROOT}/EGL/EGLContext.hpp
-            ${SRCROOT}/EGL/EglGlad.cpp
+            ${SRCROOT}/EGL/EGLGlad.cpp
             ${SRCROOT}/EGL/EGLGlad.hpp
         )
     else()
@@ -42,7 +42,7 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
-            ${SRCROOT}/EGL/EglCheck.cpp
+            ${SRCROOT}/EGL/EGLCheck.cpp
             ${SRCROOT}/EGL/EGLCheck.hpp
             ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/VideoModeImpl.cpp
@@ -74,9 +74,9 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         )
         if(SFML_OPENGL_ES)
             list(APPEND PLATFORM_SRC
-                ${SRCROOT}/EGL/EglCheck.cpp
+                ${SRCROOT}/EGL/EGLCheck.cpp
                 ${SRCROOT}/EGL/EGLCheck.hpp
-                ${SRCROOT}/EGL/EglContext.cpp
+                ${SRCROOT}/EGL/EGLContext.cpp
                 ${SRCROOT}/EGL/EGLContext.hpp
             )
         else()
@@ -176,9 +176,9 @@ elseif(SFML_OS_IOS)
     )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EglCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.cpp
         ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EglContext.cpp
+        ${SRCROOT}/EGL/EGLContext.cpp
         ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
@@ -189,9 +189,9 @@ elseif(SFML_OS_ANDROID)
     )
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EglCheck.cpp
+        ${SRCROOT}/EGL/EGLCheck.cpp
         ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EglContext.cpp
+        ${SRCROOT}/EGL/EGLContext.cpp
         ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
         ${SRCROOT}/Emscripten/JoystickImpl.hpp
