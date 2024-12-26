@@ -249,7 +249,7 @@ void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderS
     renderTarget.draw(m_vertices, PrimitiveType::TriangleFan, states);
 
     // Render the outline
-    if (m_outlineThickness != 0)
+    if (m_outlineThickness != 0.f)
         renderTarget.draw(m_outlineVertices, PrimitiveType::TriangleStrip, states);
 }
 
