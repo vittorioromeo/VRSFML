@@ -143,7 +143,6 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                                                  false}});
                 renderTexture.display();
 
-                // TODO P0: fails on ARM64 Surface with SFML_OPENGL_ES=0
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
             }
 
@@ -206,8 +205,7 @@ TEST_CASE("[Graphics] Render Tests" * doctest::skip(skipDisplayTests))
                                                                  sf::StencilValue{0xFFu},
                                                                  false}});
                 renderTexture.display();
-                
-                // TODO P0: fails on ARM64 Surface with SFML_OPENGL_ES=0
+
                 CHECK(renderTexture.getTexture().copyToImage().getPixel({50, 50}) == sf::Color::Blue);
             }
 
