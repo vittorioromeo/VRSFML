@@ -3,7 +3,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -176,7 +175,6 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
 
         CHECK(finalImage.getSize() == size);
 
-        // TODO P0: fails on ARM64 Surface with SFML_OPENGL_ES=0
         CHECK((finalImage.getPixel({0u, 0u}) == sf::Color::White));
         CHECK((finalImage.getPixel({static_cast<unsigned int>(width / 2.f) + 1u, 0u}) == sf::Color::Green));
     }
