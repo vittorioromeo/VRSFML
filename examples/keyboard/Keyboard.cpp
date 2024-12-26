@@ -12,6 +12,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
