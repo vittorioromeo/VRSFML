@@ -272,31 +272,31 @@ private:
     /// \brief Update the fill vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateFillColors(base::TrivialVector<Vertex>& vertices) const;
+    void updateFillColors();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateTexCoords(base::TrivialVector<Vertex>& vertices) const;
+    void updateTexCoords();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' texture coordinates
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const;
+    void updateOutlineTexCoords();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' position
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutline(base::TrivialVector<Vertex>& outlineVertices, const base::TrivialVector<Vertex>& vertices);
+    void updateOutline();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' color
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const;
+    void updateOutlineColors();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -308,12 +308,12 @@ private:
     float     m_outlineThickness{};         //!< Thickness of the shape's outline
 
 protected:
-    base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill geometry
+    base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
 
 private:
-    base::TrivialVector<Vertex> m_outlineVertices; //!< Vertex array containing the outline geometry
-    FloatRect                   m_insideBounds;    //!< Bounding rectangle of the inside (fill)
-    FloatRect                   m_bounds;          //!< Bounding rectangle of the whole shape (outline + fill)
+    base::SizeT m_verticesEndIndex = 0; //!< Index where the fill vertices end and outline vertices begin
+    FloatRect   m_insideBounds;         //!< Bounding rectangle of the inside (fill)
+    FloatRect   m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf
