@@ -20,8 +20,8 @@ constexpr sf::Vector2f resolution{800.f, 600.f};
 class Game
 {
 private:
-    const float        m_ballSpeed{6.f};
-    const float        m_playerSpeed{12.f};
+    const float        m_ballSpeed{3.f};
+    const float        m_playerSpeed{6.f};
     const sf::Vector2f m_brickSize{50.f, 24.f};
 
     sf::CircleShape m_ball;
@@ -36,10 +36,10 @@ private:
     {
         const sf::Vector2f offset{50.f, 50.f};
 
-        const std::size_t nBricksPerRow = 13;
+        const std::size_t nBricksPerRow = 12;
         const std::size_t nRows         = 4;
 
-        const float spacing = 50.f / 14.f;
+        const float spacing = 120.f / 14.f;
 
         sf::Vector2f next{0.f, 0.f};
 
@@ -47,10 +47,13 @@ private:
         {
             for (std::size_t x = 0; x <= nBricksPerRow; ++x)
             {
-                m_bricks.emplace_back(sf::RectangleShape::Settings{.position  = offset + next,
-                                                                   .origin    = m_brickSize / 2.f,
-                                                                   .fillColor = sf::Color::White,
-                                                                   .size      = m_brickSize});
+                m_bricks.emplace_back(
+                    sf::RectangleShape::Settings{.position         = offset + next,
+                                                 .origin           = m_brickSize / 2.f,
+                                                 .fillColor        = sf::Color::DarkGreen,
+                                                 .outlineColor     = sf::Color::Green,
+                                                 .outlineThickness = 2.f,
+                                                 .size             = m_brickSize});
 
                 next.x += spacing + m_brickSize.x;
             }
@@ -62,17 +65,11 @@ private:
 
     bool testIntersectionBetweenBallAndRectangle(const sf::RectangleShape& rect)
     {
-        const float ballLeft   = m_ball.position.x - m_ball.getRadius();
-        const float ballRight  = m_ball.position.x + m_ball.getRadius();
-        const float ballTop    = m_ball.position.y - m_ball.getRadius();
-        const float ballBottom = m_ball.position.y + m_ball.getRadius();
+        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
+        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
 
-        const float rectHalfWidth  = rect.getSize().x / 2.f;
-        const float rectHalfHeight = rect.getSize().y / 2.f;
-        const float rectLeft       = rect.position.x - rectHalfWidth;
-        const float rectRight      = rect.position.x + rectHalfWidth;
-        const float rectTop        = rect.position.y - rectHalfHeight;
-        const float rectBottom     = rect.position.y + rectHalfHeight;
+        const auto [rectLeft, rectTop]     = rect.getTopLeft();
+        const auto [rectRight, rectBottom] = rect.getBottomRight();
 
         const bool ballIsLeftOfRect  = ballRight < rectLeft;
         const bool ballIsRightOfRect = ballLeft > rectRight;
@@ -87,17 +84,11 @@ private:
         if (!testIntersectionBetweenBallAndRectangle(brick))
             return false;
 
-        const float ballLeft   = m_ball.position.x - m_ball.getRadius();
-        const float ballRight  = m_ball.position.x + m_ball.getRadius();
-        const float ballTop    = m_ball.position.y - m_ball.getRadius();
-        const float ballBottom = m_ball.position.y + m_ball.getRadius();
+        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
+        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
 
-        const float brickHalfWidth  = brick.getSize().x / 2.f;
-        const float brickHalfHeight = brick.getSize().y / 2.f;
-        const float brickLeft       = brick.position.x - brickHalfWidth;
-        const float brickRight      = brick.position.x + brickHalfWidth;
-        const float brickTop        = brick.position.y - brickHalfHeight;
-        const float brickBottom     = brick.position.y + brickHalfHeight;
+        const auto [brickLeft, brickTop]     = brick.getTopLeft();
+        const auto [brickRight, brickBottom] = brick.getBottomRight();
 
         const float overlapLeft{ballRight - brickLeft};
         const float overlapRight{brickRight - ballLeft};
@@ -125,10 +116,10 @@ private:
 
     void updateBallCollisionsAgainstBoundaries()
     {
-        const float ballLeft   = m_ball.position.x - m_ball.getRadius();
-        const float ballRight  = m_ball.position.x + m_ball.getRadius();
-        const float ballTop    = m_ball.position.y - m_ball.getRadius();
-        const float ballBottom = m_ball.position.y + m_ball.getRadius();
+        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
+        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
+
+        const float ballRadiusWithOutline = m_ball.getRadius() + m_ball.getOutlineThickness() + 2.f;
 
         const float boundaryLeft   = 0.f;
         const float boundaryRight  = resolution.x;
@@ -138,23 +129,23 @@ private:
         if (ballLeft < boundaryLeft)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.position.x = boundaryLeft + m_ball.getRadius();
+            m_ball.position.x = boundaryLeft + ballRadiusWithOutline;
         }
         else if (ballRight > boundaryRight)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.position.x = boundaryRight - m_ball.getRadius();
+            m_ball.position.x = boundaryRight - ballRadiusWithOutline;
         }
 
         if (ballTop < boundaryTop)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.position.y = boundaryTop + m_ball.getRadius();
+            m_ball.position.y = boundaryTop + ballRadiusWithOutline;
         }
         else if (ballBottom > boundaryBottom)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.position.y = boundaryBottom - m_ball.getRadius();
+            m_ball.position.y = boundaryBottom - ballRadiusWithOutline;
         }
     }
 
@@ -185,12 +176,19 @@ private:
 
 public:
     Game() :
-    m_ball{{.position = resolution / 2.f, .origin = {6.f, 6.f}, .fillColor = sf::Color::White, .radius = 12.f}},
+    m_ball{{.position         = resolution / 2.f,
+            .origin           = {6.f, 6.f},
+            .fillColor        = sf::Color::DarkGreen,
+            .outlineColor     = sf::Color::Green,
+            .outlineThickness = 2.f,
+            .radius           = 12.f}},
     m_ballVelocity{m_ballSpeed, m_ballSpeed},
-    m_player{{.position  = {resolution.x / 2.f, resolution.y - 24.f * 2},
-              .origin    = {64.f, 12.f},
-              .fillColor = sf::Color::White,
-              .size      = {128.f, 24.f}}},
+    m_player{{.position         = {resolution.x / 2.f, resolution.y - 24.f * 2},
+              .origin           = {64.f, 12.f},
+              .fillColor        = sf::Color::DarkGreen,
+              .outlineColor     = sf::Color::Green,
+              .outlineThickness = 2.f,
+              .size             = {128.f, 24.f}}},
     m_playerVelocity{0.f, 0.f}
     {
         createBrickGrid();
@@ -231,7 +229,7 @@ public:
             m_player.position.x = boundaryRight - playerHalfWidth;
     }
 
-    void draw(sf::RenderTarget& renderTarget)
+    void drawOnto(sf::RenderTarget& renderTarget)
     {
         renderTarget.draw(m_ball, /* texture */ nullptr);
         renderTarget.draw(m_player, /* texture */ nullptr);
@@ -251,7 +249,7 @@ int main()
          .title           = "Arkanoid",
          .resizable       = false,
          .vsync           = true,
-         .frametimeLimit  = 60u,
+         .frametimeLimit  = 144u,
          .contextSettings = {.antiAliasingLevel = 8u}});
 
     // ------------------------------------------------------------------------
@@ -269,7 +267,7 @@ int main()
         game.update();
 
         window.clear();
-        game.draw(window);
+        game.drawOnto(window);
         window.display();
     }
 
