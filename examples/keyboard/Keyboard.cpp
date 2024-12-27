@@ -1,5 +1,3 @@
-// TODO P0: fix
-
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -27,7 +25,6 @@
 #include "SFML/System/Vector2.hpp"
 
 #include <iomanip>
-#include <string>
 #include <unordered_set>
 
 #include <cstddef>
@@ -57,7 +54,7 @@ sf::Path resourcesDir()
 }
 
 // Get the C++ enumerator name of the given `sf::Keyboard::Key` value including `Key::` prefix
-std::string keyIdentifier(sf::Keyboard::Key code)
+constexpr const char* keyIdentifier(sf::Keyboard::Key code)
 {
     switch (code)
     {
@@ -173,7 +170,7 @@ std::string keyIdentifier(sf::Keyboard::Key code)
 }
 
 // Get the C++ enumerator name of the given `sf::Keyboard::Scancode` value including `Scan::` prefix
-std::string scancodeIdentifier(sf::Keyboard::Scancode scancode)
+constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
 {
     switch (scancode)
     {
@@ -881,7 +878,10 @@ int main()
             {
                 const auto key = static_cast<sf::Keyboard::Key>(keyIndex);
                 if (sf::Keyboard::isKeyPressed(key))
-                    text += keyIdentifier(key) + "\n";
+                {
+                    text += keyIdentifier(key);
+                    text += "\n";
+                }
             }
             keyPressedCheckText.setString(text);
         }
