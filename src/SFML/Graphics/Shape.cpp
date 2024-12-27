@@ -30,9 +30,9 @@ namespace
 
 ////////////////////////////////////////////////////////////
 // Get bounds of a vertex range
-[[nodiscard]] sf::FloatRect getVertexRangeBounds(const sf::base::TrivialVector<sf::Vertex>& data)
+[[nodiscard]] sf::FloatRect getVertexRangeBounds(const sf::Vertex* data, const sf::base::SizeT nVertices)
 {
-    if (data.empty())
+    if (nVertices == 0)
         return {};
 
     float left   = data[0].position.x;
@@ -40,21 +40,14 @@ namespace
     float right  = data[0].position.x;
     float bottom = data[0].position.y;
 
-    for (sf::base::SizeT i = 1; i < data.size(); ++i)
+    for (sf::base::SizeT i = 1; i < nVertices; ++i)
     {
         const sf::Vector2f position = data[i].position;
 
-        // Update left and right
-        if (position.x < left)
-            left = position.x;
-        else if (position.x > right)
-            right = position.x;
-
-        // Update top and bottom
-        if (position.y < top)
-            top = position.y;
-        else if (position.y > bottom)
-            bottom = position.y;
+        left   = position.x < left ? position.x : left;
+        right  = position.x > right ? position.x : right;
+        top    = position.y < top ? position.y : top;
+        bottom = position.y > bottom ? position.y : bottom;
     }
 
     return {{left, top}, {right - left, bottom - top}};
@@ -81,7 +74,7 @@ m_outlineThickness{settings.outlineThickness}
 void Shape::setTextureRect(const FloatRect& rect)
 {
     m_textureRect = rect;
-    updateTexCoords(m_vertices);
+    updateTexCoords();
 }
 
 
@@ -89,7 +82,7 @@ void Shape::setTextureRect(const FloatRect& rect)
 void Shape::setOutlineTextureRect(const FloatRect& rect)
 {
     m_outlineTextureRect = rect;
-    updateOutlineTexCoords(m_outlineVertices);
+    updateOutlineTexCoords();
 }
 
 
@@ -111,7 +104,7 @@ const FloatRect& Shape::getOutlineTextureRect() const
 void Shape::setFillColor(Color color)
 {
     m_fillColor = color;
-    updateFillColors(m_vertices);
+    updateFillColors();
 }
 
 
@@ -126,7 +119,7 @@ Color Shape::getFillColor() const
 void Shape::setOutlineColor(Color color)
 {
     m_outlineColor = color;
-    updateOutlineColors(m_outlineVertices);
+    updateOutlineColors();
 }
 
 
@@ -178,14 +171,14 @@ FloatRect Shape::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::Span<const Vertex> Shape::getFillVertices() const
 {
-    return {m_vertices.data(), m_vertices.size()};
+    return {m_vertices.data(), m_verticesEndIndex};
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::Span<const Vertex> Shape::getOutlineVertices() const
 {
-    return {m_outlineVertices.data(), m_outlineVertices.size()};
+    return {m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex};
 }
 
 
@@ -209,11 +202,12 @@ bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
     if (pointCount < 3u)
     {
         m_vertices.clear();
-        m_outlineVertices.clear();
+        m_verticesEndIndex = 0;
         return false;
     }
 
     m_vertices.resize(pointCount + 2u); // + 2 for center and repeated first point
+    m_verticesEndIndex = pointCount + 2u;
     return true;
 }
 
@@ -225,16 +219,16 @@ void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
 
     // Update the bounding rectangle
     m_vertices[0]  = m_vertices[1]; // so that the result of getBounds() is correct
-    m_insideBounds = getVertexRangeBounds(m_vertices);
+    m_insideBounds = getVertexRangeBounds(m_vertices.data(), m_verticesEndIndex);
 
     // Compute the center and make it the first vertex
     m_vertices[0].position = m_insideBounds.getCenter();
 
     // Updates
-    updateFillColors(m_vertices);
-    updateTexCoords(m_vertices);
-    updateOutline(m_outlineVertices, m_vertices);
-    updateOutlineTexCoords(m_outlineVertices);
+    updateFillColors();
+    updateTexCoords();
+    updateOutline();
+    updateOutlineTexCoords();
 }
 
 
@@ -246,30 +240,34 @@ void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderS
     states.texture        = texture;
 
     // Render the inside
-    renderTarget.draw(m_vertices, PrimitiveType::TriangleFan, states);
+    renderTarget.drawVertices(m_vertices.data(), m_verticesEndIndex, PrimitiveType::TriangleFan, states);
 
     // Render the outline
     if (m_outlineThickness != 0.f)
-        renderTarget.draw(m_outlineVertices, PrimitiveType::TriangleStrip, states);
+        renderTarget.drawVertices(m_vertices.data() + m_verticesEndIndex,
+                                  m_vertices.size() - m_verticesEndIndex,
+                                  PrimitiveType::TriangleStrip,
+                                  states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateFillColors(base::TrivialVector<Vertex>& vertices) const
+void Shape::updateFillColors()
 {
-    for (Vertex& vertex : vertices)
-        vertex.color = m_fillColor;
+    const auto* end = m_vertices.data() + m_verticesEndIndex;
+    for (Vertex* vertex = m_vertices.data(); vertex != end; ++vertex)
+        vertex->color = m_fillColor;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices) const
+void Shape::updateTexCoords()
 {
     // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
     const Vector2f safeInsideSize(m_insideBounds.size.x > 0 ? m_insideBounds.size.x : 1.f,
                                   m_insideBounds.size.y > 0 ? m_insideBounds.size.y : 1.f);
 
-    for (Vertex& vertex : vertices)
+    for (Vertex& vertex : m_vertices)
     {
         const Vector2f ratio = (vertex.position - m_insideBounds.position).componentWiseDiv(safeInsideSize);
         vertex.texCoords     = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
@@ -278,36 +276,37 @@ void Shape::updateTexCoords(base::TrivialVector<Vertex>& vertices) const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutlineTexCoords(base::TrivialVector<Vertex>& outlineVertices) const
+void Shape::updateOutlineTexCoords()
 {
     // TODO P0:
-    for (Vertex& vertex : outlineVertices)
-        vertex.texCoords = m_outlineTextureRect.position;
+    const auto* end = m_vertices.data() + m_vertices.size();
+    for (Vertex* vertex = m_vertices.data() + m_verticesEndIndex; vertex != end; ++vertex)
+        vertex->texCoords = m_outlineTextureRect.position;
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutline(base::TrivialVector<Vertex>& outlineVertices, const base::TrivialVector<Vertex>& vertices)
+void Shape::updateOutline()
 {
     // Return if there is no outline
     if (m_outlineThickness == 0.f)
     {
-        outlineVertices.clear();
-        m_bounds = m_insideBounds;
+        m_verticesEndIndex = m_vertices.size();
+        m_bounds           = m_insideBounds;
         return;
     }
 
-    const base::SizeT count = vertices.size() - 2;
-    outlineVertices.resize((count + 1) * 2);
+    const base::SizeT count = m_vertices.size() - 2;
+    m_vertices.resize(m_verticesEndIndex + (count + 1) * 2);
 
     for (base::SizeT i = 0; i < count; ++i)
     {
         const base::SizeT index = i + 1;
 
         // Get the two segments shared by the current point
-        const Vector2f p0 = (i == 0) ? vertices[count].position : vertices[index - 1].position;
-        const Vector2f p1 = vertices[index].position;
-        const Vector2f p2 = vertices[index + 1].position;
+        const Vector2f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
+        const Vector2f p1 = m_vertices[index].position;
+        const Vector2f p2 = m_vertices[index + 1].position;
 
         // Compute their normal
         Vector2f n1 = computeNormal(p0, p1);
@@ -315,9 +314,9 @@ void Shape::updateOutline(base::TrivialVector<Vertex>& outlineVertices, const ba
 
         // Make sure that the normals point towards the outside of the shape
         // (this depends on the order in which the points were defined)
-        if (n1.dot(vertices[0].position - p1) > 0)
+        if (n1.dot(m_vertices[0].position - p1) > 0)
             n1 = -n1;
-        if (n2.dot(vertices[0].position - p1) > 0)
+        if (n2.dot(m_vertices[0].position - p1) > 0)
             n2 = -n2;
 
         // Combine them to get the extrusion direction
@@ -325,27 +324,28 @@ void Shape::updateOutline(base::TrivialVector<Vertex>& outlineVertices, const ba
         const Vector2f normal = (n1 + n2) / factor;
 
         // Update the outline points
-        outlineVertices[i * 2 + 0].position = p1;
-        outlineVertices[i * 2 + 1].position = p1 + normal * m_outlineThickness;
+        m_vertices[m_verticesEndIndex + (i * 2 + 0)].position = p1;
+        m_vertices[m_verticesEndIndex + (i * 2 + 1)].position = p1 + normal * m_outlineThickness;
     }
 
     // Duplicate the first point at the end, to close the outline
-    outlineVertices[count * 2 + 0].position = outlineVertices[0].position;
-    outlineVertices[count * 2 + 1].position = outlineVertices[1].position;
+    m_vertices[m_verticesEndIndex + (count * 2 + 0)].position = m_vertices[m_verticesEndIndex + 0].position;
+    m_vertices[m_verticesEndIndex + (count * 2 + 1)].position = m_vertices[m_verticesEndIndex + 1].position;
 
     // Update outline colors
-    updateOutlineColors(outlineVertices);
+    updateOutlineColors();
 
-    // Update the shape's bounds
-    m_bounds = getVertexRangeBounds(outlineVertices);
+    // Update the shape's bounds from outline vertices
+    m_bounds = getVertexRangeBounds(m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex);
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutlineColors(base::TrivialVector<Vertex>& outlineVertices) const
+void Shape::updateOutlineColors()
 {
-    for (Vertex& outlineVertex : outlineVertices)
-        outlineVertex.color = m_outlineColor;
+    const auto* end = m_vertices.data() + m_vertices.size();
+    for (Vertex* vertex = m_vertices.data() + m_verticesEndIndex; vertex != end; ++vertex)
+        vertex->color = m_outlineColor;
 }
 
 } // namespace sf
