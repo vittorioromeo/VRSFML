@@ -135,6 +135,34 @@
         "SFML_EMSCRIPTEN_SOURCE_MAP": "C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
+    },
+    {
+      "name": "vrdev_emcc_linux",
+      "inherits": "build_base_debug",
+      "binaryDir": "build_vrdev_emcc_linux",
+      "installDir": "${sourceDir}/build_vrdev_emcc_linux/install",
+      "cacheVariables": {
+        "CMAKE_CROSSCOMPILING_EMULATOR": "/usr/bin/node",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
+        "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
+        "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
+        "SFML_OPENGL_ES": "ON"
+      }
+    },
+    {
+      "name": "vrdev_emcc_linux_rel",
+      "inherits": "build_base_release",
+      "binaryDir": "build_vrdev_emcc_linux_rel",
+      "installDir": "${sourceDir}/build_vrdev_emcc_linux_rel/install",
+      "cacheVariables": {
+        "CMAKE_CROSSCOMPILING_EMULATOR": "/usr/bin/node",
+        "CMAKE_CXX_COMPILER_LAUNCHER": "",
+        "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
+        "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
+        "SFML_OPENGL_ES": "ON"
+      }
     }
   ]
 }
