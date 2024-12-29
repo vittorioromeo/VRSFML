@@ -143,6 +143,11 @@ elseif(${EMSCRIPTEN})
         -sJSPI=1                            # Use VM support for the JavaScript Promise Integration proposal
     )
 
+    if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
+        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
+        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
+    endif()
+
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
@@ -152,6 +157,7 @@ elseif(${EMSCRIPTEN})
         # ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI}
 
         -pthread                            # Enable threading support
+        -sPTHREAD_POOL_SIZE_STRICT=0        # TODO P0:
 
         -Wno-limited-postlink-optimizations # warning: running limited binaryen optimizations because DWARF info requested (or indirectly required)
         -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
@@ -171,10 +177,6 @@ elseif(${EMSCRIPTEN})
 
         --shell-file=${CMAKE_SOURCE_DIR}/emscripten/shell.html
     )
-
-    if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
-        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS "--pre-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
-    endif()
 
 else()
     message(FATAL_ERROR "Unsupported operating system or environment")
