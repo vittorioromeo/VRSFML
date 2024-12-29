@@ -119,8 +119,6 @@ private:
         const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
         const auto [ballRight, ballBottom] = m_ball.getBottomRight();
 
-        const float ballRadiusWithOutline = m_ball.getRadius() + m_ball.getOutlineThickness() + 2.f;
-
         const float boundaryLeft   = 0.f;
         const float boundaryRight  = resolution.x;
         const float boundaryTop    = 0.f;
@@ -129,23 +127,23 @@ private:
         if (ballLeft < boundaryLeft)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.position.x = boundaryLeft + ballRadiusWithOutline;
+            m_ball.setCenterLeft({boundaryLeft, m_ball.position.y});
         }
         else if (ballRight > boundaryRight)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.position.x = boundaryRight - ballRadiusWithOutline;
+            m_ball.setCenterRight({boundaryRight, m_ball.position.y});
         }
 
         if (ballTop < boundaryTop)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.position.y = boundaryTop + ballRadiusWithOutline;
+            m_ball.setTopCenter({m_ball.position.x, boundaryTop});
         }
         else if (ballBottom > boundaryBottom)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.position.y = boundaryBottom - ballRadiusWithOutline;
+            m_ball.setBottomCenter({m_ball.position.x, boundaryBottom});
         }
     }
 
@@ -170,6 +168,7 @@ private:
             {
                 std::swap(*it, m_bricks.back());
                 m_bricks.pop_back();
+                break;
             }
         }
     }
