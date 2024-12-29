@@ -144,6 +144,7 @@ elseif(${EMSCRIPTEN})
     )
 
     if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
+        # Using `--post-js` here instead of `--pre-js` as the latter seem to cause issues in examples with threading
         list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
         list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
     endif()
@@ -157,7 +158,7 @@ elseif(${EMSCRIPTEN})
         # ${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_JSPI}
 
         -pthread                            # Enable threading support
-        -sPTHREAD_POOL_SIZE_STRICT=0        # TODO P0:
+        -sPTHREAD_POOL_SIZE_STRICT=0        # Allow thread pool to grow indefinitely
 
         -Wno-limited-postlink-optimizations # warning: running limited binaryen optimizations because DWARF info requested (or indirectly required)
         -Wno-pthreads-mem-growth            # warning: -pthread + ALLOW_MEMORY_GROWTH may run non-wasm code slowly, see https://github.com/WebAssembly/design/issues/1271
