@@ -443,7 +443,7 @@ XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsP
     EGLDisplay display = EglContextImpl::getInitializedDisplay();
 
     // Get the best EGL config matching the default video contextSettings
-    EGLConfig config = getBestConfig(display, bitsPerPixel, contextSettings);
+    EGLConfig config = EglContextImpl::getBestConfig(display, bitsPerPixel, contextSettings);
 
     // Retrieve the visual id associated with this EGL config
     EGLint nativeVisualId = 0;
