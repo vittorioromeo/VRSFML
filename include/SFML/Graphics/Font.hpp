@@ -9,7 +9,6 @@
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
-#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
