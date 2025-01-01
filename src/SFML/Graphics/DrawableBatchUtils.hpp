@@ -133,10 +133,10 @@ using IndexType = unsigned int;
     for (IndexType i = 0u; i < numQuads; ++i)
         appendPreTransformedQuadVertices(vertexPtr,
                                          transform,
-                                         data[(i * 6u) + 0u],
-                                         data[(i * 6u) + 1u],
-                                         data[(i * 6u) + 2u],
-                                         data[(i * 6u) + 5u]);
+                                         data[(i * 4u) + 0u],
+                                         data[(i * 4u) + 1u],
+                                         data[(i * 4u) + 2u],
+                                         data[(i * 4u) + 3u]);
 }
 
 

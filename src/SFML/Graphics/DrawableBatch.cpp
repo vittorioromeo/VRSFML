@@ -59,9 +59,9 @@ template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const Text& text)
 {
     const auto [data, size] = text.getVertices();
-    SFML_BASE_ASSERT(size % 6u == 0);
+    SFML_BASE_ASSERT(size % 4u == 0);
 
-    const auto numQuads = static_cast<IndexType>(size / 6u);
+    const auto numQuads = static_cast<IndexType>(size / 4u);
 
     appendTextIndicesAndVertices(text.getTransform(),
                                  data,
