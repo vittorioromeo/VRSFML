@@ -19,6 +19,57 @@ constexpr Color Color::fromRGBA(base::U32 color)
 
 
 ////////////////////////////////////////////////////////////
+constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, base::U8 alpha)
+{
+    while (hue < 0.f)
+        hue += 360.f;
+
+    while (hue > 360.f)
+        hue -= 360.f;
+
+    const auto clampBetweenZeroAndOne = [](float value) -> float
+    { return value < 0.f ? 0.f : (value > 1.f ? 1.f : value); };
+
+    saturation = clampBetweenZeroAndOne(saturation);
+    lightness  = clampBetweenZeroAndOne(lightness);
+
+    // `maxChroma` and `minChroma` define the range for each color component
+    // `maxChroma` is the upper bound, `minChroma` is the lower bound
+    const float maxChroma = lightness < 0.5f ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
+    const float minChroma = 2 * lightness - maxChroma;
+
+    const auto hueToRGB = [&](float normalizedHue) -> float
+    {
+        if (normalizedHue < 0.f)
+            normalizedHue += 1.f;
+
+        if (normalizedHue > 1.f)
+            normalizedHue -= 1.f;
+
+        if (normalizedHue < 1.0f / 6.0f)
+            return minChroma + (maxChroma - minChroma) * 6.f * normalizedHue;
+
+        if (normalizedHue < 1.0f / 2.0f)
+            return maxChroma;
+
+        if (normalizedHue < 2.0f / 3.0f)
+            return minChroma + (maxChroma - minChroma) * (2.0f / 3.0f - normalizedHue) * 6.f;
+
+        return minChroma;
+    };
+
+    const float normalizedHue = hue / 360.0f;
+
+    // NOLINTBEGIN(bugprone-incorrect-roundings)
+    return {static_cast<base::U8>(hueToRGB(normalizedHue + 1.0f / 3.0f) * 255.f + 0.5f),
+            static_cast<base::U8>(hueToRGB(normalizedHue) * 255 + 0.5f),
+            static_cast<base::U8>(hueToRGB(normalizedHue - 1.0f / 3.0f) * 255.f + 0.5f),
+            alpha};
+    // NOLINTEND(bugprone-incorrect-roundings)
+}
+
+
+////////////////////////////////////////////////////////////
 constexpr base::U32 Color::toInteger() const
 {
     return static_cast<base::U32>((r << 24) | (g << 16) | (b << 8) | a);
