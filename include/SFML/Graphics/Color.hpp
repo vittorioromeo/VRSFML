@@ -26,6 +26,21 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(base::U32 color);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Construct the color from HSLA components
+    ///
+    /// \param hue        Hue component (angle in degrees)
+    /// \param saturation Saturation component (from 0 to 1)
+    /// \param lightness  Lightness component (from 0 to 1)
+    /// \param alpha      Alpha component (0 to 255)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromHSLA(
+        float    hue,
+        float    saturation,
+        float    lightness,
+        base::U8 alpha = 255u);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
     ///
     /// \return Color represented as a 32-bit unsigned integer

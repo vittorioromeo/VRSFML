@@ -185,4 +185,91 @@ TEST_CASE("[Graphics] sf::Color")
         CHECK(begin[10] == pixels[2].b);
         CHECK(begin[11] == pixels[2].a);
     }
+
+
+    SECTION("HSLtoColor converts basic colors correctly")
+    {
+        SECTION("Primary colors")
+        {
+            // Red (Hue = 0)
+            CHECK(sf::Color::fromHSLA(0.0f, 1.0f, 0.5f) == sf::Color(255, 0, 0));
+
+            // Green (Hue = 120)
+            CHECK(sf::Color::fromHSLA(120.0f, 1.0f, 0.5f) == sf::Color(0, 255, 0));
+
+            // Blue (Hue = 240)
+            CHECK(sf::Color::fromHSLA(240.0f, 1.0f, 0.5f) == sf::Color(0, 0, 255));
+        }
+
+        SECTION("Secondary colors")
+        {
+            // Yellow (Hue = 60)
+            CHECK(sf::Color::fromHSLA(60.0f, 1.0f, 0.5f) == sf::Color(255, 255, 0));
+
+            // Cyan (Hue = 180)
+            CHECK(sf::Color::fromHSLA(180.0f, 1.0f, 0.5f) == sf::Color(0, 255, 255));
+
+            // Magenta (Hue = 300)
+            CHECK(sf::Color::fromHSLA(300.0f, 1.0f, 0.5f) == sf::Color(255, 0, 255));
+        }
+    }
+
+    SECTION("HSLtoColor handles edge cases correctly")
+    {
+        SECTION("Grayscale (Saturation = 0)")
+        {
+            // Black
+            CHECK(sf::Color::fromHSLA(0.0f, 0.0f, 0.0f) == sf::Color(0, 0, 0));
+
+            // White
+            CHECK(sf::Color::fromHSLA(0.0f, 0.0f, 1.0f) == sf::Color(255, 255, 255));
+
+            // 50% Gray (any hue)
+            CHECK(sf::Color::fromHSLA(0.0f, 0.0f, 0.5f) == sf::Color(128, 128, 128));
+            CHECK(sf::Color::fromHSLA(180.0f, 0.0f, 0.5f) == sf::Color(128, 128, 128));
+        }
+    }
+
+    SECTION("HSLtoColor produces expected intermediate values")
+    {
+        SECTION("Pastels (High lightness, medium saturation)")
+        {
+            sf::Color pastelPink = sf::Color::fromHSLA(350.0f, 0.5f, 0.8f);
+            CHECK(pastelPink.r > 200);
+            CHECK(pastelPink.g > 150);
+            CHECK(pastelPink.b > 150);
+        }
+
+        SECTION("Deep colors (Low lightness, high saturation)")
+        {
+            sf::Color deepBlue = sf::Color::fromHSLA(240.0f, 1.0f, 0.2f);
+            CHECK(deepBlue.r < 50);
+            CHECK(deepBlue.g < 50);
+            CHECK(deepBlue.b > 100);
+        }
+    }
+
+    SECTION("Hue wrapping")
+    {
+        // Negative hue should wrap to positive
+        CHECK(sf::Color::fromHSLA(-120.0f, 1.0f, 0.5f) == sf::Color::fromHSLA(240.0f, 1.0f, 0.5f));
+
+        // Hue > 360 should wrap
+        CHECK(sf::Color::fromHSLA(480.0f, 1.0f, 0.5f) == sf::Color::fromHSLA(120.0f, 1.0f, 0.5f));
+    }
+
+    SECTION("Saturation and lightness clamping")
+    {
+        // Oversaturated should clamp to 1
+        CHECK(sf::Color::fromHSLA(0.0f, 1.5f, 0.5f) == sf::Color::fromHSLA(0.0f, 1.0f, 0.5f));
+
+        // Negative saturation should clamp to 0
+        CHECK(sf::Color::fromHSLA(0.0f, -0.5f, 0.5f) == sf::Color::fromHSLA(0.0f, 0.0f, 0.5f));
+
+        // Overlight should clamp to 1
+        CHECK(sf::Color::fromHSLA(0.0f, 1.0f, 1.5f) == sf::Color::fromHSLA(0.0f, 1.0f, 1.0f));
+
+        // Negative lightness should clamp to 0
+        CHECK(sf::Color::fromHSLA(0.0f, 1.0f, -0.5f) == sf::Color::fromHSLA(0.0f, 1.0f, 0.0f));
+    }
 }
