@@ -5,9 +5,10 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
+
+#include "SFML/System/RectUtils.hpp"
 
 #include <utility>
 #include <vector>
@@ -20,9 +21,9 @@ constexpr sf::Vector2f resolution{800.f, 600.f};
 class Game
 {
 private:
-    const float        m_ballSpeed{3.f};
-    const float        m_playerSpeed{6.f};
-    const sf::Vector2f m_brickSize{50.f, 24.f};
+    static constexpr float        ballSpeed{3.f};
+    static constexpr float        playerSpeed{6.f};
+    static constexpr sf::Vector2f brickSize{50.f, 24.f};
 
     sf::CircleShape m_ball;
     sf::Vector2f    m_ballVelocity;
@@ -49,39 +50,23 @@ private:
             {
                 m_bricks.emplace_back(
                     sf::RectangleShape::Settings{.position         = offset + next,
-                                                 .origin           = m_brickSize / 2.f,
+                                                 .origin           = brickSize / 2.f,
                                                  .fillColor        = sf::Color::DarkGreen,
                                                  .outlineColor     = sf::Color::Green,
                                                  .outlineThickness = 2.f,
-                                                 .size             = m_brickSize});
+                                                 .size             = brickSize});
 
-                next.x += spacing + m_brickSize.x;
+                next.x += spacing + brickSize.x;
             }
 
             next.x = 0;
-            next.y += spacing + m_brickSize.y;
+            next.y += spacing + brickSize.y;
         }
-    }
-
-    bool testIntersectionBetweenBallAndRectangle(const sf::RectangleShape& rect)
-    {
-        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
-        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
-
-        const auto [rectLeft, rectTop]     = rect.getTopLeft();
-        const auto [rectRight, rectBottom] = rect.getBottomRight();
-
-        const bool ballIsLeftOfRect  = ballRight < rectLeft;
-        const bool ballIsRightOfRect = ballLeft > rectRight;
-        const bool ballIsAboveRect   = ballBottom < rectTop;
-        const bool ballIsBelowRect   = ballTop > rectBottom;
-
-        return !ballIsLeftOfRect && !ballIsRightOfRect && !ballIsAboveRect && !ballIsBelowRect;
     }
 
     bool performBallBrickCollisionResolution(const sf::RectangleShape& brick)
     {
-        if (!testIntersectionBetweenBallAndRectangle(brick))
+        if (!sf::findIntersection(brick.getGlobalBounds(), m_ball.getGlobalBounds()).hasValue())
             return false;
 
         const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
@@ -102,16 +87,11 @@ private:
         const float minOverlapY{ballFromTop ? overlapTop : overlapBottom};
 
         if (std::abs(minOverlapX) < std::abs(minOverlapY))
-            m_ballVelocity.x = ballFromLeft ? -m_ballSpeed : m_ballSpeed;
+            m_ballVelocity.x = ballFromLeft ? -ballSpeed : ballSpeed;
         else
-            m_ballVelocity.y = ballFromTop ? -m_ballSpeed : m_ballSpeed;
+            m_ballVelocity.y = ballFromTop ? -ballSpeed : ballSpeed;
 
         return true;
-    }
-
-    void updateBallMovement()
-    {
-        m_ball.position = m_ball.position + m_ballVelocity;
     }
 
     void updateBallCollisionsAgainstBoundaries()
@@ -149,15 +129,15 @@ private:
 
     void updateBallCollisionsAgainstPlayer()
     {
-        if (!testIntersectionBetweenBallAndRectangle(m_player))
+        if (!sf::findIntersection(m_player.getGlobalBounds(), m_ball.getGlobalBounds()).hasValue())
             return;
 
-        m_ballVelocity.y = -m_ballSpeed;
+        m_ballVelocity.y = -ballSpeed;
 
         if (m_ball.position.x < m_player.position.x)
-            m_ballVelocity.x = -m_ballSpeed;
+            m_ballVelocity.x = -ballSpeed;
         else
-            m_ballVelocity.x = m_ballSpeed;
+            m_ballVelocity.x = ballSpeed;
     }
 
     void updateBallCollisionsAgainstBricks()
@@ -181,7 +161,7 @@ public:
             .outlineColor     = sf::Color::Green,
             .outlineThickness = 2.f,
             .radius           = 12.f}},
-    m_ballVelocity{m_ballSpeed, m_ballSpeed},
+    m_ballVelocity{ballSpeed, ballSpeed},
     m_player{{.position         = {resolution.x / 2.f, resolution.y - 24.f * 2},
               .origin           = {64.f, 12.f},
               .fillColor        = sf::Color::DarkGreen,
@@ -195,7 +175,12 @@ public:
 
     void update()
     {
-        updateBallMovement();
+        //
+        // Ball movement
+        m_ball.position = m_ball.position + m_ballVelocity;
+
+        //
+        // Ball collisions
         updateBallCollisionsAgainstBoundaries();
         updateBallCollisionsAgainstPlayer();
         updateBallCollisionsAgainstBricks();
@@ -203,9 +188,9 @@ public:
         //
         // Player input
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
-            m_playerVelocity.x = -m_playerSpeed;
+            m_playerVelocity.x = -playerSpeed;
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-            m_playerVelocity.x = m_playerSpeed;
+            m_playerVelocity.x = playerSpeed;
         else
             m_playerVelocity.x = 0;
 
@@ -240,9 +225,14 @@ public:
 
 int main()
 {
-    // Create the graphics context
+    //
+    //
+    // Set up graphics context
     auto graphicsContext = sf::GraphicsContext::create().value();
 
+    //
+    //
+    // Set up window
     sf::RenderWindow window(
         {.size            = resolution.toVector2u(),
          .title           = "Arkanoid",
@@ -251,8 +241,9 @@ int main()
          .frametimeLimit  = 144u,
          .contextSettings = {.antiAliasingLevel = 8u}});
 
-    // ------------------------------------------------------------------------
-
+    //
+    //
+    // Set up game and simulation loop
     Game game;
 
     while (true)
@@ -269,8 +260,6 @@ int main()
         game.drawOnto(window);
         window.display();
     }
-
-    // ------------------------------------------------------------------------
 
     return 0;
 }
