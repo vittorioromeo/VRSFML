@@ -183,7 +183,7 @@ enum : bool
         // For small batches, the "naive" method also seems faster
         if (dataByteCount < sizeof(sf::Vertex) * 64)
         {
-            glCheck(glNamedBufferData(bufferId, dataByteCount, nullptr, GL_STREAM_DRAW)); // Must orphan first
+            glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW)); // Must orphan first
             glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
             return;
         }
