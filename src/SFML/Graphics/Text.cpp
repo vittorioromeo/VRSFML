@@ -376,11 +376,27 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Span<const Vertex> Text::getVertices() const
+base::Span<const Vertex> Text::getVertices() const
 {
     ensureGeometryUpdate(*m_font);
 
     return {m_vertices.data(), m_vertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
+base::Span<Vertex> Text::getVerticesMut()
+{
+    ensureGeometryUpdate(*m_font);
+
+    return {m_vertices.data(), m_vertices.size()};
+}
+
+
+////////////////////////////////////////////////////////////
+base::SizeT Text::getFillVerticesStartIndex() const
+{
+    return m_fillVerticesStartIndex;
 }
 
 

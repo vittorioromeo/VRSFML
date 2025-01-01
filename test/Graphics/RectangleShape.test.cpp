@@ -27,6 +27,8 @@ TEST_CASE("[Graphics] sf::RectangleShape")
         CHECK(rectangle.getPoint(2) == sf::Vector2f{0, 0});
         CHECK(rectangle.getPoint(3) == sf::Vector2f{0, 0});
         CHECK(rectangle.getGeometricCenter() == sf::Vector2f{0, 0});
+        CHECK(rectangle.getFillVertices().size() == 6u);
+        CHECK(rectangle.getOutlineVertices().size() == 0u);
     }
 
     SECTION("Size constructor")
@@ -39,6 +41,8 @@ TEST_CASE("[Graphics] sf::RectangleShape")
         CHECK(rectangle.getPoint(2) == sf::Vector2f{9, 8});
         CHECK(rectangle.getPoint(3) == sf::Vector2f{0, 8});
         CHECK(rectangle.getGeometricCenter() == sf::Vector2f(9.f, 8.f) / 2.f);
+        CHECK(rectangle.getFillVertices().size() == 6u);
+        CHECK(rectangle.getOutlineVertices().size() == 0u);
     }
 
     SECTION("Set size")
@@ -47,5 +51,14 @@ TEST_CASE("[Graphics] sf::RectangleShape")
         rectangle.setSize({5, 4});
         CHECK(rectangle.getSize() == sf::Vector2f{5, 4});
         CHECK(rectangle.getGeometricCenter() == sf::Vector2f(5.f, 4.f) / 2.f);
+        CHECK(rectangle.getFillVertices().size() == 6u);
+        CHECK(rectangle.getOutlineVertices().size() == 0u);
+    }
+
+    SECTION("With outline")
+    {
+        sf::RectangleShape rectangle{{.outlineThickness = 1.f, .size = {7.f, 6.f}}};
+        CHECK(rectangle.getFillVertices().size() == 6u);
+        CHECK(rectangle.getOutlineVertices().size() == 10u);
     }
 }
