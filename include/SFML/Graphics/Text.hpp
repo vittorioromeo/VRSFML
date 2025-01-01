@@ -427,10 +427,34 @@ public:
     void draw(RenderTarget& target, RenderStates states) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get a read-only span to the text's vertices.
+    ///
+    /// The vertices are recalculated, if necessary, when this function
+    /// is invoked. Therefore it is not thread-safe.
+    ///
+    /// The returned span fulfills the following properties:
+    ///
+    /// - The subrange `[0, getFillVerticesStartIndex()]` contains
+    ///   all the text outline vertices, if any.
+    ///
+    /// - The remaining subrange contains all text fill vertices, if any.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Span<const Vertex> getVertices() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a mutable span to the text's vertices.
+    ///
+    /// \see `getVertices`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Span<Vertex> getVerticesMut();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the index of the first fill vertex.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT getFillVerticesStartIndex() const;
 
 private:
     ////////////////////////////////////////////////////////////
