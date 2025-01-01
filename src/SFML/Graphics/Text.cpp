@@ -45,11 +45,9 @@ void addLine(sf::Vertex*      vertices,
     *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
     *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
     *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
-    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
-    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
     *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
 
-    index += 6;
+    index += 4u;
 }
 
 // Add a glyph quad to the vertex array
@@ -73,11 +71,9 @@ void addGlyphQuad(sf::Vertex*      vertices,
     *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}};
     *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
     *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
-    *ptr++ = {position + sf::Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
-    *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
     *ptr++ = {position + sf::Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}};
 
-    index += 6;
+    index += 4u;
 }
 
 } // namespace
@@ -370,8 +366,13 @@ void Text::draw(RenderTarget& target, RenderStates states) const
     states.texture        = &m_font->getTexture();
     states.coordinateType = CoordinateType::Pixels;
 
-    const auto [data, size] = getVertices();
-    target.drawVertices(data, size, PrimitiveType::Triangles, states);
+    const auto [vertexData, vertexSize] = getVertices();
+
+    static constexpr unsigned int precomputedIndices[]{
+#include "SFML/Graphics/PrecomputedQuadIndices.inl"
+    };
+
+    target.drawIndexedVertices(vertexData, vertexSize, precomputedIndices, vertexSize / 4u * 6u, PrimitiveType::Triangles, states);
 }
 
 
@@ -498,8 +499,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
             addLinesFake();
     }
 
-    const base::SizeT outlineVertexCount = outlineQuadCount * 6u;
-    const base::SizeT fillVertexCount    = fillQuadCount * 6u;
+    const base::SizeT outlineVertexCount = outlineQuadCount * 4u;
+    const base::SizeT fillVertexCount    = fillQuadCount * 4u;
 
     m_vertices.resize(outlineVertexCount + fillVertexCount);
     m_fillVerticesStartIndex = outlineVertexCount;
