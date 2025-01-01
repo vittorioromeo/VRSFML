@@ -302,7 +302,16 @@ TEST_CASE("[Window] sf::Event")
         CHECK(sensorChanged.value == sf::Vector3f());
     }
 
-    SECTION("Visit")
+    SECTION("getIf()")
+    {
+        sf::Event event      = sf::Event::MouseMoved{{4, 2}};
+        auto*     mouseMoved = event.getIf<sf::Event::MouseMoved>();
+        REQUIRE(mouseMoved);
+        mouseMoved->position = sf::Vector2i(6, 9);
+        CHECK(mouseMoved->position == sf::Vector2i(6, 9));
+    }
+
+    SECTION("visit()")
     {
         sf::Event event = sf::Event::Closed{};
         CHECK(event.visit(visitor) == 0);
