@@ -39,7 +39,7 @@ template <typename Iter, typename TargetIter>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
-[[gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (*rangeBegin == target)
@@ -51,7 +51,7 @@ template <typename Iter, typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
@@ -63,7 +63,7 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-[[gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
 {
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (predicate(*rangeBegin))
