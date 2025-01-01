@@ -6,6 +6,7 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -27,6 +28,8 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <random>
 #include <string>
@@ -106,14 +109,19 @@ int main()
 
     // Initialize the pause message
     sf::Text pauseMessage(font,
-                          {.position = {170.f, 200.f},
+                          {
+                              .position = {170.f, 200.f},
 #ifdef SFML_SYSTEM_IOS
-                           .string = "Welcome to SFML Tennis!\nTouch the screen to start the game.",
+                              .string = "Welcome to SFML Tennis!\nTouch the screen to start the game.",
 #else
-                           .string = "Welcome to SFML Tennis!\n\nPress space to start the game.",
+                              .string = "Welcome to SFML Tennis!\n\nPress space to start the game.",
 #endif
-                           .characterSize = 40u,
-                           .fillColor     = sf::Color::White});
+                              .characterSize = 40u,
+
+                              .fillColor        = sf::Color::White,
+                              .outlineColor     = sf::Color::Black,
+                              .outlineThickness = 2.f,
+                          });
 
     // Define game constants
     constexpr float paddleSpeed = 400.f;
@@ -287,8 +295,89 @@ int main()
         }
         else
         {
+            // TODO P0: cleanup
+#if 0
+            const auto [tvData, tvSize] = pauseMessage.getVertices();
+            auto textVertices           = sf::base::TrivialVector<sf::Vertex>(tvData, tvSize);
+
+            auto nOutlineVertices = pauseMessage.getFillVerticesStartIndex();
+            auto nFillVertices    = tvSize - pauseMessage.getFillVerticesStartIndex();
+
+            static float test = 0;
+            test += 0.1f;
+
+            for (auto i = 0u; i < nOutlineVertices / 6u; ++i)
+            {
+                for (auto j = 0u; j < 6; ++j)
+                {
+                    textVertices[i * 6u + j].position.y += sf::base::sin(test + float(i)) * 3.f;
+                }
+            }
+
+            for (auto i = nOutlineVertices / 6u; i < tvSize / 6u; ++i)
+            {
+                for (auto j = 0u; j < 6; ++j)
+                {
+                    textVertices[i * 6u + j].position.y += sf::base::sin(test + float(i - nOutlineVertices / 6u)) * 3.f;
+                }
+            }
+
+            if (int(test) % 1000)
+            {
+                // pauseMessage.setString(pauseMessage.getString() + "a");
+            }
+
+
+            // Draw the pause message
+            window.draw(textVertices,
+                        sf::PrimitiveType::Triangles,
+                        sf::RenderStates{.transform = pauseMessage.getTransform(),
+                                         .texture   = &pauseMessage.getFont().getTexture()});
+#else
+            auto [tvData, tvSize] = pauseMessage.getVerticesMut();
+
+            sf::base::TrivialVector<sf::Vector2f> oldVertexPositions;
+            oldVertexPositions.reserve(tvSize);
+            for (const sf::Vertex& v : pauseMessage.getVertices())
+                oldVertexPositions.pushBack(v.position);
+
+            auto nOutlineVertices = pauseMessage.getFillVerticesStartIndex();
+            auto nFillVertices    = tvSize - pauseMessage.getFillVerticesStartIndex();
+
+            static float test = 0;
+            test += 0.1f;
+
+            for (auto i = 0u; i < nOutlineVertices / 6u; ++i)
+            {
+                for (auto j = 0u; j < 6; ++j)
+                {
+                    tvData[i * 6u + j].position.y += sf::base::sin(test + float(i)) * 3.f;
+                }
+            }
+
+            for (auto i = nOutlineVertices / 6u; i < tvSize / 6u; ++i)
+            {
+                for (auto j = 0u; j < 6; ++j)
+                {
+                    auto v = sf::base::sin(test + float(i - nOutlineVertices / 6u)) * 3.f;
+                    tvData[i * 6u + j].position.y += v;
+                    // tvData[i * 6u + j].color.r = sf::base::U8(int(3.14f + sf::base::sin(test) * 25.f) % 255);
+                    // tvData[i * 6u + j].color.g = sf::base::U8(int(3.14f + sf::base::sin(test) * 25.f) % 255);
+                }
+            }
+
+            if (int(test) % 1000)
+            {
+                // pauseMessage.setString(pauseMessage.getString() + "a");
+            }
+
+
             // Draw the pause message
             window.draw(pauseMessage);
+
+            for (auto i = 0u; i < tvSize; ++i)
+                tvData[i].position = oldVertexPositions[i];
+#endif
             window.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});
         }
 
