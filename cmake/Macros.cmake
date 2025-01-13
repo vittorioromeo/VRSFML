@@ -294,8 +294,7 @@ endmacro()
 # example: sfml_add_example(ftp
 #                           SOURCES ftp.cpp ...
 #                           BUNDLE_RESOURCES MainMenu.nib ...    # Files to be added in target but not installed next to the executable
-#                           DEPENDS SFML::Network
-#                           RESOURCES_DIR resources)             # A directory to install next to the executable and sources
+#                           DEPENDS SFML::Network)
 macro(sfml_add_example target)
 
     # list and copy resources for emscripten support
@@ -309,7 +308,7 @@ macro(sfml_add_example target)
     endif()
 
     # parse the arguments
-    cmake_parse_arguments(THIS "GUI_APP" "RESOURCES_DIR" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
+    cmake_parse_arguments(THIS "GUI_APP" "" "SOURCES;BUNDLE_RESOURCES;DEPENDS" ${ARGN})
 
     # check whether resources must be added in target
     set(target_input ${THIS_SOURCES})
