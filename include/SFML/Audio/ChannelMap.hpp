@@ -8,10 +8,9 @@
 
 #include "SFML/Audio/SoundChannel.hpp"
 
+#include "SFML/Base/InitializerList.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#include <initializer_list>
 
 
 namespace sf
