@@ -2,13 +2,13 @@
 
 From SFML:
 
-  Copyright (C) 2007-2024 Laurent Gomila (laurent@sfml-dev.org)
+  Copyright (C) 2007-2025 Laurent Gomila (laurent@sfml-dev.org)
   Copyright (C) 2013 Jonathan De Wachter (dewachter.jonathan@gmail.com)
-  Copyright (C) 2024 Vittorio Romeo (vittorioromeo@sfml-dev.org)
-  Copyright (C) 2024 Marco Antognini (antognini.marco@gmail.com)
+  Copyright (C) 2024-2025 Vittorio Romeo (vittorioromeo@sfml-dev.org)
+  Copyright (C) 2024-2025 Marco Antognini (antognini.marco@gmail.com)
   Copyright (C) 2013-2013 David Demelier (demelier.david@gmail.com)
-  Copyright (C) 2024 Andrew Mickelson
-  Copyright (C) 2024 The SFML Team
+  Copyright (C) 2024-2025 Andrew Mickelson
+  Copyright (C) 2024-2025 The SFML Team
 
   This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
 
