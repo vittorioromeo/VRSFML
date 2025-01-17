@@ -5,7 +5,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-inline constexpr float pi = 3.141592654f;
+inline constexpr auto pi = static_cast<float>(3.141592653589793238462643383279502884L);
 
 ////////////////////////////////////////////////////////////
 inline constexpr float halfPi = pi / 2.f;
