@@ -166,7 +166,7 @@ Iter removeIf(Iter first, Iter last, Predicate&& predicate)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] constexpr void swap(T& a, T& b)
+[[gnu::always_inline]] constexpr void swap(T& a, T& b) noexcept
 {
     T tempA = SFML_BASE_MOVE(a);
     a       = SFML_BASE_MOVE(b);
