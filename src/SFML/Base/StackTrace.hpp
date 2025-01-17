@@ -9,6 +9,6 @@ namespace sf::base::priv
 /// Only has effect if `SFML_ENABLE_STACK_TRACES` is defined
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::cold]] void printStackTrace();
+[[gnu::cold, gnu::noinline]] void printStackTrace();
 
 } // namespace sf::base::priv
