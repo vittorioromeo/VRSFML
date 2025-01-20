@@ -65,7 +65,7 @@ if(SFML_ENABLE_STACK_TRACES)
         CPMAddPackage(
             NAME cpptrace
             GITHUB_REPOSITORY vittorioromeo/cpptrace
-            GIT_TAG 26c981f7fa89f20ee351df8faba26dc1a4598783
+            GIT_TAG 09b8fcc593793a07d943c4a6f988ba22878ae6f2
             SYSTEM TRUE
         )
 
@@ -80,6 +80,8 @@ if(SFML_ENABLE_STACK_TRACES)
         endif()
 
         target_compile_options(cpptrace-lib PRIVATE "-w")
+        set_target_properties(cpptrace-lib PROPERTIES UNITY_BUILD ON)
+        set_target_properties(cpptrace-lib PROPERTIES UNITY_BUILD_BATCH_SIZE 64)
 
         # install(TARGETS cpptrace-lib EXPORT SFMLConfigExport)
         # install(TARGETS dwarf EXPORT SFMLConfigExport)
