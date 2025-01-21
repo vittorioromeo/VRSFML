@@ -28,9 +28,9 @@
 
 #include <algorithm>
 #include <array>
-#include <deque>
 #include <iostream>
 #include <mutex>
+#include <queue>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -64,7 +64,7 @@ struct ThreadPool
 {
     std::mutex               poolMutex;
     std::vector<std::thread> threads;
-    std::deque<WorkItem>     workQueue;
+    std::queue<WorkItem>     workQueue;
     unsigned int             pendingWorkCount    = 0u;
     bool                     bufferUploadPending = false;
     bool                     finished            = false;
@@ -404,7 +404,7 @@ void threadFunction(ThreadPool& threadPool)
             if (!threadPool.workQueue.empty())
             {
                 workItem = threadPool.workQueue.front();
-                threadPool.workQueue.pop_front();
+                threadPool.workQueue.pop();
             }
         }
 
@@ -453,7 +453,7 @@ void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
         const std::lock_guard lock(threadPool.poolMutex);
 
         for (unsigned int i = 0u; i < blockCount; ++i)
-            threadPool.workQueue.emplace_back(buffer, i);
+            threadPool.workQueue.emplace(buffer, i);
 
         threadPool.pendingWorkCount = blockCount;
     }
