@@ -10,9 +10,25 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename Visitor>
+decltype(auto) Event::visit(Visitor&& visitor)
+{
+    return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename Visitor>
 decltype(auto) Event::visit(Visitor&& visitor) const
 {
     return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename... Handlers>
+decltype(auto) Event::match(Handlers&&... handlers)
+{
+    return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
 }
 
 
