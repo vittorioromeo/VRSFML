@@ -328,7 +328,25 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
+    decltype(auto) visit(Visitor&& visitor);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Applies the specified `visitor` to the event
+    ///
+    /// \return Transparently forwards whatever `visitor` returns
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Visitor>
     decltype(auto) visit(Visitor&& visitor) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invokes `visit` with an overload created from `handlers...`
+    ///
+    /// \return Transparently forwards whatever `visit` returns
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename... Handlers>
+    decltype(auto) match(Handlers&&... handlers);
 
     ////////////////////////////////////////////////////////////
     /// \brief Invokes `visit` with an overload created from `handlers...`
