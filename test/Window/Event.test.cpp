@@ -10,30 +10,35 @@ namespace
 ////////////////////////////////////////////////////////////
 struct
 {
-    int operator()(sf::Event::Closed) const
+    int operator()(sf::Event::Closed&) const
     {
         return 0;
     }
 
-    int operator()(sf::Event::Resized) const
+    int operator()(const sf::Event::Closed&) const
     {
         return 1;
     }
 
-    int operator()(sf::Event::FocusLost) const
+    int operator()(sf::Event::Resized&) const
     {
         return 2;
     }
 
-    int operator()(sf::Event::FocusGained) const
+    int operator()(sf::Event::KeyPressed) const
     {
         return 3;
+    }
+
+    int operator()(sf::Event::FocusGained) const
+    {
+        return 4;
     }
 
     template <typename T>
     int operator()(T) const
     {
-        return 4;
+        return 5;
     }
 } visitor;
 
@@ -313,19 +318,34 @@ TEST_CASE("[Window] sf::Event")
 
     SECTION("visit()")
     {
-        sf::Event event = sf::Event::Closed{};
-        CHECK(event.visit(visitor) == 0);
+        SECTION("Non-const")
+        {
+            sf::Event closed = sf::Event::Closed{};
+            CHECK(closed.visit(visitor) == 0);
 
-        event = sf::Event::Resized{{1, 2}};
-        CHECK(event.visit(visitor) == 1);
+            sf::Event resized = sf::Event::Resized{};
+            CHECK(resized.visit(visitor) == 2);
 
-        event = sf::Event::FocusLost{};
-        CHECK(event.visit(visitor) == 2);
+            sf::Event keyPressed = sf::Event::KeyPressed{};
+            CHECK(keyPressed.visit(visitor) == 3);
 
-        event = sf::Event::FocusGained{};
-        CHECK(event.visit(visitor) == 3);
+            sf::Event focusLost = sf::Event::FocusLost{};
+            CHECK(focusLost.visit(visitor) == 5);
+        }
 
-        event = sf::Event::MouseLeft{};
-        CHECK(event.visit(visitor) == 4);
+        SECTION("Const")
+        {
+            const sf::Event closed = sf::Event::Closed{};
+            CHECK(closed.visit(visitor) == 1);
+
+            const sf::Event resized = sf::Event::Resized{};
+            CHECK(resized.visit(visitor) == 5); // Cannot use non-const reference callback
+
+            const sf::Event keyPressed = sf::Event::KeyPressed{};
+            CHECK(keyPressed.visit(visitor) == 3);
+
+            const sf::Event focusLost = sf::Event::FocusLost{};
+            CHECK(focusLost.visit(visitor) == 5);
+        }
     }
 }
