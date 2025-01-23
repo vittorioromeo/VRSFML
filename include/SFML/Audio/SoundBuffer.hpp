@@ -364,7 +364,7 @@ private:
 /// // Load samples with a channel map
 /// auto samples = std::vector<std::int16_t>();
 /// // ...
-/// auto channelMap = std::vector<sf::SoundChannel>{
+/// auto channelMap = sf::ChannelMap{
 ///     sf::SoundChannel::FrontLeft,
 ///     sf::SoundChannel::FrontCenter,
 ///     sf::SoundChannel::FrontRight,
