@@ -4,7 +4,6 @@
 
 #include <CommonTraits.hpp>
 #include <StringifyPathUtil.hpp>
-#include <StringifyVectorUtil.hpp>
 
 TEST_CASE("[Network] sf::Ftp")
 {
@@ -99,8 +98,8 @@ TEST_CASE("[Network] sf::Ftp")
             const sf::Ftp::ListingResponse listingResponse(sf::Ftp::Response(sf::Ftp::Response::Status::Ok),
                                                            "foo\r\nbar\r\nbaz");
 
-            const std::vector<std::string> vec{"foo", "bar"};
-            CHECK(listingResponse.getListing().valueEquals(vec.data(), vec.size()));
+            const std::string vec[]{"foo", "bar"};
+            CHECK(listingResponse.getListing().valueEquals(vec, 2));
         }
     }
 }
