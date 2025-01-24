@@ -105,12 +105,15 @@ void setProcessDpiAware()
 
 // Register a RAWINPUTDEVICE representing the mouse to receive raw
 // mouse deltas using WM_INPUT
-void initRawMouse()
+void initRawMouse(HWND handle)
 {
     const RAWINPUTDEVICE rawMouse{0x01, 0x02, 0, nullptr}; // HID usage: mouse device class, no flags, follow keyboard focus
 
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse)) != TRUE)
         sf::priv::err() << "Failed to initialize raw mouse input";
+
+    if (RegisterTouchWindow(handle, 0) != TRUE)
+        sf::priv::err() << "Failed to initialize touch input";
 }
 
 } // namespace
@@ -130,7 +133,7 @@ WindowImplWin32::WindowImplWin32(WindowHandle handle) : m_handle(handle)
         {
             JoystickImpl::setLazyUpdates(true);
 
-            initRawMouse();
+            initRawMouse(m_handle);
         }
 
         ++handleCount;
@@ -212,7 +215,7 @@ m_cursorGrabbed(m_fullscreen)
         {
             JoystickImpl::setLazyUpdates(true);
 
-            initRawMouse();
+            initRawMouse(m_handle);
         }
 
         ++handleCount;
@@ -1000,6 +1003,57 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             event.button   = HIWORD(wParam) == XBUTTON1 ? Mouse::Button::Extra1 : Mouse::Button::Extra2;
             event.position = {static_cast<base::I16>(LOWORD(lParam)), static_cast<base::I16>(HIWORD(lParam))};
             pushEvent(event);
+            break;
+        }
+
+        case WM_TOUCH:
+        {
+            BOOL        bHandled = FALSE;
+            UINT        cInputs  = LOWORD(wParam);
+            PTOUCHINPUT pInputs  = new TOUCHINPUT[cInputs];
+
+            if (pInputs)
+            {
+                if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT)))
+                {
+                    for (UINT i = 0; i < cInputs; i++)
+                    {
+                        TOUCHINPUT ti = pInputs[i];
+
+                        // Convert the touch coordinates to pixel coordinates
+                        int touchX = ti.x / 100; // Convert from hundredths of a pixel to pixels
+                        int touchY = ti.y / 100; // Convert from hundredths of a pixel to pixels
+
+                        // Map the screen coordinates to client coordinates
+                        POINT pt = {touchX, touchY};
+                        ScreenToClient(m_handle, &pt);
+
+                        // Now pt.x and pt.y are the coordinates relative to the top-left of the window
+                        int x = pt.x;
+                        int y = pt.y;
+
+                        pushEvent(sf::Event::TouchMoved(ti.dwID, {x, y}));
+                        //do something with each touch input entry
+                    }
+                    bHandled = TRUE;
+                }
+                else
+                {
+                    /* handle the error here */
+                }
+                delete[] pInputs;
+            }
+            else
+            {
+                /* handle the error here, probably out of memory */
+            }
+
+            if (bHandled)
+            {
+                // if you handled the message, close the touch input handle and return
+                CloseTouchInputHandle((HTOUCHINPUT)lParam);
+            }
+
             break;
         }
 
