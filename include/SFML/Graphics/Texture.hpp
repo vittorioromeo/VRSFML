@@ -29,6 +29,16 @@ class Window;
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
+struct [[nodiscard]] TextureCreateSettings
+{
+    bool sRgb   = false;
+    bool smooth = false;
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureLoadSettings
 {
     bool    sRgb   = false;
@@ -84,7 +94,7 @@ public:
     /// \return Texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> create(Vector2u size, bool sRgb = false);
+    [[nodiscard]] static base::Optional<Texture> create(Vector2u size, const TextureCreateSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
