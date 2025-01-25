@@ -242,6 +242,18 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             badStruct0.reset();
             CHECK(guard.fatalErrorTriggered());
         }
+
+        SECTION("Optionals and move")
+        {
+            sf::base::Optional<sf::Text> t0;
+            sf::base::Optional<sf::Text> t1;
+
+            t0.emplace(sf::Text{font, {}});
+            t1.emplace(sf::Text{font, {}});
+
+            t1 = SFML_BASE_MOVE(t0);
+            t0.reset();
+        }
     }
 #endif
 }
