@@ -412,7 +412,7 @@ int main()
     //
     // Game state
     std::vector<Bubble> bubbles;
-    int                 bubbleTargetCount = 100;
+    int                 bubbleTargetCount = 10000;
 
     std::vector<Cat> cats;
 
