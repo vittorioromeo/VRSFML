@@ -47,10 +47,14 @@
 namespace
 {
 
+using sf::base::SizeT;
+
 constexpr sf::Vector2f resolution{1024.f, 768.f};
 constexpr auto         resolutionUInt = resolution.toVector2u();
 
-const sf::Vector2f boundaries{1024.f * 10.f, 768.f};
+constexpr sf::Vector2f boundaries{1024.f * 10.f, 768.f};
+
+constexpr sf::Color colorBlueOutline{50, 84, 135};
 
 [[nodiscard]] float getRndFloat(const float min, const float max)
 {
@@ -188,18 +192,17 @@ struct Cat
 int main()
 {
     //
+    //
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
     auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
 
     //
+    //
     // Create the graphics context
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     //
-    // Create the ImGui context
-    sf::ImGui::ImGuiContext imGuiContext;
-
     //
     // Create the render window
     sf::RenderWindow window(
@@ -210,25 +213,32 @@ int main()
          .contextSettings = {.antiAliasingLevel = sf::RenderTexture::getMaximumAntiAliasingLevel()}});
 
     //
-    // Initialize the ImGui context on the window
+    //
+    // Create and initialize the ImGui context
+    sf::ImGui::ImGuiContext imGuiContext;
     if (!imGuiContext.init(window))
         return -1;
-
 
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({4096u, 4096u}).value()};
-    textureAtlas.getTexture().setSmooth(true);
+    sf::TextureAtlas textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = true}).value()};
 
     //
-    // Load resources
-    const auto fontDailyBubble        = sf::Font::openFromFile("resources/dailybubble.ttf").value();
-    const auto fontDailyBubbleAtlased = sf::Font::openFromFile("resources/dailybubble.ttf", &textureAtlas).value();
+    //
+    // Load and initialize resources
+    /* --- Fonts */
+    const auto fontDailyBubble = sf::Font::openFromFile("resources/dailybubble.ttf", &textureAtlas).value();
 
+    /* --- ImGui fonts */
+    ImFont* fontImGuiDailyBubble = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/dailybubble.ttf", 32.f);
+
+    /* --- Sound buffers */
     const auto soundBufferPop   = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
     const auto soundBufferShine = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
 
+    /* --- Images */
+    const auto imgBackground   = sf::Image::loadFromFile("resources/background.png").value();
     const auto imgBubble128    = sf::Image::loadFromFile("resources/bubble2.png").value();
     const auto imgBubbleStar   = sf::Image::loadFromFile("resources/bubble3.png").value();
     const auto imgCat          = sf::Image::loadFromFile("resources/cat.png").value();
@@ -239,6 +249,10 @@ int main()
     const auto imgParticle     = sf::Image::loadFromFile("resources/particle.png").value();
     const auto imgStarParticle = sf::Image::loadFromFile("resources/starparticle.png").value();
 
+    /* --- Textures */
+    const auto txBackground = sf::Texture::loadFromImage(imgBackground, {.smooth = true}).value();
+
+    /* --- Texture atlas rects */
     const auto txrBubble128    = textureAtlas.add(imgBubble128).value();
     const auto txrBubbleStar   = textureAtlas.add(imgBubbleStar).value();
     const auto txrCat          = textureAtlas.add(imgCat).value();
@@ -249,10 +263,7 @@ int main()
     const auto txrParticle     = textureAtlas.add(imgParticle).value();
     const auto txrStarParticle = textureAtlas.add(imgStarParticle).value();
 
-    ImFont* fontImGuiDailyBubble = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/dailybubble.ttf", 32.f);
-
-    //
-    // TODO: organize
+    /* --- Sounds */
     sf::Sound soundPop(soundBufferPop);
     sf::Sound soundShine(soundBufferShine);
 
@@ -261,7 +272,7 @@ int main()
                         .string           = "$0",
                         .characterSize    = 32u,
                         .fillColor        = sf::Color::White,
-                        .outlineColor     = sf::Color::DarkPink,
+                        .outlineColor     = colorBlueOutline,
                         .outlineThickness = 2.f}};
 
     sf::Text comboText{fontDailyBubble,
@@ -269,46 +280,44 @@ int main()
                         .string           = "x1",
                         .characterSize    = 24u,
                         .fillColor        = sf::Color::White,
-                        .outlineColor     = sf::Color::DarkPink,
+                        .outlineColor     = colorBlueOutline,
                         .outlineThickness = 1.5f}};
 
     const auto makeCatNameText = [&](const char* name)
     {
-        return sf::Text{fontDailyBubbleAtlased,
-                        {.position         = {},
-                         .string           = name,
+        return sf::Text{fontDailyBubble,
+                        {.string           = name,
                          .characterSize    = 24u,
                          .fillColor        = sf::Color::White,
-                         .outlineColor     = sf::Color::DarkPink,
+                         .outlineColor     = colorBlueOutline,
                          .outlineThickness = 1.5f}};
     };
 
     const auto makeCatStatusText = [&]()
     {
-        return sf::Text{fontDailyBubbleAtlased,
-                        {.position         = {},
-                         .string           = "status",
-                         .characterSize    = 16u,
+        return sf::Text{fontDailyBubble,
+                        {.characterSize    = 16u,
                          .fillColor        = sf::Color::White,
-                         .outlineColor     = sf::Color::DarkPink,
+                         .outlineColor     = colorBlueOutline,
                          .outlineThickness = 1.f}};
     };
 
+    //
+    //
+    // Spatial partitioning
     const float gridSize = 64.f;
-    const auto  nCellsX  = static_cast<sf::base::SizeT>(sf::base::ceil(boundaries.x / gridSize)) + 1;
-    const auto  nCellsY  = static_cast<sf::base::SizeT>(sf::base::ceil(boundaries.y / gridSize)) + 1;
+    const auto  nCellsX  = static_cast<SizeT>(sf::base::ceil(boundaries.x / gridSize)) + 1;
+    const auto  nCellsY  = static_cast<SizeT>(sf::base::ceil(boundaries.y / gridSize)) + 1;
 
-    auto convert2DTo1D = [](sf::base::SizeT col, sf::base::SizeT row, sf::base::SizeT width)
-    { return row * width + col; };
+    const auto convert2DTo1D = [](const SizeT x, const SizeT y, const SizeT width) { return y * width + x; };
 
-    std::vector<std::vector<sf::base::SizeT>> bubbleGrid;
+    std::vector<std::vector<SizeT>> bubbleGrid;
     bubbleGrid.resize(nCellsX * nCellsY);
-
-    std::vector<sf::base::SizeT> bubbleIdSet;
 
     std::vector<Particle>     particles;
     std::vector<TextParticle> textParticles;
 
+    //
     //
     // Purchasables
     const auto costFunction = [](float baseCost, float nOwned, float growthFactor)
@@ -332,6 +341,7 @@ int main()
     };
 
     //
+    //
     // Cat names
     std::vector<std::string>
         catNames{"Gorgonzola", "Provolino",  "Pistacchietto", "Ricottina",  "Mozzarellina",  "Tiramisu",
@@ -345,10 +355,13 @@ int main()
                  "Fiocco",     "Girandola",  "Bombetta",      "Fusillo",    "Cicciobello",   "Palloncino",
                  "Joe Biden",  "Trump",      "Obama",         "De Luca",    "Salvini",       "Renzi",
                  "Nutella",    "Vespa",      "Mandolino",     "Ferrari",    "Pavarotti",     "Espresso",
-                 "Sir"};
+                 "Sir",        "Nocciolina", "Fluffy",        "Costanzo",   "Mozart",        "DB",
+                 "Soniuccia",  "Pupi",       "Pupetta",       "Genitore 1", "Genitore 2",    "Stonks",
+                 "Carotina",   "Waffle",     "Pancake",       "Muffin",     "Cupcake",       "Donut",
+                 "Jinx",       "Miao",       "Arnold",        "Granita",    "Leone",         "Pangocciolo"};
 
     std::shuffle(catNames.begin(), catNames.end(), std::mt19937{std::random_device{}()});
-    sf::base::SizeT nextCatName = 0u;
+    auto getNextCatName = [&, nextCatName = 0u]() mutable { return catNames[nextCatName++ % catNames.size()]; };
 
     //
     // Game state
@@ -358,13 +371,13 @@ int main()
     std::vector<Cat> cats;
 
 
-    int   money      = 10000;
+    int   money      = 100000;
     int   combo      = 0;
     float comboTimer = 0.f;
 
     const auto makeRandomBubble = [&]
     {
-        const float scaleFactor = getRndFloat(0.05f, 0.15f) * 0.6f;
+        const float scaleFactor = getRndFloat(0.07f, 0.17f) * 0.61f;
 
         sf::Sprite bubbleSprite{.position    = getRndVector2f(boundaries),
                                 .scale       = {scaleFactor, scaleFactor},
@@ -470,9 +483,27 @@ int main()
         for (int i = static_cast<int>(bubbles.size()); i < bubbleTargetCount; ++i)
             bubbles.emplace_back(makeRandomBubble());
 
-        for (sf::base::SizeT i = 0; i < nCellsX; ++i)
-            for (sf::base::SizeT j = 0; j < nCellsY; ++j)
-                bubbleGrid[convert2DTo1D(i, j, nCellsX)].clear();
+        //
+        //
+        // Update spatial partitioning
+        for (auto& cell : bubbleGrid)
+            cell.clear();
+
+        for (SizeT i = 0; i < bubbles.size(); ++i)
+        {
+            const auto [minX, minY] = bubbles[i].sprite.getTopLeft();
+            const auto [maxX, maxY] = bubbles[i].sprite.getBottomRight();
+
+            const auto xCellStartIdx = sf::base::max(SizeT{0u}, static_cast<SizeT>(minX / gridSize));
+            const auto yCellStartIdx = sf::base::max(SizeT{0u}, static_cast<SizeT>(minY / gridSize));
+
+            const auto xCellEndIdx = sf::base::min(SizeT{nCellsX - 1}, static_cast<SizeT>(maxX / gridSize));
+            const auto yCellEndIdx = sf::base::min(SizeT{nCellsY - 1}, static_cast<SizeT>(maxY / gridSize));
+
+            for (SizeT cellX = xCellStartIdx; cellX <= xCellEndIdx; ++cellX)
+                for (SizeT cellY = yCellStartIdx; cellY <= yCellEndIdx; ++cellY)
+                    bubbleGrid[convert2DTo1D(cellX, cellY, nCellsX)].push_back(i);
+        }
 
         const auto popBubble = [&](BubbleType bubbleType, int reward, int combo, float x, float y)
         {
@@ -481,7 +512,7 @@ int main()
                         .string           = "+ $" + std::to_string(reward),
                         .characterSize    = 16u,
                         .fillColor        = sf::Color::White,
-                        .outlineColor     = sf::Color::DarkPink,
+                        .outlineColor     = colorBlueOutline,
                         .outlineThickness = 1.0f}};
 
             t.scale += sf::Vector2f{0.1f, 0.1f} * static_cast<float>(combo) / 2.f;
@@ -528,17 +559,12 @@ int main()
             }
         };
 
-        for (sf::base::SizeT i = 0; i < bubbles.size(); ++i)
+        for (auto& bubble : bubbles)
         {
-            Bubble& bubble            = bubbles[i];
             bubble.sprite.textureRect = bubble.type == BubbleType::Normal ? txrBubble128 : txrBubbleStar;
 
             auto& pos = bubble.sprite.position;
 
-            const auto cellX = static_cast<sf::base::SizeT>(pos.x / gridSize);
-            const auto cellY = static_cast<sf::base::SizeT>(pos.y / gridSize);
-
-            bubbleGrid[convert2DTo1D(cellX, cellY, nCellsX)].push_back(i);
             pos += bubble.velocity * deltaTimeMs;
 
             if (pos.x - bubble.radius > boundaries.x)
@@ -568,7 +594,7 @@ int main()
                     if (combo == 0)
                     {
                         combo      = 1;
-                        comboTimer = 750.f;
+                        comboTimer = 775.f;
                     }
                     else
                     {
@@ -581,7 +607,7 @@ int main()
                     popBubble(bubble.type, reward, combo, x, y);
 
                     money += reward;
-                    bubbles[i] = makeRandomBubble();
+                    bubble = makeRandomBubble();
 
                     continue;
                 }
@@ -606,14 +632,11 @@ int main()
                                                 collisionVector.y * collisionVector.y); // Distance between centers
                 float overlap         = (iRadius + jRadius) - distance;                        // Amount of overlap
 
-                // Normalize the collision vector
-                sf::Vector2f collisionNormal = collisionVector / distance;
-
                 // Define a "softness" factor to control how quickly the overlap is resolved
-                float softnessFactor = 0.05f; // Adjust this value to control the overlap solver (0.1 = 10% per frame)
+                float softnessFactor = 0.025f; // Adjust this value to control the overlap solver (0.1 = 10% per frame)
 
                 // Calculate the displacement needed to resolve the overlap
-                sf::Vector2f displacement = collisionNormal * overlap * softnessFactor;
+                sf::Vector2f displacement = collisionVector.normalized() * overlap * softnessFactor;
 
                 // Move the bubbles apart based on their masses (heavier bubbles move less)
                 float m1        = iRadius * iRadius; // Mass of bubble i (quadratic scaling)
@@ -625,31 +648,15 @@ int main()
             }
         };
 
-        for (int ix = 1; ix < static_cast<int>(nCellsX - 1); ++ix)
+        for (SizeT ix = 0; ix < nCellsX; ++ix)
         {
-            for (int iy = 1; iy < static_cast<int>(nCellsY - 1); ++iy)
+            for (SizeT iy = 0; iy < nCellsY; ++iy)
             {
-                bubbleIdSet.clear();
+                const auto& bubbleIdSet = bubbleGrid[convert2DTo1D(ix, iy, nCellsX)];
 
-                for (int ox = -1; ox <= 1; ++ox)
-                {
-                    for (int oy = -1; oy <= 1; ++oy)
-                    {
-                        const auto idx = convert2DTo1D(static_cast<sf::base::SizeT>(ix + ox),
-                                                       static_cast<sf::base::SizeT>(iy + oy),
-                                                       nCellsX);
-
-                        bubbleIdSet.insert(bubbleIdSet.end(), bubbleGrid[idx].begin(), bubbleGrid[idx].end());
-                    }
-                }
-
-                for (sf::base::SizeT i = 0; i < bubbleIdSet.size(); ++i)
-                {
-                    for (sf::base::SizeT j = i + 1; j < bubbleIdSet.size(); ++j)
-                    {
+                for (SizeT i = 0; i < bubbleIdSet.size(); ++i)
+                    for (SizeT j = i + 1; j < bubbleIdSet.size(); ++j)
                         handleCollision(bubbleIdSet[i], bubbleIdSet[j]);
-                    }
-                }
             }
         }
 
@@ -837,7 +844,7 @@ int main()
 
         {
             std::sprintf(labelBuffer, "%d bubbles", bubbleTargetCount);
-            if (makePurchasableButton("More bubbles", 75.f, 1.5f, static_cast<float>(bubbleTargetCount) / 100.f))
+            if (makePurchasableButton("More bubbles", 65.f, 1.5f, static_cast<float>(bubbleTargetCount) / 100.f))
                 bubbleTargetCount = static_cast<int>(static_cast<float>(bubbleTargetCount) * 1.25f);
         }
 
@@ -875,7 +882,7 @@ int main()
                                      .scale{0.1f, 0.1f},
                                      .origin      = txrCatPaw.size / 2.f,
                                      .textureRect = txrCatPaw},
-                    .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                    .textName     = makeCatNameText(getNextCatName().c_str()),
                     .textStatus   = makeCatStatusText(),
                     .beingDragged = 3000.f});
         }
@@ -913,7 +920,7 @@ int main()
                                          .scale{0.1f, 0.1f},
                                          .origin      = txrUniCatPaw.size / 2.f,
                                          .textureRect = txrUniCatPaw},
-                        .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                        .textName     = makeCatNameText(getNextCatName().c_str()),
                         .textStatus   = makeCatStatusText(),
                         .beingDragged = 3000.f});
             }
@@ -954,7 +961,7 @@ int main()
                                          .scale{0.1f, 0.1f},
                                          .origin      = txrCatPaw.size / 2.f,
                                          .textureRect = txrCatPaw},
-                        .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                        .textName     = makeCatNameText(getNextCatName().c_str()),
                         .textStatus   = makeCatStatusText(),
                         .beingDragged = 3000.f});
             }
@@ -977,10 +984,12 @@ int main()
         ImGui::End();
         ImGui::PopFont();
 
-        window.clear(sf::Color{84, 72, 81});
+        window.clear(sf::Color{157, 171, 191});
 
         const float progress = remap(gameView.center.x, resolution.x / 2.f, boundaries.x - resolution.x / 2.f, 0.f, 100.f);
         window.setView(gameView);
+
+        window.draw(txBackground);
 
         cpuDrawableBatch.clear();
 
@@ -1002,8 +1011,8 @@ int main()
             }};
 
             const sf::Color colorsByType[3]{
-                sf::Color::Pink,
                 sf::Color::Blue,
+                sf::Color::Purple,
                 sf::Color::Red,
             };
 
@@ -1025,10 +1034,10 @@ int main()
         for (auto& particle : particles)
             cpuDrawableBatch.add(particle.sprite);
 
-        window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
-
         for (auto& textParticle : textParticles)
-            window.draw(textParticle.text);
+            cpuDrawableBatch.add(textParticle.text);
+
+        window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
 
         window.setView({.center = {resolution.x / 2.f, resolution.y / 2.f}, .size = resolution});
 
@@ -1050,7 +1059,7 @@ int main()
 
         sf::RectangleShape minimapBorder{
             {.position         = {minimapOffset, minimapOffset},
-             .fillColor        = sf::Color::DarkBabyPink,
+             .fillColor        = sf::Color{102, 131, 173},
              .outlineColor     = sf::Color::White,
              .outlineThickness = minimapOutlineThickness,
              .size             = boundaries / minimapScale + sf::Vector2f{6.f, 6.f}}};
@@ -1060,18 +1069,21 @@ int main()
         sf::RectangleShape minimapIndicator{
             {.position = {minimapOffset + (progress / 100.f) * (boundaries.x - resolution.x) / minimapScale, minimapOffset},
              .fillColor        = sf::Color::Transparent,
-             .outlineColor     = sf::Color::Red,
+             .outlineColor     = sf::Color::Blue,
              .outlineThickness = minimapOutlineThickness,
              .size             = resolution / minimapScale + sf::Vector2f{6.f, 6.f}}};
 
-        window.draw(minimapIndicator, /* texture */ nullptr);
 
         sf::View minimapView{.center = {((resolution.x / 2.f) - (minimapOffset + minimapOutlineThickness)) * minimapScale,
                                         ((resolution.y / 2.f) - (minimapOffset + minimapOutlineThickness)) * minimapScale},
                              .size = resolution * minimapScale};
         window.setView(minimapView);
 
+        window.draw(txBackground);
         window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
+
+        window.setView({.center = {resolution.x / 2.f, resolution.y / 2.f}, .size = resolution});
+        window.draw(minimapIndicator, /* texture */ nullptr);
 
         imGuiContext.render(window);
         window.display();
