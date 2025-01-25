@@ -37,9 +37,12 @@
 
 #include <imgui.h>
 
+#include <_mingw_stat64.h>
 #include <algorithm>
+#include <iostream>
 #include <random>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <cstdio>
@@ -51,11 +54,11 @@ namespace
 using sf::base::SizeT;
 
 ////////////////////////////////////////////////////////////
-constexpr sf::Vector2f resolution{1024.f, 768.f};
+constexpr sf::Vector2f resolution{1366.f, 768.f};
 constexpr auto         resolutionUInt = resolution.toVector2u();
 
 ////////////////////////////////////////////////////////////
-constexpr sf::Vector2f boundaries{1024.f * 10.f, 768.f};
+constexpr sf::Vector2f boundaries{1366.f * 10.f, 768.f};
 
 ////////////////////////////////////////////////////////////
 constexpr sf::Color colorBlueOutline{50, 84, 135};
@@ -160,6 +163,8 @@ enum class CatType
     Normal,
     Unicorn,
     Devil,
+    Witch,
+    Astromeow,
 };
 
 ////////////////////////////////////////////////////////////
@@ -250,9 +255,9 @@ int main()
     /* --- Sound buffers */
     const auto soundBufferPop   = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
     const auto soundBufferShine = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
+    const auto soundBufferClick = sf::SoundBuffer::loadFromFile("resources/click2.wav").value();
 
     /* --- Images */
-    const auto imgBackground   = sf::Image::loadFromFile("resources/background.png").value();
     const auto imgBubble128    = sf::Image::loadFromFile("resources/bubble2.png").value();
     const auto imgBubbleStar   = sf::Image::loadFromFile("resources/bubble3.png").value();
     const auto imgCat          = sf::Image::loadFromFile("resources/cat.png").value();
@@ -262,9 +267,12 @@ int main()
     const auto imgUniCatPaw    = sf::Image::loadFromFile("resources/unicatpaw.png").value();
     const auto imgParticle     = sf::Image::loadFromFile("resources/particle.png").value();
     const auto imgStarParticle = sf::Image::loadFromFile("resources/starparticle.png").value();
+    const auto imgWitchCat     = sf::Image::loadFromFile("resources/witchcat.png").value();
+    const auto imgAstromeowCat = sf::Image::loadFromFile("resources/astromeow.png").value();
 
     /* --- Textures */
-    const auto txBackground = sf::Texture::loadFromImage(imgBackground, {.smooth = true}).value();
+    const auto txLogo       = sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value();
+    const auto txBackground = sf::Texture::loadFromFile("resources/background.png", {.smooth = true}).value();
 
     /* --- Texture atlas rects */
     const auto txrWhiteDot     = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
@@ -277,10 +285,13 @@ int main()
     const auto txrUniCatPaw    = textureAtlas.add(imgUniCatPaw).value();
     const auto txrParticle     = textureAtlas.add(imgParticle).value();
     const auto txrStarParticle = textureAtlas.add(imgStarParticle).value();
+    const auto txrWitchCat     = textureAtlas.add(imgWitchCat).value();
+    const auto txrAstromeowCat = textureAtlas.add(imgAstromeowCat).value();
 
     /* --- Sounds */
     sf::Sound soundPop(soundBufferPop);
     sf::Sound soundShine(soundBufferShine);
+    sf::Sound soundClick(soundBufferClick);
 
     //
     //
@@ -359,16 +370,20 @@ int main()
         25, // Star
     };
 
-    float catCooldownPerType[3]{
+    float catCooldownPerType[5]{
         1000.f, // Normal
         2000.f, // Unicorn
-        1000.f  // Devil
+        1000.f, // Devil
+        1000.f, // Witch
+        1000.f  // Astromeow
     };
 
-    float catRangePerType[3]{
+    float catRangePerType[5]{
         96.f, // Normal
         64.f, // Unicorn
-        96.f  // Devil
+        96.f, // Devil
+        96.f, // Witch
+        96.f  // Astromeow
     };
 
     //
@@ -402,7 +417,7 @@ int main()
     std::vector<Cat> cats;
 
 
-    int   money      = 100000;
+    int   money      = 10000;
     int   combo      = 0;
     float comboTimer = 0.f;
 
@@ -433,7 +448,9 @@ int main()
     float                            scroll = 0.f;
 
     sf::base::Optional<sf::Vector2f> catDragPosition;
+    sf::base::Optional<sf::Vector2f> catDragPositionFinger;
 
+    std::unordered_map<unsigned int, sf::Vector2f> fingerPositions;
 
     while (true)
     {
@@ -448,19 +465,30 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (const auto* e0 = event->getIf<sf::Event::TouchMoved>())
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshadow"
+            if (const auto* e = event->getIf<sf::Event::TouchBegan>())
             {
-                clickPosition.emplace(e0->position.toVector2f());
+                fingerPositions[e->finger] = e->position.toVector2f();
             }
-            else if (const auto* e1 = event->getIf<sf::Event::MouseButtonPressed>())
+            else if (const auto* e = event->getIf<sf::Event::TouchEnded>())
             {
-                clickPosition.emplace(e1->position.toVector2f());
+                fingerPositions.erase(e->finger);
+            }
+            else if (const auto* e = event->getIf<sf::Event::TouchMoved>())
+            {
+                fingerPositions[e->finger] = e->position.toVector2f();
+                catDragPositionFinger.emplace(e->position.toVector2f());
+            }
+            else if (const auto* e = event->getIf<sf::Event::MouseButtonPressed>())
+            {
+                clickPosition.emplace(e->position.toVector2f());
 
-                if (e1->button == sf::Mouse::Button::Left && !catDragPosition.hasValue())
+                if (e->button == sf::Mouse::Button::Left && !catDragPosition.hasValue())
                 {
-                    catDragPosition.emplace(e1->position.toVector2f());
+                    catDragPosition.emplace(e->position.toVector2f());
                 }
-                else if (e1->button == sf::Mouse::Button::Left)
+                else if (e->button == sf::Mouse::Button::Left)
                 {
                     catDragPosition.reset();
 
@@ -468,24 +496,25 @@ int main()
                         cat.beingDragged = 0.f;
                 }
 
-                if (e1->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
+                if (e->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
                 {
-                    dragPosition.emplace(e1->position.toVector2f());
+                    dragPosition.emplace(e->position.toVector2f());
                     dragPosition->x += scroll;
                 }
             }
-            else if (const auto* e2 = event->getIf<sf::Event::MouseButtonReleased>())
+            else if (const auto* e = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                if (e2->button == sf::Mouse::Button::Right)
+                if (e->button == sf::Mouse::Button::Right)
                     dragPosition.reset();
             }
-            else if (const auto* e3 = event->getIf<sf::Event::MouseMoved>())
+            else if (const auto* e = event->getIf<sf::Event::MouseMoved>())
             {
                 if (dragPosition.hasValue())
                 {
-                    scroll = dragPosition->x - static_cast<float>(e3->position.x);
+                    scroll = dragPosition->x - static_cast<float>(e->position.x);
                 }
             }
+#pragma clang diagnostic pop
         }
 
         const auto deltaTime   = deltaClock.restart();
@@ -502,6 +531,30 @@ int main()
         {
             dragPosition.reset();
             scroll += scrollSpeed * deltaTimeMs;
+        }
+
+        if (fingerPositions.size() == 2 && !dragPosition.hasValue())
+        {
+            dragPosition.emplace(fingerPositions.begin()->second);
+            dragPosition->x += scroll;
+        }
+
+        if (fingerPositions.size() == 2 && dragPosition.hasValue())
+        {
+            const auto v0 = fingerPositions.begin()->second;
+            const auto v1 = (++fingerPositions.begin())->second;
+
+            scroll = dragPosition->x - static_cast<float>((v0.x + v1.x) / 2.f);
+        }
+
+        if (dragPosition.hasValue() && fingerPositions.empty() && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+        {
+            dragPosition.reset();
+        }
+
+        if (fingerPositions.empty())
+        {
+            catDragPositionFinger.reset();
         }
 
         scroll = sf::base::clamp(scroll, 0.f, boundaries.x - resolution.x);
@@ -641,35 +694,49 @@ int main()
 
             bubble.velocity.y += 0.00005f * deltaTimeMs;
 
+            const auto handleClick = [&](const sf::Vector2f clickPos)
+            {
+                const auto [x, y] = window.mapPixelToCoords(clickPos.toVector2i(), gameView);
+
+                if ((x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y) >= bubble.radius * bubble.radius)
+                    return false;
+
+                if (combo == 0)
+                {
+                    combo      = 1;
+                    comboTimer = 775.f;
+                }
+                else
+                {
+                    ++combo;
+                    comboTimer += 135.f - static_cast<float>(combo) * 5.f;
+                }
+
+                const auto reward = rewardPerType[static_cast<int>(bubble.type)] * combo;
+
+                popBubble(bubble.type, reward, combo, x, y);
+
+                money += reward;
+                bubble = makeRandomBubble();
+
+                return true;
+            };
+
             if (clickPosition.hasValue())
             {
-                const auto [x, y] = window.mapPixelToCoords(clickPosition->toVector2i(), gameView);
-
-                if ((x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y) < bubble.radius * bubble.radius)
+                if (handleClick(*clickPosition))
                 {
                     clickPosition.reset();
-
-                    if (combo == 0)
-                    {
-                        combo      = 1;
-                        comboTimer = 775.f;
-                    }
-                    else
-                    {
-                        ++combo;
-                        comboTimer += 135.f - static_cast<float>(combo) * 5.f;
-                    }
-
-                    const auto reward = rewardPerType[static_cast<int>(bubble.type)] * combo;
-
-                    popBubble(bubble.type, reward, combo, x, y);
-
-                    money += reward;
-                    bubble = makeRandomBubble();
-
                     continue;
                 }
             }
+
+            if (fingerPositions.size() == 1)
+                for (const auto& [finger, fingerPos] : fingerPositions)
+                {
+                    if (handleClick(fingerPos))
+                        break;
+                }
         }
 
         const auto handleCollision = [&](auto i, auto j)
@@ -740,6 +807,19 @@ int main()
                 }
             }
 
+            if (catDragPositionFinger.hasValue())
+            {
+                const auto fingerPos = window.mapPixelToCoords(catDragPositionFinger->toVector2i(), gameView);
+
+                if (cat.sprite.getGlobalBounds().contains(fingerPos))
+                {
+                    if (cat.beingDragged < 250.f)
+                        cat.beingDragged += deltaTimeMs;
+
+                    break;
+                }
+            }
+
             if (cat.beingDragged > 0.f)
                 cat.beingDragged -= deltaTimeMs;
         }
@@ -748,8 +828,18 @@ int main()
         {
             if (cat.beingDragged > 250.f)
             {
-                cat.cooldown   = -1000.f;
-                cat.position   = mousePos;
+                cat.cooldown = -1000.f;
+
+                if (catDragPositionFinger.hasValue())
+                {
+                    const auto fingerPos = window.mapPixelToCoords(catDragPositionFinger->toVector2i(), gameView);
+                    cat.position         = fingerPos;
+                }
+                else
+                {
+                    cat.position = mousePos;
+                }
+
                 cat.position.x = sf::base::clamp(cat.position.x, 0.f, boundaries.x);
                 cat.position.y = sf::base::clamp(cat.position.y, 0.f, boundaries.y);
             }
@@ -885,6 +975,8 @@ int main()
 
             if (ImGui::Button(buffer))
             {
+                soundClick.play(playbackDevice);
+
                 result = true;
                 money -= cost;
             }
@@ -923,6 +1015,37 @@ int main()
         const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
         const auto nCatDevil   = countCatsByType(CatType::Devil);
 
+        const auto makeCat =
+            [&](const CatType catType, const sf::Vector2f rangeOffset, const sf::FloatRect& txr, const sf::FloatRect& txrPaw)
+        {
+            return Cat{.type        = catType,
+                       .position    = mousePos,
+                       .rangeOffset = rangeOffset,
+                       .sprite = {.position = {200.f, 200.f}, .scale{0.2f, 0.2f}, .origin = txr.size / 2.f, .textureRect = txr},
+                       .pawSprite    = {.position = {200.f, 200.f},
+                                        .scale{0.1f, 0.1f},
+                                        .origin      = txrPaw.size / 2.f,
+                                        .textureRect = txrPaw},
+                       .textName     = makeCatNameText(getNextCatName().c_str()),
+                       .textStatus   = makeCatStatusText(),
+                       .beingDragged = 3000.f};
+        };
+
+        const auto makeCatModifiers =
+            [&](const char* labelCooldown, const char* labelRange, const CatType catType, const float initialCooldown)
+        {
+            auto& maxCooldown = catCooldownPerType[static_cast<int>(catType)];
+            auto& range       = catRangePerType[static_cast<int>(catType)];
+
+            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldown / 1000.f));
+            if (makePurchasableButton(labelCooldown, 50.f, 1.25f, 10.f + (initialCooldown - maxCooldown) / 10.f))
+                maxCooldown *= 0.95f;
+
+            std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
+            if (makePurchasableButton(labelRange, 10.f, 1.5f, range / 10.f))
+                range *= 1.05f;
+        };
+
         std::sprintf(labelBuffer, "%d cats", nCatNormal);
         if (makePurchasableButton("Cat", 35, 1.5f, static_cast<float>(nCatNormal)))
         {
@@ -930,32 +1053,12 @@ int main()
                 cat.beingDragged = 0.f;
 
             catDragPosition.emplace(mousePos);
-
-            cats.emplace_back(
-                Cat{.type     = CatType::Normal,
-                    .position = mousePos,
-                    .sprite = {.position = {200.f, 200.f}, .scale{0.2f, 0.2f}, .origin = txrCat.size / 2.f, .textureRect = txrCat},
-                    .pawSprite    = {.position = {200.f, 200.f},
-                                     .scale{0.1f, 0.1f},
-                                     .origin      = txrCatPaw.size / 2.f,
-                                     .textureRect = txrCatPaw},
-                    .textName     = makeCatNameText(getNextCatName().c_str()),
-                    .textStatus   = makeCatStatusText(),
-                    .beingDragged = 3000.f});
+            cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
         }
 
         if (nCatNormal > 0)
         {
-            auto& maxCooldownNormal = catCooldownPerType[static_cast<int>(CatType::Normal)];
-            auto& rangeNormal       = catRangePerType[static_cast<int>(CatType::Normal)];
-
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldownNormal / 1000.f));
-            if (makePurchasableButton("Cat cooldown", 50.f, 1.25f, 10.f + (1000.f - maxCooldownNormal) / 10.f))
-                maxCooldownNormal *= 0.95f;
-
-            std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(rangeNormal));
-            if (makePurchasableButton("Cat range", 10.f, 1.5f, rangeNormal / 10.f))
-                rangeNormal *= 1.05f;
+            makeCatModifiers("Cat cooldown", "Cat range", CatType::Normal, 1000.f);
 
             std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
             if (makePurchasableButton("Unicat", 250, 1.5f, static_cast<float>(nCatUnicorn)))
@@ -964,37 +1067,11 @@ int main()
                     cat.beingDragged = 0.f;
 
                 catDragPosition.emplace(mousePos);
-
-                cats.emplace_back(
-                    Cat{.type         = CatType::Unicorn,
-                        .position     = mousePos,
-                        .rangeOffset  = {0.f, -100.f},
-                        .sprite       = {.position = {200.f, 200.f},
-                                         .scale{0.2f, 0.2f},
-                                         .origin      = txrUniCat.size / 2.f,
-                                         .textureRect = txrUniCat},
-                        .pawSprite    = {.position = {200.f, 200.f},
-                                         .scale{0.1f, 0.1f},
-                                         .origin      = txrUniCatPaw.size / 2.f,
-                                         .textureRect = txrUniCatPaw},
-                        .textName     = makeCatNameText(getNextCatName().c_str()),
-                        .textStatus   = makeCatStatusText(),
-                        .beingDragged = 3000.f});
+                cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
             }
 
             if (nCatUnicorn > 0)
-            {
-                auto& maxCooldownUnicorn = catCooldownPerType[static_cast<int>(CatType::Unicorn)];
-                auto& rangeUnicorn       = catRangePerType[static_cast<int>(CatType::Unicorn)];
-
-                std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldownUnicorn / 1000.f));
-                if (makePurchasableButton("Unicat cooldown", 50.f, 1.25f, 10.f + (2000.f - maxCooldownUnicorn) / 10.f))
-                    maxCooldownUnicorn *= 0.95f;
-
-                std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(rangeUnicorn));
-                if (makePurchasableButton("Unicat range", 10.f, 1.5f, rangeUnicorn / 10.f))
-                    rangeUnicorn *= 1.05f;
-            }
+                makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 2000.f);
         }
 
         if (nCatUnicorn > 0)
@@ -1006,36 +1083,11 @@ int main()
                     cat.beingDragged = 0.f;
 
                 catDragPosition.emplace(mousePos);
-
-                cats.emplace_back(
-                    Cat{.type         = CatType::Devil,
-                        .position     = mousePos,
-                        .sprite       = {.position = {200.f, 200.f},
-                                         .scale{0.2f, 0.2f},
-                                         .origin      = txrDevilCat.size / 2.f,
-                                         .textureRect = txrDevilCat},
-                        .pawSprite    = {.position = {200.f, 200.f},
-                                         .scale{0.1f, 0.1f},
-                                         .origin      = txrCatPaw.size / 2.f,
-                                         .textureRect = txrCatPaw},
-                        .textName     = makeCatNameText(getNextCatName().c_str()),
-                        .textStatus   = makeCatStatusText(),
-                        .beingDragged = 3000.f});
+                cats.emplace_back(makeCat(CatType::Devil, {0.f, 0.f}, txrDevilCat, txrCatPaw));
             }
 
             if (nCatDevil > 0)
-            {
-                auto& maxCooldownDevil = catCooldownPerType[static_cast<int>(CatType::Devil)];
-                auto& rangeDevil       = catRangePerType[static_cast<int>(CatType::Devil)];
-
-                std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldownDevil / 1000.f));
-                if (makePurchasableButton("Devilcat cooldown", 50.f, 1.15f, 10.f + (1000.f - maxCooldownDevil) / 10.f))
-                    maxCooldownDevil *= 0.95f;
-
-                std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(rangeDevil));
-                if (makePurchasableButton("Devilcat range", 10.f, 1.5f, rangeDevil / 10.f))
-                    rangeDevil *= 1.05f;
-            }
+                makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 1000.f);
         }
 
         ImGui::End();
@@ -1143,7 +1195,26 @@ int main()
         window.setView({.center = {resolution.x / 2.f, resolution.y / 2.f}, .size = resolution});
         window.draw(minimapIndicator, /* texture */ nullptr);
 
+
         imGuiContext.render(window);
+
+        //
+        // Splash screen
+        static float logoOpacity = 1000.f;
+        logoOpacity -= deltaTimeMs * 0.5f;
+
+        sf::Sprite logoSprite{.position    = resolution / 2.f,
+                              .scale       = {0.70f, 0.70f},
+                              .origin      = txLogo.getRect().size / 2.f,
+                              .textureRect = txLogo.getRect(),
+                              .color       = sf::Color{255,
+                                                 255,
+                                                 255,
+                                                 static_cast<sf::base::U8>(sf::base::clamp(logoOpacity, 0.f, 255.f))}};
+
+        // TODO: meow sound
+        window.draw(logoSprite, txLogo);
+
         window.display();
 
         //

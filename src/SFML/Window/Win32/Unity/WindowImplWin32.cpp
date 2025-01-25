@@ -22,6 +22,7 @@
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <dbt.h>
+#include <winuser.h>
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
@@ -112,8 +113,12 @@ void initRawMouse(HWND handle)
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(rawMouse)) != TRUE)
         sf::priv::err() << "Failed to initialize raw mouse input";
 
-    if (RegisterTouchWindow(handle, 0) != TRUE)
+    if (RegisterTouchWindow(handle, TWF_WANTPALM) != TRUE)
         sf::priv::err() << "Failed to initialize touch input";
+
+    ULONG contactVisualization = TOUCH_FEEDBACK_NONE; // 0
+    if (SetWindowFeedbackSetting(handle, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(ULONG), &contactVisualization) != TRUE)
+        sf::priv::err() << "Failed to disable touch gestures";
 }
 
 } // namespace
@@ -1006,54 +1011,34 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
             break;
         }
 
-        case WM_TOUCH:
+        case WM_POINTERDOWN:
+        case WM_POINTERUPDATE:
+        case WM_POINTERUP:
         {
-            BOOL        bHandled = FALSE;
-            UINT        cInputs  = LOWORD(wParam);
-            PTOUCHINPUT pInputs  = new TOUCHINPUT[cInputs];
-
-            if (pInputs)
+            UINT32       pointerId = GET_POINTERID_WPARAM(wParam);
+            POINTER_INFO pointerInfo;
+            if (GetPointerInfo(pointerId, &pointerInfo))
             {
-                if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs, sizeof(TOUCHINPUT)))
+                if (pointerInfo.pointerType == PT_TOUCH)
                 {
-                    for (UINT i = 0; i < cInputs; i++)
+                    // Convert screen coordinates to client area coordinates
+                    POINT pt = {pointerInfo.ptPixelLocation.x, pointerInfo.ptPixelLocation.y};
+                    ScreenToClient(m_handle, &pt);
+
+                    switch (message) // 'msg' is the current message being processed
                     {
-                        TOUCHINPUT ti = pInputs[i];
-
-                        // Convert the touch coordinates to pixel coordinates
-                        int touchX = ti.x / 100; // Convert from hundredths of a pixel to pixels
-                        int touchY = ti.y / 100; // Convert from hundredths of a pixel to pixels
-
-                        // Map the screen coordinates to client coordinates
-                        POINT pt = {touchX, touchY};
-                        ScreenToClient(m_handle, &pt);
-
-                        // Now pt.x and pt.y are the coordinates relative to the top-left of the window
-                        int x = pt.x;
-                        int y = pt.y;
-
-                        pushEvent(sf::Event::TouchMoved(ti.dwID, {x, y}));
-                        //do something with each touch input entry
+                        case WM_POINTERDOWN:
+                            pushEvent(sf::Event::TouchBegan{pointerId, {pt.x, pt.y}});
+                            break;
+                        case WM_POINTERUPDATE:
+                            pushEvent(sf::Event::TouchMoved{pointerId, {pt.x, pt.y}});
+                            break;
+                        case WM_POINTERUP:
+                            pushEvent(sf::Event::TouchEnded{pointerId, {pt.x, pt.y}});
+                            break;
                     }
-                    bHandled = TRUE;
                 }
-                else
-                {
-                    /* handle the error here */
-                }
-                delete[] pInputs;
             }
-            else
-            {
-                /* handle the error here, probably out of memory */
-            }
-
-            if (bHandled)
-            {
-                // if you handled the message, close the touch input handle and return
-                CloseTouchInputHandle((HTOUCHINPUT)lParam);
-            }
-
             break;
         }
 
@@ -1339,6 +1324,9 @@ LRESULT CALLBACK WindowImplWin32::globalOnEvent(HWND handle, UINT message, WPARA
     if (window)
     {
         window->processEvent(message, wParam, lParam);
+
+        if (message == WM_POINTERDOWN || message == WM_POINTERUPDATE || message == WM_POINTERUP)
+            return 0;
 
         if (window->m_callback)
             return CallWindowProcW(reinterpret_cast<WNDPROC>(window->m_callback), handle, message, wParam, lParam);
