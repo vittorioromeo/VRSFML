@@ -735,6 +735,20 @@ int main()
                             bubble.type       = BubbleType::Star;
                             bubble.velocity.y = getRndFloat(-0.1f, -0.05f);
                             soundShine.play(playbackDevice);
+
+                            for (int i = 0; i < 4; ++i)
+                            {
+                                particles.emplace_back(
+                                    Particle{sf::Sprite{.position = {x, y},
+                                                        .scale  = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.25f,
+                                                        .origin = txrStarParticle.size / 2.f,
+                                                        .textureRect = txrStarParticle},
+                                             getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
+                                             {0.f, 0.005f},
+                                             getRndFloat(0.0005f, 0.0015f),
+                                             getRndFloat(-0.002f, 0.002f)});
+                            }
+
                             ++cat.hits;
                         }
                         else if (cat.type == CatType::Normal)
