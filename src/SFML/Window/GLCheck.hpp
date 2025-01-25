@@ -38,14 +38,13 @@ namespace sf::priv
     {                                                                           \
         SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
                                                                                 \
-        auto _glCheckResult = ::sf::priv::regularize(f);                        \
+        auto sfPrivGlCheckResult = ::sf::priv::regularize(f);                   \
                                                                                 \
         while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
             /* no-op */;                                                        \
                                                                                 \
-        return _glCheckResult;                                                  \
-    }                                                                           \
-    ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        return sfPrivGlCheckResult;                                             \
+    }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
 // The variants below are expected to fail, but we don't want to pollute the state of
 // `glGetError` so we have to call it anyway
@@ -55,14 +54,13 @@ namespace sf::priv
     {                                                          \
         SFML_BASE_ASSERT(errorFunc() == 0u /* GL_NO_ERROR */); \
                                                                \
-        auto _glCheckResult = ::sf::priv::regularize(f);       \
+        auto sfPrivGlCheckResult = ::sf::priv::regularize(f);  \
                                                                \
         while (errorFunc() != 0u /* GL_NO_ERROR */)            \
             /* no-op */;                                       \
                                                                \
-        return _glCheckResult;                                 \
-    }                                                          \
-    ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        return sfPrivGlCheckResult;                            \
+    }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
 #else
 

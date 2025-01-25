@@ -54,9 +54,7 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
 ////////////////////////////////////////////////////////////
 LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcept
 {
-    m_dependee     = rhs.m_dependee;
-    rhs.m_dependee = nullptr;
-
+    m_dependee = rhs.m_dependee;
     return *this;
 }
 
