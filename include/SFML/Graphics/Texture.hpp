@@ -26,6 +26,17 @@ class TextureAtlas;
 class Window;
 
 ////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] TextureLoadSettings
+{
+    bool    sRgb   = false;
+    IntRect area   = {};
+    bool    smooth = false;
+};
+
+////////////////////////////////////////////////////////////
 /// \brief Image living on the graphics card that can be used for drawing
 ///
 ////////////////////////////////////////////////////////////
@@ -98,7 +109,7 @@ public:
     /// \see `loadFromMemory`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromFile(const Path& filename, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromFile(const Path& filename, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file in memory
@@ -124,11 +135,9 @@ public:
     /// \see `loadFromFile`, `loadFromStream`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromMemory(
-        const void*    data,
-        base::SizeT    size,
-        bool           sRgb = false,
-        const IntRect& area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromMemory(const void*                data,
+                                                                base::SizeT                size,
+                                                                const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a custom stream
@@ -153,7 +162,8 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`, `loadFromImage`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromStream(InputStream& stream, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromStream(InputStream&               stream,
+                                                                const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from an image
@@ -178,7 +188,7 @@ public:
     /// \see `loadFromFile`, `loadFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> loadFromImage(const Image& image, bool sRgb = false, const IntRect& area = {});
+    [[nodiscard]] static base::Optional<Texture> loadFromImage(const Image& image, const TextureLoadSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the texture

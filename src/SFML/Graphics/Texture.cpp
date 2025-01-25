@@ -201,10 +201,10 @@ base::Optional<Texture> Texture::create(Vector2u size, bool sRgb)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromFile(const Path& filename, bool sRgb, const IntRect& area)
+base::Optional<Texture> Texture::loadFromFile(const Path& filename, const TextureLoadSettings& settings)
 {
     if (const base::Optional image = sf::Image::loadFromFile(filename))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(*image, settings);
 
     priv::err() << "Failed to load texture from file";
     return base::nullOpt;
@@ -212,15 +212,10 @@ base::Optional<Texture> Texture::loadFromFile(const Path& filename, bool sRgb, c
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromMemory(
-
-    const void*    data,
-    base::SizeT    size,
-    bool           sRgb,
-    const IntRect& area)
+base::Optional<Texture> Texture::loadFromMemory(const void* data, base::SizeT size, const TextureLoadSettings& settings)
 {
     if (const base::Optional image = sf::Image::loadFromMemory(data, size))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(*image, settings);
 
     priv::err() << "Failed to load texture from memory";
     return base::nullOpt;
@@ -228,10 +223,10 @@ base::Optional<Texture> Texture::loadFromMemory(
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, const IntRect& area)
+base::Optional<Texture> Texture::loadFromStream(InputStream& stream, const TextureLoadSettings& settings)
 {
     if (const base::Optional image = sf::Image::loadFromStream(stream))
-        return loadFromImage(*image, sRgb, area);
+        return loadFromImage(*image, settings);
 
     priv::err() << "Failed to load texture from stream";
     return base::nullOpt;
@@ -239,7 +234,7 @@ base::Optional<Texture> Texture::loadFromStream(InputStream& stream, bool sRgb, 
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, const IntRect& area)
+base::Optional<Texture> Texture::loadFromImage(const Image& image, const TextureLoadSettings& settings)
 {
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
@@ -247,11 +242,12 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, co
     const auto size = image.getSize().toVector2i();
 
     // Load the entire image if the source area is either empty or contains the whole image
-    if (area.size.x == 0 || (area.size.y == 0) ||
-        ((area.position.x <= 0) && (area.position.y <= 0) && (area.size.x >= size.x) && (area.size.y >= size.y)))
+    if (settings.area.size.x == 0 || (settings.area.size.y == 0) ||
+        ((settings.area.position.x <= 0) && (settings.area.position.y <= 0) && (settings.area.size.x >= size.x) &&
+         (settings.area.size.y >= size.y)))
     {
         // Load the entire image
-        if ((result = sf::Texture::create(image.getSize(), sRgb)))
+        if ((result = sf::Texture::create(image.getSize(), settings.sRgb)))
         {
             result->update(image);
             return result;
@@ -264,14 +260,14 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, co
     // Load a sub-area of the image
 
     // Adjust the rectangle to the size of the image
-    IntRect rectangle    = area;
+    IntRect rectangle    = settings.area;
     rectangle.position.x = base::max(rectangle.position.x, 0);
     rectangle.position.y = base::max(rectangle.position.y, 0);
     rectangle.size.x     = base::min(rectangle.size.x, size.x - rectangle.position.x);
     rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(rectangle.size.toVector2u(), sRgb)))
+    if ((result = sf::Texture::create(rectangle.size.toVector2u(), settings.sRgb)))
     {
         SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
 
@@ -294,6 +290,8 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, bool sRgb, co
         // in all contexts immediately (solves problems in multi-threaded apps)
         glCheck(glFlush());
     }
+
+    result->setSmooth(settings.smooth);
 
     // Error message generated in called function.
     return result;
