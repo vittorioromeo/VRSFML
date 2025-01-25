@@ -240,6 +240,14 @@ int main()
                         .outlineColor     = sf::Color::DarkPink,
                         .outlineThickness = 2.f}};
 
+    sf::Text comboText{fontDailyBubble,
+                       {.position         = {15.f, 105.f},
+                        .string           = "x1",
+                        .characterSize    = 24u,
+                        .fillColor        = sf::Color::White,
+                        .outlineColor     = sf::Color::DarkPink,
+                        .outlineThickness = 1.5f}};
+
     const auto makeCatNameText = [&](const char* name)
     {
         return sf::Text{fontDailyBubbleAtlased,
@@ -510,12 +518,12 @@ int main()
                     if (combo == 0)
                     {
                         combo      = 1;
-                        comboTimer = 700.f;
+                        comboTimer = 750.f;
                     }
                     else
                     {
                         ++combo;
-                        comboTimer += 125.f - static_cast<float>(combo) * 5.f;
+                        comboTimer += 135.f - static_cast<float>(combo) * 5.f;
                     }
 
                     const auto reward = rewardPerType[static_cast<int>(bubble.type)] * combo;
@@ -954,6 +962,13 @@ int main()
 
         moneyText.setString("$" + std::to_string(money));
         window.draw(moneyText);
+        comboText.setString("x" + std::to_string(combo + 1));
+        window.draw(comboText);
+
+        window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x, 110.f},
+                                        .fillColor = sf::Color{255, 255, 255, 75},
+                                        .size      = {100.f * comboTimer / 700.f, 20.f}}},
+                    /* texture */ nullptr);
 
         //
         // Minimap stuff
