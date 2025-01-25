@@ -266,12 +266,12 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         constexpr sf::base::U8 blue[]{0x00, 0x00, 0xFF, 0xFF};
         constexpr sf::base::U8 green[]{0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
-        auto texture1 = sf::Texture::create(sf::Vector2u{1, 1}, true).value();
+        auto texture1 = sf::Texture::create(sf::Vector2u{1, 1}, {.sRgb = true}).value();
         texture1.update(blue);
         texture1.setSmooth(false);
         texture1.setRepeated(true);
 
-        auto texture2 = sf::Texture::create(sf::Vector2u{2, 1}, false).value();
+        auto texture2 = sf::Texture::create(sf::Vector2u{2, 1}, {.sRgb = false}).value();
         texture2.update(green);
         texture2.setSmooth(true);
         texture2.setRepeated(false);

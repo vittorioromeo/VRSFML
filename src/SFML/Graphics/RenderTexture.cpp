@@ -116,7 +116,7 @@ struct RenderTexture::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Impl(Texture&& theTexture) :
     texture(SFML_BASE_MOVE(theTexture)),
-    tmpTexture(Texture::create(texture.getSize(), texture.isSrgb()).value())
+    tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
     {
     }
 
@@ -388,7 +388,7 @@ base::Optional<RenderTexture> RenderTexture::create(Vector2u size, const Context
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
     // Create the texture
-    auto texture = sf::Texture::create(size, contextSettings.sRgbCapable);
+    auto texture = sf::Texture::create(size, {.sRgb = contextSettings.sRgbCapable});
     if (!texture.hasValue())
     {
         priv::err() << "Impossible to create render texture (failed to create the target texture)";
