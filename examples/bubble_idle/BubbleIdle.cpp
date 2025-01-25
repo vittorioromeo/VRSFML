@@ -89,6 +89,26 @@ struct Bubble
     float        radius;
 };
 
+struct Particle
+{
+    sf::Sprite   sprite;
+    sf::Vector2f velocity;
+    sf::Vector2f acceleration;
+    float        opacityDecay;
+    float        torque;
+
+    void update(const float deltaTime)
+    {
+        velocity += acceleration * deltaTime;
+
+        sprite.color.a = static_cast<sf::base::U8>(
+            sf::base::clamp(sprite.color.a / 255.f - opacityDecay * deltaTime, 0.f, 1.f) * 255.f);
+
+        sprite.position += velocity;
+        sprite.rotation += sf::radians(torque * deltaTime);
+    }
+};
+
 struct TextParticle
 {
     sf::Text     text;
@@ -209,21 +229,25 @@ int main()
     const auto soundBufferPop   = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
     const auto soundBufferShine = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
 
-    const auto imgBubble128  = sf::Image::loadFromFile("resources/bubble2.png").value();
-    const auto imgBubbleStar = sf::Image::loadFromFile("resources/bubble3.png").value();
-    const auto imgCat        = sf::Image::loadFromFile("resources/cat.png").value();
-    const auto imgUniCat     = sf::Image::loadFromFile("resources/unicat.png").value();
-    const auto imgDevilCat   = sf::Image::loadFromFile("resources/devilcat.png").value();
-    const auto imgCatPaw     = sf::Image::loadFromFile("resources/catpaw.png").value();
-    const auto imgUniCatPaw  = sf::Image::loadFromFile("resources/unicatpaw.png").value();
+    const auto imgBubble128    = sf::Image::loadFromFile("resources/bubble2.png").value();
+    const auto imgBubbleStar   = sf::Image::loadFromFile("resources/bubble3.png").value();
+    const auto imgCat          = sf::Image::loadFromFile("resources/cat.png").value();
+    const auto imgUniCat       = sf::Image::loadFromFile("resources/unicat.png").value();
+    const auto imgDevilCat     = sf::Image::loadFromFile("resources/devilcat.png").value();
+    const auto imgCatPaw       = sf::Image::loadFromFile("resources/catpaw.png").value();
+    const auto imgUniCatPaw    = sf::Image::loadFromFile("resources/unicatpaw.png").value();
+    const auto imgParticle     = sf::Image::loadFromFile("resources/particle.png").value();
+    const auto imgStarParticle = sf::Image::loadFromFile("resources/starparticle.png").value();
 
-    const auto txrBubble128  = textureAtlas.add(imgBubble128).value();
-    const auto txrBubbleStar = textureAtlas.add(imgBubbleStar).value();
-    const auto txrCat        = textureAtlas.add(imgCat).value();
-    const auto txrUniCat     = textureAtlas.add(imgUniCat).value();
-    const auto txrDevilCat   = textureAtlas.add(imgDevilCat).value();
-    const auto txrCatPaw     = textureAtlas.add(imgCatPaw).value();
-    const auto txrUniCatPaw  = textureAtlas.add(imgUniCatPaw).value();
+    const auto txrBubble128    = textureAtlas.add(imgBubble128).value();
+    const auto txrBubbleStar   = textureAtlas.add(imgBubbleStar).value();
+    const auto txrCat          = textureAtlas.add(imgCat).value();
+    const auto txrUniCat       = textureAtlas.add(imgUniCat).value();
+    const auto txrDevilCat     = textureAtlas.add(imgDevilCat).value();
+    const auto txrCatPaw       = textureAtlas.add(imgCatPaw).value();
+    const auto txrUniCatPaw    = textureAtlas.add(imgUniCatPaw).value();
+    const auto txrParticle     = textureAtlas.add(imgParticle).value();
+    const auto txrStarParticle = textureAtlas.add(imgStarParticle).value();
 
     ImFont* fontImGuiDailyBubble = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/dailybubble.ttf", 32.f);
 
@@ -282,6 +306,7 @@ int main()
 
     std::vector<sf::base::SizeT> bubbleIdSet;
 
+    std::vector<Particle>     particles;
     std::vector<TextParticle> textParticles;
 
     //
@@ -446,12 +471,8 @@ int main()
             bubbles.emplace_back(makeRandomBubble());
 
         for (sf::base::SizeT i = 0; i < nCellsX; ++i)
-        {
             for (sf::base::SizeT j = 0; j < nCellsY; ++j)
-            {
                 bubbleGrid[convert2DTo1D(i, j, nCellsX)].clear();
-            }
-        }
 
         const auto popBubble = [&](BubbleType bubbleType, int reward, int combo, float x, float y)
         {
@@ -476,6 +497,35 @@ int main()
 
             soundPop.play(playbackDevice);
             soundPop.setPitch(remap(static_cast<float>(combo), 1, 10, 1.f, 2.f));
+
+            for (int i = 0; i < 32; ++i)
+            {
+                particles.emplace_back(
+                    Particle{sf::Sprite{.position    = {x, y},
+                                        .scale       = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.5f,
+                                        .origin      = txrParticle.size / 2.f,
+                                        .textureRect = txrParticle},
+                             getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
+                             {0.f, 0.005f},
+                             getRndFloat(0.0005f, 0.0015f),
+                             getRndFloat(-0.002f, 0.002f)});
+            }
+
+            if (bubbleType == BubbleType::Star)
+            {
+                for (int i = 0; i < 16; ++i)
+                {
+                    particles.emplace_back(
+                        Particle{sf::Sprite{.position    = {x, y},
+                                            .scale       = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.25f,
+                                            .origin      = txrStarParticle.size / 2.f,
+                                            .textureRect = txrStarParticle},
+                                 getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
+                                 {0.f, 0.005f},
+                                 getRndFloat(0.0005f, 0.0015f),
+                                 getRndFloat(-0.002f, 0.002f)});
+                }
+            }
         };
 
         for (sf::base::SizeT i = 0; i < bubbles.size(); ++i)
@@ -528,9 +578,10 @@ int main()
 
                     const auto reward = rewardPerType[static_cast<int>(bubble.type)] * combo;
 
+                    popBubble(bubble.type, reward, combo, x, y);
+
                     money += reward;
                     bubbles[i] = makeRandomBubble();
-                    popBubble(bubble.type, reward, combo, x, y);
 
                     continue;
                 }
@@ -606,7 +657,7 @@ int main()
         {
             if (catDragPosition.hasValue())
             {
-                if (cat.sprite.getGlobalBounds().contains(mousePos))
+                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && cat.sprite.getGlobalBounds().contains(mousePos))
                 {
                     if (cat.beingDragged < 250.f)
                         cat.beingDragged += deltaTimeMs;
@@ -717,6 +768,11 @@ int main()
             textParticle.update(deltaTimeMs);
 
         std::erase_if(textParticles, [](const auto& textParticle) { return textParticle.text.getFillColor().a <= 0; });
+
+        for (auto& particle : particles)
+            particle.update(deltaTimeMs);
+
+        std::erase_if(particles, [](const auto& particle) { return particle.sprite.color.a <= 0; });
 
         comboTimer -= deltaTimeMs;
 
@@ -949,9 +1005,11 @@ int main()
             cpuDrawableBatch.add(cat.textStatus);
         };
 
-
         for (auto& bubble : bubbles)
             cpuDrawableBatch.add(bubble.sprite);
+
+        for (auto& particle : particles)
+            cpuDrawableBatch.add(particle.sprite);
 
         window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
 
