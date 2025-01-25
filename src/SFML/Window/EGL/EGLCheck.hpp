@@ -37,12 +37,12 @@ namespace sf::priv
     {                                                                        \
         SFML_BASE_ASSERT(::eglGetError() == EGL_SUCCESS);                    \
                                                                              \
-        auto _eglCheckResult = ::sf::priv::regularize(f);                    \
+        auto sfPrivEglCheckResult = ::sf::priv::regularize(f);                    \
                                                                              \
         while (!::sf::priv::eglCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
             /* no-op */;                                                     \
                                                                              \
-        return _eglCheckResult;                                              \
+        return sfPrivEglCheckResult;                                              \
     }                                                                        \
     ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
