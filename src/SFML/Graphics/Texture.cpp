@@ -63,7 +63,7 @@ m_sRgb(rhs.m_sRgb),
 m_isRepeated(rhs.m_isRepeated),
 m_cacheId(TextureImpl::getUniqueId())
 {
-    base::Optional texture = create(rhs.getSize(), rhs.isSrgb());
+    base::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
 
     if (!texture.hasValue())
     {
@@ -139,7 +139,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::create(Vector2u size, bool sRgb)
+base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettings& settings)
 {
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
@@ -169,7 +169,7 @@ base::Optional<Texture> Texture::create(Vector2u size, bool sRgb)
     SFML_BASE_ASSERT(glTexture);
 
     // All the validity checks passed, we can store the new texture settings
-    result.emplace(base::PassKey<Texture>{}, size, glTexture, sRgb);
+    result.emplace(base::PassKey<Texture>{}, size, glTexture, settings.sRgb);
     Texture& texture = *result;
 
     // Make sure that the current texture binding will be preserved
@@ -195,6 +195,8 @@ base::Optional<Texture> Texture::create(Vector2u size, bool sRgb)
     texture.m_cacheId = TextureImpl::getUniqueId();
 
     texture.m_hasMipmap = false;
+
+    result->setSmooth(settings.smooth);
 
     return result;
 }
@@ -247,7 +249,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
          (settings.area.size.y >= size.y)))
     {
         // Load the entire image
-        if ((result = sf::Texture::create(image.getSize(), settings.sRgb)))
+        if ((result = sf::Texture::create(image.getSize(), {.sRgb = settings.sRgb, .smooth = settings.smooth})))
         {
             result->update(image);
             return result;
@@ -267,7 +269,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(rectangle.size.toVector2u(), settings.sRgb)))
+    if ((result = sf::Texture::create(rectangle.size.toVector2u(), {.sRgb = settings.sRgb, .smooth = settings.smooth})))
     {
         SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
 
@@ -536,7 +538,7 @@ bool Texture::update(const Window& window, Vector2u dest)
         const priv::ScissorDisableGuard scissorDisableGuard;
 
         // TODO P1: avoid creating this texture multiple times
-        auto tmpTexture = Texture::create(window.getSize(), m_sRgb);
+        auto tmpTexture = Texture::create(window.getSize(), {.sRgb = m_sRgb, .smooth = m_isSmooth});
 
         if (!tmpTexture.hasValue())
             priv::err() << "Failure to create intermediate texture in `copyFlippedFramebuffer`";

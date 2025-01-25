@@ -132,8 +132,7 @@ int main()
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}).value()};
-    textureAtlas.getTexture().setSmooth(true);
+    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
     //
     //
