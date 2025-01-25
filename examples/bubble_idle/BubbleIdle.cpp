@@ -27,6 +27,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
 #include "SFML/System/RectUtils.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -37,25 +38,29 @@
 #include <imgui.h>
 
 #include <algorithm>
-#include <iostream>
 #include <random>
 #include <string>
 #include <vector>
 
 #include <cstdio>
 
+
 namespace
 {
-
+////////////////////////////////////////////////////////////
 using sf::base::SizeT;
 
+////////////////////////////////////////////////////////////
 constexpr sf::Vector2f resolution{1024.f, 768.f};
 constexpr auto         resolutionUInt = resolution.toVector2u();
 
+////////////////////////////////////////////////////////////
 constexpr sf::Vector2f boundaries{1024.f * 10.f, 768.f};
 
+////////////////////////////////////////////////////////////
 constexpr sf::Color colorBlueOutline{50, 84, 135};
 
+////////////////////////////////////////////////////////////
 [[nodiscard]] float getRndFloat(const float min, const float max)
 {
     static std::random_device         randomDevice;
@@ -63,28 +68,33 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
     return std::uniform_real_distribution<float>{min, max}(randomEngine);
 }
 
+////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Vector2f getRndVector2f(const sf::Vector2f mins, const sf::Vector2f maxs)
 {
     return {getRndFloat(mins.x, maxs.x), getRndFloat(mins.y, maxs.y)};
 }
 
+////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Vector2f getRndVector2f(const sf::Vector2f maxs)
 {
     return getRndVector2f({0.f, 0.f}, maxs);
 }
 
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr float remap(const float x, const float oldMin, const float oldMax, const float newMin, const float newMax)
 {
     SFML_BASE_ASSERT(oldMax != oldMin);
     return newMin + ((x - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
+////////////////////////////////////////////////////////////
 enum class BubbleType
 {
     Normal,
     Star
 };
 
+////////////////////////////////////////////////////////////
 struct Bubble
 {
     BubbleType   type;
@@ -93,6 +103,7 @@ struct Bubble
     float        radius;
 };
 
+////////////////////////////////////////////////////////////
 struct Particle
 {
     sf::Sprite   sprite;
@@ -113,6 +124,7 @@ struct Particle
     }
 };
 
+////////////////////////////////////////////////////////////
 struct TextParticle
 {
     sf::Text     text;
@@ -142,6 +154,7 @@ struct TextParticle
     }
 };
 
+////////////////////////////////////////////////////////////
 enum class CatType
 {
     Normal,
@@ -149,6 +162,7 @@ enum class CatType
     Devil,
 };
 
+////////////////////////////////////////////////////////////
 struct Cat
 {
     CatType type;
@@ -253,6 +267,7 @@ int main()
     const auto txBackground = sf::Texture::loadFromImage(imgBackground, {.smooth = true}).value();
 
     /* --- Texture atlas rects */
+    const auto txrWhiteDot     = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
     const auto txrBubble128    = textureAtlas.add(imgBubble128).value();
     const auto txrBubbleStar   = textureAtlas.add(imgBubbleStar).value();
     const auto txrCat          = textureAtlas.add(imgCat).value();
@@ -267,6 +282,9 @@ int main()
     sf::Sound soundPop(soundBufferPop);
     sf::Sound soundShine(soundBufferShine);
 
+    //
+    //
+    // TODO: organize
     sf::Text moneyText{fontDailyBubble,
                        {.position         = {15.f, 70.f},
                         .string           = "$0",
@@ -302,6 +320,18 @@ int main()
                          .outlineThickness = 1.f}};
     };
 
+    const auto makeParticle = [&](const float x, const float y, const sf::FloatRect& txr, const float scaleMult)
+    {
+        return Particle{sf::Sprite{.position    = {x, y},
+                                   .scale       = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * scaleMult,
+                                   .origin      = txr.size / 2.f,
+                                   .textureRect = txr},
+                        getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
+                        {0.f, 0.005f},
+                        getRndFloat(0.0005f, 0.0015f),
+                        getRndFloat(-0.002f, 0.002f)};
+    };
+
     //
     //
     // Spatial partitioning
@@ -311,8 +341,9 @@ int main()
 
     const auto convert2DTo1D = [](const SizeT x, const SizeT y, const SizeT width) { return y * width + x; };
 
-    std::vector<std::vector<SizeT>> bubbleGrid;
-    bubbleGrid.resize(nCellsX * nCellsY);
+    std::vector<SizeT> bubbleIndices;          // Flat list of all bubble indices in all cells
+    std::vector<SizeT> cellStartIndices;       // Tracks where each cell's data starts in `bubbleIndices`
+    std::vector<SizeT> cellInsertionPositions; // Temporary copy of `cellStartIndices` to track insertion points
 
     std::vector<Particle>     particles;
     std::vector<TextParticle> textParticles;
@@ -486,23 +517,72 @@ int main()
         //
         //
         // Update spatial partitioning
-        for (auto& cell : bubbleGrid)
-            cell.clear();
+        cellStartIndices.clear();
+        cellStartIndices.resize(nCellsX * nCellsY + 1, 0); // +1 for prefix sum
 
+        const auto computeGridRange = [&](const auto& bubble)
+        {
+            const auto [minX, minY] = bubble.sprite.getTopLeft();
+            const auto [maxX, maxY] = bubble.sprite.getBottomRight();
+
+            struct Result
+            {
+                SizeT xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx;
+            };
+
+            return Result{sf::base::max(SizeT{0u}, static_cast<SizeT>(minX / gridSize)),
+                          sf::base::max(SizeT{0u}, static_cast<SizeT>(minY / gridSize)),
+                          sf::base::min(SizeT{nCellsX - 1}, static_cast<SizeT>(maxX / gridSize)),
+                          sf::base::min(SizeT{nCellsY - 1}, static_cast<SizeT>(maxY / gridSize))};
+        };
+
+        //
+        // First Pass (Counting):
+        // - Calculate how many bubbles will be placed in each grid cell.
+        for (auto& bubble : bubbles)
+        {
+            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble);
+
+            // For each cell the bubble covers, increment the count
+            for (SizeT x = xCellStartIdx; x <= xCellEndIdx; ++x)
+                for (SizeT y = yCellStartIdx; y <= yCellEndIdx; ++y)
+                {
+                    const SizeT cellIdx = convert2DTo1D(x, y, nCellsX);
+                    ++cellStartIndices[cellIdx + 1]; // +1 offsets for prefix sum
+                }
+        }
+
+        //
+        // Second Pass (Prefix Sum):
+        // - Calculate the starting index for each cell’s data in `bubbleIndices`.
+
+        // Prefix sum to compute start indices
+        for (SizeT i = 1; i < cellStartIndices.size(); ++i)
+            cellStartIndices[i] += cellStartIndices[i - 1];
+
+        bubbleIndices.resize(cellStartIndices.back()); // Total bubbles across all cells
+
+        // Used to track where to insert the next bubble index into the `bubbleIndices` buffer for each cell
+        cellInsertionPositions.assign(cellStartIndices.begin(), cellStartIndices.end());
+
+        //
+        // Third Pass (Populating):
+        // - Place the bubble indices into the correct positions in the `bubbleIndices` buffer.
         for (SizeT i = 0; i < bubbles.size(); ++i)
         {
-            const auto [minX, minY] = bubbles[i].sprite.getTopLeft();
-            const auto [maxX, maxY] = bubbles[i].sprite.getBottomRight();
+            const auto& bubble                                                  = bubbles[i];
+            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble);
 
-            const auto xCellStartIdx = sf::base::max(SizeT{0u}, static_cast<SizeT>(minX / gridSize));
-            const auto yCellStartIdx = sf::base::max(SizeT{0u}, static_cast<SizeT>(minY / gridSize));
-
-            const auto xCellEndIdx = sf::base::min(SizeT{nCellsX - 1}, static_cast<SizeT>(maxX / gridSize));
-            const auto yCellEndIdx = sf::base::min(SizeT{nCellsY - 1}, static_cast<SizeT>(maxY / gridSize));
-
-            for (SizeT cellX = xCellStartIdx; cellX <= xCellEndIdx; ++cellX)
-                for (SizeT cellY = yCellStartIdx; cellY <= yCellEndIdx; ++cellY)
-                    bubbleGrid[convert2DTo1D(cellX, cellY, nCellsX)].push_back(i);
+            // Insert the bubble index into all overlapping cells
+            for (SizeT x = xCellStartIdx; x <= xCellEndIdx; ++x)
+            {
+                for (SizeT y = yCellStartIdx; y <= yCellEndIdx; ++y)
+                {
+                    const SizeT cellIdx      = convert2DTo1D(x, y, nCellsX);
+                    const SizeT insertPos    = cellInsertionPositions[cellIdx]++;
+                    bubbleIndices[insertPos] = i;
+                }
+            }
         }
 
         const auto popBubble = [&](BubbleType bubbleType, int reward, int combo, float x, float y)
@@ -530,33 +610,11 @@ int main()
             soundPop.setPitch(remap(static_cast<float>(combo), 1, 10, 1.f, 2.f));
 
             for (int i = 0; i < 32; ++i)
-            {
-                particles.emplace_back(
-                    Particle{sf::Sprite{.position    = {x, y},
-                                        .scale       = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.5f,
-                                        .origin      = txrParticle.size / 2.f,
-                                        .textureRect = txrParticle},
-                             getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
-                             {0.f, 0.005f},
-                             getRndFloat(0.0005f, 0.0015f),
-                             getRndFloat(-0.002f, 0.002f)});
-            }
+                particles.emplace_back(makeParticle(x, y, txrParticle, 0.5f));
 
             if (bubbleType == BubbleType::Star)
-            {
                 for (int i = 0; i < 16; ++i)
-                {
-                    particles.emplace_back(
-                        Particle{sf::Sprite{.position    = {x, y},
-                                            .scale       = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.25f,
-                                            .origin      = txrStarParticle.size / 2.f,
-                                            .textureRect = txrStarParticle},
-                                 getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
-                                 {0.f, 0.005f},
-                                 getRndFloat(0.0005f, 0.0015f),
-                                 getRndFloat(-0.002f, 0.002f)});
-                }
-            }
+                    particles.emplace_back(makeParticle(x, y, txrStarParticle, 0.25f));
         };
 
         for (auto& bubble : bubbles)
@@ -652,11 +710,20 @@ int main()
         {
             for (SizeT iy = 0; iy < nCellsY; ++iy)
             {
-                const auto& bubbleIdSet = bubbleGrid[convert2DTo1D(ix, iy, nCellsX)];
+                const SizeT cellIdx = convert2DTo1D(ix, iy, nCellsX);
+                const SizeT start   = cellStartIndices[cellIdx];
+                const SizeT end     = cellStartIndices[cellIdx + 1];
 
-                for (SizeT i = 0; i < bubbleIdSet.size(); ++i)
-                    for (SizeT j = i + 1; j < bubbleIdSet.size(); ++j)
-                        handleCollision(bubbleIdSet[i], bubbleIdSet[j]);
+                // Iterate over all bubbles in this cell
+                for (SizeT i = start; i < end; ++i)
+                {
+                    const SizeT bubbleA = bubbleIndices[i];
+                    for (SizeT j = i + 1; j < end; ++j)
+                    {
+                        const SizeT bubbleB = bubbleIndices[j];
+                        handleCollision(bubbleA, bubbleB);
+                    }
+                }
             }
         }
 
@@ -744,17 +811,7 @@ int main()
                             soundShine.play(playbackDevice);
 
                             for (int i = 0; i < 4; ++i)
-                            {
-                                particles.emplace_back(
-                                    Particle{sf::Sprite{.position = {x, y},
-                                                        .scale  = getRndVector2f({0.1f, 0.1f}, {0.25f, 0.25f}) * 0.25f,
-                                                        .origin = txrStarParticle.size / 2.f,
-                                                        .textureRect = txrStarParticle},
-                                             getRndVector2f({-0.5f, -2.f}, {0.5f, -0.5f}),
-                                             {0.f, 0.005f},
-                                             getRndFloat(0.0005f, 0.0015f),
-                                             getRndFloat(-0.002f, 0.002f)});
-                            }
+                                particles.emplace_back(makeParticle(x, y, txrStarParticle, 0.25f));
 
                             ++cat.hits;
                         }
@@ -1002,15 +1059,16 @@ int main()
             const auto range       = catRangePerType[static_cast<int>(cat.type)];
 
             sf::CircleShape radiusCircle{{
-                .position         = cat.position + cat.rangeOffset,
-                .origin           = {range, range},
-                .fillColor        = sf::Color::Transparent,
-                .outlineThickness = 1.f,
-                .radius           = range,
-                .pointCount       = 32,
+                .position           = cat.position + cat.rangeOffset,
+                .origin             = {range, range},
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = sf::Color::Transparent,
+                .outlineThickness   = 1.f,
+                .radius             = range,
+                .pointCount         = 32,
             }};
 
-            const sf::Color colorsByType[3]{
+            constexpr sf::Color colorsByType[3]{
                 sf::Color::Blue,
                 sf::Color::Purple,
                 sf::Color::Red,
@@ -1023,18 +1081,18 @@ int main()
                  cat.cooldown < 0.f ? static_cast<sf::base::U8>(0u)
                                     : static_cast<sf::base::U8>(cat.cooldown / maxCooldown * 128.f)});
 
-            window.draw(radiusCircle, /* texture */ nullptr);
+            cpuDrawableBatch.add(radiusCircle);
             cpuDrawableBatch.add(cat.textName);
             cpuDrawableBatch.add(cat.textStatus);
         };
 
-        for (auto& bubble : bubbles)
+        for (const auto& bubble : bubbles)
             cpuDrawableBatch.add(bubble.sprite);
 
-        for (auto& particle : particles)
+        for (const auto& particle : particles)
             cpuDrawableBatch.add(particle.sprite);
 
-        for (auto& textParticle : textParticles)
+        for (const auto& textParticle : textParticles)
             cpuDrawableBatch.add(textParticle.text);
 
         window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
@@ -1088,6 +1146,8 @@ int main()
         imGuiContext.render(window);
         window.display();
 
+        //
+        // Debug stuff
         window.setTitle("FPS: " + std::to_string(1.f / fpsClock.getElapsedTime().asSeconds()));
     }
 }
