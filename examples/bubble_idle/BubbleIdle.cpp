@@ -137,7 +137,11 @@ struct Cat
     sf::Sprite pawSprite;
     float      cooldown = 0.f;
 
+    sf::Text textName;
+    sf::Text textStatus;
+
     float beingDragged = 0.f;
+    int   hits         = 0;
 
     bool update(const float maxCooldown, const float deltaTime)
     {
@@ -199,7 +203,8 @@ int main()
 
     //
     // Load resources
-    const auto fontDailyBubble = sf::Font::openFromFile("resources/dailybubble.ttf").value();
+    const auto fontDailyBubble        = sf::Font::openFromFile("resources/dailybubble.ttf").value();
+    const auto fontDailyBubbleAtlased = sf::Font::openFromFile("resources/dailybubble.ttf", &textureAtlas).value();
 
     const auto soundBufferPop   = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
     const auto soundBufferShine = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
@@ -234,6 +239,28 @@ int main()
                         .fillColor        = sf::Color::White,
                         .outlineColor     = sf::Color::DarkPink,
                         .outlineThickness = 2.f}};
+
+    const auto makeCatNameText = [&](const char* name)
+    {
+        return sf::Text{fontDailyBubbleAtlased,
+                        {.position         = {},
+                         .string           = name,
+                         .characterSize    = 24u,
+                         .fillColor        = sf::Color::White,
+                         .outlineColor     = sf::Color::DarkPink,
+                         .outlineThickness = 1.5f}};
+    };
+
+    const auto makeCatStatusText = [&]()
+    {
+        return sf::Text{fontDailyBubbleAtlased,
+                        {.position         = {},
+                         .string           = "status",
+                         .characterSize    = 16u,
+                         .fillColor        = sf::Color::White,
+                         .outlineColor     = sf::Color::DarkPink,
+                         .outlineThickness = 1.f}};
+    };
 
     const float gridSize = 64.f;
     const auto  nCellsX  = static_cast<sf::base::SizeT>(sf::base::ceil(boundaries.x / gridSize)) + 1;
@@ -270,6 +297,25 @@ int main()
         64.f, // Unicorn
         96.f  // Devil
     };
+
+    //
+    // Cat names
+    std::vector<std::string>
+        catNames{"Gorgonzola", "Provolino",  "Pistacchietto", "Ricottina",  "Mozzarellina",  "Tiramisu",
+                 "Cannolino",  "Biscottino", "Cannolina",     "Biscottina", "Pistacchietta", "Provolina",
+                 "Arancino",   "Limoncello", "Ciabatta",      "Focaccina",  "Amaretto",      "Pallino",
+                 "Birillo",    "Trottola",   "Baffo",         "Poldo",      "Fuffi",         "Birba",
+                 "Ciccio",     "Pippo",      "Tappo",         "Briciola",   "Braciola",      "Pulce",
+                 "Dante",      "Bolla",      "Fragolina",     "Luppolo",    "Sirena",        "Polvere",
+                 "Stellina",   "Lunetta",    "Briciolo",      "Fiammetta",  "Nuvoletta",     "Scintilla",
+                 "Piuma",      "Fulmine",    "Arcobaleno",    "Stelluccia", "Lucciola",      "Pepita",
+                 "Fiocco",     "Girandola",  "Bombetta",      "Fusillo",    "Cicciobello",   "Palloncino",
+                 "Joe Biden",  "Trump",      "Obama",         "De Luca",    "Salvini",       "Renzi",
+                 "Nutella",    "Vespa",      "Mandolino",     "Ferrari",    "Pavarotti",     "Espresso",
+                 "Sir"};
+
+    std::shuffle(catNames.begin(), catNames.end(), std::mt19937{std::random_device{}()});
+    sf::base::SizeT nextCatName = 0u;
 
     //
     // Game state
@@ -578,6 +624,18 @@ int main()
 
         for (auto& cat : cats)
         {
+            cat.textName.position   = cat.position + sf::Vector2f{0.f, 48.f};
+            cat.textName.origin     = cat.textName.getLocalBounds().size / 2.f;
+            cat.textStatus.position = cat.position + sf::Vector2f{0.f, 68.f};
+            cat.textStatus.origin   = cat.textStatus.getLocalBounds().size / 2.f;
+
+            if (cat.type == CatType::Normal)
+                cat.textStatus.setString(std::to_string(cat.hits) + " pops");
+            else if (cat.type == CatType::Unicorn)
+                cat.textStatus.setString(std::to_string(cat.hits) + " shines");
+            else if (cat.type == CatType::Devil)
+                cat.textStatus.setString("TODO");
+
             const auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
             const auto range       = catRangePerType[static_cast<int>(cat.type)];
 
@@ -618,6 +676,7 @@ int main()
                             bubble.type       = BubbleType::Star;
                             bubble.velocity.y = getRndFloat(-0.1f, -0.05f);
                             soundShine.play(playbackDevice);
+                            ++cat.hits;
                         }
                         else if (cat.type == CatType::Normal)
                         {
@@ -626,6 +685,7 @@ int main()
                             money += reward;
                             popBubble(bubble.type, reward, 1, x, y);
                             bubble = makeRandomBubble();
+                            ++cat.hits;
                         }
                         else if (cat.type == CatType::Devil)
                         {
@@ -737,6 +797,8 @@ int main()
                                      .scale{0.1f, 0.1f},
                                      .origin      = txrCatPaw.size / 2.f,
                                      .textureRect = txrCatPaw},
+                    .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                    .textStatus   = makeCatStatusText(),
                     .beingDragged = 3000.f});
         }
 
@@ -773,6 +835,8 @@ int main()
                                          .scale{0.1f, 0.1f},
                                          .origin      = txrUniCatPaw.size / 2.f,
                                          .textureRect = txrUniCatPaw},
+                        .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                        .textStatus   = makeCatStatusText(),
                         .beingDragged = 3000.f});
             }
 
@@ -812,6 +876,8 @@ int main()
                                          .scale{0.1f, 0.1f},
                                          .origin      = txrCatPaw.size / 2.f,
                                          .textureRect = txrCatPaw},
+                        .textName     = makeCatNameText(catNames[nextCatName++ % catNames.size()].c_str()),
+                        .textStatus   = makeCatStatusText(),
                         .beingDragged = 3000.f});
             }
 
@@ -871,6 +937,8 @@ int main()
                                     : static_cast<sf::base::U8>(cat.cooldown / maxCooldown * 128.f)});
 
             window.draw(radiusCircle, /* texture */ nullptr);
+            cpuDrawableBatch.add(cat.textName);
+            cpuDrawableBatch.add(cat.textStatus);
         };
 
 
@@ -887,6 +955,8 @@ int main()
         moneyText.setString("$" + std::to_string(money));
         window.draw(moneyText);
 
+        //
+        // Minimap stuff
         const float minimapScale            = 20.f;
         const float minimapOffset           = 15.f;
         const float minimapOutlineThickness = 2.f;
