@@ -121,21 +121,21 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
             SECTION("Non-truncated area")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{0, 0}, {5, 10}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{0, 0}, {5, 10}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{5, 10});
                 CHECK(texture.getNativeHandle() != 0);
             }
 
             SECTION("Truncated area (negative position)")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{-5, -5}, {4, 8}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{-5, -5}, {4, 8}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{4, 8});
                 CHECK(texture.getNativeHandle() != 0);
             }
 
             SECTION("Truncated area (width/height too big)")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{5, 5}, {12, 18}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{5, 5}, {12, 18}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{5, 10});
                 CHECK(texture.getNativeHandle() != 0);
             }
