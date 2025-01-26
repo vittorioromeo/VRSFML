@@ -29,7 +29,7 @@ public:
 
     constexpr initializer_list() noexcept = default;
 
-    [[nodiscard, gnu::pure, gnu::always_inline]] constexpr initializer_list(const T* b, const T* e) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr initializer_list(const T* b, const T* e) noexcept
     {
         m_begin = b;
         m_end   = e;
