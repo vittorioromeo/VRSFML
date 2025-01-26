@@ -77,6 +77,13 @@ constexpr base::U32 Color::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
+constexpr Color Color::withAlpha(base::U8 alpha) const
+{
+    return {r, g, b, alpha};
+}
+
+
+////////////////////////////////////////////////////////////
 constexpr Color operator+(Color lhs, Color rhs)
 {
     const auto clampedAdd = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8

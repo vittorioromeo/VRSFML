@@ -49,6 +49,14 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::U32 toInteger() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Create a new color from the current one with the alpha component changed
+    ///
+    /// \param alpha Alpha component (0 to 255)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withAlpha(base::U8 alpha) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator==`
     ///
     /// This operator compares two colors and check if they are equal.
