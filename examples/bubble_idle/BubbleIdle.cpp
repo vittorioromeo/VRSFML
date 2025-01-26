@@ -771,7 +771,9 @@ int main()
 
         if (twoFingersDown && !dragPosition.hasValue())
         {
-            dragPosition.emplace(*firstTwoFingersPositions.first);
+            const auto v0 = *firstTwoFingersPositions.first;
+            const auto v1 = *firstTwoFingersPositions.second;
+            dragPosition.emplace((v0 + v1) / 2.f);
             dragPosition->x += scroll;
         }
 
@@ -1384,7 +1386,7 @@ int main()
             for (auto& cat : cats)
                 cat.beingDragged = 0.f;
 
-             catDragPosition.reset();
+            catDragPosition.reset();
         };
 
         if (allFingersNotDown && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
