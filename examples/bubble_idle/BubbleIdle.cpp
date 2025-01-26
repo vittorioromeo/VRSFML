@@ -39,6 +39,7 @@
 
 #include <_mingw_stat64.h>
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include <random>
 #include <string>
@@ -94,7 +95,8 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
 enum class BubbleType
 {
     Normal,
-    Star
+    Star,
+    Bomb
 };
 
 ////////////////////////////////////////////////////////////
@@ -253,9 +255,27 @@ int main()
     ImFont* fontImGuiDailyBubble = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/dailybubble.ttf", 32.f);
 
     /* --- Sound buffers */
-    const auto soundBufferPop   = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
-    const auto soundBufferShine = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
-    const auto soundBufferClick = sf::SoundBuffer::loadFromFile("resources/click2.wav").value();
+    const auto soundBufferPop       = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
+    const auto soundBufferShine     = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
+    const auto soundBufferClick     = sf::SoundBuffer::loadFromFile("resources/click2.wav").value();
+    const auto soundBufferByteMeow  = sf::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
+    const auto soundBufferGrab      = sf::SoundBuffer::loadFromFile("resources/grab.ogg").value();
+    const auto soundBufferDrop      = sf::SoundBuffer::loadFromFile("resources/drop.ogg").value();
+    const auto soundBufferScratch   = sf::SoundBuffer::loadFromFile("resources/scratch.ogg").value();
+    const auto soundBufferBuy       = sf::SoundBuffer::loadFromFile("resources/buy.ogg").value();
+    const auto soundBufferExplosion = sf::SoundBuffer::loadFromFile("resources/explosion.ogg").value();
+
+    /* --- Sounds */
+    sf::Sound soundPop(soundBufferPop);
+    sf::Sound soundShine(soundBufferShine);
+    sf::Sound soundClick(soundBufferClick);
+    sf::Sound soundByteMeow(soundBufferByteMeow);
+    sf::Sound soundGrab(soundBufferGrab); // TODO
+    sf::Sound soundDrop(soundBufferDrop); // TODO
+    sf::Sound soundScratch(soundBufferScratch);
+    soundScratch.setVolume(35.f);
+    sf::Sound soundBuy(soundBufferBuy);
+    sf::Sound soundExplosion(soundBufferExplosion);
 
     /* --- Images */
     const auto imgBubble128    = sf::Image::loadFromFile("resources/bubble2.png").value();
@@ -269,6 +289,7 @@ int main()
     const auto imgStarParticle = sf::Image::loadFromFile("resources/starparticle.png").value();
     const auto imgWitchCat     = sf::Image::loadFromFile("resources/witchcat.png").value();
     const auto imgAstromeowCat = sf::Image::loadFromFile("resources/astromeow.png").value();
+    const auto imgBomb         = sf::Image::loadFromFile("resources/bomb.png").value();
 
     /* --- Textures */
     const auto txLogo       = sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value();
@@ -287,11 +308,7 @@ int main()
     const auto txrStarParticle = textureAtlas.add(imgStarParticle).value();
     const auto txrWitchCat     = textureAtlas.add(imgWitchCat).value();
     const auto txrAstromeowCat = textureAtlas.add(imgAstromeowCat).value();
-
-    /* --- Sounds */
-    sf::Sound soundPop(soundBufferPop);
-    sf::Sound soundShine(soundBufferShine);
-    sf::Sound soundClick(soundBufferClick);
+    const auto txrBomb         = textureAtlas.add(imgBomb).value();
 
     //
     //
@@ -303,6 +320,9 @@ int main()
                         .fillColor        = sf::Color::White,
                         .outlineColor     = colorBlueOutline,
                         .outlineThickness = 2.f}};
+
+    float moneyTextGrow  = 0.f;
+    float moneyTextAngle = 0.f;
 
     sf::Text comboText{fontDailyBubble,
                        {.position         = {15.f, 105.f},
@@ -365,15 +385,16 @@ int main()
     const auto costFunction = [](float baseCost, float nOwned, float growthFactor)
     { return baseCost * std::pow(growthFactor, nOwned); };
 
-    int rewardPerType[2]{
+    int rewardPerType[3]{
         1,  // Normal
         25, // Star
+        1,  // Bomb
     };
 
     float catCooldownPerType[5]{
         1000.f, // Normal
         2000.f, // Unicorn
-        1000.f, // Devil
+        5000.f, // Devil
         1000.f, // Witch
         1000.f  // Astromeow
     };
@@ -381,7 +402,7 @@ int main()
     float catRangePerType[5]{
         96.f, // Normal
         64.f, // Unicorn
-        96.f, // Devil
+        48.f, // Devil
         96.f, // Witch
         96.f  // Astromeow
     };
@@ -412,14 +433,17 @@ int main()
     //
     // Game state
     std::vector<Bubble> bubbles;
-    int                 bubbleTargetCount = 500;
+    int                 bubbleTargetCount = 250;
 
     std::vector<Cat> cats;
 
 
-    int   money      = 10000;
-    int   combo      = 0;
-    float comboTimer = 0.f;
+    int money = 0;
+
+    bool  comboPurchased  = false;
+    int   combo           = 0;
+    float comboTimer      = 0.f;
+    float comboTimerStart = 600.f;
 
     const auto makeRandomBubble = [&]
     {
@@ -451,6 +475,15 @@ int main()
     sf::base::Optional<sf::Vector2f> catDragPositionFinger;
 
     std::unordered_map<unsigned int, sf::Vector2f> fingerPositions;
+
+    soundByteMeow.play(playbackDevice);
+
+    const auto addReward = [&](const int reward)
+    {
+        money += reward;
+        moneyTextGrow  = 1.f + static_cast<float>(combo) * 0.1f;
+        moneyTextAngle = getRndFloat(-moneyTextGrow * 0.2f, moneyTextGrow * 0.2f);
+    };
 
     while (true)
     {
@@ -638,7 +671,8 @@ int main()
             }
         }
 
-        const auto popBubble = [&](BubbleType bubbleType, int reward, int combo, float x, float y)
+        std::function<void(BubbleType, int, int, float, float)> popBubble =
+            [&](BubbleType bubbleType, int reward, int combo, float x, float y)
         {
             sf::Text t{fontDailyBubble,
                        {.position         = {x, y - 10.f},
@@ -654,7 +688,7 @@ int main()
                 TextParticle{t,
                              getRndVector2f({-0.1f, -1.65f}, {0.1f, -1.35f}),
                              {0.f, 0.01f},
-                             0.0030f,
+                             0.0020f,
                              getRndFloat(-0.002f, 0.002f)});
 
             tp.text.origin = {tp.text.getLocalBounds().size.x / 2.f, tp.text.getLocalBounds().size.y / 2.f};
@@ -668,11 +702,56 @@ int main()
             if (bubbleType == BubbleType::Star)
                 for (int i = 0; i < 16; ++i)
                     particles.emplace_back(makeParticle(x, y, txrStarParticle, 0.25f));
+
+            if (bubbleType == BubbleType::Bomb)
+            {
+                soundExplosion.play(playbackDevice);
+
+                const int cellX = static_cast<int>(x / gridSize);
+                const int cellY = static_cast<int>(y / gridSize);
+
+                for (int ox = -4; ox <= 4; ++ox)
+                    for (int oy = -4; oy <= 4; ++oy)
+                    {
+                        const auto cellIdx = convert2DTo1D( //
+                            static_cast<SizeT>(sf::base::clamp(cellX + ox, 0, static_cast<int>(nCellsX) - 1)),
+                            static_cast<SizeT>(sf::base::clamp(cellY + oy, 0, static_cast<int>(nCellsY) - 1)),
+                            nCellsX);
+
+                        const SizeT start = cellStartIndices[cellIdx];
+                        const SizeT end   = cellStartIndices[cellIdx + 1];
+
+                        // Iterate over all bubbles in this cell
+                        for (SizeT i = start; i < end; ++i)
+                        {
+                            const SizeT bubbleIdx = bubbleIndices[i];
+                            auto&       bubble    = bubbles[bubbleIdx];
+
+                            if (bubble.type != BubbleType::Bomb)
+                            {
+                                const auto newReward = rewardPerType[static_cast<int>(bubble.type)] * 10;
+
+                                popBubble(bubble.type, newReward, 1, bubble.sprite.position.x, bubble.sprite.position.y);
+                                addReward(newReward);
+                                bubble = makeRandomBubble();
+                            }
+                        }
+                    }
+            }
         };
 
         for (auto& bubble : bubbles)
         {
-            bubble.sprite.textureRect = bubble.type == BubbleType::Normal ? txrBubble128 : txrBubbleStar;
+            bubble.sprite.textureRect = bubble.type == BubbleType::Normal ? txrBubble128
+                                        : bubble.type == BubbleType::Star ? txrBubbleStar
+                                                                          : txrBomb;
+
+            bubble.sprite.origin = bubble.sprite.textureRect.size / 2.f;
+
+            if (bubble.type == BubbleType::Bomb)
+            {
+                bubble.sprite.rotation += sf::radians(deltaTimeMs * 0.01f);
+            }
 
             auto& pos = bubble.sprite.position;
 
@@ -701,22 +780,28 @@ int main()
                 if ((x - pos.x) * (x - pos.x) + (y - pos.y) * (y - pos.y) >= bubble.radius * bubble.radius)
                     return false;
 
-                if (combo == 0)
+                if (comboPurchased)
                 {
-                    combo      = 1;
-                    comboTimer = 775.f;
+                    if (combo == 0)
+                    {
+                        combo      = 1;
+                        comboTimer = comboTimerStart;
+                    }
+                    else
+                    {
+                        ++combo;
+                        comboTimer += 150.f - static_cast<float>(combo) * 5.f;
+                    }
                 }
                 else
                 {
-                    ++combo;
-                    comboTimer += 135.f - static_cast<float>(combo) * 5.f;
+                    combo = 1;
                 }
 
                 const auto reward = rewardPerType[static_cast<int>(bubble.type)] * combo;
 
                 popBubble(bubble.type, reward, combo, x, y);
-
-                money += reward;
+                addReward(reward);
                 bubble = makeRandomBubble();
 
                 return true;
@@ -862,7 +947,7 @@ int main()
             const auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
             const auto range       = catRangePerType[static_cast<int>(cat.type)];
 
-            auto diff = cat.pawSprite.position - cat.position - sf::Vector2f{-20.f, 20.f};
+            auto diff = cat.pawSprite.position - cat.sprite.position - sf::Vector2f{-20.f, 20.f};
             cat.pawSprite.position -= diff * 0.01f * deltaTimeMs;
 
             if (cat.cooldown < 0.f)
@@ -909,20 +994,22 @@ int main()
                         {
                             const auto reward = rewardPerType[static_cast<int>(bubble.type)];
 
-                            money += reward;
+                            addReward(reward);
                             popBubble(bubble.type, reward, 1, x, y);
                             bubble = makeRandomBubble();
+
                             ++cat.hits;
                         }
                         else if (cat.type == CatType::Devil)
                         {
-                            // TODO
+                            bubble.type = BubbleType::Bomb;
+                            bubble.velocity.y += getRndFloat(0.1f, 0.2f);
+                            soundShine.play(playbackDevice); // TODO
 
-                            const auto reward = rewardPerType[static_cast<int>(bubble.type)];
+                            for (int i = 0; i < 4; ++i)
+                                particles.emplace_back(makeParticle(x, y, txrStarParticle, 0.25f)); // TODO
 
-                            money += reward;
-                            popBubble(bubble.type, reward, 1, x, y);
-                            bubble = makeRandomBubble();
+                            ++cat.hits;
                         }
 
                         cat.cooldown = 0.f;
@@ -942,13 +1029,18 @@ int main()
 
         std::erase_if(particles, [](const auto& particle) { return particle.sprite.color.a <= 0; });
 
-        comboTimer -= deltaTimeMs;
-
-        if (comboTimer <= 0.f)
+        if (comboTimer > 0.f)
         {
-            combo      = 0;
-            comboTimer = 0.f;
-            // TODO: play combo end sound
+            comboTimer -= deltaTimeMs;
+
+            if (comboTimer <= 0.f)
+            {
+                if (combo > 2)
+                    soundScratch.play(playbackDevice);
+
+                combo      = 0;
+                comboTimer = 0.f;
+            }
         }
 
         imGuiContext.update(window, deltaTime);
@@ -976,6 +1068,7 @@ int main()
             if (ImGui::Button(buffer))
             {
                 soundClick.play(playbackDevice);
+                soundBuy.play(playbackDevice);
 
                 result = true;
                 money -= cost;
@@ -991,18 +1084,38 @@ int main()
             return result;
         };
 
+        static bool longerComboPurchased       = false;
+        static bool bubbleTargetCountPurchased = false;
+        static bool catPurchased               = false;
+
+        if (!comboPurchased)
         {
-            std::sprintf(labelBuffer, "%d bubbles", bubbleTargetCount);
-            if (makePurchasableButton("More bubbles", 65.f, 1.5f, static_cast<float>(bubbleTargetCount) / 100.f))
-                bubbleTargetCount = static_cast<int>(static_cast<float>(bubbleTargetCount) * 1.25f);
+            std::sprintf(labelBuffer, "");
+            if (makePurchasableButton("Combo", 10.f, 1.0f, 1.f))
+            {
+                comboPurchased = true;
+                combo          = 0;
+            }
         }
 
+        if (comboPurchased)
         {
-            auto& rewardNormal = rewardPerType[static_cast<int>(BubbleType::Normal)];
+            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(comboTimerStart / 1000.f));
+            if (makePurchasableButton("Longer combo", 2.f, 1.5f, static_cast<float>(comboTimerStart) / 100.f))
+            {
+                longerComboPurchased = true;
+                comboTimerStart *= 1.15f;
+            }
+        }
 
-            std::sprintf(labelBuffer, "$%d", rewardNormal);
-            if (makePurchasableButton("Bubble value", 500.f, 1.5f, static_cast<float>(rewardNormal)))
-                rewardNormal += 1;
+        if (catPurchased && longerComboPurchased)
+        {
+            std::sprintf(labelBuffer, "%d bubbles", bubbleTargetCount);
+            if (makePurchasableButton("More bubbles", 25.f, 1.70f, static_cast<float>(bubbleTargetCount) / 100.f))
+            {
+                bubbleTargetCountPurchased = true;
+                bubbleTargetCount          = static_cast<int>(static_cast<float>(bubbleTargetCount) * 1.25f);
+            }
         }
 
         const auto countCatsByType = [&](CatType type)
@@ -1014,6 +1127,19 @@ int main()
         const auto nCatNormal  = countCatsByType(CatType::Normal);
         const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
         const auto nCatDevil   = countCatsByType(CatType::Devil);
+
+        if (bubbleTargetCountPurchased && nCatUnicorn > 2)
+        {
+            auto& rewardNormal = rewardPerType[static_cast<int>(BubbleType::Normal)];
+            auto& rewardStar   = rewardPerType[static_cast<int>(BubbleType::Star)];
+
+            std::sprintf(labelBuffer, "$%d | $%d", rewardNormal, rewardStar);
+            if (makePurchasableButton("Bubble value", 500.f, 1.75f, static_cast<float>(rewardNormal)))
+            {
+                rewardNormal += 1;
+                rewardStar += 5;
+            }
+        }
 
         const auto makeCat =
             [&](const CatType catType, const sf::Vector2f rangeOffset, const sf::FloatRect& txr, const sf::FloatRect& txrPaw)
@@ -1038,28 +1164,34 @@ int main()
             auto& range       = catRangePerType[static_cast<int>(catType)];
 
             std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldown / 1000.f));
-            if (makePurchasableButton(labelCooldown, 50.f, 1.25f, 10.f + (initialCooldown - maxCooldown) / 10.f))
+            if (makePurchasableButton(labelCooldown, 20.f, 1.25f, 13.f + (initialCooldown - maxCooldown) / 35.f))
                 maxCooldown *= 0.95f;
 
             std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
-            if (makePurchasableButton(labelRange, 10.f, 1.5f, range / 10.f))
+            if (makePurchasableButton(labelRange, 18.f, 1.75f, range / 15.f))
                 range *= 1.05f;
         };
 
-        std::sprintf(labelBuffer, "%d cats", nCatNormal);
-        if (makePurchasableButton("Cat", 35, 1.5f, static_cast<float>(nCatNormal)))
+        if (comboPurchased)
         {
-            for (auto& cat : cats)
-                cat.beingDragged = 0.f;
+            std::sprintf(labelBuffer, "%d cats", nCatNormal);
+            if (makePurchasableButton("Cat", 35, 1.5f, static_cast<float>(nCatNormal)))
+            {
+                catPurchased = true;
 
-            catDragPosition.emplace(mousePos);
-            cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
+                for (auto& cat : cats)
+                    cat.beingDragged = 0.f;
+
+                catDragPosition.emplace(mousePos);
+                cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
+            }
         }
 
-        if (nCatNormal > 0)
-        {
+        if (bubbleTargetCountPurchased && nCatNormal > 0 && nCatUnicorn > 0)
             makeCatModifiers("Cat cooldown", "Cat range", CatType::Normal, 1000.f);
 
+        if (bubbleTargetCountPurchased && nCatNormal > 3)
+        {
             std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
             if (makePurchasableButton("Unicat", 250, 1.5f, static_cast<float>(nCatUnicorn)))
             {
@@ -1070,7 +1202,7 @@ int main()
                 cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
             }
 
-            if (nCatUnicorn > 0)
+            if (nCatUnicorn > 0 && nCatDevil > 0)
                 makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 2000.f);
         }
 
@@ -1083,11 +1215,11 @@ int main()
                     cat.beingDragged = 0.f;
 
                 catDragPosition.emplace(mousePos);
-                cats.emplace_back(makeCat(CatType::Devil, {0.f, 0.f}, txrDevilCat, txrCatPaw));
+                cats.emplace_back(makeCat(CatType::Devil, {0.f, 100.f}, txrDevilCat, txrCatPaw));
             }
 
-            if (nCatDevil > 0)
-                makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 1000.f);
+            if (nCatDevil > 0 /* TODO */)
+                makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 5000.f);
         }
 
         ImGui::End();
@@ -1152,9 +1284,39 @@ int main()
         window.setView({.center = {resolution.x / 2.f, resolution.y / 2.f}, .size = resolution});
 
         moneyText.setString("$" + std::to_string(money));
+        moneyText.scale  = {1.f, 1.f};
+        moneyText.origin = moneyText.getLocalBounds().size / 2.f;
+
+        moneyText.setTopLeft({15.f, 70.f});
+
+        moneyText.scale = {1.f + moneyTextGrow * 0.2f, 1.f + moneyTextGrow * 0.2f};
+
+        if (moneyTextGrow > 0.f)
+            moneyTextGrow -= deltaTimeMs * 0.01f;
+
+        if (moneyTextAngle > 0.f)
+        {
+            moneyTextAngle -= deltaTimeMs * 0.005f;
+            if (moneyTextAngle < 0.f)
+                moneyTextAngle = 0.f;
+        }
+        else if (moneyTextAngle < 0.f)
+        {
+            moneyTextAngle += deltaTimeMs * 0.005f;
+            if (moneyTextAngle > 0.f)
+                moneyTextAngle = 0.f;
+        }
+
+        moneyText.rotation = sf::radians(moneyTextAngle);
+
+
         window.draw(moneyText);
-        comboText.setString("x" + std::to_string(combo + 1));
-        window.draw(comboText);
+
+        if (comboPurchased)
+        {
+            comboText.setString("x" + std::to_string(combo + 1));
+            window.draw(comboText);
+        }
 
         window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x, 110.f},
                                         .fillColor = sf::Color{255, 255, 255, 75},
@@ -1212,7 +1374,7 @@ int main()
                                                  255,
                                                  static_cast<sf::base::U8>(sf::base::clamp(logoOpacity, 0.f, 255.f))}};
 
-        // TODO: meow sound
+
         window.draw(logoSprite, txLogo);
 
         window.display();
