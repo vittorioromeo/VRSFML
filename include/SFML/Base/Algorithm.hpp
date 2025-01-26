@@ -77,13 +77,7 @@ template <typename Iter, typename Predicate>
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue) noexcept
 {
-    if (value < minValue)
-        return minValue;
-
-    if (value > maxValue)
-        return maxValue;
-
-    return value;
+    return (value < minValue) ? minValue : ((value > maxValue) ? maxValue : value);
 }
 
 
