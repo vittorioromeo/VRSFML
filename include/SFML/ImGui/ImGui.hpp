@@ -218,6 +218,12 @@ public:
     ////////////////////////////////////////////////////////////
     void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool wasLastInputTouch() const;
+
 private:
     // Shuts down all ImGui contexts
     void shutdown();
