@@ -380,8 +380,10 @@ struct [[nodiscard]] ImGuiPerWindowContext
     bool             mousePressed[3]{};
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
 
+    bool     lastInputSourceWasTouch{};
     bool     touchDown[3]{};
-    Vector2i touchPos{};
+    Vector2i touchPositions[3]{};
+    Vector2i lastTouchPos;
 
     unsigned int joystickId;
     ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};
@@ -657,12 +659,23 @@ struct [[nodiscard]] ImGuiPerWindowContext
         {
             mouseMoved                = false;
             const unsigned int button = touchBegan->finger;
+
             if (button < 3)
-                touchDown[touchBegan->finger] = true;
+            {
+                touchDown[button]      = true;
+                touchPositions[button] = touchBegan->position;
+            }
         }
-        else if (event.is<Event::TouchEnded>())
+        else if (const auto* touchEnded = event.getIf<Event::TouchEnded>())
         {
-            mouseMoved = false;
+            mouseMoved                = false;
+            const unsigned int button = touchEnded->finger;
+
+            if (button < 3)
+            {
+                touchDown[button]      = false;
+                touchPositions[button] = {};
+            }
         }
         else if (const auto* mouseWheelScrolled = event.getIf<Event::MouseWheelScrolled>())
         {
@@ -760,12 +773,16 @@ struct [[nodiscard]] ImGuiPerWindowContext
         if (!mouseMoved) // TODO P1: needed?
         {
             if (Touch::isDown(0))
-                touchPos = Touch::getPosition(0, theWindow);
+                lastTouchPos = Touch::getPosition(0, theWindow);
+            else if (touchDown[0])
+                lastTouchPos = touchPositions[0];
 
-            update(touchPos, target.getSize().toVector2f(), dt);
+            lastInputSourceWasTouch = true;
+            update(lastTouchPos, target.getSize().toVector2f(), dt);
         }
         else
         {
+            lastInputSourceWasTouch = false;
             update(Mouse::getPosition(theWindow), target.getSize().toVector2f(), dt);
         }
     }
@@ -1151,6 +1168,14 @@ void ImGuiContext::processEvent(const Window& window, const Event& event)
     SFML_BASE_ASSERT(m_impl->currentPerWindowContext && "No current window is set - forgot to call init?");
 
     m_impl->currentPerWindowContext->processEvent(event);
+}
+
+
+////////////////////////////////////////////////////////////
+bool ImGuiContext::wasLastInputTouch() const
+{
+    SFML_BASE_ASSERT(m_impl->currentPerWindowContext && "No current window is set - forgot to call init?");
+    return m_impl->currentPerWindowContext->lastInputSourceWasTouch;
 }
 
 
