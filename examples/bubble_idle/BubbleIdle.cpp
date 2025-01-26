@@ -40,9 +40,9 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <random>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include <cstdio>
@@ -641,9 +641,9 @@ int main()
     float                            scroll = 0.f;
 
     sf::base::Optional<sf::Vector2f> catDragPosition;
-    sf::base::Optional<sf::Vector2f> catDragPositionFinger;
 
-    std::unordered_map<unsigned int, sf::Vector2f> fingerPositions;
+    std::vector<sf::base::Optional<sf::Vector2f>> fingerPositions;
+    fingerPositions.resize(10);
 
     soundByteMeow.play(playbackDevice);
 
@@ -674,16 +674,15 @@ int main()
 #pragma clang diagnostic ignored "-Wshadow"
             if (const auto* e = event->getIf<sf::Event::TouchBegan>())
             {
-                fingerPositions[e->finger] = e->position.toVector2f();
+                fingerPositions[e->finger].emplace(e->position.toVector2f());
             }
             else if (const auto* e = event->getIf<sf::Event::TouchEnded>())
             {
-                fingerPositions.erase(e->finger);
+                fingerPositions[e->finger].reset();
             }
             else if (const auto* e = event->getIf<sf::Event::TouchMoved>())
             {
-                fingerPositions[e->finger] = e->position.toVector2f();
-                catDragPositionFinger.emplace(e->position.toVector2f());
+                fingerPositions[e->finger].emplace(e->position.toVector2f());
             }
             else if (const auto* e = event->getIf<sf::Event::MouseButtonPressed>())
             {
@@ -750,28 +749,47 @@ int main()
             money = 1'000'000'000u;
         }
 
-        if (fingerPositions.size() == 2 && !dragPosition.hasValue())
+        const auto firstTwoFingersPositions = [&]
         {
-            dragPosition.emplace(fingerPositions.begin()->second);
+            std::pair<sf::base::Optional<sf::Vector2f>, sf::base::Optional<sf::Vector2f>> result;
+
+            for (const auto& fingerPosition : fingerPositions)
+            {
+                if (fingerPosition.hasValue())
+                {
+                    if (!result.first.hasValue())
+                        result.first.emplace(*fingerPosition);
+                    else if (!result.second.hasValue())
+                        result.second.emplace(*fingerPosition);
+                }
+            }
+
+            return result;
+        }();
+
+        const bool twoFingersDown = firstTwoFingersPositions.first.hasValue() && firstTwoFingersPositions.second.hasValue();
+
+        if (twoFingersDown && !dragPosition.hasValue())
+        {
+            dragPosition.emplace(*firstTwoFingersPositions.first);
             dragPosition->x += scroll;
         }
 
-        if (fingerPositions.size() == 2 && dragPosition.hasValue())
+        if (twoFingersDown && dragPosition.hasValue())
         {
-            const auto v0 = fingerPositions.begin()->second;
-            const auto v1 = (++fingerPositions.begin())->second;
+            const auto v0 = *firstTwoFingersPositions.first;
+            const auto v1 = *firstTwoFingersPositions.second;
 
             scroll = dragPosition->x - static_cast<float>((v0.x + v1.x) / 2.f);
         }
 
-        if (dragPosition.hasValue() && fingerPositions.empty() && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
+        const bool allFingersNotDown = std::all_of(fingerPositions.begin(),
+                                                   fingerPositions.end(),
+                                                   [](const auto& fingerPosition) { return !fingerPosition.hasValue(); });
+
+        if (dragPosition.hasValue() && allFingersNotDown && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Right))
         {
             dragPosition.reset();
-        }
-
-        if (fingerPositions.empty())
-        {
-            catDragPositionFinger.reset();
         }
 
         scroll = sf::base::clamp(scroll, 0.f, (boundaries.x - resolution.x) / 2.f);
@@ -983,12 +1001,14 @@ int main()
                 }
             }
 
-            if (fingerPositions.size() == 1)
-                for (const auto& [finger, fingerPos] : fingerPositions)
-                {
-                    if (handleClick(fingerPos))
+            const bool onlyOneFingerPressed = std::count_if(fingerPositions.begin(),
+                                                            fingerPositions.end(),
+                                                            [](const auto& pos) { return pos.hasValue(); }) == 1;
+
+            if (onlyOneFingerPressed)
+                for (const auto& fingerPos : fingerPositions)
+                    if (fingerPos.hasValue() && handleClick(*fingerPos))
                         break;
-                }
         }
 
         for (SizeT ix = 0; ix < nCellsX; ++ix)
@@ -1025,9 +1045,9 @@ int main()
                 }
             }
 
-            if (catDragPositionFinger.hasValue())
+            if (fingerPositions[0].hasValue())
             {
-                const auto fingerPos = window.mapPixelToCoords(catDragPositionFinger->toVector2i(), gameView);
+                const auto fingerPos = window.mapPixelToCoords(fingerPositions[0]->toVector2i(), gameView);
 
                 if (cat.sprite.getGlobalBounds().contains(fingerPos))
                 {
@@ -1048,12 +1068,12 @@ int main()
             {
                 cat.cooldown = -1000.f;
 
-                if (catDragPositionFinger.hasValue())
+                if (fingerPositions[0].hasValue())
                 {
-                    const auto fingerPos = window.mapPixelToCoords(catDragPositionFinger->toVector2i(), gameView);
+                    const auto fingerPos = window.mapPixelToCoords(fingerPositions[0]->toVector2i(), gameView);
                     cat.position         = fingerPos;
                 }
-                else
+                else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || catDragPosition.hasValue())
                 {
                     cat.position = mousePos;
                 }
@@ -1249,8 +1269,14 @@ int main()
             const float rightWidgetPosX = 250.f - ImGui::GetCursorPosX();
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + rightWidgetPosX);
 
-            if (ImGui::Button(buffer))
+            ImGui::Button(buffer);
+            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
+                if (!imGuiContext.wasLastInputTouch())
+                {
+                    catDragPosition.emplace(mousePos);
+                }
+
                 soundClick.play(playbackDevice);
                 soundBuy.play(playbackDevice);
 
@@ -1335,7 +1361,7 @@ int main()
                                         .textureRect = txrPaw},
                        .textName     = makeCatNameText(getNextCatName()),
                        .textStatus   = makeCatStatusText(),
-                       .beingDragged = 3000.f};
+                       .beingDragged = 1500.f};
         };
 
         const auto makeCatModifiers =
@@ -1358,8 +1384,11 @@ int main()
             for (auto& cat : cats)
                 cat.beingDragged = 0.f;
 
-            catDragPosition.emplace(mousePos);
+             catDragPosition.reset();
         };
+
+        if (allFingersNotDown && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+            resetCatDrag();
 
         if (comboPurchased)
         {

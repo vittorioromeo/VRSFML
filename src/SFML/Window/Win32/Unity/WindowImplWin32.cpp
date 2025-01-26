@@ -22,6 +22,7 @@
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <dbt.h>
+#include <unordered_map>
 #include <winuser.h>
 
 // MinGW lacks the definition of some Win32 constants
@@ -119,6 +120,18 @@ void initRawMouse(HWND handle)
     ULONG contactVisualization = TOUCH_FEEDBACK_NONE; // 0
     if (SetWindowFeedbackSetting(handle, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(ULONG), &contactVisualization) != TRUE)
         sf::priv::err() << "Failed to disable touch gestures";
+}
+
+// TODO P0:
+std::unordered_map<UINT32, unsigned int> touchIdToIndexMap;
+unsigned int                             nextIndex = 0u;
+
+unsigned int getNormalizedIndex(UINT32 touchId)
+{
+    if (touchIdToIndexMap.find(touchId) == touchIdToIndexMap.end())
+        touchIdToIndexMap[touchId] = nextIndex++;
+
+    return touchIdToIndexMap[touchId];
 }
 
 } // namespace
@@ -288,6 +301,9 @@ WindowHandle WindowImplWin32::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void WindowImplWin32::processEvents()
 {
+    touchIdToIndexMap.clear();
+    nextIndex = 0u;
+    
     // We process the window events only if we own it
     if (!m_callback)
     {
@@ -1028,13 +1044,13 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                     switch (message) // 'msg' is the current message being processed
                     {
                         case WM_POINTERDOWN:
-                            pushEvent(sf::Event::TouchBegan{pointerId, {pt.x, pt.y}});
+                            pushEvent(sf::Event::TouchBegan{getNormalizedIndex(pointerId), {pt.x, pt.y}});
                             break;
                         case WM_POINTERUPDATE:
-                            pushEvent(sf::Event::TouchMoved{pointerId, {pt.x, pt.y}});
+                            pushEvent(sf::Event::TouchMoved{getNormalizedIndex(pointerId), {pt.x, pt.y}});
                             break;
                         case WM_POINTERUP:
-                            pushEvent(sf::Event::TouchEnded{pointerId, {pt.x, pt.y}});
+                            pushEvent(sf::Event::TouchEnded{getNormalizedIndex(pointerId), {pt.x, pt.y}});
                             break;
                     }
                 }
