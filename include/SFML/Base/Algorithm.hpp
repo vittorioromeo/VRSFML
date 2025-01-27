@@ -72,6 +72,20 @@ template <typename Iter, typename Predicate>
     return false;
 }
 
+// TODO P1: add countIf
+
+
+////////////////////////////////////////////////////////////
+template <typename Iter, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool allOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+{
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (!predicate(*rangeBegin))
+            return false;
+
+    return true;
+}
+
 
 ////////////////////////////////////////////////////////////
 template <typename T>
