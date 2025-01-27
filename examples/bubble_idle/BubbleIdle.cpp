@@ -390,7 +390,7 @@ struct CollisionResolution
     const float softnessFactor = 0.005f * deltaTimeMs;
 
     // Calculate the displacement needed to resolve the overlap
-    const sf::Vector2f normal       = diff.normalized();
+    const sf::Vector2f normal       = diff == sf::Vector2f{} ? sf::Vector2f{1.f, 0.f} : diff.normalized();
     const sf::Vector2f displacement = normal * overlap * softnessFactor;
 
     // Move the bubbles apart based on their masses (heavier bubbles move less)
@@ -462,11 +462,11 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Bubble makeRandomBubble(float radius)
+[[nodiscard]] Bubble makeRandomBubble(const float mapLimit, const float maxY, const float radius)
 {
     const float scaleFactor = getRndFloat(0.07f, 0.17f) * 0.61f;
 
-    return Bubble{.position = getRndVector2f(boundaries),
+    return Bubble{.position = getRndVector2f({mapLimit, maxY}),
                   .velocity = getRndVector2f({-0.1f, -0.1f}, {0.1f, 0.1f}),
                   .scale    = scaleFactor,
                   .radius   = radius * scaleFactor,
@@ -480,12 +480,13 @@ struct [[nodiscard]] GrowthFactors
     float initial;
     float linear;
     float exponential;
+    float exponentialBias;
 };
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::pure]] float computeGrowth(const GrowthFactors& factors, const float n)
 {
-    return factors.initial * std::pow(factors.exponential, n) + factors.linear * n;
+    return factors.initial * std::pow(factors.exponential, n * factors.exponentialBias) + factors.linear * n;
 }
 
 ////////////////////////////////////////////////////////////
@@ -527,9 +528,6 @@ void drawMinimap(const float                 mapLimit,
     // Size of full map in minimap space
     const sf::Vector2f minimapSize = boundaries / minimapScale;
 
-    // Rightmost visible coordinate in game world
-    const float maxVisibleX = mapLimit + resolution.x;
-
     //
     // White border around minimap
     const sf::RectangleShape minimapBorder{
@@ -537,7 +535,7 @@ void drawMinimap(const float                 mapLimit,
          .fillColor        = sf::Color::Transparent,
          .outlineColor     = sf::Color::White,
          .outlineThickness = 2.f,
-         .size             = {maxVisibleX / minimapScale, minimapSize.y}}};
+         .size             = {mapLimit / minimapScale, minimapSize.y}}};
 
     //
     // Blue rectangle showing current visible area
@@ -552,7 +550,7 @@ void drawMinimap(const float                 mapLimit,
     // Convert minimap dimensions to normalized `[0, 1]` range for scissor rectangle
     const auto  minimapScaledPosition = minimapPos.componentWiseDiv(resolution);
     const auto  minimapScaledSized    = minimapSize.componentWiseDiv(resolution);
-    const float progressRatio         = sf::base::clamp(maxVisibleX / boundaries.x, 0.f, 1.f);
+    const float progressRatio         = sf::base::clamp(mapLimit / boundaries.x, 0.f, 1.f);
 
     //
     // Special view that renders the world scaled down for minimap
@@ -593,6 +591,7 @@ void drawSplashScreen(const float deltaTimeMs, sf::RenderWindow& window, const s
     window.draw(logoSprite, txLogo);
 }
 
+
 } // namespace
 
 
@@ -606,22 +605,22 @@ int main()
     PurchasableScalingValue psvComboStartTime //
         {.nPurchases    = 0u,
          .nMaxPurchases = 20u,
-         .cost          = {.initial = 35.f, .linear = 0.f, .exponential = 1.525f},
-         .value         = {.initial = 0.55f, .linear = 0.05f, .exponential = 1.0256f}};
+         .cost          = {.initial = 35.f, .linear = 125.f, .exponential = 1.7f, .exponentialBias = 1.f},
+         .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f, .exponentialBias = 1.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleCount //
         {.nPurchases    = 0u,
          .nMaxPurchases = 30u,
-         .cost          = {.initial = 35.f, .linear = 250.f, .exponential = 1.65f},
-         .value         = {.initial = 500.f, .linear = 376.f, .exponential = 1.03f}};
+         .cost          = {.initial = 35.f, .linear = 1500.f, .exponential = 2.5f, .exponentialBias = 2.f},
+         .value         = {.initial = 500.f, .linear = 325.f, .exponential = 1.01f, .exponentialBias = 1.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleValue //
         {.nPurchases    = 0u,
          .nMaxPurchases = 19u,
-         .cost          = {.initial = 1000.f, .linear = 1000.f, .exponential = 1.5f},
-         .value         = {.initial = 0.f, .linear = 1.f, .exponential = 0.f}};
+         .cost          = {.initial = 1000.f, .linear = 2500.f, .exponential = 2.0f, .exponentialBias = 2.5f},
+         .value         = {.initial = 0.f, .linear = 1.f, .exponential = 0.f, .exponentialBias = 1.f}};
 
     //
     //
@@ -695,7 +694,7 @@ int main()
     soundClick.setAttenuation(uiAttenuation);
 
     sf::Sound soundByteMeow(soundBufferByteMeow);
-    soundByteMeow.setAttenuation(worldAttenuation);
+    soundByteMeow.setAttenuation(uiAttenuation);
 
     sf::Sound soundGrab(soundBufferGrab); // TODO: use
     soundGrab.setAttenuation(uiAttenuation);
@@ -744,6 +743,7 @@ int main()
     /* --- Textures */
     const auto txLogo       = sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value();
     const auto txBackground = sf::Texture::loadFromFile("resources/background.png", {.smooth = true}).value();
+    const auto txByteTip    = sf::Texture::loadFromFile("resources/bytetip.png", {.smooth = true}).value();
 
     /* --- Texture atlas rects */
     const auto txrWhiteDot     = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
@@ -940,6 +940,13 @@ int main()
 
     //
     //
+    // Tips
+    bool        tipsEnabled = true;
+    float       tipTimer    = 0.f;
+    std::string tipString;
+
+    //
+    //
     // Background music
     musicBGM.setLooping(true);
     musicBGM.setAttenuation(0.f);
@@ -1100,7 +1107,9 @@ int main()
             dragPosition.reset();
         }
 
-        scroll       = sf::base::clamp(scroll, 0.f, sf::base::min(mapLimit / 2.f, (boundaries.x - resolution.x) / 2.f));
+        scroll       = sf::base::clamp(scroll,
+                                 0.f,
+                                 sf::base::min(mapLimit / 2.f - resolution.x / 2.f, (boundaries.x - resolution.x) / 2.f));
         actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
 
         const sf::View gameView //
@@ -1117,8 +1126,13 @@ int main()
         // TODO: master volume controls here
         (void)playbackDevice.updateListener(listener);
 
-        for (SizeT i = bubbles.size(); i < static_cast<SizeT>(psvBubbleCount.currentValue()); ++i)
-            bubbles.emplace_back(makeRandomBubble(baseBubbleRadius));
+        const auto targetBubbleCountPerScreen = static_cast<SizeT>(
+            psvBubbleCount.currentValue() / (boundaries.x / resolution.x));
+        const auto nScreens          = static_cast<SizeT>(mapLimit / resolution.x) + 1;
+        const auto targetBubbleCount = targetBubbleCountPerScreen * nScreens;
+
+        for (SizeT i = bubbles.size(); i < targetBubbleCount; ++i)
+            bubbles.emplace_back(makeRandomBubble(mapLimit, boundaries.y, baseBubbleRadius));
 
         //
         //
@@ -1246,7 +1260,8 @@ int main()
                                 const SizeT newReward = getScaledReward(bubble.type) * 10u;
                                 self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
                                 addReward(newReward);
-                                bubble = makeRandomBubble(baseBubbleRadius);
+                                bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
+                                bubble.position.y -= bubble.radius;
                             }
                         }
                     }
@@ -1258,7 +1273,8 @@ int main()
             const auto reward = getScaledReward(bubble.type) * static_cast<SizeT>(combo);
             popBubble(popBubble, bubble.type, reward, combo, bubble.position.x, bubble.position.y);
             addReward(reward);
-            bubble = makeRandomBubble(baseBubbleRadius);
+            bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
+            bubble.position.y -= bubble.radius;
         };
 
         for (auto& bubble : bubbles)
@@ -1270,10 +1286,10 @@ int main()
 
             pos += bubble.velocity * deltaTimeMs;
 
-            if (pos.x - bubble.radius > boundaries.x)
+            if (pos.x - bubble.radius > mapLimit)
                 pos.x = -bubble.radius;
             else if (pos.x + bubble.radius < 0.f)
-                pos.x = boundaries.x + bubble.radius;
+                pos.x = mapLimit + bubble.radius;
 
             if (pos.y - bubble.radius > boundaries.y)
             {
@@ -1422,8 +1438,9 @@ int main()
             const auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
             const auto range       = catRangePerType[static_cast<int>(cat.type)];
 
-            auto diff = cat.pawSprite.position - cat.sprite.position - sf::Vector2f{-20.f, 20.f};
+            auto diff = cat.pawSprite.position - cat.sprite.position - sf::Vector2f{-25.f, 25.f};
             cat.pawSprite.position -= diff * 0.01f * deltaTimeMs;
+            cat.pawSprite.rotation = cat.pawSprite.rotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
 
             if (cat.cooldown < 0.f)
             {
@@ -1571,451 +1588,541 @@ int main()
         ImGui::SetNextWindowSizeConstraints(ImVec2(400.f, 0.f), ImVec2(1000.f, 600.f));
         ImGui::PushFont(fontImGuiDailyBubble);
 
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f); // Set corner radius
+
+        ImGuiStyle& style               = ImGui::GetStyle();
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f); // 65% transparent black
+
         ImGui::Begin("##menu",
                      nullptr,
-                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoTitleBar);
 
-        char buffer[256];
-        char labelBuffer[512];
+        ImGui::PopStyleVar();
 
 
-        const auto makeDoneButton = [&](const char* label)
+        if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
         {
-            ImGui::BeginDisabled(true);
-
-            ImGui::Text("%s", label);
-            ImGui::SameLine();
-
-            ImGui::SetWindowFontScale(0.5f);
-            ImGui::Text("%s", labelBuffer);
-            ImGui::SetWindowFontScale(1.f);
-            ImGui::SameLine();
-
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-            ImGui::Button("DONE", ImVec2(135.f, 0.0f));
-
-            ImGui::EndDisabled();
-        };
-
-        const auto countCatsByType = [&](CatType type)
-        {
-            return static_cast<int>(
-                std::count_if(cats.begin(), cats.end(), [type](const auto& cat) { return cat.type == type; }));
-        };
-
-        const auto nCatNormal  = countCatsByType(CatType::Normal);
-        const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
-        const auto nCatDevil   = countCatsByType(CatType::Devil);
-        const auto nCatWitch   = countCatsByType(CatType::Witch);
-
-        const auto globalCostMultiplier = [&]
-        {
-            // [ 0.25, 0.25 + 0.125, 0.25 + 0.125 + 0.0625, ... ]
-            const auto geomSum = [](auto n)
-            { return static_cast<float>(n) <= 0.f ? 0.f : 0.5f * (1.f - std::pow(0.5f, static_cast<float>(n) + 1.f)); };
-
-            return 1.f +                                            //
-                   (geomSum(psvComboStartTime.nPurchases) * 0.1f) + //
-                   (geomSum(psvBubbleCount.nPurchases) * 0.5f) +    //
-                   (geomSum(psvBubbleValue.nPurchases) * 1.f) +     //
-                   (geomSum(nCatNormal) * 0.3f) +                   //
-                   (geomSum(nCatUnicorn) * 0.4f) +                  //
-                   (geomSum(nCatDevil) * 0.5f) +                    //
-                   (geomSum(nCatWitch) * 0.6f);
-        };
-
-        const auto makePurchasableButton = [&](const char* label, float baseCost, float growthFactor, float count)
-        {
-            bool result = false;
-
-            const auto cost = static_cast<SizeT>(globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
-            std::sprintf(buffer, "$%zu##%s", cost, label);
-
-            ImGui::BeginDisabled(money < cost);
-
-            ImGui::Text("%s", label);
-            ImGui::SameLine();
-
-            ImGui::SetWindowFontScale(0.5f);
-            ImGui::Text("%s", labelBuffer);
-            ImGui::SetWindowFontScale(1.f);
-            ImGui::SameLine();
-
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-            ImGui::Button(buffer, ImVec2(135.f, 0.0f));
-
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            if (ImGui::BeginTabItem(" X "))
             {
-                if (!imGuiContext.wasLastInputTouch())
-                    catDragPosition.emplace(mousePos);
-
-                soundClick.play(playbackDevice);
-                soundBuy.play(playbackDevice);
-
-                result = true;
-                money -= cost;
+                ImGui::EndTabItem();
             }
 
-            ImGui::EndDisabled();
-            return result;
-        };
-
-        const auto makePurchasableButtonPSV = [&](const char* label, PurchasableScalingValue& psv)
-        {
-            const bool maxedOut = psv.nPurchases == psv.nMaxPurchases;
-
-            bool result = false;
-
-            const auto cost = static_cast<SizeT>(globalCostMultiplier() * psv.nextCost());
-
-            if (maxedOut)
-                std::sprintf(buffer, "MAX");
-            else
-                std::sprintf(buffer, "$%zu##%s", cost, label);
-
-            ImGui::BeginDisabled(maxedOut || money < cost);
-
-            ImGui::Text("%s", label);
-            ImGui::SameLine();
-
-            ImGui::SetWindowFontScale(0.5f);
-            ImGui::Text("%s", labelBuffer);
-            ImGui::SetWindowFontScale(1.f);
-            ImGui::SameLine();
-
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-            ImGui::Button(buffer, ImVec2(135.f, 0.0f));
-
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+            static auto selectOnce = ImGuiTabItemFlags_SetSelected;
+            if (ImGui::BeginTabItem(" Shop ", nullptr, selectOnce))
             {
-                soundClick.play(playbackDevice);
-                soundBuy.play(playbackDevice);
+                selectOnce = {};
 
-                result = true;
-                money -= cost;
+                char buffer[256];
+                char labelBuffer[512];
 
-                ++psv.nPurchases;
-            }
-
-            ImGui::EndDisabled();
-            return result;
-        };
-
-        const auto makePurchasableButtonOneTime = [&](const char* label, const SizeT xcost, bool& done)
-        {
-            bool result = false;
-
-            const auto cost = static_cast<SizeT>(globalCostMultiplier() * static_cast<float>(xcost));
-
-            if (done)
-                std::sprintf(buffer, "DONE");
-            else
-                std::sprintf(buffer, "$%zu##%s", cost, label);
-
-            ImGui::BeginDisabled(done || money < cost);
-
-            ImGui::Text("%s", label);
-
-            ImGui::SameLine();
-
-
-            ImGui::SetWindowFontScale(0.5f);
-            ImGui::Text("%s", labelBuffer);
-            ImGui::SetWindowFontScale(1.f);
-            ImGui::SameLine();
-
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-            ImGui::Button(buffer, ImVec2(135.f, 0.0f));
-
-            if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
-            {
-                soundClick.play(playbackDevice);
-                soundBuy.play(playbackDevice);
-
-                result = true;
-                money -= cost;
-
-                done = true;
-            }
-
-
-            ImGui::EndDisabled();
-
-            return result;
-        };
-
-        std::sprintf(labelBuffer, "");
-        if (makePurchasableButtonOneTime("Combo", 15, comboPurchased))
-            combo = 0;
-
-        if (comboPurchased)
-        {
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(psvComboStartTime.currentValue()));
-            makePurchasableButtonPSV("Longer combo", psvComboStartTime);
-        }
-
-        if (nCatNormal > 0 && psvComboStartTime.nPurchases > 0)
-        {
-            std::sprintf(labelBuffer, "");
-            if (makePurchasableButtonOneTime("Map scrolling", 50, mapPurchased))
-                scroll = 0.f;
-
-            if (mapPurchased)
-            {
-                if (mapLimit < boundaries.x - resolution.x)
+                const auto makeDoneButton = [&](const char* label)
                 {
-                    std::sprintf(labelBuffer,
-                                 "%.2f%%",
-                                 static_cast<double>(remap(mapLimit, 0.f, boundaries.x, 0.f, 100.f) + 10.f));
-                    if (makePurchasableButton("Extend map", 75.f, 4.5f, mapLimit / resolution.x))
+                    ImGui::BeginDisabled(true);
+
+                    ImGui::Text("%s", label);
+                    ImGui::SameLine();
+
+                    ImGui::SetWindowFontScale(0.5f);
+                    ImGui::Text("%s", labelBuffer);
+                    ImGui::SetWindowFontScale(1.f);
+                    ImGui::SameLine();
+
+                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
+                    ImGui::Button("DONE", ImVec2(135.f, 0.0f));
+
+                    ImGui::EndDisabled();
+                };
+
+                const auto countCatsByType = [&](CatType type)
+                {
+                    return static_cast<int>(
+                        std::count_if(cats.begin(), cats.end(), [type](const auto& cat) { return cat.type == type; }));
+                };
+
+                const auto nCatNormal  = countCatsByType(CatType::Normal);
+                const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
+                const auto nCatDevil   = countCatsByType(CatType::Devil);
+                const auto nCatWitch   = countCatsByType(CatType::Witch);
+
+                const auto globalCostMultiplier = [&]
+                {
+                    // [ 0.25, 0.25 + 0.125, 0.25 + 0.125 + 0.0625, ... ]
+                    const auto geomSum = [](auto n)
+                    {
+                        return static_cast<float>(n) <= 0.f ? 0.f
+                                                            : 0.5f * (1.f - std::pow(0.5f, static_cast<float>(n) + 1.f));
+                    };
+
+                    return 1.f +                                            //
+                           (geomSum(psvComboStartTime.nPurchases) * 0.1f) + //
+                           (geomSum(psvBubbleCount.nPurchases) * 0.5f) +    //
+                           (geomSum(psvBubbleValue.nPurchases) * 1.f) +     //
+                           (geomSum(nCatNormal) * 0.35f) +                  //
+                           (geomSum(nCatUnicorn) * 0.5f) +                  //
+                           (geomSum(nCatDevil) * 0.75f) +                   //
+                           (geomSum(nCatWitch) * 1.f);
+                };
+
+                const auto makePurchasableButton = [&](const char* label, float baseCost, float growthFactor, float count)
+                {
+                    bool result = false;
+
+                    const auto cost = static_cast<SizeT>(
+                        globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
+                    std::sprintf(buffer, "$%zu##%s", cost, label);
+
+                    ImGui::BeginDisabled(money < cost);
+
+                    ImGui::Text("%s", label);
+                    ImGui::SameLine();
+
+                    ImGui::SetWindowFontScale(0.5f);
+                    ImGui::Text("%s", labelBuffer);
+                    ImGui::SetWindowFontScale(1.f);
+                    ImGui::SameLine();
+
+                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
+                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        if (!imGuiContext.wasLastInputTouch())
+                            catDragPosition.emplace(mousePos);
+
+                        soundClick.play(playbackDevice);
+                        soundBuy.play(playbackDevice);
+
+                        result = true;
+                        money -= cost;
+                    }
+
+                    ImGui::EndDisabled();
+                    return result;
+                };
+
+                const auto makePurchasableButtonPSV = [&](const char* label, PurchasableScalingValue& psv)
+                {
+                    const bool maxedOut = psv.nPurchases == psv.nMaxPurchases;
+
+                    bool result = false;
+
+                    const auto cost = static_cast<SizeT>(globalCostMultiplier() * psv.nextCost());
+
+                    if (maxedOut)
+                        std::sprintf(buffer, "MAX");
+                    else
+                        std::sprintf(buffer, "$%zu##%s", cost, label);
+
+                    ImGui::BeginDisabled(maxedOut || money < cost);
+
+                    ImGui::Text("%s", label);
+                    ImGui::SameLine();
+
+                    ImGui::SetWindowFontScale(0.5f);
+                    ImGui::Text("%s", labelBuffer);
+                    ImGui::SetWindowFontScale(1.f);
+                    ImGui::SameLine();
+
+                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
+                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        soundClick.play(playbackDevice);
+                        soundBuy.play(playbackDevice);
+
+                        result = true;
+                        money -= cost;
+
+                        ++psv.nPurchases;
+                    }
+
+                    ImGui::EndDisabled();
+                    return result;
+                };
+
+                const auto makePurchasableButtonOneTime = [&](const char* label, const SizeT xcost, bool& done)
+                {
+                    bool result = false;
+
+                    const auto cost = static_cast<SizeT>(globalCostMultiplier() * static_cast<float>(xcost));
+
+                    if (done)
+                        std::sprintf(buffer, "DONE");
+                    else
+                        std::sprintf(buffer, "$%zu##%s", cost, label);
+
+                    ImGui::BeginDisabled(done || money < cost);
+
+                    ImGui::Text("%s", label);
+
+                    ImGui::SameLine();
+
+
+                    ImGui::SetWindowFontScale(0.5f);
+                    ImGui::Text("%s", labelBuffer);
+                    ImGui::SetWindowFontScale(1.f);
+                    ImGui::SameLine();
+
+                    ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
+                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
+                    if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        soundClick.play(playbackDevice);
+                        soundBuy.play(playbackDevice);
+
+                        result = true;
+                        money -= cost;
+
+                        done = true;
+                    }
+
+
+                    ImGui::EndDisabled();
+
+                    return result;
+                };
+
+                const auto doTip = [&](const char* str)
+                {
+                    if (!tipsEnabled)
+                        return;
+
+                    soundByteMeow.play(playbackDevice);
+                    tipString = str;
+                    tipTimer  = 4500.f;
+                };
+
+                std::sprintf(labelBuffer, "");
+                if (makePurchasableButtonOneTime("Combo", 15, comboPurchased))
+                {
+                    combo = 0;
+                    doTip("Pop bubbles in quick successions to\nkeep your combo up and make money!");
+                }
+
+                if (comboPurchased)
+                {
+                    std::sprintf(labelBuffer, "%.2fs", static_cast<double>(psvComboStartTime.currentValue()));
+                    makePurchasableButtonPSV("Longer combo", psvComboStartTime);
+                }
+
+                if (nCatNormal > 0 && psvComboStartTime.nPurchases > 0)
+                {
+                    std::sprintf(labelBuffer, "");
+                    if (makePurchasableButtonOneTime("Map scrolling", 50, mapPurchased))
                     {
                         mapLimit += resolution.x;
-                        mapPurchased = true;
+                        scroll = 0.f;
+
+                        doTip("You can scroll the map with right click\nor by dragging with two fingers!");
+                    }
+
+                    if (mapPurchased)
+                    {
+                        if (mapLimit < boundaries.x - resolution.x)
+                        {
+                            std::sprintf(labelBuffer,
+                                         "%.2f%%",
+                                         static_cast<double>(remap(mapLimit, 0.f, boundaries.x, 0.f, 100.f) + 10.f));
+                            if (makePurchasableButton("Extend map", 75.f, 4.75f, mapLimit / resolution.x))
+                            {
+                                mapLimit += resolution.x;
+                                mapPurchased = true;
+                            }
+                        }
+                        else
+                        {
+                            std::sprintf(labelBuffer, "100%%");
+                            makeDoneButton("Extend map");
+                        }
+                    }
+
+                    std::sprintf(labelBuffer, "%zu bubbles", static_cast<SizeT>(psvBubbleCount.currentValue()));
+                    makePurchasableButtonPSV("More bubbles", psvBubbleCount);
+                }
+
+                const bool bubbleValueUnlocked = psvBubbleCount.nPurchases > 0 && nCatUnicorn >= 3;
+                if (bubbleValueUnlocked)
+                {
+                    std::sprintf(labelBuffer, "x%zu", getScaledReward(BubbleType::Normal));
+                    makePurchasableButtonPSV("Bubble value", psvBubbleValue);
+                }
+
+                const auto makeCat = [&](const CatType        catType,
+                                         const sf::Vector2f   rangeOffset,
+                                         const sf::FloatRect& txr,
+                                         const sf::FloatRect& txrPaw)
+                {
+                    const auto pos = window.mapPixelToCoords((resolution / 2.f).toVector2i(), gameView);
+
+                    for (int i = 0; i < 32; ++i)
+                        particles.emplace_back(makeParticle(pos.x, pos.y, ParticleType::Star, 0.25f, 0.75f));
+
+                    return Cat{.type        = catType,
+                               .position    = pos,
+                               .rangeOffset = rangeOffset,
+                               .sprite = {.position = pos, .scale{0.2f, 0.2f}, .origin = txr.size / 2.f, .textureRect = txr},
+                               .pawSprite = {.position = pos, .scale{0.1f, 0.1f}, .origin = txrPaw.size / 2.f, .textureRect = txrPaw},
+                               .textName     = makeCatNameText(getNextCatName()),
+                               .textStatus   = makeCatStatusText(),
+                               .beingDragged = 0.f};
+                };
+
+                const auto makeCatModifiers =
+                    [&](const char* labelCooldown, const char* labelRange, const CatType catType, const float initialCooldown)
+                {
+                    auto& maxCooldown = catCooldownPerType[static_cast<int>(catType)];
+                    auto& range       = catRangePerType[static_cast<int>(catType)];
+
+                    std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldown / 1000.f));
+                    if (makePurchasableButton(labelCooldown, 20.f, 1.25f, 13.f + (initialCooldown - maxCooldown) / 35.f))
+                        maxCooldown *= 0.95f;
+
+                    std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
+                    if (makePurchasableButton(labelRange, 18.f, 1.75f, range / 15.f))
+                        range *= 1.05f;
+                };
+
+                const auto resetCatDrag = [&]
+                {
+                    for (auto& cat : cats)
+                        cat.beingDragged = 0.f;
+
+                    catDragPosition.reset();
+                };
+
+                if (countFingersDown == 0 && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
+                    resetCatDrag();
+
+                if (comboPurchased && psvComboStartTime.nPurchases > 0)
+                {
+                    std::sprintf(labelBuffer, "%d cats", nCatNormal);
+                    if (makePurchasableButton("Cat", 35, 1.7f, static_cast<float>(nCatNormal)))
+                    {
+                        resetCatDrag();
+                        cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
+
+                        if (nCatNormal == 0)
+                        {
+                            doTip("Cat periodically pop bubbles for you!\nYou can drag them around to position them.");
+                        }
                     }
                 }
-                else
+
+                const bool catUpgradesUnlocked = psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUnicorn >= 1;
+                if (catUpgradesUnlocked)
+                    makeCatModifiers("Cat cooldown", "Cat range", CatType::Normal, 1000.f);
+
+                // UNICORN CAT
+                const bool unicatsUnlocked        = psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
+                const bool unicatUpgradesUnlocked = unicatsUnlocked && nCatUnicorn >= 2 && nCatDevil >= 1;
+                if (unicatsUnlocked)
                 {
-                    std::sprintf(labelBuffer, "100%%");
-                    makeDoneButton("Extend map");
+                    std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
+                    if (makePurchasableButton("Unicat", 250, 1.725f, static_cast<float>(nCatUnicorn)))
+                    {
+                        resetCatDrag();
+                        cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
+
+                        if (nCatUnicorn == 0)
+                        {
+                            doTip(
+                                "Unicats transform bubbles in star bubbles,\nwhich are worth much more!\nPop them at "
+                                "the end of a combo for huge gains!");
+                        }
+                    }
+
+                    if (unicatUpgradesUnlocked)
+                        makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 2500.f);
                 }
-            }
 
-            std::sprintf(labelBuffer, "%zu bubbles", static_cast<SizeT>(psvBubbleCount.currentValue()));
-            makePurchasableButtonPSV("More bubbles", psvBubbleCount);
-        }
+                // DEVIL CAT
+                const bool devilcatsUnlocked = psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUnicorn >= 4;
+                const bool devilcatsUpgradesUnlocked = devilcatsUnlocked && nCatDevil >= 2 && nCatWitch >= 1;
+                if (devilcatsUnlocked)
+                {
+                    std::sprintf(labelBuffer, "%d devilcats", nCatDevil);
+                    if (makePurchasableButton("Devilcat", 15000.f, 1.6f, static_cast<float>(nCatDevil)))
+                    {
+                        resetCatDrag();
+                        cats.emplace_back(makeCat(CatType::Devil, {0.f, 100.f}, txrDevilCat, txrDevilCatPaw));
 
-        const bool bubbleValueUnlocked = psvBubbleCount.nPurchases > 0 && nCatUnicorn >= 3;
-        if (bubbleValueUnlocked)
-        {
-            std::sprintf(labelBuffer, "x%zu", getScaledReward(BubbleType::Normal));
-            makePurchasableButtonPSV("Bubble value", psvBubbleValue);
-        }
+                        if (nCatDevil == 0)
+                        {
+                            doTip(
+                                "Devilcats transform bubbles in bombs!\nPop a bomb to explode all nearby bubbles\nwith "
+                                "a huge x10 money multiplier!");
+                        }
+                    }
 
-        const auto makeCat =
-            [&](const CatType catType, const sf::Vector2f rangeOffset, const sf::FloatRect& txr, const sf::FloatRect& txrPaw)
-        {
-            return Cat{.type        = catType,
-                       .position    = mousePos,
-                       .rangeOffset = rangeOffset,
-                       .sprite = {.position = {200.f, 200.f}, .scale{0.2f, 0.2f}, .origin = txr.size / 2.f, .textureRect = txr},
-                       .pawSprite    = {.position = {200.f, 200.f},
-                                        .scale{0.1f, 0.1f},
-                                        .origin      = txrPaw.size / 2.f,
-                                        .textureRect = txrPaw},
-                       .textName     = makeCatNameText(getNextCatName()),
-                       .textStatus   = makeCatStatusText(),
-                       .beingDragged = 1500.f};
-        };
+                    if (devilcatsUpgradesUnlocked)
+                        makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 6000.f);
+                }
 
-        const auto makeCatModifiers =
-            [&](const char* labelCooldown, const char* labelRange, const CatType catType, const float initialCooldown)
-        {
-            auto& maxCooldown = catCooldownPerType[static_cast<int>(catType)];
-            auto& range       = catRangePerType[static_cast<int>(catType)];
+                // WITCH CAT
+                const bool witchCatUnlocked         = nCatNormal >= 10 && nCatUnicorn >= 5 && nCatDevil >= 2;
+                const bool witchCatUpgradesUnlocked = witchCatUnlocked && nCatDevil >= 10 && nCatWitch >= 5;
+                if (witchCatUnlocked)
+                {
+                    std::sprintf(labelBuffer, "%d witch cats", nCatWitch);
+                    if (makePurchasableButton("Witch cat", 20000.f, 1.5f, static_cast<float>(nCatWitch)))
+                    {
+                        resetCatDrag();
+                        cats.emplace_back(makeCat(CatType::Witch, {0.f, 0.f}, txrWitchCat, txrWitchCatPaw));
+                    }
 
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldown / 1000.f));
-            if (makePurchasableButton(labelCooldown, 20.f, 1.25f, 13.f + (initialCooldown - maxCooldown) / 35.f))
-                maxCooldown *= 0.95f;
+                    if (witchCatUpgradesUnlocked)
+                        makeCatModifiers("Witch cat cooldown", "Witch cat range", CatType::Witch, 2000.f);
+                }
 
-            std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
-            if (makePurchasableButton(labelRange, 18.f, 1.75f, range / 15.f))
-                range *= 1.05f;
-        };
+                const auto milestoneText = [&]() -> std::string
+                {
+                    if (!comboPurchased)
+                        return "buy combo to earn money faster";
 
-        const auto resetCatDrag = [&]
-        {
-            for (auto& cat : cats)
-                cat.beingDragged = 0.f;
+                    if (psvComboStartTime.nPurchases == 0)
+                        return "buy longer combo to unlock cats";
 
-            catDragPosition.reset();
-        };
+                    if (nCatNormal == 0)
+                        return "buy a cat";
 
-        if (countFingersDown == 0 && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-            resetCatDrag();
+                    std::string result;
+                    const auto  startList = [&](const char* s)
+                    {
+                        result += result.empty() ? "" : "\n\n";
+                        result += s;
+                    };
 
-        if (comboPurchased && psvComboStartTime.nPurchases > 0)
-        {
-            std::sprintf(labelBuffer, "%d cats", nCatNormal);
-            if (makePurchasableButton("Cat", 35, 1.7f, static_cast<float>(nCatNormal)))
-            {
-                resetCatDrag();
-                cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
-            }
-        }
+                    const auto needNCats = [&](auto& count, auto needed)
+                    {
+                        const char* name = "";
 
-        const bool catUpgradesUnlocked = psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUnicorn >= 1;
-        if (catUpgradesUnlocked)
-            makeCatModifiers("Cat cooldown", "Cat range", CatType::Normal, 1000.f);
-
-        // UNICORN CAT
-        const bool unicatsUnlocked        = psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
-        const bool unicatUpgradesUnlocked = unicatsUnlocked && nCatUnicorn >= 2 && nCatDevil >= 1;
-        if (unicatsUnlocked)
-        {
-            std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
-            if (makePurchasableButton("Unicat", 250, 1.7f, static_cast<float>(nCatUnicorn)))
-            {
-                resetCatDrag();
-                cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
-            }
-
-            if (unicatUpgradesUnlocked)
-                makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 2500.f);
-        }
-
-        // DEVIL CAT
-        const bool devilcatsUnlocked         = psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUnicorn >= 4;
-        const bool devilcatsUpgradesUnlocked = devilcatsUnlocked && nCatDevil >= 2 && nCatWitch >= 1;
-        if (devilcatsUnlocked)
-        {
-            std::sprintf(labelBuffer, "%d devilcats", nCatDevil);
-            if (makePurchasableButton("Devilcat", 2500.f, 1.5f, static_cast<float>(nCatDevil)))
-            {
-                resetCatDrag();
-                cats.emplace_back(makeCat(CatType::Devil, {0.f, 100.f}, txrDevilCat, txrDevilCatPaw));
-            }
-
-            if (devilcatsUpgradesUnlocked)
-                makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 6000.f);
-        }
-
-        // WITCH CAT
-        const bool witchCatUnlocked         = nCatNormal >= 10 && nCatUnicorn >= 5 && nCatDevil >= 2;
-        const bool witchCatUpgradesUnlocked = witchCatUnlocked && nCatDevil >= 10 && nCatWitch >= 5;
-        if (witchCatUnlocked)
-        {
-            std::sprintf(labelBuffer, "%d witch cats", nCatWitch);
-            if (makePurchasableButton("Witch cat", 20000.f, 1.5f, static_cast<float>(nCatWitch)))
-            {
-                resetCatDrag();
-                cats.emplace_back(makeCat(CatType::Witch, {0.f, 0.f}, txrWitchCat, txrWitchCatPaw));
-            }
-
-            if (witchCatUpgradesUnlocked)
-                makeCatModifiers("Witch cat cooldown", "Witch cat range", CatType::Witch, 2000.f);
-        }
-
-        const auto milestoneText = [&]() -> std::string
-        {
-            if (!comboPurchased)
-                return "buy combo to earn money faster";
-
-            if (psvComboStartTime.nPurchases == 0)
-                return "buy longer combo to unlock cats";
-
-            if (nCatNormal == 0)
-                return "buy a cat";
-
-            std::string result;
-            const auto  startList = [&](const char* s)
-            {
-                result += result.empty() ? "" : "\n\n";
-                result += s;
-            };
-
-            const auto needNCats = [&](auto& count, auto needed)
-            {
-                const char* name = "";
-
-                // clang-format off
+                        // clang-format off
                 if      (&count == &nCatNormal)  name = "cat";
                 else if (&count == &nCatUnicorn) name = "unicat";
                 else if (&count == &nCatDevil)   name = "devilcat";
                 else if (&count == &nCatWitch)   name = "witch cat";
-                // clang-format on
+                        // clang-format on
 
-                if (count < needed)
-                    result += "\n- buy " + std::to_string(needed - count) + " more " + name + "(s)";
-            };
+                        if (count < needed)
+                            result += "\n- buy " + std::to_string(needed - count) + " more " + name + "(s)";
+                    };
 
-            if (!mapPurchased)
-            {
-                startList("to increase playing area:");
-                result += "\n- buy map scrolling";
+                    if (!mapPurchased)
+                    {
+                        startList("to increase playing area:");
+                        result += "\n- buy map scrolling";
+                    }
+
+                    if (!unicatsUnlocked)
+                    {
+                        startList("to unlock unicats:");
+
+                        if (psvBubbleCount.nPurchases == 0)
+                            result += "\n- buy more bubbles";
+
+                        needNCats(nCatNormal, 3);
+                    }
+
+                    if (!catUpgradesUnlocked && unicatsUnlocked)
+                    {
+                        startList("to unlock cat upgrades:");
+
+                        if (psvBubbleCount.nPurchases == 0)
+                            result += "\n- buy more bubbles";
+
+                        needNCats(nCatNormal, 2);
+                        needNCats(nCatUnicorn, 1);
+                    }
+
+                    if (unicatsUnlocked && !bubbleValueUnlocked)
+                    {
+                        startList("to unlock bubble value:");
+
+                        if (psvBubbleCount.nPurchases == 0)
+                            result += "\n- buy more bubbles";
+
+                        needNCats(nCatUnicorn, 3);
+                    }
+
+                    if (unicatsUnlocked && bubbleValueUnlocked && !devilcatsUnlocked)
+                    {
+                        startList("to unlock devilcats:");
+
+                        if (psvBubbleValue.nPurchases == 0)
+                            result += "\n- buy bubble value";
+
+                        needNCats(nCatNormal, 6);
+                        needNCats(nCatUnicorn, 4);
+                    }
+
+                    if (unicatsUnlocked && devilcatsUnlocked && !unicatUpgradesUnlocked)
+                    {
+                        startList("to unlock unicat upgrades:");
+                        needNCats(nCatUnicorn, 2);
+                        needNCats(nCatDevil, 1);
+                    }
+
+                    if (unicatsUnlocked && devilcatsUnlocked && !witchCatUnlocked)
+                    {
+                        startList("to unlock witch cats:");
+                        needNCats(nCatNormal, 10);
+                        needNCats(nCatUnicorn, 5);
+                        needNCats(nCatDevil, 2);
+                    }
+
+                    if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !devilcatsUpgradesUnlocked)
+                    {
+                        startList("to unlock devilcat upgrades:");
+                        needNCats(nCatDevil, 2);
+                        needNCats(nCatWitch, 1);
+                    }
+
+                    if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !witchCatUpgradesUnlocked)
+                    {
+                        startList("to unlock witch cat upgrades:");
+                        needNCats(nCatDevil, 10);
+                        needNCats(nCatWitch, 5);
+                    }
+
+                    return result;
+                }();
+
+                if (milestoneText != "")
+                {
+                    ImGui::Separator();
+
+                    ImGui::SetWindowFontScale(0.65f);
+                    ImGui::Text("%s", milestoneText.c_str());
+
+                    ImGui::SetWindowFontScale(1.f);
+                }
+
+                ImGui::EndTabItem();
             }
 
-            if (!unicatsUnlocked)
+            if (ImGui::BeginTabItem(" Settings "))
             {
-                startList("to unlock unicats:");
+                static float masterVolume = 100.f;
+                static float musicVolume  = 100.f;
 
-                if (psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
+                ImGui::SetNextItemWidth(250.f);
+                ImGui::SliderFloat("Master volume", &masterVolume, 0.f, 100.f, "%.0f%%");
 
-                needNCats(nCatNormal, 3);
+                ImGui::SetNextItemWidth(250.f);
+                ImGui::SliderFloat("Music volume", &musicVolume, 0.f, 100.f, "%.0f%%");
+
+                listener.volume = masterVolume;
+                musicBGM.setVolume(musicVolume);
+
+                ImGui::Checkbox("Enable tips", &tipsEnabled);
+
+                ImGui::EndTabItem();
             }
 
-            if (!catUpgradesUnlocked && unicatsUnlocked)
-            {
-                startList("to unlock cat upgrades:");
-
-                if (psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
-
-                needNCats(nCatNormal, 2);
-                needNCats(nCatUnicorn, 1);
-            }
-
-            if (unicatsUnlocked && !bubbleValueUnlocked)
-            {
-                startList("to unlock bubble value:");
-
-                if (psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
-
-                needNCats(nCatUnicorn, 3);
-            }
-
-            if (unicatsUnlocked && bubbleValueUnlocked && !devilcatsUnlocked)
-            {
-                startList("to unlock devilcats:");
-
-                if (psvBubbleValue.nPurchases == 0)
-                    result += "\n- buy bubble value";
-
-                needNCats(nCatNormal, 6);
-                needNCats(nCatUnicorn, 4);
-            }
-
-            if (unicatsUnlocked && devilcatsUnlocked && !unicatUpgradesUnlocked)
-            {
-                startList("to unlock unicat upgrades:");
-                needNCats(nCatUnicorn, 2);
-                needNCats(nCatDevil, 1);
-            }
-
-            if (unicatsUnlocked && devilcatsUnlocked && !witchCatUnlocked)
-            {
-                startList("to unlock witch cats:");
-                needNCats(nCatNormal, 10);
-                needNCats(nCatUnicorn, 5);
-                needNCats(nCatDevil, 2);
-            }
-
-            if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !devilcatsUpgradesUnlocked)
-            {
-                startList("to unlock devilcat upgrades:");
-                needNCats(nCatDevil, 2);
-                needNCats(nCatWitch, 1);
-            }
-
-            if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !witchCatUpgradesUnlocked)
-            {
-                startList("to unlock witch cat upgrades:");
-                needNCats(nCatDevil, 10);
-                needNCats(nCatWitch, 5);
-            }
-
-            return result;
-        }();
-
-        if (milestoneText != "")
-        {
-            ImGui::Separator();
-
-            ImGui::SetWindowFontScale(0.65f);
-            ImGui::Text("%s", milestoneText.c_str());
-
-            ImGui::SetWindowFontScale(1.f);
+            ImGui::EndTabBar();
         }
 
         ImGui::End();
@@ -2153,6 +2260,37 @@ int main()
         //
         // Splash screen
         drawSplashScreen(deltaTimeMs, window, txLogo);
+
+        //
+        // Tips
+        if (tipTimer > 0.f)
+        {
+            tipTimer -= deltaTimeMs;
+
+            float fade = 255.f;
+
+            if (tipTimer > 4000.f)
+                fade = remap(tipTimer, 4000.f, 4500.f, 255.f, 0.f);
+            else if (tipTimer < 500.f)
+                fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
+
+            sf::Text tipText{fontDailyBubble,
+                             {.position      = {195.f, 265.f},
+                              .string        = tipString,
+                              .characterSize = 32u,
+                              .fillColor = sf::Color{0, 0, 0, static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f))},
+                              .outlineThickness = 0.f}};
+
+            sf::Sprite tipSprite{.position    = resolution / 2.f,
+                                 .scale       = {0.70f, 0.70f},
+                                 .origin      = txByteTip.getRect().size / 2.f,
+                                 .textureRect = txByteTip.getRect(),
+                                 .color = sf::Color{255, 255, 255, static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f))}};
+
+
+            window.draw(tipSprite, txByteTip);
+            window.draw(tipText);
+        }
 
         //
         // Display

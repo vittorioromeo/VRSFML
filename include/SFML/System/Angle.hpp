@@ -114,6 +114,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapUnsigned() const;
 
+    /// TODO P1: docs
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(Angle other,
+                                                                                                     float speed) const;
+
     ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
