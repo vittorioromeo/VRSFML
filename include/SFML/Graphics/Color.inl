@@ -9,7 +9,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Color Color::fromRGBA(base::U32 color)
+constexpr Color Color::fromRGBA(const base::U32 color)
 {
     return {static_cast<base::U8>((color & 0xff000000) >> 24),
             static_cast<base::U8>((color & 0x00ff0000) >> 16),
@@ -19,7 +19,7 @@ constexpr Color Color::fromRGBA(base::U32 color)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, base::U8 alpha)
+constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, const base::U8 alpha)
 {
     while (hue < 0.f)
         hue += 360.f;
@@ -77,14 +77,14 @@ constexpr base::U32 Color::toInteger() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color Color::withAlpha(base::U8 alpha) const
+constexpr Color Color::withAlpha(const base::U8 alpha) const
 {
     return {r, g, b, alpha};
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator+(Color lhs, Color rhs)
+constexpr Color operator+(const Color lhs, const Color rhs)
 {
     const auto clampedAdd = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
     {
@@ -97,7 +97,7 @@ constexpr Color operator+(Color lhs, Color rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator-(Color lhs, Color rhs)
+constexpr Color operator-(const Color lhs, const Color rhs)
 {
     const auto clampedSub = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
     {
@@ -110,7 +110,7 @@ constexpr Color operator-(Color lhs, Color rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color operator*(Color lhs, Color rhs)
+constexpr Color operator*(const Color lhs, const Color rhs)
 {
     const auto scaledMul = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
     {
@@ -123,21 +123,21 @@ constexpr Color operator*(Color lhs, Color rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator+=(Color& lhs, Color rhs)
+constexpr Color& operator+=(Color& lhs, const Color rhs)
 {
     return lhs = lhs + rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator-=(Color& lhs, Color rhs)
+constexpr Color& operator-=(Color& lhs, const Color rhs)
 {
     return lhs = lhs - rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color& operator*=(Color& lhs, Color rhs)
+constexpr Color& operator*=(Color& lhs, const Color rhs)
 {
     return lhs = lhs * rhs;
 }
