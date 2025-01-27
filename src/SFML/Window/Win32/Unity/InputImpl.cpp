@@ -19,7 +19,7 @@ namespace
 sf::base::EnumArray<sf::Keyboard::Key, sf::Keyboard::Scancode, sf::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
 sf::base::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::ScancodeCount> scancodeToKeyMapping; ///< Mapping from Scancode to Key
 
-sf::Keyboard::Key virtualKeyToSfKey(UINT virtualKey)
+[[nodiscard]] sf::Keyboard::Key virtualKeyToSfKey(UINT virtualKey)
 {
     // clang-format off
     switch (virtualKey)
@@ -130,7 +130,7 @@ sf::Keyboard::Key virtualKeyToSfKey(UINT virtualKey)
     // clang-format on
 }
 
-int sfKeyToVirtualKey(sf::Keyboard::Key key)
+[[nodiscard]] int sfKeyToVirtualKey(sf::Keyboard::Key key)
 {
     // clang-format off
     switch (key)
@@ -241,7 +241,7 @@ int sfKeyToVirtualKey(sf::Keyboard::Key key)
     // clang-format on
 }
 
-WORD sfScanToWinScan(sf::Keyboard::Scancode code)
+[[nodiscard]] WORD sfScanToWinScan(sf::Keyboard::Scancode code)
 {
     // Convert an SFML scancode to a Windows scancode
     // Reference: https://msdn.microsoft.com/en-us/library/aa299374(v=vs.60).aspx
@@ -412,7 +412,7 @@ WORD sfScanToWinScan(sf::Keyboard::Scancode code)
     // clang-format on
 }
 
-WORD sfScanToWinScanExtended(sf::Keyboard::Scancode code)
+[[nodiscard]] WORD sfScanToWinScanExtended(sf::Keyboard::Scancode code)
 {
     // Convert an SFML scancode to a Windows scancode
     // Reference: https://msdn.microsoft.com/en-us/library/aa299374(v=vs.60).aspx
@@ -465,7 +465,7 @@ WORD sfScanToWinScanExtended(sf::Keyboard::Scancode code)
     // clang-format on
 }
 
-UINT sfScanToVirtualKey(sf::Keyboard::Scancode code)
+[[nodiscard]] UINT sfScanToVirtualKey(sf::Keyboard::Scancode code)
 {
     const WORD winScancode = sfScanToWinScan(code);
 
@@ -494,7 +494,7 @@ UINT sfScanToVirtualKey(sf::Keyboard::Scancode code)
     // clang-format on
 }
 
-sf::base::Optional<sf::String> sfScanToConsumerKeyName(sf::Keyboard::Scancode code)
+[[nodiscard]] sf::base::Optional<sf::String> sfScanToConsumerKeyName(sf::Keyboard::Scancode code)
 {
     // Convert an SFML scancode to a Windows consumer keyboard key name
     // Reference: https://learn.microsoft.com/en-us/windows/win32/inputdev/about-keyboard-input#keystroke-messages
@@ -552,12 +552,12 @@ void ensureMappings()
     isMappingInitialized = true;
 }
 
-bool isValidScancode(sf::Keyboard::Scancode code)
+[[nodiscard]] bool isValidScancode(sf::Keyboard::Scancode code)
 {
     return code > sf::Keyboard::Scan::Unknown && static_cast<unsigned int>(code) < sf::Keyboard::ScancodeCount;
 }
 
-bool isValidKey(sf::Keyboard::Key key)
+[[nodiscard]] bool isValidKey(sf::Keyboard::Key key)
 {
     return key > sf::Keyboard::Key::Unknown && static_cast<unsigned int>(key) < sf::Keyboard::KeyCount;
 }
@@ -620,6 +620,7 @@ String getDescription(Keyboard::Scancode code)
     // Remap F13-F23 to values supported by GetKeyNameText
     if ((winCode >= 0x64) && (winCode <= 0x6E))
         winCode += 0x18;
+
     // Remap F24 to value supported by GetKeyNameText
     if (winCode == 0x76)
         winCode = 0x87;
@@ -643,28 +644,24 @@ void setVirtualKeyboardVisible(bool /*visible*/)
 ////////////////////////////////////////////////////////////
 bool isMouseButtonPressed(Mouse::Button button)
 {
-    int virtualKey = 0;
-    switch (button)
+    const int virtualKey = [&]
     {
-        case Mouse::Button::Left:
-            virtualKey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON;
-            break;
-        case Mouse::Button::Right:
-            virtualKey = GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON;
-            break;
-        case Mouse::Button::Middle:
-            virtualKey = VK_MBUTTON;
-            break;
-        case Mouse::Button::Extra1:
-            virtualKey = VK_XBUTTON1;
-            break;
-        case Mouse::Button::Extra2:
-            virtualKey = VK_XBUTTON2;
-            break;
-        default:
-            virtualKey = 0;
-            break;
-    }
+        switch (button)
+        {
+            case Mouse::Button::Left:
+                return GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON;
+            case Mouse::Button::Right:
+                return GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON;
+            case Mouse::Button::Middle:
+                return VK_MBUTTON;
+            case Mouse::Button::Extra1:
+                return VK_XBUTTON1;
+            case Mouse::Button::Extra2:
+                return VK_XBUTTON2;
+            default:
+                return 0;
+        }
+    }();
 
     return (GetAsyncKeyState(virtualKey) & 0x8000) != 0;
 }
@@ -716,6 +713,7 @@ void setMousePosition(Vector2i position, const WindowBase& relativeTo)
 ////////////////////////////////////////////////////////////
 bool isTouchDown(unsigned int /* finger */)
 {
+    // TODO P1: implement via WM_ pointer messages
     // Not applicable
     return false;
 }
@@ -724,6 +722,7 @@ bool isTouchDown(unsigned int /* finger */)
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int /* finger */)
 {
+    // TODO P1: implement via WM_ pointer messages
     // Not applicable
     return {};
 }
@@ -732,6 +731,7 @@ Vector2i getTouchPosition(unsigned int /* finger */)
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int /* finger */, const WindowBase& /* relativeTo */)
 {
+    // TODO P1: implement via WM_ pointer messages
     // Not applicable
     return {};
 }
