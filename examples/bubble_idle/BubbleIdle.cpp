@@ -18,6 +18,7 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -681,19 +682,46 @@ int main()
     const auto soundBufferHex       = sf::SoundBuffer::loadFromFile("resources/hex.ogg").value();
 
     /* --- Sounds */
+    const float worldAttenuation = 0.0015f;
+    const float uiAttenuation    = 0.f;
+
     sf::Sound soundPop(soundBufferPop);
+    soundPop.setAttenuation(worldAttenuation);
+
     sf::Sound soundShine(soundBufferShine);
+    soundShine.setAttenuation(worldAttenuation);
+
     sf::Sound soundClick(soundBufferClick);
+    soundClick.setAttenuation(uiAttenuation);
+
     sf::Sound soundByteMeow(soundBufferByteMeow);
+    soundByteMeow.setAttenuation(worldAttenuation);
+
     sf::Sound soundGrab(soundBufferGrab); // TODO: use
+    soundGrab.setAttenuation(uiAttenuation);
+
     sf::Sound soundDrop(soundBufferDrop); // TODO: use
+    soundDrop.setAttenuation(uiAttenuation);
+
     sf::Sound soundScratch(soundBufferScratch);
+    soundScratch.setAttenuation(uiAttenuation);
     soundScratch.setVolume(35.f);
+
     sf::Sound soundBuy(soundBufferBuy);
+    soundBuy.setAttenuation(uiAttenuation);
+
     sf::Sound soundExplosion(soundBufferExplosion);
+    soundExplosion.setAttenuation(worldAttenuation);
     soundExplosion.setVolume(75.f);
+
     sf::Sound soundMakeBomb(soundBufferMakeBomb);
+    soundMakeBomb.setAttenuation(worldAttenuation);
+
     sf::Sound soundHex(soundBufferHex);
+    soundHex.setAttenuation(worldAttenuation);
+
+    /* --- Listener */
+    sf::Listener listener;
 
     /* --- Images */
     const auto imgBubble128    = sf::Image::loadFromFile("resources/bubble2.png").value();
@@ -914,6 +942,7 @@ int main()
     //
     // Background music
     musicBGM.setLooping(true);
+    musicBGM.setAttenuation(0.f);
     musicBGM.play(playbackDevice);
     musicBGM.setVolume(75.f);
 
@@ -1081,7 +1110,12 @@ int main()
                         resolution.y / 2.f},
              .size   = resolution};
 
+
         const auto mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window), gameView);
+
+        listener.position = {mousePos.x, mousePos.y, 0.f};
+        // TODO: master volume controls here
+        (void)playbackDevice.updateListener(listener);
 
         for (SizeT i = bubbles.size(); i < static_cast<SizeT>(psvBubbleCount.currentValue()); ++i)
             bubbles.emplace_back(makeRandomBubble(baseBubbleRadius));
@@ -1164,8 +1198,9 @@ int main()
             auto& tp = textParticles.emplace_back(makeTextParticle(x, y, combo));
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%zu", reward);
 
-            soundPop.play(playbackDevice);
+            soundPop.setPosition({x, y});
             soundPop.setPitch(remap(static_cast<float>(combo), 1, 10, 1.f, 2.f));
+            soundPop.play(playbackDevice);
 
             for (int i = 0; i < 32; ++i)
                 particles.emplace_back(makeParticle(x, y, ParticleType::Bubble, 0.5f, 0.5f));
@@ -1179,6 +1214,7 @@ int main()
 
             if (bubbleType == BubbleType::Bomb)
             {
+                soundExplosion.setPosition({x, y});
                 soundExplosion.play(playbackDevice);
 
                 for (int i = 0; i < 32; ++i)
@@ -1438,6 +1474,7 @@ int main()
 
                     if (witchHits > 0)
                     {
+                        soundHex.setPosition({cx, cy});
                         soundHex.play(playbackDevice);
 
                         cat.textStatusShakeEffect.bump(1.5f);
@@ -1466,6 +1503,7 @@ int main()
                         {
                             bubble.type       = BubbleType::Star;
                             bubble.velocity.y = getRndFloat(-0.1f, -0.05f);
+                            soundShine.setPosition({x, y});
                             soundShine.play(playbackDevice);
 
                             for (int i = 0; i < 4; ++i)
@@ -1485,6 +1523,7 @@ int main()
                         {
                             bubble.type = BubbleType::Bomb;
                             bubble.velocity.y += getRndFloat(0.1f, 0.2f);
+                            soundMakeBomb.setPosition({x, y});
                             soundMakeBomb.play(playbackDevice);
 
                             for (int i = 0; i < 8; ++i)
@@ -1985,7 +2024,6 @@ int main()
         window.clear(sf::Color{157, 171, 191});
 
         window.setView(gameView);
-
         window.draw(txBackground);
 
         cpuDrawableBatch.clear();
