@@ -14,7 +14,6 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
@@ -53,13 +52,14 @@
 
 #include <cstdio>
 
-#define BUBBLEBYTE_VERSION_STR "v0.0.2"
+#define BUBBLEBYTE_VERSION_STR "v0.0.3"
 
 
 namespace
 {
 ////////////////////////////////////////////////////////////
 using sf::base::SizeT;
+using sf::base::U64;
 
 ////////////////////////////////////////////////////////////
 constexpr sf::Vector2f resolution{1366.f, 768.f};
@@ -107,7 +107,7 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
     if (speed <= 0.0f)
         return target; // Instant snap if time constant is zero or negative
 
-    float factor = 1.0f - sf::base::exp(-deltaTimeMs / speed);
+    const float factor = 1.0f - sf::base::exp(-deltaTimeMs / speed);
     return current + (target - current) * factor;
 }
 
@@ -326,8 +326,8 @@ struct [[nodiscard]] Cat
     sf::Sprite pawSprite;
     float      cooldown = 0.f;
 
-    sf::Text        textName;
-    sf::Text        textStatus;
+    SizeT nameIdx;
+
     TextShakeEffect textStatusShakeEffect{};
 
     float beingDragged = 0.f;
@@ -336,7 +336,6 @@ struct [[nodiscard]] Cat
     [[nodiscard]] bool update(const float maxCooldown, const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
-        textStatusShakeEffect.applyToText(textStatus);
 
         wobbleTimer += deltaTime * 0.002f;
         sprite.position.x = position.x;
@@ -371,7 +370,9 @@ struct CollisionResolution
     const sf::Vector2f iVelocity,
     const sf::Vector2f jVelocity,
     const float        iRadius,
-    const float        jRadius)
+    const float        jRadius,
+    const float        iMassMult,
+    const float        jMassMult)
 {
     const sf::Vector2f diff        = jPosition - iPosition;
     const float        squaredDiff = diff.lengthSquared();
@@ -394,15 +395,15 @@ struct CollisionResolution
     const sf::Vector2f displacement = normal * overlap * softnessFactor;
 
     // Move the bubbles apart based on their masses (heavier bubbles move less)
-    const float m1        = iRadius * iRadius; // Mass of bubble i (quadratic scaling)
-    const float m2        = jRadius * jRadius; // Mass of bubble j (quadratic scaling)
+    const float m1        = iRadius * iRadius * iMassMult; // Mass of bubble i (quadratic scaling)
+    const float m2        = jRadius * jRadius * jMassMult; // Mass of bubble j (quadratic scaling)
     const float totalMass = m1 + m2;
 
     // Velocity resolution calculations
     const float vRelDotNormal = (iVelocity - jVelocity).dot(normal);
 
-    sf::Vector2f velocityChangeI(0.0f, 0.0f);
-    sf::Vector2f velocityChangeJ(0.0f, 0.0f);
+    sf::Vector2f velocityChangeI;
+    sf::Vector2f velocityChangeJ;
 
     // Only apply impulse if bubbles are moving towards each other
     if (vRelDotNormal > 0)
@@ -432,7 +433,9 @@ bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBu
                                         iBubble.velocity,
                                         jBubble.velocity,
                                         iBubble.radius,
-                                        jBubble.radius);
+                                        jBubble.radius,
+                                        iBubble.type == BubbleType::Bomb ? 5.f : 1.f,
+                                        jBubble.type == BubbleType::Bomb ? 5.f : 1.f);
 
     if (!result.hasValue())
         return false;
@@ -451,7 +454,7 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
     const auto iRadius = iCat.sprite.textureRect.size.x * iCat.sprite.scale.x * 0.75f;
     const auto jRadius = jCat.sprite.textureRect.size.x * jCat.sprite.scale.x * 0.75f;
 
-    const auto result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iRadius, jRadius);
+    const auto result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iRadius, jRadius, 1.f, 1.f);
     if (!result.hasValue())
         return false;
 
@@ -464,7 +467,7 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 ////////////////////////////////////////////////////////////
 [[nodiscard]] Bubble makeRandomBubble(const float mapLimit, const float maxY, const float radius)
 {
-    const float scaleFactor = getRndFloat(0.07f, 0.17f) * 0.61f;
+    const float scaleFactor = getRndFloat(0.07f, 0.17f) * 0.65f;
 
     return Bubble{.position = getRndVector2f({mapLimit, maxY}),
                   .velocity = getRndVector2f({-0.1f, -0.1f}, {0.1f, 0.1f}),
@@ -479,14 +482,16 @@ struct [[nodiscard]] GrowthFactors
 {
     float initial;
     float linear;
+    float multiplicative;
     float exponential;
-    float exponentialBias;
+    float flat;
 };
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::pure]] float computeGrowth(const GrowthFactors& factors, const float n)
 {
-    return factors.initial * std::pow(factors.exponential, n * factors.exponentialBias) + factors.linear * n;
+    return (factors.initial + n * factors.multiplicative) * std::pow(factors.exponential, n) + factors.linear * n +
+           factors.flat;
 }
 
 ////////////////////////////////////////////////////////////
@@ -511,7 +516,8 @@ struct [[nodiscard]] PurchasableScalingValue
 };
 
 ////////////////////////////////////////////////////////////
-void drawMinimap(const float                 mapLimit,
+void drawMinimap(const float                 minimapScale,
+                 const float                 mapLimit,
                  const sf::View&             gameView,
                  const sf::View&             hudView,
                  sf::RenderTarget&           window,
@@ -519,9 +525,6 @@ void drawMinimap(const float                 mapLimit,
                  const sf::CPUDrawableBatch& cpuDrawableBatch,
                  const sf::TextureAtlas&     textureAtlas)
 {
-    // Scaling factor for world-to-minimap conversion
-    constexpr float minimapScale = 20.f;
-
     // Screen position of minimap's top-left corner
     constexpr sf::Vector2f minimapPos = {15.f, 15.f};
 
@@ -583,7 +586,7 @@ void drawSplashScreen(const float deltaTimeMs, sf::RenderWindow& window, const s
 
     sf::Sprite logoSprite{.position    = resolution / 2.f,
                           .scale       = {0.70f, 0.70f},
-                          .origin      = txLogo.getRect().size / 2.f,
+                          .origin      = txLogo.getSize().toVector2f() / 2.f,
                           .textureRect = txLogo.getRect(),
                           .color = sf::Color{255, 255, 255, static_cast<sf::base::U8>(sf::base::clamp(logoOpacity, 0.f, 255.f))}};
 
@@ -605,22 +608,25 @@ int main()
     PurchasableScalingValue psvComboStartTime //
         {.nPurchases    = 0u,
          .nMaxPurchases = 20u,
-         .cost          = {.initial = 35.f, .linear = 125.f, .exponential = 1.7f, .exponentialBias = 1.f},
-         .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f, .exponentialBias = 1.f}};
+
+         .cost  = {.initial = 35.f, .linear = 125.f, .multiplicative = 1.f, .exponential = 1.7f, .flat = 0.f},
+         .value = {.initial = 0.55f, .linear = 0.04f, .multiplicative = 1.f, .exponential = 1.02f, .flat = 0.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleCount //
         {.nPurchases    = 0u,
          .nMaxPurchases = 30u,
-         .cost          = {.initial = 35.f, .linear = 1500.f, .exponential = 2.5f, .exponentialBias = 2.f},
-         .value         = {.initial = 500.f, .linear = 325.f, .exponential = 1.01f, .exponentialBias = 1.f}};
+
+         .cost  = {.initial = 35.f, .linear = 1500.f, .multiplicative = 1.f, .exponential = 2.5f, .flat = 0.f},
+         .value = {.initial = 500.f, .linear = 325.f, .multiplicative = 1.f, .exponential = 1.01f, .flat = 0.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleValue //
         {.nPurchases    = 0u,
          .nMaxPurchases = 19u,
-         .cost          = {.initial = 1000.f, .linear = 2500.f, .exponential = 2.0f, .exponentialBias = 2.5f},
-         .value         = {.initial = 0.f, .linear = 1.f, .exponential = 0.f, .exponentialBias = 1.f}};
+
+         .cost  = {.initial = 1000.f, .linear = 2500.f, .multiplicative = 1.f, .exponential = 2.0f, .flat = 0.f},
+         .value = {.initial = 0.f, .linear = 1.f, .multiplicative = 1.f, .exponential = 0.f, .flat = 0.f}};
 
     //
     //
@@ -668,9 +674,9 @@ int main()
     auto musicBGM = sf::Music::openFromFile("resources/hibiscus.mp3").value();
 
     /* --- Sound buffers */
-    const auto soundBufferPop       = sf::SoundBuffer::loadFromFile("resources/pop.wav").value();
+    const auto soundBufferPop       = sf::SoundBuffer::loadFromFile("resources/pop.ogg").value();
     const auto soundBufferShine     = sf::SoundBuffer::loadFromFile("resources/shine.ogg").value();
-    const auto soundBufferClick     = sf::SoundBuffer::loadFromFile("resources/click2.wav").value();
+    const auto soundBufferClick     = sf::SoundBuffer::loadFromFile("resources/click2.ogg").value();
     const auto soundBufferByteMeow  = sf::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
     const auto soundBufferGrab      = sf::SoundBuffer::loadFromFile("resources/grab.ogg").value();
     const auto soundBufferDrop      = sf::SoundBuffer::loadFromFile("resources/drop.ogg").value();
@@ -742,7 +748,7 @@ int main()
 
     /* --- Textures */
     const auto txLogo       = sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value();
-    const auto txBackground = sf::Texture::loadFromFile("resources/background.png", {.smooth = true}).value();
+    const auto txBackground = sf::Texture::loadFromFile("resources/background.jpg", {.smooth = true}).value();
     const auto txByteTip    = sf::Texture::loadFromFile("resources/bytetip.png", {.smooth = true}).value();
 
     /* --- Texture atlas rects */
@@ -780,7 +786,6 @@ int main()
                         .outlineColor     = colorBlueOutline,
                         .outlineThickness = 2.f}};
 
-
     sf::Text comboText{fontDailyBubble,
                        {.position         = {15.f, 105.f},
                         .string           = "x1",
@@ -792,29 +797,6 @@ int main()
     TextShakeEffect moneyTextShakeEffect;
     TextShakeEffect comboTextShakeEffect;
 
-    //
-    //
-    // Helper functions for cat creation
-    const auto makeCatNameText = [&](const char* name)
-    {
-        return sf::Text{fontDailyBubble,
-                        {.string           = name,
-                         .characterSize    = 24u,
-                         .fillColor        = sf::Color::White,
-                         .outlineColor     = colorBlueOutline,
-                         .outlineThickness = 1.5f}};
-    };
-
-    const auto makeCatStatusText = [&]()
-    {
-        return sf::Text{fontDailyBubble,
-                        {.characterSize    = 16u,
-                         .fillColor        = sf::Color::White,
-                         .outlineColor     = colorBlueOutline,
-                         .outlineThickness = 1.f}};
-    };
-
-    //
     //
     // Spatial partitioning
     const float gridSize = 64.f;
@@ -841,28 +823,30 @@ int main()
 
     bool  comboPurchased = false;
     bool  mapPurchased   = false;
-    float mapLimit       = 1366.f;
+    float mapLimit       = resolution.x;
 
     //
     //
     // Scaling values (persistent)
-    const SizeT rewardPerType[3]{
+    const U64 rewardPerType[3]{
         1u,  // Normal
         25u, // Star
         1u,  // Bomb
     };
 
     const auto getScaledReward = [&](const BubbleType type)
-    { return rewardPerType[static_cast<SizeT>(type)] * static_cast<SizeT>(psvBubbleValue.currentValue() + 1); };
+    { return rewardPerType[static_cast<SizeT>(type)] * static_cast<U64>(psvBubbleValue.currentValue() + 1); };
 
+    // TODO: make const and apply scaler on use
     float catCooldownPerType[5]{
         1000.f, // Normal
-        2500.f, // Unicorn
-        6000.f, // Devil
+        3000.f, // Unicorn
+        7000.f, // Devil
         2000.f, // Witch
         1000.f  // Astromeow
     };
 
+    // TODO: make const and apply scaler on use
     float catRangePerType[5]{
         96.f,  // Normal
         64.f,  // Unicorn
@@ -890,8 +874,9 @@ int main()
                         "Carotina",   "Waffle",     "Pancake",       "Muffin",     "Cupcake",       "Donut",
                         "Jinx",       "Miao",       "Arnold",        "Granita",    "Leone",         "Pangocciolo"};
 
+    // TODO: use seed for persistance
     std::shuffle(catNames.begin(), catNames.end(), std::mt19937{std::random_device{}()});
-    auto getNextCatName = [&, nextCatName = 0u]() mutable { return catNames[nextCatName++ % catNames.size()]; };
+    auto getNextCatNameIdx = [&, nextCatName = 0u]() mutable { return nextCatName++ % catNames.size(); };
 
     //
     //
@@ -899,7 +884,7 @@ int main()
     std::vector<Bubble> bubbles;
     std::vector<Cat>    cats;
 
-    SizeT money = 0;
+    U64 money = 0;
 
     //
     //
@@ -910,6 +895,7 @@ int main()
     //
     //
     // Clocks
+    sf::Clock playedClock;
     sf::Clock fpsClock;
     sf::Clock deltaClock;
 
@@ -945,6 +931,10 @@ int main()
     float       tipTimer    = 0.f;
     std::string tipString;
 
+    // Other settings
+    float minimapScale          = 20.f;
+    bool  playAudioInBackground = true;
+
     //
     //
     // Background music
@@ -956,7 +946,7 @@ int main()
     //
     //
     // Money helper functions
-    const auto addReward = [&](const SizeT reward)
+    const auto addReward = [&](const U64 reward)
     {
         money += reward;
         moneyTextShakeEffect.bump(1.f + static_cast<float>(combo) * 0.1f);
@@ -965,6 +955,8 @@ int main()
     //
     //
     // Game loop
+    playedClock.start();
+
     while (true)
     {
         fpsClock.restart();
@@ -1254,15 +1246,20 @@ int main()
                             const SizeT bubbleIdx = bubbleIndices[i];
                             auto&       bubble    = bubbles[bubbleIdx];
 
-                            if (bubble.type != BubbleType::Bomb)
-                            {
-                                // TODO: repetition due to recursion
-                                const SizeT newReward = getScaledReward(bubble.type) * 10u;
-                                self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
-                                addReward(newReward);
-                                bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
-                                bubble.position.y -= bubble.radius;
-                            }
+                            if (bubble.type == BubbleType::Bomb)
+                                continue;
+
+                            // TODO: add scaling explosion radius, right after unlocking devilcat
+                            float explosionRadius = 128.f;
+                            if ((bubble.position - sf::Vector2f{x, y}).lengthSquared() > explosionRadius * explosionRadius)
+                                continue;
+
+                            // TODO: repetition due to recursion
+                            const SizeT newReward = getScaledReward(bubble.type) * 10u;
+                            self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
+                            addReward(newReward);
+                            bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
+                            bubble.position.y -= bubble.radius;
                         }
                     }
             }
@@ -1270,7 +1267,7 @@ int main()
 
         const auto popWithRewardAndReplaceBubble = [&](Bubble& bubble, int combo)
         {
-            const auto reward = getScaledReward(bubble.type) * static_cast<SizeT>(combo);
+            const auto reward = getScaledReward(bubble.type) * static_cast<U64>(combo);
             popBubble(popBubble, bubble.type, reward, combo, bubble.position.x, bubble.position.y);
             addReward(reward);
             bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
@@ -1427,14 +1424,6 @@ int main()
 
         for (auto& cat : cats)
         {
-            cat.textName.position   = cat.position + sf::Vector2f{0.f, 48.f};
-            cat.textName.origin     = cat.textName.getLocalBounds().size / 2.f;
-            cat.textStatus.position = cat.position + sf::Vector2f{0.f, 68.f};
-            cat.textStatus.origin   = cat.textStatus.getLocalBounds().size / 2.f;
-
-            constexpr const char* catActions[5]{"Pops", "Shines", "IEDs", "Hexes", "Flights"};
-            cat.textStatus.setString(std::to_string(cat.hits) + " " + catActions[static_cast<int>(cat.type)]);
-
             const auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
             const auto range       = catRangePerType[static_cast<int>(cat.type)];
 
@@ -1600,7 +1589,6 @@ int main()
 
         ImGui::PopStyleVar();
 
-
         if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
         {
             if (ImGui::BeginTabItem(" X "))
@@ -1668,8 +1656,7 @@ int main()
                 {
                     bool result = false;
 
-                    const auto cost = static_cast<SizeT>(
-                        globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
+                    const auto cost = static_cast<U64>(globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
                     std::sprintf(buffer, "$%zu##%s", cost, label);
 
                     ImGui::BeginDisabled(money < cost);
@@ -1707,7 +1694,7 @@ int main()
 
                     bool result = false;
 
-                    const auto cost = static_cast<SizeT>(globalCostMultiplier() * psv.nextCost());
+                    const auto cost = static_cast<U64>(globalCostMultiplier() * psv.nextCost());
 
                     if (maxedOut)
                         std::sprintf(buffer, "MAX");
@@ -1742,11 +1729,11 @@ int main()
                     return result;
                 };
 
-                const auto makePurchasableButtonOneTime = [&](const char* label, const SizeT xcost, bool& done)
+                const auto makePurchasableButtonOneTime = [&](const char* label, const U64 xcost, bool& done)
                 {
                     bool result = false;
 
-                    const auto cost = static_cast<SizeT>(globalCostMultiplier() * static_cast<float>(xcost));
+                    const auto cost = static_cast<U64>(globalCostMultiplier() * static_cast<float>(xcost));
 
                     if (done)
                         std::sprintf(buffer, "DONE");
@@ -1865,8 +1852,7 @@ int main()
                                .rangeOffset = rangeOffset,
                                .sprite = {.position = pos, .scale{0.2f, 0.2f}, .origin = txr.size / 2.f, .textureRect = txr},
                                .pawSprite = {.position = pos, .scale{0.1f, 0.1f}, .origin = txrPaw.size / 2.f, .textureRect = txrPaw},
-                               .textName     = makeCatNameText(getNextCatName()),
-                               .textStatus   = makeCatStatusText(),
+                               .nameIdx      = getNextCatNameIdx(),
                                .beingDragged = 0.f};
                 };
 
@@ -1921,7 +1907,7 @@ int main()
                 if (unicatsUnlocked)
                 {
                     std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
-                    if (makePurchasableButton("Unicat", 250, 1.725f, static_cast<float>(nCatUnicorn)))
+                    if (makePurchasableButton("Unicat", 250, 1.75f, static_cast<float>(nCatUnicorn)))
                     {
                         resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
@@ -1935,7 +1921,7 @@ int main()
                     }
 
                     if (unicatUpgradesUnlocked)
-                        makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 2500.f);
+                        makeCatModifiers("Unicat cooldown", "Unicat range", CatType::Unicorn, 3000.f);
                 }
 
                 // DEVIL CAT
@@ -1958,7 +1944,7 @@ int main()
                     }
 
                     if (devilcatsUpgradesUnlocked)
-                        makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 6000.f);
+                        makeCatModifiers("Devilcat cooldown", "Devilcat range", CatType::Devil, 7000.f);
                 }
 
                 // WITCH CAT
@@ -1967,7 +1953,7 @@ int main()
                 if (witchCatUnlocked)
                 {
                     std::sprintf(labelBuffer, "%d witch cats", nCatWitch);
-                    if (makePurchasableButton("Witch cat", 20000.f, 1.5f, static_cast<float>(nCatWitch)))
+                    if (makePurchasableButton("Witch cat", 200000.f, 1.5f, static_cast<float>(nCatWitch)))
                     {
                         resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Witch, {0.f, 0.f}, txrWitchCat, txrWitchCatPaw));
@@ -2000,10 +1986,10 @@ int main()
                         const char* name = "";
 
                         // clang-format off
-                if      (&count == &nCatNormal)  name = "cat";
-                else if (&count == &nCatUnicorn) name = "unicat";
-                else if (&count == &nCatDevil)   name = "devilcat";
-                else if (&count == &nCatWitch)   name = "witch cat";
+                        if      (&count == &nCatNormal)  name = "cat";
+                        else if (&count == &nCatUnicorn) name = "unicat";
+                        else if (&count == &nCatDevil)   name = "devilcat";
+                        else if (&count == &nCatWitch)   name = "witch cat";
                         // clang-format on
 
                         if (count < needed)
@@ -2114,10 +2100,24 @@ int main()
                 ImGui::SetNextItemWidth(250.f);
                 ImGui::SliderFloat("Music volume", &musicVolume, 0.f, 100.f, "%.0f%%");
 
-                listener.volume = masterVolume;
-                musicBGM.setVolume(musicVolume);
+                ImGui::Checkbox("Play audio in background", &playAudioInBackground);
+                const float volumeMult = playAudioInBackground ? 1.f : window.hasFocus() ? 1.f : 0.f;
+
+                listener.volume = masterVolume * volumeMult;
+                musicBGM.setVolume(musicVolume * volumeMult);
 
                 ImGui::Checkbox("Enable tips", &tipsEnabled);
+
+                ImGui::SetNextItemWidth(250.f);
+                ImGui::SliderFloat("Minimap Scale", &minimapScale, 5.f, 30.f, "%.2f");
+
+                const float fps = 1.f / fpsClock.getElapsedTime().asSeconds();
+                ImGui::Text("FPS: %.2f", static_cast<double>(fps));
+
+                const float timePlayed    = playedClock.getElapsedTime().asSeconds();
+                const U64   secondsPlayed = static_cast<U64>(std::fmod(timePlayed, 60.f));
+                const U64   minutesPlayed = static_cast<U64>(timePlayed / 60);
+                ImGui::Text("Time played: %llu min %llu sec", minutesPlayed, secondsPlayed);
 
                 ImGui::EndTabItem();
             }
@@ -2143,6 +2143,22 @@ int main()
             .pointCount         = 32,
         }};
 
+
+        //
+        //
+        // TODO: move up to avoid reallocation
+        sf::Text catTextName{fontDailyBubble,
+                             {.characterSize    = 24u,
+                              .fillColor        = sf::Color::White,
+                              .outlineColor     = colorBlueOutline,
+                              .outlineThickness = 1.5f}};
+
+        sf::Text catTextStatus{fontDailyBubble,
+                               {.characterSize    = 16u,
+                                .fillColor        = sf::Color::White,
+                                .outlineColor     = colorBlueOutline,
+                                .outlineThickness = 1.f}};
+
         for (auto& cat : cats)
         {
             cpuDrawableBatch.add(cat.sprite);
@@ -2165,10 +2181,19 @@ int main()
             catRadiusCircle.setOutlineColor(colorsByType[static_cast<int>(cat.type)].withAlpha(
                 cat.cooldown < 0.f ? static_cast<sf::base::U8>(0u)
                                    : static_cast<sf::base::U8>(cat.cooldown / maxCooldown * 128.f)));
-
             cpuDrawableBatch.add(catRadiusCircle);
-            cpuDrawableBatch.add(cat.textName);   // TODO: move text object outside
-            cpuDrawableBatch.add(cat.textStatus); // TODO: move text object outside
+
+            catTextName.setString(catNames[cat.nameIdx]);
+            catTextName.position = cat.position + sf::Vector2f{0.f, 48.f};
+            catTextName.origin   = catTextName.getLocalBounds().size / 2.f;
+            cpuDrawableBatch.add(catTextName);
+
+            constexpr const char* catActions[5]{"Pops", "Shines", "IEDs", "Hexes", "Flights"};
+            catTextStatus.setString(std::to_string(cat.hits) + " " + catActions[static_cast<int>(cat.type)]);
+            catTextStatus.position = cat.position + sf::Vector2f{0.f, 68.f};
+            catTextStatus.origin   = catTextStatus.getLocalBounds().size / 2.f;
+            cat.textStatusShakeEffect.applyToText(catTextStatus);
+            cpuDrawableBatch.add(catTextStatus);
         };
         // ---
 
@@ -2227,7 +2252,9 @@ int main()
         moneyTextShakeEffect.update(deltaTimeMs);
         moneyTextShakeEffect.applyToText(moneyText);
 
-        moneyText.position.y = mapPurchased ? 85.f : 30.f;
+        const float yBelowMinimap = mapPurchased ? (boundaries.y / minimapScale) + 15.f : 0.f;
+
+        moneyText.position.y = yBelowMinimap + 30.f;
         window.draw(moneyText);
 
         if (comboPurchased)
@@ -2237,7 +2264,7 @@ int main()
             comboTextShakeEffect.update(deltaTimeMs);
             comboTextShakeEffect.applyToText(comboText);
 
-            comboText.position.y = mapPurchased ? 105.f : 50.f;
+            comboText.position.y = yBelowMinimap + 50.f;
             window.draw(comboText);
         }
 
@@ -2251,7 +2278,7 @@ int main()
         //
         // Minimap
         if (mapPurchased)
-            drawMinimap(mapLimit, gameView, hudView, window, txBackground, cpuDrawableBatch, textureAtlas);
+            drawMinimap(minimapScale, mapLimit, gameView, hudView, window, txBackground, cpuDrawableBatch, textureAtlas);
 
         //
         // UI
@@ -2267,38 +2294,37 @@ int main()
         {
             tipTimer -= deltaTimeMs;
 
-            float fade = 255.f;
+            if (tipsEnabled)
+            {
+                float fade = 255.f;
 
-            if (tipTimer > 4000.f)
-                fade = remap(tipTimer, 4000.f, 4500.f, 255.f, 0.f);
-            else if (tipTimer < 500.f)
-                fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
+                if (tipTimer > 4000.f)
+                    fade = remap(tipTimer, 4000.f, 4500.f, 255.f, 0.f);
+                else if (tipTimer < 500.f)
+                    fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
 
-            sf::Text tipText{fontDailyBubble,
-                             {.position      = {195.f, 265.f},
-                              .string        = tipString,
-                              .characterSize = 32u,
-                              .fillColor = sf::Color{0, 0, 0, static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f))},
-                              .outlineThickness = 0.f}};
+                const auto fadeAlpha = static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f));
 
-            sf::Sprite tipSprite{.position    = resolution / 2.f,
-                                 .scale       = {0.70f, 0.70f},
-                                 .origin      = txByteTip.getRect().size / 2.f,
-                                 .textureRect = txByteTip.getRect(),
-                                 .color = sf::Color{255, 255, 255, static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f))}};
+                sf::Text tipText{fontDailyBubble,
+                                 {.position      = {195.f, 265.f},
+                                  .string        = tipString,
+                                  .characterSize = 32u,
+                                  .fillColor     = sf::Color::Black.withAlpha(fadeAlpha)}};
 
+                sf::Sprite tipSprite{.position    = resolution / 2.f,
+                                     .scale       = {0.70f, 0.70f},
+                                     .origin      = txByteTip.getSize().toVector2f() / 2.f,
+                                     .textureRect = txByteTip.getRect(),
+                                     .color       = sf::Color::White.withAlpha(fadeAlpha)};
 
-            window.draw(tipSprite, txByteTip);
-            window.draw(tipText);
+                window.draw(tipSprite, txByteTip);
+                window.draw(tipText);
+            }
         }
 
         //
         // Display
         window.display();
-
-        //
-        // Debug stuff
-        // window.setTitle("FPS: " + std::to_string(1.f / fpsClock.getElapsedTime().asSeconds()));
     }
 }
 
@@ -2306,3 +2332,12 @@ int main()
 // - bubbles that need to be weakened
 // - individual cat levels and upgrades
 // - unlockable areas, different bubble types
+// - timer
+// - prestige
+// - unicat cooldown scaling should be less powerful and capped
+// - cat cooldown scaling should be a bit more powerful at the beginning and capped around 0.4
+// - unicat range scaling should be much more exponential and be capped
+// x - bomb explosion should have circular range (slight nerf)
+// x - bomb should have higher mass for bubble collisions ??
+// - cats can go out of bounds if pushed by other cats
+// - cats should not be allowed next to the bounds, should be gently pushed away
