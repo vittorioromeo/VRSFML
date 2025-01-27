@@ -358,6 +358,8 @@ struct CollisionResolution
 {
     sf::Vector2f iDisplacement;
     sf::Vector2f jDisplacement;
+    sf::Vector2f iVelocityChange;
+    sf::Vector2f jVelocityChange;
 };
 
 ////////////////////////////////////////////////////////////
@@ -365,6 +367,8 @@ struct CollisionResolution
     const float        deltaTimeMs,
     const sf::Vector2f iPosition,
     const sf::Vector2f jPosition,
+    const sf::Vector2f iVelocity,
+    const sf::Vector2f jVelocity,
     const float        iRadius,
     const float        jRadius)
 {
@@ -385,25 +389,58 @@ struct CollisionResolution
     const float softnessFactor = 0.005f * deltaTimeMs;
 
     // Calculate the displacement needed to resolve the overlap
-    const sf::Vector2f displacement = diff.normalized() * overlap * softnessFactor;
+    const sf::Vector2f normal       = diff.normalized();
+    const sf::Vector2f displacement = normal * overlap * softnessFactor;
 
     // Move the bubbles apart based on their masses (heavier bubbles move less)
     const float m1        = iRadius * iRadius; // Mass of bubble i (quadratic scaling)
     const float m2        = jRadius * jRadius; // Mass of bubble j (quadratic scaling)
     const float totalMass = m1 + m2;
 
-    return sf::base::makeOptional(CollisionResolution{displacement * (m2 / totalMass), displacement * (m1 / totalMass)});
+    // Velocity resolution calculations
+    const float vRelDotNormal = (iVelocity - jVelocity).dot(normal);
+
+    sf::Vector2f velocityChangeI(0.0f, 0.0f);
+    sf::Vector2f velocityChangeJ(0.0f, 0.0f);
+
+    // Only apply impulse if bubbles are moving towards each other
+    if (vRelDotNormal > 0)
+    {
+        const float e = 0.65f; // Coefficient of restitution (1.0 = perfectly elastic)
+        const float j = -(1.0f + e) * vRelDotNormal / ((1.0f / m1) + (1.0f / m2));
+
+        const sf::Vector2f impulse = normal * j;
+
+        velocityChangeI = impulse / m1;
+        velocityChangeJ = -impulse / m2;
+    }
+
+    return sf::base::makeOptional( //
+        CollisionResolution{.iDisplacement   = -displacement * (m2 / totalMass),
+                            .jDisplacement   = displacement * (m1 / totalMass),
+                            .iVelocityChange = velocityChangeI,
+                            .jVelocityChange = velocityChangeJ});
 }
 
 ////////////////////////////////////////////////////////////
 bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBubble)
 {
-    const auto result = handleCollision(deltaTimeMs, iBubble.position, jBubble.position, iBubble.radius, jBubble.radius);
+    const auto result = handleCollision(deltaTimeMs,
+                                        iBubble.position,
+                                        jBubble.position,
+                                        iBubble.velocity,
+                                        jBubble.velocity,
+                                        iBubble.radius,
+                                        jBubble.radius);
+
     if (!result.hasValue())
         return false;
 
-    iBubble.position -= result->iDisplacement;
+    iBubble.position += result->iDisplacement;
     jBubble.position += result->jDisplacement;
+    iBubble.velocity += result->iVelocityChange;
+    jBubble.velocity += result->jVelocityChange;
+
     return true;
 }
 
@@ -413,12 +450,13 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
     const auto iRadius = iCat.sprite.textureRect.size.x * iCat.sprite.scale.x * 0.75f;
     const auto jRadius = jCat.sprite.textureRect.size.x * jCat.sprite.scale.x * 0.75f;
 
-    const auto result = handleCollision(deltaTimeMs, iCat.position, jCat.position, iRadius, jRadius);
+    const auto result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iRadius, jRadius);
     if (!result.hasValue())
         return false;
 
-    iCat.position -= result->iDisplacement;
+    iCat.position += result->iDisplacement;
     jCat.position += result->jDisplacement;
+
     return true;
 }
 
@@ -574,8 +612,15 @@ int main()
     PurchasableScalingValue psvBubbleCount //
         {.nPurchases    = 0u,
          .nMaxPurchases = 30u,
-         .cost          = {.initial = 35.f, .linear = 350.f, .exponential = 1.42f},
+         .cost          = {.initial = 35.f, .linear = 250.f, .exponential = 1.65f},
          .value         = {.initial = 500.f, .linear = 376.f, .exponential = 1.03f}};
+
+    // TODO
+    PurchasableScalingValue psvBubbleValue //
+        {.nPurchases    = 0u,
+         .nMaxPurchases = 19u,
+         .cost          = {.initial = 1000.f, .linear = 1000.f, .exponential = 1.5f},
+         .value         = {.initial = 0.f, .linear = 1.f, .exponential = 0.f}};
 
     //
     //
@@ -773,11 +818,14 @@ int main()
     //
     //
     // Scaling values (persistent)
-    SizeT rewardPerType[3]{
+    const SizeT rewardPerType[3]{
         1u,  // Normal
         25u, // Star
         1u,  // Bomb
     };
+
+    const auto getScaledReward = [&](const BubbleType type)
+    { return rewardPerType[static_cast<SizeT>(type)] * static_cast<SizeT>(psvBubbleValue.currentValue() + 1); };
 
     float catCooldownPerType[5]{
         1000.f, // Normal
@@ -1159,7 +1207,7 @@ int main()
                             if (bubble.type != BubbleType::Bomb)
                             {
                                 // TODO: repetition due to recursion
-                                const SizeT newReward = rewardPerType[static_cast<int>(bubble.type)] * 10u;
+                                const SizeT newReward = getScaledReward(bubble.type) * 10u;
                                 self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
                                 addReward(newReward);
                                 bubble = makeRandomBubble(baseBubbleRadius);
@@ -1171,7 +1219,7 @@ int main()
 
         const auto popWithRewardAndReplaceBubble = [&](Bubble& bubble, int combo)
         {
-            const auto reward = rewardPerType[static_cast<int>(bubble.type)] * static_cast<SizeT>(combo);
+            const auto reward = getScaledReward(bubble.type) * static_cast<SizeT>(combo);
             popBubble(popBubble, bubble.type, reward, combo, bubble.position.x, bubble.position.y);
             addReward(reward);
             bubble = makeRandomBubble(baseBubbleRadius);
@@ -1400,6 +1448,7 @@ int main()
                     continue;
                 }
 
+                // TODO: use spatial grid
                 for (auto& bubble : bubbles)
                 {
                     if (cat.type == CatType::Unicorn && bubble.type != BubbleType::Normal)
@@ -1494,46 +1543,72 @@ int main()
         const auto makeDoneButton = [&](const char* label)
         {
             ImGui::BeginDisabled(true);
+
             ImGui::Text("%s", label);
             ImGui::SameLine();
 
-            const float rightWidgetPosX = ImGui::GetWindowWidth() - 150.f;
             ImGui::SetWindowFontScale(0.5f);
             ImGui::Text("%s", labelBuffer);
             ImGui::SetWindowFontScale(1.f);
             ImGui::SameLine();
-            ImGui::SetCursorPosX(rightWidgetPosX);
 
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
             ImGui::Button("DONE", ImVec2(135.f, 0.0f));
 
             ImGui::EndDisabled();
+        };
+
+        const auto countCatsByType = [&](CatType type)
+        {
+            return static_cast<int>(
+                std::count_if(cats.begin(), cats.end(), [type](const auto& cat) { return cat.type == type; }));
+        };
+
+        const auto nCatNormal  = countCatsByType(CatType::Normal);
+        const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
+        const auto nCatDevil   = countCatsByType(CatType::Devil);
+        const auto nCatWitch   = countCatsByType(CatType::Witch);
+
+        const auto globalCostMultiplier = [&]
+        {
+            // [ 0.25, 0.25 + 0.125, 0.25 + 0.125 + 0.0625, ... ]
+            const auto geomSum = [](auto n)
+            { return static_cast<float>(n) <= 0.f ? 0.f : 0.5f * (1.f - std::pow(0.5f, static_cast<float>(n) + 1.f)); };
+
+            return 1.f +                                            //
+                   (geomSum(psvComboStartTime.nPurchases) * 0.1f) + //
+                   (geomSum(psvBubbleCount.nPurchases) * 0.5f) +    //
+                   (geomSum(psvBubbleValue.nPurchases) * 1.f) +     //
+                   (geomSum(nCatNormal) * 0.3f) +                   //
+                   (geomSum(nCatUnicorn) * 0.4f) +                  //
+                   (geomSum(nCatDevil) * 0.5f) +                    //
+                   (geomSum(nCatWitch) * 0.6f);
         };
 
         const auto makePurchasableButton = [&](const char* label, float baseCost, float growthFactor, float count)
         {
             bool result = false;
 
-            const auto cost = static_cast<SizeT>(costFunction(baseCost, count, growthFactor));
+            const auto cost = static_cast<SizeT>(globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
             std::sprintf(buffer, "$%zu##%s", cost, label);
 
             ImGui::BeginDisabled(money < cost);
+
             ImGui::Text("%s", label);
             ImGui::SameLine();
 
-            const float rightWidgetPosX = ImGui::GetWindowWidth() - 150.f;
             ImGui::SetWindowFontScale(0.5f);
             ImGui::Text("%s", labelBuffer);
             ImGui::SetWindowFontScale(1.f);
             ImGui::SameLine();
-            ImGui::SetCursorPosX(rightWidgetPosX);
 
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
             ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 if (!imGuiContext.wasLastInputTouch())
-                {
                     catDragPosition.emplace(mousePos);
-                }
 
                 soundClick.play(playbackDevice);
                 soundBuy.play(playbackDevice);
@@ -1542,9 +1617,7 @@ int main()
                 money -= cost;
             }
 
-
             ImGui::EndDisabled();
-
             return result;
         };
 
@@ -1554,7 +1627,7 @@ int main()
 
             bool result = false;
 
-            const auto cost = static_cast<SizeT>(psv.nextCost());
+            const auto cost = static_cast<SizeT>(globalCostMultiplier() * psv.nextCost());
 
             if (maxedOut)
                 std::sprintf(buffer, "MAX");
@@ -1562,19 +1635,18 @@ int main()
                 std::sprintf(buffer, "$%zu##%s", cost, label);
 
             ImGui::BeginDisabled(maxedOut || money < cost);
-            ImGui::Text("%s", label);
 
+            ImGui::Text("%s", label);
             ImGui::SameLine();
 
-
-            const float rightWidgetPosX = ImGui::GetWindowWidth() - 150.f;
             ImGui::SetWindowFontScale(0.5f);
             ImGui::Text("%s", labelBuffer);
             ImGui::SetWindowFontScale(1.f);
             ImGui::SameLine();
-            ImGui::SetCursorPosX(rightWidgetPosX);
 
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
             ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 soundClick.play(playbackDevice);
@@ -1586,15 +1658,15 @@ int main()
                 ++psv.nPurchases;
             }
 
-
             ImGui::EndDisabled();
-
             return result;
         };
 
-        const auto makePurchasableButtonOneTime = [&](const char* label, const SizeT cost, bool& done)
+        const auto makePurchasableButtonOneTime = [&](const char* label, const SizeT xcost, bool& done)
         {
             bool result = false;
+
+            const auto cost = static_cast<SizeT>(globalCostMultiplier() * static_cast<float>(xcost));
 
             if (done)
                 std::sprintf(buffer, "DONE");
@@ -1602,19 +1674,20 @@ int main()
                 std::sprintf(buffer, "$%zu##%s", cost, label);
 
             ImGui::BeginDisabled(done || money < cost);
+
             ImGui::Text("%s", label);
 
             ImGui::SameLine();
 
 
-            const float rightWidgetPosX = ImGui::GetWindowWidth() - 150.f;
             ImGui::SetWindowFontScale(0.5f);
             ImGui::Text("%s", labelBuffer);
             ImGui::SetWindowFontScale(1.f);
             ImGui::SameLine();
-            ImGui::SetCursorPosX(rightWidgetPosX);
 
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
             ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+
             if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
             {
                 soundClick.play(playbackDevice);
@@ -1633,7 +1706,7 @@ int main()
         };
 
         std::sprintf(labelBuffer, "");
-        if (makePurchasableButtonOneTime("Combo", 10, comboPurchased))
+        if (makePurchasableButtonOneTime("Combo", 15, comboPurchased))
             combo = 0;
 
         if (comboPurchased)
@@ -1641,17 +1714,6 @@ int main()
             std::sprintf(labelBuffer, "%.2fs", static_cast<double>(psvComboStartTime.currentValue()));
             makePurchasableButtonPSV("Longer combo", psvComboStartTime);
         }
-
-        const auto countCatsByType = [&](CatType type)
-        {
-            return static_cast<int>(
-                std::count_if(cats.begin(), cats.end(), [type](const auto& cat) { return cat.type == type; }));
-        };
-
-        const auto nCatNormal  = countCatsByType(CatType::Normal);
-        const auto nCatUnicorn = countCatsByType(CatType::Unicorn);
-        const auto nCatDevil   = countCatsByType(CatType::Devil);
-        const auto nCatWitch   = countCatsByType(CatType::Witch);
 
         if (nCatNormal > 0 && psvComboStartTime.nPurchases > 0)
         {
@@ -1666,7 +1728,7 @@ int main()
                     std::sprintf(labelBuffer,
                                  "%.2f%%",
                                  static_cast<double>(remap(mapLimit, 0.f, boundaries.x, 0.f, 100.f) + 10.f));
-                    if (makePurchasableButton("Extend map", 75.f, 4.f, mapLimit / resolution.x))
+                    if (makePurchasableButton("Extend map", 75.f, 4.5f, mapLimit / resolution.x))
                     {
                         mapLimit += resolution.x;
                         mapPurchased = true;
@@ -1683,17 +1745,11 @@ int main()
             makePurchasableButtonPSV("More bubbles", psvBubbleCount);
         }
 
-        if (psvBubbleCount.nPurchases > 0 && nCatUnicorn > 2)
+        const bool bubbleValueUnlocked = psvBubbleCount.nPurchases > 0 && nCatUnicorn >= 3;
+        if (bubbleValueUnlocked)
         {
-            auto& rewardNormal = rewardPerType[static_cast<int>(BubbleType::Normal)];
-            auto& rewardStar   = rewardPerType[static_cast<int>(BubbleType::Star)];
-
-            std::sprintf(labelBuffer, "$%zu | $%zu", rewardNormal, rewardStar);
-            if (makePurchasableButton("Bubble value", 500.f, 1.75f, static_cast<float>(rewardNormal)))
-            {
-                rewardNormal += 1;
-                rewardStar += 5;
-            }
+            std::sprintf(labelBuffer, "x%zu", getScaledReward(BubbleType::Normal));
+            makePurchasableButtonPSV("Bubble value", psvBubbleValue);
         }
 
         const auto makeCat =
@@ -1741,7 +1797,7 @@ int main()
         if (comboPurchased && psvComboStartTime.nPurchases > 0)
         {
             std::sprintf(labelBuffer, "%d cats", nCatNormal);
-            if (makePurchasableButton("Cat", 35, 1.5f, static_cast<float>(nCatNormal)))
+            if (makePurchasableButton("Cat", 35, 1.7f, static_cast<float>(nCatNormal)))
             {
                 resetCatDrag();
                 cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
@@ -1758,7 +1814,7 @@ int main()
         if (unicatsUnlocked)
         {
             std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
-            if (makePurchasableButton("Unicat", 250, 1.65f, static_cast<float>(nCatUnicorn)))
+            if (makePurchasableButton("Unicat", 250, 1.7f, static_cast<float>(nCatUnicorn)))
             {
                 resetCatDrag();
                 cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
@@ -1769,7 +1825,7 @@ int main()
         }
 
         // DEVIL CAT
-        const bool devilcatsUnlocked         = nCatNormal >= 5 && nCatUnicorn >= 2;
+        const bool devilcatsUnlocked         = psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUnicorn >= 4;
         const bool devilcatsUpgradesUnlocked = devilcatsUnlocked && nCatDevil >= 2 && nCatWitch >= 1;
         if (devilcatsUnlocked)
         {
@@ -1835,8 +1891,8 @@ int main()
 
             if (!mapPurchased)
             {
-                startList("to unlock scrolling:");
-                result += "\n- buy map";
+                startList("to increase playing area:");
+                result += "\n- buy map scrolling";
             }
 
             if (!unicatsUnlocked)
@@ -1860,25 +1916,32 @@ int main()
                 needNCats(nCatUnicorn, 1);
             }
 
-            if (unicatsUnlocked && !devilcatsUnlocked)
+            if (unicatsUnlocked && !bubbleValueUnlocked)
             {
-                startList("to unlock devilcats:");
-                needNCats(nCatNormal, 5);
-                needNCats(nCatUnicorn, 2);
+                startList("to unlock bubble value:");
+
+                if (psvBubbleCount.nPurchases == 0)
+                    result += "\n- buy more bubbles";
+
+                needNCats(nCatUnicorn, 3);
             }
 
-            if (unicatsUnlocked && !unicatUpgradesUnlocked && devilcatsUnlocked)
+            if (unicatsUnlocked && bubbleValueUnlocked && !devilcatsUnlocked)
+            {
+                startList("to unlock devilcats:");
+
+                if (psvBubbleValue.nPurchases == 0)
+                    result += "\n- buy bubble value";
+
+                needNCats(nCatNormal, 6);
+                needNCats(nCatUnicorn, 4);
+            }
+
+            if (unicatsUnlocked && devilcatsUnlocked && !unicatUpgradesUnlocked)
             {
                 startList("to unlock unicat upgrades:");
                 needNCats(nCatUnicorn, 2);
                 needNCats(nCatDevil, 1);
-            }
-
-            if (unicatsUnlocked && devilcatsUnlocked && !devilcatsUpgradesUnlocked && witchCatUnlocked)
-            {
-                startList("to unlock devilcat upgrades:");
-                needNCats(nCatDevil, 2);
-                needNCats(nCatWitch, 1);
             }
 
             if (unicatsUnlocked && devilcatsUnlocked && !witchCatUnlocked)
@@ -1887,6 +1950,13 @@ int main()
                 needNCats(nCatNormal, 10);
                 needNCats(nCatUnicorn, 5);
                 needNCats(nCatDevil, 2);
+            }
+
+            if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !devilcatsUpgradesUnlocked)
+            {
+                startList("to unlock devilcat upgrades:");
+                needNCats(nCatDevil, 2);
+                needNCats(nCatWitch, 1);
             }
 
             if (unicatsUnlocked && devilcatsUnlocked && witchCatUnlocked && !witchCatUpgradesUnlocked)
@@ -1902,10 +1972,10 @@ int main()
         if (milestoneText != "")
         {
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.45f);
-            ImGui::Text("next goal:");
+
             ImGui::SetWindowFontScale(0.65f);
             ImGui::Text("%s", milestoneText.c_str());
+
             ImGui::SetWindowFontScale(1.f);
         }
 
