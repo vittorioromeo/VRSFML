@@ -7,6 +7,8 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
 
 
 namespace sf::priv
@@ -53,6 +55,47 @@ constexpr Angle Angle::wrapUnsigned() const
     return Angle(priv::positiveRemainder(m_radians, base::tau));
 }
 
+
+////////////////////////////////////////////////////////////
+constexpr Angle Angle::rotatedTowards(const Angle other, const float speed) const
+{
+    float diff = base::fmod(other.m_radians - m_radians, base::tau);
+
+    if (diff > base::pi)
+    {
+        diff -= base::tau;
+    }
+    else if (diff < -base::pi)
+    {
+        diff += base::tau;
+    }
+
+    if (base::fabs(diff) <= speed)
+    {
+        return Angle{other.m_radians};
+    }
+
+    float result = m_radians;
+
+    if (diff > 0.0f)
+    {
+        result += speed;
+    }
+    else
+    {
+        result -= speed;
+    }
+
+    // Normalize to [0, base::tau)
+    result = base::fmod(result, base::tau);
+
+    if (result < 0.0f)
+    {
+        result += base::tau;
+    }
+
+    return Angle{result};
+}
 
 ////////////////////////////////////////////////////////////
 constexpr Angle::Angle(float radians) : m_radians(radians)
