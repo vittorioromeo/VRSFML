@@ -2341,3 +2341,4 @@ int main()
 // x - bomb should have higher mass for bubble collisions ??
 // - cats can go out of bounds if pushed by other cats
 // - cats should not be allowed next to the bounds, should be gently pushed away
+// - release trailer with Byte and real life bubbles!
