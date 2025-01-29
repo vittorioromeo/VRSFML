@@ -52,6 +52,8 @@
 
 #include <cstdio>
 
+
+////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR "v0.0.3"
 
 
@@ -60,6 +62,9 @@ namespace
 ////////////////////////////////////////////////////////////
 using sf::base::SizeT;
 using sf::base::U64;
+
+////////////////////////////////////////////////////////////
+using MoneyType = U64;
 
 ////////////////////////////////////////////////////////////
 constexpr sf::Vector2f resolution{1366.f, 768.f};
@@ -72,12 +77,17 @@ constexpr sf::Vector2f boundaries{1366.f * 10.f, 768.f};
 constexpr sf::Color colorBlueOutline{50, 84, 135};
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] std::minstd_rand0& getRandomEngine()
+{
+    static std::minstd_rand0 randomEngine(std::random_device{}());
+    return randomEngine;
+}
+
+////////////////////////////////////////////////////////////
 [[nodiscard]] float getRndFloat(const float min, const float max)
 {
     SFML_BASE_ASSERT(min <= max);
-
-    static std::default_random_engine randomEngine(std::random_device{}());
-    return std::uniform_real_distribution<float>{min, max}(randomEngine);
+    return std::uniform_real_distribution<float>{min, max}(getRandomEngine());
 }
 
 ////////////////////////////////////////////////////////////
@@ -90,6 +100,29 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
 [[nodiscard]] sf::Vector2f getRndVector2f(const sf::Vector2f maxs)
 {
     return getRndVector2f({0.f, 0.f}, maxs);
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] auto getShuffledCatNames(auto&& randomEngine)
+{
+    std::array names{"Gorgonzola", "Provolino",  "Pistacchietto", "Ricottina",  "Mozzarellina",  "Tiramisu",
+                     "Cannolino",  "Biscottino", "Cannolina",     "Biscottina", "Pistacchietta", "Provolina",
+                     "Arancino",   "Limoncello", "Ciabatta",      "Focaccina",  "Amaretto",      "Pallino",
+                     "Birillo",    "Trottola",   "Baffo",         "Poldo",      "Fuffi",         "Birba",
+                     "Ciccio",     "Pippo",      "Tappo",         "Briciola",   "Braciola",      "Pulce",
+                     "Dante",      "Bolla",      "Fragolina",     "Luppolo",    "Sirena",        "Polvere",
+                     "Stellina",   "Lunetta",    "Briciolo",      "Fiammetta",  "Nuvoletta",     "Scintilla",
+                     "Piuma",      "Fulmine",    "Arcobaleno",    "Stelluccia", "Lucciola",      "Pepita",
+                     "Fiocco",     "Girandola",  "Bombetta",      "Fusillo",    "Cicciobello",   "Palloncino",
+                     "Joe Biden",  "Trump",      "Obama",         "De Luca",    "Salvini",       "Renzi",
+                     "Nutella",    "Vespa",      "Mandolino",     "Ferrari",    "Pavarotti",     "Espresso",
+                     "Sir",        "Nocciolina", "Fluffy",        "Costanzo",   "Mozart",        "DB",
+                     "Soniuccia",  "Pupi",       "Pupetta",       "Genitore 1", "Genitore 2",    "Stonks",
+                     "Carotina",   "Waffle",     "Pancake",       "Muffin",     "Cupcake",       "Donut",
+                     "Jinx",       "Miao",       "Arnold",        "Granita",    "Leone",         "Pangocciolo"};
+
+    std::shuffle(names.begin(), names.end(), randomEngine);
+    return names;
 }
 
 ////////////////////////////////////////////////////////////
@@ -106,10 +139,10 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
     const float deltaTimeMs,
     const float speed)
 {
-    if (speed <= 0.0f)
+    if (speed <= 0.f)
         return target; // Instant snap if time constant is zero or negative
 
-    const float factor = 1.0f - sf::base::exp(-deltaTimeMs / speed);
+    const float factor = 1.f - sf::base::exp(-deltaTimeMs / speed);
     return current + (target - current) * factor;
 }
 
@@ -119,12 +152,14 @@ struct [[nodiscard]] TextShakeEffect
     float grow  = 0.f;
     float angle = 0.f;
 
+    ////////////////////////////////////////////////////////////
     void bump(const float strength)
     {
         grow  = strength;
         angle = getRndFloat(-grow * 0.2f, grow * 0.2f);
     }
 
+    ////////////////////////////////////////////////////////////
     void update(const float deltaTimeMs)
     {
         if (grow > 0.f)
@@ -171,11 +206,13 @@ struct [[nodiscard]] Bubble
 
     BubbleType type;
 
+    ////////////////////////////////////////////////////////////
     void update(const float deltaTime)
     {
         position += velocity * deltaTime;
     }
 
+    ////////////////////////////////////////////////////////////
     void applyToSprite(sf::Sprite& sprite) const
     {
         sprite.position = position;
@@ -208,6 +245,7 @@ struct [[nodiscard]] ParticleData
     float rotation;
     float torque;
 
+    ////////////////////////////////////////////////////////////
     void update(const float deltaTime)
     {
         velocity.y += accelerationY * deltaTime;
@@ -218,6 +256,7 @@ struct [[nodiscard]] ParticleData
         opacity = sf::base::clamp(opacity - opacityDecay * deltaTime, 0.f, 1.f);
     }
 
+    ////////////////////////////////////////////////////////////
     void applyToTransformable(auto& transformable) const
     {
         transformable.position = position;
@@ -225,9 +264,10 @@ struct [[nodiscard]] ParticleData
         transformable.rotation = sf::radians(rotation);
     }
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] sf::base::U8 opacityAsAlpha() const
     {
-        return static_cast<sf::base::U8>(opacity * 255.0f);
+        return static_cast<sf::base::U8>(opacity * 255.f);
     }
 };
 
@@ -237,11 +277,13 @@ struct [[nodiscard]] Particle
     ParticleData data;
     ParticleType type;
 
+    ////////////////////////////////////////////////////////////
     void update(const float deltaTime)
     {
         data.update(deltaTime);
     }
 
+    ////////////////////////////////////////////////////////////
     void applyToSprite(sf::Sprite& sprite) const
     {
         data.applyToTransformable(sprite);
@@ -274,11 +316,13 @@ struct [[nodiscard]] TextParticle
     char         buffer[16];
     ParticleData data;
 
+    ////////////////////////////////////////////////////////////
     void update(const float deltaTime)
     {
         data.update(deltaTime);
     }
 
+    ////////////////////////////////////////////////////////////
     void applyToText(sf::Text& text) const
     {
         text.setString(buffer); // TODO P1: should find a way to assign directly to text buffer
@@ -300,7 +344,7 @@ struct [[nodiscard]] TextParticle
                        .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 2.f, 1.f, 2.5f),
                        .accelerationY = 0.00425f,
                        .opacity       = 1.f,
-                       .opacityDecay  = 0.0020f,
+                       .opacityDecay  = 0.002f,
                        .rotation      = 0.f,
                        .torque        = getRndFloat(-0.002f, 0.002f)}};
 }
@@ -324,17 +368,18 @@ struct [[nodiscard]] Cat
     sf::Vector2f rangeOffset;
     float        wobbleTimer = 0.f;
 
-    sf::Sprite sprite;
-    sf::Sprite pawSprite;
+    sf::Sprite sprite;    // TODO: remove and cache in draw loop
+    sf::Sprite pawSprite; // TODO: remove and cache in draw loop
     float      cooldown = 0.f;
 
     SizeT nameIdx;
 
     TextShakeEffect textStatusShakeEffect;
 
-    float beingDragged = 0.f;
+    float beingDragged = 0.f; // TODO: remove
     int   hits         = 0;
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool update(const float maxCooldown, const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
@@ -354,6 +399,7 @@ struct [[nodiscard]] Cat
         return false;
     }
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] float getRadius() const noexcept
     {
         return sprite.textureRect.size.x * sprite.scale.x * 0.75f;
@@ -416,7 +462,7 @@ struct CollisionResolution
     if (vRelDotNormal > 0)
     {
         const float e = 0.65f; // Coefficient of restitution (1.0 = perfectly elastic)
-        const float j = -(1.0f + e) * vRelDotNormal / ((1.0f / m1) + (1.0f / m2));
+        const float j = -(1.f + e) * vRelDotNormal / ((1.f / m1) + (1.f / m2));
 
         const sf::Vector2f impulse = normal * j;
 
@@ -487,11 +533,11 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 struct [[nodiscard]] GrowthFactors
 {
     float initial;
-    float linear;
-    float multiplicative;
-    float exponential;
-    float flat;
-    float finalMult;
+    float linear         = 0.f;
+    float multiplicative = 0.f;
+    float exponential    = 0.f;
+    float flat           = 0.f;
+    float finalMult      = 1.f;
 };
 
 ////////////////////////////////////////////////////////////
@@ -503,23 +549,29 @@ struct [[nodiscard]] GrowthFactors
 }
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] PurchasableScalingValue
+struct [[nodiscard]] PSVData
 {
-    SizeT nPurchases;
-
-    const SizeT nMaxPurchases;
-
+    const SizeT         nMaxPurchases;
     const GrowthFactors cost;
     const GrowthFactors value;
+};
 
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] PurchasableScalingValue
+{
+    const PSVData& data;
+    SizeT          nPurchases;
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] float nextCost() const
     {
-        return computeGrowth(cost, static_cast<float>(nPurchases));
+        return computeGrowth(data.cost, static_cast<float>(nPurchases));
     }
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] float currentValue() const
     {
-        return computeGrowth(value, static_cast<float>(nPurchases));
+        return computeGrowth(data.value, static_cast<float>(nPurchases));
     }
 };
 
@@ -600,43 +652,47 @@ void drawSplashScreen(sf::RenderWindow& window, const sf::Texture& txLogo, const
         fade = splashTimer;
 
     window.draw({.position    = resolution / 2.f,
-                 .scale       = {0.70f, 0.70f},
+                 .scale       = {0.7f, 0.7f},
                  .origin      = txLogo.getSize().toVector2f() / 2.f,
                  .textureRect = txLogo.getRect(),
-                 .color       = sf::Color{255, 255, 255, static_cast<sf::base::U8>(fade)}},
+                 .color       = sf::Color::White.withAlpha(static_cast<sf::base::U8>(fade))},
                 txLogo);
 }
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_SOUND(name, filename)                                                           \
-                                                                                                   \
-private:                                                                                           \
-    sf::SoundBuffer m_buffer##name = sf::SoundBuffer::loadFromFile("resources/" filename).value(); \
-                                                                                                   \
-public:                                                                                            \
-    sf::Sound name                                                                                 \
-    {                                                                                              \
-        m_buffer##name                                                                             \
-    }
-
-
-////////////////////////////////////////////////////////////
 struct Sounds
 {
-    BUBBLEBYTE_SOUND(pop, "pop.ogg");
-    BUBBLEBYTE_SOUND(reversePop, "reversepop.ogg");
-    BUBBLEBYTE_SOUND(shine, "shine.ogg");
-    BUBBLEBYTE_SOUND(click, "click2.ogg");
-    BUBBLEBYTE_SOUND(byteMeow, "bytemeow.ogg");
-    BUBBLEBYTE_SOUND(grab, "grab.ogg");
-    BUBBLEBYTE_SOUND(drop, "drop.ogg");
-    BUBBLEBYTE_SOUND(scratch, "scratch.ogg");
-    BUBBLEBYTE_SOUND(buy, "buy.ogg");
-    BUBBLEBYTE_SOUND(explosion, "explosion.ogg");
-    BUBBLEBYTE_SOUND(makeBomb, "makebomb.ogg");
-    BUBBLEBYTE_SOUND(hex, "hex.ogg");
-    BUBBLEBYTE_SOUND(byteSpeak, "bytespeak.ogg");
+    ////////////////////////////////////////////////////////////
+    struct LoadedSound : private sf::SoundBuffer, public sf::Sound
+    {
+        ////////////////////////////////////////////////////////////
+        explicit LoadedSound(const sf::Path& filename) :
+        sf::SoundBuffer(sf::SoundBuffer::loadFromFile("resources/" / filename).value()),
+        sf::Sound(static_cast<const sf::SoundBuffer&>(*this))
+        {
+        }
 
+        ////////////////////////////////////////////////////////////
+        LoadedSound(const LoadedSound&) = delete;
+        LoadedSound(LoadedSound&&)      = delete;
+    };
+
+    ////////////////////////////////////////////////////////////
+    LoadedSound pop{"pop.ogg"};
+    LoadedSound reversePop{"reversepop.ogg"};
+    LoadedSound shine{"shine.ogg"};
+    LoadedSound click{"click2.ogg"};
+    LoadedSound byteMeow{"bytemeow.ogg"};
+    LoadedSound grab{"grab.ogg"};
+    LoadedSound drop{"drop.ogg"};
+    LoadedSound scratch{"scratch.ogg"};
+    LoadedSound buy{"buy.ogg"};
+    LoadedSound explosion{"explosion.ogg"};
+    LoadedSound makeBomb{"makebomb.ogg"};
+    LoadedSound hex{"hex.ogg"};
+    LoadedSound byteSpeak{"bytespeak.ogg"};
+
+    ////////////////////////////////////////////////////////////
     explicit Sounds()
     {
         constexpr float worldAttenuation = 0.0015f;
@@ -661,6 +717,7 @@ struct Sounds
         explosion.setVolume(75.f);
     }
 
+    ////////////////////////////////////////////////////////////
     Sounds(const Sounds&) = delete;
     Sounds(Sounds&&)      = delete;
 };
@@ -681,59 +738,145 @@ struct GameResources
 ////////////////////////////////////////////////////////////
 struct Game
 {
-    // TODO
-    PurchasableScalingValue psvComboStartTime //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 20u,
+    static inline constexpr PSVData psvComboStartTimeData //
+        {.nMaxPurchases = 20u,
+         .cost          = {.initial = 35.f, .linear = 125.f, .exponential = 1.7f},
+         .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f}};
 
-         .cost = {.initial = 35.f, .linear = 125.f, .multiplicative = 0.f, .exponential = 1.7f, .flat = 0.f, .finalMult = 1.f},
-         .value = {.initial = 0.55f, .linear = 0.04f, .multiplicative = 0.f, .exponential = 1.02f, .flat = 0.f, .finalMult = 1.f}};
+    static inline constexpr PSVData psvBubbleCountData //
+        {.nMaxPurchases = 30u,
+         .cost          = {.initial = 35.f, .linear = 1500.f, .exponential = 2.5f},
+         .value         = {.initial = 500.f, .linear = 325.f, .exponential = 1.01f}};
 
-    // TODO
-    PurchasableScalingValue psvBubbleCount //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 30u,
+    static inline constexpr PSVData psvBubbleValueData //
+        {.nMaxPurchases = 19u,
+         .cost          = {.initial = 1000.f, .linear = 2500.f, .exponential = 2.f},
+         .value         = {.initial = 0.f, .linear = 1.f}};
 
-         .cost = {.initial = 35.f, .linear = 1500.f, .multiplicative = 0.f, .exponential = 2.5f, .flat = 0.f, .finalMult = 1.f},
-         .value = {.initial = 500.f, .linear = 325.f, .multiplicative = 0.f, .exponential = 1.01f, .flat = 0.f, .finalMult = 1.f}};
+    static inline constexpr PSVData psvExplosionRadiusMultData //
+        {.nMaxPurchases = 12u,
+         .cost          = {.initial = 15000.f, .exponential = 1.5f},
+         .value         = {.initial = 1.f, .linear = 0.25f, .exponential = 1.f}};
 
-    // TODO
-    PurchasableScalingValue psvBubbleValue //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 19u,
+    static inline constexpr PSVData psvCatCooldownMultData //
+        {.nMaxPurchases = 12u,
+         .cost          = {.initial = 2000.f, .exponential = 1.68f, .flat = -1500.f},
+         .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
-         .cost = {.initial = 1000.f, .linear = 2500.f, .multiplicative = 0.f, .exponential = 2.0f, .flat = 0.f, .finalMult = 1.f},
-         .value = {.initial = 0.f, .linear = 1.f, .multiplicative = 0.f, .exponential = 0.f, .flat = 0.f, .finalMult = 1.f}};
+    static inline constexpr PSVData psvCatRangeDivData //
+        {.nMaxPurchases = 9u,
+         .cost          = {.initial = 4000.f, .exponential = 1.85f, .flat = -2500.f},
+         .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f}};
 
-    // TODO
-    PurchasableScalingValue psvExplosionRadiusMult //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 12u,
-         .cost = {.initial = 15000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.5f, .flat = 0.f, .finalMult = 1.f},
-         .value = {.initial = 1.f, .linear = 0.25f, .multiplicative = 0.f, .exponential = 1.f, .flat = 0.f, .finalMult = 1.f}};
+    static inline constexpr PSVData psvUnicatCooldownMultData //
+        {.nMaxPurchases = 12u,
+         .cost          = {.initial = 6000.f, .exponential = 1.68f, .flat = -2500.f},
+         .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
-    // TODO
-    PurchasableScalingValue psvCatCooldownMult //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 12u,
+    // TODO same as cat
+    static inline constexpr PSVData psvUnicatRangeDivData //
+        {.nMaxPurchases = 9u,
+         .cost          = {.initial = 4000.f, .exponential = 1.85f, .flat = -2500.f},
+         .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f}};
 
-         .cost = {.initial = 2000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -1500.f, .finalMult = 1.f},
-         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f, .finalMult = 1.f}};
+    // TODO same as cat
+    static inline constexpr PSVData psvDevilcatCooldownMultData //
+        {.nMaxPurchases = 12u,
+         .cost          = {.initial = 2000.f, .exponential = 1.68f, .flat = -1500.f},
+         .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
-    // TODO
-    PurchasableScalingValue psvCatRangeDiv //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 9u,
-         .cost = {.initial = 4000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.85f, .flat = -2500.f, .finalMult = 1.f},
-         .value = {.initial = 0.6f, .linear = 0.f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f, .finalMult = 1.f}};
+    // TODO same as cat
+    static inline constexpr PSVData psvDevilcatRangeDivData //
+        {.nMaxPurchases = 9u,
+         .cost          = {.initial = 4000.f, .exponential = 1.85f, .flat = -2500.f},
+         .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f}};
 
-    // TODO
-    PurchasableScalingValue psvUnicatCooldownMult //
-        {.nPurchases    = 0u,
-         .nMaxPurchases = 12u,
+    // TODO same as cat
+    static inline constexpr PSVData psvWitchCatCooldownMultData //
+        {.nMaxPurchases = 12u,
+         .cost          = {.initial = 2000.f, .exponential = 1.68f, .flat = -1500.f},
+         .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
-         .cost = {.initial = 6000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -2500.f, .finalMult = 1.f},
-         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f, .finalMult = 1.f}};
+    // TODO same as cat
+    static inline constexpr PSVData psvWitchCatRangeDivData //
+        {.nMaxPurchases = 9u,
+         .cost          = {.initial = 4000.f, .exponential = 1.85f, .flat = -2500.f},
+         .value         = {.initial = 0.6f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f}};
+
+    PurchasableScalingValue psvComboStartTime{.data{psvComboStartTimeData}, .nPurchases = 0u};
+    PurchasableScalingValue psvBubbleCount{.data{psvBubbleCountData}, .nPurchases = 0u};
+    PurchasableScalingValue psvBubbleValue{.data{psvBubbleValueData}, .nPurchases = 0u};
+    PurchasableScalingValue psvExplosionRadiusMult{.data{psvExplosionRadiusMultData}, .nPurchases = 0u};
+    PurchasableScalingValue psvCatCooldownMult{.data{psvCatCooldownMultData}, .nPurchases = 0u};
+    PurchasableScalingValue psvCatRangeDiv{.data{psvCatRangeDivData}, .nPurchases = 0u};
+    PurchasableScalingValue psvUnicatCooldownMult{.data{psvUnicatCooldownMultData}, .nPurchases = 0u};
+    PurchasableScalingValue psvUnicatRangeDiv{.data{psvUnicatRangeDivData}, .nPurchases = 0u};
+    PurchasableScalingValue psvDevilcatCooldownMult{.data{psvDevilcatCooldownMultData}, .nPurchases = 0u};
+    PurchasableScalingValue psvDevilcatRangeDiv{.data{psvDevilcatRangeDivData}, .nPurchases = 0u};
+    PurchasableScalingValue psvWitchCatCooldownMult{.data{psvWitchCatCooldownMultData}, .nPurchases = 0u};
+    PurchasableScalingValue psvWitchCatRangeDiv{.data{psvWitchCatRangeDivData}, .nPurchases = 0u};
+
+    [[nodiscard]] constexpr float getBaseCooldownByCatType(const CatType type) const
+    {
+        constexpr float result[5]{
+            1000.f, // Normal
+            3000.f, // Unicorn
+            7000.f, // Devil
+            2000.f, // Witch
+            1000.f  // Astromeow
+        };
+
+        return result[static_cast<sf::base::U8>(type)];
+    }
+
+    [[nodiscard]] constexpr float getBaseRangeByCatType(const CatType type) const
+    {
+        constexpr float result[5]{
+            96.f,  // Normal
+            64.f,  // Unicorn
+            48.f,  // Devil
+            256.f, // Witch
+            96.f   // Astromeow
+        };
+
+        return result[static_cast<sf::base::U8>(type)];
+    }
+
+    [[nodiscard]] PurchasableScalingValue& getCooldownMultPSVByCatType(const CatType catType)
+    {
+        PurchasableScalingValue* const psvCooldownMults[5] = {
+            &psvCatCooldownMult,
+            &psvUnicatCooldownMult,
+            &psvDevilcatCooldownMult,
+            &psvWitchCatCooldownMult,
+            &psvCatCooldownMult, // TODO: Astromeow
+        };
+
+        return *psvCooldownMults[static_cast<sf::base::U8>(catType)];
+    }
+
+    [[nodiscard]] PurchasableScalingValue& getRangeDivPSVByCatType(const CatType catType)
+    {
+        PurchasableScalingValue* const psvRangeDivs[5] = {
+            &psvCatRangeDiv,
+            &psvUnicatRangeDiv,
+            &psvDevilcatRangeDiv,
+            &psvWitchCatRangeDiv,
+            &psvCatRangeDiv, // TODO: Astromeow
+        };
+
+        return *psvRangeDivs[static_cast<sf::base::U8>(catType)];
+    }
+
+    [[nodiscard]] float getComputedCooldownByCatType(const CatType catType)
+    {
+        return getBaseCooldownByCatType(catType) * getCooldownMultPSVByCatType(catType).currentValue();
+    }
+
+    [[nodiscard]] float getComputedRangeByCatType(const CatType catType)
+    {
+        return getBaseRangeByCatType(catType) / getRangeDivPSVByCatType(catType).currentValue();
+    }
 };
 
 } // namespace
@@ -894,55 +1037,21 @@ int main()
     //
     //
     // Scaling values (persistent)
-    const U64 rewardPerType[3]{
+    const MoneyType rewardPerType[3]{
         1u,  // Normal
         25u, // Star
         1u,  // Bomb
     };
 
     const auto getScaledReward = [&](const BubbleType type)
-    { return rewardPerType[static_cast<SizeT>(type)] * static_cast<U64>(game.psvBubbleValue.currentValue() + 1); };
-
-    // TODO: make const and apply scaler on use
-    float catCooldownPerType[5]{
-        1000.f, // Normal
-        3000.f, // Unicorn
-        7000.f, // Devil
-        2000.f, // Witch
-        1000.f  // Astromeow
-    };
-
-    // TODO: make const and apply scaler on use
-    float catRangePerType[5]{
-        96.f,  // Normal
-        64.f,  // Unicorn
-        48.f,  // Devil
-        256.f, // Witch
-        96.f   // Astromeow
-    };
+    { return rewardPerType[static_cast<SizeT>(type)] * static_cast<MoneyType>(game.psvBubbleValue.currentValue() + 1); };
 
     //
     //
     // Cat names
-    std::array catNames{"Gorgonzola", "Provolino",  "Pistacchietto", "Ricottina",  "Mozzarellina",  "Tiramisu",
-                        "Cannolino",  "Biscottino", "Cannolina",     "Biscottina", "Pistacchietta", "Provolina",
-                        "Arancino",   "Limoncello", "Ciabatta",      "Focaccina",  "Amaretto",      "Pallino",
-                        "Birillo",    "Trottola",   "Baffo",         "Poldo",      "Fuffi",         "Birba",
-                        "Ciccio",     "Pippo",      "Tappo",         "Briciola",   "Braciola",      "Pulce",
-                        "Dante",      "Bolla",      "Fragolina",     "Luppolo",    "Sirena",        "Polvere",
-                        "Stellina",   "Lunetta",    "Briciolo",      "Fiammetta",  "Nuvoletta",     "Scintilla",
-                        "Piuma",      "Fulmine",    "Arcobaleno",    "Stelluccia", "Lucciola",      "Pepita",
-                        "Fiocco",     "Girandola",  "Bombetta",      "Fusillo",    "Cicciobello",   "Palloncino",
-                        "Joe Biden",  "Trump",      "Obama",         "De Luca",    "Salvini",       "Renzi",
-                        "Nutella",    "Vespa",      "Mandolino",     "Ferrari",    "Pavarotti",     "Espresso",
-                        "Sir",        "Nocciolina", "Fluffy",        "Costanzo",   "Mozart",        "DB",
-                        "Soniuccia",  "Pupi",       "Pupetta",       "Genitore 1", "Genitore 2",    "Stonks",
-                        "Carotina",   "Waffle",     "Pancake",       "Muffin",     "Cupcake",       "Donut",
-                        "Jinx",       "Miao",       "Arnold",        "Granita",    "Leone",         "Pangocciolo"};
-
     // TODO: use seed for persistance
-    std::shuffle(catNames.begin(), catNames.end(), std::mt19937{std::random_device{}()});
-    auto getNextCatNameIdx = [&, nextCatName = 0u]() mutable { return nextCatName++ % catNames.size(); };
+    const auto shuffledCatNames  = getShuffledCatNames(getRandomEngine());
+    auto       getNextCatNameIdx = [&, nextCatName = 0u]() mutable { return nextCatName++ % shuffledCatNames.size(); };
 
     //
     //
@@ -956,7 +1065,7 @@ int main()
     std::vector<Cat> cats;
     cats.reserve(512);
 
-    U64 money = 0u;
+    MoneyType money = 0u;
 
     //
     //
@@ -1027,7 +1136,7 @@ int main()
     //
     //
     // Money helper functions
-    const auto addReward = [&](const U64 reward)
+    const auto addReward = [&](const MoneyType reward)
     {
         money += reward;
         moneyTextShakeEffect.bump(1.f + static_cast<float>(combo) * 0.1f);
@@ -1378,7 +1487,7 @@ int main()
 
         const auto popWithRewardAndReplaceBubble = [&](Bubble& bubble, int combo)
         {
-            const auto reward = static_cast<U64>(
+            const auto reward = static_cast<MoneyType>(
                 sf::base::ceil(static_cast<float>(getScaledReward(bubble.type)) * comboValueMult(combo)));
 
             popBubble(popBubble, bubble.type, reward, combo, bubble.position.x, bubble.position.y);
@@ -1549,19 +1658,8 @@ int main()
 
         for (auto& cat : cats)
         {
-            auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
-
-            // TODO
-            if (cat.type == CatType::Normal)
-                maxCooldown = 1000.f * game.psvCatCooldownMult.currentValue();
-            else if (cat.type == CatType::Unicorn)
-                maxCooldown = 3000.f * game.psvUnicatCooldownMult.currentValue();
-
-            auto range = catRangePerType[static_cast<int>(cat.type)];
-
-            // TODO
-            if (cat.type == CatType::Normal)
-                range = 96.f / game.psvCatRangeDiv.currentValue();
+            const auto maxCooldown = game.getComputedCooldownByCatType(cat.type);
+            const auto range       = game.getComputedRangeByCatType(cat.type);
 
             auto diff = cat.pawSprite.position - cat.sprite.position - sf::Vector2f{-25.f, 25.f};
             cat.pawSprite.position -= diff * 0.01f * deltaTimeMs;
@@ -1597,7 +1695,7 @@ int main()
                         if ((otherCat.position - cat.position).length() > range)
                             continue;
 
-                        otherCat.cooldown = catCooldownPerType[static_cast<int>(otherCat.type)];
+                        otherCat.cooldown = game.getComputedCooldownByCatType(cat.type);
                         ++witchHits;
 
                         if (!pawSet && getRndFloat(0.f, 100.f) > 50.f)
@@ -1713,10 +1811,10 @@ int main()
         ImGui::SetNextWindowSizeConstraints(ImVec2(400.f, 0.f), ImVec2(1000.f, 600.f));
         ImGui::PushFont(fontImGuiDailyBubble);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f); // Set corner radius
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
 
         ImGuiStyle& style               = ImGui::GetStyle();
-        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.0f, 0.0f, 0.0f, 0.65f); // 65% transparent black
+        style.Colors[ImGuiCol_WindowBg] = ImVec4(0.f, 0.f, 0.f, 0.65f); // 65% transparent black
 
         ImGui::Begin("##menu",
                      nullptr,
@@ -1753,7 +1851,7 @@ int main()
                     ImGui::SameLine();
 
                     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-                    ImGui::Button("DONE", ImVec2(135.f, 0.0f));
+                    ImGui::Button("DONE", ImVec2(135.f, 0.f));
 
                     ImGui::EndDisabled();
                 };
@@ -1792,7 +1890,8 @@ int main()
                 {
                     bool result = false;
 
-                    const auto cost = static_cast<U64>(globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
+                    const auto cost = static_cast<MoneyType>(
+                        globalCostMultiplier() * costFunction(baseCost, count, growthFactor));
                     std::sprintf(buffer, "$%zu##%s", cost, label);
 
                     ImGui::BeginDisabled(money < cost);
@@ -1806,7 +1905,7 @@ int main()
                     ImGui::SameLine();
 
                     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+                    ImGui::Button(buffer, ImVec2(135.f, 0.f));
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
@@ -1826,11 +1925,11 @@ int main()
 
                 const auto makePurchasableButtonPSV = [&](const char* label, PurchasableScalingValue& psv)
                 {
-                    const bool maxedOut = psv.nPurchases == psv.nMaxPurchases;
+                    const bool maxedOut = psv.nPurchases == psv.data.nMaxPurchases;
 
                     bool result = false;
 
-                    const auto cost = static_cast<U64>(globalCostMultiplier() * psv.nextCost());
+                    const auto cost = static_cast<MoneyType>(globalCostMultiplier() * psv.nextCost());
 
                     if (maxedOut)
                         std::sprintf(buffer, "MAX");
@@ -1848,7 +1947,7 @@ int main()
                     ImGui::SameLine();
 
                     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+                    ImGui::Button(buffer, ImVec2(135.f, 0.f));
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
@@ -1865,11 +1964,11 @@ int main()
                     return result;
                 };
 
-                const auto makePurchasableButtonOneTime = [&](const char* label, const U64 xcost, bool& done)
+                const auto makePurchasableButtonOneTime = [&](const char* label, const MoneyType xcost, bool& done)
                 {
                     bool result = false;
 
-                    const auto cost = static_cast<U64>(globalCostMultiplier() * static_cast<float>(xcost));
+                    const auto cost = static_cast<MoneyType>(globalCostMultiplier() * static_cast<float>(xcost));
 
                     if (done)
                         std::sprintf(buffer, "DONE");
@@ -1889,7 +1988,7 @@ int main()
                     ImGui::SameLine();
 
                     ImGui::SetCursorPosX(ImGui::GetWindowWidth() - 160.f);
-                    ImGui::Button(buffer, ImVec2(135.f, 0.0f));
+                    ImGui::Button(buffer, ImVec2(135.f, 0.f));
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
@@ -1993,21 +2092,6 @@ int main()
                                .beingDragged          = 0.f};
                 };
 
-                const auto makeCatModifiers =
-                    [&](const char* labelCooldown, const char* labelRange, const CatType catType, const float initialCooldown)
-                {
-                    auto& maxCooldown = catCooldownPerType[static_cast<int>(catType)];
-                    auto& range       = catRangePerType[static_cast<int>(catType)];
-
-                    std::sprintf(labelBuffer, "%.2fs", static_cast<double>(maxCooldown / 1000.f));
-                    if (makePurchasableButton(labelCooldown, 20.f, 1.25f, 13.f + (initialCooldown - maxCooldown) / 35.f))
-                        maxCooldown *= 0.95f;
-
-                    std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
-                    if (makePurchasableButton(labelRange, 18.f, 1.75f, range / 15.f))
-                        range *= 1.05f;
-                };
-
                 const auto resetCatDrag = [&]
                 {
                     for (auto& cat : cats)
@@ -2029,30 +2113,34 @@ int main()
 
                         if (nCatNormal == 0)
                         {
-                            doTip("Cat periodically pop bubbles for you!\nYou can drag them around to position them.");
+                            doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
                         }
                     }
                 }
 
-                const auto makeCooldownButton = [&](const char* label, const CatType catType, PurchasableScalingValue& psv)
+                const auto makeCooldownButton = [&](const char* label, const CatType catType)
                 {
-                    const auto baseCooldown = catCooldownPerType[static_cast<int>(catType)];
-                    std::sprintf(labelBuffer, "%.2fs", static_cast<double>(baseCooldown * psv.currentValue() / 1000.f));
+                    auto& psv = game.getCooldownMultPSVByCatType(catType);
+
+                    std::sprintf(labelBuffer,
+                                 "%.2fs",
+                                 static_cast<double>(game.getComputedCooldownByCatType(catType) / 1000.f));
                     makePurchasableButtonPSV(label, psv);
                 };
 
-                const auto makeRangeButton = [&](const char* label, const CatType catType, PurchasableScalingValue& psv)
+                const auto makeRangeButton = [&](const char* label, const CatType catType)
                 {
-                    const auto baseRange = catRangePerType[static_cast<int>(catType)];
-                    std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(baseRange / psv.currentValue()));
+                    auto& psv = game.getRangeDivPSVByCatType(catType);
+
+                    std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(game.getComputedRangeByCatType(catType)));
                     makePurchasableButtonPSV(label, psv);
                 };
 
                 const bool catUpgradesUnlocked = game.psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUnicorn >= 1;
                 if (catUpgradesUnlocked)
                 {
-                    makeCooldownButton("- Cat cooldown", CatType::Normal, game.psvCatCooldownMult);
-                    makeRangeButton("- Cat range", CatType::Normal, game.psvCatRangeDiv);
+                    makeCooldownButton("- Cat cooldown", CatType::Normal);
+                    makeRangeButton("- Cat range", CatType::Normal);
                 }
 
                 // UNICORN CAT
@@ -2076,12 +2164,8 @@ int main()
 
                     if (unicatUpgradesUnlocked)
                     {
-                        makeCooldownButton("- Unicat cooldown", CatType::Unicorn, game.psvUnicatCooldownMult);
-
-                        auto& range = catRangePerType[static_cast<int>(CatType::Unicorn)];
-                        std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(range));
-                        if (makePurchasableButton("- Unicat range", 18.f, 1.75f, range / 15.f))
-                            range *= 1.05f;
+                        makeCooldownButton("- Unicat cooldown", CatType::Unicorn);
+                        makeRangeButton("- Unicat range", CatType::Unicorn);
                     }
                 }
 
@@ -2108,7 +2192,10 @@ int main()
                     makePurchasableButtonPSV("- Explosion radius", game.psvExplosionRadiusMult);
 
                     if (devilcatsUpgradesUnlocked)
-                        makeCatModifiers("- Devilcat cooldown", "- Devilcat range", CatType::Devil, 7000.f);
+                    {
+                        makeCooldownButton("- Devilcat cooldown", CatType::Devil);
+                        makeRangeButton("- Devilcat range", CatType::Devil);
+                    }
                 }
 
                 // WITCH CAT
@@ -2124,7 +2211,10 @@ int main()
                     }
 
                     if (witchCatUpgradesUnlocked)
-                        makeCatModifiers("- Witch cat cooldown", "- Witch cat range", CatType::Witch, 2000.f);
+                    {
+                        makeCooldownButton("- Witch cat cooldown", CatType::Witch);
+                        makeRangeButton("- Witch cat range", CatType::Witch);
+                    }
                 }
 
                 const auto milestoneText = [&]() -> std::string
@@ -2279,8 +2369,8 @@ int main()
                 ImGui::Text("FPS: %.2f", static_cast<double>(fps));
 
                 const float timePlayed    = playedClock.getElapsedTime().asSeconds();
-                const U64   secondsPlayed = static_cast<U64>(std::fmod(timePlayed, 60.f));
-                const U64   minutesPlayed = static_cast<U64>(timePlayed / 60);
+                const auto  secondsPlayed = static_cast<U64>(std::fmod(timePlayed, 60.f));
+                const auto  minutesPlayed = static_cast<U64>(timePlayed / 60);
                 ImGui::Text("Time played: %llu min %llu sec", minutesPlayed, secondsPlayed);
 
                 ImGui::EndTabItem();
@@ -2328,12 +2418,8 @@ int main()
             cpuDrawableBatch.add(cat.sprite);
             cpuDrawableBatch.add(cat.pawSprite);
 
-            const auto maxCooldown = catCooldownPerType[static_cast<int>(cat.type)];
-            auto       range       = catRangePerType[static_cast<int>(cat.type)];
-
-            // TODO:
-            if (cat.type == CatType::Normal)
-                range = 96.f / game.psvCatRangeDiv.currentValue();
+            const auto maxCooldown = game.getComputedCooldownByCatType(cat.type);
+            const auto range       = game.getComputedRangeByCatType(cat.type);
 
             constexpr sf::Color colorsByType[5]{
                 sf::Color::Blue,   // Cat
@@ -2343,6 +2429,8 @@ int main()
                 sf::Color::White,  // Astromeow
             };
 
+            // TODO P1: make it possible to draw a circle directly via batching without any of this stuff,
+            // no need to preallocate a circle shape before, have a reusable vertex buffer in the batch itself
             catRadiusCircle.position = cat.position + cat.rangeOffset;
             catRadiusCircle.origin   = {range, range};
             catRadiusCircle.setRadius(range);
@@ -2351,7 +2439,7 @@ int main()
                                    : static_cast<sf::base::U8>(cat.cooldown / maxCooldown * 128.f)));
             cpuDrawableBatch.add(catRadiusCircle);
 
-            catTextName.setString(catNames[cat.nameIdx]);
+            catTextName.setString(shuffledCatNames[cat.nameIdx]);
             catTextName.position = cat.position + sf::Vector2f{0.f, 48.f};
             catTextName.origin   = catTextName.getLocalBounds().size / 2.f;
             cpuDrawableBatch.add(catTextName);
@@ -2398,7 +2486,7 @@ int main()
                           {.characterSize    = 16u,
                            .fillColor        = sf::Color::White,
                            .outlineColor     = colorBlueOutline,
-                           .outlineThickness = 1.0f}};
+                           .outlineThickness = 1.f}};
 
         for (const auto& textParticle : textParticles)
         {
@@ -2472,27 +2560,31 @@ int main()
                 else if (tipTimer < 500.f)
                     fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
 
+                const auto alpha = static_cast<sf::base::U8>(sf::base::clamp(fade, 0.f, 255.f));
+
                 sounds.byteSpeak.setPitch(1.6f);
 
                 sf::Text tipText{fontDailyBubble,
-                                 {.position      = {195.f, 265.f},
-                                  .string        = tipString.substr(0,
+                                 {.position         = {195.f, 265.f},
+                                  .string           = tipString.substr(0,
                                                              static_cast<SizeT>(
                                                                  sf::base::clamp((4100.f - tipTimer) / 25.f,
                                                                                  0.f,
                                                                                  static_cast<float>(tipString.size())))),
-                                  .characterSize = 32u,
-                                  .fillColor     = sf::Color::Black.withAlpha(static_cast<sf::base::U8>(fade))}};
+                                  .characterSize    = 32u,
+                                  .fillColor        = sf::Color::White.withAlpha(alpha),
+                                  .outlineColor     = colorBlueOutline.withAlpha(alpha),
+                                  .outlineThickness = 2.f}};
 
                 if (sounds.byteSpeak.getStatus() != sf::Sound::Status::Playing &&
                     tipText.getString().getSize() < tipString.size() && tipText.getString().getSize() > 0)
                     sounds.byteSpeak.play(playbackDevice);
 
                 sf::Sprite tipSprite{.position    = resolution / 2.f,
-                                     .scale       = {0.70f, 0.70f},
+                                     .scale       = {0.7f, 0.7f},
                                      .origin      = txByteTip.getSize().toVector2f() / 2.f,
                                      .textureRect = txByteTip.getRect(),
-                                     .color       = sf::Color::White.withAlpha(static_cast<sf::base::U8>(fade))};
+                                     .color       = sf::Color::White.withAlpha(alpha)};
 
                 window.draw(tipSprite, txByteTip);
                 window.draw(tipText);
@@ -2523,3 +2615,8 @@ int main()
 // - leveling cat
 // - some normal cat buff around 17000 money as a milestone towards devilcats, maybe two paws?
 // - change bg when unlocking new cat type?
+
+// TODO PRE-RELEASE:
+// - check Google Keep
+// - unlock hard mode and speedrun mode at the end
+// - make open source?
