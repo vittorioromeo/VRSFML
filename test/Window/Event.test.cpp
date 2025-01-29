@@ -5,6 +5,7 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////
@@ -346,6 +347,25 @@ TEST_CASE("[Window] sf::Event")
 
             const sf::Event focusLost = sf::Event::FocusLost{};
             CHECK(focusLost.visit(visitor) == 5);
+        }
+
+        SECTION("Move-only visitor")
+        {
+            struct MoveOnly
+            {
+                MoveOnly()                = default;
+                MoveOnly(const MoveOnly&) = delete;
+                MoveOnly(MoveOnly&&)      = default;
+            };
+
+            auto moveOnlyVisitor = [p = MoveOnly{}](const auto&)
+            {
+                (void)p;
+                return 100;
+            };
+
+            const sf::Event closed = sf::Event::Closed{};
+            CHECK(closed.visit(moveOnlyVisitor) == 100);
         }
     }
 }
