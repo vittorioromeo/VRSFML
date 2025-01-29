@@ -10,6 +10,8 @@
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/AddConst.hpp"
+#include "SFML/Base/Traits/AddLvalueReference.hpp"
 #include "SFML/Base/Traits/IsReference.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
@@ -133,10 +135,7 @@ private:
         else                                                                                               \
         {                                                                                                  \
             [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) __attribute__((always_inline, flatten)) \
-            {                                                                                              \
-                ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...);                                    \
-            }                                                                                              \
-            (alternative_index_sequence);                                                                  \
+            { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence);       \
         }                                                                                                  \
     } while (false)
 
@@ -388,7 +387,9 @@ public:
         return static_cast<TINYVARIANT_NTH_TYPE(I) &&>(as<TINYVARIANT_NTH_TYPE(I)>());
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -405,7 +406,9 @@ public:
         }
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -423,8 +426,8 @@ public:
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursive_match(
-        Fs&&... fs) & -> decltype(recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto recursive_match(Fs&&... fs) & -> decltype(recursive_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
@@ -436,7 +439,9 @@ public:
         return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -463,7 +468,9 @@ public:
     }
 
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -490,15 +497,15 @@ public:
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(
-        Fs&&... fs) & -> decltype(linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) & -> decltype(linear_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(
-        Fs&&... fs) const& -> decltype(linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) const& -> decltype(linear_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
