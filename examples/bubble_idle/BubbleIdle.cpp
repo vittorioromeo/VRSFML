@@ -491,13 +491,15 @@ struct [[nodiscard]] GrowthFactors
     float multiplicative;
     float exponential;
     float flat;
+    float finalMult;
 };
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::pure]] float computeGrowth(const GrowthFactors& factors, const float n)
 {
-    return (factors.initial + n * factors.multiplicative) * std::pow(factors.exponential, n) + factors.linear * n +
-           factors.flat;
+    return ((factors.initial + n * factors.multiplicative) * std::pow(factors.exponential, n) + factors.linear * n +
+            factors.flat) *
+           factors.finalMult;
 }
 
 ////////////////////////////////////////////////////////////
@@ -684,54 +686,54 @@ struct Game
         {.nPurchases    = 0u,
          .nMaxPurchases = 20u,
 
-         .cost  = {.initial = 35.f, .linear = 125.f, .multiplicative = 0.f, .exponential = 1.7f, .flat = 0.f},
-         .value = {.initial = 0.55f, .linear = 0.04f, .multiplicative = 0.f, .exponential = 1.02f, .flat = 0.f}};
+         .cost = {.initial = 35.f, .linear = 125.f, .multiplicative = 0.f, .exponential = 1.7f, .flat = 0.f, .finalMult = 1.f},
+         .value = {.initial = 0.55f, .linear = 0.04f, .multiplicative = 0.f, .exponential = 1.02f, .flat = 0.f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleCount //
         {.nPurchases    = 0u,
          .nMaxPurchases = 30u,
 
-         .cost  = {.initial = 35.f, .linear = 1500.f, .multiplicative = 0.f, .exponential = 2.5f, .flat = 0.f},
-         .value = {.initial = 500.f, .linear = 325.f, .multiplicative = 0.f, .exponential = 1.01f, .flat = 0.f}};
+         .cost = {.initial = 35.f, .linear = 1500.f, .multiplicative = 0.f, .exponential = 2.5f, .flat = 0.f, .finalMult = 1.f},
+         .value = {.initial = 500.f, .linear = 325.f, .multiplicative = 0.f, .exponential = 1.01f, .flat = 0.f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvBubbleValue //
         {.nPurchases    = 0u,
          .nMaxPurchases = 19u,
 
-         .cost  = {.initial = 1000.f, .linear = 2500.f, .multiplicative = 0.f, .exponential = 2.0f, .flat = 0.f},
-         .value = {.initial = 0.f, .linear = 1.f, .multiplicative = 0.f, .exponential = 0.f, .flat = 0.f}};
+         .cost = {.initial = 1000.f, .linear = 2500.f, .multiplicative = 0.f, .exponential = 2.0f, .flat = 0.f, .finalMult = 1.f},
+         .value = {.initial = 0.f, .linear = 1.f, .multiplicative = 0.f, .exponential = 0.f, .flat = 0.f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvExplosionRadiusMult //
         {.nPurchases    = 0u,
          .nMaxPurchases = 12u,
-         .cost          = {.initial = 15000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.5f, .flat = 0.f},
-         .value         = {.initial = 1.f, .linear = 0.25f, .multiplicative = 0.f, .exponential = 1.f, .flat = 0.f}};
+         .cost = {.initial = 15000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.5f, .flat = 0.f, .finalMult = 1.f},
+         .value = {.initial = 1.f, .linear = 0.25f, .multiplicative = 0.f, .exponential = 1.f, .flat = 0.f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvCatCooldownMult //
         {.nPurchases    = 0u,
          .nMaxPurchases = 12u,
 
-         .cost  = {.initial = 2000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -1500.f},
-         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f}};
+         .cost = {.initial = 2000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -1500.f, .finalMult = 1.f},
+         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvCatRangeDiv //
         {.nPurchases    = 0u,
          .nMaxPurchases = 9u,
-         .cost  = {.initial = 4000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.85f, .flat = -2500.f},
-         .value = {.initial = 0.6f, .linear = 0.f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f}};
+         .cost = {.initial = 4000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.85f, .flat = -2500.f, .finalMult = 1.f},
+         .value = {.initial = 0.6f, .linear = 0.f, .multiplicative = -0.05f, .exponential = 0.75f, .flat = 0.4f, .finalMult = 1.f}};
 
     // TODO
     PurchasableScalingValue psvUnicatCooldownMult //
         {.nPurchases    = 0u,
          .nMaxPurchases = 12u,
 
-         .cost  = {.initial = 6000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -2500.f},
-         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f}};
+         .cost = {.initial = 6000.f, .linear = 0.f, .multiplicative = 0.f, .exponential = 1.68f, .flat = -2500.f, .finalMult = 1.f},
+         .value = {.initial = 1.0f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f, .flat = 0.f, .finalMult = 1.f}};
 };
 
 } // namespace
@@ -2520,3 +2522,4 @@ int main()
 // x - gradually increase count of bubbles when purchasing and on startup
 // - leveling cat
 // - some normal cat buff around 17000 money as a milestone towards devilcats, maybe two paws?
+// - change bg when unlocking new cat type?
