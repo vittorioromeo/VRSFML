@@ -13,6 +13,18 @@
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
+namespace
+{
+
+template <class T>
+constexpr const T& asConst(T& t) noexcept
+{
+    return t;
+}
+
+} // namespace
+
+
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
@@ -162,5 +174,43 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         // Should compile if user provides both a specific handler and a catch-all
         windowBase.pollAndHandleEvents([](sf::Event::Closed) {}, [](const auto&) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {}, [](const auto&) {});
+
+        // Should compile if user provides a handler taking an event subtype by value or reference,
+        // but not rvalue reference because it would never be called.
+        windowBase.pollAndHandleEvents([](sf::Event::Closed) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed) {});
+        windowBase.pollAndHandleEvents([](sf::Event::Closed&) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {});
+
+        // Should compile if user provides a move-only handler
+        struct MoveOnly
+        {
+            MoveOnly()                = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&)      = default;
+        };
+
+        windowBase.pollAndHandleEvents([p = MoveOnly{}](const sf::Event::Closed&) { (void)p; });
+
+        // Should compile if user provides a handler with deleted rvalue ref-qualified call operator
+        struct LvalueOnlyHandler
+        {
+            void operator()(const sf::Event::Closed&) &
+            {
+            }
+
+            void operator()(const sf::Event::Closed&) && = delete;
+        };
+
+        windowBase.pollAndHandleEvents(LvalueOnlyHandler{});
+
+        // Should compile if user provides a reference to a handler
+        auto handler = [](const sf::Event::Closed&) {};
+        windowBase.pollAndHandleEvents(handler);
+        windowBase.pollAndHandleEvents(asConst(handler));
+
+        // Should compile if user provides a function pointer
+        windowBase.pollAndHandleEvents(+[](const sf::Event::Closed&) {});
     };
 }
