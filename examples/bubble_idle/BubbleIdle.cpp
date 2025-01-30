@@ -436,6 +436,15 @@ struct [[nodiscard]] Cat
     {
         return 64.f;
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isCloseToBase() const noexcept
+    {
+        SFML_BASE_ASSERT(type == CatType::Astro);
+        SFML_BASE_ASSERT(astroState.hasValue());
+
+        return astroState->wrapped && sf::base::fabs(position.x - astroState->startX) < 400.f;
+    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -772,6 +781,8 @@ struct Sounds
     LoadedSound hex{"hex.ogg"};
     LoadedSound byteSpeak{"bytespeak.ogg"};
     LoadedSound prestige{"prestige.ogg"};
+    LoadedSound launch{"launch.ogg"};
+    LoadedSound rocket{"rocket.ogg"};
 
     ////////////////////////////////////////////////////////////
     explicit Sounds()
@@ -783,6 +794,8 @@ struct Sounds
         explosion.setAttenuation(worldAttenuation);
         makeBomb.setAttenuation(worldAttenuation);
         hex.setAttenuation(worldAttenuation);
+        launch.setAttenuation(worldAttenuation);
+        rocket.setAttenuation(worldAttenuation);
 
         constexpr float uiAttenuation = 0.f;
         click.setAttenuation(uiAttenuation);
@@ -797,6 +810,7 @@ struct Sounds
         scratch.setVolume(35.f);
         buy.setVolume(75.f);
         explosion.setVolume(75.f);
+        rocket.setVolume(75.f);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1983,10 +1997,14 @@ int main()
 
                 particleTimer += deltaTimeMs;
 
-                const bool closeToBase = wrapped && sf::base::fabs(cat.position.x - startX) < 400.f;
-
-                if (particleTimer >= 3.f && !closeToBase)
+                if (particleTimer >= 3.f && !cat.isCloseToBase())
                 {
+                    if (sounds.rocket.getStatus() != sf::Sound::Status::Playing)
+                    {
+                        sounds.rocket.setPosition({cx, cy});
+                        sounds.rocket.play(playbackDevice);
+                    }
+
                     particles.emplace_back(
                         makeParticle({cat.drawPosition.x + 56.f, cat.drawPosition.y + 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f));
 
@@ -2015,16 +2033,16 @@ int main()
                                           return ControlFlow::Continue;
                                       });
 
-                if (!closeToBase && velocityX > -5.f)
+                if (!cat.isCloseToBase() && velocityX > -5.f)
                     velocityX -= 0.00025f * deltaTimeMs;
 
-                if (!closeToBase)
+                if (!cat.isCloseToBase())
                     cat.position.x += velocityX * deltaTimeMs;
                 else
                     cat.position.x = exponentialApproach(cat.position.x, startX - 10.f, deltaTimeMs, 500.f);
 
                 if (!wrapped && cat.position.x + catRadius < 0.f)
-                {\
+                {
                     cat.position.x = game.getMapLimit() + catRadius;
                     wrapped        = true;
                 }
@@ -2047,6 +2065,8 @@ int main()
             {
                 if (!cat.astroState.hasValue())
                 {
+                    sounds.launch.play(playbackDevice);
+
                     ++cat.hits;
                     cat.astroState.emplace(/* startX */ cat.position.x, /* velocityX */ 0.f, /* wrapped */ false);
                     --cat.position.x;
@@ -2224,7 +2244,8 @@ int main()
                    (geomSum(nCatNormal) * 0.35f) +                       //
                    (geomSum(nCatUni) * 0.5f) +                           //
                    (geomSum(nCatDevil) * 0.75f) +                        //
-                   (geomSum(nCatWitch) * 1.f);
+                   (geomSum(nCatWitch) * 0.75f) +                        //
+                   (geomSum(nCatAstro) * 0.75f);
         };
 
         const bool bubbleValueUnlocked = game.psvBubbleValue.nPurchases > 0 ||
@@ -2630,7 +2651,7 @@ int main()
 
                 // DEVIL CAT
                 const bool catDevilUnlocked = game.psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4;
-                const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatWitch >= 1;
+                const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
                 if (catDevilUnlocked)
                 {
                     std::sprintf(labelBuffer, "%d devilcats", nCatDevil);
@@ -2658,19 +2679,19 @@ int main()
 
                 // ASTRO CAT
                 const bool astroCatUnlocked         = true; // TODO: nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2;
-                const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 10 && nCatWitch >= 5;
+                const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 10 && nCatAstro >= 5;
                 if (astroCatUnlocked)
                 {
-                    std::sprintf(labelBuffer, "%d astrocats", nCatWitch);
-                    if (makePurchasableButton("astrocat", 200000.f, 1.5f, static_cast<float>(nCatWitch)))
+                    std::sprintf(labelBuffer, "%d astrocats", nCatAstro);
+                    if (makePurchasableButton("astrocat", 200000.f, 1.5f, static_cast<float>(nCatAstro)))
                     {
                         game.cats.emplace_back(makeCat(CatType::Astro, {-64.f, 0.f}));
                     }
 
                     if (astroCatUpgradesUnlocked)
                     {
-                        makeCooldownButton("- astrocat cooldown", CatType::Witch);
-                        makeRangeButton("- astrocat range", CatType::Witch);
+                        makeCooldownButton("- astrocat cooldown", CatType::Astro);
+                        makeRangeButton("- astrocat range", CatType::Astro);
                     }
                 }
 
@@ -2697,10 +2718,11 @@ int main()
                         const char* name = "";
 
                         // clang-format off
-                        if      (&count == &nCatNormal)  name = "cat";
-                        else if (&count == &nCatUni) name = "unicat";
-                        else if (&count == &nCatDevil)   name = "devilcat";
-                        else if (&count == &nCatWitch)   name = "astrocat";
+                        if      (&count == &nCatNormal) name = "cat";
+                        else if (&count == &nCatUni)    name = "unicat";
+                        else if (&count == &nCatDevil)  name = "devilcat";
+                        else if (&count == &nCatWitch)  name = "witchcat";
+                        else if (&count == &nCatAstro)  name = "astrocat";
                         // clang-format on
 
                         if (count < needed)
@@ -2775,14 +2797,14 @@ int main()
                     {
                         startList("to unlock devilcat upgrades:");
                         needNCats(nCatDevil, 2);
-                        needNCats(nCatWitch, 1);
+                        needNCats(nCatAstro, 1);
                     }
 
                     if (catUnicornUnlocked && catDevilUnlocked && astroCatUnlocked && !astroCatUpgradesUnlocked)
                     {
                         startList("to unlock astrocat upgrades:");
                         needNCats(nCatDevil, 10);
-                        needNCats(nCatWitch, 5);
+                        needNCats(nCatAstro, 5);
                     }
 
                     return result;
@@ -3090,18 +3112,10 @@ int main()
 
             if (cat.type == CatType::Astro)
             {
-                const bool closeToBase = cat.astroState.hasValue() && cat.astroState->wrapped &&
-                                         sf::base::fabs(cat.position.x - cat.astroState->startX) < 400.f;
-
-                if (!closeToBase)
-                {
-                    if (cooldownDiff < 1000.f)
-                        catRotation = remap(cooldownDiff, 0.f, 1000.f, 0.523599f, 0.f);
-                }
-                else
-                {
+                if (cat.astroState.hasValue() && cat.isCloseToBase())
                     catRotation = remap(sf::base::fabs(cat.position.x - cat.astroState->startX), 0.f, 400.f, 0.f, 0.523599f);
-                }
+                else if (cooldownDiff < 1000.f)
+                    catRotation = remap(cooldownDiff, 0.f, 1000.f, 0.523599f, 0.f);
             }
 
             cpuDrawableBatch.add(
