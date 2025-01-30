@@ -5,6 +5,8 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/Math/Fabs.hpp"
+
 #include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
 
@@ -80,6 +82,11 @@ std::ostream& operator<<(std::ostream& os, Color color)
               << ", b=" << int{color.b} << ", a=" << int{color.a} << ")";
 }
 
+std::ostream& operator<<(std::ostream& os, Approx<Color> color)
+{
+    return os << color.value;
+}
+
 std::ostream& operator<<(std::ostream& os, const Transform& transform)
 {
     // clang-format off
@@ -110,6 +117,7 @@ std::ostream& operator<<(std::ostream& os, const Rect<T>& rect)
 
 template std::ostream& operator<<(std::ostream&, const Rect<int>&);
 template std::ostream& operator<<(std::ostream&, const Rect<float>&);
+
 } // namespace sf
 
 bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
@@ -134,4 +142,12 @@ bool operator==(const sf::Transform& lhs, const Approx<sf::Transform>& rhs)
            lhsMatrix[5] == Approx(rhsMatrix[5]) && lhsMatrix[13] == Approx(rhsMatrix[13]) &&
            lhsMatrix[3] == Approx(rhsMatrix[3]) && lhsMatrix[7] == Approx(rhsMatrix[7]) &&
            lhsMatrix[15] == Approx(rhsMatrix[15]);
+}
+
+bool operator==(const sf::Color& lhs, const Approx<sf::Color>& rhs)
+{
+    return sf::base::fabs(static_cast<float>(lhs.r - rhs.value.r)) < 2.f &&
+           sf::base::fabs(static_cast<float>(lhs.g - rhs.value.g)) < 2.f &&
+           sf::base::fabs(static_cast<float>(lhs.b - rhs.value.b)) < 2.f &&
+           sf::base::fabs(static_cast<float>(lhs.a - rhs.value.a)) < 2.f;
 }
