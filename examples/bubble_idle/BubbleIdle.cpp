@@ -147,6 +147,17 @@ constexpr sf::Color colorBlueOutline{50, 84, 135};
 }
 
 ////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr sf::Vector2f exponentialApproach(
+    const sf::Vector2f current,
+    const sf::Vector2f target,
+    const float        deltaTimeMs,
+    const float        speed)
+{
+    return {exponentialApproach(current.x, target.x, deltaTimeMs, speed),
+            exponentialApproach(current.y, target.y, deltaTimeMs, speed)};
+}
+
+////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextShakeEffect
 {
     float grow  = 0.f;
@@ -292,14 +303,12 @@ struct [[nodiscard]] Particle
 };
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] Particle makeParticle(
-    const float        x,
-    const float        y,
-    const ParticleType particleType,
-    const float        scaleMult,
-    const float        speedMult)
+[[nodiscard, gnu::always_inline]] Particle makeParticle(const sf::Vector2f position,
+                                                        const ParticleType particleType,
+                                                        const float        scaleMult,
+                                                        const float        speedMult)
 {
-    return {.data = {.position      = {x, y},
+    return {.data = {.position      = position,
                      .velocity      = getRndVector2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
                      .scale         = getRndFloat(0.08f, 0.27f) * scaleMult,
                      .accelerationY = 0.002f,
@@ -376,8 +385,7 @@ struct [[nodiscard]] Cat
 
     TextShakeEffect textStatusShakeEffect;
 
-    float beingDragged = 0.f; // TODO: remove
-    int   hits         = 0;
+    int hits = 0;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool update(const float maxCooldown, const float deltaTime)
@@ -535,7 +543,7 @@ struct [[nodiscard]] GrowthFactors
     float initial;
     float linear         = 0.f;
     float multiplicative = 0.f;
-    float exponential    = 0.f;
+    float exponential    = 1.f;
     float flat           = 0.f;
     float finalMult      = 1.f;
 };
@@ -754,9 +762,7 @@ struct Game
          .value         = {.initial = 0.f, .linear = 1.f}};
 
     static inline constexpr PSVData psvExplosionRadiusMultData //
-        {.nMaxPurchases = 12u,
-         .cost          = {.initial = 15000.f, .exponential = 1.5f},
-         .value         = {.initial = 1.f, .linear = 0.25f, .exponential = 1.f}};
+        {.nMaxPurchases = 10u, .cost = {.initial = 15000.f, .exponential = 1.5f}, .value = {.initial = 1.f, .linear = 0.1f}};
 
     static inline constexpr PSVData psvCatCooldownMultData //
         {.nMaxPurchases = 12u,
@@ -877,6 +883,18 @@ struct Game
     {
         return getBaseRangeByCatType(catType) / getRangeDivPSVByCatType(catType).currentValue();
     }
+
+    [[nodiscard]] float getComputedBombExplosionRadius() const
+    {
+        return 200.f * psvExplosionRadiusMult.currentValue();
+    }
+};
+
+////////////////////////////////////////////////////////////
+enum class ControlFlow
+{
+    Continue,
+    Break
 };
 
 } // namespace
@@ -1016,6 +1034,24 @@ int main()
     std::vector<SizeT> cellStartIndices;       // Tracks where each cell's data starts in `bubbleIndices`
     std::vector<SizeT> cellInsertionPositions; // Temporary copy of `cellStartIndices` to track insertion points
 
+    const auto computeGridRange = [&](const sf::Vector2f center, const float radius)
+    {
+        const float minX = center.x - radius;
+        const float minY = center.y - radius;
+        const float maxX = center.x + radius;
+        const float maxY = center.y + radius;
+
+        struct Result
+        {
+            SizeT xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx;
+        };
+
+        return Result{static_cast<SizeT>(sf::base::max(0.f, minX / gridSize)),
+                      static_cast<SizeT>(sf::base::max(0.f, minY / gridSize)),
+                      static_cast<SizeT>(sf::base::min(static_cast<float>(nCellsX - 1.f), maxX / gridSize)),
+                      static_cast<SizeT>(sf::base::min(static_cast<float>(nCellsY - 1.f), maxY / gridSize))};
+    };
+
     //
     //
     // Particles
@@ -1031,8 +1067,6 @@ int main()
     bool  comboPurchased = false;
     bool  mapPurchased   = false;
     float mapLimit       = resolution.x;
-
-    const float bombExplosionRadius = 200.f;
 
     //
     //
@@ -1058,6 +1092,35 @@ int main()
     // Persistent game state
     std::vector<Bubble> bubbles;
     bubbles.reserve(20000);
+
+    const auto forEachBubbleInRadius = [&](const sf::Vector2f center, const float radius, auto&& func)
+    {
+        const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(center, radius);
+
+        // Pre-calculate squared radius for efficient comparison
+        const float radiusSq = radius * radius;
+
+        // Check all candidate cells
+        for (SizeT cellX = xCellStartIdx; cellX <= xCellEndIdx; ++cellX)
+            for (SizeT cellY = yCellStartIdx; cellY <= yCellEndIdx; ++cellY)
+            {
+                const SizeT cellIdx = convert2DTo1D(cellX, cellY, nCellsX);
+
+                // Get range of bubbles in this cell
+                const SizeT start = cellStartIndices[cellIdx];
+                const SizeT end   = cellStartIndices[cellIdx + 1];
+
+                // Check each bubble in cell
+                for (SizeT i = start; i < end; ++i)
+                {
+                    auto& bubble = bubbles[bubbleIndices[i]];
+
+                    if ((bubble.position - center).lengthSquared() <= radiusSq)
+                        if (func(bubble) == ControlFlow::Break)
+                            return;
+                }
+            }
+    };
 
     constexpr float bubbleSpawnDelay = 3.f;
     float           bubbleSpawnTimer = 0.f;
@@ -1100,7 +1163,11 @@ int main()
     float                            scroll       = 0.f;
     float                            actualScroll = 0.f;
 
-    sf::base::Optional<sf::Vector2f> catDragPosition;
+    //
+    //
+    // Cat dragging
+    Cat*  draggedCat           = nullptr;
+    float catDragPressDuration = 0.f;
 
     //
     //
@@ -1111,19 +1178,20 @@ int main()
     //
     //
     // Startup
-    float splashTimer = 1500.f;
+    float splashTimer = 0.f; // TODO: 1500.f;
     sounds.byteMeow.play(playbackDevice);
 
     //
     //
     // Tips
-    bool        tipsEnabled = true;
+    bool        tipsEnabled = false; // TODO
     float       tipTimer    = 0.f;
     std::string tipString;
 
     // Other settings
     float minimapScale          = 20.f;
     bool  playAudioInBackground = true;
+    bool  playComboEndSound     = true;
 
     //
     //
@@ -1179,18 +1247,6 @@ int main()
             {
                 if (e->button == sf::Mouse::Button::Left)
                     clickPosition.emplace(e->position.toVector2f());
-
-                if (e->button == sf::Mouse::Button::Left && !catDragPosition.hasValue())
-                {
-                    catDragPosition.emplace(e->position.toVector2f());
-                }
-                else if (e->button == sf::Mouse::Button::Left)
-                {
-                    catDragPosition.reset();
-
-                    for (auto& cat : cats)
-                        cat.beingDragged = 0.f;
-                }
 
                 if (e->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
                 {
@@ -1334,7 +1390,7 @@ int main()
                     const auto& b = bubbles.emplace_back(makeRandomBubble(mapLimit, boundaries.y, baseBubbleRadius));
 
                     for (int i = 0; i < 8; ++i)
-                        particles.emplace_back(makeParticle(b.position.x, b.position.y, ParticleType::Bubble, 0.5f, 0.5f));
+                        particles.emplace_back(makeParticle(b.position, ParticleType::Bubble, 0.5f, 0.5f));
 
                     if (sounds.reversePop.getStatus() != sf::Sound::Status::Playing)
                     {
@@ -1351,30 +1407,13 @@ int main()
         cellStartIndices.clear();
         cellStartIndices.resize(nCellsX * nCellsY + 1, 0); // +1 for prefix sum
 
-        const auto computeGridRange = [&](const auto& bubble)
-        {
-            const auto minX = bubble.position.x - bubble.radius;
-            const auto minY = bubble.position.y - bubble.radius;
-            const auto maxX = bubble.position.x + bubble.radius;
-            const auto maxY = bubble.position.y + bubble.radius;
-
-            struct Result
-            {
-                SizeT xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx;
-            };
-
-            return Result{sf::base::max(SizeT{0u}, static_cast<SizeT>(minX / gridSize)),
-                          sf::base::max(SizeT{0u}, static_cast<SizeT>(minY / gridSize)),
-                          sf::base::min(SizeT{nCellsX - 1}, static_cast<SizeT>(maxX / gridSize)),
-                          sf::base::min(SizeT{nCellsY - 1}, static_cast<SizeT>(maxY / gridSize))};
-        };
-
         //
         // First Pass (Counting):
         // - Calculate how many bubbles will be placed in each grid cell.
         for (auto& bubble : bubbles)
         {
-            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble);
+            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble.position,
+                                                                                                   bubble.radius);
 
             // For each cell the bubble covers, increment the count
             for (SizeT x = xCellStartIdx; x <= xCellEndIdx; ++x)
@@ -1404,18 +1443,17 @@ int main()
         for (SizeT i = 0; i < bubbles.size(); ++i)
         {
             const auto& bubble                                                  = bubbles[i];
-            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble);
+            const auto [xCellStartIdx, yCellStartIdx, xCellEndIdx, yCellEndIdx] = computeGridRange(bubble.position,
+                                                                                                   bubble.radius);
 
             // Insert the bubble index into all overlapping cells
             for (SizeT x = xCellStartIdx; x <= xCellEndIdx; ++x)
-            {
                 for (SizeT y = yCellStartIdx; y <= yCellEndIdx; ++y)
                 {
                     const SizeT cellIdx      = convert2DTo1D(x, y, nCellsX);
                     const SizeT insertPos    = cellInsertionPositions[cellIdx]++;
                     bubbleIndices[insertPos] = i;
                 }
-            }
         }
 
         auto popBubble = [&](auto self, BubbleType bubbleType, SizeT reward, int combo, float x, float y) -> void
@@ -1428,14 +1466,14 @@ int main()
             sounds.pop.play(playbackDevice);
 
             for (int i = 0; i < 32; ++i)
-                particles.emplace_back(makeParticle(x, y, ParticleType::Bubble, 0.5f, 0.5f));
+                particles.emplace_back(makeParticle({x, y}, ParticleType::Bubble, 0.5f, 0.5f));
 
             for (int i = 0; i < 8; ++i)
-                particles.emplace_back(makeParticle(x, y, ParticleType::Bubble, 1.2f, 0.25f));
+                particles.emplace_back(makeParticle({x, y}, ParticleType::Bubble, 1.2f, 0.25f));
 
             if (bubbleType == BubbleType::Star)
                 for (int i = 0; i < 16; ++i)
-                    particles.emplace_back(makeParticle(x, y, ParticleType::Star, 0.25f, 0.35f));
+                    particles.emplace_back(makeParticle({x, y}, ParticleType::Star, 0.25f, 0.35f));
 
             if (bubbleType == BubbleType::Bomb)
             {
@@ -1443,45 +1481,23 @@ int main()
                 sounds.explosion.play(playbackDevice);
 
                 for (int i = 0; i < 32; ++i)
-                    particles.emplace_back(makeParticle(x, y, ParticleType::Fire, 3.f, 1.f));
+                    particles.emplace_back(makeParticle({x, y}, ParticleType::Fire, 3.f, 1.f));
 
-                const int cellX = static_cast<int>(x / gridSize);
-                const int cellY = static_cast<int>(y / gridSize);
+                forEachBubbleInRadius({x, y},
+                                      game.getComputedBombExplosionRadius(),
+                                      [&](Bubble& bubble)
+                                      {
+                                          if (bubble.type == BubbleType::Bomb)
+                                              return ControlFlow::Continue;
 
-                for (int ox = -4; ox <= 4; ++ox)
-                    for (int oy = -4; oy <= 4; ++oy)
-                    {
-                        const auto cellIdx = convert2DTo1D( //
-                            static_cast<SizeT>(sf::base::clamp(cellX + ox, 0, static_cast<int>(nCellsX) - 1)),
-                            static_cast<SizeT>(sf::base::clamp(cellY + oy, 0, static_cast<int>(nCellsY) - 1)),
-                            nCellsX);
+                                          const SizeT newReward = getScaledReward(bubble.type) * 10u;
+                                          self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
+                                          addReward(newReward);
+                                          bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
+                                          bubble.position.y -= bubble.radius;
 
-                        const SizeT start = cellStartIndices[cellIdx];
-                        const SizeT end   = cellStartIndices[cellIdx + 1];
-
-                        // Iterate over all bubbles in this cell
-                        for (SizeT i = start; i < end; ++i)
-                        {
-                            const SizeT bubbleIdx = bubbleIndices[i];
-                            auto&       bubble    = bubbles[bubbleIdx];
-
-                            if (bubble.type == BubbleType::Bomb)
-                                continue;
-
-                            const float squaredExplosionRadius = (bombExplosionRadius * bombExplosionRadius) *
-                                                                 game.psvExplosionRadiusMult.currentValue();
-
-                            if ((bubble.position - sf::Vector2f{x, y}).lengthSquared() > squaredExplosionRadius)
-                                continue;
-
-                            // TODO: repetition due to recursion
-                            const SizeT newReward = getScaledReward(bubble.type) * 10u;
-                            self(self, bubble.type, newReward, 1, bubble.position.x, bubble.position.y);
-                            addReward(newReward);
-                            bubble = makeRandomBubble(mapLimit, 0.f, baseBubbleRadius);
-                            bubble.position.y -= bubble.radius;
-                        }
-                    }
+                                          return ControlFlow::Continue;
+                                      });
             }
         };
 
@@ -1590,74 +1606,56 @@ int main()
 
         for (SizeT i = 0u; i < cats.size(); ++i)
             for (SizeT j = i + 1; j < cats.size(); ++j)
-                if (cats[i].beingDragged == 0.f && cats[j].beingDragged == 0.f)
+                if (&cats[i] != draggedCat && &cats[j] != draggedCat)
                     handleCatCollision(deltaTimeMs, cats[i], cats[j]);
 
-        for (auto& cat : cats)
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) // TODO: touch
         {
-            if (catDragPosition.hasValue())
+            if (draggedCat)
             {
-                if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) && cat.sprite.getGlobalBounds().contains(mousePos))
-                {
-                    if (cat.beingDragged < 250.f)
-                        cat.beingDragged += deltaTimeMs;
+                draggedCat->position = exponentialApproach(draggedCat->position, mousePos, deltaTimeMs, 50.f);
+                draggedCat->cooldown = -250.f;
+            }
+            else
+            {
+                Cat* hoveredCat = nullptr;
 
-                    break;
+                // Only check for hover targets during initial press phase
+                if (catDragPressDuration <= 150.f)
+                    for (Cat& cat : cats)
+                        if (cat.sprite.getGlobalBounds().contains(mousePos))
+                            hoveredCat = &cat;
+
+                if (hoveredCat)
+                {
+                    catDragPressDuration += deltaTimeMs;
+
+                    if (catDragPressDuration >= 150.f)
+                    {
+                        draggedCat = hoveredCat;
+                        sounds.grab.play(playbackDevice);
+                    }
                 }
             }
-
-            if (fingerPositions[0].hasValue())
+        }
+        else
+        {
+            if (draggedCat)
             {
-                const auto fingerPos = window.mapPixelToCoords(fingerPositions[0]->toVector2i(), gameView);
-
-                if (cat.sprite.getGlobalBounds().contains(fingerPos))
-                {
-                    if (cat.beingDragged < 250.f)
-                        cat.beingDragged += deltaTimeMs;
-
-                    break;
-                }
+                sounds.drop.play(playbackDevice);
+                draggedCat = nullptr;
             }
 
-            if (cat.beingDragged > 0.f)
-                cat.beingDragged -= deltaTimeMs;
+            catDragPressDuration = 0.f;
         }
 
         for (auto& cat : cats)
         {
-            if (cat.beingDragged > 250.f)
-            {
-                cat.cooldown = -1000.f;
+            // Keep cat in boundaries
+            const float catRadius = cat.getRadius();
+            cat.position.x        = sf::base::clamp(cat.position.x, catRadius, mapLimit - catRadius);
+            cat.position.y        = sf::base::clamp(cat.position.y, catRadius, boundaries.y - catRadius);
 
-                if (fingerPositions[0].hasValue())
-                {
-                    const auto fingerPos = window.mapPixelToCoords(fingerPositions[0]->toVector2i(), gameView);
-                    cat.position         = fingerPos;
-                }
-                else if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left) || catDragPosition.hasValue())
-                {
-                    cat.position = mousePos;
-                }
-
-                cat.position.x = sf::base::clamp(cat.position.x, 0.f, boundaries.x);
-                cat.position.y = sf::base::clamp(cat.position.y, 0.f, boundaries.y);
-            }
-
-            // Keep cat in X bounds
-            if (cat.position.x - cat.getRadius() < 0.f)
-                cat.position.x = cat.getRadius();
-            else if (cat.position.x + cat.getRadius() > mapLimit)
-                cat.position.x = mapLimit - cat.getRadius();
-
-            // Keep cat in Y bounds
-            if (cat.position.y - cat.getRadius() < 0.f)
-                cat.position.y = cat.getRadius();
-            else if (cat.position.y + cat.getRadius() > boundaries.y)
-                cat.position.y = boundaries.y - cat.getRadius();
-        }
-
-        for (auto& cat : cats)
-        {
             const auto maxCooldown = game.getComputedCooldownByCatType(cat.type);
             const auto range       = game.getComputedRangeByCatType(cat.type);
 
@@ -1702,14 +1700,13 @@ int main()
                         {
                             pawSet = true;
 
-                            cat.pawSprite.position = {otherCat.position.x, otherCat.position.y};
+                            cat.pawSprite.position = otherCat.position;
                             cat.pawSprite.color.a  = 255;
                             cat.pawSprite.rotation = (otherCat.position - cat.position).angle() + sf::degrees(45);
                         }
 
                         for (int i = 0; i < 8; ++i)
-                            particles.emplace_back(
-                                makeParticle(otherCat.position.x, otherCat.position.y, ParticleType::Hex, 0.5f, 0.35f));
+                            particles.emplace_back(makeParticle(otherCat.position, ParticleType::Hex, 0.5f, 0.35f));
                     }
 
                     if (witchHits > 0)
@@ -1725,58 +1722,54 @@ int main()
                     continue;
                 }
 
-                // TODO: use spatial grid
-                for (auto& bubble : bubbles)
+                const auto action = [&](Bubble& bubble)
                 {
                     if (cat.type == CatType::Unicorn && bubble.type != BubbleType::Normal)
-                        continue;
+                        return ControlFlow::Continue;
 
-                    const auto [x, y] = bubble.position;
+                    cat.pawSprite.position = bubble.position;
+                    cat.pawSprite.color.a  = 255;
+                    cat.pawSprite.rotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
-                    if ((x - cx) * (x - cx) + (y - cy) * (y - cy) < range * range)
+                    if (cat.type == CatType::Unicorn)
                     {
-                        cat.pawSprite.position = {x, y};
-                        cat.pawSprite.color.a  = 255;
-                        cat.pawSprite.rotation = (bubble.position - cat.position).angle() + sf::degrees(45);
+                        bubble.type       = BubbleType::Star;
+                        bubble.velocity.y = getRndFloat(-0.1f, -0.05f);
+                        sounds.shine.setPosition({bubble.position.x, bubble.position.y});
+                        sounds.shine.play(playbackDevice);
 
-                        if (cat.type == CatType::Unicorn)
-                        {
-                            bubble.type       = BubbleType::Star;
-                            bubble.velocity.y = getRndFloat(-0.1f, -0.05f);
-                            sounds.shine.setPosition({x, y});
-                            sounds.shine.play(playbackDevice);
+                        for (int i = 0; i < 4; ++i)
+                            particles.emplace_back(makeParticle(bubble.position, ParticleType::Star, 0.25f, 0.35f));
 
-                            for (int i = 0; i < 4; ++i)
-                                particles.emplace_back(makeParticle(x, y, ParticleType::Star, 0.25f, 0.35f));
-
-                            cat.textStatusShakeEffect.bump(1.5f);
-                            ++cat.hits;
-                        }
-                        else if (cat.type == CatType::Normal)
-                        {
-                            popWithRewardAndReplaceBubble(bubble, /* combo */ 1);
-
-                            cat.textStatusShakeEffect.bump(1.5f);
-                            ++cat.hits;
-                        }
-                        else if (cat.type == CatType::Devil)
-                        {
-                            bubble.type = BubbleType::Bomb;
-                            bubble.velocity.y += getRndFloat(0.1f, 0.2f);
-                            sounds.makeBomb.setPosition({x, y});
-                            sounds.makeBomb.play(playbackDevice);
-
-                            for (int i = 0; i < 8; ++i)
-                                particles.emplace_back(makeParticle(x, y, ParticleType::Fire, 1.25f, 0.35f));
-
-                            cat.textStatusShakeEffect.bump(1.5f);
-                            ++cat.hits;
-                        }
-
-                        cat.cooldown = 0.f;
-                        break;
+                        cat.textStatusShakeEffect.bump(1.5f);
+                        ++cat.hits;
                     }
-                }
+                    else if (cat.type == CatType::Normal)
+                    {
+                        popWithRewardAndReplaceBubble(bubble, /* combo */ 1);
+
+                        cat.textStatusShakeEffect.bump(1.5f);
+                        ++cat.hits;
+                    }
+                    else if (cat.type == CatType::Devil)
+                    {
+                        bubble.type = BubbleType::Bomb;
+                        bubble.velocity.y += getRndFloat(0.1f, 0.2f);
+                        sounds.makeBomb.setPosition({bubble.position.x, bubble.position.y});
+                        sounds.makeBomb.play(playbackDevice);
+
+                        for (int i = 0; i < 8; ++i)
+                            particles.emplace_back(makeParticle(bubble.position, ParticleType::Fire, 1.25f, 0.35f));
+
+                        cat.textStatusShakeEffect.bump(1.5f);
+                        ++cat.hits;
+                    }
+
+                    cat.cooldown = 0.f;
+                    return ControlFlow::Break;
+                };
+
+                forEachBubbleInRadius({cx, cy}, range, action);
             }
         }
 
@@ -1797,7 +1790,7 @@ int main()
 
             if (comboTimer <= 0.f)
             {
-                if (combo > 2)
+                if (combo > 3 && playComboEndSound)
                     sounds.scratch.play(playbackDevice);
 
                 combo      = 0;
@@ -1909,9 +1902,6 @@ int main()
 
                     if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
                     {
-                        if (!imGuiContext.wasLastInputTouch())
-                            catDragPosition.emplace(mousePos);
-
                         sounds.click.play(playbackDevice);
                         sounds.buy.play(playbackDevice);
 
@@ -2080,7 +2070,7 @@ int main()
                     const auto pos = window.mapPixelToCoords((resolution / 2.f).toVector2i(), gameView);
 
                     for (int i = 0; i < 32; ++i)
-                        particles.emplace_back(makeParticle(pos.x, pos.y, ParticleType::Star, 0.25f, 0.75f));
+                        particles.emplace_back(makeParticle(pos, ParticleType::Star, 0.25f, 0.75f));
 
                     return Cat{.type        = catType,
                                .position    = pos,
@@ -2088,27 +2078,15 @@ int main()
                                .sprite = {.position = pos, .scale{0.2f, 0.2f}, .origin = txr.size / 2.f, .textureRect = txr},
                                .pawSprite = {.position = pos, .scale{0.1f, 0.1f}, .origin = txrPaw.size / 2.f, .textureRect = txrPaw},
                                .nameIdx               = getNextCatNameIdx(),
-                               .textStatusShakeEffect = {},
-                               .beingDragged          = 0.f};
+                               .textStatusShakeEffect = {}};
                 };
 
-                const auto resetCatDrag = [&]
-                {
-                    for (auto& cat : cats)
-                        cat.beingDragged = 0.f;
-
-                    catDragPosition.reset();
-                };
-
-                if (countFingersDown == 0 && !sf::Mouse::isButtonPressed(sf::Mouse::Button::Left))
-                    resetCatDrag();
 
                 if (comboPurchased && game.psvComboStartTime.nPurchases > 0)
                 {
                     std::sprintf(labelBuffer, "%d cats", nCatNormal);
                     if (makePurchasableButton("Cat", 35, 1.7f, static_cast<float>(nCatNormal)))
                     {
-                        resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Normal, {0.f, 0.f}, txrCat, txrCatPaw));
 
                         if (nCatNormal == 0)
@@ -2151,7 +2129,6 @@ int main()
                     std::sprintf(labelBuffer, "%d unicats", nCatUnicorn);
                     if (makePurchasableButton("Unicat", 250, 1.75f, static_cast<float>(nCatUnicorn)))
                     {
-                        resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Unicorn, {0.f, -100.f}, txrUniCat, txrUniCatPaw));
 
                         if (nCatUnicorn == 0)
@@ -2177,7 +2154,6 @@ int main()
                     std::sprintf(labelBuffer, "%d devilcats", nCatDevil);
                     if (makePurchasableButton("Devilcat", 15000.f, 1.6f, static_cast<float>(nCatDevil)))
                     {
-                        resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Devil, {0.f, 100.f}, txrDevilCat, txrDevilCatPaw));
 
                         if (nCatDevil == 0)
@@ -2206,7 +2182,6 @@ int main()
                     std::sprintf(labelBuffer, "%d witch cats", nCatWitch);
                     if (makePurchasableButton("Witch cat", 200000.f, 1.5f, static_cast<float>(nCatWitch)))
                     {
-                        resetCatDrag();
                         cats.emplace_back(makeCat(CatType::Witch, {0.f, 0.f}, txrWitchCat, txrWitchCatPaw));
                     }
 
@@ -2365,6 +2340,8 @@ int main()
                 ImGui::SetNextItemWidth(250.f);
                 ImGui::SliderFloat("Minimap Scale", &minimapScale, 5.f, 30.f, "%.2f");
 
+                ImGui::Checkbox("Enable combo scratch sound", &playComboEndSound);
+
                 const float fps = 1.f / fpsClock.getElapsedTime().asSeconds();
                 ImGui::Text("FPS: %.2f", static_cast<double>(fps));
 
@@ -2415,6 +2392,12 @@ int main()
 
         for (auto& cat : cats)
         {
+            if (false) // TODO
+            {
+                cat.sprite.color.a    = 128;
+                cat.pawSprite.color.a = 128;
+            }
+
             cpuDrawableBatch.add(cat.sprite);
             cpuDrawableBatch.add(cat.pawSprite);
 
@@ -2612,9 +2595,12 @@ int main()
 // x - cats should not be allowed next to the bounds, should be gently pushed away
 // - release trailer with Byte and real life bubbles!
 // x - gradually increase count of bubbles when purchasing and on startup
-// - leveling cat
+// - leveling cat (2500 pops is a good milestone for 1st lvl up, 5000 for 2nd, 10000 for 3rd)
 // - some normal cat buff around 17000 money as a milestone towards devilcats, maybe two paws?
 // - change bg when unlocking new cat type?
+// - make combo end on misclick and play scratch sound
+// - make bubble value exponential and not linear?
+// - at one point I had a ton of money, maybe bubble value scales too quickly?
 
 // TODO PRE-RELEASE:
 // - check Google Keep
