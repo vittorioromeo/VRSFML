@@ -5,6 +5,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/Base/Algorithm.hpp" // TODO P1: split min and max into separate headers
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Fmod.hpp"
+
 
 namespace sf
 {
@@ -19,13 +23,13 @@ constexpr Color Color::fromRGBA(const base::U32 color)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, const base::U8 alpha)
+constexpr Color Color::fromHSLA(HSL hsl, const base::U8 alpha)
 {
-    while (hue < 0.f)
-        hue += 360.f;
+    auto& [hue, saturation, lightness] = hsl;
 
-    while (hue > 360.f)
-        hue -= 360.f;
+    hue = base::fmod(hue, 360.f);
+    if (hue < 0.f)
+        hue += 360.f;
 
     const auto clampBetweenZeroAndOne = [](float value) -> float
     { return value < 0.f ? 0.f : (value > 1.f ? 1.f : value); };
@@ -38,7 +42,7 @@ constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, co
     const float maxChroma = lightness < 0.5f ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
     const float minChroma = 2 * lightness - maxChroma;
 
-    const auto hueToRGB = [&](float normalizedHue) -> float
+    const auto hueToRGB = [&](float normalizedHue) __attribute__((always_inline, flatten)) -> float
     {
         if (normalizedHue < 0.f)
             normalizedHue += 1.f;
@@ -46,26 +50,105 @@ constexpr Color Color::fromHSLA(float hue, float saturation, float lightness, co
         if (normalizedHue > 1.f)
             normalizedHue -= 1.f;
 
-        if (normalizedHue < 1.0f / 6.0f)
+        if (normalizedHue < 1.f / 6.f)
             return minChroma + (maxChroma - minChroma) * 6.f * normalizedHue;
 
-        if (normalizedHue < 1.0f / 2.0f)
+        if (normalizedHue < 1.f / 2.f)
             return maxChroma;
 
-        if (normalizedHue < 2.0f / 3.0f)
-            return minChroma + (maxChroma - minChroma) * (2.0f / 3.0f - normalizedHue) * 6.f;
+        if (normalizedHue < 2.f / 3.f)
+            return minChroma + (maxChroma - minChroma) * (2.f / 3.f - normalizedHue) * 6.f;
 
         return minChroma;
     };
 
-    const float normalizedHue = hue / 360.0f;
+    const float normalizedHue = hue / 360.f;
 
     // NOLINTBEGIN(bugprone-incorrect-roundings)
-    return {static_cast<base::U8>(hueToRGB(normalizedHue + 1.0f / 3.0f) * 255.f + 0.5f),
+    return {static_cast<base::U8>(hueToRGB(normalizedHue + 1.f / 3.f) * 255.f + 0.5f),
             static_cast<base::U8>(hueToRGB(normalizedHue) * 255 + 0.5f),
-            static_cast<base::U8>(hueToRGB(normalizedHue - 1.0f / 3.0f) * 255.f + 0.5f),
+            static_cast<base::U8>(hueToRGB(normalizedHue - 1.f / 3.f) * 255.f + 0.5f),
             alpha};
     // NOLINTEND(bugprone-incorrect-roundings)
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Color::HSL Color::toHSL() const
+{
+    const float rNorm = static_cast<float>(r) / 255.f;
+    const float gNorm = static_cast<float>(g) / 255.f;
+    const float bNorm = static_cast<float>(b) / 255.f;
+
+    const float max    = base::max(base::max(rNorm, gNorm), bNorm);
+    const float min    = base::min(base::min(rNorm, gNorm), bNorm);
+    const float chroma = max - min;
+
+    float hue = 0.f;
+    if (chroma != 0.f)
+    {
+        if (max == rNorm)
+            hue = (gNorm - bNorm) / chroma;
+        else if (max == gNorm)
+            hue = (bNorm - rNorm) / chroma + 2.f;
+        else
+            hue = (rNorm - gNorm) / chroma + 4.f;
+
+        hue *= 60.f;
+
+        if (hue < 0.f)
+            hue += 360.f;
+    }
+
+    const float lightness = (max + min) / 2.f;
+
+    float saturation = 0.f;
+    if (chroma != 0.f)
+    {
+        if (lightness == 0.f || lightness == 1.f)
+            saturation = 0.f;
+        else
+            saturation = chroma / (1.f - base::fabs(2.f * lightness - 1.f));
+    }
+
+    return {hue, saturation, lightness};
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Color Color::withHueMod(const float hueMod) const
+{
+    auto hsl = toHSL();
+
+    hsl.hue = base::fmod(hsl.hue + hueMod, 360.f);
+    if (hsl.hue < 0.f)
+        hsl.hue += 360.f;
+
+    return Color::fromHSLA(hsl, a);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TVec4>
+constexpr Color Color::fromVec4(const TVec4& vec)
+{
+    const auto convert = []<typename T>(const T value)
+    { return static_cast<sf::base::U8>(sf::base::clamp(value * T{255}, T{0}, T{255})); };
+
+    return {convert(vec.x), convert(vec.y), convert(vec.z), convert(vec.w)};
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TVec4>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr TVec4 Color::toVec4() const
+{
+    using DimType = decltype(TVec4{}.x);
+
+    return {static_cast<DimType>(r) / DimType{255},
+            static_cast<DimType>(g) / DimType{255},
+            static_cast<DimType>(b) / DimType{255},
+            static_cast<DimType>(a) / DimType{255}};
 }
 
 

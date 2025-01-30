@@ -26,6 +26,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(base::U32 color);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct HSL
+    {
+        float hue;        //!< Hue in degrees (between `[0, 360)`)
+        float saturation; //!< Saturation (between `[0, 1]`)
+        float lightness;  //!< Lightness (between `[0, 1]`)
+    };
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the color from HSLA components
     ///
     /// \param hue        Hue component (angle in degrees)
@@ -34,11 +45,13 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param alpha      Alpha component (0 to 255)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromHSLA(
-        float    hue,
-        float    saturation,
-        float    lightness,
-        base::U8 alpha = 255u);
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromHSLA(HSL hsl, base::U8 alpha = 255u);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr HSL toHSL() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
@@ -57,6 +70,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withAlpha(base::U8 alpha) const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withHueMod(float hueMod) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator==`
     ///
     /// This operator compares two colors and check if they are equal.
@@ -67,6 +86,20 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(const Color& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs, range [0, 1], xyzw
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename TVec4>
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromVec4(const TVec4& vec);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs, range [0, 1], xyzw
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename TVec4>
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr TVec4 toVec4() const;
 
     ////////////////////////////////////////////////////////////
     // Static member data
