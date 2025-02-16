@@ -117,19 +117,19 @@ struct [[nodiscard]] Timer // TODO P2: turn to free funcs?
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr inline bool isDoneForward() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool isDoneForward() const noexcept
     {
         return value == 1.f;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr inline bool isDoneBackwards() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool isDoneBackwards() const noexcept
     {
         return value == 0.f;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr inline float remap(const float min, const float max) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr float remap(const float min, const float max) const noexcept
     {
         return min + value * (max - min);
     }
@@ -166,7 +166,7 @@ struct [[nodiscard]] BidirectionalTimer : Timer
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr inline bool isDone() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr bool isDone() const noexcept
     {
         return (direction == TimerDirection::Forward) ? isDoneForward() : isDoneBackwards();
     }
