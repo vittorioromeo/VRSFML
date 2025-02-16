@@ -17,6 +17,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <string>
 
 
 namespace sf
@@ -420,6 +421,7 @@ try
 void saveProfileToFile(const Profile& profile, const char* filename)
 try
 {
+    std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
     std::ofstream(filename) << nlohmann::json(profile).dump();
 } catch (const std::exception& ex)
@@ -441,6 +443,7 @@ try
 void savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
 try
 {
+    std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
     std::ofstream(filename) << nlohmann::json(playthrough).dump();
 } catch (const std::exception& ex)

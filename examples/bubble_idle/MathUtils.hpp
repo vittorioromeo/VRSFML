@@ -20,6 +20,13 @@
 }
 
 ////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr float blend(const float a, const float b, const float value)
+{
+    ASSERT_AND_ASSUME(value >= 0.f && value <= 1.f);
+    return a + (b - a) * value;
+}
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr float exponentialApproach(
     const float current,
     const float target,
