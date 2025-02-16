@@ -99,7 +99,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_STR "v0.0.6"
+#define BUBBLEBYTE_VERSION_STR "v0.0.7"
 
 
 namespace
@@ -131,8 +131,9 @@ bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBu
 ////////////////////////////////////////////////////////////
 bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 {
-    const auto
-        result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iCat.getRadius(), jCat.getRadius(), 1.f, 1.f);
+    const auto result =
+        // NOLINTNEXTLINE(readability-static-accessed-through-instance)
+        handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iCat.getRadius(), jCat.getRadius(), 1.f, 1.f);
 
     if (!result.hasValue())
         return false;
@@ -149,7 +150,9 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 ////////////////////////////////////////////////////////////
 bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 {
-    const auto result = handleCollision(deltaTimeMs, cat.position, shrine.position, {}, {}, cat.getRadius(), 64.f, 1.f, 1.f);
+    const auto result =
+        // NOLINTNEXTLINE(readability-static-accessed-through-instance)
+        handleCollision(deltaTimeMs, cat.position, shrine.position, {}, {}, cat.getRadius(), 64.f, 1.f, 1.f);
 
     if (!result.hasValue())
         return false;
@@ -380,7 +383,7 @@ struct Main
     sf::FloatRect txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
     sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
     sf::FloatRect txrDoll{addImgResourceToAtlas("doll.png")};
-    sf::FloatRect txrByteCoin{addImgResourceToAtlas("bytecoin.png")};
+    sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
 
     ///////////////////////////////////////////////////////////
     const sf::FloatRect particleRects[nParticleTypes] = {
@@ -391,7 +394,7 @@ struct Main
         txrShrineParticle,
         txrMouseCatPaw,
         txrCogParticle,
-        txrByteCoin,
+        txrCoin,
     };
 
     ///////////////////////////////////////////////////////////
@@ -411,11 +414,11 @@ struct Main
     });
 
     ////////////////////////////////////////////////////////////
-    // Prestige tracking
+    // Prestige availability tracking
     bool wasPrestigeAvailableLastFrame = false;
 
     ////////////////////////////////////////////////////////////
-    // Buy reminder secret achievement
+    // Buy combo reminder secret achievement
     int buyReminder = 0;
 
     ////////////////////////////////////////////////////////////
@@ -444,37 +447,37 @@ struct Main
     // HUD buff text
     sf::Text buffText{fontSuperBakery,
                       {.position         = comboText.position + sf::Vector2f{0.f, 35.f},
-                       .string           = "buffs go here",
+                       .string           = "",
                        .characterSize    = 48u,
                        .fillColor        = sf::Color::White,
                        .outlineColor     = colorBlueOutline,
                        .outlineThickness = 3.f}};
 
     ////////////////////////////////////////////////////////////
+    // Spatial partitioning
     SweepAndPrune sweepAndPrune;
 
     ////////////////////////////////////////////////////////////
-    std::vector<Particle>     particles;
-    std::vector<TextParticle> textParticles;
-    std::vector<Particle>     hudParticles;
-    std::vector<Particle>     hudTopParticles;
+    // Particles
+    std::vector<Particle>     particles;          // World space
+    std::vector<TextParticle> textParticles;      // World space
+    std::vector<Particle>     spentCoinParticles; // HUD space
+    std::vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
+
+    struct EarnedCoinParticle
+    {
+        sf::Vector2f startPosition;
+        Timer        progress;
+    };
+
+    std::vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
 
     ////////////////////////////////////////////////////////////
     // Random number generation
-    RNG rng{std::random_device{}()};
+    RNG rng{/* seed */ std::random_device{}()};
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    [[nodiscard]] static std::vector<std::vector<std::string>> makeShuffledCatNames(RNG& rng)
-    {
-        std::vector<std::vector<std::string>> result(nCatTypes);
-
-        for (SizeT i = 0u; i < nCatTypes; ++i)
-            result[i] = getShuffledCatNames(static_cast<CatType>(i), rng.getEngine());
-
-        return result;
-    }
-
     std::vector<std::vector<std::string>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
     ////////////////////////////////////////////////////////////
@@ -482,7 +485,7 @@ struct Main
     bool inPrestigeTransition{false};
 
     ////////////////////////////////////////////////////////////
-    // Times for transitions
+    // Timers for transitions
     TargetedCountdown bubbleSpawnTimer{.startingValue = 3.f};
     TargetedCountdown catRemoveTimer{.startingValue = 100.f};
 
@@ -496,7 +499,7 @@ struct Main
     sf::Clock     playedClock;
     sf::base::I64 playedUsAccumulator{0};
     sf::base::I64 autosaveUsAccumulator{0};
-    sf::base::I64 fixedBgSlideAccumulator{0};
+    sf::base::I64 fixedBgSlideAccumulator{0}; // for menu background slide
 
     ////////////////////////////////////////////////////////////
     // FPS and delta time clocks
@@ -504,11 +507,11 @@ struct Main
     sf::Clock deltaClock;
 
     ////////////////////////////////////////////////////////////
-    // Batch for drawing
+    // Batches for drawing
     sf::CPUDrawableBatch bubbleDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch;
+    sf::CPUDrawableBatch hudTopDrawableBatch; // drawn on top of ImGui
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
@@ -530,12 +533,14 @@ struct Main
         float top;
         float bottom;
 
-        [[nodiscard, gnu::always_inline, gnu::flatten]] inline bool isInside(const sf::Vector2f point) const
+        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr inline bool isInside(
+            const sf::Vector2f point) const noexcept
         {
             return (point.x >= left) & (point.x <= right) & (point.y >= top) & (point.y <= bottom);
         }
     };
 
+    CullingBoundaries hudCullingBoundaries{};
     CullingBoundaries particleCullingBoundaries{};
     CullingBoundaries bubbleCullingBoundaries{};
 
@@ -550,7 +555,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
-    TargetedCountdown splashCountdown{.startingValue = 1750.f};
+    TargetedCountdown splashCountdown{.startingValue = 2000.f};
 
     ////////////////////////////////////////////////////////////
     // Tip state
@@ -559,7 +564,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Shape buffers
-    sf::CircleShape circleShapeBuffer{{.outlineTextureRect = txrWhiteDot, .outlineThickness = 1.f}};
+    sf::CircleShape    circleShapeBuffer{{.outlineTextureRect = txrWhiteDot, .outlineThickness = 1.f}};
+    sf::RectangleShape rectangleShapeBuffer{{}};
 
     ////////////////////////////////////////////////////////////
     // Text buffers
@@ -575,13 +581,30 @@ struct Main
                                .outlineThickness = 2.f}};
 
     ////////////////////////////////////////////////////////////
-    // Spent money effect
+    // Spent money count-down effect
     MoneyType spentMoney{0u};
     Timer     spentMoneyTimer{.value = 0.f};
 
     ////////////////////////////////////////////////////////////
     // Thread pool
     hg::ThreadPool::Pool threadPool{getTPWorkerCount()};
+
+    ////////////////////////////////////////////////////////////
+    // Cached views
+    sf::View gameView;
+    sf::View nonScaledHUDView;
+    sf::View scaledHUDView;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static std::vector<std::vector<std::string>> makeShuffledCatNames(RNG& rng)
+    {
+        std::vector<std::vector<std::string>> result(nCatTypes);
+
+        for (SizeT i = 0u; i < nCatTypes; ++i)
+            result[i] = getShuffledCatNames(static_cast<CatType>(i), rng.getEngine());
+
+        return result;
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getTPWorkerCount()
@@ -616,21 +639,32 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void spawnHUDParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
+    bool spawnSpentCoinParticle(const ParticleData& particleData)
     {
-        if (!profile.showParticles)
-            return;
+        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
+            return false;
 
-        hudParticles.emplace_back(particleData, hueToByte(hue), particleType);
+        spentCoinParticles.emplace_back(particleData, 0u, ParticleType::Coin);
+        return true;
     }
 
     ////////////////////////////////////////////////////////////
     void spawnHUDTopParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
     {
-        if (!profile.showParticles)
+        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
             return;
 
         hudTopParticles.emplace_back(particleData, hueToByte(hue), particleType);
+    }
+
+    ////////////////////////////////////////////////////////////
+    bool spawnEarnedCoinParticle(const sf::Vector2f startPosition)
+    {
+        if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
+            return false;
+
+        earnedCoinParticles.emplace_back(startPosition);
+        return true;
     }
 
     ////////////////////////////////////////////////////////////
@@ -808,9 +842,9 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    void playSound(const Sounds::LoadedSound& ls, bool overlap = true)
+    void playSound(const Sounds::LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
-        sounds.playPooled(playbackDevice, ls, overlap);
+        sounds.playPooled(playbackDevice, ls, maxOverlap);
     }
 
     ////////////////////////////////////////////////////////////
@@ -883,7 +917,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCat(const sf::View& gameView, const CatType catType, const float hue)
+    Cat& spawnCatCentered(const CatType catType, const float hue)
     {
         const auto pos = getWindow().mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
         return spawnCat(pos, catType, hue);
@@ -908,31 +942,31 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr float normalFontScale    = 1.f;
-    static inline constexpr float subBulletFontScale = 0.8f;
-    static inline constexpr float toolTipFontScale   = 0.65f;
-    static inline constexpr float windowWidth        = 425.f;
-    static inline constexpr float buttonWidth        = 150.f;
-    const float                   tooltipWidth       = windowWidth;
+    static inline constexpr float uiNormalFontScale    = 1.f;
+    static inline constexpr float uiSubBulletFontScale = 0.8f;
+    static inline constexpr float uiToolTipFontScale   = 0.65f;
+    static inline constexpr float uiWindowWidth        = 425.f;
+    static inline constexpr float uiButtonWidth        = 150.f;
+    const float                   uiTooltipWidth       = uiWindowWidth;
 
     ////////////////////////////////////////////////////////////
-    inline constexpr float getWindowHeight() const
+    [[nodiscard]] inline constexpr float uiGetMaxWindowHeight() const
     {
         return getResolution().y - 30.f;
     }
 
     ////////////////////////////////////////////////////////////
-    char         buffer[256]{};
-    char         labelBuffer[512]{};
-    char         tooltipBuffer[1024]{};
-    float        buttonHueMod = 0.f;
-    unsigned int widgetId     = 0u;
+    char         uiBuffer[256]{};
+    char         uiLabelBuffer[512]{};
+    char         uiTooltipBuffer[1024]{};
+    float        uiButtonHueMod = 0.f;
+    unsigned int uiWidgetId     = 0u;
 
     ////////////////////////////////////////////////////////////
     void uiMakeButtonLabels(const char* label, const char* xLabelBuffer)
     {
         // button label
-        ImGui::SetWindowFontScale((label[0] == '-' ? subBulletFontScale : normalFontScale) * 1.15f);
+        ImGui::SetWindowFontScale((label[0] == '-' ? uiSubBulletFontScale : uiNormalFontScale) * 1.15f);
         ImGui::AlignTextToFramePadding();
         ImGui::Text("%s", label);
         ImGui::SameLine();
@@ -940,7 +974,7 @@ struct Main
         // button top label
         ImGui::SetWindowFontScale(0.5f);
         ImGui::Text("%s", xLabelBuffer);
-        ImGui::SetWindowFontScale(label[0] == '-' ? subBulletFontScale : normalFontScale);
+        ImGui::SetWindowFontScale(label[0] == '-' ? uiSubBulletFontScale : uiNormalFontScale);
         ImGui::SameLine();
 
         ImGui::NextColumn();
@@ -949,15 +983,15 @@ struct Main
     ////////////////////////////////////////////////////////////
     void uiPushButtonColors()
     {
-        const auto convertColor = [&](const auto colorId)
+        const auto convertColorWithHueMod = [&](const auto colorId)
         {
-            return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId)).withHueMod(buttonHueMod).template toVec4<ImVec4>();
+            return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId)).withHueMod(uiButtonHueMod).template toVec4<ImVec4>();
         };
 
-        ImGui::PushStyleColor(ImGuiCol_Button, convertColor(ImGuiCol_Button));
-        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, convertColor(ImGuiCol_ButtonHovered));
-        ImGui::PushStyleColor(ImGuiCol_ButtonActive, convertColor(ImGuiCol_ButtonActive));
-        ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withHueMod(buttonHueMod).toVec4<ImVec4>());
+        ImGui::PushStyleColor(ImGuiCol_Button, convertColorWithHueMod(ImGuiCol_Button));
+        ImGui::PushStyleColor(ImGuiCol_ButtonHovered, convertColorWithHueMod(ImGuiCol_ButtonHovered));
+        ImGui::PushStyleColor(ImGuiCol_ButtonActive, convertColorWithHueMod(ImGuiCol_ButtonActive));
+        ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withHueMod(uiButtonHueMod).toVec4<ImVec4>());
     }
 
     ////////////////////////////////////////////////////////////
@@ -969,17 +1003,17 @@ struct Main
     ////////////////////////////////////////////////////////////
     void uiBeginTooltip() const
     {
-        ImGui::SetNextWindowSizeConstraints(ImVec2(tooltipWidth, 0), ImVec2(tooltipWidth, FLT_MAX));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(uiTooltipWidth, 0), ImVec2(uiTooltipWidth, FLT_MAX));
 
         ImGui::BeginTooltip();
         ImGui::PushFont(fontImGuiMouldyCheese);
-        ImGui::SetWindowFontScale(toolTipFontScale);
+        ImGui::SetWindowFontScale(uiToolTipFontScale);
     }
 
     ////////////////////////////////////////////////////////////
     void uiEndTooltip() const
     {
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::PopFont();
         ImGui::EndTooltip();
     }
@@ -987,40 +1021,39 @@ struct Main
     ////////////////////////////////////////////////////////////
     void uiMakeTooltip()
     {
-        if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || std::strlen(tooltipBuffer) == 0u)
+        if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || std::strlen(uiTooltipBuffer) == 0u)
             return;
 
-        ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - tooltipWidth, ImGui::GetMousePos().y + 20));
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - uiTooltipWidth, ImGui::GetMousePos().y + 20));
+
         uiBeginTooltip();
-
-        ImGui::TextWrapped("%s", tooltipBuffer);
-
+        ImGui::TextWrapped("%s", uiTooltipBuffer);
         uiEndTooltip();
     }
 
     ////////////////////////////////////////////////////////////
-    void uiMakeCatTooltip(const sf::Vector2f mousePos)
+    void uiMakeShrineOrCatTooltip(const sf::Vector2f mousePos)
     {
-        Shrine* hoveredShrine = nullptr;
+        const auto* hoveredShrine = [&]() -> const Shrine*
+        {
+            for (Shrine& shrine : pt.shrines)
+                if ((mousePos - shrine.position).lengthSquared() <= shrine.getRadiusSquared())
+                    return &shrine;
 
-        for (Shrine& shrine : pt.shrines)
-            if ((mousePos - shrine.position).lengthSquared() <= shrine.getRadiusSquared())
-            {
-                hoveredShrine = &shrine;
-                break;
-            }
+            return nullptr;
+        }();
 
-        Cat* hoveredCat = nullptr;
+        const auto* hoveredCat = [&]() -> const Cat*
+        {
+            if (hoveredShrine == nullptr)
+                for (const Cat& cat : pt.cats)
+                    if ((mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared())
+                        return &cat;
 
-        if (hoveredShrine == nullptr)
-            for (Cat& cat : pt.cats)
-                if ((mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared())
-                {
-                    hoveredCat = &cat;
-                    break;
-                }
+            return nullptr;
+        }();
 
-        if ((hoveredShrine == nullptr && hoveredCat == nullptr) || std::strlen(tooltipBuffer) == 0u)
+        if ((hoveredShrine == nullptr && hoveredCat == nullptr) || std::strlen(uiTooltipBuffer) == 0u)
             return;
 
         ImGui::SetNextWindowPos(ImVec2(getResolution().x - 15.f, getResolution().y - 15.f), 0, ImVec2(1, 1));
@@ -1028,69 +1061,7 @@ struct Main
 
         if (hoveredShrine != nullptr)
         {
-            constexpr const char* shrineTooltipsByType[]{
-                R"(
-~~ Shrine Of Voodoo ~~
-
-Spirits can be felt emanating from this shrine, where a Witchcat is sealed inside. They performs rituals on nearby cats, hexing one of them and capturing their soul in voodoo dolls that appear around the map.
-
-Collecting all the dolls will release the hex and trigger a powerful timed effect depending on the type of the cursed cat.
-
-The spirits seem to demand a cat... only one, at least.
-)",
-                R"(
-~~ Shrine Of Magic ~~
-
-The legend says that a powerful Wizardcat is sealed inside, capable of absorbing wisdom from star bubbles and casting spells on demand. Guess they weren't powerful enough to avoid being sealed...
-
-The magic of star bubbles seem to be absorbed by the shrine, nullifying their benefits.)",
-                R"(
-~~ Shrine Of Clicking ~~
-
-Rumor has it that a sneaky Mousecat is sealed inside, capable of clicking bubbles, keeping up their own combos, empowering nearby cats, and providing a global click reward value multiplier by merely existing. That's a mouthful.
-
-The shrine repels cats, wanting you to prove your worth by clicking bubbles.)",
-                R"(
-~~ Shrine Of Automation ~~
-
-Stories of a crafty Engicat being sealed inside this shrine are told, capable of performing engine maintenance on nearby cats, temporarily increasing their speed, and providing a global cat reward value multiplier by merely existing.
-
-Bubbles in the shrine's range are immune to clicks, as the shrine wants you to prove your automation skils.)",
-                R"(
-~~ Shrine Of Repulsion ~~
-
-Experiments reveal that a Repulsocat is sealed inside, who continuously pushes bubbles away with their portable USB fan. Thankfully, other cats are too fat to be affected by the wind.
-
-Seems like the wind is powerful enough to repel bubbles even from within the shrine.)",
-                R"(
-~~ Shrine Of Attraction ~~
-
-Electromagnetism readings suggest that an Attractocat is sealed inside, who continuously attracts bubbles with their huge magnet. Despite cats having an engine, they are not affected by the magnet -- can't explain that one.
-
-The magnet is so powerful that its effects are felt even near the shrine.)",
-                R"(
-~~ Shrine Of Chaos ~~
-
-Effects: TODO P1: complete
-
-Rewards: TODO P1: complete)",
-                R"(
-~~ Shrine Of Transmutation ~~
-
-Effects: TODO P1: complete
-
-Rewards: TODO P1: complete)",
-                R"(
-~~ Shrine Of Victory ~~
-
-Effects: TODO P1: complete
-
-Rewards: TODO P1: complete)",
-            };
-
-            static_assert(sf::base::getArraySize(shrineTooltipsByType) == nShrineTypes);
-
-            std::sprintf(tooltipBuffer, "%s", shrineTooltipsByType[static_cast<SizeT>(hoveredShrine->type)] + 1);
+            std::sprintf(uiTooltipBuffer, "%s", shrineTooltipsByType[static_cast<SizeT>(hoveredShrine->type)] + 1);
         }
         else
         {
@@ -1210,10 +1181,10 @@ Using prestige points, TODO P0
             static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
 
             SFML_BASE_ASSERT(hoveredCat != nullptr);
-            std::sprintf(tooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
+            std::sprintf(uiTooltipBuffer, "%s", catTooltipsByType[static_cast<SizeT>(hoveredCat->type)] + 1);
         }
 
-        ImGui::TextWrapped("%s", tooltipBuffer);
+        ImGui::TextWrapped("%s", uiTooltipBuffer);
 
         uiEndTooltip();
     }
@@ -1227,41 +1198,45 @@ Using prestige points, TODO P0
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] AnimatedButtonOutcome AnimatedButton(const char* label, const ImVec2& size_arg)
+    [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(const char* label, const ImVec2& btnSize)
     {
         ImGuiWindow* window = ImGui::GetCurrentWindow();
+
         if (window->SkipItems)
             return AnimatedButtonOutcome::None;
 
+        const char* labelEnd = ImGui::FindRenderedTextEnd(label);
 
-        const char* label_end = ImGui::FindRenderedTextEnd(label);
+        const ImGuiID id        = std::strtoul(labelEnd + 2, nullptr, 10);
+        const ImVec2  labelSize = ImGui::CalcTextSize(label, labelEnd, true);
 
-        const ImGuiID id         = std::strtoul(label_end + 2, nullptr, 10);
-        const ImVec2  label_size = ImGui::CalcTextSize(label, label_end, true);
-        ImVec2        size       = ImGui::CalcItemSize(size_arg,
-                                          label_size.x + ImGui::GetStyle().FramePadding.x * 2.f,
-                                          label_size.y + ImGui::GetStyle().FramePadding.y * 2.f);
+        const ImVec2 size = ImGui::CalcItemSize(btnSize,
+                                                labelSize.x + ImGui::GetStyle().FramePadding.x * 2.f,
+                                                labelSize.y + ImGui::GetStyle().FramePadding.y * 2.f);
 
         const ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + size.x, window->DC.CursorPos.y + size.y));
         ImGui::ItemSize(bb);
+
         if (!ImGui::ItemAdd(bb, id))
             return AnimatedButtonOutcome::None;
 
         // Store animation state in window data
         struct AnimState
         {
-            float hoverAnim; // 0.f to 1.f for tilt
-            float clickAnim; // 0.f to 1.f for scale
-            float lastClickTime;
+            float hoverAnim;     // 0.f to 1.f for tilt
+            float clickAnim;     // 0.f to 1.f for scale
+            float lastClickTime; // in seconds
         };
 
         // Get or create animation state
         ImGuiStorage* storage     = window->DC.StateStorage;
         const ImGuiID animStateId = id + 1; // Use a different ID for the state
-        auto*         animState   = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
-        if (!animState)
+
+        auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
+        if (animState == nullptr)
         {
-            animState = new AnimState{0.f, 0.f, -1.f};
+            // TODO P2: rewrite to use static unordered_map
+            animState = new AnimState{0.f, 0.f, -1.f}; // intentionally leaked, shouldn't be an issue
             storage->SetVoidPtr(animStateId, animState);
         }
 
@@ -1275,10 +1250,7 @@ Using prestige points, TODO P0
         const float deltaTime = ImGui::GetIO().DeltaTime;
 
         // Hover animation (tilt)
-        if (hovered)
-            animState->hoverAnim = ImMin(animState->hoverAnim + deltaTime * 5.f, 1.f);
-        else
-            animState->hoverAnim = 0.f;
+        animState->hoverAnim = hovered ? ImMin(animState->hoverAnim + deltaTime * 5.f, 1.f) : 0.f;
 
         // Click animation (scale)
         if (pressed)
@@ -1286,89 +1258,115 @@ Using prestige points, TODO P0
 
         const float timeSinceClick = static_cast<float>(ImGui::GetTime()) - animState->lastClickTime;
 
-        const float clickAnimDir = timeSinceClick > 0.f && timeSinceClick < 0.15f ? 1.f : -1.f;
-        animState->clickAnim     = sf::base::clamp(animState->clickAnim + deltaTime * 5.f * clickAnimDir, 0.f, 1.f);
+        const float clickAnimDir = timeSinceClick > 0.f && timeSinceClick < 0.2f ? 1.f : -1.f;
+        animState->clickAnim     = sf::base::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
 
         // Save current cursor pos
         const ImVec2 originalPos = window->DC.CursorPos;
-        ImDrawList*  draw_list   = window->DrawList;
+        ImDrawList*  drawList    = window->DrawList;
 
         // Calculate center point for transformations
         const ImVec2 center = ImVec2(bb.Min.x + size.x * 0.5f, bb.Min.y + size.y * 0.5f);
 
         // Apply transformations (with a small extra clip so nothing gets cut off)
-        ImVec2 clipMin = ImVec2(bb.Min.x - 10.f, bb.Min.y - 10.f);
-        ImVec2 clipMax = ImVec2(bb.Max.x + 10.f, bb.Max.y + 10.f);
-        draw_list->PushClipRect(clipMin, clipMax, true);
+        const ImVec2 clipMin{bb.Min.x - 20.f, bb.Min.y - 20.f};
+        const ImVec2 clipMax{bb.Max.x + 20.f, bb.Max.y + 20.f};
+        drawList->PushClipRect(clipMin, clipMax, true);
 
         // Scale transform: shrink by up to 10% when clicked.
-        const float scale = 1.f - easeInOutElastic(animState->clickAnim);
+        const float scale = 1.f - easeInOutElastic(animState->clickAnim) * 0.75f;
+
         // Tilt transform: rotate by up to 0.05 radians (≈2.9°). (Use ~0.0873f for 5°.)
-        const float tiltAngle = sf::base::sin(remap(easeInOutSine(animState->hoverAnim), 0.f, 1.f, 0.f, sf::base::tau)) * 0.1f;
-        const float cos_a = cosf(tiltAngle);
-        const float sin_a = sinf(tiltAngle);
+        const float tiltAngle = sf::base::sin(easeInOutSine(animState->hoverAnim) * sf::base::tau) * 0.1f;
+        const float tiltCos   = sf::base::cos(tiltAngle);
+        const float tiltSin   = sf::base::sin(tiltAngle);
 
         // Helper lambda: apply scale & rotation about the button center.
-        auto transformPoint = [&](const ImVec2& p) -> ImVec2
+        const auto transformPoint = [&](const ImVec2& p) -> ImVec2
         {
             // Translate so that the center is at (0,0)
-            ImVec2 centered = ImVec2(p.x - center.x, p.y - center.y);
+            const ImVec2 centered{p.x - center.x, p.y - center.y};
+
             // Apply scale
-            ImVec2 scaled = ImVec2(centered.x * scale, centered.y * scale);
+            const ImVec2 scaled{centered.x * scale, centered.y * scale};
+
             // Apply rotation
-            ImVec2 rotated = ImVec2(scaled.x * cos_a - scaled.y * sin_a, scaled.x * sin_a + scaled.y * cos_a);
+            const ImVec2 rotated{scaled.x * tiltCos - scaled.y * tiltSin, scaled.x * tiltSin + scaled.y * tiltCos};
+
             // Translate back
-            return ImVec2(center.x + rotated.x, center.y + rotated.y);
+            return {center.x + rotated.x, center.y + rotated.y};
         };
 
         // ── Draw Button Background as a Rounded Rectangle ──
-        // (This replaces your AddConvexPolyFilled code so that FrameRounding is respected.)
-        const ImU32 col      = ImGui::GetColorU32(pressed   ? ImGuiCol_ButtonActive
-                                             : hovered ? ImGuiCol_ButtonHovered
-                                                       : ImGuiCol_Button);
-        float       rounding = ImGui::GetStyle().FrameRounding;
-        draw_list->PathClear();
-        draw_list->PathRect(bb.Min, bb.Max, rounding);
-        for (int i = 0; i < draw_list->_Path.Size; i++)
-        {
-            draw_list->_Path[i] = transformPoint(draw_list->_Path[i]);
-        }
-        draw_list->PathFillConvex(col);
+        const ImU32 btnBgColor = ImGui::GetColorU32(
+            pressed   ? ImGuiCol_ButtonActive
+            : hovered ? ImGuiCol_ButtonHovered
+                      : ImGuiCol_Button);
+
+        const float rounding = ImGui::GetStyle().FrameRounding;
+
+        drawList->PathClear();
+        drawList->PathRect(bb.Min, bb.Max, rounding);
+
+        for (int i = 0; i < drawList->_Path.Size; i++)
+            drawList->_Path[i] = transformPoint(drawList->_Path[i]);
+
+        drawList->PathFillConvex(btnBgColor);
 
         if (ImGui::GetStyle().FrameBorderSize > 0.f)
         {
             // Recreate the path for the border.
-            draw_list->PathClear();
-            draw_list->PathRect(bb.Min, bb.Max, rounding);
-            for (int i = 0; i < draw_list->_Path.Size; i++)
-            {
-                draw_list->_Path[i] = transformPoint(draw_list->_Path[i]);
-            }
+            drawList->PathClear();
+            drawList->PathRect(bb.Min, bb.Max, rounding);
 
-            draw_list->PathStroke(ImGui::GetColorU32(ImGuiCol_Border), ImDrawFlags_Closed, ImGui::GetStyle().FrameBorderSize);
+            for (int i = 0; i < drawList->_Path.Size; i++)
+                drawList->_Path[i] = transformPoint(drawList->_Path[i]);
+
+            drawList->PathStroke(ImGui::GetColorU32(ImGuiCol_Border), ImDrawFlags_Closed, ImGui::GetStyle().FrameBorderSize);
         }
 
         // ── Draw Text with the Same Transformation ──
+
         // First, compute the untransformed text position.
-        ImVec2 text_pos = ImVec2(bb.Min.x + (size.x - label_size.x) * 0.5f, bb.Min.y + (size.y - label_size.y) * 0.5f);
+        const ImVec2 textPos{bb.Min.x + (size.x - labelSize.x) * 0.5f, bb.Min.y + (size.y - labelSize.y) * 0.5f};
+
         // Record the current vertex buffer size...
-        int vtx_before = draw_list->VtxBuffer.Size;
+        const int vtxBufferSizeBeforeTransformation = drawList->VtxBuffer.Size;
+
         // ...and add the text at its normal (unrotated/unscaled) position.
-        draw_list->AddText(text_pos, ImGui::GetColorU32(ImGuiCol_Text), label, label_end);
+        drawList->AddText(textPos, ImGui::GetColorU32(ImGuiCol_Text), label, labelEnd);
+
         // Then, apply our transform to only the new text vertices.
-        for (int i = vtx_before; i < draw_list->VtxBuffer.Size; i++)
-        {
-            draw_list->VtxBuffer[i].pos = transformPoint(draw_list->VtxBuffer[i].pos);
-        }
+        for (int i = vtxBufferSizeBeforeTransformation; i < drawList->VtxBuffer.Size; i++)
+            drawList->VtxBuffer[i].pos = transformPoint(drawList->VtxBuffer[i].pos);
 
         // Restore the previous clip rect and cursor position.
-        draw_list->PopClipRect();
+        drawList->PopClipRect();
         window->DC.CursorPos = originalPos;
 
         return clicked                ? AnimatedButtonOutcome::Clicked
                : clickedWhileDisabled ? AnimatedButtonOutcome::ClickedWhileDisabled
                                       : AnimatedButtonOutcome::None;
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
+    {
+        // Calculate the scale factors for both dimensions
+        const float scaleX = windowSize.x / originalSize.x;
+        const float scaleY = windowSize.y / originalSize.y;
+
+        // Use the smaller scale factor to maintain aspect ratio
+        const float scale = std::min(scaleX, scaleY);
+
+        // Calculate the scaled dimensions
+        const sf::Vector2f scaledSize = originalSize * scale;
+
+        return {.center   = originalSize / 2.f,
+                .size     = originalSize,
+                .viewport = {(windowSize - scaledSize).componentWiseDiv(windowSize * 2.f),
+                             scaledSize.componentWiseDiv(windowSize)}};
+    };
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::View makeScaledHUDView(const sf::Vector2f& resolution, float scale) const
@@ -1379,20 +1377,20 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f getHUDMousePos() const
     {
-        const sf::View hudView = makeScaledHUDView(getResolution(), profile.hudScale);
-        return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), hudView);
+        return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), scaledHUDView);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool uiMakeButtonImpl(const char* label, const char* xBuffer)
     {
-        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x - buttonWidth - 2.5f, 0.f)); // Push to right
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x - uiButtonWidth - 2.5f, 0.f)); // Push to right
         ImGui::SameLine();
 
         uiPushButtonColors();
 
         bool clicked = false;
-        if (const auto outcome = AnimatedButton(xBuffer, ImVec2(buttonWidth, 0.f)); outcome == AnimatedButtonOutcome::Clicked)
+        if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(uiButtonWidth, 0.f));
+            outcome == AnimatedButtonOutcome::Clicked)
         {
             playSound(sounds.buy);
             clicked = true;
@@ -1406,7 +1404,7 @@ Using prestige points, TODO P0
                                      .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                      .rotation      = rng.getF(0.f, sf::base::tau),
                                      .torque        = rng.getF(-0.002f, 0.002f)},
-                                    /* hue */ wrapHue(165.f + buttonHueMod),
+                                    /* hue */ wrapHue(165.f + uiButtonHueMod),
                                     ParticleType::Star);
         }
         else if (outcome == AnimatedButtonOutcome::ClickedWhileDisabled)
@@ -1426,12 +1424,12 @@ Using prestige points, TODO P0
                                     ParticleType::Bubble);
         }
 
-        uiMakeTooltip();
-
         uiPopButtonColors();
 
+        uiMakeTooltip();
+
         if (label[0] == '-')
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
         ImGui::NextColumn();
         return clicked;
@@ -1451,19 +1449,19 @@ Using prestige points, TODO P0
         bool       result   = false;
 
         if (maxedOut)
-            std::sprintf(buffer, "MAX##%u", widgetId++);
+            std::sprintf(uiBuffer, "MAX##%u", uiWidgetId++);
         else if (cost == 0u)
-            std::sprintf(buffer, "N/A##%u", widgetId++);
+            std::sprintf(uiBuffer, "N/A##%u", uiWidgetId++);
         else
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-            std::sprintf(buffer, currencyFmt, toStringWithSeparators(cost), widgetId++);
+            std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
 #pragma clang diagnostic pop
 
         ImGui::BeginDisabled(maxedOut || availability < cost || cost == 0u);
 
-        uiMakeButtonLabels(label, labelBuffer);
-        if (uiMakeButtonImpl(label, buffer))
+        uiMakeButtonLabels(label, uiLabelBuffer);
+        if (uiMakeButtonImpl(label, uiBuffer))
         {
             result = true;
             availability -= cost;
@@ -1485,10 +1483,11 @@ Using prestige points, TODO P0
         // Thread-local buffer to store the result
         // Size should be 27 (max 20 digits for 64-bit integer + up to 6 separators + null terminator)
         // Using 32 for addinional safety just in case
-        static thread_local char buffer[32];
+        static thread_local char strBuffer[32];
 
         // First, convert to string from right to left
-        char* end = buffer + sizeof(buffer) - 1;
+        char* const end = strBuffer + sizeof(strBuffer) - 1;
+
         char* ptr = end;
         *ptr      = '\0';
 
@@ -1512,7 +1511,8 @@ Using prestige points, TODO P0
 
             *--ptr = '0' + (absValue % 10);
             absValue /= 10;
-            digitCount++;
+
+            ++digitCount;
         }
 
         if (isNegative)
@@ -1545,17 +1545,17 @@ Using prestige points, TODO P0
         bool result = false;
 
         if (done)
-            std::sprintf(buffer, "DONE##%u", widgetId++);
+            std::sprintf(uiBuffer, "DONE##%u", uiWidgetId++);
         else
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-            std::sprintf(buffer, currencyFmt, toStringWithSeparators(cost), widgetId++);
+            std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
 #pragma clang diagnostic pop
 
         ImGui::BeginDisabled(done || availability < cost);
 
-        uiMakeButtonLabels(label, labelBuffer);
-        if (uiMakeButtonImpl(label, buffer))
+        uiMakeButtonLabels(label, uiLabelBuffer);
+        if (uiMakeButtonImpl(label, uiBuffer))
         {
             result = true;
             availability -= cost;
@@ -1573,21 +1573,13 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool makePurchasableButtonOneTime(const char* label, const MoneyType cost, bool& done)
     {
-        return makePurchasableButtonOneTimeByCurrency(label,
-                                                      done,
-                                                      /* cost */ static_cast<MoneyType>(static_cast<float>(cost)),
-                                                      /* availability */ pt.money,
-                                                      "$%s##%u");
+        return makePurchasableButtonOneTimeByCurrency(label, done, cost, pt.money, "$%s##%u");
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool makePurchasablePPButtonOneTime(const char* label, const PrestigePointsType prestigePointsCost, bool& done)
     {
-        return makePurchasableButtonOneTimeByCurrency(label,
-                                                      done,
-                                                      /* cost */ prestigePointsCost,
-                                                      /* availability */ pt.prestigePoints,
-                                                      "%s PPs##%u");
+        return makePurchasableButtonOneTimeByCurrency(label, done, prestigePointsCost, pt.prestigePoints, "%s PPs##%u");
     }
 
     ////////////////////////////////////////////////////////////
@@ -1605,8 +1597,8 @@ Using prestige points, TODO P0
     void uiBeginColumns()
     {
         ImGui::Columns(2, "twoColumns", false);
-        ImGui::SetColumnWidth(0, windowWidth - buttonWidth - 20.f);
-        ImGui::SetColumnWidth(1, buttonWidth + 10.f);
+        ImGui::SetColumnWidth(0, uiWindowWidth - uiButtonWidth - 20.f);
+        ImGui::SetColumnWidth(1, uiButtonWidth + 10.f);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1623,12 +1615,12 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    void uiDraw(const sf::View& gameView, const sf::Vector2f mousePos)
+    void uiDraw(const sf::Vector2f mousePos)
     {
-        widgetId = 0u;
+        uiWidgetId = 0u;
 
         ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
-        ImGui::SetNextWindowSizeConstraints(ImVec2(windowWidth, 0.f), ImVec2(windowWidth, getWindowHeight()));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth, 0.f), ImVec2(uiWindowWidth, uiGetMaxWindowHeight()));
         ImGui::PushFont(fontImGuiSuperBakery);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
@@ -1651,17 +1643,17 @@ Using prestige points, TODO P0
 
         if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
         {
-            uiTabBar(gameView);
+            uiTabBar();
             ImGui::EndTabBar();
         }
 
-        uiMakeCatTooltip(mousePos);
+        uiMakeShrineOrCatTooltip(mousePos);
 
         ImGui::End();
         ImGui::PopFont();
     }
 
-    void uiTabBar(const sf::View& gameView)
+    void uiTabBar()
     {
         static int  lastSelectedTabIdx = 1;
         static auto selectOnce         = ImGuiTabItemFlags_SetSelected;
@@ -1686,7 +1678,7 @@ Using prestige points, TODO P0
             selectedTab(1);
 
             selectOnce = {};
-            uiTabBarShop(gameView);
+            uiTabBarShop();
             ImGui::EndTabItem();
         }
 
@@ -1745,7 +1737,7 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    void uiTabBarShop(const sf::View& gameView)
+    void uiTabBarShop()
     {
         const auto nCatNormal = pt.getCatCountByType(CatType::Normal);
         const auto nCatUni    = pt.getCatCountByType(CatType::Uni);
@@ -1764,11 +1756,11 @@ Using prestige points, TODO P0
 
         uiBeginColumns();
 
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
                      "one.\n\nCombos expires on misclicks and over time, but can be upgraded to last "
                      "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
-        std::sprintf(labelBuffer, "");
+        std::sprintf(uiLabelBuffer, "");
         if (makePurchasableButtonOneTime("Combo", 15, pt.comboPurchased))
         {
             combo = 0;
@@ -1777,8 +1769,8 @@ Using prestige points, TODO P0
 
         if (pt.comboPurchased)
         {
-            std::sprintf(tooltipBuffer, "Increase combo duration. We are in it for the long run.");
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
+            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long run.");
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
             makePSVButton("- Longer combo", pt.psvComboStartTime);
         }
 
@@ -1786,12 +1778,12 @@ Using prestige points, TODO P0
 
         if (nCatNormal > 0 && pt.psvComboStartTime.nPurchases > 0)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Extend the map and enable scrolling (right click or drag with two fingers).\n\nExtending "
                          "the "
                          "map will increase the total number of bubbles you can work with, and will also reveal "
                          "magical shrines that grant unique cats upon completion.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             if (makePurchasableButtonOneTime("Map scrolling", 250, pt.mapPurchased))
             {
                 scroll = 0.f;
@@ -1800,25 +1792,25 @@ Using prestige points, TODO P0
 
             if (pt.mapPurchased)
             {
-                std::sprintf(tooltipBuffer, "Extend the map further by one screen.");
-                std::sprintf(labelBuffer, "%.2f%%", static_cast<double>(pt.getMapLimit() / boundaries.x * 100.f));
+                std::sprintf(uiTooltipBuffer, "Extend the map further by one screen.");
+                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.getMapLimit() / boundaries.x * 100.f));
                 makePSVButton("- Extend map", pt.psvMapExtension);
 
                 ImGui::BeginDisabled(pt.psvShrineActivation.nPurchases > pt.psvMapExtension.nPurchases);
-                std::sprintf(tooltipBuffer,
+                std::sprintf(uiTooltipBuffer,
                              "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
                              "bubbles are absorbed by a shrine, it will grant a unique cat.");
-                std::sprintf(labelBuffer, "%zu/9", pt.psvShrineActivation.nPurchases);
+                std::sprintf(uiLabelBuffer, "%zu/9", pt.psvShrineActivation.nPurchases);
                 makePSVButton("- Activate next shrine", pt.psvShrineActivation);
                 ImGui::EndDisabled();
             }
 
             ImGui::Separator();
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
                          "more money, fewer FPS!");
-            std::sprintf(labelBuffer, "%zu bubbles", static_cast<SizeT>(pt.psvBubbleCount.currentValue()));
+            std::sprintf(uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt.psvBubbleCount.currentValue()));
             makePSVButton("More bubbles", pt.psvBubbleCount);
 
             ImGui::Separator();
@@ -1826,16 +1818,16 @@ Using prestige points, TODO P0
 
         if (pt.comboPurchased && pt.psvComboStartTime.nPurchases > 0)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
                          "behavior "
                          "can be permanently upgraded with prestige points.\n\nCats can be dragged around to "
                          "position "
                          "them strategically.\n\nNo, you can't get rid of a cat once purchased, you monster.");
-            std::sprintf(labelBuffer, "%zu cats", nCatNormal);
+            std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
             if (makePSVButton("Cat", pt.psvPerCatType[asIdx(CatType::Normal)]))
             {
-                spawnCat(gameView, CatType::Normal, /* hue */ rng.getF(-20.f, 20.f));
+                spawnCatCentered(CatType::Normal, /* hue */ rng.getF(-20.f, 20.f));
 
                 if (nCatNormal == 0)
                     doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
@@ -1846,9 +1838,9 @@ Using prestige points, TODO P0
         {
             auto& psv = pt.psvCooldownMultsPerCatType[asIdx(catType)];
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Decrease cooldown.\n\n(Note: can be reverted by right-clicking, but no refunds!)");
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.getComputedCooldownByCatType(catType) / 1000.f));
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedCooldownByCatType(catType) / 1000.f));
             makePSVButton(label, psv);
 
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
@@ -1863,8 +1855,9 @@ Using prestige points, TODO P0
         {
             auto& psv = pt.psvRangeDivsPerCatType[asIdx(catType)];
 
-            std::sprintf(tooltipBuffer, "Increase range.\n\n(Note: can be reverted by right-clicking, but no refunds!)");
-            std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(pt.getComputedRangeByCatType(catType)));
+            std::sprintf(uiTooltipBuffer,
+                         "Increase range.\n\n(Note: can be reverted by right-clicking, but no refunds!)");
+            std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedRangeByCatType(catType)));
             makePSVButton(label, psv);
 
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
@@ -1889,13 +1882,13 @@ Using prestige points, TODO P0
         const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
         if (catUnicornUnlocked)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Unicats transform bubbles into star bubbles, which are worth x25 more!\n\nHave "
                          "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
-            std::sprintf(labelBuffer, "%zu unicats", nCatUni);
+            std::sprintf(uiLabelBuffer, "%zu unicats", nCatUni);
             if (makePSVButton("Unicat", pt.psvPerCatType[asIdx(CatType::Uni)]))
             {
-                spawnCat(gameView, CatType::Uni, /* hue */ rng.getF(0.f, 360.f));
+                spawnCatCentered(CatType::Uni, /* hue */ rng.getF(0.f, 360.f));
 
                 if (nCatUni == 0)
                     doTip("Unicats transform bubbles in star bubbles,\nworth x25! Pop them at the end of a combo!");
@@ -1916,13 +1909,13 @@ Using prestige points, TODO P0
         const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
         if (catDevilUnlocked)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
                          "explosion are worth x10 more! Bomb explosion range can be upgraded.");
-            std::sprintf(labelBuffer, "%zu devilcats", nCatDevil);
+            std::sprintf(uiLabelBuffer, "%zu devilcats", nCatDevil);
             if (makePSVButton("Devilcat", pt.psvPerCatType[asIdx(CatType::Devil)]))
             {
-                spawnCat(gameView, CatType::Devil, /* hue */ rng.getF(-20.f, 20.f));
+                spawnCatCentered(CatType::Devil, /* hue */ rng.getF(-20.f, 20.f));
 
                 if (nCatDevil == 0)
                     doTip(
@@ -1931,8 +1924,8 @@ Using prestige points, TODO P0
                         /* maxPrestigeLevel */ 1);
             }
 
-            std::sprintf(tooltipBuffer, "Increase bomb explosion radius.");
-            std::sprintf(labelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
+            std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
             makePSVButton("- Explosion radius", pt.psvExplosionRadiusMult);
 
             if (catDevilUpgradesUnlocked)
@@ -1949,15 +1942,15 @@ Using prestige points, TODO P0
         const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
         if (astroCatUnlocked)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
                          "money "
                          "multiplier!\n\nThey can be permanently upgraded with prestige points to inspire cats "
                          "watching them fly past to pop bubbles faster.");
-            std::sprintf(labelBuffer, "%zu astrocats", nCatAstro);
+            std::sprintf(uiLabelBuffer, "%zu astrocats", nCatAstro);
             if (makePSVButton("Astrocat", pt.psvPerCatType[asIdx(CatType::Astro)]))
             {
-                spawnCat(gameView, CatType::Astro, /* hue */ rng.getF(-20.f, 20.f));
+                spawnCatCentered(CatType::Astro, /* hue */ rng.getF(-20.f, 20.f));
 
                 if (nCatAstro == 0)
                     doTip(
@@ -2123,7 +2116,7 @@ Using prestige points, TODO P0
             {
                 startList("to unlock astrocats:");
 
-                if (pt.nShrinesCompleted < 1)
+                if (pt.nShrinesCompleted < 2)
                     result += "\n- complete at least two shrines";
 
                 needNCats(nCatNormal, 10);
@@ -2152,9 +2145,9 @@ Using prestige points, TODO P0
 
         if (nextGoalsText != "")
         {
-            ImGui::SetWindowFontScale(subBulletFontScale);
+            ImGui::SetWindowFontScale(uiSubBulletFontScale);
             ImGui::Text("%s", nextGoalsText.c_str());
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
         }
     }
 
@@ -2171,7 +2164,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void uiTabBarPrestige()
     {
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::Text("Prestige to:");
 
         ImGui::SetWindowFontScale(0.75f);
@@ -2179,23 +2172,23 @@ Using prestige points, TODO P0
         ImGui::Text("- reset all your other progress");
         ImGui::Text("- obtain prestige points");
 
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::Separator();
 
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
                      "obtain prestige points. Prestige points can be used to unlock powerful permanent "
                      "upgrades.\n\nYou will sacrifice all your cats, bubbles, and money, but you will keep your "
                      "prestige points and permanent upgrades, and the value of bubbles will be permanently "
                      "increased.\n\nDo not be afraid to prestige -- it is what enables you to progress further!");
-        std::sprintf(labelBuffer, "current bubble value x%llu", pt.getComputedRewardByBubbleType(BubbleType::Normal));
+        std::sprintf(uiLabelBuffer, "current bubble value x%llu", pt.getComputedRewardByBubbleType(BubbleType::Normal));
 
         const auto [times, maxCost, nextCost] = pt.psvBubbleValue.maxSubsequentPurchases(pt.money);
         const auto ppReward                   = pt.calculatePrestigePointReward(times);
 
         uiBeginColumns();
 
-        buttonHueMod = 120.f;
+        uiButtonHueMod = 120.f;
         ImGui::BeginDisabled(!pt.canBuyNextPrestige());
         if (makePSVButtonEx("Prestige", pt.psvBubbleValue, times, maxCost))
         {
@@ -2213,7 +2206,7 @@ Using prestige points, TODO P0
 
         ImGui::Columns(1);
 
-        buttonHueMod = 0.f;
+        uiButtonHueMod = 0.f;
         ImGui::SetWindowFontScale(0.75f);
 
         const auto currentMult = static_cast<SizeT>(pt.psvBubbleValue.currentValue()) + 1u;
@@ -2236,14 +2229,14 @@ Using prestige points, TODO P0
                 ImGui::Text("- must complete %llu more shrine(s)", pt.psvBubbleValue.nPurchases - pt.nShrinesCompleted);
         }
 
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::Separator();
 
         ImGui::Text("permanent upgrades");
 
         ImGui::SetWindowFontScale(0.75f);
         ImGui::Text("- prestige points: %llu PPs", pt.prestigePoints);
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
 
         ImGui::Spacing();
         ImGui::Spacing();
@@ -2252,50 +2245,49 @@ Using prestige points, TODO P0
 
         uiBeginColumns();
 
-        buttonHueMod = 190.f;
+        uiButtonHueMod = 190.f;
 
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
-                     "multiplier "
-                     "still only increases once per successful click.)\n\n(Note: this effect can be toggled at "
-                     "will.)");
-        std::sprintf(labelBuffer, "");
+                     "multiplier still only increases once per successful click.)\n\n(Note: this effect can be toggled "
+                     "at will.)");
+        std::sprintf(uiLabelBuffer, "");
         if (makePurchasablePPButtonOneTime("Multipop click", 1u, pt.perm.multiPopPurchased))
             doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
         if (pt.perm.multiPopPurchased)
         {
-            std::sprintf(tooltipBuffer, "Increase the range of the multipop effect.");
-            std::sprintf(labelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
+            std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
+            std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
             makePrestigePurchasablePPButtonPSV("- range", pt.psvPPMultiPopRange);
 
-            ImGui::SetWindowFontScale(subBulletFontScale);
+            ImGui::SetWindowFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
         }
 
         ImGui::Separator();
 
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
                      "for "
                      "star bubbles and bombs first, ensuring they are not wasted!");
-        std::sprintf(labelBuffer, "");
+        std::sprintf(uiLabelBuffer, "");
         if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt.perm.smartCatsPurchased))
             doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
         if (pt.perm.smartCatsPurchased)
         {
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Embrace the glorious evolution!\n\nCats have ascended beyond their primal "
                          "insticts and will now prioritize bombs, then star bubbles, then normal "
                          "bubbles!\n\nThey will also ignore any bubble type of your choosing.\n\n(Note: "
                          "this effect can be toggled at will.)");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             if (makePurchasablePPButtonOneTime("- genius cats", 16u, pt.perm.geniusCatsPurchased))
                 doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                       /* maxPrestigeLevel */ UINT_MAX);
@@ -2304,7 +2296,7 @@ Using prestige points, TODO P0
         if (pt.perm.geniusCatsPurchased)
         {
             ImGui::Columns(1);
-            ImGui::SetWindowFontScale(subBulletFontScale);
+            ImGui::SetWindowFontScale(uiSubBulletFontScale);
 
             ImGui::Text("- ignore: ");
             ImGui::SameLine();
@@ -2319,24 +2311,24 @@ Using prestige points, TODO P0
 
             uiCheckbox("bombs##genius", &ignoreBomb);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             uiBeginColumns();
         }
 
         ImGui::Separator();
 
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
                      "flow much faster.\n\n(Note: this effect can be toggled at will.)");
-        std::sprintf(labelBuffer, "");
+        std::sprintf(uiLabelBuffer, "");
         if (makePurchasablePPButtonOneTime("Giant fan", 8u, pt.perm.windPurchased))
             doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
 
         if (pt.perm.windPurchased)
         {
-            ImGui::SetWindowFontScale(subBulletFontScale);
+            ImGui::SetWindowFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##wind", &pt.windEnabled);
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
         }
@@ -2345,10 +2337,10 @@ Using prestige points, TODO P0
         {
             ImGui::Separator();
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "
                          "them fly by to work faster!");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
 
             if (makePurchasablePPButtonOneTime("Space propaganda", 32u, pt.perm.astroCatInspirePurchased))
                 doTip("Astrocats will inspire other cats\nto work faster when flying by!",
@@ -2356,8 +2348,8 @@ Using prestige points, TODO P0
 
             if (pt.perm.astroCatInspirePurchased)
             {
-                std::sprintf(tooltipBuffer, "Increase the duration of the inspiration effect.");
-                std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
+                std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect.");
+                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
 
                 makePrestigePurchasablePPButtonPSV("- buff duration", pt.psvPPInspireDurationMult);
             }
@@ -2368,13 +2360,12 @@ Using prestige points, TODO P0
             if (findFirstCatByType(type) == nullptr)
                 return;
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Permanently release the %s from their shrine. They will be waiting for you right "
                          "outside when the shrine is activated.\n\n(Note: completing the shrine will now grant "
-                         "1.5x "
-                         "the money it absorbed.)",
+                         "1.5x the money it absorbed.)",
                          catName);
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Break the seal", ppCost, pt.perm.unsealedByType[asIdx(type)]);
         };
 
@@ -2388,27 +2379,27 @@ Using prestige points, TODO P0
 
             makeUnsealButton(8u, "Witchcat", CatType::Witch);
 
-            std::sprintf(tooltipBuffer, "Increase the base duration of Witchcat buffs.");
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.psvPPWitchCatBuffDuration.currentValue()));
+            std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs.");
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvPPWitchCatBuffDuration.currentValue()));
             makePrestigePurchasablePPButtonPSV("- Buff duration", pt.psvPPWitchCatBuffDuration);
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "The duration of Witchcat buffs scales with the number of cats that were in range while "
                          "the "
                          "ritual was performed.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
 
-            std::sprintf(tooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiTooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
 
-            std::sprintf(tooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Material shortage", 128u, pt.perm.witchCatBuffFewerDolls);
 
-            std::sprintf(tooltipBuffer, "TODO P0: implement, poppable dolls");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiTooltipBuffer, "TODO P0: implement, poppable dolls");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Fragile dolls", 256u, pt.perm.witchCatBuffFragileDolls);
         }
 
@@ -2424,19 +2415,18 @@ Using prestige points, TODO P0
 
             // TODO P1: autocast
 
-            std::sprintf(tooltipBuffer, "Increase the speed of mana generation.");
-            std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.getComputedManaCooldown() / 1000.f));
+            std::sprintf(uiTooltipBuffer, "Increase the speed of mana generation.");
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedManaCooldown() / 1000.f));
             makePrestigePurchasablePPButtonPSV("- Mana cooldown", pt.psvPPManaCooldownMult);
 
-            std::sprintf(tooltipBuffer, "Increase the maximum mana.");
-            std::sprintf(labelBuffer, "%llu mana", pt.getComputedMaxMana());
+            std::sprintf(uiTooltipBuffer, "Increase the maximum mana.");
+            std::sprintf(uiLabelBuffer, "%llu mana", pt.getComputedMaxMana());
             makePrestigePurchasablePPButtonPSV("- Mana limit", pt.psvPPManaMaxMult);
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
-                         "into "
-                         "star bubbles.");
-            std::sprintf(labelBuffer, "");
+                         "into star bubbles.");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Selective starpaw", 64u, pt.perm.astroCatInspirePurchased);
         }
 
@@ -2450,8 +2440,8 @@ Using prestige points, TODO P0
 
             makeUnsealButton(32u, "Mousecat", CatType::Mouse);
 
-            std::sprintf(tooltipBuffer, "Increase the global click reward value multiplier.");
-            std::sprintf(labelBuffer, "x%.2f", static_cast<double>(pt.psvPPMouseCatGlobalBonusMult.currentValue()));
+            std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier.");
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPMouseCatGlobalBonusMult.currentValue()));
             makePrestigePurchasablePPButtonPSV("- Global click mult", pt.psvPPMouseCatGlobalBonusMult);
         }
 
@@ -2465,8 +2455,8 @@ Using prestige points, TODO P0
 
             makeUnsealButton(64u, "Engicat", CatType::Engi);
 
-            std::sprintf(tooltipBuffer, "Increase the global cat reward value multiplier.");
-            std::sprintf(labelBuffer, "x%.2f", static_cast<double>(pt.psvPPEngiCatGlobalBonusMult.currentValue()));
+            std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier.");
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPEngiCatGlobalBonusMult.currentValue()));
             makePrestigePurchasablePPButtonPSV("- Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
         }
 
@@ -2480,14 +2470,14 @@ Using prestige points, TODO P0
 
             makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
 
-            std::sprintf(tooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Repulsion filter", 64u, pt.perm.repulsoCatFilterPurchased);
 
             if (pt.perm.repulsoCatFilterPurchased)
             {
                 ImGui::Columns(1);
-                ImGui::SetWindowFontScale(subBulletFontScale);
+                ImGui::SetWindowFontScale(uiSubBulletFontScale);
 
                 ImGui::Text("- ignore: ");
                 ImGui::SameLine();
@@ -2502,26 +2492,26 @@ Using prestige points, TODO P0
 
                 uiCheckbox("bombs##repulso", &ignoreBomb);
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 uiBeginColumns();
             }
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.perm.repulsoCatConverterPurchased);
 
             if (pt.perm.repulsoCatConverterPurchased)
             {
-                ImGui::SetWindowFontScale(subBulletFontScale);
+                ImGui::SetWindowFontScale(uiSubBulletFontScale);
                 uiCheckbox("enable ##repulsoconv", &pt.repulsoCatConverterEnabled);
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 ImGui::NextColumn();
                 ImGui::NextColumn();
 
-                std::sprintf(tooltipBuffer, "Increase the repelled bubble conversion chance.");
-                std::sprintf(labelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
+                std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance.");
+                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
                 makePrestigePurchasablePPButtonPSV("- Conversion chance", pt.psvPPRepulsoCatConverterChance);
             }
         }
@@ -2536,16 +2526,16 @@ Using prestige points, TODO P0
 
             makeUnsealButton(256u, "Attractocat", CatType::Attracto);
 
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
                          "attracted bubbles by type.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Attraction filter", 96u, pt.perm.attractoCatFilterPurchased);
 
             if (pt.perm.attractoCatFilterPurchased)
             {
                 ImGui::Columns(1);
-                ImGui::SetWindowFontScale(subBulletFontScale);
+                ImGui::SetWindowFontScale(uiSubBulletFontScale);
 
                 ImGui::Text("- ignore: ");
                 ImGui::SameLine();
@@ -2560,33 +2550,33 @@ Using prestige points, TODO P0
 
                 uiCheckbox("bombs##attracto", &ignoreBomb);
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 uiBeginColumns();
             }
 
             /* TODO P0:
-            std::sprintf(tooltipBuffer,
+            std::sprintf(uiTooltipBuffer,
                          "The Repulsocat does some more weird science to its magnet, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
-            std::sprintf(labelBuffer, "");
+            std::sprintf(uiLabelBuffer, "");
             (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.attractoCatConverterPurchased);
 
             if (pt.attractoCatConverterPurchased)
             {
-                ImGui::SetWindowFontScale(subBulletFontScale);
+                ImGui::SetWindowFontScale(uiSubBulletFontScale);
          uiCheckbox("enable ##attractoconv", &pt.attractoCatConverterEnabled);
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 ImGui::NextColumn();
                 ImGui::NextColumn();
 
-                std::sprintf(tooltipBuffer, "Increase the repelled bubble conversion chance.");
-                std::sprintf(labelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
+                std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance.");
+                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
                 makePrestigePurchasablePPButtonPSV("- Conversion chance", pt.psvPPRepulsoCatConverterChance);
             }
             */
         }
 
-        buttonHueMod = 0.f;
+        uiButtonHueMod = 0.f;
 
         ImGui::Columns(1);
     }
@@ -2648,7 +2638,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void uiTabBarMagic()
     {
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
 
         Cat* wizardCat = findFirstCatByType(CatType::Wizard);
 
@@ -2668,16 +2658,16 @@ Using prestige points, TODO P0
         ImGui::Text("Wisdom points: %llu WP", pt.wisdom);
 
         uiCheckbox("Absorb wisdom", &pt.absorbingWisdom);
-        std::sprintf(tooltipBuffer,
+        std::sprintf(uiTooltipBuffer,
                      "The Wizardcat concentrates, absorbing wisdom points from nearby star bubbles. While the "
                      "Wizardcat is concentrating, it cannot cast spells nor be moved around.");
         uiMakeTooltip();
 
         uiBeginColumns();
-        buttonHueMod = 45.f;
+        uiButtonHueMod = 45.f;
 
-        std::sprintf(tooltipBuffer, "The Wizardcat taps into memories of past lives, remembering a powerful spell.");
-        std::sprintf(labelBuffer, "%zu/%zu", pt.psvSpellCount.nPurchases, pt.psvSpellCount.data->nMaxPurchases);
+        std::sprintf(uiTooltipBuffer, "The Wizardcat taps into memories of past lives, remembering a powerful spell.");
+        std::sprintf(uiLabelBuffer, "%zu/%zu", pt.psvSpellCount.nPurchases, pt.psvSpellCount.data->nMaxPurchases);
         (void)makePSVButtonExByCurrency("Remember spell",
                                         pt.psvSpellCount,
                                         1u,
@@ -2685,7 +2675,7 @@ Using prestige points, TODO P0
                                         pt.wisdom,
                                         "%s WP##%u");
 
-        buttonHueMod = 0.f;
+        uiButtonHueMod = 0.f;
         ImGui::Columns(1);
 
         ImGui::Separator();
@@ -2710,16 +2700,16 @@ Using prestige points, TODO P0
         {
             ImGui::BeginDisabled(isWizardBusy());
             uiBeginColumns();
-            buttonHueMod = 45.f;
+            uiButtonHueMod = 45.f;
 
             //
             // SPELL 0
             if (pt.psvSpellCount.nPurchases >= 1)
             {
-                std::sprintf(tooltipBuffer,
+                std::sprintf(uiTooltipBuffer,
                              "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
                              "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
-                std::sprintf(labelBuffer, "");
+                std::sprintf(uiLabelBuffer, "");
                 bool done = false;
 
                 if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
@@ -2761,8 +2751,8 @@ Using prestige points, TODO P0
                     statSpellCast(0u);
                 }
 
-                std::sprintf(tooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
-                std::sprintf(labelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
+                std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
+                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
                 (void)makePSVButtonExByCurrency("- higher percentage",
                                                 pt.psvStarpawPercentage,
                                                 1u,
@@ -2777,12 +2767,12 @@ Using prestige points, TODO P0
             {
                 ImGui::Separator();
 
-                std::sprintf(tooltipBuffer,
+                std::sprintf(uiTooltipBuffer,
                              "Creates a value multiplier aura around the Wizardcat that affects all cats and "
                              "bubbles. "
                              "Lasts 5 seconds.\n\nCasting this spell multiple times will accumulate the aura "
                              "duration.");
-                std::sprintf(labelBuffer, "%.2fs", static_cast<double>(pt.arcaneAuraTimer / 1000.f));
+                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.arcaneAuraTimer / 1000.f));
                 bool done = false;
                 if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
                                                            done,
@@ -2806,8 +2796,8 @@ Using prestige points, TODO P0
                     statSpellCast(1u);
                 }
 
-                std::sprintf(tooltipBuffer, "Increase the multiplier applied while the aura is active.");
-                std::sprintf(labelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
+                std::sprintf(uiTooltipBuffer, "Increase the multiplier applied while the aura is active.");
+                std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
                 (void)makePSVButtonExByCurrency("- higher multiplier",
                                                 pt.psvMewltiplierMult,
                                                 1u,
@@ -2824,8 +2814,8 @@ Using prestige points, TODO P0
             {
                 ImGui::Separator();
 
-                std::sprintf(tooltipBuffer, "TODO");
-                std::sprintf(labelBuffer, "TODO");
+                std::sprintf(uiTooltipBuffer, "TODO");
+                std::sprintf(uiLabelBuffer, "TODO");
 
                 bool done = false;
                 if (makePurchasableButtonOneTimeByCurrency("TODO", done, ManaType{30u}, pt.mana, "%s mana##%u"))
@@ -2848,8 +2838,8 @@ Using prestige points, TODO P0
             {
                 ImGui::Separator();
 
-                std::sprintf(tooltipBuffer, "TODO");
-                std::sprintf(labelBuffer, "TODO");
+                std::sprintf(uiTooltipBuffer, "TODO");
+                std::sprintf(uiLabelBuffer, "TODO");
 
                 bool done = false;
                 if (makePurchasableButtonOneTimeByCurrency("TODO", done, ManaType{30u}, pt.mana, "%s mana##%u"))
@@ -2866,7 +2856,7 @@ Using prestige points, TODO P0
                 }
             }
 
-            buttonHueMod = 0.f;
+            uiButtonHueMod = 0.f;
             ImGui::Columns(1);
             ImGui::EndDisabled();
         }
@@ -2894,8 +2884,8 @@ Using prestige points, TODO P0
             ImGui::Spacing();
 
             ImGui::Columns(2, "twoColumnsStats", false);
-            ImGui::SetColumnWidth(0, windowWidth / 2.f);
-            ImGui::SetColumnWidth(1, windowWidth / 2.f);
+            ImGui::SetColumnWidth(0, uiWindowWidth / 2.f);
+            ImGui::SetColumnWidth(1, uiWindowWidth / 2.f);
 
             const auto [h, m, s] = formatTime(stats.secondsPlayed);
             ImGui::Text("Time played: %lluh %llum %llus", h, m, s);
@@ -2959,7 +2949,7 @@ Using prestige points, TODO P0
                 uiCenteredText(" ~~ This prestige ~~ ");
                 displayStats(pt.statsSession);
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
 
                 ImGui::EndTabItem();
             }
@@ -3028,10 +3018,7 @@ Using prestige points, TODO P0
                 ImGui::Separator();
 
                 for (SizeT i = 0u; i < nShrineTypes; ++i)
-                {
-                    const char* shrineName = i >= pt.getMapLimitIncreases() ? "Shrine Of ???" : shrineNames[i];
-                    doMilestone(shrineName, pt.milestones.shrineCompletions[i]);
-                }
+                    doMilestone(shrineNames[i], pt.milestones.shrineCompletions[i]);
 
                 ImGui::EndTabItem();
             }
@@ -3044,12 +3031,12 @@ Using prestige points, TODO P0
                 const sf::base::SizeT nAchievementsUnlocked = sf::base::count(profile.unlockedAchievements,
                                                                               profile.unlockedAchievements + nAchievements);
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, sf::base::getArraySize(achievementData));
                 ImGui::Separator();
                 ImGui::SetWindowFontScale(0.75f);
 
-                ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, getWindowHeight() - 125.f));
+                ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, uiGetMaxWindowHeight() - 125.f));
 
                 sf::base::U64 id = 0u;
                 for (const auto& [name, description, secret] : achievementData)
@@ -3070,10 +3057,10 @@ Using prestige points, TODO P0
                     ImGui::Separator();
                 }
 
-                buttonHueMod = 120.f;
+                uiButtonHueMod = 120.f;
                 uiPushButtonColors();
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
                 if (ImGui::Button("Reset stats and achievements"))
                 {
                     withAllStats([](Stats& stats) { stats = {}; });
@@ -3083,18 +3070,18 @@ Using prestige points, TODO P0
                 }
 
                 uiPopButtonColors();
-                buttonHueMod = 0.f;
+                uiButtonHueMod = 0.f;
 
                 ImGui::EndChild();
 
                 ImGui::EndTabItem();
             }
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::EndTabBar();
         }
 
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3126,7 +3113,7 @@ Using prestige points, TODO P0
 
         const auto windowSize = fullscreenSize * scalingFactor * scalingFactorMult;
 
-        const auto windowedWidth = windowSize.y * gameRatio + (windowWidth + 35.f);
+        const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
         return (sf::Vector2f{windowedWidth, windowSize.y}).toVector2u();
     }
@@ -3156,7 +3143,7 @@ Using prestige points, TODO P0
         {
             selectedTab(0);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f);
             ImGui::SliderFloat("Master volume", &profile.masterVolume, 0.f, 100.f, "%.f%%");
@@ -3175,7 +3162,7 @@ Using prestige points, TODO P0
         {
             selectedTab(1);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f);
             ImGui::SliderFloat("Minimap Scale", &profile.minimapScale, 5.f, 40.f, "%.2f");
@@ -3203,7 +3190,7 @@ Using prestige points, TODO P0
                 ImGui::SetNextItemWidth(210.f);
                 ImGui::SliderFloat("Scale", &profile.cursorScale, 0.3f, 1.5f, "%.2f");
 
-                ImGui::SetWindowFontScale(normalFontScale);
+                ImGui::SetWindowFontScale(uiNormalFontScale);
             }
             ImGui::EndDisabled();
 
@@ -3215,13 +3202,18 @@ Using prestige points, TODO P0
         {
             selectedTab(2);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f);
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
 
             uiCheckbox("Show cat text", &profile.showCatText);
             uiCheckbox("Show particles", &profile.showParticles);
+
+            ImGui::BeginDisabled(!profile.showParticles);
+            uiCheckbox("Show coin particles", &profile.showCoinParticles);
+            ImGui::EndDisabled();
+
             uiCheckbox("Show text particles", &profile.showTextParticles);
 
             ImGui::EndTabItem();
@@ -3232,7 +3224,7 @@ Using prestige points, TODO P0
         {
             selectedTab(3);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
             ImGui::Text("Auto resolution");
 
@@ -3318,7 +3310,7 @@ Using prestige points, TODO P0
                 optWindow->setFramerateLimit(profile.frametimeLimit);
             }
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
 
             ImGui::EndTabItem();
         }
@@ -3338,7 +3330,7 @@ Using prestige points, TODO P0
 
             ImGui::SameLine();
 
-            buttonHueMod = 120.f;
+            uiButtonHueMod = 120.f;
             uiPushButtonColors();
 
             if (ImGui::Button("Reset game"))
@@ -3353,23 +3345,24 @@ Using prestige points, TODO P0
                 buyReminder                   = 0u;
 
                 particles.clear();
-                hudParticles.clear();
+                spentCoinParticles.clear();
                 hudTopParticles.clear();
                 textParticles.clear();
+                earnedCoinParticles.clear();
             }
 
             uiPopButtonColors();
-            buttonHueMod = 0.f;
+            uiButtonHueMod = 0.f;
 
             ImGui::Separator();
 
             ImGui::PushFont(fontImGuiMouldyCheese);
-            ImGui::SetWindowFontScale(toolTipFontScale);
+            ImGui::SetWindowFontScale(uiToolTipFontScale);
 
             SizeT step    = 1u;
             SizeT counter = 0u;
 
-            static char filenameBuf[128] = "custom.json";
+            static char filenameBuf[128] = "userdata/custom.json";
 
             ImGui::SetNextItemWidth(320.f);
             ImGui::InputText("##Filename", filenameBuf, sizeof(filenameBuf));
@@ -3454,22 +3447,7 @@ Using prestige points, TODO P0
 
             for (SizeT i = 0u; i < nCatTypes; ++i)
             {
-                constexpr const char* catNames[] = {
-                    "Normal",
-                    "Uni",
-                    "Devil",
-                    "Witch",
-                    "Astro",
-                    "Wizard",
-                    "Mouse",
-                    "Engi",
-                    "Repulso",
-                    "Attracto",
-                };
-
-                static_assert(sf::base::getArraySize(catNames) == nCatTypes);
-
-                ImGui::Text("%s", catNames[i]);
+                ImGui::Text("%s", CatConstants::typeNames[i]);
                 psvScalarInput("PerCatType", pt.psvPerCatType[i]);
                 psvScalarInput("CooldownMultsPerCatType", pt.psvCooldownMultsPerCatType[i]);
                 psvScalarInput("RangeDivsPerCatType", pt.psvRangeDivsPerCatType[i]);
@@ -3485,14 +3463,14 @@ Using prestige points, TODO P0
             psvScalarInput("PPEngiCatGlobalBonusMult", pt.psvPPEngiCatGlobalBonusMult);
             psvScalarInput("PPRepulsoCatConverterChance", pt.psvPPRepulsoCatConverterChance);
 
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::PopFont();
 
             ImGui::EndTabItem();
         }
 
         ImGui::Separator();
-        ImGui::SetWindowFontScale(normalFontScale);
+        ImGui::SetWindowFontScale(uiNormalFontScale);
 
         const float fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         ImGui::Text("FPS: %.2f", static_cast<double>(fps));
@@ -3529,22 +3507,36 @@ Using prestige points, TODO P0
             auto& tp = makeRewardTextParticle(tpPosition);
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
 
-            spawnHUDParticle({.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
-                              .velocity      = sf::Vector2f{-0.25f, 0.f},
-                              .scale         = 0.25f,
-                              .accelerationY = 0.f,
-                              .opacity       = 0.f,
-                              .opacityDecay  = -0.003f,
-                              .rotation      = rng.getF(0.f, sf::base::tau),
-                              .torque        = 0.f},
-                             /* hue */ 0.f,
-                             ParticleType::ByteCoin);
+            if (profile.showCoinParticles)
+                spawnSpentCoinParticle(
+                    {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
+                     .velocity      = sf::Vector2f{-0.25f, 0.f},
+                     .scale         = 0.25f,
+                     .accelerationY = 0.f,
+                     .opacity       = 0.f,
+                     .opacityDecay  = -0.003f,
+                     .rotation      = rng.getF(0.f, sf::base::tau),
+                     .torque        = 0.f});
+
+            // From game coordinates to screen coordinates
+            const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(position, gameView);
+
+            // From screen coordinates to HUD view coordinates
+            const sf::Vector2f hudPos = getWindow().mapPixelToCoords(screenPos, scaledHUDView);
+
+            if (spawnEarnedCoinParticle(hudPos))
+            {
+                sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
+                                              getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
+
+                playSound(sounds.coindelay, /* maxOverlap */ 64);
+            }
         }
 
         sounds.pop.setPosition({position.x, position.y});
         sounds.pop.setPitch(remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f));
 
-        playSound(sounds.pop, popSoundOverlap);
+        playSound(sounds.pop, popSoundOverlap ? 255u : 1u);
 
         spawnParticles(32, position, ParticleType::Bubble, 0.5f, 0.5f);
         spawnParticles(8, position, ParticleType::Bubble, 1.2f, 0.25f);
@@ -3619,7 +3611,7 @@ Using prestige points, TODO P0
             const auto diff = bubble.position - shrine.position;
 
             // if bubble is not in shrine range, continue
-            if (diff.length() > shrine.getRange())
+            if (diff.lengthSquared() > shrine.getRangeSquared())
                 continue;
 
             collectorShrine = &shrine;
@@ -3760,7 +3752,7 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vector2f>& clickPosition, const sf::View& gameView)
+    [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vector2f>& clickPosition)
     {
         if (!clickPosition.hasValue())
             return false;
@@ -3883,7 +3875,7 @@ Using prestige points, TODO P0
         {
             return pickRandomBubbleInRadiusMatching({cx, cy},
                                                     range,
-                                                    [&](Bubble& b) { return ((b.type == types) || ...); });
+                                                    [&](const Bubble& b) { return ((b.type == types) || ...); });
         };
 
         if (!pt.perm.geniusCatsPurchased)
@@ -3912,7 +3904,8 @@ Using prestige points, TODO P0
 
         Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat),
                                                      range,
-                                                     [&](Bubble& bubble) { return bubble.type == BubbleType::Normal; });
+                                                     [&](const Bubble& bubble)
+        { return bubble.type == BubbleType::Normal; });
 
         if (b == nullptr)
             return;
@@ -3975,7 +3968,7 @@ Using prestige points, TODO P0
             return;
 
         sounds.launch.setPosition({cx, cy});
-        playSound(sounds.launch, /* overlap */ true);
+        playSound(sounds.launch);
 
         ++cat.hits;
         cat.astroState.emplace(/* startX */ cat.position.x, /* velocityX */ 0.f, /* wrapped */ false);
@@ -4031,6 +4024,7 @@ Using prestige points, TODO P0
             // - each in a different screen? more spread out
             // - cats can kill dolls on prestige
             // - magic spell to refresh witch cooldown immediately
+            // - nicer animations/effects/sounds
 
             SFML_BASE_ASSERT(selected != nullptr);
 
@@ -4131,10 +4125,8 @@ Using prestige points, TODO P0
                 std::snprintf(tp.buffer, sizeof(tp.buffer), "+%llu WP", wisdomReward);
             }
 
-            // TODO P1: change sound
-            sounds.pop.setPosition({bubble.position.x, bubble.position.y});
-            sounds.pop.setPitch(1.f);
-            playSound(sounds.pop);
+            sounds.absorb.setPosition({bubble.position.x, bubble.position.y});
+            playSound(sounds.absorb);
 
             spawnParticlesWithHue(230.f, 16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
@@ -4217,9 +4209,8 @@ Using prestige points, TODO P0
 
             spawnParticles(8, otherCat.getDrawPosition(), ParticleType::Cog, 0.25f, 0.5f);
 
-            // TODO P1: change sound
-            sounds.rocket.setPosition({otherCat.position.x, otherCat.position.y});
-            playSound(sounds.woosh, /* overlap */ false);
+            sounds.maintenance.setPosition({otherCat.position.x, otherCat.position.y});
+            playSound(sounds.maintenance, /* maxOverlap */ 1u);
 
             otherCat.boostCountdown.value = 1500.f;
         }
@@ -4288,7 +4279,7 @@ Using prestige points, TODO P0
                 if (shrine.type == ShrineType::Clicking && shrine.isActive())
                 {
                     const auto diff = (shrine.position - cat.position);
-                    if (diff.length() < shrine.getRange() * 1.35f)
+                    if (diff.lengthSquared() < shrine.getRangeSquared() * 1.35f)
                     {
                         const auto strength = (shrine.getRange() * 1.35f - diff.length()) * 0.00125f * deltaTimeMs;
                         cat.position -= diff.normalized() * strength;
@@ -4413,13 +4404,15 @@ Using prestige points, TODO P0
                 if (particleTimer >= 3.f && !cat.isCloseToStartX())
                 {
                     sounds.rocket.setPosition({cx, cy});
-                    playSound(sounds.rocket, /* overlap */ false);
+                    playSound(sounds.rocket, /* maxOverlap */ 1u);
 
                     spawnParticles(1, drawPosition + sf::Vector2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
                     particleTimer = 0.f;
                 }
 
-                const auto astroPopAction = [&](Bubble& bubble)
+                forEachBubbleInRadius({cx, cy},
+                                      range,
+                                      [&](Bubble& bubble)
                 {
                     const MoneyType newReward = computeFinalReward(bubble.position,
                                                                    pt.getComputedRewardByBubbleType(bubble.type) * 20u,
@@ -4439,9 +4432,7 @@ Using prestige points, TODO P0
                         pt.achAstrocatPopBomb = true;
 
                     return ControlFlow::Continue;
-                };
-
-                forEachBubbleInRadius({cx, cy}, range, astroPopAction);
+                });
 
                 if (!cat.isCloseToStartX() && velocityX > -5.f)
                     velocityX -= 0.00025f * deltaTimeMs;
@@ -4617,7 +4608,7 @@ Using prestige points, TODO P0
                 if (cat.type == CatType::Witch && anyCatHexed())
                     continue;
 
-                if ((mousePos - cat.position).length() > cat.getRadius())
+                if ((mousePos - cat.position).lengthSquared() > cat.getRadiusSquared())
                     continue;
 
                 hoveredCat = &cat;
@@ -4708,6 +4699,10 @@ Using prestige points, TODO P0
             {
                 const auto diff = (shrine.position - bubble.position);
 
+                // `ShrineType::Voodoo` handled elsewhere
+                // `ShrineType::Clicking` handled elsewhere
+                // `ShrineType::Automation` handled elsewhere
+
                 if (shrine.type == ShrineType::Magic)
                 {
                     if (bubble.type == BubbleType::Star)
@@ -4732,21 +4727,7 @@ Using prestige points, TODO P0
                     bubble.velocity += diff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f);
                 }
 
-                // magnetism
-                // bubble.velocity += diff * 0.0000005f * deltaTimeMs;
-
-                // repulsion
-                // if (diff.length() < 128.f)
-                //     bubble.velocity -= diff * 0.0000025f * deltaTimeMs;
-
-                // scattering
-                // bubble.velocity.x += (diff.x * 0.0000055f * deltaTimeMs);
-
-                // other ideas:
-                // - turns all bubbles into normal bubbles
-                // - periodically pushes cats/bubbles away
-                // - debuffs/buffs clicks/cats/combos/stars/etc
-                // - only gets rewards from stars/bombs
+                // TODO P1: complete shrines
 
                 return ControlFlow::Continue;
             });
@@ -4877,7 +4858,7 @@ Using prestige points, TODO P0
 
                 const bool click = (mBtnDown(sf::Mouse::Button::Left) || sf::Touch::isDown(0u));
 
-                if (click && (mousePos - d.position).length() <= d.getRadius())
+                if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
                 {
                     /*
                         case CatType::Astro:
@@ -4905,7 +4886,7 @@ Using prestige points, TODO P0
                     if (allDollsClicked)
                     {
                         sounds.buffon.setPosition({d.position.x, d.position.y});
-                        playSound(sounds.buffon);
+                        playSound(sounds.buffon); // TODO P0: change this sound, it sucks
 
                         const float buffDuration = d.buffPower * 1000.f;
                         pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration;
@@ -4940,7 +4921,7 @@ Using prestige points, TODO P0
     {
         for (Countdown& buffCountdown : pt.buffCountdownsPerType)
             if (buffCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                playSound(sounds.buffoff);
+                playSound(sounds.buffoff); // TODO P0: change this sound, it sucks
     }
 
     ////////////////////////////////////////////////////////////
@@ -5677,11 +5658,11 @@ Using prestige points, TODO P0
                 cpuDrawableBatch.add(textStatusBuffer);
 
                 // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
-                sf::RectangleShape catCooldownShape{{.size = {cat.cooldown.value / maxCooldown * 64.f, 3.f}}};
-                catCooldownShape.origin   = {32.f, 0.f};
-                catCooldownShape.position = {textStatusBuffer.getBottomCenter() + sf::Vector2f{0.f, 2.f}};
-                catCooldownShape.setFillColor(sf::Color::White.withAlpha(128u));
-                cpuDrawableBatch.add(catCooldownShape);
+                rectangleShapeBuffer.setSize({cat.cooldown.value / maxCooldown * 64.f, 3.f});
+                rectangleShapeBuffer.origin   = {32.f, 0.f};
+                rectangleShapeBuffer.position = {textStatusBuffer.getBottomCenter() + sf::Vector2f{0.f, 2.f}};
+                rectangleShapeBuffer.setFillColor(sf::Color::White.withAlpha(128u));
+                cpuDrawableBatch.add(rectangleShapeBuffer);
             }
         };
     }
@@ -5816,7 +5797,6 @@ Using prestige points, TODO P0
         tempSprite.origin      = tempSprite.textureRect.size / 2.f;
     }
 
-
     ////////////////////////////////////////////////////////////
     void gameLoopDrawParticles()
     {
@@ -5843,9 +5823,46 @@ Using prestige points, TODO P0
 
         sf::Sprite tempSprite;
 
-        for (const auto& particle : hudParticles)
+        for (const auto& particle : spentCoinParticles)
         {
             applyParticleToSprite(tempSprite, particle);
+            hudDrawableBatch.add(tempSprite);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawEarnedCoinParticles()
+    {
+        if (!profile.showParticles)
+            return;
+
+        sf::Sprite tempSprite;
+
+        const auto targetPosition = moneyText.getCenterRight();
+
+        const auto bezier = [](const sf::Vector2f& start, const sf::Vector2f& end, const float t)
+        {
+            const sf::Vector2f control(start.x, end.y);
+            const float        u = 1.0f - t;
+
+            return u * u * start + 2.0f * u * t * control + t * t * end;
+        };
+
+        for (const auto& particle : earnedCoinParticles)
+        {
+            const auto newPos  = bezier(particle.startPosition, targetPosition, easeInOutSine(particle.progress.value));
+            const auto newPos2 = bezier(particle.startPosition, targetPosition, easeInOutBack(particle.progress.value));
+
+            const float opacityScale = sf::base::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
+            const float alpha        = (128.f + particle.progress.remap(128.f, 0.f)) * opacityScale;
+
+            tempSprite.position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y};
+            tempSprite.scale       = {0.25f, 0.25f};
+            tempSprite.rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau));
+            tempSprite.color       = sf::Color::White.withAlpha(static_cast<U8>(alpha));
+            tempSprite.textureRect = txrCoin;
+            tempSprite.origin      = tempSprite.textureRect.size / 2.f;
+
             hudDrawableBatch.add(tempSprite);
         }
     }
@@ -5894,11 +5911,11 @@ Using prestige points, TODO P0
             [&]
         {
             ImGui::PushFont(fontImGuiMouldyCheese);
-            ImGui::SetWindowFontScale(toolTipFontScale);
+            ImGui::SetWindowFontScale(uiToolTipFontScale);
         },
             [&]
         {
-            ImGui::SetWindowFontScale(normalFontScale);
+            ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::PopFont();
         });
 
@@ -5908,8 +5925,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
     {
-        auto&              window     = *optWindow;
-        const sf::Vector2f resolution = getResolution();
+        auto& window = *optWindow;
 
         window.setMouseCursorVisible(!profile.highVisibilityCursor);
 
@@ -5921,7 +5937,6 @@ Using prestige points, TODO P0
                 profile.cursorHue = wrapHue(profile.cursorHue);
             }
 
-            window.setView({.center = resolution / 2.f, .size = resolution});
             window.draw(draggedCat != nullptr || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
                         {.position = sf::Mouse::getPosition(window).toVector2f(),
                          .scale = sf::Vector2f{profile.cursorScale, profile.cursorScale} * (1.f + easeInOutBack(cursorGrow)),
@@ -5967,7 +5982,7 @@ Using prestige points, TODO P0
                           .outlineThickness = 4.f}};
 
         if (tipText.getString().getSize() < tipString.size() && tipText.getString().getSize() > 0)
-            playSound(sounds.byteSpeak, /* overlap */ false);
+            playSound(sounds.byteSpeak, /* maxOverlap */ 1u);
 
         sf::Sprite tipSprite{.position    = {},
                              .scale       = {0.8f, 0.8f},
@@ -6178,28 +6193,7 @@ Using prestige points, TODO P0
 
         const sf::Vector2f resolution = getResolution();
 
-        const auto createScaledView = [&](const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) -> sf::View
-        {
-            // Calculate the scale factors for both dimensions
-            const float scaleX = windowSize.x / originalSize.x;
-            const float scaleY = windowSize.y / originalSize.y;
-
-            // Use the smaller scale factor to maintain aspect ratio
-            const float scale = std::min(scaleX, scaleY);
-
-            // Calculate the scaled dimensions
-            const sf::Vector2f scaledSize = originalSize * scale;
-
-            return {.center   = originalSize / 2.f,
-                    .size     = originalSize,
-                    .viewport = {(windowSize - scaledSize).componentWiseDiv(windowSize * 2.f),
-                                 scaledSize.componentWiseDiv(windowSize)}};
-        };
-
-        sf::View gameView            = createScaledView(gameScreenSize, resolution);
-        gameView.viewport.position.x = 0.f;
-        gameView.center              = getViewCenter() + screenShake;
-
+        hudCullingBoundaries      = {0.f, resolution.x, 0.f, resolution.y};
         particleCullingBoundaries = getViewCullingBoundaries(/* offset */ 0.f);
         bubbleCullingBoundaries   = getViewCullingBoundaries(/* offset */ -64.f);
 
@@ -6228,7 +6222,7 @@ Using prestige points, TODO P0
         const auto playReversePopAt = [this](const sf::Vector2f position)
         {
             sounds.reversePop.setPosition({position.x, position.y});
-            playSound(sounds.reversePop, /* overlap */ false);
+            playSound(sounds.reversePop, /* maxOverlap */ 1u);
         };
 
         if (splashCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
@@ -6321,7 +6315,7 @@ Using prestige points, TODO P0
 
         //
         // Process clicks
-        const bool anyBubblePoppedByClicking = gameLoopUpdateBubbleClick(clickPosition, gameView);
+        const bool anyBubblePoppedByClicking = gameLoopUpdateBubbleClick(clickPosition);
 
         //
         // Cursor grow effect on click
@@ -6361,7 +6355,10 @@ Using prestige points, TODO P0
                                              threadPool,
                                              [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ)
                                                  __attribute__((always_inline))
-        { handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]); });
+        {
+            // TODO P2: technically this is a data race
+            handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]);
+        });
 
         latch.wait();
 
@@ -6447,16 +6444,21 @@ Using prestige points, TODO P0
         };
 
         updateParticleLike(particles);
-        updateParticleLike(hudParticles);
+        updateParticleLike(spentCoinParticles);
         updateParticleLike(hudTopParticles);
         updateParticleLike(textParticles);
 
-        sf::base::vectorEraseIf(hudParticles,
+        sf::base::vectorEraseIf(spentCoinParticles,
                                 [&](const auto& p)
         {
-            return p.type == ParticleType::ByteCoin &&
+            return p.type == ParticleType::Coin &&
                    (p.data.position.x > (gameView.viewport.size.x * resolution.x) || p.data.position.x < 0.f);
         });
+
+        for (auto& earnedCoinParticle : earnedCoinParticles)
+            (void)earnedCoinParticle.progress.updateForwardAndStop(deltaTimeMs * 0.0015f);
+
+        sf::base::vectorEraseIf(earnedCoinParticles, [&](const auto& p) { return p.progress.isDoneForward(); });
 
         //
         // Sounds and volume
@@ -6465,7 +6467,7 @@ Using prestige points, TODO P0
         listener.volume = profile.masterVolume * volumeMult;
         musicBGM.setVolume(profile.musicVolume * volumeMult);
 
-        if (sounds.isPlayingPooled(sounds.prestige))
+        if (sounds.countPlayingPooled(sounds.prestige) > 0u)
             musicBGM.setVolume(0.f);
 
         //
@@ -6503,7 +6505,15 @@ Using prestige points, TODO P0
         const bool shouldDrawUI = inPrestigeTransition == 0 && splashCountdown.value <= 0.f;
 
         if (shouldDrawUI)
-            uiDraw(gameView, mousePos);
+            uiDraw(mousePos);
+
+        //
+        // Compute views
+        nonScaledHUDView             = {.center = resolution / 2.f, .size = resolution};
+        scaledHUDView                = makeScaledHUDView(resolution, profile.hudScale);
+        gameView                     = createScaledGameView(gameScreenSize, resolution);
+        gameView.viewport.position.x = 0.f;
+        gameView.center              = getViewCenter() + screenShake;
 
         window.clear(sf::Color{157, 171, 191});
 
@@ -6528,7 +6538,7 @@ Using prestige points, TODO P0
 
         const float fixedBgX = 2100.f * sf::base::fmod(fixedBgSlide, 3.f);
 
-        window.setView({.center = resolution / 2.f, .size = resolution});
+        window.setView(nonScaledHUDView);
         window.draw(txFixedBg,
                     {.position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f}, .scale = {ratio, ratio}},
                     {.shader = &shader});
@@ -6556,7 +6566,7 @@ Using prestige points, TODO P0
 
         //
         // Draw border around gameview
-        window.setView(sf::View{.center = resolution / 2.f, .size = resolution});
+        window.setView(nonScaledHUDView);
 
         // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
         window.draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
@@ -6566,13 +6576,13 @@ Using prestige points, TODO P0
                                         .size             = gameView.viewport.size.componentWiseMul(resolution)}},
                     /* texture */ nullptr);
 
-        const sf::View hudView = makeScaledHUDView(resolution, profile.hudScale);
-        window.setView(hudView);
+        window.setView(scaledHUDView);
 
         if (shouldDrawUI)
         {
             hudDrawableBatch.clear();
             gameLoopDrawHUDParticles();
+            gameLoopDrawEarnedCoinParticles();
             window.draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
@@ -6593,18 +6603,20 @@ Using prestige points, TODO P0
         // Spent money effect
         if (spentMoney > 0u && spentMoneyTimer.updateForwardAndLoop(deltaTimeMs * 0.08f) == TimerStatusLoop::Looping)
         {
-            playSound(sounds.coin);
+            if (profile.showCoinParticles)
+            {
+                playSound(sounds.coin, /* maxOverlap */ 64);
 
-            spawnHUDParticle({.position      = moneyText.getCenterRight() + sf::Vector2f{0.f, rng.getF(-12.f, 12.f)},
-                              .velocity      = sf::Vector2f{3.f, 0.f},
-                              .scale         = 0.35f,
-                              .accelerationY = 0.f,
-                              .opacity       = 0.f,
-                              .opacityDecay  = -0.015f,
-                              .rotation      = rng.getF(0.f, sf::base::tau),
-                              .torque        = 0.f},
-                             /* hue */ 0.f,
-                             ParticleType::ByteCoin);
+                spawnSpentCoinParticle(
+                    {.position      = moneyText.getCenterRight() + sf::Vector2f{0.f, rng.getF(-12.f, 12.f)},
+                     .velocity      = sf::Vector2f{3.f, 0.f},
+                     .scale         = 0.35f,
+                     .accelerationY = 0.f,
+                     .opacity       = 0.f,
+                     .opacityDecay  = -0.015f,
+                     .rotation      = rng.getF(0.f, sf::base::tau),
+                     .torque        = 0.f});
+            }
 
             if (spentMoney > 5u)
             {
@@ -6699,7 +6711,7 @@ Using prestige points, TODO P0
                         profile.minimapScale,
                         pt.getMapLimit(),
                         gameView,
-                        hudView,
+                        scaledHUDView,
                         window,
                         txBackground,
                         cpuDrawableBatch,
@@ -6714,18 +6726,19 @@ Using prestige points, TODO P0
         // Top-level hud particles
         if (shouldDrawUI)
         {
-        hudTopDrawableBatch.clear();
-        gameLoopDrawHUDTopParticles();
-        window.draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            hudTopDrawableBatch.clear();
+            gameLoopDrawHUDTopParticles();
+            window.draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
         // High visibility cursor
+        window.setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
 
         //
         // Splash screen
-        window.setView(hudView);
+        window.setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
             drawSplashScreen(window, txLogo, splashCountdown, resolution, profile.hudScale);
 
@@ -6845,7 +6858,7 @@ void main()
     {
         //
         // Profile
-        if (sf::Path{"profile.json"}.exists())
+        if (sf::Path{"userdata/profile.json"}.exists())
         {
             loadProfileFromFile(profile);
             std::cout << "Loaded profile from file on startup\n";
@@ -6853,7 +6866,7 @@ void main()
 
         //
         // Playthrough
-        if (sf::Path{"playthrough.json"}.exists())
+        if (sf::Path{"userdata/playthrough.json"}.exists())
         {
             loadPlaythroughFromFileAndReseed();
             std::cout << "Loaded playthrough from file on startup\n";
@@ -6866,7 +6879,7 @@ void main()
         //
         // Reserve memory
         particles.reserve(512);
-        hudParticles.reserve(512);
+        spentCoinParticles.reserve(512);
         textParticles.reserve(256);
         pt.bubbles.reserve(32768);
         pt.cats.reserve(512);
@@ -6912,6 +6925,9 @@ int main()
 }
 
 // TODO IDEAS:
+// - sounds for hexing/unhexing (meows), also sounds for ritual and nicer ritual animation
+// - add big flashing arrow when map scrolling is first unlocked to force player to scroll
+// - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
 // - disable exiting with escape key, or add popup to confirm
 // - leveling cat (2000-2500 pops is a good milestone for 1st lvl up, 5000 for 2nd, 10000 for 3rd), level up should increase reward by 2...1.75...1.5, etc
 // - maybe unlock leveling via prestige
