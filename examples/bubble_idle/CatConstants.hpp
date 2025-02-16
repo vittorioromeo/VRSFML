@@ -5,6 +5,8 @@
 
 #include "SFML/Graphics/Color.hpp"
 
+#include "SFML/System/Vector2.hpp"
+
 
 namespace CatConstants
 {
@@ -102,6 +104,24 @@ inline constexpr EXACT_ARRAY(
         {0.f, 0.f}, // Engi
         {0.f, 0.f}, // Repulso
         {0.f, 0.f}, // Attracto
+    });
+
+////////////////////////////////////////////////////////////
+inline constexpr EXACT_ARRAY(
+    const char*,
+    typeNames,
+    nCatTypes,
+    {
+        "Normal",
+        "Uni",
+        "Devil",
+        "Witch",
+        "Astro",
+        "Wizard",
+        "Mouse",
+        "Engi",
+        "Repulso",
+        "Attracto",
     });
 
 } // namespace CatConstants

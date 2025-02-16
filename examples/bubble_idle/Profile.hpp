@@ -33,5 +33,7 @@ struct [[nodiscard]] Profile
     float cursorHue            = 0.f;
     float cursorScale          = 0.4f;
 
+    bool showCoinParticles = true;
+
     bool unlockedAchievements[nAchievements] = {};
 };

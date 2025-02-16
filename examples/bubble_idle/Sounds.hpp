@@ -72,6 +72,9 @@ struct Sounds
     LoadedSound coin{"coin.ogg"};
     LoadedSound btnswitch{"btnswitch.ogg"};
     LoadedSound uitab{"uitab.ogg"};
+    LoadedSound coindelay{"coindelay.ogg"};
+    LoadedSound absorb{"absorb.ogg"};
+    LoadedSound maintenance{"maintenance.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -81,7 +84,7 @@ struct Sounds
     {
         const auto setupWorldSound = [&](auto& sound, const float attenuationMult = 1.f)
         {
-            sound.setAttenuation(0.0025f * attenuationMult);
+            sound.setAttenuation(0.0035f * attenuationMult);
             sound.setSpatializationEnabled(true);
         };
 
@@ -105,6 +108,9 @@ struct Sounds
         setupWorldSound(cast0, /* attenuationMult */ 0.1f);
         setupWorldSound(failpop);
         setupWorldSound(kaching);
+        setupWorldSound(coindelay);
+        setupWorldSound(absorb);
+        setupWorldSound(maintenance);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -132,21 +138,23 @@ struct Sounds
     Sounds(Sounds&&)      = delete;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isPlayingPooled(const LoadedSound& ls) const
+    [[nodiscard]] sf::base::SizeT countPlayingPooled(const LoadedSound& ls) const
     {
-        return sf::base::anyOf( //
-            soundsBeingPlayed.begin(),
-            soundsBeingPlayed.end(),
-            [&ls](const sf::Sound& sound)
-        { return sound.getStatus() == sf::Sound::Status::Playing && &sound.getBuffer() == &ls.asBuffer(); });
+        sf::base::SizeT acc = 0u;
+
+        for (const sf::Sound& sound : soundsBeingPlayed)
+            if (sound.getStatus() == sf::Sound::Status::Playing && &sound.getBuffer() == &ls.asBuffer())
+                ++acc;
+
+        return acc;
     }
 
     ////////////////////////////////////////////////////////////
-    bool playPooled(sf::PlaybackDevice& playbackDevice, const LoadedSound& ls, const bool overlap)
+    bool playPooled(sf::PlaybackDevice& playbackDevice, const LoadedSound& ls, const sf::base::SizeT maxOverlap)
     {
         // TODO P2 (lib): improve in library
 
-        if (!overlap && isPlayingPooled(ls))
+        if (countPlayingPooled(ls) >= maxOverlap)
             return false;
 
         const auto it = sf::base::findIf( //

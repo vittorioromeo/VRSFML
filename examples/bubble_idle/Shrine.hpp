@@ -67,7 +67,7 @@ struct [[nodiscard]] Shrine
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline float getRange() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline float getRange() const
     {
         if (!isActive())
             return 0.f;
@@ -76,27 +76,34 @@ struct [[nodiscard]] Shrine
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] inline bool isInRange(const sf::Vector2f point) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline float getRangeSquared() const
     {
-        return isActive() && (point - position).length() < getRange();
+        const float range = getRange();
+        return range * range;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline float getHue() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isInRange(const sf::Vector2f point) const
+    {
+        return isActive() && (point - position).lengthSquared() < getRangeSquared();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline float getHue() const
     {
         return wrapHue(shrineHues[static_cast<U8>(type)]);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline float getRadius() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::const]] static inline constexpr float getRadius() noexcept
     {
         return 64.f;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getRadiusSquared() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr float getRadiusSquared() noexcept
     {
-        const float radius = getRadius();
+        constexpr float radius = getRadius();
         return radius * radius;
     }
 };

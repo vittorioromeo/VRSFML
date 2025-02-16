@@ -1,5 +1,6 @@
 #pragma once
 
+#include<iostream>
 #include "AssertAssume.hpp"
 
 #include "SFML/Base/Constants.hpp"

@@ -80,15 +80,15 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline float getRadius() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::const]] static inline constexpr float getRadius() noexcept
     {
         return 64.f;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline float getRadiusSquared() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr float getRadiusSquared() noexcept
     {
-        const float radius = getRadius();
+        constexpr float radius = getRadius();
         return radius * radius;
     }
 
@@ -105,11 +105,5 @@ struct [[nodiscard]] Cat
     [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isAstroAndInFlight() const noexcept
     {
         return type == CatType::Astro && astroState.hasValue();
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool hasUniqueType() const noexcept
-    {
-        return isUniqueCatType(type);
     }
 };
