@@ -11,8 +11,6 @@
 #include <vector>
 
 
-// IDEAS: Shodan, Glados,
-
 ////////////////////////////////////////////////////////////
 inline constexpr const char* normalCatNames[] =
     {"Mochi",      "Biscuit", "Tuna",      "Waffle",    "Noodle",     "Pebble",    "Pickle",      "Pudding", "Sprout",
@@ -28,7 +26,7 @@ inline constexpr const char* normalCatNames[] =
      "Randy",      "Ike",     "Chef",      "Timmy",     "Homer",      "Bart",      "Marge",       "Lisa",    "Maggie",
      "Flanders",   "Reimu",   "Marisa",    "Cirno",     "Remilia",    "Sakuya",    "Youmu",       "Yuyuko",  "Reisen",
      "Tewi",       "Aya",     "Sanae",     "Kanako",    "Suwako",     "Beethro",   "Halph",       "Dugan",   "Denfry",
-     "Tendry",     "Gunthro", "Cannolo",   "Braciola",  "Granita"};
+     "Tendry",     "Gunthro", "Cannolo",   "Braciola",  "Granita",    "Shodan"};
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* uniCatNames[] =
