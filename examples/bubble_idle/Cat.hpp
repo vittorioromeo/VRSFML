@@ -25,8 +25,7 @@ struct [[nodiscard]] Cat
     sf::Vector2f pawPosition;
     sf::Angle    pawRotation;
 
-    float mainOpacity = 255.f;
-    float pawOpacity  = 255.f;
+    float pawOpacity = 255.f;
 
     float hue = 0.f;
 

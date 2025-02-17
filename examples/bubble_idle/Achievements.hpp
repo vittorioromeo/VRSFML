@@ -255,7 +255,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Spiritual Clowder", "Purchase the \"Group Ritual\" permanent upgrade."},
     {"Cult Classic", "Purchase the \"Worldwide Cult\" permanent upgrade."},
     {"Doll Inflation", "Purchase the \"Material Shortage\" permanent upgrade."},
-    {"Porcelain Dolls", "Purchase the \"Fragile Dolls\" permanent upgrade."},
+    {"Space Junk Cleanup", "Purchase the \"Orbital Dolls\" permanent upgrade."},
 
     {"Double Mojo", "Have two Witchcat ritual buffs active at once."},
     {"Triple Mojo", "Have three Witchcat ritual buffs active at once."},

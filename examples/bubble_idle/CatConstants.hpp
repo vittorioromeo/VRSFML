@@ -62,7 +62,7 @@ inline constexpr EXACT_ARRAY(
 
         60000.f, // Witch
         1500.f,  // Wizard
-        500.f,   // Mouse
+        400.f,   // Mouse
         10000.f, // Engi
         5.f,     // Repulso
         5.f,     // Attracto (TODO P1: change?)
@@ -81,7 +81,7 @@ inline constexpr EXACT_ARRAY(
 
         192.f, // Witch
         384.f, // Wizard
-        128.f, // Mouse
+        160.f, // Mouse
         192.f, // Engi
         192.f, // Repulso
         192.f, // Attracto
@@ -115,8 +115,9 @@ inline constexpr EXACT_ARRAY(
         "Normal",
         "Uni",
         "Devil",
-        "Witch",
         "Astro",
+
+        "Witch",
         "Wizard",
         "Mouse",
         "Engi",
