@@ -66,6 +66,7 @@ struct Sounds
     LoadedSound cast0{"cast0.ogg"};
     LoadedSound notification{"notification.ogg"};
     LoadedSound failpop{"failpop.ogg"};
+    LoadedSound failpopui{"failpop.ogg"};
     LoadedSound buffoff{"buffoff.ogg"};
     LoadedSound buffon{"buffon.ogg"};
     LoadedSound kaching{"kaching.ogg"};
@@ -75,6 +76,7 @@ struct Sounds
     LoadedSound coindelay{"coindelay.ogg"};
     LoadedSound absorb{"absorb.ogg"};
     LoadedSound maintenance{"maintenance.ogg"};
+    LoadedSound ritual{"ritual.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -84,7 +86,7 @@ struct Sounds
     {
         const auto setupWorldSound = [&](auto& sound, const float attenuationMult = 1.f)
         {
-            sound.setAttenuation(0.0035f * attenuationMult);
+            sound.setAttenuation(0.003f * attenuationMult);
             sound.setSpatializationEnabled(true);
         };
 
@@ -111,6 +113,7 @@ struct Sounds
         setupWorldSound(coindelay);
         setupWorldSound(absorb);
         setupWorldSound(maintenance);
+        setupWorldSound(ritual, /* attenuationMult */ 0.1f);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -126,6 +129,7 @@ struct Sounds
         setupUISound(coin);
         setupUISound(btnswitch);
         setupUISound(uitab);
+        setupUISound(failpopui);
 
         scratch.setVolume(35.f);
         buy.setVolume(75.f);
