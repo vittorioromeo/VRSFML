@@ -7,14 +7,15 @@
 ////////////////////////////////////////////////////////////
 enum class [[nodiscard]] ParticleType : sf::base::U8
 {
-    Bubble = 0u,
-    Star   = 1u,
-    Fire   = 2u,
-    Hex    = 3u,
-    Shrine = 4u,
-    Cursor = 5u,
-    Cog    = 6u,
-    Coin   = 7u,
+    Bubble  = 0u,
+    Star    = 1u,
+    Fire    = 2u,
+    Hex     = 3u,
+    Shrine  = 4u,
+    Cursor  = 5u,
+    Cog     = 6u,
+    Coin    = 7u,
+    CatSoul = 8u,
 
     Count
 };

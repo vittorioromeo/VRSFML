@@ -309,7 +309,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     witchCatBuffPowerScalesWithNCats,
     witchCatBuffPowerScalesWithMapSize,
     witchCatBuffFewerDolls,
-    witchCatBuffFragileDolls,
+    witchCatBuffOrbitalDolls,
     unsealedByType);
 
 ////////////////////////////////////////////////////////////
@@ -387,6 +387,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     buffCountdownsPerType,
 
     prestigeTipShown,
+    shrineHoverTipShown,
+    shrineActivateTipShown,
+    dollTipShown,
     shrinesSpawned);
 
 namespace
