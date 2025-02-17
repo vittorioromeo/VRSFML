@@ -346,6 +346,7 @@ struct Main
     sf::Texture txTipByte{sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()};
     sf::Texture txCursor{sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()};
     sf::Texture txCursorGrab{sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()};
+    sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
@@ -384,6 +385,7 @@ struct Main
     sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
     sf::FloatRect txrDoll{addImgResourceToAtlas("doll.png")};
     sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
+    sf::FloatRect txrCatSoul{addImgResourceToAtlas("catsoul.png")};
 
     ///////////////////////////////////////////////////////////
     const sf::FloatRect particleRects[nParticleTypes] = {
@@ -395,6 +397,7 @@ struct Main
         txrMouseCatPaw,
         txrCogParticle,
         txrCoin,
+        txrCatSoul,
     };
 
     ///////////////////////////////////////////////////////////
@@ -594,6 +597,10 @@ struct Main
     sf::View gameView;
     sf::View nonScaledHUDView;
     sf::View scaledHUDView;
+
+    ////////////////////////////////////////////////////////////
+    // Scroll arrow hint
+    Countdown scrollArrowCountdown;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static std::vector<std::vector<std::string>> makeShuffledCatNames(RNG& rng)
@@ -1116,7 +1123,7 @@ Finally financed by the NB (NOBUBBLES) political party to inspire other cats to 
                 R"(
 ~~ Unicat ~~
 
-Imbued with the power of stars and rainbows, transforms bubbles (or bombs) into star bubbles, worth x25 more.
+Imbued with the power of stars and rainbows, transforms bubbles (or bombs) into star bubbles, worth x15 more.
 
 Must have eaten something they weren't supposed to, because they keep changing color.
 )",
@@ -1409,7 +1416,7 @@ Using prestige points, TODO P0
         }
         else if (outcome == AnimatedButtonOutcome::ClickedWhileDisabled)
         {
-            playSound(sounds.failpop);
+            playSound(sounds.failpopui);
 
             for (SizeT i = 0u; i < 6u; ++i)
                 spawnHUDTopParticle({.position      = getHUDMousePos(),
@@ -1761,7 +1768,7 @@ Using prestige points, TODO P0
                      "one.\n\nCombos expires on misclicks and over time, but can be upgraded to last "
                      "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
         std::sprintf(uiLabelBuffer, "");
-        if (makePurchasableButtonOneTime("Combo", 15, pt.comboPurchased))
+        if (makePurchasableButtonOneTime("Combo", 20u, pt.comboPurchased))
         {
             combo = 0;
             doTip("Pop bubbles quickly keep to\nyour combo up and make more money!");
@@ -1769,7 +1776,7 @@ Using prestige points, TODO P0
 
         if (pt.comboPurchased)
         {
-            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long run.");
+            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!");
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
             makePSVButton("- Longer combo", pt.psvComboStartTime);
         }
@@ -1784,10 +1791,13 @@ Using prestige points, TODO P0
                          "map will increase the total number of bubbles you can work with, and will also reveal "
                          "magical shrines that grant unique cats upon completion.");
             std::sprintf(uiLabelBuffer, "");
-            if (makePurchasableButtonOneTime("Map scrolling", 250, pt.mapPurchased))
+            if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt.mapPurchased))
             {
                 scroll = 0.f;
                 doTip("You can scroll the map with right click\nor by dragging with two fingers!");
+
+                if (pt.psvBubbleValue.nPurchases == 0u)
+                    scrollArrowCountdown.value = 2000.f;
             }
 
             if (pt.mapPurchased)
@@ -1801,7 +1811,20 @@ Using prestige points, TODO P0
                              "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
                              "bubbles are absorbed by a shrine, it will grant a unique cat.");
                 std::sprintf(uiLabelBuffer, "%zu/9", pt.psvShrineActivation.nPurchases);
-                makePSVButton("- Activate next shrine", pt.psvShrineActivation);
+                if (makePSVButton("- Activate next shrine", pt.psvShrineActivation))
+                {
+                    if (!pt.shrineActivateTipShown)
+                    {
+                        pt.shrineActivateTipShown = true;
+
+                        if (pt.psvBubbleValue.nPurchases == 0u)
+                        {
+                            doTip(
+                                "Move your cats near the shrine to help\n it absorb bubbles and unlock a unique "
+                                "cat!\nWill there be consequences?");
+                        }
+                    }
+                }
                 ImGui::EndDisabled();
             }
 
@@ -1883,7 +1906,7 @@ Using prestige points, TODO P0
         if (catUnicornUnlocked)
         {
             std::sprintf(uiTooltipBuffer,
-                         "Unicats transform bubbles into star bubbles, which are worth x25 more!\n\nHave "
+                         "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
                          "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
             std::sprintf(uiLabelBuffer, "%zu unicats", nCatUni);
             if (makePSVButton("Unicat", pt.psvPerCatType[asIdx(CatType::Uni)]))
@@ -1891,7 +1914,7 @@ Using prestige points, TODO P0
                 spawnCatCentered(CatType::Uni, /* hue */ rng.getF(0.f, 360.f));
 
                 if (nCatUni == 0)
-                    doTip("Unicats transform bubbles in star bubbles,\nworth x25! Pop them at the end of a combo!");
+                    doTip("Unicats transform bubbles in star bubbles,\nworth x15! Pop them at the end of a combo!");
             }
 
             if (catUnicornUpgradesUnlocked)
@@ -2101,8 +2124,11 @@ Using prestige points, TODO P0
                 if (pt.nShrinesCompleted < 1)
                     result += "\n- complete at least one shrine";
 
-                needNCats(nCatNormal, 6);
-                needNCats(nCatUni, 4);
+                if (pt.psvBubbleValue.nPurchases > 0u)
+                {
+                    needNCats(nCatNormal, 6);
+                    needNCats(nCatUni, 4);
+                }
             }
 
             if (catUnicornUnlocked && catDevilUnlocked && !catUnicornUpgradesUnlocked)
@@ -2189,7 +2215,7 @@ Using prestige points, TODO P0
         uiBeginColumns();
 
         uiButtonHueMod = 120.f;
-        ImGui::BeginDisabled(!pt.canBuyNextPrestige());
+        ImGui::BeginDisabled(!pt.canBuyNextPrestige()); // TODO P0: Bugged, must multiply with times to figure out needed shrines!
         if (makePSVButtonEx("Prestige", pt.psvBubbleValue, times, maxCost))
         {
             playSound(sounds.prestige);
@@ -2225,8 +2251,10 @@ Using prestige points, TODO P0
             if (maxCost == 0u)
                 ImGui::Text("- not enough money to prestige");
 
-            if (pt.nShrinesCompleted < pt.psvBubbleValue.nPurchases)
-                ImGui::Text("- must complete %llu more shrine(s)", pt.psvBubbleValue.nPurchases - pt.nShrinesCompleted);
+            const SizeT shrinesNeeded = pt.getShrinesCompletedNeededForNextPrestige();
+
+            if (pt.nShrinesCompleted < shrinesNeeded)
+                ImGui::Text("- must complete %llu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
         }
 
         ImGui::SetWindowFontScale(uiNormalFontScale);
@@ -2288,7 +2316,7 @@ Using prestige points, TODO P0
                          "bubbles!\n\nThey will also ignore any bubble type of your choosing.\n\n(Note: "
                          "this effect can be toggled at will.)");
             std::sprintf(uiLabelBuffer, "");
-            if (makePurchasablePPButtonOneTime("- genius cats", 16u, pt.perm.geniusCatsPurchased))
+            if (makePurchasablePPButtonOneTime("- genius cats", 8u, pt.perm.geniusCatsPurchased))
                 doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                       /* maxPrestigeLevel */ UINT_MAX);
         }
@@ -2321,7 +2349,7 @@ Using prestige points, TODO P0
                      "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
                      "flow much faster.\n\n(Note: this effect can be toggled at will.)");
         std::sprintf(uiLabelBuffer, "");
-        if (makePurchasablePPButtonOneTime("Giant fan", 8u, pt.perm.windPurchased))
+        if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt.perm.windPurchased))
             doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
 
         if (pt.perm.windPurchased)
@@ -2396,11 +2424,11 @@ Using prestige points, TODO P0
 
             std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
             std::sprintf(uiLabelBuffer, "");
-            (void)makePurchasablePPButtonOneTime("- Material shortage", 128u, pt.perm.witchCatBuffFewerDolls);
+            (void)makePurchasablePPButtonOneTime("- Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
 
-            std::sprintf(uiTooltipBuffer, "TODO P0: implement, poppable dolls");
+            std::sprintf(uiTooltipBuffer, "Dolls can be automatically collected by Astrocats during their flyby.");
             std::sprintf(uiLabelBuffer, "");
-            (void)makePurchasablePPButtonOneTime("- Fragile dolls", 256u, pt.perm.witchCatBuffFragileDolls);
+            (void)makePurchasablePPButtonOneTime("- Orbital dolls", 32u, pt.perm.witchCatBuffOrbitalDolls);
         }
 
         if (findFirstCatByType(CatType::Wizard) != nullptr || pt.psvBubbleValue.nPurchases >= 3)
@@ -2427,7 +2455,7 @@ Using prestige points, TODO P0
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                          "into star bubbles.");
             std::sprintf(uiLabelBuffer, "");
-            (void)makePurchasablePPButtonOneTime("- Selective starpaw", 64u, pt.perm.astroCatInspirePurchased);
+            (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.astroCatInspirePurchased);
         }
 
         if (findFirstCatByType(CatType::Mouse) != nullptr || pt.psvBubbleValue.nPurchases >= 4)
@@ -2714,7 +2742,7 @@ Using prestige points, TODO P0
 
                 if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
                                                            done,
-                                                           ManaType{10u},
+                                                           ManaType{5u},
                                                            pt.mana,
                                                            "%s mana##%u"))
                 {
@@ -3498,7 +3526,8 @@ Using prestige points, TODO P0
                        const int          xCombo,
                        const sf::Vector2f position,
                        const sf::Vector2f tpPosition,
-                       bool               popSoundOverlap)
+                       const bool         popSoundOverlap,
+                       const bool         collectedByShrine)
     {
         statBubblePopped(bubbleType, byHand, reward);
 
@@ -3507,7 +3536,7 @@ Using prestige points, TODO P0
             auto& tp = makeRewardTextParticle(tpPosition);
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
 
-            if (profile.showCoinParticles)
+            if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
                     {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
                      .velocity      = sf::Vector2f{-0.25f, 0.f},
@@ -3524,7 +3553,7 @@ Using prestige points, TODO P0
             // From screen coordinates to HUD view coordinates
             const sf::Vector2f hudPos = getWindow().mapPixelToCoords(screenPos, scaledHUDView);
 
-            if (spawnEarnedCoinParticle(hudPos))
+            if (!collectedByShrine && spawnEarnedCoinParticle(hudPos))
             {
                 sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
                                               getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
@@ -3630,7 +3659,7 @@ Using prestige points, TODO P0
             spawnParticle({.position      = bubble.position,
                            .velocity      = -diff.normalized() * 0.5f,
                            .scale         = 1.5f,
-                           .accelerationY = 0.02f,
+                           .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = 0.00135f + (shrine.getRange() - diff.length()) / 22000.f,
                            .rotation      = 0.f,
@@ -3645,7 +3674,8 @@ Using prestige points, TODO P0
                       xCombo,
                       bubble.position,
                       collectorShrine == nullptr ? bubble.position : collectorShrine->getDrawPosition(),
-                      popSoundOverlap);
+                      popSoundOverlap,
+                      collectorShrine != nullptr);
 
         if (collectorShrine == nullptr)
         {
@@ -3992,6 +4022,30 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    void hexCat(Cat& cat)
+    {
+        if (draggedCat == &cat)
+            draggedCat = nullptr;
+
+        screenShakeAmount = 3.5f;
+        screenShakeTimer  = 600.f;
+
+        cat.hexedTimer.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+        cat.wobbleRadians = 0.f;
+
+        spawnParticle({.position      = cat.getDrawPosition() + sf::Vector2f{0.f, 29.f},
+                       .velocity      = {0.f, 0.f},
+                       .scale         = 0.2f,
+                       .accelerationY = -0.00015f,
+                       .opacity       = 200.f,
+                       .opacityDecay  = 0.0002f,
+                       .rotation      = 0.f,
+                       .torque        = rng.getF(-0.0002f, 0.0002f)},
+                      /* hue */ 0.f,
+                      ParticleType::CatSoul);
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionWitch(const float /* deltaTimeMs */, Cat& cat)
     {
         SFML_BASE_ASSERT(!anyCatHexed());
@@ -4028,8 +4082,7 @@ Using prestige points, TODO P0
 
             SFML_BASE_ASSERT(selected != nullptr);
 
-            selected->hexedTimer.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
-            selected->wobbleRadians = 0.f;
+            hexCat(*selected);
 
             float buffPower = pt.psvPPWitchCatBuffDuration.currentValue();
 
@@ -4069,6 +4122,12 @@ Using prestige points, TODO P0
 
             cat.textStatusShakeEffect.bump(rng, 1.5f);
             cat.hits += 1u;
+
+            if (pt.dollTipShown)
+            {
+                pt.dollTipShown = true;
+                doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
+            }
         }
 
         cat.cooldown.value = maxCooldown;
@@ -4126,7 +4185,7 @@ Using prestige points, TODO P0
             }
 
             sounds.absorb.setPosition({bubble.position.x, bubble.position.y});
-            playSound(sounds.absorb);
+            playSound(sounds.absorb, /* maxOverlap */ 1u);
 
             spawnParticlesWithHue(230.f, 16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
@@ -4295,8 +4354,7 @@ Using prestige points, TODO P0
                     if (shrine.isInRange(cat.position) && findFirstCatByType(CatType::Witch) == nullptr &&
                         !anyCatHexed() && !cat.hexedTimer.hasValue())
                     {
-                        cat.hexedTimer.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
-                        cat.wobbleRadians = 0.f;
+                        hexCat(cat);
                     }
                 }
             }
@@ -4322,16 +4380,6 @@ Using prestige points, TODO P0
                 cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
             }
 
-            if (cat.cooldown.value == INFINITY) // TODO P0:
-            {
-                cat.pawOpacity  = 128.f;
-                cat.mainOpacity = 128.f;
-            }
-            else
-            {
-                cat.mainOpacity = 255.f;
-            }
-
             if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
 
@@ -4345,9 +4393,53 @@ Using prestige points, TODO P0
                     cat.hexedTimer.reset();
             }
 
+            if (cat.type == CatType::Witch && !anyCatHexed())
+            {
+                if (cat.cooldown.value < 10000.f)
+                {
+                    if (sounds.countPlayingPooled(sounds.ritual) == 0u)
+                    {
+                        sounds.ritual.setPosition({cat.position.x, cat.position.y});
+                        playSound(sounds.ritual);
+                    }
+
+                    const float intensity = remap(cat.cooldown.value, 0.f, 10000.f, 1.f, 0.f);
+
+                    for (Cat& otherCat : pt.cats)
+                    {
+                        if (otherCat.hexedTimer.hasValue())
+                            continue;
+
+                        if (&otherCat == &cat)
+                            cat.hue = sf::base::sin(sf::base::fmod(cat.cooldown.value /
+                                                                       remap(cat.cooldown.value, 0.f, 10000.f, 15.f, 150.f),
+                                                                   sf::base::tau)) *
+                                      50.f * intensity;
+
+                        const auto diff2 = otherCat.position - cat.position;
+
+                        if (diff2.lengthSquared() > rangeSquared)
+                            continue;
+
+                        if (rng.getF(0.f, 1.f) < intensity)
+                            spawnParticle({.position = otherCat.getDrawPosition() +
+                                                       sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
+                                           .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                           .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                                           .accelerationY = -0.0017f,
+                                           .opacity       = 255.f,
+                                           .opacityDecay  = rng.getF(0.00035f, 0.0025f),
+                                           .rotation      = rng.getF(0.f, sf::base::tau),
+                                           .torque        = rng.getF(-0.002f, 0.002f)},
+                                          /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
+                                          ParticleType::Hex);
+                    }
+                }
+            }
+
             if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && anyCatHexed()))
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 25.f},
+                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
                                .accelerationY = -0.0017f,
@@ -4355,7 +4447,7 @@ Using prestige points, TODO P0
                                .opacityDecay  = rng.getF(0.00035f, 0.0025f),
                                .rotation      = rng.getF(0.f, sf::base::tau),
                                .torque        = rng.getF(-0.002f, 0.002f)},
-                              /* hue */ 0.f,
+                              /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
                               ParticleType::Hex);
 
                 continue;
@@ -4445,7 +4537,9 @@ Using prestige points, TODO P0
                 if (!wrapped && cat.position.x + catRadius < 0.f)
                 {
                     cat.position.x = pt.getMapLimit() + catRadius;
-                    wrapped        = true;
+
+                    if (pt.buffCountdownsPerType[asIdx(CatType::Astro)].value == 0.f) // loop if astro buff active
+                        wrapped = true;
                 }
 
                 if (wrapped && cat.position.x <= startX)
@@ -4460,6 +4554,18 @@ Using prestige points, TODO P0
 
             if (cat.type == CatType::Wizard)
             {
+                if (pt.absorbingWisdom)
+                {
+                    static float absorbSin = 0.f;
+                    absorbSin += deltaTimeMs * 0.002f;
+
+                    cat.hue = wrapHue(sf::base::sin(sf::base::fmod(absorbSin, sf::base::tau)) * 25.f);
+                }
+                else
+                {
+                    cat.hue = 0.f;
+                }
+
                 if (isWizardBusy() && rng.getF(0.f, 1.f) > 0.5f)
                 {
                     spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
@@ -4553,6 +4659,7 @@ Using prestige points, TODO P0
                 &Main::gameLoopUpdateCatActionUni,
                 &Main::gameLoopUpdateCatActionDevil,
                 &Main::gameLoopUpdateCatActionAstro,
+
                 &Main::gameLoopUpdateCatActionWitch,
                 &Main::gameLoopUpdateCatActionWizard,
                 &Main::gameLoopUpdateCatActionMouse,
@@ -4710,7 +4817,7 @@ Using prestige points, TODO P0
                         if (rng.getF(0.f, 1.f) > 0.85f)
                             spawnParticlesWithHue(230.f, 1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
-                        bubble.rotation += deltaTimeMs * 0.0025f;
+                        bubble.rotation += deltaTimeMs * 0.025f;
 
                         if (bubble.rotation >= sf::base::tau)
                             turnBubbleNormal(bubble);
@@ -4758,7 +4865,6 @@ Using prestige points, TODO P0
                             if (findFirstCatByType(catType) == nullptr)
                             {
                                 spawnSpecialCat(shrine.position, catType);
-                                doTip("TODO:  tip", /* maxPrestigeLevel */ UINT_MAX);
                             }
                             else // unsealed
                             {
@@ -4777,9 +4883,14 @@ Using prestige points, TODO P0
                             }
                         };
 
-                        // TODO P0: handle all shrine death rewards
+                        // TODO P0: handle all shrine death rewards, add other tips
                         if (shrine.type == ShrineType::Voodoo)
+                        {
                             doShrineReward(CatType::Witch);
+                            doTip(
+                                "The Witchcat has been unsealed!\nThey perform voodoo rituals on nearby cats,\ngiving "
+                                "you powerful timed buffs.");
+                        }
                         else if (shrine.type == ShrineType::Magic)
                             doShrineReward(CatType::Wizard);
                         else if (shrine.type == ShrineType::Clicking)
@@ -4812,6 +4923,72 @@ Using prestige points, TODO P0
         }
 
         sf::base::vectorEraseIf(pt.shrines, [](const Shrine& shrine) { return shrine.getDeathProgress() >= 1.f; });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void collectDoll(Doll& d)
+    {
+        statDollCollected();
+
+        for (SizeT i = 0u; i < 8u; ++i)
+            spawnParticlesWithHue(wrapHue(rng.getF(-50.f, 50.f)), 8, d.getDrawPosition(), ParticleType::Hex, 0.5f, 0.35f);
+
+        screenShakeAmount = 1.5f;
+        screenShakeTimer  = 500.f;
+
+        d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
+        d.tcDeath->restart();
+
+        const bool allDollsCollected = sf::base::allOf(pt.dolls.begin(),
+                                                       pt.dolls.end(),
+                                                       [&](const Doll& otherDoll)
+        { return otherDoll.tcDeath.hasValue(); });
+
+        if (allDollsCollected)
+        {
+            sounds.buffon.setPosition({d.position.x, d.position.y});
+            playSound(sounds.buffon); // TODO P0: change this sound, it sucks
+
+            constexpr float buffDurationMult[] = {
+                1.f, // Normal
+                1.f, // Uni
+                1.f, // Devil
+                1.f, // Astro
+
+                1.f, // Witch
+                1.f, // Wizard
+                1.f, // Mouse
+                1.f, // Engi
+                1.f, // Repulso
+                1.f, // Attracto
+            };
+
+            static_assert(sf::base::getArraySize(buffDurationMult) == nCatTypes);
+
+            const float buffDuration = d.buffPower * 1000.f;
+            pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * buffDurationMult[asIdx(d.catType)];
+
+            const auto* hexedCat = getHexedCat();
+            SFML_BASE_ASSERT(hexedCat != nullptr);
+
+            spawnParticle({.position      = d.getDrawPosition(),
+                           .velocity      = (hexedCat->getDrawPosition() - d.getDrawPosition()).normalized() * 1.f,
+                           .scale         = 0.2f,
+                           .accelerationY = 0.f,
+                           .opacity       = 128.f,
+                           .opacityDecay  = 0.0015f,
+                           .rotation      = 0.f,
+                           .torque        = rng.getF(-0.0002f, 0.0002f)},
+                          /* hue */ 0.f,
+                          ParticleType::CatSoul);
+        }
+        else
+        {
+            sounds.hex.setPosition({d.position.x, d.position.y});
+            playSound(sounds.hex);
+        }
+
+        // TODO P0: sound, particles, etc
     }
 
     ////////////////////////////////////////////////////////////
@@ -4853,7 +5030,7 @@ Using prestige points, TODO P0
                                    .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
-                                  /* hue */ 0.f,
+                                  /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
                                   ParticleType::Hex);
 
                 const bool click = (mBtnDown(sf::Mouse::Button::Left) || sf::Touch::isDown(0u));
@@ -4861,43 +5038,13 @@ Using prestige points, TODO P0
                 if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
                 {
                     /*
-                        case CatType::Astro:
-                            // TODO P0: astro loop, astro cats fly in a loop for X seconds
                         case CatType::Repulso:
                             // TODO P0: ??? something with wind? or stop bubbles from falling? blows special bubbles from below?
                         case CatType::Attracto:
                             // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
                     */
 
-                    statDollCollected();
-                    spawnParticles(64, d.getDrawPosition(), ParticleType::Hex, 0.5f, 0.35f);
-
-                    screenShakeAmount = 1.5f;
-                    screenShakeTimer  = 500.f;
-
-                    d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
-                    d.tcDeath->restart();
-
-                    const bool allDollsClicked = sf::base::allOf(pt.dolls.begin(),
-                                                                 pt.dolls.end(),
-                                                                 [&](const Doll& otherDoll)
-                    { return otherDoll.tcDeath.hasValue(); });
-
-                    if (allDollsClicked)
-                    {
-                        sounds.buffon.setPosition({d.position.x, d.position.y});
-                        playSound(sounds.buffon); // TODO P0: change this sound, it sucks
-
-                        const float buffDuration = d.buffPower * 1000.f;
-                        pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration;
-                    }
-                    else
-                    {
-                        sounds.hex.setPosition({d.position.x, d.position.y});
-                        playSound(sounds.hex);
-                    }
-
-                    // TODO P0: sound, particles, etc
+                    collectDoll(d);
                 }
             }
             else
@@ -4934,7 +5081,7 @@ Using prestige points, TODO P0
 
         //
         // Mana mult buff
-        const float manaMult = pt.buffCountdownsPerType[asIdx(CatType::Wizard)].value > 0.f ? 3.f : 1.f;
+        const float manaMult = pt.buffCountdownsPerType[asIdx(CatType::Wizard)].value > 0.f ? 3.5f : 1.f;
 
         //
         // Mana
@@ -5358,7 +5505,7 @@ Using prestige points, TODO P0
         unlockIf(pt.perm.witchCatBuffPowerScalesWithNCats);
         unlockIf(pt.perm.witchCatBuffPowerScalesWithMapSize);
         unlockIf(pt.perm.witchCatBuffFewerDolls);
-        unlockIf(pt.perm.witchCatBuffFragileDolls);
+        unlockIf(pt.perm.witchCatBuffOrbitalDolls);
 
         const auto nActiveBuffs = sf::base::countIf(pt.buffCountdownsPerType,
                                                     pt.buffCountdownsPerType + nCatTypes,
@@ -5594,7 +5741,7 @@ Using prestige points, TODO P0
             const auto range = pt.getComputedRangeByCatType(cat.type);
 
             const auto alpha = cat.hexedTimer.hasValue() ? static_cast<U8>(cat.hexedTimer->remap(255.f, 128.f))
-                                                         : static_cast<U8>(cat.mainOpacity);
+                                                         : static_cast<U8>(255u);
 
             const auto catColor = hueColor(wrapHue(cat.hue), alpha);
 
@@ -5681,6 +5828,18 @@ Using prestige points, TODO P0
             {
                 hoveredShrine   = &shrine;
                 rangeInnerAlpha = 75u;
+
+                if (!pt.shrineHoverTipShown)
+                {
+                    pt.shrineHoverTipShown = true;
+
+                    if (pt.psvBubbleValue.nPurchases == 0u)
+                    {
+                        doTip(
+                            "Unique cats are sealed inside shrines!\nShrines absorb money, and can have\ndangerous "
+                            "effects, read their tooltip!");
+                    }
+                }
             }
 
             const float invDeathProgress = 1.f - shrine.getDeathProgress();
@@ -5854,10 +6013,10 @@ Using prestige points, TODO P0
             const auto newPos2 = bezier(particle.startPosition, targetPosition, easeInOutBack(particle.progress.value));
 
             const float opacityScale = sf::base::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
-            const float alpha        = (128.f + particle.progress.remap(128.f, 0.f)) * opacityScale;
+            const float alpha        = (128.f + particle.progress.remapEased(easeInQuint, 128.f, 0.f)) * opacityScale;
 
             tempSprite.position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y};
-            tempSprite.scale       = {0.25f, 0.25f};
+            tempSprite.scale       = sf::Vector2f{0.25f, 0.25f} * opacityScale;
             tempSprite.rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau));
             tempSprite.color       = sf::Color::White.withAlpha(static_cast<U8>(alpha));
             tempSprite.textureRect = txrCoin;
@@ -5902,6 +6061,32 @@ Using prestige points, TODO P0
             textParticle.applyToText(tempText);
             cpuDrawableBatch.add(tempText);
         }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawScrollArrowHint(const float deltaTimeMs)
+    {
+        if (scrollArrowCountdown.value <= 0.f)
+            return;
+
+        if (scroll == 0.f)
+            (void)scrollArrowCountdown.updateAndLoop(deltaTimeMs, sf::base::tau * 350.f);
+        else
+            (void)scrollArrowCountdown.updateAndStop(deltaTimeMs);
+
+        const float blinkOpacity = easeInOutSine(sf::base::fabs(
+                                       sf::base::sin(sf::base::fmod(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
+                                   255.f;
+
+        getWindow().draw(txArrow,
+                         {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
+                          .origin   = txArrow.getRect().getCenterRight(),
+                          .color    = sf::Color::White.withAlpha(static_cast<U8>(blinkOpacity))});
+
+        getWindow().draw(txArrow,
+                         {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
+                          .origin = txArrow.getRect().getCenterRight(),
+                          .color  = sf::Color::White.withAlpha(static_cast<U8>(blinkOpacity))});
     }
 
     ////////////////////////////////////////////////////////////
@@ -6246,6 +6431,15 @@ Using prestige points, TODO P0
                     spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                     playReversePopAt(cPos);
                 }
+
+                if (inPrestigeTransition && !pt.dolls.empty())
+                {
+                    const auto cPos = pt.dolls.back().position;
+                    pt.dolls.pop_back();
+
+                    spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                    playReversePopAt(cPos);
+                }
             }
 
             if (bubbleSpawnTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
@@ -6291,7 +6485,7 @@ Using prestige points, TODO P0
             }
 
             // End prestige transition
-            if (inPrestigeTransition && pt.cats.empty() && pt.shrines.empty() && pt.bubbles.empty())
+            if (inPrestigeTransition && pt.cats.empty() && pt.shrines.empty() && pt.bubbles.empty() && pt.dolls.empty())
             {
                 inPrestigeTransition = false;
                 pt.money             = 0u;
@@ -6375,6 +6569,9 @@ Using prestige points, TODO P0
 
                 const auto checkAstro = [this](auto& catA, auto& catB)
                 {
+                    if (catA.isAstroAndInFlight() && catB.type == CatType::Astro && !catB.astroState.hasValue())
+                        return true;
+
                     if (catA.isAstroAndInFlight() && catB.type != CatType::Astro)
                     {
                         if (pt.perm.astroCatInspirePurchased &&
@@ -6406,6 +6603,20 @@ Using prestige points, TODO P0
         for (Cat& cat : pt.cats)
             for (Shrine& shrine : pt.shrines)
                 handleCatShrineCollision(deltaTimeMs, cat, shrine);
+
+        // Cat vs doll collisions
+        for (Doll& doll : pt.dolls)
+            for (Cat& cat : pt.cats)
+            {
+                if (!cat.isAstroAndInFlight())
+                    continue;
+
+                if (pt.perm.witchCatBuffOrbitalDolls && doll.isActive() && !doll.tcDeath.hasValue() &&
+                    detectCollision(cat.position, doll.position, cat.getRadius(), doll.getRadius()))
+                {
+                    collectDoll(doll);
+                }
+            }
 
         gameLoopUpdateCatDragging(deltaTimeMs, countFingersDown, mousePos);
         gameLoopUpdateCatActions(deltaTimeMs);
@@ -6551,7 +6762,6 @@ Using prestige points, TODO P0
                     {.color = sf::Color::White.withAlpha(static_cast<U8>(profile.backgroundOpacity / 100.f * 255.f))},
                     {.shader = &shader});
 
-        window.setView(gameView);
         bubbleDrawableBatch.clear();
         gameLoopDrawBubbles();
         window.draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
@@ -6563,6 +6773,9 @@ Using prestige points, TODO P0
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
         window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+
+        // Scroll arrow hint
+        gameLoopDrawScrollArrowHint(deltaTimeMs);
 
         //
         // Draw border around gameview
@@ -6649,11 +6862,12 @@ Using prestige points, TODO P0
         if (findFirstCatByType(CatType::Witch) != nullptr)
         {
             constexpr const char* buffNames[] = {
-                "x5 Cat Reward",      // Normal
-                "Star Rain",          // Uni
-                "Bomb Rain",          // Devil
+                "Midas Paws",         // Normal
+                "Shooting Stars",     // Uni
+                "Explosive Downpour", // Devil
+                "Endless Flight",     // Astro
+
                 "N/A",                // Witch
-                "Astro Buff",         // Astro
                 "Mana Overload",      // Wizard
                 "x5 Click Reward",    // Mouse
                 "Global Maintenance", // Engi
@@ -6760,7 +6974,7 @@ Using prestige points, TODO P0
         // Reminder to buy something
         if (pt.psvBubbleValue.nPurchases == 0u && !pt.comboPurchased)
         {
-            if (pt.money >= 20u && buyReminder == 0)
+            if (pt.money >= 25u && buyReminder == 0)
             {
                 buyReminder = 1;
                 doTip("Remember to buy the combo upgrade!");
@@ -6925,6 +7139,11 @@ int main()
 }
 
 // TODO IDEAS:
+// - rested buff 1PP : 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
+// - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph
+// - mousecat might need a buff
+// - show wizard buffs in buff HUD string
+// - bubbleValue.nPurchases == 1 and money > 500 and prestigePoints > 0 -> tip to remind to spend prestige points
 // - sounds for hexing/unhexing (meows), also sounds for ritual and nicer ritual animation
 // - add big flashing arrow when map scrolling is first unlocked to force player to scroll
 // - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
@@ -6934,13 +7153,11 @@ int main()
 // - change bg when unlocking new cat type or prestiging?
 // - steam achievements
 // - find better word for "prestige"
-// - change cat names
 // - smart/genius cat name prefix
-// - pp point ideas: start with stuff unlocked, start with a bit of money, start with special cats, etc
+// - pp point ideas: start with stuff unlocked, start with a bit of money
 // - prestige should scale indefinitely...? or make PP costs scale linearly, max is 20 -- or maybe when we reach max bubble value just purchase prestige points
 // - other prestige ideas: cat multipop, unicat multitransform, unicat trasnform twice in a row, unlock random special bubbles
 // - make bombs less affected by wind
-// - balance until 3rd prestige + 2 astrocats seems pretty good
 // - astrocats collide with each other when one flies but the other doesn't
 // - achievements for speedrunning milestones
 // - track generated revenue per cat, enable via PPs (maybe)
@@ -6948,6 +7165,7 @@ int main()
 // - ignore clicks done on top of imgui
 // - "resting powerup" via PPs that increases cat multiplier when not clicking for a while, maybe around 16PPs
 // - maybe make "autocast spell selector" a PP upgrade for around 128PPs
+// - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs
 
 // x - "tweaks menu" unlockable with PP that allows any purchased cooldown/range upgrade to be tweaked, or just allow selling via right click...?
 // x - resolution should be calculated from user desktop size
