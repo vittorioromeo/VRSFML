@@ -154,7 +154,7 @@ struct Playthrough
         bool witchCatBuffPowerScalesWithNCats   = false;
         bool witchCatBuffPowerScalesWithMapSize = false;
         bool witchCatBuffFewerDolls             = false;
-        bool witchCatBuffFragileDolls           = false; // TODO P0: implement
+        bool witchCatBuffOrbitalDolls           = false;
         bool unsealedByType[nCatTypes]          = {};
     };
 
@@ -197,8 +197,11 @@ struct Playthrough
 
     //
     // Other flags
-    bool prestigeTipShown = false;
-    bool shrinesSpawned   = false;
+    bool prestigeTipShown       = false;
+    bool shrineHoverTipShown    = false;
+    bool shrineActivateTipShown = false;
+    bool dollTipShown           = false;
+    bool shrinesSpawned         = false;
 
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()
@@ -272,8 +275,7 @@ struct Playthrough
         multiPopEnabled = false;
         windEnabled     = false;
 
-        // bubbles, cats, and shrines are cleaned in the game loop
-        dolls.clear();
+        // bubbles, cats, dolls, and shrines are cleaned in the game loop
 
         nShrinesCompleted = 0u;
 
@@ -305,7 +307,7 @@ struct Playthrough
                               nBubbleTypes,
                               {
                                   1u,  // Normal
-                                  25u, // Star
+                                  15u, // Star
                                   1u,  // Bomb
                               });
 
@@ -319,15 +321,15 @@ struct Playthrough
                               baseRequiredRewards,
                               nShrineTypes,
                               {
-                                  1'000,         // Voodoo
-                                  5'000,         // Magic
-                                  10'000,        // Clicking
-                                  50'000,        // Automation
-                                  150'000,       // Repulsion
-                                  500'000,       // Attraction
-                                  25'000'000,    // Chaos
-                                  500'000'000,   // Transmutation
-                                  1'000'000'000, // Victory
+                                  1'000,          // Voodoo
+                                  75'000,         // Magic
+                                  150'000,        // Clicking
+                                  2'500'000,      // Automation
+                                  50'000'000,     // Repulsion
+                                  100'000'000,    // Attraction
+                                  500'000'000,    // Chaos
+                                  1'000'000'000,  // Transmutation
+                                  10'000'000'000, // Victory
                               });
 
         return static_cast<MoneyType>(static_cast<float>(baseRequiredRewards[asIdx(type)]));
@@ -402,8 +404,36 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] SizeT getShrinesCompletedNeededForNextPrestige() const
+    {
+        if (psvBubbleValue.nPurchases <= 0u)
+            return 1u;
+
+        if (psvBubbleValue.nPurchases <= 1u)
+            return 2u;
+
+        if (psvBubbleValue.nPurchases <= 3u)
+            return 3u;
+
+        if (psvBubbleValue.nPurchases <= 7u)
+            return 4u;
+
+        if (psvBubbleValue.nPurchases <= 10u)
+            return 5u;
+
+        if (psvBubbleValue.nPurchases <= 13u)
+            return 6u;
+
+        if (psvBubbleValue.nPurchases <= 16u)
+            return 7u;
+
+        return 8u;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool canBuyNextPrestige() const
     {
-        return psvBubbleValue.nextCost() <= static_cast<float>(money) && nShrinesCompleted >= psvBubbleValue.nPurchases;
+        const SizeT shrinesNeeded = getShrinesCompletedNeededForNextPrestige();
+        return psvBubbleValue.nextCost() <= static_cast<float>(money) && nShrinesCompleted >= shrinesNeeded;
     }
 };

@@ -1,12 +1,13 @@
 #pragma once
 
-#include<iostream>
 #include "AssertAssume.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
+
+#include <iostream>
 
 
 ////////////////////////////////////////////////////////////
@@ -86,4 +87,20 @@ using EasingFn = float (*)(const float);
            : x == 1.f ? 1.f
            : x < 0.5f ? -(sf::base::pow(2.f, 20.f * x - 10.f) * sf::base::sin((20.f * x - 11.125f) * c5)) / 2.f
                       : (sf::base::pow(2.f, -20.f * x + 10.f) * sf::base::sin((20.f * x - 11.125f) * c5)) / 2.f + 1.f;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeInQuint(const float x) noexcept
+{
+    ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    return x * x * x * x * x;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeOutQuint(const float x) noexcept
+{
+    ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+    return 1.f - sf::base::pow(1.f - x, 5.f);
 }
