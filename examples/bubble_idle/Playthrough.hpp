@@ -201,6 +201,7 @@ struct Playthrough
     bool shrineHoverTipShown    = false;
     bool shrineActivateTipShown = false;
     bool dollTipShown           = false;
+    bool spendPPTipShown        = false;
     bool shrinesSpawned         = false;
 
     ////////////////////////////////////////////////////////////
