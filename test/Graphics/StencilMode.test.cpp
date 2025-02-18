@@ -5,14 +5,15 @@
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::StencilMode")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::StencilMode));
     }
 
     SECTION("Construction")

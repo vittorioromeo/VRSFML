@@ -12,6 +12,7 @@
 #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
+#include "SFML/System/FileUtils.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -54,11 +55,7 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
     }
 #endif
 
-#ifdef SFML_SYSTEM_WINDOWS
-    if (auto file = base::UniquePtr<std::FILE, FileCloser>(_wfopen(filename.c_str(), L"rb")))
-#else
-    if (auto file = base::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
-#endif
+    if (auto file = base::UniquePtr<std::FILE, FileCloser>(openFile(filename, "rb")))
         return base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(file));
 
     return base::nullOpt;

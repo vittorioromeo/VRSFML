@@ -67,10 +67,10 @@ TEST_CASE("[Audio] sf::SoundFileFactory")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundFileFactory));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::SoundFileFactory));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::SoundFileFactory));
     }
 
     SECTION("isReaderRegistered()")

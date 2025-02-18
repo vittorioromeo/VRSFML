@@ -9,10 +9,10 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Vector3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Vector3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Vector3<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Vector3<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Vector3<TestType>));
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Vector3<TestType>)); // because of member initializers
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Vector3<TestType>));

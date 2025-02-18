@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/Traits/IsSame.hpp"
+
 #include <filesystem>
 #include <string>
 
@@ -49,6 +51,7 @@ Path::Path(const T& source) : m_impl(source, std::string{})
 
 template Path::Path(const std::string&);
 template Path::Path(const std::basic_string<wchar_t>&);
+template Path::Path(const std::u32string&);
 
 
 ////////////////////////////////////////////////////////////
@@ -59,6 +62,7 @@ Path::Path(const T* source) : m_impl(source, std::string{})
 
 template Path::Path(const char*);
 template Path::Path(const wchar_t*);
+template Path::Path(const char32_t*);
 
 
 ////////////////////////////////////////////////////////////
@@ -171,7 +175,19 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 template <typename T>
 T Path::to() const
 {
-    return m_impl->fsPath.string();
+    if constexpr (SFML_BASE_IS_SAME(T, std::string))
+        return m_impl->fsPath.string();
+    else if constexpr (SFML_BASE_IS_SAME(T, std::u8string))
+        return m_impl->fsPath.u8string();
+    else if constexpr (SFML_BASE_IS_SAME(T, std::u32string))
+        return m_impl->fsPath.u32string();
+    else if constexpr (SFML_BASE_IS_SAME(T, std::wstring))
+        return m_impl->fsPath.wstring();
+    else
+    {
+        struct unsupported;
+        return unsupported{};
+    }
 }
 
 
@@ -208,7 +224,8 @@ bool Path::operator!=(const T& str) const
 
 
 ////////////////////////////////////////////////////////////
-template std::string Path::to<std::string>() const;
+template std::string   Path::to<std::string>() const;
+template std::u8string Path::to<std::u8string>() const;
 
 
 ////////////////////////////////////////////////////////////

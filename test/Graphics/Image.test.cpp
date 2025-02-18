@@ -95,6 +95,18 @@ TEST_CASE("[Graphics] sf::Image")
         {
             CHECK(!sf::Image::loadFromFile(".").hasValue());
             CHECK(!sf::Image::loadFromFile("this/does/not/exist.jpg").hasValue());
+
+            // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
+            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-ñ.png")).hasValue());
+
+            // small n with acute accent, from Polish, outside of Latin 1 codepage
+            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-ń.png")).hasValue());
+
+            // CJK symbol for Sun, outside of any European language codepage
+            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-日.png")).hasValue());
+
+            // snail emoji, outside of Unicode Basic Multilingual Plane
+            CHECK(!sf::Image::loadFromFile(sf::Path(U"missing-file-🐌.png")).hasValue());
         }
 
         SECTION("Successful load")
@@ -183,6 +195,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(image.getSize() == sf::Vector2u{24, 24});
+
             CHECK(image.getPixelsPtr() != nullptr);
             CHECK(image.getPixel({0, 0}) == sf::Color::Green);
             CHECK(image.getPixel({23, 23}) == sf::Color::Green);
@@ -217,33 +230,95 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            auto filename = sf::Path::tempDirectoryPath();
-
             SECTION("To .bmp")
             {
-                filename /= "test.bmp";
+                auto filename = sf::Path::tempDirectoryPath() / "test.bmp";
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
             }
 
             SECTION("To .tga")
             {
-                filename /= "test.tga";
+                auto filename = sf::Path::tempDirectoryPath() / "test.tga";
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
             }
 
             SECTION("To .png")
             {
-                filename /= "test.png";
+                auto filename = sf::Path::tempDirectoryPath() / "test.png";
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
+            }
+
+            SECTION("To Spanish Latin1 filename .png")
+            {
+                // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
+                auto filename = sf::Path::tempDirectoryPath() / U"test-ñ.png";
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
+            }
+
+            SECTION("To Polish filename .png")
+            {
+                // small n with acute accent, from Polish, outside of Latin 1 codepage
+                auto filename = sf::Path::tempDirectoryPath() / U"test-ń.png";
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
+            }
+
+            SECTION("To Japanese CJK filename .png")
+            {
+                // CJK symbol for Sun, outside of any European language codepage
+                auto filename = sf::Path::tempDirectoryPath() / U"test-日.png";
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
+            }
+
+            SECTION("To emoji non-BMP Unicode filename .png")
+            {
+                // snail emoji, outside of Unicode Basic Multilingual Plane
+                auto filename = sf::Path::tempDirectoryPath() / U"test-🐌.png";
+                CHECK(sf::ImageUtils::saveToFile(image, filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
             }
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
-
-            const auto loadedImage = sf::Image::loadFromFile(filename).value();
-            CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
-            CHECK(loadedImage.getPixelsPtr() != nullptr);
-
-            CHECK(filename.remove());
         }
     }
 

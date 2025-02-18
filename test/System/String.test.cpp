@@ -265,7 +265,7 @@ TEST_CASE("[System] sf::String")
     {
         sf::String string("you'll never guess what happens when you call clear()");
         string.clear();
-        CHECK(string == sf::String());
+        CHECK(string.isEmpty());
         CHECK(string.getSize() == 0);
     }
 

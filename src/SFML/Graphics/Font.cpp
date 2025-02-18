@@ -11,6 +11,8 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
+#include "SFML/System/FileInputStream.hpp"
+#include "SFML/System/MemoryInputStream.hpp"
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -371,9 +373,7 @@ struct Font::Impl
 
     mutable base::TrivialVector<base::U8> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 
-#ifdef SFML_SYSTEM_ANDROID
-    base::UniquePtr<priv::ResourceStream> m_stream; //!< Asset file streamer (if loaded from file)
-#endif
+    std::shared_ptr<InputStream> stream; //!< Stream for `openFromFile` and `openFromMemory`
 
     TextureAtlas& getTextureAtlas() const
     {
@@ -412,42 +412,33 @@ base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* text
 
 #ifndef SFML_SYSTEM_ANDROID
 
-    auto fontHandles = std::make_shared<FontHandles>();
+    // Create the input stream and open the file
+    auto optStream = FileInputStream::open(filename);
+    if (!optStream.hasValue())
+        return fail("failed to open file");
 
-    // Initialize FreeType
-    // Note: we initialize FreeType for every font instance in order to avoid having a single
-    // global manager that would create a lot of issues regarding creation and destruction order.
-    if (FT_Init_FreeType(&fontHandles->library) != 0)
-        return fail("failed to initialize FreeType");
-
-    // Load the new font face from the specified file
-    FT_Face face = nullptr;
-    if (FT_New_Face(fontHandles->library, filename.toCharPtr(), 0, &face) != 0)
-        return fail("failed to create the font face");
-
-    fontHandles->face = face;
-
-    // Load the stroker that will be used to outline the font
-    if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
-        return fail("failed to create the stroker");
-
-    // Select the unicode character map
-    if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
-        return fail("failed to set the Unicode character set");
-
-    return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
+    const auto            stream = std::make_shared<FileInputStream>(SFML_BASE_MOVE(*optStream));
+    constexpr const char* type   = "file";
 
 #else
 
-    auto stream = base::makeUnique<priv::ResourceStream>(filename);
-    auto font   = openFromStream(*stream);
-
-    if (font)
-        font->m_stream = SFML_BASE_MOVE(stream);
-
-    return font;
+    const auto            stream = std::make_shared<priv::ResourceStream>(filename);
+    constexpr const char* type   = "Android resource stream";
 
 #endif
+
+    auto result = openFromStreamImpl(*stream, textureAtlas, type);
+
+    // Open the font, and if successful save the stream to keep it alive
+    if (result.hasValue())
+        result->m_impl->stream = stream;
+    else
+    {
+        // If loading failed, print filename (after the error message already printed in openFromStreamImpl)
+        priv::err() << priv::PathDebugFormatter{filename};
+    }
+
+    return result;
 }
 
 
@@ -460,43 +451,28 @@ base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBy
         return base::nullOpt;
     };
 
-    auto fontHandles = std::make_shared<FontHandles>();
+    if (!data)
+        return fail("provided data pointer is null");
 
-    // Initialize FreeType
-    // Note: we initialize FreeType for every font instance in order to avoid having a single
-    // global manager that would create a lot of issues regarding creation and destruction order.
-    if (FT_Init_FreeType(&fontHandles->library) != 0)
-        return fail("failed to initialize FreeType");
+    // Create memory stream - the memory is owned by the user
+    const auto memoryStream = std::make_shared<MemoryInputStream>(data, sizeInBytes);
 
-    // Load the new font face from the specified file
-    FT_Face face = nullptr;
-    if (FT_New_Memory_Face(fontHandles->library,
-                           reinterpret_cast<const FT_Byte*>(data),
-                           static_cast<FT_Long>(sizeInBytes),
-                           0,
-                           &face) != 0)
-        return fail("failed to create the font face");
+    auto result = openFromStreamImpl(*memoryStream, textureAtlas, "memory");
 
-    fontHandles->face = face;
+    // Open the font, and if successful save the stream to keep it alive
+    if (result.hasValue())
+        result->m_impl->stream = memoryStream;
 
-    // Load the stroker that will be used to outline the font
-    if (FT_Stroker_New(fontHandles->library, &fontHandles->stroker) != 0)
-        return fail("failed to create the stroker");
-
-    // Select the Unicode character map
-    if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != 0)
-        return fail("failed to set the Unicode character set");
-
-    return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
+    return result;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
+base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type)
 {
     const auto fail = [&](const char* what)
     {
-        priv::err() << "Failed to load font from stream: " << what;
+        priv::err() << "Failed to load font from stream (type:" << type << "): " << what;
         return base::nullOpt;
     };
 
@@ -507,10 +483,6 @@ base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* tex
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&fontHandles->library) != 0)
         return fail("failed to initialize FreeType");
-
-    // Make sure that the stream's reading position is at the beginning
-    if (!stream.seek(0).hasValue())
-        return fail("failed to seek font stream");
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
     fontHandles->streamRec.base               = nullptr;
@@ -542,6 +514,21 @@ base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* tex
         return fail("failed to set the Unicode character set");
 
     return base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas, &fontHandles, face->family_name);
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Font> Font::openFromStream(InputStream& stream, TextureAtlas* textureAtlas)
+{
+    // Make sure that the stream's reading position is at the beginning
+    if (!stream.seek(0).hasValue())
+    {
+        priv::err() << "Failed to seek font stream";
+        return base::nullOpt;
+    }
+
+    // Open the font, do not save the stream in m_stream, its owned by the caller
+    return openFromStreamImpl(stream, textureAtlas, "stream");
 }
 
 
