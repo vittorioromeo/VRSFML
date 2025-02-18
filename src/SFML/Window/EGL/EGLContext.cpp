@@ -250,7 +250,10 @@ EglContext::EglContext(unsigned int id, EglContext* shared) : GlContext(id, {})
     constexpr EGLint attribList[]{EGL_WIDTH, 1, EGL_HEIGHT, 1, EGL_NONE};
 
     m_impl->surface = eglCheck(eglCreatePbufferSurface(m_impl->display, m_impl->config, attribList));
-    SFML_BASE_ASSERT(m_impl->surface != EGL_NO_SURFACE);
+    if (m_impl->surface == EGL_NO_SURFACE) {
+        EGLNativeWindowType dummyWindow{};
+        createSurface(&dummyWindow);
+    }
 #else
     EGLNativeWindowType dummyWindow{};
     createSurface(&dummyWindow);
