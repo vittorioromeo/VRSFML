@@ -12,6 +12,7 @@ TEST_CASE("[System] sf::Clock")
 {
     SECTION("Type traits")
     {
+        // cannot be trivially copiable/movable due to pimpl
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Clock));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Clock));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Clock));

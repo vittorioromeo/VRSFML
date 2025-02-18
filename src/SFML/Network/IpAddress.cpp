@@ -46,7 +46,7 @@ base::U32 IpAddress::toInteger() const
 ////////////////////////////////////////////////////////////
 base::Optional<IpAddress> IpAddress::getLocalAddress()
 {
-    // The method here is to connect a UDP socket to anyone (here to localhost),
+    // The method here is to connect a UDP socket to a public ip,
     // and get the local socket address with the getsockname function.
     // UDP connection will not send anything to the network, so this function won't cause any overhead.
 
@@ -58,9 +58,10 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
         return base::nullOpt;
     }
 
-    // Connect the socket to localhost on any port
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()),
-                                                               9);
+    // Connect the socket to a public ip (here 1.1.1.1) on any
+    // port. This will give the local address of the network interface
+    // used for default routing which is usually what we want.
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(0x01010101, 9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);

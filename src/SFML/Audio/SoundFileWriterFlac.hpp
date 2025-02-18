@@ -9,7 +9,6 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
-
 namespace sf
 {
 class Path;
