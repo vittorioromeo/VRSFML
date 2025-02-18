@@ -11,10 +11,9 @@
 
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
-#ifndef GLAD_EGL_IMPLEMENTATION_INCLUDED
-#define GLAD_EGL_IMPLEMENTATION_INCLUDED
+#ifndef GLAD_IMPL_UTIL_C_
 #define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
-#endif
+#endif // GLAD_IMPL_UTIL_C_
 
-#endif
+#endif // SFML_SYSTEM_EMSCRIPTEN

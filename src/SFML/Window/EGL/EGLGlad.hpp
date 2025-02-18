@@ -12,5 +12,8 @@
 #define KHRONOS_APIENTRY
 #include <EGL/egl.h>
 #else
+#ifndef GLAD_IMPL_UTIL_C_
+#define GLAD_EGL_IMPLEMENTATION
 #include <glad/egl.h>
-#endif
+#endif // GLAD_IMPL_UTIL_C_
+#endif // SFML_SYSTEM_EMSCRIPTEN
