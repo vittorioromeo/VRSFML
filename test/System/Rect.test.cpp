@@ -12,10 +12,10 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Rect<TestType>));
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Rect<TestType>)); // because of member initializers
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Rect<TestType>));

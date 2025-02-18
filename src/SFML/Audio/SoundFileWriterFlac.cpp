@@ -7,6 +7,7 @@
 #include "SFML/Audio/SoundFileWriterFlac.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/FileUtils.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/StringUtils.hpp"
@@ -18,6 +19,8 @@
 #include <FLAC/stream_encoder.h>
 #include <algorithm> // std::is_permutation
 #include <string>
+
+#include <cstdio>
 
 
 namespace sf::priv
@@ -37,6 +40,7 @@ struct SoundFileWriterFlac::Impl
         }
     };
 
+    std::FILE*                                                     file{};
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
     base::SizeT                    remapTable[8]{}; //!< Table we use to remap source to target channel order
@@ -141,13 +145,16 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
         return false;
     }
 
+    // Open file
+    m_impl->file = openFile(filename, "w+b");
+
     // Setup the encoder
     FLAC__stream_encoder_set_channels(m_impl->encoder.get(), channelCount);
     FLAC__stream_encoder_set_bits_per_sample(m_impl->encoder.get(), 16);
     FLAC__stream_encoder_set_sample_rate(m_impl->encoder.get(), sampleRate);
 
     // Initialize the output stream
-    if (FLAC__stream_encoder_init_file(m_impl->encoder.get(), filename.toCharPtr(), nullptr, nullptr) !=
+    if (FLAC__stream_encoder_init_FILE(m_impl->encoder.get(), m_impl->file, nullptr, nullptr) !=
         FLAC__STREAM_ENCODER_INIT_STATUS_OK)
     {
         priv::err() << "Failed to write flac file (failed to open the file)\n" << priv::PathDebugFormatter{filename};
