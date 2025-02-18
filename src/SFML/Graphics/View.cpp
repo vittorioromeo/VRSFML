@@ -13,7 +13,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 View View::fromRect(const FloatRect& rectangle)
 {
-    return {.center = rectangle.getCenter(), .size = rectangle.size};
+    return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
 }
 
 
