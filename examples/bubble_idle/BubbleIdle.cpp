@@ -957,7 +957,7 @@ struct Main
     const float                   uiTooltipWidth       = uiWindowWidth;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] inline constexpr float uiGetMaxWindowHeight() const
+    [[nodiscard]] float uiGetMaxWindowHeight() const
     {
         return getResolution().y - 30.f;
     }
@@ -1516,7 +1516,7 @@ Using prestige points, TODO P0
             if (digitCount > 0 && digitCount % 3 == 0)
                 *--ptr = '.';
 
-            *--ptr = '0' + (absValue % 10);
+            *--ptr = '0' + static_cast<char>(absValue % 10);
             absValue /= 10;
 
             ++digitCount;
@@ -1767,7 +1767,7 @@ Using prestige points, TODO P0
                      "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
                      "one.\n\nCombos expires on misclicks and over time, but can be upgraded to last "
                      "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
-        std::sprintf(uiLabelBuffer, "");
+        uiLabelBuffer[0] = '\0';
         if (makePurchasableButtonOneTime("Combo", 20u, pt.comboPurchased))
         {
             combo = 0;
@@ -1790,7 +1790,7 @@ Using prestige points, TODO P0
                          "the "
                          "map will increase the total number of bubbles you can work with, and will also reveal "
                          "magical shrines that grant unique cats upon completion.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt.mapPurchased))
             {
                 scroll = 0.f;
@@ -2279,7 +2279,7 @@ Using prestige points, TODO P0
                      "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
                      "multiplier still only increases once per successful click.)\n\n(Note: this effect can be toggled "
                      "at will.)");
-        std::sprintf(uiLabelBuffer, "");
+        uiLabelBuffer[0] = '\0';
         if (makePurchasablePPButtonOneTime("Multipop click", 1u, pt.perm.multiPopPurchased))
             doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
                   /* maxPrestigeLevel */ UINT_MAX);
@@ -2303,7 +2303,7 @@ Using prestige points, TODO P0
                      "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
                      "for "
                      "star bubbles and bombs first, ensuring they are not wasted!");
-        std::sprintf(uiLabelBuffer, "");
+        uiLabelBuffer[0] = '\0';
         if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt.perm.smartCatsPurchased))
             doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
                   /* maxPrestigeLevel */ UINT_MAX);
@@ -2315,7 +2315,7 @@ Using prestige points, TODO P0
                          "insticts and will now prioritize bombs, then star bubbles, then normal "
                          "bubbles!\n\nThey will also ignore any bubble type of your choosing.\n\n(Note: "
                          "this effect can be toggled at will.)");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             if (makePurchasablePPButtonOneTime("- genius cats", 8u, pt.perm.geniusCatsPurchased))
                 doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                       /* maxPrestigeLevel */ UINT_MAX);
@@ -2348,7 +2348,7 @@ Using prestige points, TODO P0
         std::sprintf(uiTooltipBuffer,
                      "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
                      "flow much faster.\n\n(Note: this effect can be toggled at will.)");
-        std::sprintf(uiLabelBuffer, "");
+        uiLabelBuffer[0] = '\0';
         if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt.perm.windPurchased))
             doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
 
@@ -2368,7 +2368,7 @@ Using prestige points, TODO P0
             std::sprintf(uiTooltipBuffer,
                          "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "
                          "them fly by to work faster!");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
 
             if (makePurchasablePPButtonOneTime("Space propaganda", 32u, pt.perm.astroCatInspirePurchased))
                 doTip("Astrocats will inspire other cats\nto work faster when flying by!",
@@ -2393,7 +2393,7 @@ Using prestige points, TODO P0
                          "outside when the shrine is activated.\n\n(Note: completing the shrine will now grant "
                          "1.5x the money it absorbed.)",
                          catName);
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Break the seal", ppCost, pt.perm.unsealedByType[asIdx(type)]);
         };
 
@@ -2415,19 +2415,19 @@ Using prestige points, TODO P0
                          "The duration of Witchcat buffs scales with the number of cats that were in range while "
                          "the "
                          "ritual was performed.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
 
             std::sprintf(uiTooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
 
             std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
 
             std::sprintf(uiTooltipBuffer, "Dolls can be automatically collected by Astrocats during their flyby.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Orbital dolls", 32u, pt.perm.witchCatBuffOrbitalDolls);
         }
 
@@ -2454,7 +2454,7 @@ Using prestige points, TODO P0
             std::sprintf(uiTooltipBuffer,
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                          "into star bubbles.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.astroCatInspirePurchased);
         }
 
@@ -2499,7 +2499,7 @@ Using prestige points, TODO P0
             makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
 
             std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Repulsion filter", 64u, pt.perm.repulsoCatFilterPurchased);
 
             if (pt.perm.repulsoCatFilterPurchased)
@@ -2527,7 +2527,7 @@ Using prestige points, TODO P0
             std::sprintf(uiTooltipBuffer,
                          "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.perm.repulsoCatConverterPurchased);
 
             if (pt.perm.repulsoCatConverterPurchased)
@@ -2557,7 +2557,7 @@ Using prestige points, TODO P0
             std::sprintf(uiTooltipBuffer,
                          "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
                          "attracted bubbles by type.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Attraction filter", 96u, pt.perm.attractoCatFilterPurchased);
 
             if (pt.perm.attractoCatFilterPurchased)
@@ -2586,7 +2586,7 @@ Using prestige points, TODO P0
             std::sprintf(uiTooltipBuffer,
                          "The Repulsocat does some more weird science to its magnet, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
-            std::sprintf(uiLabelBuffer, "");
+            uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.attractoCatConverterPurchased);
 
             if (pt.attractoCatConverterPurchased)
@@ -2737,8 +2737,8 @@ Using prestige points, TODO P0
                 std::sprintf(uiTooltipBuffer,
                              "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
                              "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
-                std::sprintf(uiLabelBuffer, "");
-                bool done = false;
+                uiLabelBuffer[0] = '\0';
+                bool done        = false;
 
                 if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
                                                            done,
@@ -4277,7 +4277,7 @@ Using prestige points, TODO P0
         if (nCatsHit > 0)
         {
             cat.textStatusShakeEffect.bump(rng, 1.5f);
-            cat.hits += nCatsHit;
+            cat.hits += static_cast<sf::base::U32>(nCatsHit);
 
             statMaintenance();
             statHighestSimultaneousMaintenances(nCatsHit);
@@ -4620,9 +4620,9 @@ Using prestige points, TODO P0
                     if (ignoreBombBubbles && bubble.type == BubbleType::Bomb)
                         return ControlFlow::Continue;
 
-                    const auto diff = (cat.position - bubble.position);
-                    const auto strength = (pt.getComputedRangeByCatType(cat.type) - diff.length()) * 0.000017f * deltaTimeMs;
-                    bubble.velocity += (diff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f)) * direction;
+                    const auto bcDiff = (cat.position - bubble.position);
+                    const auto strength = (pt.getComputedRangeByCatType(cat.type) - bcDiff.length()) * 0.000017f * deltaTimeMs;
+                    bubble.velocity += (bcDiff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f)) * direction;
 
                     return ControlFlow::Continue;
                 };
@@ -6253,44 +6253,44 @@ Using prestige points, TODO P0
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wshadow"
-            if (const auto* e = event->getIf<sf::Event::TouchBegan>())
+            if (const auto* e0 = event->getIf<sf::Event::TouchBegan>())
             {
-                fingerPositions[e->finger].emplace(e->position.toVector2f());
+                fingerPositions[e0->finger].emplace(e0->position.toVector2f());
 
                 if (!clickPosition.hasValue())
-                    clickPosition.emplace(e->position.toVector2f());
+                    clickPosition.emplace(e0->position.toVector2f());
             }
-            else if (const auto* e = event->getIf<sf::Event::TouchEnded>())
+            else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
             {
-                fingerPositions[e->finger].reset();
+                fingerPositions[e1->finger].reset();
             }
-            else if (const auto* e = event->getIf<sf::Event::TouchMoved>())
+            else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
             {
-                fingerPositions[e->finger].emplace(e->position.toVector2f());
+                fingerPositions[e2->finger].emplace(e2->position.toVector2f());
             }
-            else if (const auto* e = event->getIf<sf::Event::MouseButtonPressed>())
+            else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (e->button == sf::Mouse::Button::Left)
-                    clickPosition.emplace(e->position.toVector2f());
+                if (e3->button == sf::Mouse::Button::Left)
+                    clickPosition.emplace(e3->position.toVector2f());
 
-                if (e->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
+                if (e3->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
                 {
                     clickPosition.reset();
 
-                    dragPosition.emplace(e->position.toVector2f());
+                    dragPosition.emplace(e3->position.toVector2f());
                     dragPosition->x += scroll;
                 }
             }
-            else if (const auto* e = event->getIf<sf::Event::MouseButtonReleased>())
+            else if (const auto* e4 = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                if (e->button == sf::Mouse::Button::Right)
+                if (e4->button == sf::Mouse::Button::Right)
                     dragPosition.reset();
             }
-            else if (const auto* e = event->getIf<sf::Event::MouseMoved>())
+            else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
             {
                 if (pt.mapPurchased && dragPosition.hasValue())
                 {
-                    scroll = dragPosition->x - static_cast<float>(e->position.x);
+                    scroll = dragPosition->x - static_cast<float>(e5->position.x);
                 }
             }
 #pragma clang diagnostic pop

@@ -354,34 +354,33 @@ public:
         }
 
         // Initialize keys color and label
-        forEachKey(
-            [this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        {
+            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+
+            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+                m_triangles[6u * scancodeIndex + vertexIndex]
+                    .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
+                                 ? sf::Color::Red
+                                 : sf::Color::White;
+
+            sf::Text& label = m_labels[scancodeIndex];
+            label.setString(sf::Keyboard::getDescription(scancode));
+            label.position = {rect.position + rect.size / 2.f};
+
+            if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
-                const auto scancodeIndex = static_cast<std::size_t>(scancode);
+                sf::String string = label.getString();
+                string.replace(" ", "\n");
+                label.setString(string);
+            }
+            while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
+                label.setCharacterSize(label.getCharacterSize() - 2);
 
-                for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
-                    m_triangles[6u * scancodeIndex + vertexIndex]
-                        .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
-                                     ? sf::Color::Red
-                                     : sf::Color::White;
-
-                sf::Text& label = m_labels[scancodeIndex];
-                label.setString(sf::Keyboard::getDescription(scancode));
-                label.position = {rect.position + rect.size / 2.f};
-
-                if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
-                {
-                    sf::String string = label.getString();
-                    string.replace(" ", "\n");
-                    label.setString(string);
-                }
-                while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
-                    label.setCharacterSize(label.getCharacterSize() - 2);
-
-                const sf::FloatRect bounds = label.getLocalBounds();
-                label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
-                                              std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
-            });
+            const sf::FloatRect bounds = label.getLocalBounds();
+            label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
+                                          std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+        });
     }
 
     void handle(const sf::Event& event)
@@ -410,36 +409,35 @@ public:
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
-        forEachKey(
-            [this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        {
+            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+
+            static constexpr sf::Vector2f square[]{
+                {0.f, 0.f},
+                {1.f, 0.f},
+                {1.f, 1.f},
+                {0.f, 1.f},
+            };
+
+            static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
+
+            const float        moveFactor = m_moveFactors[scancodeIndex];
+            const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
+
+            const bool pressed = sf::Keyboard::isKeyPressed(scancode);
+
+            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
-                const auto scancodeIndex = static_cast<std::size_t>(scancode);
+                sf::Vertex&                   vertex = m_triangles[6u * scancodeIndex + vertexIndex];
+                const sf::Vector2f&           corner = square[cornerIndexes[vertexIndex]];
+                static constexpr sf::Vector2f pad(padding, padding);
+                vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
+                vertex.color.a  = pressed ? 96 : 48;
+            }
 
-                static constexpr sf::Vector2f square[]{
-                    {0.f, 0.f},
-                    {1.f, 0.f},
-                    {1.f, 1.f},
-                    {0.f, 1.f},
-                };
-
-                static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
-
-                const float        moveFactor = m_moveFactors[scancodeIndex];
-                const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
-
-                const bool pressed = sf::Keyboard::isKeyPressed(scancode);
-
-                for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
-                {
-                    sf::Vertex&                   vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                    const sf::Vector2f&           corner = square[cornerIndexes[vertexIndex]];
-                    static constexpr sf::Vector2f pad(padding, padding);
-                    vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
-                    vertex.color.a  = pressed ? 96 : 48;
-                }
-
-                m_labels[scancodeIndex].position = rect.position + rect.size / 2.f + move;
-            });
+            m_labels[scancodeIndex].position = rect.position + rect.size / 2.f + move;
+        });
     }
 
     void drawOnto(sf::RenderTarget& target, sf::RenderStates states) const
@@ -455,16 +453,16 @@ private:
     template <typename F>
     void forEachKey(F function) const
     {
-        sf::Vector2f position;
+        sf::Vector2f pos;
         for (const auto& [cells, marginBottom] : m_matrix)
         {
             for (const auto& [scancode, size, marginRight] : cells)
             {
-                function(scancode, sf::FloatRect(position, size));
-                position.x += size.x + marginRight;
+                function(scancode, sf::FloatRect(pos, size));
+                pos.x += size.x + marginRight;
             }
-            position.x = 0.f;
-            position.y += keySize + marginBottom;
+            pos.x = 0.f;
+            pos.y += keySize + marginBottom;
         }
     }
 
