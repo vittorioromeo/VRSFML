@@ -28,14 +28,22 @@ namespace sf::priv
 class GlContext
 {
 public:
+    virtual ~GlContext() = default;
+
     [[nodiscard]] const ContextSettings& getSettings() const;
     [[nodiscard]] unsigned int           getId() const;
+
+private:
+    ContextSettings    m_settings;
+    const unsigned int m_id{};
 };
 
 }; // namespace sf::priv
 
 struct TestContext
 {
+    sf::base::UniquePtr<sf::priv::GlContext> glContext;
+
     TestContext() : glContext(sf::WindowContext::createGlContext())
     {
         if (!setActive(true))
@@ -65,8 +73,6 @@ struct TestContext
     {
         return glContext->getSettings();
     }
-
-    sf::base::UniquePtr<sf::priv::GlContext> glContext;
 
     [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId()
     {
