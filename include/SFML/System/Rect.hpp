@@ -59,7 +59,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPoint(Vector2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPoint(const Vector2f factors) const
     {
         if constexpr (SFML_BASE_IS_SAME(T, float))
         {
@@ -92,22 +92,22 @@ SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomRight,  {1.f,  1.f});
 #undef SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER
 
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]]
-    constexpr Vector2<T> getAnchorPointOffset(Vector2f factors) const
+    constexpr Vector2<T> getAnchorPointOffset(const Vector2f factors) const
     {
         return -(size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>());
     }
 
     [[gnu::always_inline, gnu::flatten]]
-    constexpr void setAnchorPoint(Vector2f factors, Vector2<T> newPosition)
+    constexpr void setAnchorPoint(const Vector2f factors, const Vector2<T> newPosition)
     {
         position = newPosition + getAnchorPointOffset(factors);
     }
 
 
-#define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                          \
-    [[gnu::always_inline, gnu::flatten]] constexpr void name(Vector2<T> newPos) \
-    {                                                                           \
-        return setAnchorPoint(__VA_ARGS__, newPos);                             \
+#define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                                \
+    [[gnu::always_inline, gnu::flatten]] constexpr void name(const Vector2<T> newPos) \
+    {                                                                                 \
+        return setAnchorPoint(__VA_ARGS__, newPos);                                   \
     }
 
     // clang-format off
