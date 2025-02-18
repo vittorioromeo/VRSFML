@@ -85,7 +85,7 @@ struct [[nodiscard]] BufferSlice
 [[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path&                filename,
                                                                          sf::base::TrivialVector<char>& buffer)
 {
-    std::ifstream file(filename.to<std::string>(), std::ios_base::binary);
+    std::ifstream file(filename.c_str(), std::ios_base::binary);
 
     if (!file)
     {

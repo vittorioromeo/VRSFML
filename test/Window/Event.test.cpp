@@ -50,10 +50,14 @@ TEST_CASE("[Window] sf::Event")
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(
+            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(
+            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(
+            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(
+            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
     }
 
     SECTION("Construction")

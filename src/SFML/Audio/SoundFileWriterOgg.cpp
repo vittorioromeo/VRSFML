@@ -147,7 +147,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     vorbis_analysis_init(&m_impl->state, &m_impl->vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_impl->file.open(filename.to<std::string>(), std::ios::binary);
+    m_impl->file.open(filename.c_str(), std::ios::binary);
     if (!m_impl->file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::PathDebugFormatter{filename};
