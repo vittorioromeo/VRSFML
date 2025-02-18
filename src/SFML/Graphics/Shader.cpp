@@ -311,7 +311,7 @@ namespace sf
 struct Shader::Impl
 {
     using TextureTable = std::unordered_map<int, const Texture*>;
-    using UniformTable = std::unordered_map<std::string, int, StringHash, StringEq>;
+    using UniformTable = std::unordered_map<base::StringView, int, StringHash, StringEq>;
 
     unsigned int shaderProgram{};    //!< OpenGL identifier for the program
     int          currentTexture{-1}; //!< Location of the current texture in the shader
