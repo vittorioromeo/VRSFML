@@ -158,7 +158,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(StringView v, SizeT startPos = 0u) const noexcept
     {
         if (empty())
-            return v.empty() ? 0u : nPos;
+            return v.empty() ? SizeT{0u} : static_cast<SizeT>(nPos);
 
         if (v.empty())
             return base::min(m_size - 1, startPos);

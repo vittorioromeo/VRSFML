@@ -404,18 +404,17 @@ Font& Font::operator=(Font&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* textureAtlas)
 {
-    [[maybe_unused]] const auto fail = [&](const char* what)
-    {
-        priv::err() << "Failed to load font (" << priv::PathDebugFormatter{filename} << "): " << what;
-        return base::nullOpt;
-    };
+    base::Optional<Font> result; // Use a single local variable for NRVO
 
 #ifndef SFML_SYSTEM_ANDROID
 
     // Create the input stream and open the file
     auto optStream = FileInputStream::open(filename);
     if (!optStream.hasValue())
-        return fail("failed to open file");
+    {
+        priv::err() << "Failed to load font (" << priv::PathDebugFormatter{filename} << "): failed to open file";
+        return result; // Empty optional
+    }
 
     const auto            stream = std::make_shared<FileInputStream>(SFML_BASE_MOVE(*optStream));
     constexpr const char* type   = "file";
@@ -427,7 +426,7 @@ base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* text
 
 #endif
 
-    auto result = openFromStreamImpl(*stream, textureAtlas, type);
+    result = openFromStreamImpl(*stream, textureAtlas, type);
 
     // Open the font, and if successful save the stream to keep it alive
     if (result.hasValue())
@@ -445,19 +444,18 @@ base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* text
 ////////////////////////////////////////////////////////////
 base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBytes, TextureAtlas* textureAtlas)
 {
-    const auto fail = [&](const char* what)
-    {
-        priv::err() << "Failed to load font from memory: " << what;
-        return base::nullOpt;
-    };
+    base::Optional<Font> result; // Use a single local variable for NRVO
 
     if (!data)
-        return fail("provided data pointer is null");
+    {
+        priv::err() << "Failed to load font from memory: provided data pointer is null";
+        return result; // Empty optional
+    }
 
     // Create memory stream - the memory is owned by the user
     const auto memoryStream = std::make_shared<MemoryInputStream>(data, sizeInBytes);
 
-    auto result = openFromStreamImpl(*memoryStream, textureAtlas, "memory");
+    result = openFromStreamImpl(*memoryStream, textureAtlas, "memory");
 
     // Open the font, and if successful save the stream to keep it alive
     if (result.hasValue())
