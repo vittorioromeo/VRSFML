@@ -6266,9 +6266,10 @@ Using prestige points, TODO P0
 
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCursorGrowthEffect(const float deltaTimeMs, const bool anyBubblePoppedByClicking)
+    [[nodiscard]] float gameLoopUpdateCursorGrowthEffect(const float deltaTimeMs, const bool anyBubblePoppedByClicking)
     {
         static float cursorGrow = 0.f;
+
         if (anyBubblePoppedByClicking)
             cursorGrow = 0.49f;
 
@@ -6277,6 +6278,8 @@ Using prestige points, TODO P0
             cursorGrow -= deltaTimeMs * 0.0015f;
             cursorGrow = sf::base::max(cursorGrow, 0.f);
         }
+
+        return cursorGrow;
     }
 
     ////////////////////////////////////////////////////////////
@@ -6965,7 +6968,7 @@ Using prestige points, TODO P0
 
         //
         // Cursor grow effect on click
-        gameLoopUpdateCursorGrowthEffect(deltaTimeMs, anyBubblePoppedByClicking);
+        const float cursorGrow = gameLoopUpdateCursorGrowthEffect(deltaTimeMs, anyBubblePoppedByClicking);
 
         //
         // Combo failure due to timer end
