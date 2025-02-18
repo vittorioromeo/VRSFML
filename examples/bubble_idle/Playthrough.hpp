@@ -214,9 +214,9 @@ struct Playthrough
 
         for (SizeT i = 0u; i < 9u; ++i)
             shrines.push_back({
-                .position              = gameScreenSize / 2.f + sf::Vector2f{gameScreenSize.x * (i + 1u), 0.f},
-                .tcActivation          = {},
-                .tcDeath               = {},
+                .position     = gameScreenSize / 2.f + sf::Vector2f{gameScreenSize.x * static_cast<float>(i + 1u), 0.f},
+                .tcActivation = {},
+                .tcDeath      = {},
                 .textStatusShakeEffect = {},
                 .type                  = static_cast<ShrineType>(i),
             });

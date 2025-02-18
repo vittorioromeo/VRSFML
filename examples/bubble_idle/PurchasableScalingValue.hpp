@@ -13,19 +13,19 @@ struct [[nodiscard]] PurchasableScalingValue
     sf::base::SizeT nPurchases = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline float nextCost() const
+    [[nodiscard, gnu::always_inline]] inline constexpr float nextCost() const
     {
         return data->cost.computeGrowth(static_cast<float>(nPurchases));
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline float currentValue() const
+    [[nodiscard, gnu::always_inline]] inline constexpr float currentValue() const
     {
         return data->value.computeGrowth(static_cast<float>(nPurchases));
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] auto maxSubsequentPurchases(const MoneyType money) const
+    [[nodiscard]] constexpr auto maxSubsequentPurchases(const MoneyType money) const
     {
         struct Result
         {

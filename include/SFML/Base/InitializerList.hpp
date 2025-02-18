@@ -29,10 +29,10 @@ public:
 
     constexpr initializer_list() noexcept = default;
 
-    [[nodiscard, gnu::always_inline]] constexpr initializer_list(const T* b, const T* e) noexcept
+    [[nodiscard, gnu::always_inline]] constexpr initializer_list(const T* b, const size_type s) noexcept :
+    m_begin(b),
+    m_size(s)
     {
-        m_begin = b;
-        m_end   = e;
     }
 
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* begin() const noexcept
@@ -42,17 +42,17 @@ public:
 
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* end() const noexcept
     {
-        return m_end;
+        return m_begin + m_size;
     }
 
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr size_type size() const noexcept
     {
-        return static_cast<size_type>(m_end - m_begin);
+        return m_size;
     }
 
 private:
-    const T* m_begin = nullptr;
-    const T* m_end   = nullptr;
+    const T*  m_begin = nullptr;
+    size_type m_size  = 0u;
 };
 
 template <typename T>
