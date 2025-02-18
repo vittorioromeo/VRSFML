@@ -214,7 +214,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     m_impl->channelCount = channelCount;
 
     // Open the file
-    m_impl->file.open(filename.to<std::string>(), std::ios::binary);
+    m_impl->file.open(filename.c_str(), std::ios::binary);
     if (!m_impl->file)
     {
         priv::err() << "Failed to open WAV sound file for writing\n" << priv::PathDebugFormatter{filename};

@@ -290,6 +290,12 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Open from stream and print errors with custom message
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<Font> openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Return the index of the internal representation a character
     ///
     /// \param codePoint Unicode code point of the character to load
@@ -315,7 +321,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Font(base::PassKey<Font>&&,
-
                                 TextureAtlas* textureAtlas,
                                 void*         fontHandlesSharedPtr,
                                 const char*   familyName);

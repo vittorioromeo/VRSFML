@@ -30,6 +30,8 @@
 
 #include <stb_image.h>
 
+#include <fstream>
+
 
 namespace
 {
@@ -154,20 +156,53 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
 #endif
 
-    // Load the image and get a pointer to the pixels in memory
-    int width    = 0;
-    int height   = 0;
-    int channels = 0;
-
-    if (const auto ptr = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha)))
+    // Set up the stb_image callbacks for the `std::ifstream`
+    const auto readStdIfStream = [](void* user, char* data, int size)
     {
-        SFML_BASE_ASSERT(width > 0 && "Loaded image from file with width == 0");
-        SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");
+        auto& file = *static_cast<std::ifstream*>(user);
+        file.read(data, size);
+        return static_cast<int>(file.gcount());
+    };
+
+    const auto skipStdIfStream = [](void* user, int size)
+    {
+        auto& file = *static_cast<std::ifstream*>(user);
+        if (!file.seekg(size, std::ios_base::cur))
+            priv::err() << "Failed to seek image loader std::ifstream";
+    };
+
+    const auto eofStdIfStream = [](void* user)
+    {
+        auto& file = *static_cast<std::ifstream*>(user);
+        return static_cast<int>(file.eof());
+    };
+
+    const stbi_io_callbacks callbacks{readStdIfStream, skipStdIfStream, eofStdIfStream};
+
+    // Open file
+    std::ifstream file(filename.c_str(), std::ios::binary);
+    if (!file.is_open())
+    {
+        // Error, failed to open the file
+        priv::err() << "Failed to load image\n"
+                    << priv::PathDebugFormatter{filename} << "\nReason: Failed to open the file";
+        return base::nullOpt;
+    }
+
+    // Load the image and get a pointer to the pixels in memory
+    sf::Vector2i imageSize;
+    int          channels = 0;
+
+    if (const auto ptr = StbPtr(
+            stbi_load_from_callbacks(&callbacks, &file, &imageSize.x, &imageSize.y, &channels, STBI_rgb_alpha)))
+    {
+        SFML_BASE_ASSERT(imageSize.x > 0 && "Loaded image from file with width == 0");
+        SFML_BASE_ASSERT(imageSize.y > 0 && "Loaded image from file with height == 0");
 
         return base::makeOptional<Image>(base::PassKey<Image>{},
-                                         Vector2i{width, height}.toVector2u(),
+                                         Vector2i{imageSize.x, imageSize.y}.toVector2u(),
                                          ptr.get(),
-                                         ptr.get() + width * height * 4);
+                                         ptr.get() + imageSize.x * imageSize.y * 4);
     }
 
     // Error, failed to load the image

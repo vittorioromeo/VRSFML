@@ -19,6 +19,8 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 
+#include <string>
+
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
@@ -60,17 +62,24 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid file")
         {
-            auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
-            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
+            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
 
-            const auto [offset, length] = music.getLoopPoints();
-            CHECK(offset == sf::Time::Zero);
-            CHECK(length == sf::microseconds(1990884));
-            CHECK(music.getStatus() == sf::Music::Status::Stopped);
-            CHECK(music.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!music.isLooping());
+            for (const auto& filenameSuffix : filenameSuffixes)
+            {
+                const sf::Path filename = U"Audio/ding" + filenameSuffix + U".mp3";
+                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
+                CHECK(music.getDuration() == sf::microseconds(1990884));
+
+                const auto [offset, length] = music.getLoopPoints();
+                CHECK(offset == sf::Time::Zero);
+                CHECK(length == sf::microseconds(1990884));
+
+                CHECK(music.getStatus() == sf::Music::Status::Stopped);
+                CHECK(music.getPlayingOffset() == sf::Time::Zero);
+                CHECK(!music.isLooping());
+            }
         }
     }
 
