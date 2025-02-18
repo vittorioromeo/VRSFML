@@ -60,7 +60,7 @@ inline constexpr EXACT_ARRAY(
         7000.f,  // Devil
         10000.f, // Astro
 
-        60000.f, // Witch
+        80000.f, // Witch
         1500.f,  // Wizard
         400.f,   // Mouse
         10000.f, // Engi

@@ -66,6 +66,10 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Bubble, position, velocity, radius, rotation,
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cat::AstroState, startX, velocityX, particleTimer, wrapped);
+
+////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(modernize-use-constraints)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     Cat,
 
@@ -78,7 +82,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     boostCountdown,
     nameIdx,
     hits,
-    hexedTimer);
+    hexedTimer,
+    astroState);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -390,6 +395,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     shrineHoverTipShown,
     shrineActivateTipShown,
     dollTipShown,
+    spendPPTipShown,
     shrinesSpawned);
 
 namespace
