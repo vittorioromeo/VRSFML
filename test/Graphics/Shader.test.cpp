@@ -215,6 +215,12 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
             if (shader.hasValue())
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());
         }
+
+        SECTION("One shader with non-ASCII filename")
+        {
+            CHECK(sf::Shader::loadFromFile(U"Graphics/shader-ń.vert", sf::Shader::Type::Vertex).hasValue());
+            CHECK(sf::Shader::loadFromFile(U"Graphics/shader-🐌.vert", sf::Shader::Type::Vertex).hasValue());
+        }
     }
 
     SECTION("loadFromMemory()")

@@ -115,4 +115,22 @@ TEST_CASE("[System] sf::FileInputStream")
         CHECK(fileInputStream.seek(6).value() == 6);
         CHECK(fileInputStream.tell().value() == 6);
     }
+
+    SECTION("open()")
+    {
+        const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+        for (const auto& filenameSuffix : filenameSuffixes)
+        {
+            const sf::Path filename = U"System/test" + filenameSuffix + U".txt";
+            INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+            auto fileInputStream = sf::FileInputStream::open(filename).value();
+            CHECK(fileInputStream.read(buffer, 5).value() == 5);
+            CHECK(fileInputStream.tell().value() == 5);
+            CHECK(fileInputStream.getSize().value() == 12);
+            CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
+            CHECK(fileInputStream.seek(6).value() == 6);
+            CHECK(fileInputStream.tell().value() == 6);
+        }
+    }
 }
