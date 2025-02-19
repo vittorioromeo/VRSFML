@@ -83,7 +83,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     nameIdx,
     hits,
     hexedTimer,
-    astroState);
+    astroState,
+    moneyEarned);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -287,6 +288,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     cursorHue,
     cursorScale,
 
+    showCoinParticles,
+    showDpsMeter,
+
     unlockedAchievements);
 
 ////////////////////////////////////////////////////////////
@@ -369,6 +373,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     perm,
 
     multiPopEnabled,
+    multiPopMouseCatEnabled,
     windEnabled,
     geniusCatIgnoreBubbles,
     repulsoCatIgnoreBubbles,
