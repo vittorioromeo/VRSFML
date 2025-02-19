@@ -865,6 +865,8 @@ Vector2i WindowImplX11::getPosition() const
 ////////////////////////////////////////////////////////////
 void WindowImplX11::setPosition(Vector2i position)
 {
+    // TODO P2: doesn't seem to work in Linux VM under window tests, see
+    // https://tronche.com/gui/x/xlib/window/XMoveWindow.html maybe?
     XMoveWindow(m_display.get(), m_window, position.x, position.y);
     XFlush(m_display.get());
 }
