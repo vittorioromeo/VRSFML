@@ -17,7 +17,7 @@ namespace sf
 /// By default, the vertex color is white and texture coordinates are (0, 0).
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] Vertex
+struct [[nodiscard]] alignas(32) Vertex
 {
     ////////////////////////////////////////////////////////////
     // Member data
