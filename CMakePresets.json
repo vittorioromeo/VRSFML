@@ -110,7 +110,7 @@
         "CMAKE_C_COMPILER": "clang",
         "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Ofast $env{CXX_WARNINGS}"
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -Ofast $env{CXX_WARNINGS} -mavx2 -mfma -msse4.1"
       }
     },
     {
