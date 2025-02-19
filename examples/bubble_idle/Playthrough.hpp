@@ -163,6 +163,7 @@ struct Playthrough
     //
     // Permanent purchases settings
     bool              multiPopEnabled            = false;
+    bool              multiPopMouseCatEnabled    = false;
     bool              windEnabled                = false;
     BubbleIgnoreFlags geniusCatIgnoreBubbles     = {};
     BubbleIgnoreFlags repulsoCatIgnoreBubbles    = {};
@@ -273,8 +274,9 @@ struct Playthrough
         mouseCatCombo                = 0.f;
         mouseCatComboCountdown.value = 0.f;
 
-        multiPopEnabled = false;
-        windEnabled     = false;
+        multiPopEnabled         = false;
+        multiPopMouseCatEnabled = false;
+        windEnabled             = false;
 
         // bubbles, cats, dolls, and shrines are cleaned in the game loop
 
@@ -326,8 +328,8 @@ struct Playthrough
                                   75'000,         // Magic
                                   150'000,        // Clicking
                                   2'500'000,      // Automation
-                                  50'000'000,     // Repulsion
-                                  100'000'000,    // Attraction
+                                  25'000'000,     // Repulsion
+                                  50'000'000,     // Attraction
                                   500'000'000,    // Chaos
                                   1'000'000'000,  // Transmutation
                                   10'000'000'000, // Victory
