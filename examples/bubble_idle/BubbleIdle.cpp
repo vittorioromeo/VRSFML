@@ -20,6 +20,7 @@
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "RNG.hpp"
+#include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
 #include "Sounds.hpp"
@@ -79,6 +80,8 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
+
+#include <unordered_map>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -582,6 +585,11 @@ struct Main
                                .fillColor        = sf::Color::White,
                                .outlineColor     = colorBlueOutline,
                                .outlineThickness = 2.f}};
+    sf::Text textMoneyBuffer{fontSuperBakery,
+                             {.characterSize    = 24u,
+                              .fillColor        = sf::Color::White,
+                              .outlineColor     = colorBlueOutline,
+                              .outlineThickness = 1.5f}};
 
     ////////////////////////////////////////////////////////////
     // Spent money count-down effect
@@ -601,6 +609,23 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Scroll arrow hint
     Countdown scrollArrowCountdown;
+
+    ////////////////////////////////////////////////////////////
+    // $ps sampler
+    MoneyType     moneyGainedLastSecond{0u};
+    Sampler       samplerMoneyPerSecond{/* capacity */ 60u};
+    sf::base::I64 moneyGainedUsAccumulator{0};
+
+    ////////////////////////////////////////////////////////////
+    // Bomb-cat tracker for money earned
+    std::unordered_map<sf::base::SizeT, sf::base::SizeT> bombIdxToCatIdx;
+
+    ////////////////////////////////////////////////////////////
+    void addMoney(const MoneyType reward)
+    {
+        pt.money += reward;
+        moneyGainedLastSecond += reward;
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static std::vector<std::vector<std::string>> makeShuffledCatNames(RNG& rng)
@@ -917,6 +942,7 @@ struct Main
             .boostCountdown        = {},
             .nameIdx               = getNextCatNameIdx(catType),
             .textStatusShakeEffect = {},
+            .textMoneyShakeEffect  = {},
             .type                  = catType,
             .hexedTimer            = {},
             .astroState            = {},
@@ -1194,6 +1220,7 @@ Using prestige points, TODO P0
         }
 
         ImGui::TextWrapped("%s", uiTooltipBuffer);
+        std::sprintf(uiTooltipBuffer, "");
 
         uiEndTooltip();
     }
@@ -1628,10 +1655,7 @@ Using prestige points, TODO P0
     {
         uiWidgetId = 0u;
 
-        ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
-        ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth, 0.f), ImVec2(uiWindowWidth, uiGetMaxWindowHeight()));
         ImGui::PushFont(fontImGuiSuperBakery);
-
         ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
 
         ImGuiStyle& style               = ImGui::GetStyle();
@@ -1643,12 +1667,17 @@ Using prestige points, TODO P0
 
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
 
+        if (profile.showDpsMeter)
+            uiDpsMeter();
+
+        ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
+        ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth, 0.f), ImVec2(uiWindowWidth, uiGetMaxWindowHeight()));
+
         ImGui::Begin("##menu",
                      nullptr,
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                          ImGuiWindowFlags_NoTitleBar);
 
-        ImGui::PopStyleVar();
 
         if (ImGui::BeginTabBar("TabBar", ImGuiTabBarFlags_DrawSelectedOverline))
         {
@@ -1659,9 +1688,46 @@ Using prestige points, TODO P0
         uiMakeShrineOrCatTooltip(mousePos);
 
         ImGui::End();
+        ImGui::PopStyleVar();
         ImGui::PopFont();
     }
 
+    ////////////////////////////////////////////////////////////
+    void uiDpsMeter() const
+    {
+        const auto resolution = getResolution();
+
+        const ImVec2 dpsMeterSize(240.f, 60.f);
+
+        ImGui::SetNextWindowPos({15.f, resolution.y - 15.f}, 0, {0.f, 1.f});
+        ImGui::SetNextWindowSizeConstraints(dpsMeterSize, dpsMeterSize);
+
+        ImGui::Begin("##dpsmeter",
+                     nullptr,
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoTitleBar);
+
+        ImGui::SetWindowFontScale(0.75f);
+
+        static thread_local std::vector<float> sampleBuffer(60);
+        samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
+
+        static thread_local char avgBuffer[64];
+        std::sprintf(avgBuffer, "%.2f $/s", samplerMoneyPerSecond.getAverage());
+
+        ImGui::PlotLines("##dpsmeter",
+                         sampleBuffer.data(),
+                         static_cast<int>(sampleBuffer.size()),
+                         0,
+                         avgBuffer,
+                         0.f,
+                         FLT_MAX,
+                         ImVec2(dpsMeterSize.x - 15.f, dpsMeterSize.y - 17.f));
+
+        ImGui::End();
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBar()
     {
         static int  lastSelectedTabIdx = 1;
@@ -1778,7 +1844,9 @@ Using prestige points, TODO P0
 
         if (pt.comboPurchased)
         {
-            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!");
+            const char* mouseNote = catMouse == nullptr ? "" : "\n\n(Note: this also applies to the Mousecat!)";
+
+            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!%s", mouseNote);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
             makePSVButton("- Longer combo", pt.psvComboStartTime);
         }
@@ -2311,6 +2379,11 @@ Using prestige points, TODO P0
 
             ImGui::SetWindowFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
+            if (findFirstCatByType(CatType::Mouse) != nullptr)
+            {
+                ImGui::SameLine();
+                uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
+            }
             ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
@@ -2405,7 +2478,8 @@ Using prestige points, TODO P0
 
         const auto makeUnsealButton = [&](const PrestigePointsType ppCost, const char* catName, const CatType type)
         {
-            if (findFirstCatByType(type) == nullptr)
+            if (findFirstCatByType(type) ==
+                nullptr) // TODO P1: change to "ever unlocked cat at least once", and also apply to prestige menus per unique cat
                 return;
 
             std::sprintf(uiTooltipBuffer,
@@ -3220,6 +3294,8 @@ Using prestige points, TODO P0
 
             uiCheckbox("Enable tips", &profile.tipsEnabled);
 
+            uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
+
             ImGui::Separator();
 
             uiCheckbox("High-visibility cursor", &profile.highVisibilityCursor);
@@ -3541,16 +3617,15 @@ Using prestige points, TODO P0
 
     ////////////////////////////////////////////////////////////
     void popBubbleImpl(const bool         byHand,
-                       const BubbleType   bubbleType,
+                       const Bubble&      bubble,
                        const MoneyType    reward,
                        const int          xCombo,
                        const sf::Vector2f position,
                        const sf::Vector2f tpPosition,
                        const bool         popSoundOverlap,
-                       const bool         collectedByShrine,
-                       Cat*               popperCat)
+                       const bool         collectedByShrine)
     {
-        statBubblePopped(bubbleType, byHand, reward);
+        statBubblePopped(bubble.type, byHand, reward);
 
         if (profile.showTextParticles)
         {
@@ -3591,39 +3666,48 @@ Using prestige points, TODO P0
         spawnParticles(32, position, ParticleType::Bubble, 0.5f, 0.5f);
         spawnParticles(8, position, ParticleType::Bubble, 1.2f, 0.25f);
 
-        if (bubbleType == BubbleType::Star)
+        if (bubble.type == BubbleType::Star)
         {
             spawnParticles(16, position, ParticleType::Star, 0.5f, 0.35f);
         }
-        else if (bubbleType == BubbleType::Bomb)
+        else if (bubble.type == BubbleType::Bomb)
         {
             sounds.explosion.setPosition({position.x, position.y});
             playSound(sounds.explosion);
 
             spawnParticles(32, position, ParticleType::Fire, 3.f, 1.f);
 
+            // TODO P2: cleanup
+            const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
+            const auto bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
+
+            Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt.cats.data() + bombIdxItr->second : nullptr;
+
             forEachBubbleInRadius(position,
                                   pt.getComputedBombExplosionRadius(),
-                                  [&](Bubble& bubble)
+                                  [&](Bubble& otherBubble)
             {
-                if (bubble.type == BubbleType::Bomb)
+                if (otherBubble.type == BubbleType::Bomb)
                     return ControlFlow::Continue;
 
-                const MoneyType newReward = computeFinalReward(bubble.position,
-                                                               pt.getComputedRewardByBubbleType(bubble.type) * 10u,
+                const MoneyType newReward = computeFinalReward(otherBubble.position,
+                                                               pt.getComputedRewardByBubbleType(otherBubble.type) * 10u,
                                                                /* combo */ 1);
 
                 statExplosionRevenue(newReward);
 
                 popWithRewardAndReplaceBubble(newReward,
                                               /* byHand */ false,
-                                              bubble,
+                                              otherBubble,
                                               /* combo */ 1,
                                               /* popSoundOverlap */ false,
-                                              popperCat);
+                                              catWhoMadeBomb);
 
                 return ControlFlow::Continue;
             });
+
+            if (catWhoMadeBomb != nullptr)
+                bombIdxToCatIdx.erase(bombIdxItr);
         }
     }
 
@@ -3695,18 +3779,23 @@ Using prestige points, TODO P0
         }
 
         popBubbleImpl(byHand,
-                      bubble.type,
+                      bubble,
                       reward,
                       xCombo,
                       bubble.position,
                       collectorShrine == nullptr ? bubble.position : collectorShrine->getDrawPosition(),
                       popSoundOverlap,
-                      collectorShrine != nullptr,
-                      popperCat);
+                      collectorShrine != nullptr);
+
+        if (popperCat != nullptr)
+        {
+            popperCat->moneyEarned += reward;
+            popperCat->textMoneyShakeEffect.bump(rng, 1.25f);
+        }
 
         if (collectorShrine == nullptr)
         {
-            pt.money += reward;
+            addMoney(reward);
             moneyTextShakeEffect.bump(rng, 1.f + static_cast<float>(combo) * 0.1f);
         }
 
@@ -3741,6 +3830,9 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void turnBubbleNormal(Bubble& bubble)
     {
+        if (bubble.type == BubbleType::Bomb)
+            bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data()));
+
         bubble.type     = BubbleType::Normal;
         bubble.rotation = 0.f;
         bubble.hueMod   = 0.f;
@@ -4006,6 +4098,12 @@ Using prestige points, TODO P0
         cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
         bubble.type = BubbleType::Bomb;
+
+        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
+        const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt.cats.data());
+
+        bombIdxToCatIdx[bubbleIdx] = catIdx;
+
         bubble.velocity.y += rng.getF(0.1f, 0.2f);
         sounds.makeBomb.setPosition({bubble.position.x, bubble.position.y});
         playSound(sounds.makeBomb);
@@ -4256,7 +4354,7 @@ Using prestige points, TODO P0
                                       /* popSoundOverlap */ true,
                                       /* popperCat */ &cat);
 
-        if (pt.multiPopEnabled)
+        if (pt.multiPopMouseCatEnabled)
             forEachBubbleInRadius(savedBubblePos,
                                   pt.getComputedMultiPopRange(),
                                   [&](Bubble& otherBubble)
@@ -4426,7 +4524,7 @@ Using prestige points, TODO P0
 
             if (cat.type == CatType::Witch && !anyCatHexed())
             {
-                if (cat.cooldown.value < 10000.f)
+                if (cat.cooldown.value < 10'000.f)
                 {
                     if (sounds.countPlayingPooled(sounds.ritual) == 0u)
                     {
@@ -4747,6 +4845,9 @@ Using prestige points, TODO P0
                 if (cat.type == CatType::Witch && anyCatHexed())
                     continue;
 
+                if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
+                    continue;
+
                 if ((mousePos - cat.position).lengthSquared() > cat.getRadiusSquared())
                     continue;
 
@@ -4902,7 +5003,7 @@ Using prestige points, TODO P0
                             {
                                 const auto unsealedReward = static_cast<MoneyType>(
                                     static_cast<float>(shrine.collectedReward) * 1.5f);
-                                pt.money += unsealedReward;
+                                addMoney(unsealedReward);
 
                                 sounds.kaching.setPosition({shrine.position.x, shrine.position.y});
                                 playSound(sounds.kaching);
@@ -5817,6 +5918,7 @@ Using prestige points, TODO P0
 
             if (profile.showCatText)
             {
+                // Name text
                 textNameBuffer.setString(shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx]);
                 textNameBuffer.position = cat.position + sf::Vector2f{0.f, 48.f};
                 textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
@@ -5824,6 +5926,7 @@ Using prestige points, TODO P0
                 textNameBuffer.setOutlineColor(outlineColor);
                 cpuDrawableBatch.add(textNameBuffer);
 
+                // Status text
                 std::string actionString = std::to_string(cat.hits) + " " + CatConstants::actionNames[asIdx(cat.type)];
                 if (cat.type == CatType::Mouse)
                     actionString += " (x" + std::to_string(pt.mouseCatCombo + 1) + ")";
@@ -5836,10 +5939,27 @@ Using prestige points, TODO P0
                 textStatusBuffer.scale *= 0.5f;
                 cpuDrawableBatch.add(textStatusBuffer);
 
-                // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
+                // Money text
+                if (cat.moneyEarned != 0u)
+                {
+                    char moneyFmtBuffer[128]{};
+                    std::sprintf(moneyFmtBuffer, "$%s", toStringWithSeparators(cat.moneyEarned));
+
+                    textMoneyBuffer.setString(moneyFmtBuffer);
+                    textMoneyBuffer.position = cat.position + sf::Vector2f{0.f, 84.f};
+                    textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
+                    textMoneyBuffer.setOutlineColor(outlineColor);
+                    cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
+                    textMoneyBuffer.scale *= 0.5f;
+                    cpuDrawableBatch.add(textMoneyBuffer);
+                }
+
+                // TODO P2: (lib) make it possible to draw a rectangle and a text directly via batching without any of this stuff
                 rectangleShapeBuffer.setSize({cat.cooldown.value / maxCooldown * 64.f, 3.f});
                 rectangleShapeBuffer.origin   = {32.f, 0.f};
-                rectangleShapeBuffer.position = {textStatusBuffer.getBottomCenter() + sf::Vector2f{0.f, 2.f}};
+                rectangleShapeBuffer.position = {
+                    (cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter() : textStatusBuffer.getBottomCenter()) +
+                    sf::Vector2f{0.f, 2.f}};
                 rectangleShapeBuffer.setFillColor(sf::Color::White.withAlpha(128u));
                 cpuDrawableBatch.add(rectangleShapeBuffer);
             }
@@ -6124,13 +6244,13 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopDrawImGui()
     {
-        ImGui::RenderNotifications(
-            [&]
+        ImGui::RenderNotifications(/* paddingY */ profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f,
+                                   [&]
         {
             ImGui::PushFont(fontImGuiMouldyCheese);
             ImGui::SetWindowFontScale(uiToolTipFontScale);
         },
-            [&]
+                                   [&]
         {
             ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::PopFont();
@@ -6375,7 +6495,7 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCollisionsCatDoll(const float deltaTimeMs)
+    void gameLoopUpdateCollisionsCatDoll()
     {
         for (Doll& doll : pt.dolls)
             for (Cat& cat : pt.cats)
@@ -6613,10 +6733,10 @@ Using prestige points, TODO P0
                 std::snprintf(buffStrBuffer, sizeof(buffStrBuffer), "Dolls left: %zu\n", nDollsToClick));
 
         if (pt.arcaneAuraTimer > 0.f)
-            std::snprintf(buffStrBuffer + writeIdx,
-                          sizeof(buffStrBuffer) - writeIdx,
-                          "Mewltiplier Aura: %.2fs\n",
-                          static_cast<double>(pt.arcaneAuraTimer / 1000.f));
+            writeIdx = static_cast<SizeT>(std::snprintf(buffStrBuffer + writeIdx,
+                                                        sizeof(buffStrBuffer) - writeIdx,
+                                                        "Mewltiplier Aura: %.2fs\n",
+                                                        static_cast<double>(pt.arcaneAuraTimer / 1000.f)));
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
@@ -6944,6 +7064,16 @@ Using prestige points, TODO P0
             {
                 inPrestigeTransition = false;
                 pt.money             = 0u;
+
+                scroll                   = 0.f;
+                draggedCat               = nullptr;
+                catDragPressDuration     = 0.f;
+                spentMoney               = 0u;
+                moneyGainedLastSecond    = 0u;
+                moneyGainedUsAccumulator = 0u;
+                samplerMoneyPerSecond.clear();
+                bombIdxToCatIdx.clear();
+
                 splashCountdown.restart();
                 playSound(sounds.byteMeow);
             }
@@ -6979,7 +7109,7 @@ Using prestige points, TODO P0
         gameLoopUpdateCollisionsBubbleBubble(deltaTimeMs);
         gameLoopUpdateCollisionsCatCat(deltaTimeMs);
         gameLoopUpdateCollisionsCatShrine(deltaTimeMs);
-        gameLoopUpdateCollisionsCatDoll(deltaTimeMs);
+        gameLoopUpdateCollisionsCatDoll();
 
         //
         // Update cats, shrines, dolls, buffs, and magic
@@ -7105,28 +7235,22 @@ Using prestige points, TODO P0
 
         //
         // Money text & spent money effect
+        gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
+        gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
         if (shouldDrawUI)
-        {
-            gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
-            gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
             window.draw(moneyText);
-        }
 
         //
         // Combo text
-        if (shouldDrawUI)
-        {
-            gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
+        gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
+        if (shouldDrawUI && pt.comboPurchased)
             window.draw(comboText);
-        }
 
         //
         // Buff text
+        gameLoopUpdateBuffText();
         if (shouldDrawUI)
-        {
-            gameLoopUpdateBuffText();
             window.draw(buffText);
-        }
 
         //
         // Combo bar
@@ -7183,6 +7307,17 @@ Using prestige points, TODO P0
         gameLoopPrestigeAvailableReminder(); // produces notification as well
         gameLoopReminderBuyCombo();          // also handles secret combo purchase achievement
         gameLoopReminderSpendPPs();
+
+        //
+        // Update sampler
+        moneyGainedUsAccumulator += elapsedUs;
+        while (moneyGainedUsAccumulator >= 1'000'000)
+        {
+            moneyGainedUsAccumulator -= 1'000'000;
+
+            samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
+            moneyGainedLastSecond = 0u;
+        }
 
         //
         // Display window
@@ -7320,8 +7455,16 @@ int main()
 }
 
 // TODO IDEAS:
+// - prestige 8 (first prestige where repulsion shrine is required) takes too long
+// - does astrocat have a speed limit? needs one for endless flight buff
+// - maybe add checkbox to giant fan to choose power between fast (current) and slow
+// - maybe 64PP prestige buff that doubles duration of mewltiplier aura
+// - mousecat witch buff a bit too weak probably
+// - maybe 64PP prestige buff for multipop that allows "misses"
+// - notification when wizard mana is full? or when witch is ready to cast? maybe make them optional in settings?
+// - witchcat sound gets out of sync if shes inspired or boosted, split in two separate sounds...?
+// - queue imgui toasts to avoid spamming and sound spam
 // - rested buff 1PP : 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
-// - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph
 // - mousecat might need a buff
 // - sounds for hexing/unhexing (meows), also sounds for ritual and nicer ritual animation
 // - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
@@ -7336,7 +7479,6 @@ int main()
 // - prestige should scale indefinitely...? or make PP costs scale linearly, max is 20 -- or maybe when we reach max bubble value just purchase prestige points
 // - other prestige ideas: cat multipop, unicat multitransform, unicat trasnform twice in a row, unlock random special bubbles
 // - make bombs less affected by wind
-// - astrocats collide with each other when one flies but the other doesn't
 // - achievements for speedrunning milestones
 // - track generated revenue per cat, enable via PPs (maybe)
 // - track pops/actions per cat should enabled via PPs (maybe)
@@ -7345,6 +7487,8 @@ int main()
 // - maybe make "autocast spell selector" a PP upgrade for around 128PPs
 // - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs
 
+// x - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph
+// x - astrocats collide with each other when one flies but the other doesn't
 // x - add big flashing arrow when map scrolling is first unlocked to force player to scroll
 // x - bubbleValue.nPurchases == 1 and money > 500 and prestigePoints > 0 -> tip to remind to spend prestige points
 // x - show wizard buffs in buff HUD string
