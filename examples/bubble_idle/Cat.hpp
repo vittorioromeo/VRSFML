@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Aliases.hpp"
 #include "CatType.hpp"
 #include "Countdown.hpp"
 #include "TextShakeEffect.hpp"
@@ -35,12 +36,15 @@ struct [[nodiscard]] Cat
     sf::base::SizeT nameIdx;
 
     TextShakeEffect textStatusShakeEffect;
+    TextShakeEffect textMoneyShakeEffect;
 
     sf::base::U32 hits = 0u;
 
     CatType type;
 
     sf::base::Optional<BidirectionalTimer> hexedTimer;
+
+    MoneyType moneyEarned = 0u;
 
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] AstroState
@@ -59,6 +63,7 @@ struct [[nodiscard]] Cat
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
+        textMoneyShakeEffect.update(deltaTime);
         wobbleRadians = sf::base::fmod(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
     }
 

@@ -37,8 +37,7 @@
 */
 
 #define NOTIFY_MAX_MSG_LENGTH				4096		// Max message content length
-#define NOTIFY_PADDING_X					20.f		// Bottom-left X padding
-#define NOTIFY_PADDING_Y					20.f		// Bottom-left Y padding
+#define NOTIFY_PADDING_X					15.f		// Bottom-left X padding
 #define NOTIFY_PADDING_MESSAGE_Y			10.f		// Padding Y between each message
 #define NOTIFY_FADE_IN_OUT_TIME				150			// Fade in and out duration
 #define NOTIFY_DEFAULT_DISMISS				3000		// Auto dismiss after X ms (default, applied only of no data provided in constructors)
@@ -453,7 +452,7 @@ namespace ImGui
      * Each notification is rendered as a toast window with a title, content and an optional icon.
      * If a notification is expired, it is removed from the vector.
      */
-    inline void RenderNotifications(auto&& afterBegin, auto&& beforeEnd)
+    inline void RenderNotifications(const float paddingY, auto&& afterBegin, auto&& beforeEnd)
     {
         const ImVec2 mainWindowSize = GetMainViewport()->Size;
 
@@ -505,7 +504,7 @@ namespace ImGui
 
             // Set notification window position to bottom right corner of the main window, considering the main window size and location in relation to the display
             ImVec2 mainWindowPos = GetMainViewport()->Pos;
-            SetNextWindowPos(ImVec2(mainWindowPos.x + NOTIFY_PADDING_X, mainWindowPos.y + mainWindowSize.y - NOTIFY_PADDING_Y - height), ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+            SetNextWindowPos(ImVec2(mainWindowPos.x + NOTIFY_PADDING_X, mainWindowPos.y + mainWindowSize.y - paddingY - height), ImGuiCond_Always, ImVec2(0.0f, 1.0f));
 
             Begin(windowName, nullptr, currentToast->getWindowFlags() );
             afterBegin();
