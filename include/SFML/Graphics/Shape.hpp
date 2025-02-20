@@ -309,9 +309,9 @@ protected:
     base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
 
 private:
-    base::SizeT m_verticesEndIndex = 0; //!< Index where the fill vertices end and outline vertices begin
-    FloatRect   m_insideBounds;         //!< Bounding rectangle of the inside (fill)
-    FloatRect   m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
+    base::SizeT m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
+    FloatRect   m_insideBounds;          //!< Bounding rectangle of the inside (fill)
+    FloatRect   m_bounds;                //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf

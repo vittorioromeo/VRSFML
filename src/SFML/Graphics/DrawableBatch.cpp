@@ -17,6 +17,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf::priv
@@ -95,35 +96,53 @@ void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::addShapeFill(const Transform& transform, const Vertex* data, const base::SizeT size)
+{
+    if (size < 3u) [[unlikely]]
+        return;
+
+    appendShapeFillIndicesAndVertices(transform,
+                                      data,
+                                      static_cast<IndexType>(size),
+                                      m_storage.getNumVertices(),
+                                      m_storage.reserveMoreIndices(3u * (size - 2u)),
+                                      m_storage.reserveMoreVertices(size));
+
+    m_storage.commitMoreIndices(3u * (size - 2u));
+    m_storage.commitMoreVertices(size);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::addShapeOutline(const Transform& transform, const Vertex* data, const base::SizeT size)
+{
+    if (size < 3u) [[unlikely]]
+        return;
+
+    appendShapeOutlineIndicesAndVertices(transform,
+                                         data,
+                                         static_cast<IndexType>(size),
+                                         m_storage.getNumVertices(),
+                                         m_storage.reserveMoreIndices(3u * (size - 2u)),
+                                         m_storage.reserveMoreVertices(size));
+
+    m_storage.commitMoreIndices(3u * (size - 2u));
+    m_storage.commitMoreVertices(size);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 {
     const auto transform = shape.getTransform();
 
-    if (const auto [fillData, fillSize] = shape.getFillVertices(); fillSize > 2u)
-    {
-        appendShapeFillIndicesAndVertices(transform,
-                                          fillData,
-                                          static_cast<IndexType>(fillSize),
-                                          m_storage.getNumVertices(),
-                                          m_storage.reserveMoreIndices(3u * (fillSize - 2u)),
-                                          m_storage.reserveMoreVertices(fillSize));
+    const auto [fillData, fillSize]       = shape.getFillVertices();
+    const auto [outlineData, outlineSize] = shape.getOutlineVertices();
 
-        m_storage.commitMoreIndices(3u * (fillSize - 2u));
-        m_storage.commitMoreVertices(fillSize);
-    }
-
-    if (const auto [outlineData, outlineSize] = shape.getOutlineVertices(); outlineSize > 2u)
-    {
-        appendShapeOutlineIndicesAndVertices(transform,
-                                             outlineData,
-                                             static_cast<IndexType>(outlineSize),
-                                             m_storage.getNumVertices(),
-                                             m_storage.reserveMoreIndices(3u * (outlineSize - 2u)),
-                                             m_storage.reserveMoreVertices(outlineSize));
-
-        m_storage.commitMoreIndices(3u * (outlineSize - 2u));
-        m_storage.commitMoreVertices(outlineSize);
-    }
+    addShapeFill(transform, fillData, fillSize);
+    addShapeOutline(transform, outlineData, outlineSize);
 }
 
 
@@ -136,39 +155,34 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
     // TODO P1: improve, also add to RenderTarget
 
-    // const auto [sine, cosine] = base::fastSinCos(sdCircle.rotation.asRadians());
-    // const auto transform = Transform::from(sdCircle.position, sdCircle.scale, sdCircle.origin, sine, cosine);
+    base::TrivialVector<Vertex> vertices;
+    base::SizeT                 verticesEndIndex = 0u;
 
-    m_shapeBuffer.position = sdCircle.position;
-    m_shapeBuffer.scale    = sdCircle.scale;
-    m_shapeBuffer.origin   = sdCircle.origin;
-    m_shapeBuffer.rotation = sdCircle.rotation;
-
-    m_shapeBuffer.m_vertices.resize(sdCircle.pointCount + 2u); // + 2 for center and repeated first point
-    m_shapeBuffer.m_verticesEndIndex = sdCircle.pointCount + 2u;
+    vertices.resize(sdCircle.pointCount + 2u); // + 2 for center and repeated first point
+    verticesEndIndex = sdCircle.pointCount + 2u;
 
     //
     // Update vertex positions
     const float angleStep = sf::base::tau / static_cast<float>(sdCircle.pointCount);
 
     for (unsigned int i = 0u; i < sdCircle.pointCount; ++i)
-        m_shapeBuffer.m_vertices[1u + i].position = computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius);
+        vertices[1u + i].position = computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius);
 
-    m_shapeBuffer.m_vertices[1u + sdCircle.pointCount].position = m_shapeBuffer.m_vertices[1].position;
+    vertices[1u + sdCircle.pointCount].position = vertices[1].position;
 
     //
     // Update the bounding rectangle
-    m_shapeBuffer.m_vertices[0] = m_shapeBuffer.m_vertices[1]; // so that the result of getBounds() is correct
-    const auto insideBounds = getVertexRangeBounds(m_shapeBuffer.m_vertices.data(), m_shapeBuffer.m_verticesEndIndex);
+    vertices[0]             = vertices[1]; // so that the result of getBounds() is correct
+    const auto insideBounds = getVertexRangeBounds(vertices.data(), verticesEndIndex);
 
     // Compute the center and make it the first vertex
-    m_shapeBuffer.m_vertices[0].position = insideBounds.getCenter();
+    vertices[0].position = insideBounds.getCenter();
 
     //
     // Update fill color
     {
-        const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex;
-        for (Vertex* vertex = m_shapeBuffer.m_vertices.data(); vertex != end; ++vertex)
+        const auto* end = vertices.data() + verticesEndIndex;
+        for (Vertex* vertex = vertices.data(); vertex != end; ++vertex)
             vertex->color = sdCircle.fillColor;
     }
 
@@ -178,7 +192,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
     const Vector2f safeInsideSize(insideBounds.size.x > 0 ? insideBounds.size.x : 1.f,
                                   insideBounds.size.y > 0 ? insideBounds.size.y : 1.f);
 
-    for (Vertex& vertex : m_shapeBuffer.m_vertices)
+    for (Vertex& vertex : vertices)
     {
         const Vector2f ratio = (vertex.position - insideBounds.position).componentWiseDiv(safeInsideSize);
         vertex.texCoords     = sdCircle.textureRect.position + sdCircle.textureRect.size.componentWiseMul(ratio);
@@ -190,32 +204,36 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
     // Update outline if needed
     if (sdCircle.outlineThickness == 0.f)
     {
-        m_shapeBuffer.m_verticesEndIndex = m_shapeBuffer.m_vertices.size();
+        verticesEndIndex = vertices.size();
         // TODO: can we return here?
     }
     else
     {
-        const base::SizeT count = m_shapeBuffer.m_vertices.size() - 2;
-        m_shapeBuffer.m_vertices.resize(m_shapeBuffer.m_verticesEndIndex + (count + 1) * 2);
+        const base::SizeT count = vertices.size() - 2;
+        vertices.resize(verticesEndIndex + (count + 1) * 2);
 
-        updateOutlineImpl(sdCircle.outlineThickness, m_shapeBuffer.m_verticesEndIndex, m_shapeBuffer.m_vertices.data(), count);
+        updateOutlineImpl(sdCircle.outlineThickness, verticesEndIndex, vertices.data(), count);
 
         //
         // Update outline colors
         {
-            const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_vertices.size();
-            for (Vertex* vertex = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex; vertex != end; ++vertex)
+            const auto* end = vertices.data() + vertices.size();
+            for (Vertex* vertex = vertices.data() + verticesEndIndex; vertex != end; ++vertex)
                 vertex->color = sdCircle.outlineColor;
         }
 
         //
         // Update outline tex coords
-        const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_vertices.size();
-        for (Vertex* vertex = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex; vertex != end; ++vertex)
+        const auto* end = vertices.data() + vertices.size();
+        for (Vertex* vertex = vertices.data() + verticesEndIndex; vertex != end; ++vertex)
             vertex->texCoords = sdCircle.outlineTextureRect.position;
     }
 
-    add(m_shapeBuffer);
+    const auto [sine, cosine] = base::fastSinCos(sdCircle.rotation.asRadians());
+    const auto transform      = Transform::from(sdCircle.position, sdCircle.scale, sdCircle.origin, sine, cosine);
+
+    addShapeFill(transform, vertices.data(), verticesEndIndex);
+    addShapeOutline(transform, vertices.data() + verticesEndIndex, vertices.size() - verticesEndIndex);
 }
 
 
