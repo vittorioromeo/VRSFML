@@ -172,7 +172,7 @@ inline constexpr PSVData multiPopRange //
 
 inline constexpr PSVData inspireDurationMult //
     {.nMaxPurchases = 20u,
-     .cost          = {.initial = 2.f, .linear = 2.f, .exponential = 1.75f},
+     .cost          = {.initial = 2.f, .linear = 2.f, .exponential = 1.8f},
      .value         = {.initial = 1.f, .linear = 0.15f}};
 
 inline constexpr PSVData manaCooldownMult //
@@ -187,7 +187,7 @@ inline constexpr PSVData manaMaxMult //
 
 inline constexpr PSVData spellCount //
     {.nMaxPurchases = 4u,
-     .cost          = {.initial = 3500.f, .linear = -24000.f, .exponential = 9.f, .flat = -3250.f},
+     .cost          = {.initial = 3500.f, .linear = -24000.f, .exponential = 8.f, .flat = -3250.f},
      .value         = {.initial = 0.f, .linear = 1.f}};
 
 inline constexpr PSVData mouseCatGlobalBonusMult //

@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Shape.hpp"
 
 #include "SFML/System/Vector2.hpp"
@@ -26,14 +27,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
-    {
-        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
-        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
-
-        float        radius{0.f};     //!< Radius of the circle
-        unsigned int pointCount{30u}; //!< Number of points composing the circle
-    };
+    using Settings = CircleShapeData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

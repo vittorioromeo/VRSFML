@@ -15,10 +15,10 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>

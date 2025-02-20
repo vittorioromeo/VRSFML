@@ -5,9 +5,8 @@
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] Particle
+struct [[nodiscard]] Particle : ParticleData
 {
-    ParticleData data;
     sf::base::U8 hueByte = 0u;
     ParticleType type;
 };

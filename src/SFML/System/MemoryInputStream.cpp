@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/MemoryInputStream.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 
 

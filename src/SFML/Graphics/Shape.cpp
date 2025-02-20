@@ -7,6 +7,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
+#include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 
@@ -14,46 +15,6 @@
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-// Compute the normal of a segment
-[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2)
-{
-    const sf::Vector2f normal = (p2 - p1).perpendicular();
-    const float        length = normal.length();
-
-    return length != 0.f ? normal / length : normal;
-}
-
-////////////////////////////////////////////////////////////
-// Get bounds of a vertex range
-[[nodiscard]] sf::FloatRect getVertexRangeBounds(const sf::Vertex* data, const sf::base::SizeT nVertices)
-{
-    if (nVertices == 0)
-        return {};
-
-    float left   = data[0].position.x;
-    float top    = data[0].position.y;
-    float right  = data[0].position.x;
-    float bottom = data[0].position.y;
-
-    for (sf::base::SizeT i = 1; i < nVertices; ++i)
-    {
-        const sf::Vector2f position = data[i].position;
-
-        left   = position.x < left ? position.x : left;
-        right  = position.x > right ? position.x : right;
-        top    = position.y < top ? position.y : top;
-        bottom = position.y > bottom ? position.y : bottom;
-    }
-
-    return {{left, top}, {right - left, bottom - top}};
-}
-
-} // namespace
 
 
 namespace sf
@@ -195,7 +156,7 @@ void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
     for (base::SizeT i = 0; i < pointCount; ++i)
         m_vertices[i + 1].position = points[i];
 
-    updateImplFromVerticesPositions(pointCount);
+    updateImplFromVerticesPositions(pointCount, /* mustUpdateBounds */ true);
 }
 
 
@@ -216,7 +177,7 @@ bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
+void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount, const bool mustUpdateBounds)
 {
     m_vertices[pointCount + 1].position = m_vertices[1].position;
 
@@ -230,7 +191,7 @@ void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
     // Updates
     updateFillColors();
     updateTexCoords();
-    updateOutline();
+    updateOutline(mustUpdateBounds);
     updateOutlineTexCoords();
 }
 
@@ -289,57 +250,30 @@ void Shape::updateOutlineTexCoords()
 
 
 ////////////////////////////////////////////////////////////
-void Shape::updateOutline()
+void Shape::updateOutline(const bool mustUpdateBounds)
 {
     // Return if there is no outline
     if (m_outlineThickness == 0.f)
     {
         m_verticesEndIndex = m_vertices.size();
-        m_bounds           = m_insideBounds;
+
+        if (mustUpdateBounds)
+            m_bounds = m_insideBounds;
+
         return;
     }
 
     const base::SizeT count = m_vertices.size() - 2;
     m_vertices.resize(m_verticesEndIndex + (count + 1) * 2);
 
-    for (base::SizeT i = 0; i < count; ++i)
-    {
-        const base::SizeT index = i + 1;
-
-        // Get the two segments shared by the current point
-        const Vector2f p0 = (i == 0) ? m_vertices[count].position : m_vertices[index - 1].position;
-        const Vector2f p1 = m_vertices[index].position;
-        const Vector2f p2 = m_vertices[index + 1].position;
-
-        // Compute their normal
-        Vector2f n1 = computeNormal(p0, p1);
-        Vector2f n2 = computeNormal(p1, p2);
-
-        // Make sure that the normals point towards the outside of the shape
-        // (this depends on the order in which the points were defined)
-        if (n1.dot(m_vertices[0].position - p1) > 0)
-            n1 = -n1;
-        if (n2.dot(m_vertices[0].position - p1) > 0)
-            n2 = -n2;
-
-        // Combine them to get the extrusion direction
-        const float    factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
-        const Vector2f normal = (n1 + n2) / factor;
-
-        // Update the outline points
-        m_vertices[m_verticesEndIndex + (i * 2 + 0)].position = p1;
-        m_vertices[m_verticesEndIndex + (i * 2 + 1)].position = p1 + normal * m_outlineThickness;
-    }
-
-    // Duplicate the first point at the end, to close the outline
-    m_vertices[m_verticesEndIndex + (count * 2 + 0)].position = m_vertices[m_verticesEndIndex + 0].position;
-    m_vertices[m_verticesEndIndex + (count * 2 + 1)].position = m_vertices[m_verticesEndIndex + 1].position;
+    updateOutlineImpl(m_outlineThickness, m_verticesEndIndex, m_vertices.data(), count);
 
     // Update outline colors
     updateOutlineColors();
 
     // Update the shape's bounds from outline vertices
-    m_bounds = getVertexRangeBounds(m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex);
+    if (mustUpdateBounds)
+        m_bounds = getVertexRangeBounds(m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex);
 }
 
 

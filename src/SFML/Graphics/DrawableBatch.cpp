@@ -3,11 +3,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
+#include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -18,6 +21,7 @@
 
 namespace sf::priv
 {
+
 ////////////////////////////////////////////////////////////
 PersistentGPUStorage::PersistentGPUStorage(RenderTarget& renderTarget) :
 vboPersistentBuffer{renderTarget.getVBOPersistentBuffer()},
@@ -120,6 +124,148 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
         m_storage.commitMoreIndices(3u * (outlineSize - 2u));
         m_storage.commitMoreVertices(outlineSize);
     }
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
+{
+    if (sdCircle.pointCount < 3u) [[unlikely]]
+        return;
+
+    // TODO P1: improve, also add to RenderTarget
+
+    // const auto [sine, cosine] = base::fastSinCos(sdCircle.rotation.asRadians());
+    // const auto transform = Transform::from(sdCircle.position, sdCircle.scale, sdCircle.origin, sine, cosine);
+
+    m_shapeBuffer.position = sdCircle.position;
+    m_shapeBuffer.scale    = sdCircle.scale;
+    m_shapeBuffer.origin   = sdCircle.origin;
+    m_shapeBuffer.rotation = sdCircle.rotation;
+
+    m_shapeBuffer.m_vertices.resize(sdCircle.pointCount + 2u); // + 2 for center and repeated first point
+    m_shapeBuffer.m_verticesEndIndex = sdCircle.pointCount + 2u;
+
+    //
+    // Update vertex positions
+    const float angleStep = sf::base::tau / static_cast<float>(sdCircle.pointCount);
+
+    for (unsigned int i = 0u; i < sdCircle.pointCount; ++i)
+        m_shapeBuffer.m_vertices[1u + i].position = computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius);
+
+    m_shapeBuffer.m_vertices[1u + sdCircle.pointCount].position = m_shapeBuffer.m_vertices[1].position;
+
+    //
+    // Update the bounding rectangle
+    m_shapeBuffer.m_vertices[0] = m_shapeBuffer.m_vertices[1]; // so that the result of getBounds() is correct
+    const auto insideBounds = getVertexRangeBounds(m_shapeBuffer.m_vertices.data(), m_shapeBuffer.m_verticesEndIndex);
+
+    // Compute the center and make it the first vertex
+    m_shapeBuffer.m_vertices[0].position = insideBounds.getCenter();
+
+    //
+    // Update fill color
+    {
+        const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex;
+        for (Vertex* vertex = m_shapeBuffer.m_vertices.data(); vertex != end; ++vertex)
+            vertex->color = sdCircle.fillColor;
+    }
+
+    //
+    // Update tex coords
+    // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
+    const Vector2f safeInsideSize(insideBounds.size.x > 0 ? insideBounds.size.x : 1.f,
+                                  insideBounds.size.y > 0 ? insideBounds.size.y : 1.f);
+
+    for (Vertex& vertex : m_shapeBuffer.m_vertices)
+    {
+        const Vector2f ratio = (vertex.position - insideBounds.position).componentWiseDiv(safeInsideSize);
+        vertex.texCoords     = sdCircle.textureRect.position + sdCircle.textureRect.size.componentWiseMul(ratio);
+    }
+
+    // TODO: we can already add fill vertices here
+
+    //
+    // Update outline if needed
+    if (sdCircle.outlineThickness == 0.f)
+    {
+        m_shapeBuffer.m_verticesEndIndex = m_shapeBuffer.m_vertices.size();
+        // TODO: can we return here?
+    }
+    else
+    {
+        const base::SizeT count = m_shapeBuffer.m_vertices.size() - 2;
+        m_shapeBuffer.m_vertices.resize(m_shapeBuffer.m_verticesEndIndex + (count + 1) * 2);
+
+        updateOutlineImpl(sdCircle.outlineThickness, m_shapeBuffer.m_verticesEndIndex, m_shapeBuffer.m_vertices.data(), count);
+
+        //
+        // Update outline colors
+        {
+            const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_vertices.size();
+            for (Vertex* vertex = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex; vertex != end; ++vertex)
+                vertex->color = sdCircle.outlineColor;
+        }
+
+        //
+        // Update outline tex coords
+        const auto* end = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_vertices.size();
+        for (Vertex* vertex = m_shapeBuffer.m_vertices.data() + m_shapeBuffer.m_verticesEndIndex; vertex != end; ++vertex)
+            vertex->texCoords = sdCircle.outlineTextureRect.position;
+    }
+
+    add(m_shapeBuffer);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
+{
+    // TODO P1: improve, also add to RenderTarget
+
+    // const auto [sine, cosine] = base::fastSinCos(sdRectangle.rotation.asRadians());
+    // const auto transform = Transform::from(sdRectangle.position, sdRectangle.scale, sdRectangle.origin, sine, cosine);
+
+    m_shapeBuffer.position = sdRectangle.position;
+    m_shapeBuffer.scale    = sdRectangle.scale;
+    m_shapeBuffer.origin   = sdRectangle.origin;
+    m_shapeBuffer.rotation = sdRectangle.rotation;
+
+    m_shapeBuffer.m_textureRect        = sdRectangle.textureRect;
+    m_shapeBuffer.m_outlineTextureRect = sdRectangle.outlineTextureRect;
+    m_shapeBuffer.m_fillColor          = sdRectangle.fillColor;
+    m_shapeBuffer.m_outlineColor       = sdRectangle.outlineColor;
+    m_shapeBuffer.m_outlineThickness   = sdRectangle.outlineThickness;
+
+    m_shapeBuffer.m_vertices.resize(4u + 2u); // + 2 for center and repeated first point
+    m_shapeBuffer.m_verticesEndIndex = 4u + 2u;
+
+    //
+    // Update vertex positions
+    m_shapeBuffer.m_vertices[1u + 0u].position = {0.f, 0.f};
+    m_shapeBuffer.m_vertices[1u + 1u].position = {sdRectangle.size.x, 0.f};
+    m_shapeBuffer.m_vertices[1u + 2u].position = {sdRectangle.size.x, sdRectangle.size.y};
+    m_shapeBuffer.m_vertices[1u + 3u].position = {0.f, sdRectangle.size.y};
+
+    m_shapeBuffer.m_vertices[1u + 4u].position = m_shapeBuffer.m_vertices[1].position;
+
+    //
+    // Update the bounding rectangle
+    m_shapeBuffer.m_vertices[0] = m_shapeBuffer.m_vertices[1]; // so that the result of getBounds() is correct
+    m_shapeBuffer.m_insideBounds = getVertexRangeBounds(m_shapeBuffer.m_vertices.data(), m_shapeBuffer.m_verticesEndIndex);
+
+    // Compute the center and make it the first vertex
+    m_shapeBuffer.m_vertices[0].position = m_shapeBuffer.m_insideBounds.getCenter();
+
+    // Updates
+    m_shapeBuffer.updateFillColors();
+    m_shapeBuffer.updateTexCoords();
+    m_shapeBuffer.updateOutline(/* mustUpdateBounds */ false);
+    m_shapeBuffer.updateOutlineTexCoords();
+
+    add(m_shapeBuffer);
 }
 
 
