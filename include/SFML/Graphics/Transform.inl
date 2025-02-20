@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Transform.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/Base/MinMax.hpp"
+
 
 namespace sf
 {

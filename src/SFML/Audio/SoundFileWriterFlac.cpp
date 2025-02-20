@@ -13,6 +13,7 @@
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 

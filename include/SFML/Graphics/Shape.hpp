@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -18,28 +19,22 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                                \
-    ::sf::FloatRect textureRect{};                    /*!< Area of the source texture to display for the fill */    \
-    ::sf::FloatRect outlineTextureRect{};             /*!< Area of the source texture to display for the outline */ \
-    ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
-    ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
-    float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
-    using sfPrivSwallowSemicolon1 = void
-
-
-////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class CPUDrawableBatch;
 class RenderTarget;
 class Texture;
 struct Color;
 struct RenderStates;
 } // namespace sf
+
+namespace sf::priv
+{
+template <typename TStorage>
+class DrawableBatchImpl;
+}
 
 
 namespace sf
@@ -257,10 +252,13 @@ protected:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void updateImplFromVerticesPositions(base::SizeT pointCount);
+    void updateImplFromVerticesPositions(base::SizeT pointCount, bool mustUpdateBounds);
 
 private:
     friend RenderTarget;
+
+    template <typename TStorage>
+    friend class priv::DrawableBatchImpl;
 
     ////////////////////////////////////////////////////////////
     /// \brief Draws the shape on `renderTarget` with the given `texture` and `states`
@@ -290,7 +288,7 @@ private:
     /// \brief Update the outline vertices' position
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutline();
+    void updateOutline(bool mustUpdateBounds);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' color

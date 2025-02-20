@@ -36,5 +36,7 @@ struct [[nodiscard]] Profile
     bool showCoinParticles = true;
     bool showDpsMeter      = true;
 
+    bool showFullManaNotification = true;
+
     bool unlockedAchievements[nAchievements] = {};
 };

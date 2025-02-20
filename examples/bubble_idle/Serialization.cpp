@@ -291,6 +291,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     showCoinParticles,
     showDpsMeter,
 
+    showFullManaNotification,
+
     unlockedAchievements);
 
 ////////////////////////////////////////////////////////////
@@ -306,6 +308,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BubbleIgnoreFlags,
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     Playthrough::Permanent,
 
+    starterPackPurchased,
     multiPopPurchased,
     smartCatsPurchased,
     geniusCatsPurchased,
@@ -318,8 +321,11 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     witchCatBuffPowerScalesWithNCats,
     witchCatBuffPowerScalesWithMapSize,
     witchCatBuffFewerDolls,
+    witchCatBuffFlammableDolls,
     witchCatBuffOrbitalDolls,
-    unsealedByType);
+    shrineCompletedOnceByType,
+    unsealedByType,
+    wizardCatDoubleMewltiplierDuration);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -365,7 +371,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     mana,
     absorbingWisdom,
     wisdom,
-    arcaneAuraTimer,
+    mewltiplierAuraTimer,
 
     mouseCatCombo,
     mouseCatComboCountdown,
@@ -374,7 +380,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
 
     multiPopEnabled,
     multiPopMouseCatEnabled,
-    windEnabled,
+    windStrength,
     geniusCatIgnoreBubbles,
     repulsoCatIgnoreBubbles,
     attractoCatIgnoreBubbles,
