@@ -84,15 +84,17 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static inline constexpr float getRadius() noexcept
+    static inline constexpr float radius = 64.f;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr float getRadius() const noexcept
     {
-        return 64.f;
+        return radius;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr float getRadiusSquared() noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float getRadiusSquared() const noexcept
     {
-        constexpr float radius = getRadius();
         return radius * radius;
     }
 

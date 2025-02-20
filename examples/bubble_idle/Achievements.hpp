@@ -136,6 +136,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Divine Loop", "Prestige 15 times."},
     {"God of Pops", "Prestige 20 times."},
 
+    {"Locked'n'Loaded", "Purchase the \"Starter Pack\" permanent upgrade."},
     {"Pop Goes the Weasel", "Purchase the \"Multipop\" permanent upgrade."},
     {"Popcorn Popper", "Improve multipop range once."},
     {"Fireworks Factory", "Improve multipop range 2 times."},
@@ -255,6 +256,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Spiritual Clowder", "Purchase the \"Group Ritual\" permanent upgrade."},
     {"Cult Classic", "Purchase the \"Worldwide Cult\" permanent upgrade."},
     {"Doll Inflation", "Purchase the \"Material Shortage\" permanent upgrade."},
+    {"Boomdoo", "Purchase the \"Flammable Dolls\" permanent upgrade."},
     {"Space Junk Cleanup", "Purchase the \"Orbital Dolls\" permanent upgrade."},
 
     {"Double Mojo", "Have two Witchcat ritual buffs active at once."},
@@ -321,6 +323,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Monumental Autoclicker", "Reach combo x125 with Mousecat."},
     {"Mammoth Autoclicker", "Reach combo x150 with Mousecat."},
     {"Mythic Autoclicker", "Reach combo x175 with Mousecat."},
+    {"Hello, Mouse? Mouse Broke", "Reach combo x999 with Mousecat."},
 
     {"Speedy Squeak", "Improve Mousecat cooldown once."},
     {"Triple Squeak Sprint", "Improve Mousecat cooldown 3 times."},

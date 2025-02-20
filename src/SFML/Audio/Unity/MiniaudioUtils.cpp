@@ -1,4 +1,4 @@
-#include "SFML/Copyright.hpp" // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -12,9 +12,9 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 #include <miniaudio.h>
@@ -68,20 +68,22 @@ impl(thePlaybackDevice)
     if (const ma_result result = ma_data_source_init(&config, &impl->dataSourceBase); result != MA_SUCCESS)
         fail("initialize audio data source", result);
 
-    impl->resourceEntryIndex = impl->playbackDevice->registerResource(
-        this,
-        [](void* ptr) { static_cast<SoundBase*>(ptr)->deinitialize(); },
-        reinitializeFunc,
-        [](void* ptr, PlaybackDevice& newPlaybackDevice, PlaybackDevice::ResourceEntryIndex newIndex)
-        {
-            static_cast<SoundBase*>(ptr)->impl->playbackDevice     = &newPlaybackDevice;
-            static_cast<SoundBase*>(ptr)->impl->resourceEntryIndex = newIndex;
+    impl->resourceEntryIndex = impl->playbackDevice->registerResource(this,
+                                                                      [](void* ptr)
+    { static_cast<SoundBase*>(ptr)->deinitialize(); },
+                                                                      reinitializeFunc,
+                                                                      [](void*           ptr,
+                                                                         PlaybackDevice& newPlaybackDevice,
+                                                                         PlaybackDevice::ResourceEntryIndex newIndex)
+    {
+        static_cast<SoundBase*>(ptr)->impl->playbackDevice     = &newPlaybackDevice;
+        static_cast<SoundBase*>(ptr)->impl->resourceEntryIndex = newIndex;
 
-            SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice,
-                                           SoundBase,
-                                           static_cast<SoundBase*>(ptr),
-                                           static_cast<SoundBase*>(ptr)->impl->playbackDevice);
-        });
+        SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice,
+                                       SoundBase,
+                                       static_cast<SoundBase*>(ptr),
+                                       static_cast<SoundBase*>(ptr)->impl->playbackDevice);
+    });
 
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
 }

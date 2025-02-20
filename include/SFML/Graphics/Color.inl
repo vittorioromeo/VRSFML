@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/Algorithm.hpp" // TODO P1: split min and max into separate headers
+#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 
 namespace sf

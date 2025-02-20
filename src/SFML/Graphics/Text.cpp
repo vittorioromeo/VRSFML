@@ -15,13 +15,11 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Floor.hpp"
-#include "SFML/Base/Math/Fmax.hpp"
-#include "SFML/Base/Math/Fmin.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
 
@@ -553,8 +551,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
         if ((curChar == U' ') || (curChar == U'\n') || (curChar == U'\t'))
         {
             // Update the current bounds (min coordinates)
-            minX = base::fmin(minX, x);
-            minY = base::fmin(minY, y);
+            minX = base::min(minX, x);
+            minY = base::min(minY, y);
 
             switch (curChar)
             {
@@ -571,8 +569,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
             }
 
             // Update the current bounds (max coordinates)
-            maxX = base::fmax(maxX, x);
-            maxY = base::fmax(maxY, y);
+            maxX = base::max(maxX, x);
+            maxY = base::max(maxY, y);
 
             // Next glyph, no need to create a quad for whitespace
             continue;
@@ -597,10 +595,10 @@ void Text::ensureGeometryUpdate(const Font& font) const
         const Vector2f p1 = glyph.bounds.position;
         const Vector2f p2 = glyph.bounds.position + glyph.bounds.size;
 
-        minX = base::fmin(minX, x + p1.x - italicShear * p2.y);
-        maxX = base::fmax(maxX, x + p2.x - italicShear * p1.y);
-        minY = base::fmin(minY, y + p1.y);
-        maxY = base::fmax(maxY, y + p2.y);
+        minX = base::min(minX, x + p1.x - italicShear * p2.y);
+        maxX = base::max(maxX, x + p2.x - italicShear * p1.y);
+        minY = base::min(minY, y + p1.y);
+        maxY = base::max(maxY, y + p2.y);
 
         // Advance to the next character
         x += glyph.advance + letterSpacing;
