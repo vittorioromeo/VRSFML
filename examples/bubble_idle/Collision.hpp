@@ -85,9 +85,9 @@ struct [[nodiscard]] CollisionResolution
     const float        overlap      = sumRadii - distance; // Amount of overlap
     const sf::Vector2f displacement = normal * overlap * softnessFactor;
 
-    return sf::base::makeOptional( //
-        CollisionResolution{.iDisplacement   = -displacement * (m2 * totalMassInv),
-                            .jDisplacement   = displacement * (m1 * totalMassInv),
-                            .iVelocityChange = velocityChangeI,
-                            .jVelocityChange = velocityChangeJ});
+    return sf::base::makeOptional<CollisionResolution>( //
+        /* iDisplacement */ -displacement * (m2 * totalMassInv),
+        /* jDisplacement */ displacement * (m1 * totalMassInv),
+        /* iVelocityChange */ velocityChangeI,
+        /* jVelocityChange */ velocityChangeJ);
 }

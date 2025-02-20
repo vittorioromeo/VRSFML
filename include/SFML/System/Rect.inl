@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Rect.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 
 namespace sf

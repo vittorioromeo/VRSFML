@@ -25,7 +25,7 @@ void RectangleShape::setSize(Vector2f size)
     m_size = size;
 
     const Vector2f points[]{{0.f, 0.f}, {m_size.x, 0.f}, {m_size.x, m_size.y}, {0.f, m_size.y}};
-    update(points, /* pointCount */ 4);
+    update(points, /* pointCount */ 4u);
 }
 
 

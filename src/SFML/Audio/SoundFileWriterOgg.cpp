@@ -13,6 +13,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 #include <vorbis/vorbisenc.h>
 

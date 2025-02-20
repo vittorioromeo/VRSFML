@@ -1,6 +1,7 @@
 #include "Achievements.hpp"
 #include "Aliases.hpp"
 #include "Bubble.hpp"
+#include "BubbleType.hpp"
 #include "Cat.hpp"
 #include "CatConstants.hpp"
 #include "CatNames.hpp"
@@ -33,7 +34,7 @@
 
 #include "SFML/ImGui/ImGui.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -78,10 +79,10 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
-
-#include <unordered_map>
+#include "SFML/Base/SizeT.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -93,6 +94,7 @@
 #include <latch>
 #include <random>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -102,7 +104,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_STR "v0.0.7"
+#define BUBBLEBYTE_VERSION_STR "v0.0.8"
 
 
 namespace
@@ -134,9 +136,8 @@ bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBu
 ////////////////////////////////////////////////////////////
 bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 {
-    const auto result =
-        // NOLINTNEXTLINE(readability-static-accessed-through-instance)
-        handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iCat.getRadius(), jCat.getRadius(), 1.f, 1.f);
+    const auto
+        result = handleCollision(deltaTimeMs, iCat.position, jCat.position, {}, {}, iCat.getRadius(), jCat.getRadius(), 1.f, 1.f);
 
     if (!result.hasValue())
         return false;
@@ -153,9 +154,7 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 ////////////////////////////////////////////////////////////
 bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 {
-    const auto result =
-        // NOLINTNEXTLINE(readability-static-accessed-through-instance)
-        handleCollision(deltaTimeMs, cat.position, shrine.position, {}, {}, cat.getRadius(), 64.f, 1.f, 1.f);
+    const auto result = handleCollision(deltaTimeMs, cat.position, shrine.position, {}, {}, cat.getRadius(), 64.f, 1.f, 1.f);
 
     if (!result.hasValue())
         return false;
@@ -177,12 +176,13 @@ bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] inline constexpr float getComboValueMult(const int n)
-{
-    constexpr float initial = 1.f;
-    constexpr float decay   = 0.95f;
+inline constexpr auto playerComboDecay   = 0.95f;
+inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat (higher reward)
 
-    return initial * (1.f - sf::base::pow(decay, static_cast<float>(n))) / (1.f - decay);
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline]] inline constexpr float getComboValueMult(const int n, const float decay)
+{
+    return (1.f - sf::base::pow(decay, static_cast<float>(n))) / (1.f - decay);
 }
 
 ////////////////////////////////////////////////////////////
@@ -516,6 +516,7 @@ struct Main
     // Batches for drawing
     sf::CPUDrawableBatch bubbleDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
+    sf::CPUDrawableBatch catTextDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
     sf::CPUDrawableBatch hudTopDrawableBatch; // drawn on top of ImGui
 
@@ -569,11 +570,6 @@ struct Main
     std::string tipString;
 
     ////////////////////////////////////////////////////////////
-    // Shape buffers
-    sf::CircleShape    circleShapeBuffer{{.outlineTextureRect = txrWhiteDot, .outlineThickness = 1.f}};
-    sf::RectangleShape rectangleShapeBuffer{{}};
-
-    ////////////////////////////////////////////////////////////
     // Text buffers
     sf::Text textNameBuffer{fontSuperBakery,
                             {.characterSize    = 48u,
@@ -619,6 +615,17 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
     std::unordered_map<sf::base::SizeT, sf::base::SizeT> bombIdxToCatIdx;
+
+    ////////////////////////////////////////////////////////////
+    // Notification queue
+    struct NotificationData
+    {
+        const char* title;
+        std::string content;
+    };
+
+    std::vector<NotificationData> notificationQueue;
+    TargetedCountdown             notificationCountdown{.startingValue = 750.f};
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -735,7 +742,7 @@ struct Main
             return;
 
         for (SizeT i = 0; i < n; ++i)
-            implEmplaceParticle(position, args...).data.accelerationY = 0.f;
+            implEmplaceParticle(position, args...).accelerationY = 0.f;
     }
 
     ////////////////////////////////////////////////////////////
@@ -746,9 +753,9 @@ struct Main
 
         for (SizeT i = 0; i < n; ++i)
         {
-            auto& p              = implEmplaceParticle(position, args...);
-            p.data.accelerationY = 0.f;
-            p.hueByte            = hueToByte(hue);
+            auto& p         = implEmplaceParticle(position, args...);
+            p.accelerationY = 0.f;
+            p.hueByte       = hueToByte(hue);
         }
     }
 
@@ -1184,6 +1191,8 @@ The scriptures say that they "unlock a Magic menu", but nobody knows what that m
 They stole a Logicat gaming mouse and they're now on the run. Surprisingly, the mouse still works even though it's not plugged in to anything.
 
 Able to keep up a combo like for manual popping, and empowers nearby cats to pop bubbles with Mousecat's current combo multiplier.
+
+Is affected by both cat reward value multipliers and click reward value multipliers, including their own buff.
 
 Provides a global click reward value multiplier (upgradable via PPs) by merely existing... Logicat does know how to make a good mouse.
 )",
@@ -1833,7 +1842,7 @@ Using prestige points, TODO P0
 
         std::sprintf(uiTooltipBuffer,
                      "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
-                     "one.\n\nCombos expires on misclicks and over time, but can be upgraded to last "
+                     "one.\n\nCombos expire on misclicks and over time, but can be upgraded to last "
                      "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
         uiLabelBuffer[0] = '\0';
         if (makePurchasableButtonOneTime("Combo", 20u, pt.comboPurchased))
@@ -2275,16 +2284,18 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    bool uiRadio(const char* label, int* i, const int value)
+    {
+        if (!ImGui::RadioButton(label, i, value))
+            return false;
+
+        playSound(sounds.btnswitch);
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBarPrestige()
     {
-        ImGui::SetWindowFontScale(uiNormalFontScale);
-        ImGui::Text("Prestige to:");
-
-        ImGui::SetWindowFontScale(0.75f);
-        ImGui::Text("- increase bubble value permanently");
-        ImGui::Text("- reset all your other progress");
-        ImGui::Text("- obtain prestige points");
-
         ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::Separator();
 
@@ -2322,6 +2333,7 @@ Using prestige points, TODO P0
         uiButtonHueMod = 0.f;
         ImGui::SetWindowFontScale(0.75f);
 
+
         const auto currentMult = static_cast<SizeT>(pt.psvBubbleValue.currentValue()) + 1u;
 
         ImGui::Text("(next prestige: $%s)", toStringWithSeparators(nextCost));
@@ -2347,10 +2359,12 @@ Using prestige points, TODO P0
         ImGui::SetWindowFontScale(uiNormalFontScale);
         ImGui::Separator();
 
-        ImGui::Text("permanent upgrades");
+        uiCenteredText("~~ permanent upgrades ~~");
 
         ImGui::SetWindowFontScale(0.75f);
-        ImGui::Text("- prestige points: %llu PPs", pt.prestigePoints);
+        char ppBuf[256];
+        std::snprintf(ppBuf, sizeof(ppBuf), "%llu PPs available", pt.prestigePoints);
+        uiCenteredText(ppBuf);
         ImGui::SetWindowFontScale(uiNormalFontScale);
 
         ImGui::Spacing();
@@ -2361,6 +2375,15 @@ Using prestige points, TODO P0
         uiBeginColumns();
 
         uiButtonHueMod = 190.f;
+
+        if (pt.psvBubbleValue.nPurchases >= 3u)
+        {
+            std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
+            uiLabelBuffer[0] = '\0';
+            (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt.perm.starterPackPurchased);
+
+            ImGui::Separator();
+        }
 
         std::sprintf(uiTooltipBuffer,
                      "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
@@ -2392,11 +2415,42 @@ Using prestige points, TODO P0
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer,
-                     "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
-                     "for "
-                     "star bubbles and bombs first, ensuring they are not wasted!");
+                     "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
+                     "flow much faster.\n\n(Note: this effect can be toggled at will.)");
         uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt.perm.smartCatsPurchased))
+        if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt.perm.windPurchased))
+            doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
+
+        if (pt.perm.windPurchased)
+        {
+            ImGui::SetWindowFontScale(uiSubBulletFontScale);
+            ImGui::Columns(1);
+
+            uiRadio("off##windOff", &pt.windStrength, 0);
+            ImGui::SameLine();
+            uiRadio("slow##windSlow", &pt.windStrength, 1);
+            ImGui::SameLine();
+            uiRadio("medium##windMed", &pt.windStrength, 2);
+            ImGui::SameLine();
+            uiRadio("fast##windFast", &pt.windStrength, 3);
+
+            uiBeginColumns();
+            ImGui::SetWindowFontScale(uiNormalFontScale);
+            ImGui::NextColumn();
+            ImGui::NextColumn();
+        }
+
+        ImGui::Separator();
+
+        ImGui::Columns(1);
+        ImGui::Text("Cats");
+        uiBeginColumns();
+
+        std::sprintf(uiTooltipBuffer,
+                     "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
+                     "for star bubbles and bombs first, ensuring they are not wasted!");
+        uiLabelBuffer[0] = '\0';
+        if (makePurchasablePPButtonOneTime("- Smart cats", 1u, pt.perm.smartCatsPurchased))
             doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
@@ -2419,6 +2473,7 @@ Using prestige points, TODO P0
             ImGui::Columns(1);
             ImGui::SetWindowFontScale(uiSubBulletFontScale);
 
+            ImGui::AlignTextToFramePadding();
             ImGui::Text("- ignore: ");
             ImGui::SameLine();
 
@@ -2436,34 +2491,22 @@ Using prestige points, TODO P0
             uiBeginColumns();
         }
 
-        ImGui::Separator();
-
-        std::sprintf(uiTooltipBuffer,
-                     "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
-                     "flow much faster.\n\n(Note: this effect can be toggled at will.)");
-        uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt.perm.windPurchased))
-            doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
-
-        if (pt.perm.windPurchased)
-        {
-            ImGui::SetWindowFontScale(uiSubBulletFontScale);
-            uiCheckbox("enable ##wind", &pt.windEnabled);
-            ImGui::SetWindowFontScale(uiNormalFontScale);
-            ImGui::NextColumn();
-            ImGui::NextColumn();
-        }
+        // TODO: unicats, devilcats
 
         if (pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3)
         {
             ImGui::Separator();
+
+            ImGui::Columns(1);
+            ImGui::Text("Astrocats");
+            uiBeginColumns();
 
             std::sprintf(uiTooltipBuffer,
                          "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "
                          "them fly by to work faster!");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("Space propaganda", 16u, pt.perm.astroCatInspirePurchased))
+            if (makePurchasablePPButtonOneTime("- Space propaganda", 16u, pt.perm.astroCatInspirePurchased))
                 doTip("Astrocats will inspire other cats\nto work faster when flying by!",
                       /* maxPrestigeLevel */ UINT_MAX);
 
@@ -2472,14 +2515,13 @@ Using prestige points, TODO P0
                 std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect.");
                 std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
 
-                makePrestigePurchasablePPButtonPSV("- buff duration", pt.psvPPInspireDurationMult);
+                makePrestigePurchasablePPButtonPSV("- inspire duration", pt.psvPPInspireDurationMult);
             }
         }
 
         const auto makeUnsealButton = [&](const PrestigePointsType ppCost, const char* catName, const CatType type)
         {
-            if (findFirstCatByType(type) ==
-                nullptr) // TODO P1: change to "ever unlocked cat at least once", and also apply to prestige menus per unique cat
+            if (!pt.perm.shrineCompletedOnceByType[asIdx(type)])
                 return;
 
             std::sprintf(uiTooltipBuffer,
@@ -2491,7 +2533,7 @@ Using prestige points, TODO P0
             (void)makePurchasablePPButtonOneTime("- Break the seal", ppCost, pt.perm.unsealedByType[asIdx(type)]);
         };
 
-        if (findFirstCatByType(CatType::Witch) != nullptr || pt.psvBubbleValue.nPurchases >= 3)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Witch)])
         {
             ImGui::Separator();
 
@@ -2520,12 +2562,16 @@ Using prestige points, TODO P0
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
 
-            std::sprintf(uiTooltipBuffer, "Dolls can be automatically collected by Astrocats during their flyby.");
+            std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
+            uiLabelBuffer[0] = '\0';
+            (void)makePurchasablePPButtonOneTime("- Flammable dolls", 8u, pt.perm.witchCatBuffFlammableDolls);
+
+            std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Orbital dolls", 16u, pt.perm.witchCatBuffOrbitalDolls);
         }
 
-        if (findFirstCatByType(CatType::Wizard) != nullptr || pt.psvBubbleValue.nPurchases >= 3)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Wizard)])
         {
             ImGui::Separator();
 
@@ -2549,10 +2595,14 @@ Using prestige points, TODO P0
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                          "into star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.astroCatInspirePurchased);
+            (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.starpawConversionIgnoreBombs);
+
+            std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 5s to 10s.");
+            uiLabelBuffer[0] = '\0';
+            (void)makePurchasablePPButtonOneTime("- Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
         }
 
-        if (findFirstCatByType(CatType::Mouse) != nullptr || pt.psvBubbleValue.nPurchases >= 4)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Mouse)])
         {
             ImGui::Separator();
 
@@ -2567,7 +2617,7 @@ Using prestige points, TODO P0
             makePrestigePurchasablePPButtonPSV("- Global click mult", pt.psvPPMouseCatGlobalBonusMult);
         }
 
-        if (findFirstCatByType(CatType::Engi) != nullptr || pt.psvBubbleValue.nPurchases >= 5)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Engi)])
         {
             ImGui::Separator();
 
@@ -2582,7 +2632,7 @@ Using prestige points, TODO P0
             makePrestigePurchasablePPButtonPSV("- Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
         }
 
-        if (findFirstCatByType(CatType::Repulso) != nullptr || pt.psvBubbleValue.nPurchases >= 5)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Repulso)])
         {
             ImGui::Separator();
 
@@ -2594,7 +2644,7 @@ Using prestige points, TODO P0
 
             std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Repulsion filter", 64u, pt.perm.repulsoCatFilterPurchased);
+            (void)makePurchasablePPButtonOneTime("- Repulsion filter", 16u, pt.perm.repulsoCatFilterPurchased);
 
             if (pt.perm.repulsoCatFilterPurchased)
             {
@@ -2622,7 +2672,7 @@ Using prestige points, TODO P0
                          "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.perm.repulsoCatConverterPurchased);
+            (void)makePurchasablePPButtonOneTime("- Conversion field", 32u, pt.perm.repulsoCatConverterPurchased);
 
             if (pt.perm.repulsoCatConverterPurchased)
             {
@@ -2638,7 +2688,7 @@ Using prestige points, TODO P0
             }
         }
 
-        if (findFirstCatByType(CatType::Attracto) != nullptr || pt.psvBubbleValue.nPurchases >= 5)
+        if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Attracto)])
         {
             ImGui::Separator();
 
@@ -2894,7 +2944,7 @@ Using prestige points, TODO P0
                              "bubbles. "
                              "Lasts 5 seconds.\n\nCasting this spell multiple times will accumulate the aura "
                              "duration.");
-                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.arcaneAuraTimer / 1000.f));
+                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
                 bool done = false;
                 if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
                                                            done,
@@ -2909,7 +2959,7 @@ Using prestige points, TODO P0
                                             rng.getF(0.25f, 1.25f),
                                             rng.getF(0.50f, 3.f));
 
-                    pt.arcaneAuraTimer += 5000.f;
+                    pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 10000.f : 5000.f;
 
                     done = false;
                     ++wizardCat->hits;
@@ -3071,6 +3121,21 @@ Using prestige points, TODO P0
                 uiCenteredText(" ~~ This prestige ~~ ");
                 displayStats(pt.statsSession);
 
+                ImGui::Spacing();
+                ImGui::Spacing();
+
+                // per cat type
+                MoneyType revenueByCatType[nCatTypes] = {};
+
+                for (const Cat& cat : pt.cats)
+                    revenueByCatType[asIdx(cat.type)] += cat.moneyEarned;
+
+                ImGui::Text("Cat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Normal)]));
+                ImGui::Text("Devilcat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Devil)]));
+
+                ImGui::Text("Astrocat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Astro)]));
+                ImGui::Text("Mousecat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Mouse)]));
+
                 ImGui::SetWindowFontScale(uiNormalFontScale);
 
                 ImGui::EndTabItem();
@@ -3207,17 +3272,77 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] MoneyType computeFinalReward(const sf::Vector2f bubblePosition, const MoneyType computedReward, const int xCombo)
+    [[nodiscard]] bool mustApplyMewltiplierAura(const sf::Vector2f bubblePosition) const
     {
-        Cat* wizardCat = findFirstCatByType(CatType::Wizard);
+        if (pt.mewltiplierAuraTimer <= 0.f)
+            return false;
 
-        const bool inRangeOfWizard = wizardCat != nullptr && (wizardCat->position - bubblePosition).lengthSquared() <=
-                                                                 pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+        const Cat* wizardCat = findFirstCatByType(CatType::Wizard);
+        if (wizardCat == nullptr)
+            return false;
 
-        const float arcaneAuraMult = (pt.arcaneAuraTimer > 0.f && inRangeOfWizard) ? pt.psvMewltiplierMult.currentValue() : 1.f;
+        return (wizardCat->position - bubblePosition).lengthSquared() <=
+               pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+    }
 
-        return static_cast<MoneyType>(
-            sf::base::ceil(static_cast<float>(computedReward) * getComboValueMult(xCombo) * arcaneAuraMult));
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] MoneyType computeFinalReward(const Bubble& bubble,
+                                               const float   multiplier,
+                                               const float   comboMult,
+                                               const Cat*    popperCat) const
+    {
+        // Determine some information about the reward
+        const bool byPlayerClick       = popperCat == nullptr;
+        const bool popperCatIsMousecat = !byPlayerClick && popperCat->type == CatType::Mouse;
+        const bool popperCatIsNormal   = !byPlayerClick && popperCat->type == CatType::Normal;
+
+        const bool mustApplyHandMult = byPlayerClick || popperCatIsMousecat; // mousecat benefits from both click and cat multipliers
+        const bool mustApplyCatMult = !byPlayerClick;
+
+        const bool nearShrineOfClicking = byPlayerClick && ([&]
+        {
+            for (const Shrine& shrine : pt.shrines)
+                if (shrine.type == ShrineType::Clicking && shrine.isInRange(bubble.position))
+                    return true;
+
+            return false;
+        })();
+
+        // Base reward: bubble value by type multiplied by static multiplier (e.g. x10 for bombs, x20 for astro)
+        float result = static_cast<float>(pt.getComputedRewardByBubbleType(bubble.type)) * multiplier;
+
+        // Combo mult: applied for player clicks or mousecat clicks
+        result *= comboMult;
+
+        // Wizard spells: mewltiplier aura
+        if (mustApplyMewltiplierAura(bubble.position))
+            result *= pt.psvMewltiplierMult.currentValue();
+
+        // Global bonus -- mousecat (applies to clicks)
+        if (mustApplyHandMult && findFirstCatByType(CatType::Mouse) != nullptr)
+            result *= pt.psvPPMouseCatGlobalBonusMult.currentValue();
+
+        // Global bonus -- engicat (applies to cats)
+        if (mustApplyCatMult && findFirstCatByType(CatType::Engi) != nullptr)
+            result *= pt.psvPPEngiCatGlobalBonusMult.currentValue();
+
+        // Shrine of clicking: x5 reward for clicks
+        if (mustApplyHandMult && nearShrineOfClicking)
+            result *= 5.f;
+
+        // Ritual buff -- normalcat: x5 reward for cats
+        if (mustApplyCatMult && pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
+            result *= 5.f;
+
+        // Ritual buff -- mousecat: x10 reward for clicks
+        if (mustApplyHandMult && pt.buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
+            result *= 10.f;
+
+        // Genius cats: x2 reward for normal cats only
+        if (!byPlayerClick && popperCatIsNormal && pt.perm.geniusCatsPurchased)
+            result *= 2.f;
+
+        return static_cast<MoneyType>(sf::base::ceil(result));
     }
 
     ////////////////////////////////////////////////////////////
@@ -3237,7 +3362,7 @@ Using prestige points, TODO P0
 
         const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
-        return (sf::Vector2f{windowedWidth, windowSize.y}).toVector2u();
+        return sf::Vector2f{windowedWidth, windowSize.y}.toVector2u();
     }
 
     ////////////////////////////////////////////////////////////
@@ -3293,6 +3418,7 @@ Using prestige points, TODO P0
             ImGui::SliderFloat("HUD Scale", &profile.hudScale, 0.5f, 2.f, "%.2f");
 
             uiCheckbox("Enable tips", &profile.tipsEnabled);
+            uiCheckbox("Enable full mana notification", &profile.showFullManaNotification);
 
             uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
 
@@ -3603,35 +3729,133 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     TextParticle& makeRewardTextParticle(const sf::Vector2f position)
     {
-        return textParticles.emplace_back(
-            TextParticle{.buffer = {},
-                         .data   = {.position = {position.x, position.y - 10.f},
-                                    .velocity = rng.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
-                                    .scale = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
-                                    .accelerationY = 0.0039f,
-                                    .opacity       = 1.f,
-                                    .opacityDecay  = 0.00150f,
-                                    .rotation      = 0.f,
-                                    .torque        = rng.getF(-0.002f, 0.002f)}});
+        return textParticles.emplace_back(TextParticle{
+            {.position      = {position.x, position.y - 10.f},
+             .velocity      = rng.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
+             .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+             .accelerationY = 0.0039f,
+             .opacity       = 1.f,
+             .opacityDecay  = 0.00150f,
+             .rotation      = 0.f,
+             .torque        = rng.getF(-0.002f, 0.002f)}});
     }
 
     ////////////////////////////////////////////////////////////
-    void popBubbleImpl(const bool         byHand,
-                       const Bubble&      bubble,
-                       const MoneyType    reward,
-                       const int          xCombo,
-                       const sf::Vector2f position,
-                       const sf::Vector2f tpPosition,
-                       const bool         popSoundOverlap,
-                       const bool         collectedByShrine)
+    void shrineCollectReward(Shrine& shrine, const MoneyType reward, const Bubble& bubble)
     {
-        statBubblePopped(bubble.type, byHand, reward);
+        shrine.collectedReward += reward;
+        shrine.textStatusShakeEffect.bump(rng, 1.5f);
+
+        spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
+                              6,
+                              shrine.getDrawPosition(),
+                              ParticleType::Fire,
+                              rng.getF(0.25f, 0.6f),
+                              0.75f);
+
+        spawnParticlesWithHue(shrine.getHue(), 6, shrine.getDrawPosition(), ParticleType::Shrine, rng.getF(0.6f, 1.f), 0.5f);
+
+        const auto diff = bubble.position - shrine.position;
+
+        spawnParticle({.position      = bubble.position,
+                       .velocity      = -diff.normalized() * 0.5f,
+                       .scale         = 1.5f,
+                       .accelerationY = 0.f,
+                       .opacity       = 1.f,
+                       .opacityDecay  = 0.00135f + (shrine.getRange() - diff.length()) / 22000.f,
+                       .rotation      = 0.f,
+                       .torque        = 0.f},
+                      /* hue */ 0.f,
+                      ParticleType::Bubble);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void doExplosion(Bubble& bubble)
+    {
+        sounds.explosion.setPosition({bubble.position.x, bubble.position.y});
+        playSound(sounds.explosion);
+
+        spawnParticles(32, bubble.position, ParticleType::Fire, 3.f, 1.f);
+
+        // TODO P2: cleanup
+        const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
+        const auto bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
+
+        Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt.cats.data() + bombIdxItr->second : nullptr;
+
+        const float explosionRadius = pt.getComputedBombExplosionRadius();
+
+        forEachBubbleInRadius(bubble.position,
+                              explosionRadius,
+                              [&](Bubble& otherBubble)
+        {
+            if (otherBubble.type == BubbleType::Bomb)
+                return ControlFlow::Continue;
+
+            const MoneyType otherReward = computeFinalReward(/* bubble     */ otherBubble,
+                                                             /* multiplier */ 10.f,
+                                                             /* comboMult  */ 1.f,
+                                                             /* popperCat  */ catWhoMadeBomb);
+
+            statExplosionRevenue(otherReward);
+
+            popWithRewardAndReplaceBubble(otherReward,
+                                          otherBubble,
+                                          /* combo */ 1,
+                                          /* popSoundOverlap */ false,
+                                          catWhoMadeBomb);
+
+            return ControlFlow::Continue;
+        });
+
+        if (pt.perm.witchCatBuffFlammableDolls)
+            for (Doll& doll : pt.dolls)
+            {
+                const float dollDistance = (doll.position - bubble.position).length();
+
+                if (dollDistance > explosionRadius)
+                    continue;
+
+                // TODO P2: achivement/stat
+                if (!doll.tcDeath.hasValue())
+                    collectDoll(doll);
+            }
+
+        if (catWhoMadeBomb != nullptr)
+            bombIdxToCatIdx.erase(bombIdxItr);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void popWithRewardAndReplaceBubble(const MoneyType reward, Bubble& bubble, int xCombo, bool popSoundOverlap, Cat* popperCat)
+    {
+        const bool byPlayerClick = popperCat == nullptr;
+
+        statBubblePopped(bubble.type, byPlayerClick, reward);
+
+        if (byPlayerClick && bubble.type == BubbleType::Star)
+            statHighestStarBubblePopCombo(static_cast<sf::base::U64>(combo));
+
+        Shrine* collectorShrine = nullptr;
+        for (Shrine& shrine : pt.shrines)
+        {
+            if ((bubble.position - shrine.position).lengthSquared() > shrine.getRangeSquared())
+                continue;
+
+            collectorShrine = &shrine;
+            shrineCollectReward(shrine, reward, bubble);
+        }
+
+        const bool         collectedByShrine = collectorShrine != nullptr;
+        const sf::Vector2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
 
         if (profile.showTextParticles)
         {
             auto& tp = makeRewardTextParticle(tpPosition);
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
+        }
 
+        if (profile.showCoinParticles)
+        {
             if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
                     {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
@@ -3644,7 +3868,7 @@ Using prestige points, TODO P0
                      .torque        = 0.f});
 
             // From game coordinates to screen coordinates
-            const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(position, gameView);
+            const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(bubble.position, gameView);
 
             // From screen coordinates to HUD view coordinates
             const sf::Vector2f hudPos = getWindow().mapPixelToCoords(screenPos, scaledHUDView);
@@ -3658,134 +3882,22 @@ Using prestige points, TODO P0
             }
         }
 
-        sounds.pop.setPosition({position.x, position.y});
+        sounds.pop.setPosition({bubble.position.x, bubble.position.y});
         sounds.pop.setPitch(remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f));
 
         playSound(sounds.pop, popSoundOverlap ? 255u : 1u);
 
-        spawnParticles(32, position, ParticleType::Bubble, 0.5f, 0.5f);
-        spawnParticles(8, position, ParticleType::Bubble, 1.2f, 0.25f);
+        spawnParticles(32, bubble.position, ParticleType::Bubble, 0.5f, 0.5f);
+        spawnParticles(8, bubble.position, ParticleType::Bubble, 1.2f, 0.25f);
 
         if (bubble.type == BubbleType::Star)
         {
-            spawnParticles(16, position, ParticleType::Star, 0.5f, 0.35f);
+            spawnParticles(16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
         }
         else if (bubble.type == BubbleType::Bomb)
         {
-            sounds.explosion.setPosition({position.x, position.y});
-            playSound(sounds.explosion);
-
-            spawnParticles(32, position, ParticleType::Fire, 3.f, 1.f);
-
-            // TODO P2: cleanup
-            const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
-            const auto bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
-
-            Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt.cats.data() + bombIdxItr->second : nullptr;
-
-            forEachBubbleInRadius(position,
-                                  pt.getComputedBombExplosionRadius(),
-                                  [&](Bubble& otherBubble)
-            {
-                if (otherBubble.type == BubbleType::Bomb)
-                    return ControlFlow::Continue;
-
-                const MoneyType newReward = computeFinalReward(otherBubble.position,
-                                                               pt.getComputedRewardByBubbleType(otherBubble.type) * 10u,
-                                                               /* combo */ 1);
-
-                statExplosionRevenue(newReward);
-
-                popWithRewardAndReplaceBubble(newReward,
-                                              /* byHand */ false,
-                                              otherBubble,
-                                              /* combo */ 1,
-                                              /* popSoundOverlap */ false,
-                                              catWhoMadeBomb);
-
-                return ControlFlow::Continue;
-            });
-
-            if (catWhoMadeBomb != nullptr)
-                bombIdxToCatIdx.erase(bombIdxItr);
+            doExplosion(bubble);
         }
-    }
-
-    ////////////////////////////////////////////////////////////
-    void popWithRewardAndReplaceBubble(MoneyType reward, const bool byHand, Bubble& bubble, int xCombo, bool popSoundOverlap, Cat* popperCat)
-    {
-        if (byHand && findFirstCatByType(CatType::Mouse) != nullptr)
-            reward = static_cast<MoneyType>(
-                sf::base::ceil(static_cast<float>(reward) * pt.psvPPMouseCatGlobalBonusMult.currentValue()));
-        else if (!byHand && findFirstCatByType(CatType::Engi) != nullptr)
-            reward = static_cast<MoneyType>(
-                sf::base::ceil(static_cast<float>(reward) * pt.psvPPEngiCatGlobalBonusMult.currentValue()));
-
-        if (byHand && bubble.type == BubbleType::Star)
-            statHighestStarBubblePopCombo(static_cast<sf::base::U64>(combo));
-
-        // Boosts clicks x5 around shrine of clicking
-        for (Shrine& shrine : pt.shrines)
-            if (byHand && shrine.type == ShrineType::Clicking && shrine.isInRange(bubble.position))
-            {
-                reward *= 5;
-                break;
-            }
-
-        // Boosts clicks x5 if global click boost witch buff is enabled
-        if (byHand && pt.buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
-            reward *= 5;
-
-        // Boosts cats x5 if global cat boost witch buff is enabled
-        if (!byHand && pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
-            reward *= 5;
-
-        // Boost normal cats x2 if genius cats is purchased
-        if (!byHand && popperCat != nullptr && popperCat->type == CatType::Normal && pt.perm.geniusCatsPurchased)
-            reward *= 2;
-
-        Shrine* collectorShrine = nullptr;
-        for (Shrine& shrine : pt.shrines)
-        {
-            const auto diff = bubble.position - shrine.position;
-
-            // if bubble is not in shrine range, continue
-            if (diff.lengthSquared() > shrine.getRangeSquared())
-                continue;
-
-            collectorShrine = &shrine;
-            shrine.collectedReward += reward;
-            shrine.textStatusShakeEffect.bump(rng, 1.5f);
-
-            spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
-                                  6,
-                                  shrine.getDrawPosition(),
-                                  ParticleType::Fire,
-                                  rng.getF(0.25f, 0.6f),
-                                  0.75f);
-
-            spawnParticlesWithHue(shrine.getHue(), 6, shrine.getDrawPosition(), ParticleType::Shrine, rng.getF(0.6f, 1.f), 0.5f);
-
-            spawnParticle({.position      = bubble.position,
-                           .velocity      = -diff.normalized() * 0.5f,
-                           .scale         = 1.5f,
-                           .accelerationY = 0.f,
-                           .opacity       = 1.f,
-                           .opacityDecay  = 0.00135f + (shrine.getRange() - diff.length()) / 22000.f,
-                           .rotation      = 0.f,
-                           .torque        = 0.f},
-                          /* hue */ 0.f,
-                          ParticleType::Bubble);
-        }
-
-        popBubbleImpl(byHand,
-                      bubble,
-                      reward,
-                      xCombo,
-                      bubble.position,
-                      collectorShrine == nullptr ? bubble.position : collectorShrine->getDrawPosition(),
-                      popSoundOverlap,
-                      collectorShrine != nullptr);
 
         if (popperCat != nullptr)
         {
@@ -3793,7 +3905,7 @@ Using prestige points, TODO P0
             popperCat->textMoneyShakeEffect.bump(rng, 1.25f);
         }
 
-        if (collectorShrine == nullptr)
+        if (!collectedByShrine)
         {
             addMoney(reward);
             moneyTextShakeEffect.bump(rng, 1.f + static_cast<float>(combo) * 0.1f);
@@ -3851,10 +3963,15 @@ Using prestige points, TODO P0
 
             auto& pos = bubble.position;
 
-            if (pt.perm.windPurchased && pt.windEnabled)
+            constexpr float windMult[4]           = {0.f, 0.00011f, 0.00022f, 0.00055f};
+            constexpr float windStartVelocityY[4] = {0.075f, 0.2f, 0.3f, 0.6f};
+
+            const float horizontalWindStrength = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.1f : 1.f);
+
+            if (pt.perm.windPurchased)
             {
-                bubble.velocity.x += 0.00055f * deltaTimeMs;
-                bubble.velocity.y += 0.00055f * deltaTimeMs;
+                bubble.velocity.x += horizontalWindStrength * deltaTimeMs;
+                bubble.velocity.y += horizontalWindStrength * deltaTimeMs;
             }
 
             pos += bubble.velocity * deltaTimeMs;
@@ -3869,9 +3986,9 @@ Using prestige points, TODO P0
             if (pos.y - radius > boundaries.y)
             {
                 pos.x = rng.getF(0.f, pt.getMapLimit());
-                pos.y = -radius;
+                pos.y = -radius * rng.getF(1.f, 2.f);
 
-                bubble.velocity.y = pt.windEnabled ? 0.2f : 0.05f;
+                bubble.velocity.y = windStartVelocityY[pt.windStrength];
 
                 if (sf::base::fabs(bubble.velocity.x) > 0.04f)
                     bubble.velocity.x = 0.04f;
@@ -3945,8 +4062,12 @@ Using prestige points, TODO P0
                 combo = 1;
             }
 
-            const MoneyType reward = computeFinalReward(bubble.position, pt.getComputedRewardByBubbleType(bubble.type), combo);
-            popWithRewardAndReplaceBubble(reward, /* byHand */ true, bubble, combo, /* popSoundOverlap */ true, /* popperCat */ nullptr);
+            const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                        /* multiplier */ 1.f,
+                                                        /* comboMult  */ getComboValueMult(combo, playerComboDecay),
+                                                        /* popperCat  */ nullptr);
+
+            popWithRewardAndReplaceBubble(reward, bubble, combo, /* popSoundOverlap */ true, /* popperCat */ nullptr);
 
             if (pt.multiPopEnabled)
                 forEachBubbleInRadius(clickPos,
@@ -3957,7 +4078,6 @@ Using prestige points, TODO P0
                         return ControlFlow::Continue;
 
                     popWithRewardAndReplaceBubble(reward,
-                                                  /* byHand */ true,
                                                   otherBubble,
                                                   combo,
                                                   /* popSoundOverlap */ false,
@@ -3999,10 +4119,12 @@ Using prestige points, TODO P0
 
             const int comboMult = inMouseCatRange ? pt.mouseCatCombo : 1;
 
-            popWithRewardAndReplaceBubble(computeFinalReward(bubble.position,
-                                                             pt.getComputedRewardByBubbleType(bubble.type),
-                                                             /* combo */ comboMult),
-                                          /* byHand */ false,
+            const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                        /* multiplier */ 1.f,
+                                                        /* comboMult  */ getComboValueMult(comboMult, mouseCatComboDecay),
+                                                        /* popperCat  */ &cat);
+
+            popWithRewardAndReplaceBubble(reward,
                                           bubble,
                                           /* combo */ comboMult,
                                           /* popSoundOverlap */ true,
@@ -4214,10 +4336,15 @@ Using prestige points, TODO P0
             float buffPower = pt.psvPPWitchCatBuffDuration.currentValue();
 
             if (pt.perm.witchCatBuffPowerScalesWithNCats)
-                buffPower += static_cast<float>(otherCatCount) * 0.5f;
+                buffPower += sf::base::ceil(sf::base::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
 
             if (pt.perm.witchCatBuffPowerScalesWithMapSize)
-                buffPower += (pt.mapPurchased ? 0.75f : 0.f) + static_cast<float>(pt.psvMapExtension.nPurchases) * 0.75f;
+            {
+                const float nMapExtensions = (pt.mapPurchased ? 1.f : 0.f) +
+                                             static_cast<float>(pt.psvMapExtension.nPurchases);
+
+                buffPower += static_cast<float>(nMapExtensions) * 0.75f;
+            }
 
             const auto nDollsToSpawn = sf::base::max(SizeT{2u},
                                                      static_cast<SizeT>(
@@ -4341,14 +4468,16 @@ Using prestige points, TODO P0
         cat.pawOpacity  = 255.f;
 
         addCombo(pt.mouseCatCombo, pt.mouseCatComboCountdown);
+        pt.mouseCatCombo = sf::base::min(pt.mouseCatCombo, 999); // cap at 999x
 
         const auto savedBubblePos = bubble.position;
-        const auto reward         = computeFinalReward(savedBubblePos,
-                                               pt.getComputedRewardByBubbleType(bubble.type),
-                                               /* combo */ pt.mouseCatCombo);
+
+        const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                    /* multiplier */ pt.mouseCatCombo == 999 ? 5.f : 1.f,
+                                                    /* comboMult  */ getComboValueMult(pt.mouseCatCombo, mouseCatComboDecay),
+                                                    /* popperCat  */ &cat);
 
         popWithRewardAndReplaceBubble(reward,
-                                      /* byHand */ true,
                                       bubble,
                                       /* combo */ pt.mouseCatCombo,
                                       /* popSoundOverlap */ true,
@@ -4361,7 +4490,6 @@ Using prestige points, TODO P0
             {
                 if (&otherBubble != &bubble)
                     popWithRewardAndReplaceBubble(reward,
-                                                  /* byHand */ true,
                                                   otherBubble,
                                                   /* combo */ pt.mouseCatCombo,
                                                   /* popSoundOverlap */ false,
@@ -4453,6 +4581,13 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getWindRepulsionMult() const
+    {
+        constexpr float windRepulsionMults[4] = {1.f, 4.f, 8.f, 12.f};
+        return windRepulsionMults[pt.windStrength];
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActions(const float deltaTimeMs)
     {
         for (Cat& cat : pt.cats)
@@ -4524,9 +4659,20 @@ Using prestige points, TODO P0
 
             if (cat.type == CatType::Witch && !anyCatHexed())
             {
+                if (cat.cooldown.value < 100.f)
+                {
+                    sounds.stopPlayingAll(sounds.ritual);
+
+                    if (sounds.countPlayingPooled(sounds.ritualend) == 0u)
+                    {
+                        sounds.ritualend.setPosition({cat.position.x, cat.position.y});
+                        playSound(sounds.ritualend);
+                    }
+                }
+
                 if (cat.cooldown.value < 10'000.f)
                 {
-                    if (sounds.countPlayingPooled(sounds.ritual) == 0u)
+                    if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(sounds.ritual) == 0u)
                     {
                         sounds.ritual.setPosition({cat.position.x, cat.position.y});
                         playSound(sounds.ritual);
@@ -4564,9 +4710,13 @@ Using prestige points, TODO P0
                                           ParticleType::Hex);
                     }
                 }
+                else
+                {
+                    sounds.stopPlayingAll(sounds.ritual);
+                }
             }
 
-            if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && anyCatHexed()))
+            if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt.dolls.empty())))
             {
                 spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -4609,7 +4759,7 @@ Using prestige points, TODO P0
                                .opacityDecay  = rng.getF(0.00055f, 0.0045f),
                                .rotation      = rng.getF(0.f, sf::base::tau),
                                .torque        = rng.getF(-0.002f, 0.002f)},
-                              /* hue */ 0.f,
+                              /* hue */ 180.f,
                               ParticleType::Cog);
             }
 
@@ -4635,14 +4785,14 @@ Using prestige points, TODO P0
                                       range,
                                       [&](Bubble& bubble)
                 {
-                    const MoneyType newReward = computeFinalReward(bubble.position,
-                                                                   pt.getComputedRewardByBubbleType(bubble.type) * 20u,
-                                                                   /* combo */ 1);
+                    const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                                /* multiplier */ 20.f,
+                                                                /* comboMult  */ 1.f,
+                                                                /* popperCat  */ &cat);
 
-                    statFlightRevenue(newReward);
+                    statFlightRevenue(reward);
 
-                    popWithRewardAndReplaceBubble(newReward,
-                                                  /* byHand */ false,
+                    popWithRewardAndReplaceBubble(reward,
                                                   bubble,
                                                   /* combo */ 1,
                                                   /* popSoundOverlap */ rng.getF(0.f, 1.f) > 0.75f,
@@ -4752,7 +4902,7 @@ Using prestige points, TODO P0
 
                     const auto bcDiff = (cat.position - bubble.position);
                     const auto strength = (pt.getComputedRangeByCatType(cat.type) - bcDiff.length()) * 0.000017f * deltaTimeMs;
-                    bubble.velocity += (bcDiff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f)) * direction;
+                    bubble.velocity += (bcDiff.normalized() * strength * getWindRepulsionMult()) * direction;
 
                     return ControlFlow::Continue;
                 };
@@ -4867,6 +5017,12 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] static constexpr CatType shrineTypeToCatType(const ShrineType shrineType)
+    {
+        return static_cast<CatType>(asIdx(shrineType) + 4u);
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateShrines(const float deltaTimeMs)
     {
         for (SizeT i = 0u; i < pt.psvShrineActivation.nPurchases; ++i)
@@ -4919,12 +5075,12 @@ Using prestige points, TODO P0
                 {
                     playSound(sounds.woosh);
 
-                    const auto shrineTypeToCatType = asIdx(shrine.type) + 4u;
-                    if (shrineTypeToCatType >= asIdx(CatType::Count))
+                    const auto asCatType = asIdx(shrineTypeToCatType(shrine.type));
+                    if (asCatType >= asIdx(CatType::Count))
                         return;
 
-                    if (pt.perm.unsealedByType[shrineTypeToCatType])
-                        spawnSpecialCat(shrine.position, static_cast<CatType>(shrineTypeToCatType));
+                    if (pt.perm.unsealedByType[asCatType])
+                        spawnSpecialCat(shrine.position, static_cast<CatType>(asCatType));
                 }
             }
 
@@ -4959,12 +5115,12 @@ Using prestige points, TODO P0
                 else if (shrine.type == ShrineType::Repulsion)
                 {
                     const auto strength = (shrine.getRange() - diff.length()) * 0.0000015f * deltaTimeMs;
-                    bubble.velocity -= diff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f);
+                    bubble.velocity -= diff.normalized() * strength * getWindRepulsionMult();
                 }
                 else if (shrine.type == ShrineType::Attraction)
                 {
                     const auto strength = (shrine.getRange() - diff.length()) * 0.0000025f * deltaTimeMs;
-                    bubble.velocity += diff.normalized() * strength * (pt.windEnabled ? 10.f : 1.f);
+                    bubble.velocity += diff.normalized() * strength * getWindRepulsionMult();
                 }
 
                 // TODO P1: complete shrines
@@ -4992,6 +5148,8 @@ Using prestige points, TODO P0
                     {
                         playSound(sounds.woosh);
                         ++pt.nShrinesCompleted;
+
+                        pt.perm.shrineCompletedOnceByType[asIdx(shrineTypeToCatType(shrine.type))] = true;
 
                         const auto doShrineReward = [&](const CatType catType)
                         {
@@ -5061,6 +5219,8 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void collectDoll(Doll& d)
     {
+        SFML_BASE_ASSERT(!d.tcDeath.hasValue());
+
         statDollCollected();
 
         for (SizeT i = 0u; i < 8u; ++i)
@@ -5098,8 +5258,17 @@ Using prestige points, TODO P0
 
             static_assert(sf::base::getArraySize(buffDurationMult) == nCatTypes);
 
-            const float buffDuration = d.buffPower * 1000.f;
-            pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * buffDurationMult[asIdx(d.catType)];
+            // Apply some diminishing returns if the same buff type is chosen over and over
+            constexpr float buffDurationSoftCap = 60'000.f;
+            const float     buffDuration        = d.buffPower * 1000.f;
+
+            const float currentBuff = pt.buffCountdownsPerType[asIdx(d.catType)].value;
+
+            const float factor = (currentBuff < buffDurationSoftCap)
+                                     ? std::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
+                                     : 0.1f;
+
+            pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
 
             const auto* hexedCat = getHexedCat();
             SFML_BASE_ASSERT(hexedCat != nullptr);
@@ -5228,15 +5397,20 @@ Using prestige points, TODO P0
             pt.manaTimer = 0.f;
 
             if (pt.mana < pt.getComputedMaxMana())
+            {
                 pt.mana += 1u;
+
+                if (profile.showFullManaNotification && pt.mana == pt.getComputedMaxMana())
+                    pushNotification("Mana fully charged!", "The Wizardcat is eager to cast a spell...");
+            }
         }
 
         //
         // Arcane aura spell
-        if (pt.arcaneAuraTimer > 0.f)
+        if (pt.mewltiplierAuraTimer > 0.f)
         {
-            pt.arcaneAuraTimer -= deltaTimeMs;
-            pt.arcaneAuraTimer = sf::base::max(pt.arcaneAuraTimer, 0.f);
+            pt.mewltiplierAuraTimer -= deltaTimeMs;
+            pt.mewltiplierAuraTimer = sf::base::max(pt.mewltiplierAuraTimer, 0.f);
 
             for (SizeT i = 0u; i < 8u; ++i)
                 spawnParticlesWithHueNoGravity(230.f,
@@ -5252,12 +5426,15 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void pushNotification(const char* title, const char* format, const auto&... args)
     {
-        ImGuiToast toast{ImGuiToastType::None, 4500};
-        toast.setTitle(title);
-        toast.setContent(format, args...);
+        char fmtBuffer[1024]{};
 
-        ImGui::InsertNotification(toast);
-        playSound(sounds.notification);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma clang diagnostic ignored "-Wformat-security"
+        std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
+#pragma clang diagnostic pop
+
+        notificationQueue.emplace_back(title, std::string{fmtBuffer});
     }
 
     ////////////////////////////////////////////////////////////
@@ -5513,6 +5690,7 @@ Using prestige points, TODO P0
         unlockIf(pt.psvBubbleValue.nPurchases >= 15);
         unlockIf(pt.psvBubbleValue.nPurchases >= 20);
 
+        unlockIf(pt.perm.starterPackPurchased);
         unlockIf(pt.perm.multiPopPurchased);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 1);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 2);
@@ -5638,6 +5816,7 @@ Using prestige points, TODO P0
         unlockIf(pt.perm.witchCatBuffPowerScalesWithNCats);
         unlockIf(pt.perm.witchCatBuffPowerScalesWithMapSize);
         unlockIf(pt.perm.witchCatBuffFewerDolls);
+        unlockIf(pt.perm.witchCatBuffFlammableDolls);
         unlockIf(pt.perm.witchCatBuffOrbitalDolls);
 
         const auto nActiveBuffs = sf::base::countIf(pt.buffCountdownsPerType,
@@ -5708,6 +5887,7 @@ Using prestige points, TODO P0
         unlockIf(pt.mouseCatCombo >= 125);
         unlockIf(pt.mouseCatCombo >= 150);
         unlockIf(pt.mouseCatCombo >= 175);
+        unlockIf(pt.mouseCatCombo >= 999);
 
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 1);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 3);
@@ -5790,7 +5970,7 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawCats(const sf::Vector2f mousePos)
+    void gameLoopDrawCats(const sf::Vector2f mousePos, const float deltaTimeMs)
     {
         const sf::FloatRect* const normalCatTxr = pt.perm.geniusCatsPurchased  ? &txrGeniusCat
                                                   : pt.perm.smartCatsPurchased ? &txrSmartCat
@@ -5870,6 +6050,30 @@ Using prestige points, TODO P0
             {
                 catRotation = -0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f;
             }
+            else if (Cat* witch = findFirstCatByType(CatType::Witch); witch != nullptr)
+            {
+                static float wobblePhase = 0.f;
+
+                if (witch->cooldown.value >= 10'000.f)
+                {
+                    wobblePhase = 0.f;
+                }
+                else
+                {
+                    const float frequency = remap(witch->cooldown.value, 0.f, 10'000.f, 0.1f, 0.05f);
+                    wobblePhase += frequency * deltaTimeMs * 0.005f;
+
+                    const auto range        = pt.getComputedRangeByCatType(CatType::Witch);
+                    const auto rangeSquared = range * range;
+
+                    if (&cat == witch || (pt.perm.witchCatBuffPowerScalesWithNCats &&
+                                          (witch->position - cat.position).lengthSquared() <= rangeSquared))
+                    {
+                        const float amplitude = remap(witch->cooldown.value, 0.f, 10'000.f, 0.5f, 0.f);
+                        catRotation           = sf::base::sin(wobblePhase) * amplitude;
+                    }
+                }
+            }
 
             const auto range = pt.getComputedRangeByCatType(cat.type);
 
@@ -5883,17 +6087,19 @@ Using prestige points, TODO P0
                                          : static_cast<U8>(255.f - (cat.cooldown.value / maxCooldown * 225.f));
 
             const auto circleColor = CatConstants::colors[asIdx(cat.type)].withHueMod(cat.hue).withLightness(0.75f);
-            const sf::Color outlineColor = circleColor.withLightness(0.25f);
+            const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
+            const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
-            // TODO P2: (lib) make it possible to draw a circle directly via batching without any of this stuff,
-            // no need to preallocate a circle shape before, have a reusable vertex buffer in the batch itself
-            circleShapeBuffer.position = getCatRangeCenter(cat);
-            circleShapeBuffer.origin   = {range, range};
-            circleShapeBuffer.setPointCount(static_cast<unsigned int>(range / 3.f));
-            circleShapeBuffer.setRadius(range);
-            circleShapeBuffer.setOutlineColor(circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u));
-            circleShapeBuffer.setFillColor(circleShapeBuffer.getOutlineColor().withAlpha(rangeInnerAlpha));
-            cpuDrawableBatch.add(circleShapeBuffer);
+            cpuDrawableBatch.add(sf::CircleShapeData{
+                .position           = getCatRangeCenter(cat),
+                .origin             = {range, range},
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
+                .outlineColor       = circleOutlineColor,
+                .outlineThickness   = 1.f,
+                .radius             = range,
+                .pointCount         = static_cast<unsigned int>(range / 3.f),
+            });
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = beingDragged ? cat.position : cat.getDrawPosition(),
@@ -5918,13 +6124,24 @@ Using prestige points, TODO P0
 
             if (profile.showCatText)
             {
+                static thread_local std::string catNameBuffer;
+                catNameBuffer.clear();
+
+                if (pt.perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
+                    catNameBuffer += "Dr. ";
+
+                catNameBuffer += shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx];
+
+                if (pt.perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
+                    catNameBuffer += ", PhD";
+
                 // Name text
-                textNameBuffer.setString(shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx]);
+                textNameBuffer.setString(catNameBuffer);
                 textNameBuffer.position = cat.position + sf::Vector2f{0.f, 48.f};
                 textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
                 textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f};
-                textNameBuffer.setOutlineColor(outlineColor);
-                cpuDrawableBatch.add(textNameBuffer);
+                textNameBuffer.setOutlineColor(textOutlineColor);
+                catTextDrawableBatch.add(textNameBuffer);
 
                 // Status text
                 std::string actionString = std::to_string(cat.hits) + " " + CatConstants::actionNames[asIdx(cat.type)];
@@ -5934,10 +6151,10 @@ Using prestige points, TODO P0
                 textStatusBuffer.setString(actionString);
                 textStatusBuffer.position = cat.position + sf::Vector2f{0.f, 68.f};
                 textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-                textStatusBuffer.setOutlineColor(outlineColor);
+                textStatusBuffer.setOutlineColor(textOutlineColor);
                 cat.textStatusShakeEffect.applyToText(textStatusBuffer);
                 textStatusBuffer.scale *= 0.5f;
-                cpuDrawableBatch.add(textStatusBuffer);
+                catTextDrawableBatch.add(textStatusBuffer);
 
                 // Money text
                 if (cat.moneyEarned != 0u)
@@ -5948,20 +6165,19 @@ Using prestige points, TODO P0
                     textMoneyBuffer.setString(moneyFmtBuffer);
                     textMoneyBuffer.position = cat.position + sf::Vector2f{0.f, 84.f};
                     textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
-                    textMoneyBuffer.setOutlineColor(outlineColor);
+                    textMoneyBuffer.setOutlineColor(textOutlineColor);
                     cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
                     textMoneyBuffer.scale *= 0.5f;
-                    cpuDrawableBatch.add(textMoneyBuffer);
+                    catTextDrawableBatch.add(textMoneyBuffer);
                 }
 
-                // TODO P2: (lib) make it possible to draw a rectangle and a text directly via batching without any of this stuff
-                rectangleShapeBuffer.setSize({cat.cooldown.value / maxCooldown * 64.f, 3.f});
-                rectangleShapeBuffer.origin   = {32.f, 0.f};
-                rectangleShapeBuffer.position = {
-                    (cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter() : textStatusBuffer.getBottomCenter()) +
-                    sf::Vector2f{0.f, 2.f}};
-                rectangleShapeBuffer.setFillColor(sf::Color::White.withAlpha(128u));
-                cpuDrawableBatch.add(rectangleShapeBuffer);
+                catTextDrawableBatch.add(
+                    {.position  = {(cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter()
+                                                          : textStatusBuffer.getBottomCenter()) +
+                                   sf::Vector2f{0.f, 2.f}},
+                     .origin    = {32.f, 0.f},
+                     .fillColor = sf::Color::White.withAlpha(128u),
+                     .size      = {cat.cooldown.value / maxCooldown * 64.f, 3.f}});
             }
         };
     }
@@ -5999,8 +6215,9 @@ Using prestige points, TODO P0
             const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
             const auto shrineColor = hueColor(shrine.getHue(), shrineAlpha);
 
-            const auto      circleColor  = sf::Color{231u, 198u, 39u}.withHueMod(shrine.getHue()).withLightness(0.75f);
-            const sf::Color outlineColor = circleColor.withLightness(0.25f);
+            const auto circleColor        = sf::Color{231u, 198u, 39u}.withHueMod(shrine.getHue()).withLightness(0.75f);
+            const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha);
+            const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position = shrine.getDrawPosition(),
@@ -6012,21 +6229,22 @@ Using prestige points, TODO P0
 
             const auto range = shrine.getRange();
 
-            // TODO P2: (lib) make it possible to draw a circle directly via batching without any of this stuff,
-            // no need to preallocate a circle shape before, have a reusable vertex buffer in the batch itself
-            circleShapeBuffer.position = shrine.position;
-            circleShapeBuffer.origin   = {range, range};
-            circleShapeBuffer.setPointCount(64);
-            circleShapeBuffer.setRadius(range);
-            circleShapeBuffer.setOutlineColor(circleColor);
-            circleShapeBuffer.setFillColor(circleShapeBuffer.getOutlineColor().withAlpha(rangeInnerAlpha));
-            cpuDrawableBatch.add(circleShapeBuffer);
+            cpuDrawableBatch.add(sf::CircleShapeData{
+                .position           = shrine.position,
+                .origin             = {range, range},
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
+                .outlineColor       = circleColor,
+                .outlineThickness   = 1.f,
+                .radius             = range,
+                .pointCount         = 64u,
+            });
 
             textNameBuffer.setString(shrineNames[asIdx(shrine.type)]);
             textNameBuffer.position = shrine.position + sf::Vector2f{0.f, 48.f};
             textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
             textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * invDeathProgress;
-            textNameBuffer.setOutlineColor(outlineColor);
+            textNameBuffer.setOutlineColor(textOutlineColor);
             cpuDrawableBatch.add(textNameBuffer);
 
             if (shrine.isActive())
@@ -6048,7 +6266,7 @@ Using prestige points, TODO P0
 
             textStatusBuffer.position = shrine.position + sf::Vector2f{0.f, 68.f};
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
-            textStatusBuffer.setOutlineColor(outlineColor);
+            textStatusBuffer.setOutlineColor(textOutlineColor);
             shrine.textStatusShakeEffect.applyToText(textStatusBuffer);
             textStatusBuffer.scale *= invDeathProgress;
             textStatusBuffer.scale *= 0.5f;
@@ -6102,8 +6320,12 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void applyParticleToSprite(sf::Sprite& tempSprite, const Particle& particle) const
     {
-        particle.data.applyToTransformable(tempSprite);
-        tempSprite.color       = hueByteColor(particle.hueByte, particle.data.opacityAsAlpha());
+        const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+
+        tempSprite.position    = particle.position;
+        tempSprite.scale       = {particle.scale, particle.scale};
+        tempSprite.rotation    = sf::radians(particle.rotation);
+        tempSprite.color       = hueByteColor(particle.hueByte, opacityAsAlpha);
         tempSprite.textureRect = particleRects[asIdx(particle.type)];
         tempSprite.origin      = tempSprite.textureRect.size / 2.f;
     }
@@ -6118,7 +6340,7 @@ Using prestige points, TODO P0
 
         for (const auto& particle : particles)
         {
-            if (!particleCullingBoundaries.isInside(particle.data.position))
+            if (!particleCullingBoundaries.isInside(particle.position))
                 continue;
 
             applyParticleToSprite(tempSprite, particle);
@@ -6147,8 +6369,6 @@ Using prestige points, TODO P0
         if (!profile.showParticles)
             return;
 
-        sf::Sprite tempSprite;
-
         const auto targetPosition = moneyText.getCenterRight();
 
         const auto bezier = [](const sf::Vector2f& start, const sf::Vector2f& end, const float t)
@@ -6167,14 +6387,14 @@ Using prestige points, TODO P0
             const float opacityScale = sf::base::clamp(particle.progress.value, 0.f, 0.15f) / 0.15f;
             const float alpha        = (128.f + particle.progress.remapEased(easeInQuint, 128.f, 0.f)) * opacityScale;
 
-            tempSprite.position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y};
-            tempSprite.scale       = sf::Vector2f{0.25f, 0.25f} * opacityScale;
-            tempSprite.rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau));
-            tempSprite.color       = sf::Color::White.withAlpha(static_cast<U8>(alpha));
-            tempSprite.textureRect = txrCoin;
-            tempSprite.origin      = tempSprite.textureRect.size / 2.f;
-
-            hudDrawableBatch.add(tempSprite);
+            hudDrawableBatch.add(sf::Sprite{
+                .position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
+                .scale       = sf::Vector2f{0.25f, 0.25f} * opacityScale,
+                .origin      = txrCoin.size / 2.f,
+                .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
+                .textureRect = txrCoin,
+                .color       = sf::Color::White.withAlpha(static_cast<U8>(alpha)),
+            });
         }
     }
 
@@ -6199,19 +6419,23 @@ Using prestige points, TODO P0
         if (!profile.showTextParticles)
             return;
 
-        sf::Text tempText{fontSuperBakery,
-                          {.characterSize    = 32u,
-                           .fillColor        = sf::Color::White,
-                           .outlineColor     = colorBlueOutline,
-                           .outlineThickness = 2.f}};
-
-        for (const auto& textParticle : textParticles)
+        for (const auto& tp : textParticles)
         {
-            if (!particleCullingBoundaries.isInside(textParticle.data.position))
+            if (!particleCullingBoundaries.isInside(tp.position))
                 continue;
 
-            textParticle.applyToText(tempText);
-            cpuDrawableBatch.add(tempText);
+            textStatusBuffer.setString(tp.buffer); // TODO P2: (lib) should find a way to assign directly to buffer
+
+            textStatusBuffer.position = tp.position;
+            textStatusBuffer.scale    = {tp.scale, tp.scale};
+            textStatusBuffer.rotation = sf::radians(tp.rotation);
+            textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
+
+            const auto opacityAsAlpha = static_cast<sf::base::U8>(tp.opacity * 255.f);
+            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(opacityAsAlpha));
+            textStatusBuffer.setOutlineColor(colorBlueOutline.withAlpha(opacityAsAlpha));
+
+            cpuDrawableBatch.add(textStatusBuffer);
         }
     }
 
@@ -6327,6 +6551,8 @@ Using prestige points, TODO P0
                              .textureRect = txTipBg.getRect(),
                              .color       = sf::Color::White.withAlpha(static_cast<U8>(alpha * 0.85f))};
 
+        SFML_BASE_ASSERT(profile.hudScale > 0.f);
+
         tipSprite.setBottomCenter({getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
         getWindow().draw(tipSprite, txTipBg);
 
@@ -6429,6 +6655,8 @@ Using prestige points, TODO P0
 
         std::latch latch{nWorkers};
 
+        // TODO P2: perform one chunk in main threaD?
+
         sweepAndPrune.forEachUniqueIndexPair(nWorkers,
                                              latch,
                                              threadPool,
@@ -6506,6 +6734,7 @@ Using prestige points, TODO P0
                 if (pt.perm.witchCatBuffOrbitalDolls && doll.isActive() && !doll.tcDeath.hasValue() &&
                     detectCollision(cat.position, doll.position, cat.getRadius(), doll.getRadius()))
                 {
+                    // TODO P2: achivement/stat
                     collectDoll(doll);
                 }
             }
@@ -6538,11 +6767,17 @@ Using prestige points, TODO P0
 
         const auto updateParticleLike = [&](auto& particleLikeVec)
         {
-            for (auto& particleLike : particleLikeVec)
-                particleLike.data.update(deltaTimeMs);
+            for (auto& p : particleLikeVec)
+            {
+                p.velocity.y += p.accelerationY * deltaTimeMs;
+                p.position += p.velocity * deltaTimeMs;
 
-            sf::base::vectorEraseIf(particleLikeVec,
-                                    [](const auto& particleLike) { return particleLike.data.opacity <= 0.f; });
+                p.rotation += p.torque * deltaTimeMs;
+
+                p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+            }
+
+            sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
         };
 
         updateParticleLike(particles);
@@ -6554,7 +6789,7 @@ Using prestige points, TODO P0
                                 [&](const auto& p)
         {
             return p.type == ParticleType::Coin &&
-                   (p.data.position.x > (gameView.viewport.size.x * resolution.x) || p.data.position.x < 0.f);
+                   (p.position.x > (gameView.viewport.size.x * resolution.x) || p.position.x < 0.f);
         });
 
         for (auto& earnedCoinParticle : earnedCoinParticles)
@@ -6706,17 +6941,17 @@ Using prestige points, TODO P0
     void gameLoopUpdateBuffText()
     {
         static constexpr const char* buffNames[] = {
-            "Midas Paws",         // Normal
-            "Shooting Stars",     // Uni
-            "Explosive Downpour", // Devil
-            "Endless Flight",     // Astro
+            "Midas Paws (x5 Cat Reward)",          // Normal
+            "Shooting Stars (15% Star Chance) ",   // Uni
+            "Explosive Downpour (1% Bomb Chance)", // Devil
+            "Endless Flight (Looping Astrocats)",  // Astro
 
-            "N/A",                // Witch
-            "Mana Overload",      // Wizard
-            "x5 Click Reward",    // Mouse
-            "Global Maintenance", // Engi
-            "Repulso Buff TODO",  // Repulso
-            "Attracto Buff TODO", // Attracto
+            "N/A",                                     // Witch
+            "Mana Overload (x3.5 Mana Regen)",         // Wizard
+            "Click Fever (x10 Click Reward)",          // Mouse
+            "Global Maintenance (x2 Faster Cooldown)", // Engi
+            "Repulso Buff TODO",                       // Repulso
+            "Attracto Buff TODO",                      // Attracto
         };
 
         static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
@@ -6729,14 +6964,16 @@ Using prestige points, TODO P0
                                                       [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
 
         if (nDollsToClick > 0u)
-            writeIdx = static_cast<SizeT>(
-                std::snprintf(buffStrBuffer, sizeof(buffStrBuffer), "Dolls left: %zu\n", nDollsToClick));
+            writeIdx += static_cast<SizeT>(
+                std::snprintf(buffStrBuffer, sizeof(buffStrBuffer), "Dolls to collect: %zu\n", nDollsToClick));
 
-        if (pt.arcaneAuraTimer > 0.f)
-            writeIdx = static_cast<SizeT>(std::snprintf(buffStrBuffer + writeIdx,
-                                                        sizeof(buffStrBuffer) - writeIdx,
-                                                        "Mewltiplier Aura: %.2fs\n",
-                                                        static_cast<double>(pt.arcaneAuraTimer / 1000.f)));
+        if (pt.mewltiplierAuraTimer > 0.f)
+            writeIdx += static_cast<SizeT>(
+                std::snprintf(buffStrBuffer + writeIdx,
+                              sizeof(buffStrBuffer) - writeIdx,
+                              "Mewltiplier Aura (x%.1f Any Reward): %.2fs\n",
+                              static_cast<double>(pt.psvMewltiplierMult.currentValue()),
+                              static_cast<double>(pt.mewltiplierAuraTimer / 1000.f)));
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
@@ -6745,11 +6982,12 @@ Using prestige points, TODO P0
             if (buffTime == 0.f)
                 continue;
 
-            std::snprintf(buffStrBuffer + writeIdx,
-                          sizeof(buffStrBuffer) - writeIdx,
-                          "%s: %.2fs\n",
-                          buffNames[i],
-                          static_cast<double>(buffTime / 1000.f));
+            writeIdx += static_cast<SizeT>(
+                std::snprintf(buffStrBuffer + writeIdx,
+                              sizeof(buffStrBuffer) - writeIdx,
+                              "%s: %.2fs\n",
+                              buffNames[i],
+                              static_cast<double>(buffTime / 1000.f)));
         }
 
         buffText.setString(buffStrBuffer);
@@ -6812,6 +7050,43 @@ Using prestige points, TODO P0
             pt.spendPPTipShown = true;
             doTip("Remember that you have some\nprestige points to spend!");
         }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateDpsSampler(const sf::base::I64 elapsedUs)
+    {
+        moneyGainedUsAccumulator += elapsedUs;
+        while (moneyGainedUsAccumulator >= 1'000'000)
+        {
+            moneyGainedUsAccumulator -= 1'000'000;
+
+            samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
+            moneyGainedLastSecond = 0u;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateNotificationQueue(const float deltaTimeMs)
+    {
+        if (notificationQueue.empty())
+            return;
+
+        if (notificationCountdown.updateAndIsActive(deltaTimeMs))
+            return;
+
+        notificationCountdown.restart();
+
+        const auto& notification = notificationQueue.front();
+
+        ImGuiToast toast{ImGuiToastType::None, 4500};
+        toast.setTitle(notification.title);
+        toast.setContent("%s", notification.content.c_str());
+
+        ImGui::InsertNotification(toast);
+        playSound(sounds.notification);
+
+        // pop front
+        notificationQueue.erase(notificationQueue.begin());
     }
 
     ////////////////////////////////////////////////////////////
@@ -6879,7 +7154,7 @@ Using prestige points, TODO P0
         }
 
         const auto deltaTime   = deltaClock.restart();
-        const auto deltaTimeMs = static_cast<float>(deltaTime.asMilliseconds());
+        const auto deltaTimeMs = sf::base::min(24.f, static_cast<float>(deltaTime.asMicroseconds()) / 1000.f);
 
         gameLoopCheats();
 
@@ -7063,7 +7338,7 @@ Using prestige points, TODO P0
             if (inPrestigeTransition && pt.cats.empty() && pt.shrines.empty() && pt.bubbles.empty() && pt.dolls.empty())
             {
                 inPrestigeTransition = false;
-                pt.money             = 0u;
+                pt.money             = pt.perm.starterPackPurchased ? 1'000u : 0u;
 
                 scroll                   = 0.f;
                 draggedCat               = nullptr;
@@ -7196,12 +7471,14 @@ Using prestige points, TODO P0
         //
         // Draw cats, shrines, dolls, particles, and text particles
         cpuDrawableBatch.clear();
-        gameLoopDrawCats(mousePos);
+        catTextDrawableBatch.clear();
+        gameLoopDrawCats(mousePos, deltaTimeMs);
         gameLoopDrawShrines(mousePos);
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
         window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        window.draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Scroll arrow hint
@@ -7310,14 +7587,12 @@ Using prestige points, TODO P0
 
         //
         // Update sampler
-        moneyGainedUsAccumulator += elapsedUs;
-        while (moneyGainedUsAccumulator >= 1'000'000)
-        {
-            moneyGainedUsAccumulator -= 1'000'000;
+        gameLoopUpdateDpsSampler(elapsedUs);
 
-            samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
-            moneyGainedLastSecond = 0u;
-        }
+        //
+        // Notification queue
+        if (shouldDrawUI)
+            gameLoopUpdateNotificationQueue(deltaTimeMs);
 
         //
         // Display window
@@ -7455,38 +7730,49 @@ int main()
 }
 
 // TODO IDEAS:
+// - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
+// - bubble collisions with wind enabled seem fucked, is it a data race?
+// - crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x multiplier with corrupted zalgo names
+// - prestige upgrade for unicats that makes star bubbles worth 30x instead of 15x, around 64pps
+// - prestige upgrade for unicats that makes all bubbles in range converted at once, and enables range upgrades (need to be expensive), around 128pps
+// - some prestige upgrade for devilcats, maybe make bombs transformable by unicats
+// - some prestige upgrade for astrocats, ...?
 // - prestige 8 (first prestige where repulsion shrine is required) takes too long
-// - does astrocat have a speed limit? needs one for endless flight buff
-// - maybe add checkbox to giant fan to choose power between fast (current) and slow
-// - maybe 64PP prestige buff that doubles duration of mewltiplier aura
-// - mousecat witch buff a bit too weak probably
 // - maybe 64PP prestige buff for multipop that allows "misses"
-// - notification when wizard mana is full? or when witch is ready to cast? maybe make them optional in settings?
-// - witchcat sound gets out of sync if shes inspired or boosted, split in two separate sounds...?
-// - queue imgui toasts to avoid spamming and sound spam
-// - rested buff 1PP : 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
-// - mousecat might need a buff
-// - sounds for hexing/unhexing (meows), also sounds for ritual and nicer ritual animation
-// - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
+// - rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
+// - sounds for hexing/unhexing (meows)
 // - disable exiting with escape key, or add popup to confirm
 // - leveling cat (2000-2500 pops is a good milestone for 1st lvl up, 5000 for 2nd, 10000 for 3rd), level up should increase reward by 2...1.75...1.5, etc
 // - maybe unlock leveling via prestige
 // - change bg when unlocking new cat type or prestiging?
 // - steam achievements
 // - find better word for "prestige"
-// - smart/genius cat name prefix
-// - pp point ideas: start with stuff unlocked, start with a bit of money
 // - prestige should scale indefinitely...? or make PP costs scale linearly, max is 20 -- or maybe when we reach max bubble value just purchase prestige points
 // - other prestige ideas: cat multipop, unicat multitransform, unicat trasnform twice in a row, unlock random special bubbles
-// - make bombs less affected by wind
 // - achievements for speedrunning milestones
-// - track generated revenue per cat, enable via PPs (maybe)
-// - track pops/actions per cat should enabled via PPs (maybe)
 // - ignore clicks done on top of imgui
 // - "resting powerup" via PPs that increases cat multiplier when not clicking for a while, maybe around 16PPs
 // - maybe make "autocast spell selector" a PP upgrade for around 128PPs
-// - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs
 
+// x - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
+// x - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs
+// x - display cat text always on top of cats
+// x - dragging the window stops execution and deltatime accumulates
+// x - make cats wobble back and forth when ritual
+// x - witchcat sound gets out of sync if shes inspired or boosted, split in two separate sounds...?
+// x - mousecat combo should cap at x999, and perhaps give a flat bonus there and needs achievement ("mouse broke")
+// x - witchcat needs to delay ritual until all dolls are collected
+// x - witchcat stacking same buff needs diminishing return, promote having different buffs stacked, also should probably have 90s cap
+// x - does astrocat have a speed limit? needs one for endless flight buff
+// x - make bombs less affected by wind
+// x - smart/genius cat name prefix
+// x - pp point ideas: start with stuff unlocked, start with a bit of money
+// x - maybe 64PP prestige buff that doubles duration of mewltiplier aura
+// x - mousecat might need a buff
+// x - maybe add checkbox to giant fan to choose power between fast (current) and slow
+// x - queue imgui toasts to avoid spamming and sound spam
+// x - notification when wizard mana is full? or when witch is ready to cast? maybe make them optional in settings?
+// x - mousecat witch buff a bit too weak probably
 // x - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph
 // x - astrocats collide with each other when one flies but the other doesn't
 // x - add big flashing arrow when map scrolling is first unlocked to force player to scroll

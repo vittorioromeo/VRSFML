@@ -11,22 +11,6 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& min(const T& a, const T& b) noexcept
-{
-    return b < a ? b : a;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& max(const T& a, const T& b) noexcept
-{
-    return a < b ? b : a;
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename Iter, typename TargetIter>
 [[gnu::always_inline]] constexpr TargetIter copy(Iter rangeBegin, Iter rangeEnd, TargetIter targetIter)
 {

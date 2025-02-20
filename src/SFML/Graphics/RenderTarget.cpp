@@ -38,6 +38,7 @@
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <atomic>

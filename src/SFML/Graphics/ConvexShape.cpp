@@ -7,8 +7,7 @@
 #include "SFML/Graphics/Shape.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Math/Fmax.hpp"
-#include "SFML/Base/Math/Fmin.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 
 namespace sf
@@ -94,10 +93,10 @@ Vector2f ConvexShape::getGeometricCenter() const
     {
         const auto currentPoint = m_points[i];
 
-        minPoint.x = base::fmin(minPoint.x, currentPoint.x);
-        maxPoint.x = base::fmax(maxPoint.x, currentPoint.x);
-        minPoint.y = base::fmin(minPoint.y, currentPoint.y);
-        maxPoint.y = base::fmax(maxPoint.y, currentPoint.y);
+        minPoint.x = base::min(minPoint.x, currentPoint.x);
+        maxPoint.x = base::max(maxPoint.x, currentPoint.x);
+        minPoint.y = base::min(minPoint.y, currentPoint.y);
+        maxPoint.y = base::max(maxPoint.y, currentPoint.y);
     }
 
     return (maxPoint + minPoint) / 2.f;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -6,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -29,6 +31,9 @@ struct GLElementBufferObject;
 struct GLVertexBufferObject;
 struct Sprite;
 struct Transform;
+
+struct CircleShapeData;
+struct RectangleShapeData;
 } // namespace sf
 
 
@@ -199,6 +204,18 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    void add(const CircleShapeData& sdCircle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RectangleShapeData& sdRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void clear();
 
 private:
@@ -208,6 +225,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     TStorage m_storage;
+    Shape    m_shapeBuffer{{}}; //!< Used to store shape data temporarily
 };
 
 ////////////////////////////////////////////////////////////
