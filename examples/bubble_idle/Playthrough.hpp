@@ -127,11 +127,11 @@ struct Playthrough
 
     //
     // Magic
-    float     manaTimer       = 0.f;
-    ManaType  mana            = 0u;
-    bool      absorbingWisdom = false;
-    MoneyType wisdom          = 0u;
-    float     arcaneAuraTimer = 0.f;
+    float     manaTimer            = 0.f;
+    ManaType  mana                 = 0u;
+    bool      absorbingWisdom      = false;
+    MoneyType wisdom               = 0u;
+    float     mewltiplierAuraTimer = 0.f;
 
     //
     // Mouse cat
@@ -142,20 +142,24 @@ struct Playthrough
     // Permanent purchases
     struct Permanent
     {
-        bool multiPopPurchased                  = false;
-        bool smartCatsPurchased                 = false;
-        bool geniusCatsPurchased                = false; // if true, `smartCatsPurchased` must be true
-        bool windPurchased                      = false;
-        bool astroCatInspirePurchased           = false;
-        bool starpawConversionIgnoreBombs       = false;
-        bool repulsoCatFilterPurchased          = false;
-        bool repulsoCatConverterPurchased       = false;
-        bool attractoCatFilterPurchased         = false;
-        bool witchCatBuffPowerScalesWithNCats   = false;
-        bool witchCatBuffPowerScalesWithMapSize = false;
-        bool witchCatBuffFewerDolls             = false;
-        bool witchCatBuffOrbitalDolls           = false;
-        bool unsealedByType[nCatTypes]          = {};
+        bool starterPackPurchased                 = false;
+        bool multiPopPurchased                    = false;
+        bool smartCatsPurchased                   = false;
+        bool geniusCatsPurchased                  = false; // if true, `smartCatsPurchased` must be true
+        bool windPurchased                        = false;
+        bool astroCatInspirePurchased             = false;
+        bool starpawConversionIgnoreBombs         = false;
+        bool repulsoCatFilterPurchased            = false;
+        bool repulsoCatConverterPurchased         = false;
+        bool attractoCatFilterPurchased           = false;
+        bool witchCatBuffPowerScalesWithNCats     = false;
+        bool witchCatBuffPowerScalesWithMapSize   = false;
+        bool witchCatBuffFewerDolls               = false;
+        bool witchCatBuffFlammableDolls           = false;
+        bool witchCatBuffOrbitalDolls             = false;
+        bool shrineCompletedOnceByType[nCatTypes] = {};
+        bool unsealedByType[nCatTypes]            = {};
+        bool wizardCatDoubleMewltiplierDuration   = false;
     };
 
     Permanent perm = {};
@@ -164,7 +168,7 @@ struct Playthrough
     // Permanent purchases settings
     bool              multiPopEnabled            = false;
     bool              multiPopMouseCatEnabled    = false;
-    bool              windEnabled                = false;
+    int               windStrength               = 0;
     BubbleIgnoreFlags geniusCatIgnoreBubbles     = {};
     BubbleIgnoreFlags repulsoCatIgnoreBubbles    = {};
     BubbleIgnoreFlags attractoCatIgnoreBubbles   = {};
@@ -259,24 +263,24 @@ struct Playthrough
         for (auto& psv : psvRangeDivsPerCatType)
             psv.nPurchases = 0u;
 
-        money = 0u;
+        money = perm.starterPackPurchased ? 1'000u : 0u;
         prestigePoints += prestigePointReward;
 
         comboPurchased = false;
         mapPurchased   = false;
 
-        manaTimer       = 0.f;
-        mana            = 0u;
-        absorbingWisdom = false;
-        wisdom          = 0u;
-        arcaneAuraTimer = 0.f;
+        manaTimer            = 0.f;
+        mana                 = 0u;
+        absorbingWisdom      = false;
+        wisdom               = 0u;
+        mewltiplierAuraTimer = 0.f;
 
         mouseCatCombo                = 0.f;
         mouseCatComboCountdown.value = 0.f;
 
         multiPopEnabled         = false;
         multiPopMouseCatEnabled = false;
-        windEnabled             = false;
+        windStrength            = 0;
 
         // bubbles, cats, dolls, and shrines are cleaned in the game loop
 
@@ -324,15 +328,15 @@ struct Playthrough
                               baseRequiredRewards,
                               nShrineTypes,
                               {
-                                  1'000,          // Voodoo
-                                  75'000,         // Magic
-                                  150'000,        // Clicking
-                                  2'500'000,      // Automation
-                                  25'000'000,     // Repulsion
-                                  50'000'000,     // Attraction
-                                  500'000'000,    // Chaos
-                                  1'000'000'000,  // Transmutation
-                                  10'000'000'000, // Victory
+                                  1'000,             // Voodoo
+                                  75'000,            // Magic
+                                  150'000,           // Clicking
+                                  2'500'000,         // Automation
+                                  25'000'000,        // Repulsion
+                                  500'000'000,       // Attraction
+                                  2'500'000'000,     // Chaos
+                                  10'000'000'000,    // Transmutation
+                                  1'000'000'000'000, // Victory
                               });
 
         return static_cast<MoneyType>(static_cast<float>(baseRequiredRewards[asIdx(type)]));

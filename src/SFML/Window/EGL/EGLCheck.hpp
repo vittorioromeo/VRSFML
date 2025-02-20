@@ -6,8 +6,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#ifdef SFML_DEBUG
+#include "SFML/Window/Priv/Regularize.hpp" // used
+#endif
+
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
 
 
 namespace sf::priv
@@ -17,19 +20,6 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 #ifdef SFML_DEBUG
 
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr auto regularize(auto&& f)
-{
-    if constexpr (SFML_BASE_IS_SAME(decltype(f()), void))
-    {
-        f();
-        return nullptr;
-    }
-    else
-    {
-        return f();
-    }
-}
-
 // In debug mode, perform a test on every EGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
 #define eglCheck(...)                                                        \
@@ -37,14 +27,13 @@ namespace sf::priv
     {                                                                        \
         SFML_BASE_ASSERT(::eglGetError() == EGL_SUCCESS);                    \
                                                                              \
-        auto sfPrivEglCheckResult = ::sf::priv::regularize(f);                    \
+        auto sfPrivEglCheckResult = ::sf::priv::regularize(f);               \
                                                                              \
         while (!::sf::priv::eglCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
             /* no-op */;                                                     \
                                                                              \
-        return sfPrivEglCheckResult;                                              \
-    }                                                                        \
-    ([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        return sfPrivEglCheckResult;                                         \
+    }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
 
 #else
 

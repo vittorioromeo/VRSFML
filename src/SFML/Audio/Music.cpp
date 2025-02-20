@@ -10,8 +10,8 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
