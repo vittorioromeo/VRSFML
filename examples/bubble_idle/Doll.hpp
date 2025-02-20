@@ -56,15 +56,17 @@ struct [[nodiscard]] Doll
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static inline constexpr float getRadius() noexcept
+    static inline constexpr float radius = 32.f;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] inline constexpr float getRadius() const noexcept
     {
-        return 32.f;
+        return radius;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static inline constexpr float getRadiusSquared()
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float getRadiusSquared() const noexcept
     {
-        constexpr float radius = getRadius();
         return radius * radius;
     }
 };

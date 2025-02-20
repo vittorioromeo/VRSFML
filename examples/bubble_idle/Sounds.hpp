@@ -77,6 +77,7 @@ struct Sounds
     LoadedSound absorb{"absorb.ogg"};
     LoadedSound maintenance{"maintenance.ogg"};
     LoadedSound ritual{"ritual.ogg"};
+    LoadedSound ritualend{"ritualend.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -114,6 +115,7 @@ struct Sounds
         setupWorldSound(absorb);
         setupWorldSound(maintenance);
         setupWorldSound(ritual, /* attenuationMult */ 0.1f);
+        setupWorldSound(ritualend, /* attenuationMult */ 0.1f);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -140,6 +142,14 @@ struct Sounds
     ////////////////////////////////////////////////////////////
     Sounds(const Sounds&) = delete;
     Sounds(Sounds&&)      = delete;
+
+    ////////////////////////////////////////////////////////////
+    void stopPlayingAll(const LoadedSound& ls)
+    {
+        for (sf::Sound& sound : soundsBeingPlayed)
+            if (sound.getStatus() == sf::Sound::Status::Playing && &sound.getBuffer() == &ls.asBuffer())
+                sound.stop();
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT countPlayingPooled(const LoadedSound& ls) const

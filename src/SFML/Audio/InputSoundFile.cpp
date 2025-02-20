@@ -16,10 +16,10 @@
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 
 namespace sf
