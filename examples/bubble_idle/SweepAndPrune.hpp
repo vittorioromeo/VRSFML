@@ -22,7 +22,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    void forEachUniqueIndexPair(const unsigned int nWorkers, std::latch& latch, auto& pool, auto&& func)
+    void forEachUniqueIndexPair(const unsigned int nWorkers, std::latch& latch, auto& pool, auto& func)
     {
         const sf::base::SizeT numObjects = m_aabbs.size();
         if (numObjects < 2)
