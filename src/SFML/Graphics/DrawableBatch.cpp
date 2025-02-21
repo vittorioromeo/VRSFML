@@ -123,7 +123,7 @@ void DrawableBatchImpl<TStorage>::addShapeOutline(const Transform& transform, co
     if (size < 3u) [[unlikely]]
         return;
 
-    const base::SizeT indexCount = 3u * (size - 2u); // TODO P0: this is probably wrong, I think outline is not a fan
+    const base::SizeT indexCount = 3u * (size - 2u);
 
     appendShapeOutlineIndicesAndVertices(transform,
                                          data,
@@ -153,17 +153,17 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
+void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints, const auto& descriptor, auto&& pointFn)
 {
-    if (sdCircle.pointCount < 3u) [[unlikely]]
+    if (nPoints < 3u) [[unlikely]]
         return;
 
-    const auto [sine, cosine] = base::fastSinCos(sdCircle.rotation.asRadians());
-    const auto transform      = Transform::from(sdCircle.position, sdCircle.scale, sdCircle.origin, sine, cosine);
+    const auto [sine, cosine] = base::fastSinCos(descriptor.rotation.asRadians());
+    const auto transform      = Transform::from(descriptor.position, descriptor.scale, descriptor.origin, sine, cosine);
 
     // TODO P1: improve, also add to RenderTarget
 
-    const base::SizeT vertexCount   = sdCircle.pointCount + 2u; // + 2 for center and repeated first point
+    const base::SizeT vertexCount   = nPoints + 2u; // + 2 for center and repeated first point
     const IndexType   nextFillIndex = m_storage.getNumVertices();
 
     Vertex* vertices = m_storage.reserveMoreVertices(vertexCount);
@@ -171,12 +171,10 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
     //
     // Update vertex positions
-    const float angleStep = sf::base::tau / static_cast<float>(sdCircle.pointCount);
+    for (unsigned int i = 0u; i < nPoints; ++i)
+        vertices[1u + i].position = transform.transformPoint(pointFn(i));
 
-    for (unsigned int i = 0u; i < sdCircle.pointCount; ++i)
-        vertices[1u + i].position = transform.transformPoint(computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius));
-
-    vertices[1u + sdCircle.pointCount].position = vertices[1].position;
+    vertices[1u + nPoints].position = vertices[1].position;
 
     //
     // Update the bounding rectangle
@@ -191,7 +189,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
     {
         const auto* end = vertices + vertexCount;
         for (Vertex* vertex = vertices; vertex != end; ++vertex)
-            vertex->color = sdCircle.fillColor;
+            vertex->color = descriptor.fillColor;
     }
 
     //
@@ -205,7 +203,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
         for (Vertex* vertex = vertices; vertex != end; ++vertex)
         {
             const Vector2f ratio = (vertex->position - insideBounds.position).componentWiseDiv(safeInsideSize);
-            vertex->texCoords    = sdCircle.textureRect.position + sdCircle.textureRect.size.componentWiseMul(ratio);
+            vertex->texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratio);
         }
     }
 
@@ -220,7 +218,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
     //
     // Update outline if needed
-    if (sdCircle.outlineThickness == 0.f)
+    if (descriptor.outlineThickness == 0.f)
         return;
 
     {
@@ -242,23 +240,23 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
             SFML_BASE_ASSERT(m_storage.vertices.data() + nextFillIndex == outlineVertices - vertexCount);
         }
 
-        updateOutlineImpl(sdCircle.outlineThickness, vertexCount, outlineVertices - vertexCount, count);
+        updateOutlineImpl(descriptor.outlineThickness, vertexCount, outlineVertices - vertexCount, count);
 
         //
         // Update outline colors
         {
             const auto* end = outlineVertices + outlineCount;
             for (Vertex* vertex = outlineVertices; vertex != end; ++vertex)
-                vertex->color = sdCircle.outlineColor;
+                vertex->color = descriptor.outlineColor;
         }
 
         //
         // Update outline tex coords
         const auto* end = outlineVertices + outlineCount;
         for (Vertex* vertex = outlineVertices; vertex != end; ++vertex)
-            vertex->texCoords = sdCircle.outlineTextureRect.position;
+            vertex->texCoords = descriptor.outlineTextureRect.position;
 
-        const base::SizeT outlineIndexCount = 3u * (outlineCount - 2u); // TODO P0: this is probably wrong, I think outline is not a fan
+        const base::SizeT outlineIndexCount = 3u * (outlineCount - 2u);
 
         auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
 
@@ -272,51 +270,30 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
+{
+    drawShapeFromPoints(sdCircle.pointCount,
+                        sdCircle,
+                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+    {
+        const float angleStep = sf::base::tau / static_cast<float>(sdCircle.pointCount);
+        return computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
-    // TODO P1: improve, also add to RenderTarget
+    const Vector2f points[]{{0.f, 0.f},
+                            {sdRectangle.size.x, 0.f},
+                            {sdRectangle.size.x, sdRectangle.size.y},
+                            {0.f, sdRectangle.size.y}};
 
-    // const auto [sine, cosine] = base::fastSinCos(sdRectangle.rotation.asRadians());
-    // const auto transform = Transform::from(sdRectangle.position, sdRectangle.scale, sdRectangle.origin, sine, cosine);
-
-    m_shapeBuffer.position = sdRectangle.position;
-    m_shapeBuffer.scale    = sdRectangle.scale;
-    m_shapeBuffer.origin   = sdRectangle.origin;
-    m_shapeBuffer.rotation = sdRectangle.rotation;
-
-    m_shapeBuffer.m_textureRect        = sdRectangle.textureRect;
-    m_shapeBuffer.m_outlineTextureRect = sdRectangle.outlineTextureRect;
-    m_shapeBuffer.m_fillColor          = sdRectangle.fillColor;
-    m_shapeBuffer.m_outlineColor       = sdRectangle.outlineColor;
-    m_shapeBuffer.m_outlineThickness   = sdRectangle.outlineThickness;
-
-    m_shapeBuffer.m_vertices.resize(4u + 2u); // + 2 for center and repeated first point
-    m_shapeBuffer.m_verticesEndIndex = 4u + 2u;
-
-    //
-    // Update vertex positions
-    m_shapeBuffer.m_vertices[1u + 0u].position = {0.f, 0.f};
-    m_shapeBuffer.m_vertices[1u + 1u].position = {sdRectangle.size.x, 0.f};
-    m_shapeBuffer.m_vertices[1u + 2u].position = {sdRectangle.size.x, sdRectangle.size.y};
-    m_shapeBuffer.m_vertices[1u + 3u].position = {0.f, sdRectangle.size.y};
-
-    m_shapeBuffer.m_vertices[1u + 4u].position = m_shapeBuffer.m_vertices[1].position;
-
-    //
-    // Update the bounding rectangle
-    m_shapeBuffer.m_vertices[0] = m_shapeBuffer.m_vertices[1]; // so that the result of getBounds() is correct
-    m_shapeBuffer.m_insideBounds = getVertexRangeBounds(m_shapeBuffer.m_vertices.data(), m_shapeBuffer.m_verticesEndIndex);
-
-    // Compute the center and make it the first vertex
-    m_shapeBuffer.m_vertices[0].position = m_shapeBuffer.m_insideBounds.getCenter();
-
-    // Updates
-    m_shapeBuffer.updateFillColors();
-    m_shapeBuffer.updateTexCoords();
-    m_shapeBuffer.updateOutline(/* mustUpdateBounds */ false);
-    m_shapeBuffer.updateOutlineTexCoords();
-
-    add(m_shapeBuffer);
+    drawShapeFromPoints(4u,
+                        sdRectangle,
+                        [&](const base::SizeT i) __attribute__((always_inline, flatten)) { return points[i]; });
 }
 
 
