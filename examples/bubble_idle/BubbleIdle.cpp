@@ -1257,8 +1257,9 @@ Using prestige points, TODO P0
 
         const char* labelEnd = ImGui::FindRenderedTextEnd(label);
 
-        const ImGuiID id        = std::strtoul(labelEnd + 2, nullptr, 10);
-        const ImVec2  labelSize = ImGui::CalcTextSize(label, labelEnd, true);
+        const auto id = static_cast<ImGuiID>(std::strtoul(labelEnd + 2, nullptr, 10));
+
+        const ImVec2 labelSize = ImGui::CalcTextSize(label, labelEnd, true);
 
         const ImVec2 size = ImGui::CalcItemSize(btnSize,
                                                 labelSize.x + ImGui::GetStyle().FramePadding.x * 2.f,
