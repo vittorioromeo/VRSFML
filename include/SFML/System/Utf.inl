@@ -183,7 +183,7 @@ base::SizeT Utf<8>::count(In begin, In end)
 {
     static_assert(sizeof(decltype(*begin)) == sizeof(char));
 
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin != end)
     {
         begin = next(begin, end);
@@ -434,7 +434,7 @@ base::SizeT Utf<16>::count(In begin, In end)
 {
     static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
 
-    std::size_t length = 0;
+    base::SizeT length = 0;
     while (begin != end)
     {
         begin = next(begin, end);

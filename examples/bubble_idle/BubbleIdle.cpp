@@ -6730,21 +6730,18 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
     {
-        const unsigned int nWorkers = threadPool.getWorkerCount();
-
-        std::latch latch{nWorkers};
-
         // TODO P2: perform one chunk in main threaD?
 
-        sweepAndPrune.forEachUniqueIndexPair(nWorkers,
-                                             latch,
-                                             threadPool,
-                                             [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ)
-                                                 __attribute__((always_inline))
+        auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) __attribute__((always_inline))
         {
             // TODO P2: technically this is a data race
             handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]);
-        });
+        };
+
+        const unsigned int nWorkers = threadPool.getWorkerCount();
+        std::latch latch{nWorkers};
+
+        sweepAndPrune.forEachUniqueIndexPair(nWorkers, latch, threadPool, func);
 
         latch.wait();
     }
