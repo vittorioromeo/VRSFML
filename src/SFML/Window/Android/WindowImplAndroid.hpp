@@ -176,6 +176,15 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasFocus() const override;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Return a scaling factor for DPI-aware scaling
+    ///
+    /// \return `1.f` for default DPI (96) or the window is not
+    ///         DPI-aware, otherwise the scaling factor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDPIAwareScalingFactor() const override;
+
     static void               forwardEvent(const Event& event);
     static WindowImplAndroid* singleInstance;
 

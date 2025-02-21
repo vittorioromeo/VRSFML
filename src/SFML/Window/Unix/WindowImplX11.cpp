@@ -1224,6 +1224,14 @@ bool WindowImplX11::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
+float WindowImplX11::getDPIAwareScalingFactor() const
+{
+    // TODO P1: implement
+    return 1.f;
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImplX11::grabFocus()
 {
     using namespace WindowImplX11Impl;
