@@ -312,6 +312,7 @@ struct Main
     // Render window
     sf::base::Optional<sf::RenderWindow> optWindow;
     bool                                 mustRecreateWindow = true;
+    float                                dpiScalingFactor   = 1.f;
 
     ////////////////////////////////////////////////////////////
     // ImGui context
@@ -1430,15 +1431,29 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getHUDScalingFactor() const
+    {
+        return dpiScalingFactor * profile.hudScale;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getUIScalingFactor() const
+    {
+        return dpiScalingFactor * profile.uiScale;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool uiMakeButtonImpl(const char* label, const char* xBuffer)
     {
-        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x - uiButtonWidth - 2.5f, 0.f)); // Push to right
+        const float scaledButtonWidth = uiButtonWidth * getUIScalingFactor();
+
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x - scaledButtonWidth - 2.5f, 0.f)); // Push to right
         ImGui::SameLine();
 
         uiPushButtonColors();
 
         bool clicked = false;
-        if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(uiButtonWidth, 0.f));
+        if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(scaledButtonWidth, 0.f));
             outcome == AnimatedButtonOutcome::Clicked)
         {
             playSound(sounds.buy);
@@ -1646,8 +1661,8 @@ Using prestige points, TODO P0
     void uiBeginColumns()
     {
         ImGui::Columns(2, "twoColumns", false);
-        ImGui::SetColumnWidth(0, uiWindowWidth - uiButtonWidth - 20.f);
-        ImGui::SetColumnWidth(1, uiButtonWidth + 10.f);
+        ImGui::SetColumnWidth(0, (uiWindowWidth - uiButtonWidth - 20.f) * getUIScalingFactor());
+        ImGui::SetColumnWidth(1, (uiButtonWidth + 10.f) * getUIScalingFactor());
     }
 
     ////////////////////////////////////////////////////////////
@@ -1678,13 +1693,28 @@ Using prestige points, TODO P0
         style.FrameRounding             = 10.f;
         style.WindowRounding            = 5.f;
 
+        const float  newScalingFactor  = getUIScalingFactor();
+        static float lastScalingFactor = 1.f;
+
+        if (getUIScalingFactor() != lastScalingFactor)
+        {
+            style.ScaleAllSizes(1.f / lastScalingFactor);
+            style.ScaleAllSizes(newScalingFactor);
+
+            lastScalingFactor = newScalingFactor;
+        }
+
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
+
+        ImGui::GetIO().FontGlobalScale = newScalingFactor;
 
         if (profile.showDpsMeter)
             uiDpsMeter();
 
         ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
-        ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth, 0.f), ImVec2(uiWindowWidth, uiGetMaxWindowHeight()));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth * newScalingFactor, 0.f),
+                                            ImVec2(uiWindowWidth * newScalingFactor,
+                                                   uiGetMaxWindowHeight() * newScalingFactor));
 
         ImGui::Begin("##menu",
                      nullptr,
@@ -1710,7 +1740,8 @@ Using prestige points, TODO P0
     {
         const auto resolution = getResolution();
 
-        const ImVec2 dpsMeterSize(240.f, 60.f);
+        const float  dpsMeterScale = getUIScalingFactor();
+        const ImVec2 dpsMeterSize(240.f * dpsMeterScale, 65.f * dpsMeterScale);
 
         ImGui::SetNextWindowPos({15.f, resolution.y - 15.f}, 0, {0.f, 1.f});
         ImGui::SetNextWindowSizeConstraints(dpsMeterSize, dpsMeterSize);
@@ -1735,7 +1766,7 @@ Using prestige points, TODO P0
                          avgBuffer,
                          0.f,
                          FLT_MAX,
-                         ImVec2(dpsMeterSize.x - 15.f, dpsMeterSize.y - 17.f));
+                         ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
         ImGui::End();
     }
@@ -2858,8 +2889,11 @@ Using prestige points, TODO P0
 
         ImGui::Text("Mana: %llu / %llu", pt.mana, pt.getComputedMaxMana());
 
+        ImGui::AlignTextToFramePadding();
         ImGui::Text("Next mana:");
+
         ImGui::SameLine();
+
         ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(157, 0, 255, 128));
         ImGui::ProgressBar(pt.manaTimer / pt.getComputedManaCooldown());
         ImGui::PopStyleColor();
@@ -3060,8 +3094,8 @@ Using prestige points, TODO P0
             ImGui::Spacing();
 
             ImGui::Columns(2, "twoColumnsStats", false);
-            ImGui::SetColumnWidth(0, uiWindowWidth / 2.f);
-            ImGui::SetColumnWidth(1, uiWindowWidth / 2.f);
+            ImGui::SetColumnWidth(0, uiWindowWidth / 2.f * getUIScalingFactor());
+            ImGui::SetColumnWidth(1, uiWindowWidth / 2.f * getUIScalingFactor());
 
             const auto [h, m, s] = formatTime(stats.secondsPlayed);
             ImGui::Text("Time played: %lluh %llum %llus", h, m, s);
@@ -3396,10 +3430,10 @@ Using prestige points, TODO P0
 
             ImGui::SetWindowFontScale(uiNormalFontScale);
 
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Master volume", &profile.masterVolume, 0.f, 100.f, "%.f%%");
 
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Music volume", &profile.musicVolume, 0.f, 100.f, "%.f%%");
 
             uiCheckbox("Play audio in background", &profile.playAudioInBackground);
@@ -3415,11 +3449,30 @@ Using prestige points, TODO P0
 
             ImGui::SetWindowFontScale(uiNormalFontScale);
 
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Minimap Scale", &profile.minimapScale, 5.f, 40.f, "%.2f");
 
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("HUD Scale", &profile.hudScale, 0.5f, 2.f, "%.2f");
+
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("UI Scale");
+
+            const auto makeUIScaleButton = [&](const char* label, const float scaleFactor)
+            {
+                ImGui::SameLine();
+                if (ImGui::Button(label))
+                {
+                    playSound(sounds.buy);
+                    profile.uiScale = scaleFactor;
+                }
+            };
+
+            makeUIScaleButton(" XL ", 1.5f);
+            makeUIScaleButton(" L ", 1.25f);
+            makeUIScaleButton(" M ", 1.f);
+            makeUIScaleButton(" S ", 0.75f);
+            makeUIScaleButton(" XS ", 0.5f);
 
             uiCheckbox("Enable tips", &profile.tipsEnabled);
             uiCheckbox("Enable full mana notification", &profile.showFullManaNotification);
@@ -3437,11 +3490,11 @@ Using prestige points, TODO P0
                 uiCheckbox("Multicolor", &profile.multicolorCursor);
 
                 ImGui::BeginDisabled(profile.multicolorCursor);
-                ImGui::SetNextItemWidth(210.f);
+                ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
                 ImGui::SliderFloat("Hue", &profile.cursorHue, 0.f, 360.f, "%.2f");
                 ImGui::EndDisabled();
 
-                ImGui::SetNextItemWidth(210.f);
+                ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
                 ImGui::SliderFloat("Scale", &profile.cursorScale, 0.3f, 1.5f, "%.2f");
 
                 ImGui::SetWindowFontScale(uiNormalFontScale);
@@ -3458,7 +3511,7 @@ Using prestige points, TODO P0
 
             ImGui::SetWindowFontScale(uiNormalFontScale);
 
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
 
             uiCheckbox("Show cat text", &profile.showCatText);
@@ -3557,7 +3610,7 @@ Using prestige points, TODO P0
             }
 
             static auto fpsLimit = static_cast<float>(profile.frametimeLimit);
-            ImGui::SetNextItemWidth(210.f);
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             if (ImGui::DragFloat("FPS Limit", &fpsLimit, 1.f, 60.f, 144.f, "%.f", ImGuiSliderFlags_AlwaysClamp))
             {
                 profile.frametimeLimit = static_cast<unsigned int>(fpsLimit);
@@ -3618,7 +3671,7 @@ Using prestige points, TODO P0
 
             static char filenameBuf[128] = "userdata/custom.json";
 
-            ImGui::SetNextItemWidth(320.f);
+            ImGui::SetNextItemWidth(320.f * getUIScalingFactor());
             ImGui::InputText("##Filename", filenameBuf, sizeof(filenameBuf));
 
             if (ImGui::Button("Custom save"))
@@ -3646,13 +3699,13 @@ Using prestige points, TODO P0
 
             ImGui::Separator();
 
-            ImGui::SetNextItemWidth(240.f);
+            ImGui::SetNextItemWidth(240.f * getUIScalingFactor());
             ImGui::InputScalar("Money", ImGuiDataType_U64, &pt.money, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
-            ImGui::SetNextItemWidth(240.f);
+            ImGui::SetNextItemWidth(240.f * getUIScalingFactor());
             ImGui::InputScalar("PPs", ImGuiDataType_U64, &pt.prestigePoints, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
-            ImGui::SetNextItemWidth(240.f);
+            ImGui::SetNextItemWidth(240.f * getUIScalingFactor());
             ImGui::InputScalar("WPs", ImGuiDataType_U64, &pt.wisdom, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
             ImGui::Separator();
@@ -3663,7 +3716,7 @@ Using prestige points, TODO P0
                 lbuf += "##";
                 lbuf += std::to_string(counter++);
 
-                ImGui::SetNextItemWidth(140.f);
+                ImGui::SetNextItemWidth(140.f * getUIScalingFactor());
                 if (ImGui::InputScalar(lbuf.c_str(), ImGuiDataType_Float, &value, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
                     value = sf::base::clamp(value, 0.f, 10000.f);
             };
@@ -3677,7 +3730,7 @@ Using prestige points, TODO P0
                 lbuf += "##";
                 lbuf += std::to_string(counter++);
 
-                ImGui::SetNextItemWidth(140.f);
+                ImGui::SetNextItemWidth(140.f * getUIScalingFactor());
                 if (ImGui::InputScalar(lbuf.c_str(), ImGuiDataType_U64, &psv.nPurchases, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
                     psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
             };
@@ -5694,16 +5747,24 @@ Using prestige points, TODO P0
         unlockIf(pt.psvBubbleValue.nPurchases >= 20);
 
         unlockIf(pt.perm.starterPackPurchased);
+
         unlockIf(pt.perm.multiPopPurchased);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 1);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 2);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 5);
         unlockIf(pt.psvPPMultiPopRange.nPurchases >= 10);
 
+        unlockIf(pt.perm.windPurchased);
+
         unlockIf(pt.perm.smartCatsPurchased);
         unlockIf(pt.perm.geniusCatsPurchased);
-        unlockIf(pt.perm.windPurchased);
+
         unlockIf(pt.perm.astroCatInspirePurchased);
+        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 1);
+        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 4);
+        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 8);
+        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 12);
+        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 16);
 
         unlockIf(combo >= 5);
         unlockIf(combo >= 10);
@@ -5725,8 +5786,6 @@ Using prestige points, TODO P0
         unlockIf(nStarBubblesPoppedByHand >= 1'000);
         unlockIf(nStarBubblesPoppedByHand >= 10'000);
         unlockIf(nStarBubblesPoppedByHand >= 100'000);
-        unlockIf(nStarBubblesPoppedByHand >= 1'000'000);
-        unlockIf(nStarBubblesPoppedByHand >= 10'000'000);
 
         unlockIf(nStarBubblesPoppedByCat >= 1);
         unlockIf(nStarBubblesPoppedByCat >= 100);
@@ -5743,7 +5802,6 @@ Using prestige points, TODO P0
         unlockIf(nBombBubblesPoppedByHand >= 100);
         unlockIf(nBombBubblesPoppedByHand >= 1'000);
         unlockIf(nBombBubblesPoppedByHand >= 10'000);
-        unlockIf(nBombBubblesPoppedByHand >= 100'000);
 
         unlockIf(nBombBubblesPoppedByCat >= 1);
         unlockIf(nBombBubblesPoppedByCat >= 100);
@@ -5800,10 +5858,10 @@ Using prestige points, TODO P0
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)] >= 1);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)] >= 1);
 
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 100);
+        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 500);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)] >= 100);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Devil)] >= 100);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)] >= 100);
+        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)] >= 50);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Wizard)] >= 10);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Mouse)] >= 10);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)] >= 10);
@@ -5882,6 +5940,14 @@ Using prestige points, TODO P0
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 3);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 6);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 9);
+
+        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 1);
+        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 4);
+        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 8);
+        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 12);
+        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 16);
+
+        // TODO: other wizardcat prestiges
 
         unlockIf(pt.mouseCatCombo >= 25);
         unlockIf(pt.mouseCatCombo >= 50);
@@ -6155,6 +6221,7 @@ Using prestige points, TODO P0
                 textStatusBuffer.setString(actionString);
                 textStatusBuffer.position = cat.position + sf::Vector2f{0.f, 68.f};
                 textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
+                textStatusBuffer.setFillColor(sf::Color::White);
                 textStatusBuffer.setOutlineColor(textOutlineColor);
                 cat.textStatusShakeEffect.applyToText(textStatusBuffer);
                 textStatusBuffer.scale *= 0.5f;
@@ -6475,7 +6542,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopDrawImGui()
     {
-        ImGui::RenderNotifications(/* paddingY */ profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f,
+        ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * getUIScalingFactor(),
                                    [&]
         {
             ImGui::PushFont(fontImGuiMouldyCheese);
@@ -6507,7 +6574,8 @@ Using prestige points, TODO P0
 
             window.draw(draggedCat != nullptr || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
                         {.position = sf::Mouse::getPosition(window).toVector2f(),
-                         .scale = sf::Vector2f{profile.cursorScale, profile.cursorScale} * (1.f + easeInOutBack(cursorGrow)),
+                         .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
+                                  ((1.f + easeInOutBack(cursorGrow)) * dpiScalingFactor),
                          .origin = {5.f, 5.f},
                          .color  = hueColor(wrapHue(profile.cursorHue), 255u)},
                         {.shader = &shader});
@@ -6560,7 +6628,8 @@ Using prestige points, TODO P0
 
         SFML_BASE_ASSERT(profile.hudScale > 0.f);
 
-        tipSprite.setBottomCenter({getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
+        tipSprite.setBottomCenter(
+            {getResolution().x / 2.f / getHUDScalingFactor(), getResolution().y / getHUDScalingFactor() - 50.f});
         getWindow().draw(tipSprite, txTipBg);
 
         sf::Sprite tipByteSprite{.position    = {},
@@ -6598,6 +6667,8 @@ Using prestige points, TODO P0
                                .vsync           = profile.vsync,
                                .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
                                .contextSettings = contextSettings});
+
+        dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
 
         static bool imguiInit = false;
         if (!imguiInit)
@@ -7449,7 +7520,7 @@ Using prestige points, TODO P0
         //
         // Compute views
         nonScaledHUDView             = {.center = resolution / 2.f, .size = resolution};
-        scaledHUDView                = makeScaledHUDView(resolution, profile.hudScale);
+        scaledHUDView                = makeScaledHUDView(resolution, getHUDScalingFactor());
         gameView                     = createScaledGameView(gameScreenSize, resolution);
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
@@ -7558,7 +7629,7 @@ Using prestige points, TODO P0
                         cpuDrawableBatch,
                         textureAtlas,
                         resolution,
-                        profile.hudScale);
+                        getHUDScalingFactor());
 
         //
         // UI and Toasts
@@ -7581,7 +7652,7 @@ Using prestige points, TODO P0
         // Splash screen
         window.setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
-            drawSplashScreen(window, txLogo, splashCountdown, resolution, profile.hudScale);
+            drawSplashScreen(window, txLogo, splashCountdown, resolution, getHUDScalingFactor());
 
         //
         // Tips
@@ -7744,7 +7815,6 @@ int main()
 // - prestige upgrade for unicats that makes star bubbles worth 30x instead of 15x, around 64pps
 // - prestige upgrade for unicats that makes all bubbles in range converted at once, and enables range upgrades (need to be expensive), around 128pps
 // - some prestige upgrade for devilcats, maybe make bombs transformable by unicats
-// - some prestige upgrade for astrocats, ...?
 // - prestige 8 (first prestige where repulsion shrine is required) takes too long
 // - maybe 64PP prestige buff for multipop that allows "misses"
 // - rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
