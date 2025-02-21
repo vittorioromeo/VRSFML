@@ -270,6 +270,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     playComboEndSound,
     minimapScale,
     hudScale,
+    uiScale,
     tipsEnabled,
     backgroundOpacity,
     showCatText,

@@ -171,12 +171,12 @@ inline constexpr PSVData multiPopRange //
      .value         = {.initial = 64.0f, .linear = 8.0f}};
 
 inline constexpr PSVData inspireDurationMult //
-    {.nMaxPurchases = 20u,
+    {.nMaxPurchases = 16u,
      .cost          = {.initial = 2.f, .linear = 2.f, .exponential = 1.8f},
-     .value         = {.initial = 1.f, .linear = 0.15f}};
+     .value         = {.initial = 1.f, .linear = 0.2f}};
 
 inline constexpr PSVData manaCooldownMult //
-    {.nMaxPurchases = 20u,
+    {.nMaxPurchases = 16u,
      .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},
      .value         = {.initial = 1.f, .exponential = 0.875f}};
 
