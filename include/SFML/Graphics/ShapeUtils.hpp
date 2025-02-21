@@ -12,6 +12,7 @@
 #include "SFML/Base/Builtins/Assume.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -60,12 +61,25 @@ namespace sf
 /// \brief Compute the normal of a segment
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeNormal(sf::Vector2f p1, sf::Vector2f p2) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeSegmentNormal(const sf::Vector2f p1,
+                                                                                       const sf::Vector2f p2) noexcept
 {
-    const sf::Vector2f normal = (p2 - p1).perpendicular();
-    const float        length = normal.length();
+    // Compute the difference and its perpendicular.
+    const sf::Vector2f diff   = p2 - p1;
+    const sf::Vector2f normal = {-diff.y, diff.x};
 
-    return length != 0.f ? normal / length : normal;
+    // Compute squared length of the normal.
+    const float lenSq = normal.x * normal.x + normal.y * normal.y;
+
+    // By computing the squared length (lenSq), we can avoid an extra temporary if the squared length is zero.
+    // Only if nonzero do we compute the square root and the reciprocal.
+
+    // Avoid division by zero.
+    if (lenSq == 0.f)
+        return normal;
+
+    const float invLen = 1.f / sf::base::sqrt(lenSq);
+    return {normal.x * invLen, normal.y * invLen};
 }
 
 ////////////////////////////////////////////////////////////
@@ -102,41 +116,56 @@ namespace sf
 inline constexpr void updateOutlineImpl(const float       outlineThickness,
                                         const base::SizeT verticesEndIndex,
                                         Vertex*           vertices,
-                                        const base::SizeT count) noexcept
+                                        const base::SizeT count)
 {
-    for (base::SizeT i = 0u; i < count; ++i)
+    // Cache the center (`vertices[0]` is the center of the shape)
+    const Vector2f    center      = vertices[0].position;
+    const base::SizeT outlineBase = verticesEndIndex;
+
+    // Lambda that computes and writes the outline for a single segment
+    // - `i` is the logical index (used to compute the output position)
+    // - `p0`, `p1`, `p2` are the three consecutive positions used to compute the normals
+    const auto updateSegment = [&](const base::SizeT i, const Vector2f p0, const Vector2f p1, const Vector2f p2)
+                                   __attribute__((always_inline, flatten))
     {
-        const base::SizeT index = i + 1u;
+        Vector2f n1 = computeSegmentNormal(p0, p1);
+        Vector2f n2 = computeSegmentNormal(p1, p2);
 
-        // Get the two segments shared by the current point
-        const Vector2f p0 = (i == 0u) ? vertices[count].position : vertices[index - 1].position;
-        const Vector2f p1 = vertices[index].position;
-        const Vector2f p2 = vertices[index + 1].position;
+        const Vector2f diff = center - p1;
 
-        // Compute their normal
-        Vector2f n1 = computeNormal(p0, p1);
-        Vector2f n2 = computeNormal(p1, p2);
-
-        // Make sure that the normals point towards the outside of the shape
-        // (this depends on the order in which the points were defined)
-        if (n1.dot(vertices[0].position - p1) > 0.f)
+        if (n1.dot(diff) > 0.f)
             n1 = -n1;
 
-        if (n2.dot(vertices[0].position - p1) > 0.f)
+        if (n2.dot(diff) > 0.f)
             n2 = -n2;
 
-        // Combine them to get the extrusion direction
-        const float    factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
-        const Vector2f normal = (n1 + n2) / factor;
+        const float factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
 
-        // Update the outline points
-        vertices[verticesEndIndex + (i * 2 + 0)].position = p1;
-        vertices[verticesEndIndex + (i * 2 + 1)].position = p1 + normal * outlineThickness;
+        const Vector2f    normal = (n1 + n2) / factor;
+        const base::SizeT outIdx = outlineBase + (i << 1u); // Shift is equivalent to `i * 2`
+
+        vertices[outIdx + 0u].position = p1;
+        vertices[outIdx + 1u].position = p1 + normal * outlineThickness;
+    };
+
+    // Handle the first segment (wrap-around):
+    // `p0` is from the last vertex (wrap-around), `p1` is the first point (after center),
+    // and `p2` is the second point.
+    updateSegment(0u, vertices[count].position, vertices[1].position, vertices[2].position);
+
+    // Process the remaining segments.
+    for (base::SizeT i = 1; i < count; ++i)
+    {
+        // For `i >= 1`, the three points are consecutive:
+        // `p0` is `vertices[i]`, `p1` is `vertices[i + 1]`, `p2` is `vertices[i + 2]`.
+        updateSegment(i, vertices[i].position, vertices[i + 1].position, vertices[i + 2].position);
     }
 
-    // Duplicate the first point at the end, to close the outline
-    vertices[verticesEndIndex + (count * 2 + 0)].position = vertices[verticesEndIndex + 0].position;
-    vertices[verticesEndIndex + (count * 2 + 1)].position = vertices[verticesEndIndex + 1].position;
+    // Duplicate the first outline vertex at the end to close the outline loop.
+    const base::SizeT dupIndex = outlineBase + (count << 1u); // Shift is equivalent to `i * 2`
+
+    vertices[dupIndex + 0].position = vertices[outlineBase + 0].position;
+    vertices[dupIndex + 1].position = vertices[outlineBase + 1].position;
 }
 
 } // namespace sf
