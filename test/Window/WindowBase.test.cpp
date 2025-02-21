@@ -42,10 +42,18 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Mode and title constructor")
         {
-            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
+            {
+                const sf::WindowBase windowBase({.size{360u, 240u}, .title = ""});
 
-            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
-            CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+            }
+            {
+                const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
+
+                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+            }
         }
 
         SECTION("Mode, title, and style constructor")
