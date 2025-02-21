@@ -8,6 +8,7 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/String.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
 #include "SFML/Base/Builtins/Memcpy.hpp"
@@ -44,7 +45,8 @@ String ClipboardImpl::getString()
         return text;
     }
 
-    text = String(static_cast<wchar_t*>(GlobalLock(clipboardHandle)));
+    const std::u16string_view string(static_cast<const char16_t*>(GlobalLock(clipboardHandle)));
+    text = StringUtfUtils::fromUtf16(string.begin(), string.end());
     GlobalUnlock(clipboardHandle);
 
     CloseClipboard();
@@ -70,11 +72,12 @@ void ClipboardImpl::setString(const String& text)
     }
 
     // Create a Win32-compatible string
-    const base::SizeT stringSize = (text.getSize() + 1) * sizeof(WCHAR);
+    const auto        string     = text.toUtf16<std::u16string>();
+    const std::size_t stringSize = (string.size() + 1) * sizeof(char16_t);
 
     if (const HANDLE stringHandle = GlobalAlloc(GMEM_MOVEABLE, stringSize))
     {
-        SFML_BASE_MEMCPY(GlobalLock(stringHandle), text.toWideString<std::wstring>().data(), stringSize);
+        SFML_BASE_MEMCPY(GlobalLock(stringHandle), string.data(), stringSize);
         GlobalUnlock(stringHandle);
         SetClipboardData(CF_UNICODETEXT, stringHandle);
     }
