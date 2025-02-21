@@ -6364,8 +6364,9 @@ Using prestige points, TODO P0
 
             const auto dollColor = hueColor(doll.hue, dollAlpha);
 
+            // TODO P1: tilt rotation a bit as well
             cpuDrawableBatch.add(sf::Sprite{.position    = doll.getDrawPosition(),
-                                            .scale       = sf::Vector2f{0.5f, 0.5f} * progress,
+                                            .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
                                             .origin      = txrDoll.size / 2.f,
                                             .textureRect = txrDoll,
                                             .color       = dollColor});
@@ -6730,7 +6731,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
     {
-        // TODO P2: perform one chunk in main threaD?
+        // TODO P2: perform one chunk in main thread?
 
         auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) __attribute__((always_inline))
         {
