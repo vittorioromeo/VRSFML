@@ -348,7 +348,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& RenderTarget::getVBOPersistentBuffer()
+[[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& RenderTarget::getVBOPersistentBuffer() // TODO P1: encapsulate in its own class
 {
     return m_impl->vboPersistentBuffer;
 }
