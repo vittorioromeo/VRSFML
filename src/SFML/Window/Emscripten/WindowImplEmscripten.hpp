@@ -168,6 +168,15 @@ public:
     [[nodiscard]] bool hasFocus() const override;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Return a scaling factor for DPI-aware scaling
+    ///
+    /// \return `1.f` for default DPI (96) or the window is not
+    ///         DPI-aware, otherwise the scaling factor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDPIAwareScalingFactor() const override;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Push a new html event into the event queue
     ///
     /// \param event Event to push

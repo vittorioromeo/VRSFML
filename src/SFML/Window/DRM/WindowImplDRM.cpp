@@ -166,6 +166,16 @@ bool WindowImplDRM::hasFocus() const
     return true;
 }
 
+
+////////////////////////////////////////////////////////////
+float WindowImplDRM::getDPIAwareScalingFactor() const
+{
+    // TODO P1: implement
+    return 1.f;
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImplDRM::processEvents()
 {
     while (const base::Optional event = InputImpl::checkEvent())

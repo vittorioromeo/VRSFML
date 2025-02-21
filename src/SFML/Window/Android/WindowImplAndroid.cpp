@@ -201,6 +201,14 @@ bool WindowImplAndroid::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
+float WindowImplAndroid::getDPIAwareScalingFactor() const
+{
+    // TODO P1: implement
+    return 1.f;
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImplAndroid::forwardEvent(const Event& event)
 {
     if (WindowImplAndroid::singleInstance != nullptr)
