@@ -477,4 +477,12 @@ bool WindowImplCocoa::hasFocus() const
 }
 
 
+////////////////////////////////////////////////////////////
+float WindowImplCocoa::getDPIAwareScalingFactor() const
+{
+    // TODO P1: implement
+    return 1.f;
+}
+
+
 } // namespace sf::priv

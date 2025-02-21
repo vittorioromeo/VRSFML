@@ -50,6 +50,7 @@ sf::priv::WindowImplWin32* fullscreenWindow = nullptr;
 
 constexpr GUID guidDevinterfaceHid = {0x4d1e55b2, 0xf16f, 0x11cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30}};
 
+////////////////////////////////////////////////////////////
 void setProcessDpiAware()
 {
     // Try SetProcessDpiAwareness first
@@ -75,7 +76,7 @@ void setProcessDpiAware()
             // enabled with SetProcessDpiAwarenessContext, because that
             // would scale the title bar and thus change window size
             // by default when moving the window between monitors.
-            if (setProcessDpiAwarenessFunc(ProcessDpiUnaware) == E_INVALIDARG)
+            if (setProcessDpiAwarenessFunc(ProcessSystemDpiAware) == E_INVALIDARG)
             {
                 sf::priv::err() << "Failed to set process DPI awareness";
             }
@@ -107,6 +108,38 @@ void setProcessDpiAware()
     }
 }
 
+////////////////////////////////////////////////////////////
+float getScalingFactor(HWND hwnd)
+{
+    // Try to use GetDpiForWindow from user32.dll (Windows 10, version 1607+)
+    using GetDpiForWindowFunc = UINT(WINAPI*)(HWND);
+
+    if (HMODULE hUser32 = GetModuleHandleW(L"user32.dll"))
+    {
+        auto pGetDpiForWindow = reinterpret_cast<GetDpiForWindowFunc>(
+            reinterpret_cast<void*>(GetProcAddress(hUser32, "GetDpiForWindow")));
+
+        if (pGetDpiForWindow)
+        {
+            const UINT dpi = pGetDpiForWindow(hwnd);
+            return static_cast<float>(dpi) / 96.f;
+        }
+    }
+
+    // Fallback: use GetDeviceCaps on the window's device context
+    if (HDC hdc = GetDC(hwnd))
+    {
+        const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+        ReleaseDC(hwnd, hdc);
+
+        return static_cast<float>(dpiX) / 96.f;
+    }
+
+    // If all else fails, default to 1.0 (i.e., 96 DPI)
+    return 1.f;
+}
+
+////////////////////////////////////////////////////////////
 // Register a RAWINPUTDEVICE representing the mouse to receive raw
 // mouse deltas using WM_INPUT
 void initRawMouse(HWND handle)
@@ -515,6 +548,13 @@ void WindowImplWin32::requestFocus()
 bool WindowImplWin32::hasFocus() const
 {
     return m_handle == GetForegroundWindow();
+}
+
+
+////////////////////////////////////////////////////////////
+float WindowImplWin32::getDPIAwareScalingFactor() const
+{
+    return getScalingFactor(m_handle);
 }
 
 

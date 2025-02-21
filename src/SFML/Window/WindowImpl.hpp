@@ -262,6 +262,15 @@ public:
     [[nodiscard]] virtual bool hasFocus() const = 0;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Return a scaling factor for DPI-aware scaling
+    ///
+    /// \return `1.f` for default DPI (96) or the window is not
+    ///         DPI-aware, otherwise the scaling factor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual float getDPIAwareScalingFactor() const = 0;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
     ///
     /// \param instance  Vulkan instance

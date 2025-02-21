@@ -935,6 +935,13 @@ bool WindowImplEmscripten::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
+float WindowImplEmscripten::getDPIAwareScalingFactor() const
+{
+    return static_cast<float>(emscripten_get_device_pixel_ratio());
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImplEmscripten::pushHtmlEvent(const Event& event)
 {
     pushEvent(event);

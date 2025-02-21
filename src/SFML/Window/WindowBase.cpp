@@ -270,6 +270,13 @@ bool WindowBase::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
+float WindowBase::getDPIAwareScalingFactor() const
+{
+    return m_impl->getDPIAwareScalingFactor();
+}
+
+
+////////////////////////////////////////////////////////////
 WindowHandle WindowBase::getNativeHandle() const
 {
     return m_impl->getNativeHandle();

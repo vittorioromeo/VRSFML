@@ -40,9 +40,9 @@ inline constexpr AchievementData achievementData[] = {
 
     {"What's Over There?", "Purchase the \"Map Scrolling\" upgrade."},
     {"Horizon Hoarder", "Extend the map up to 40%."},
-    {"Borderline Addict", "Extend the map up to 60%."},
+    {"Border-line Addict", "Extend the map up to 60%."},
     {"Map Magnate", "Extend the map up to 80%."},
-    {"Spy Satellite", "Extend the map up to 100%."},
+    {"SpyCat Satellite", "Extend the map up to 100%."},
 
     {"Keeping Kids Entertained", "Purchase the \"More Bubbles\" upgrade once."},
     {"The Screen Isn't Full Yet", "Purchase the \"More Bubbles\" upgrade 5 times."},
@@ -55,7 +55,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Crazy Cat Person", "Purchase 10 cats."},
     {"Cat Café Owner", "Purchase 20 cats."},
     {"Cat Hoarder", "Purchase 30 cats."},
-    {"Servant of Cats", "Purchase 40 cats."},
+    {"I Live to Serve Cats", "Purchase 40 cats."},
 
     // TODO P1: review and improve all names below
 
@@ -137,16 +137,24 @@ inline constexpr AchievementData achievementData[] = {
     {"God of Pops", "Prestige 20 times."},
 
     {"Locked'n'Loaded", "Purchase the \"Starter Pack\" permanent upgrade."},
+
     {"Pop Goes the Weasel", "Purchase the \"Multipop\" permanent upgrade."},
     {"Popcorn Popper", "Improve multipop range once."},
     {"Fireworks Factory", "Improve multipop range 2 times."},
     {"Big Bang Theory", "Improve multipop range 5 times."},
     {"Overkill", "Improve multipop range 10 times."},
 
+    {"Wind Beneath My Paws", "Purchase the \"Giant Fan\" permanent upgrade."},
+
     {"Cat-culus Master", "Purchase the \"Smart Cats\" permanent upgrade."},
     {"Feline Einstein", "Purchase the \"Genius Cats\" permanent upgrade."},
-    {"Wind Beneath My Paws", "Purchase the \"Giant Fan\" permanent upgrade."},
+
     {"Interstellar Brainwashing", "Purchase the \"Space Propaganda\" permanent upgrade."},
+    {"TODONAME", "Improve inspire duration once."},
+    {"TODONAME", "Improve inspire duration 4 times."},
+    {"TODONAME", "Improve inspire duration 8 times."},
+    {"TODONAME", "Improve inspire duration 12 times."},
+    {"TODONAME", "Improve inspire duration 16 times."},
 
     {"Multiplier Maven", "Reach x5 combo multiplier."},
     {"Decimator", "Reach x10 combo multiplier."},
@@ -165,8 +173,6 @@ inline constexpr AchievementData achievementData[] = {
     {"Stellar Hoarder", "Pop 1,000 star bubbles by hand."},
     {"Galactic Tycoon", "Pop 10,000 star bubbles by hand."},
     {"Supernova Supplier", "Pop 100,000 star bubbles by hand."},
-    {"Black Hole Banker", "Pop 1,000,000 star bubbles by hand."},
-    {"Star Forger", "Pop 10,000,000 star bubbles by hand."},
 
     {"Paw-laris", "Pop your first star bubble via cats."},
     {"Paw-lar Power", "Pop 100 star bubbles via cats."},
@@ -180,7 +186,6 @@ inline constexpr AchievementData achievementData[] = {
     {"Hand Grenade Hero", "Pop 100 bombs by hand."},
     {"Dynamite Digits", "Pop 1,000 bombs by hand."},
     {"Manual Detonator", "Pop 10,000 bombs by hand."},
-    {"Finger on the Button", "Pop 100,000 bombs by hand."},
 
     {"Bomb Voyage", "Pop your first bomb via cats."},
     {"Clawed Demolition", "Pop 100 bombs via cats."},
@@ -231,16 +236,16 @@ inline constexpr AchievementData achievementData[] = {
     {"I Hate Rainbows", "Perform a voodoo ritual on a Unicat."},
     {"Demilitarization", "Perform a voodoo ritual on a Devilcat."},
     {"Out of Fuel", "Perform a voodoo ritual on an Astrocat."},
-    {"Go to Bed, Gramps", "Perform a voodoo ritual on a Wizardcat."},
-    {"Gamer Rage", "Perform a voodoo ritual on a Mousecat."},
-    {"Hex Tech", "Perform a voodoo ritual on an Engicat."},
-    {"Not a Fan", "Perform a voodoo ritual on a Repulsocat."},
-    {"Demagnetized", "Perform a voodoo ritual on an Attractocat."},
+    {"Go to Bed, Gramps", "Perform a voodoo ritual on the Wizardcat."},
+    {"Gamer Rage", "Perform a voodoo ritual on the Mousecat."},
+    {"Hex Tech", "Perform a voodoo ritual on the Engicat."},
+    {"Not a Fan", "Perform a voodoo ritual on the Repulsocat."},
+    {"Demagnetized", "Perform a voodoo ritual on the Attractocat."},
 
-    {"TODONAME", "Perform 100 voodoo rituals on a cat."},
+    {"TODONAME", "Perform 500 voodoo rituals on a cat."},
     {"TODONAME", "Perform 100 voodoo rituals on a Unicat."},
     {"TODONAME", "Perform 100 voodoo rituals on a Devilcat."},
-    {"TODONAME", "Perform 100 voodoo rituals on an Astrocat."},
+    {"TODONAME", "Perform 50 voodoo rituals on an Astrocat."},
     {"TODONAME", "Perform 10 voodoo rituals on a Wizardcat."},
     {"TODONAME", "Perform 10 voodoo rituals on a Mousecat."},
     {"TODONAME", "Perform 10 voodoo rituals on an Engicat."},
@@ -315,6 +320,14 @@ inline constexpr AchievementData achievementData[] = {
     {"Telescopic Wisdom", "Improve Wizardcat range 3 times."},
     {"Planetary Wisdom", "Improve Wizardcat range 6 times."},
     {"Universal Wisdom", "Improve Wizardcat range 9 times."},
+
+    {"TODONAME", "Improve Wizardcat's mana cooldown once"},
+    {"TODONAME", "Improve Wizardcat's mana cooldown 4 times"},
+    {"TODONAME", "Improve Wizardcat's mana cooldown 8 times"},
+    {"TODONAME", "Improve Wizardcat's mana cooldown 8 times"},
+    {"TODONAME", "Improve Wizardcat's mana cooldown 16 times"},
+
+    // TODO: other wizardcat prestiges
 
     {"Modest Autoclicker", "Reach combo x25 with Mousecat."},
     {"Midway Autoclicker", "Reach combo x50 with Mousecat."},
