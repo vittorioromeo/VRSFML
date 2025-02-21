@@ -193,7 +193,7 @@ void drawMinimap(sf::Shader&             shader,
                  const sf::View&         hudView,
                  sf::RenderTarget&       window,
                  const sf::Texture&      txBackground,
-                 sf::CPUDrawableBatch&   cpuDrawableBatch,
+                 BatchType&              cpuDrawableBatch,
                  const sf::TextureAtlas& textureAtlas,
                  const sf::Vector2f      resolution,
                  const float             hudScale)
@@ -514,11 +514,13 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Batches for drawing
-    sf::CPUDrawableBatch bubbleDrawableBatch;
-    sf::CPUDrawableBatch cpuDrawableBatch;
-    sf::CPUDrawableBatch catTextDrawableBatch;
-    sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch; // drawn on top of ImGui
+    using BatchType = sf::CPUDrawableBatch;
+
+    BatchType bubbleDrawableBatch;
+    BatchType cpuDrawableBatch;
+    BatchType catTextDrawableBatch;
+    BatchType hudDrawableBatch;
+    BatchType hudTopDrawableBatch; // drawn on top of ImGui
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
