@@ -5,8 +5,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Utf.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsIntegral.hpp"
+#include "SFML/Base/Traits/MakeUnsigned.hpp"
+#include "SFML/Base/Traits/RemoveCVRef.hpp"
+
+#include <iterator>
 
 
 ////////////////////////////////////////////////////////////
@@ -22,9 +27,45 @@
 
 namespace sf
 {
+namespace priv
+{
+////////////////////////////////////////////////////////////
+template <typename In, typename Out>
+inline constexpr Out copyBits(In begin, In end, Out output)
+{
+    using InputType = SFML_BASE_REMOVE_CVREF(decltype(*begin));
+    static_assert(base::isIntegral<InputType>);
+
+    using OutputType = typename Out::container_type::value_type;
+    static_assert(base::isIntegral<OutputType>);
+
+    static_assert(sizeof(OutputType) >= sizeof(InputType));
+
+    // The goal is to copy the byte representation of the input into the output type.
+    // A single static_cast will try to preserve the value as opposed to the byte representation
+    // which leads to issues when the input is signed and has a negative value. That will get
+    // wrapped to a very large unsigned value which is incorrect. To address this, we first
+    // cast the input to its unsigned equivalent then cast that to the destination type which has
+    // the property of preserving the byte representation of the input. A simple memcpy seems
+    // like a viable solution but copying the bytes of a type into a larger type yields different
+    // results on big versus little endian machines so it's not a possibility.
+    //
+    // Why do this? For example take the Latin1 character é. It has a byte representation of 0xE9
+    // and a signed integer value of -23. If you cast -23 to a char32_t, you get a value of
+    // 4294967273 which is not a valid Unicode codepoint. What we actually wanted was a char32_t
+    // with the byte representation 0x000000E9.
+    while (begin != end)
+        *output++ = static_cast<OutputType>(static_cast<SFML_BASE_MAKE_UNSIGNED(InputType)>(*begin++));
+
+    return output;
+}
+} // namespace priv
+
 template <typename In>
 In Utf<8>::decode(In begin, In end, char32_t& output, char32_t replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     // clang-format off
     // Some useful precomputed data
     static constexpr base::U8 trailing[256] =
@@ -118,7 +159,7 @@ Out Utf<8>::encode(char32_t input, Out output, base::U8 replacement)
         // clang-format on
 
         // Add them to the output
-        output = base::copy(bytes, bytes + bytestoWrite, output);
+        output = priv::copyBits(bytes, bytes + bytestoWrite, output);
     }
 
     return output;
@@ -129,6 +170,8 @@ Out Utf<8>::encode(char32_t input, Out output, base::U8 replacement)
 template <typename In>
 In Utf<8>::next(In begin, In end)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     char32_t codepoint = 0;
     return decode(begin, end, codepoint);
 }
@@ -138,7 +181,9 @@ In Utf<8>::next(In begin, In end)
 template <typename In>
 base::SizeT Utf<8>::count(In begin, In end)
 {
-    base::SizeT length = 0;
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+    std::size_t length = 0;
     while (begin != end)
     {
         begin = next(begin, end);
@@ -153,6 +198,8 @@ base::SizeT Utf<8>::count(In begin, In end)
 template <typename In, typename Out>
 Out Utf<8>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
         const char32_t codepoint = Utf<32>::decodeAnsi(*begin++, locale);
@@ -167,10 +214,12 @@ Out Utf<8>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 template <typename In, typename Out>
 Out Utf<8>::fromWide(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
+
     while (begin != end)
     {
-        char32_t codepoint = Utf<32>::decodeWide(*begin++);
-        output             = encode(codepoint, output);
+        const char32_t codepoint = Utf<32>::decodeWide(*begin++);
+        output                   = encode(codepoint, output);
     }
 
     return output;
@@ -181,10 +230,12 @@ Out Utf<8>::fromWide(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<8>::fromLatin1(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
     while (begin != end)
-        output = encode(*begin++, output);
+        output = encode(static_cast<base::U8>(*begin++), output);
 
     return output;
 }
@@ -194,6 +245,8 @@ Out Utf<8>::fromLatin1(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<8>::toAnsi(In begin, In end, Out output, char replacement, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -209,6 +262,8 @@ Out Utf<8>::toAnsi(In begin, In end, Out output, char replacement, const std::lo
 template <typename In, typename Out>
 Out Utf<8>::toWide(In begin, In end, Out output, wchar_t replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -224,6 +279,8 @@ Out Utf<8>::toWide(In begin, In end, Out output, wchar_t replacement)
 template <typename In, typename Out>
 Out Utf<8>::toLatin1(In begin, In end, Out output, char replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
     while (begin != end)
@@ -241,7 +298,9 @@ Out Utf<8>::toLatin1(In begin, In end, Out output, char replacement)
 template <typename In, typename Out>
 Out Utf<8>::toUtf8(In begin, In end, Out output)
 {
-    return base::copy(begin, end, output);
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
+    return priv::copyBits(begin, end, output);
 }
 
 
@@ -249,6 +308,8 @@ Out Utf<8>::toUtf8(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<8>::toUtf16(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -264,6 +325,8 @@ Out Utf<8>::toUtf16(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<8>::toUtf32(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -279,6 +342,8 @@ Out Utf<8>::toUtf32(In begin, In end, Out output)
 template <typename In>
 In Utf<16>::decode(In begin, In end, char32_t& output, char32_t replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     const char16_t first = *begin++;
 
     // If it's a surrogate pair, first convert to a single UTF-32 character
@@ -356,6 +421,8 @@ Out Utf<16>::encode(char32_t input, Out output, char16_t replacement)
 template <typename In>
 In Utf<16>::next(In begin, In end)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     char32_t codepoint = 0;
     return decode(begin, end, codepoint);
 }
@@ -365,7 +432,9 @@ In Utf<16>::next(In begin, In end)
 template <typename In>
 base::SizeT Utf<16>::count(In begin, In end)
 {
-    base::SizeT length = 0;
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
+    std::size_t length = 0;
     while (begin != end)
     {
         begin = next(begin, end);
@@ -380,10 +449,12 @@ base::SizeT Utf<16>::count(In begin, In end)
 template <typename In, typename Out>
 Out Utf<16>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
     {
-        char32_t codepoint = Utf<32>::decodeAnsi(*begin++, locale);
-        output             = encode(codepoint, output);
+        const char32_t codepoint = Utf<32>::decodeAnsi(*begin++, locale);
+        output                   = encode(codepoint, output);
     }
 
     return output;
@@ -394,10 +465,12 @@ Out Utf<16>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 template <typename In, typename Out>
 Out Utf<16>::fromWide(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
+
     while (begin != end)
     {
-        char32_t codepoint = Utf<32>::decodeWide(*begin++);
-        output             = encode(codepoint, output);
+        const char32_t codepoint = Utf<32>::decodeWide(*begin++);
+        output                   = encode(codepoint, output);
     }
 
     return output;
@@ -408,9 +481,11 @@ Out Utf<16>::fromWide(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::fromLatin1(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return base::copy(begin, end, output);
+    return priv::copyBits(begin, end, output);
 }
 
 
@@ -418,6 +493,8 @@ Out Utf<16>::fromLatin1(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::toAnsi(In begin, In end, Out output, char replacement, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -433,6 +510,8 @@ Out Utf<16>::toAnsi(In begin, In end, Out output, char replacement, const std::l
 template <typename In, typename Out>
 Out Utf<16>::toWide(In begin, In end, Out output, wchar_t replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -448,6 +527,8 @@ Out Utf<16>::toWide(In begin, In end, Out output, wchar_t replacement)
 template <typename In, typename Out>
 Out Utf<16>::toLatin1(In begin, In end, Out output, char replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
     while (begin != end)
@@ -464,6 +545,8 @@ Out Utf<16>::toLatin1(In begin, In end, Out output, char replacement)
 template <typename In, typename Out>
 Out Utf<16>::toUtf8(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -479,7 +562,9 @@ Out Utf<16>::toUtf8(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::toUtf16(In begin, In end, Out output)
 {
-    return base::copy(begin, end, output);
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
+    return priv::copyBits(begin, end, output);
 }
 
 
@@ -487,6 +572,8 @@ Out Utf<16>::toUtf16(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<16>::toUtf32(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char16_t));
+
     while (begin != end)
     {
         char32_t codepoint = 0;
@@ -502,6 +589,8 @@ Out Utf<16>::toUtf32(In begin, In end, Out output)
 template <typename In>
 In Utf<32>::decode(In begin, In /*end*/, char32_t& output, char32_t /*replacement*/)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     output = *begin++;
     return begin;
 }
@@ -520,6 +609,8 @@ Out Utf<32>::encode(char32_t input, Out output, char32_t /*replacement*/)
 template <typename In>
 In Utf<32>::next(In begin, In /* end */)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     return ++begin;
 }
 
@@ -528,6 +619,8 @@ In Utf<32>::next(In begin, In /* end */)
 template <typename In>
 base::SizeT Utf<32>::count(In begin, In end)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     return static_cast<base::SizeT>(end - begin);
 }
 
@@ -536,6 +629,8 @@ base::SizeT Utf<32>::count(In begin, In end)
 template <typename In, typename Out>
 Out Utf<32>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     while (begin != end)
         *output++ = decodeAnsi(*begin++, locale);
 
@@ -547,6 +642,8 @@ Out Utf<32>::fromAnsi(In begin, In end, Out output, const std::locale& locale)
 template <typename In, typename Out>
 Out Utf<32>::fromWide(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(wchar_t));
+
     while (begin != end)
         *output++ = decodeWide(*begin++);
 
@@ -558,9 +655,11 @@ Out Utf<32>::fromWide(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::fromLatin1(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
-    return base::copy(begin, end, output);
+    return priv::copyBits(begin, end, output);
 }
 
 
@@ -568,6 +667,8 @@ Out Utf<32>::fromLatin1(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::toAnsi(In begin, In end, Out output, char replacement, const std::locale& locale)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     while (begin != end)
         output = encodeAnsi(*begin++, output, replacement, locale);
 
@@ -579,6 +680,8 @@ Out Utf<32>::toAnsi(In begin, In end, Out output, char replacement, const std::l
 template <typename In, typename Out>
 Out Utf<32>::toWide(In begin, In end, Out output, wchar_t replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     while (begin != end)
         output = encodeWide(*begin++, output, replacement);
 
@@ -590,6 +693,8 @@ Out Utf<32>::toWide(In begin, In end, Out output, wchar_t replacement)
 template <typename In, typename Out>
 Out Utf<32>::toLatin1(In begin, In end, Out output, char replacement)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     // Latin-1 is directly compatible with Unicode encodings,
     // and can thus be treated as (a sub-range of) UTF-32
     while (begin != end)
@@ -606,6 +711,8 @@ Out Utf<32>::toLatin1(In begin, In end, Out output, char replacement)
 template <typename In, typename Out>
 Out Utf<32>::toUtf8(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     while (begin != end)
         output = Utf<8>::encode(*begin++, output);
 
@@ -616,6 +723,8 @@ Out Utf<32>::toUtf8(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::toUtf16(In begin, In end, Out output)
 {
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
     while (begin != end)
         output = Utf<16>::encode(*begin++, output);
 
@@ -627,7 +736,9 @@ Out Utf<32>::toUtf16(In begin, In end, Out output)
 template <typename In, typename Out>
 Out Utf<32>::toUtf32(In begin, In end, Out output)
 {
-    return base::copy(begin, end, output);
+    static_assert(sizeof(decltype(*begin)) == sizeof(char32_t));
+
+    return priv::copyBits(begin, end, output);
 }
 
 

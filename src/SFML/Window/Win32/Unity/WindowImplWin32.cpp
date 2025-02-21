@@ -24,6 +24,7 @@
 
 #include <_mingw_stat64.h>
 #include <dbt.h>
+#include <string>
 #include <unordered_map>
 #include <winuser.h>
 
@@ -281,7 +282,7 @@ m_cursorGrabbed(m_fullscreen)
 
     // Create the window
     m_handle = CreateWindowW(className,
-                             windowSettings.title.toWideString<std::wstring>().c_str(),
+                             reinterpret_cast<const wchar_t*>(windowSettings.title.toUtf16<std::u16string>().c_str()),
                              win32Style,
                              left,
                              top,
@@ -434,7 +435,7 @@ void WindowImplWin32::setSize(Vector2u size)
 ////////////////////////////////////////////////////////////
 void WindowImplWin32::setTitle(const String& title)
 {
-    SetWindowTextW(m_handle, title.toWideString<std::wstring>().c_str());
+    SetWindowTextW(m_handle, reinterpret_cast<const wchar_t*>(title.toUtf16<std::u16string>().c_str()));
 }
 
 
