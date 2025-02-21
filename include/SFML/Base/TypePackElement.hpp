@@ -70,7 +70,7 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <SizeT N, typename... Ts>
-using TypePackElement = typename decltype(typePackElementImpl<N, Ts...>())::type;
+using TypePackElement = typename decltype(priv::typePackElementImpl<N, Ts...>())::type;
 
 
 ////////////////////////////////////////////////////////////
