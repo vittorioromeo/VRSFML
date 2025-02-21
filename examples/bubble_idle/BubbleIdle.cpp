@@ -1234,7 +1234,7 @@ Using prestige points, TODO P0
         }
 
         ImGui::TextWrapped("%s", uiTooltipBuffer);
-        std::sprintf(uiTooltipBuffer, "");
+        uiTooltipBuffer[0] = '\0';
 
         uiEndTooltip();
     }
@@ -1518,10 +1518,10 @@ Using prestige points, TODO P0
         else if (cost == 0u)
             std::sprintf(uiBuffer, "N/A##%u", uiWidgetId++);
         else
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
             std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
         ImGui::BeginDisabled(maxedOut || availability < cost || cost == 0u);
 
@@ -1612,10 +1612,10 @@ Using prestige points, TODO P0
         if (done)
             std::sprintf(uiBuffer, "DONE##%u", uiWidgetId++);
         else
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
             std::sprintf(uiBuffer, currencyFmt, toStringWithSeparators(cost), uiWidgetId++);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
         ImGui::BeginDisabled(done || availability < cost);
 
@@ -2376,7 +2376,7 @@ Using prestige points, TODO P0
 
         if (pt.canBuyNextPrestige())
         {
-            ImGui::Text("- increase bubble value from x%zu to x%zu\n- obtain %zu prestige points",
+            ImGui::Text("- increase bubble value from x%zu to x%zu\n- obtain %llu prestige points",
                         currentMult,
                         currentMult + times,
                         ppReward);
@@ -2389,7 +2389,7 @@ Using prestige points, TODO P0
             const SizeT shrinesNeeded = pt.getShrinesCompletedNeededForNextPrestige();
 
             if (pt.nShrinesCompleted < shrinesNeeded)
-                ImGui::Text("- must complete %llu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
+                ImGui::Text("- must complete %zu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
         }
 
         ImGui::SetWindowFontScale(uiNormalFontScale);
@@ -5485,11 +5485,11 @@ Using prestige points, TODO P0
     {
         char fmtBuffer[1024]{};
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#pragma clang diagnostic ignored "-Wformat-security"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#pragma GCC diagnostic ignored "-Wformat-security"
         std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 
         notificationQueue.emplace_back(title, std::string{fmtBuffer});
     }
@@ -7188,8 +7188,8 @@ Using prestige points, TODO P0
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return false;
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wshadow"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
             if (const auto* e0 = event->getIf<sf::Event::TouchBegan>())
             {
                 fingerPositions[e0->finger].emplace(e0->position.toVector2f());
@@ -7230,7 +7230,7 @@ Using prestige points, TODO P0
                     scroll = dragPosition->x - static_cast<float>(e5->position.x);
                 }
             }
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
         }
 
         const auto deltaTime   = deltaClock.restart();
