@@ -113,7 +113,7 @@ struct CPUStorage
 struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
-    explicit PersistentGPUStorage(RenderTarget& renderTarget);
+    explicit PersistentGPUStorage(RenderTarget& renderTarget); // TODO P1: bad coupling here
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()

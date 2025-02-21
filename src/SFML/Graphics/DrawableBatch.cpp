@@ -18,7 +18,6 @@
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 
 
 namespace sf::priv
