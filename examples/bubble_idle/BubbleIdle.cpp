@@ -628,6 +628,10 @@ struct Main
     TargetedCountdown             notificationCountdown{.startingValue = 750.f};
 
     ////////////////////////////////////////////////////////////
+    // FPS counter
+    float fps{0.f};
+
+    ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
     {
         pt.money += reward;
@@ -3722,7 +3726,6 @@ Using prestige points, TODO P0
         ImGui::Separator();
         ImGui::SetWindowFontScale(uiNormalFontScale);
 
-        const float fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         ImGui::Text("FPS: %.2f", static_cast<double>(fps));
     }
 
@@ -6090,16 +6093,17 @@ Using prestige points, TODO P0
             const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
-            cpuDrawableBatch.add(sf::CircleShapeData{
-                .position           = getCatRangeCenter(cat),
-                .origin             = {range, range},
-                .outlineTextureRect = txrWhiteDot,
-                .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
-                .outlineColor       = circleOutlineColor,
-                .outlineThickness   = 1.f,
-                .radius             = range,
-                .pointCount         = static_cast<unsigned int>(range / 3.f),
-            });
+            if (bubbleCullingBoundaries.isInside(cat.position))
+                cpuDrawableBatch.add(sf::CircleShapeData{
+                    .position           = getCatRangeCenter(cat),
+                    .origin             = {range, range},
+                    .outlineTextureRect = txrWhiteDot,
+                    .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
+                    .outlineColor       = circleOutlineColor,
+                    .outlineThickness   = 1.f,
+                    .radius             = range,
+                    .pointCount         = static_cast<unsigned int>(range / 3.f),
+                });
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = beingDragged ? cat.position : cat.getDrawPosition(),
@@ -6172,12 +6176,15 @@ Using prestige points, TODO P0
                 }
 
                 catTextDrawableBatch.add(
-                    {.position  = {(cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter()
-                                                          : textStatusBuffer.getBottomCenter()) +
-                                   sf::Vector2f{0.f, 2.f}},
-                     .origin    = {32.f, 0.f},
-                     .fillColor = sf::Color::White.withAlpha(128u),
-                     .size      = {cat.cooldown.value / maxCooldown * 64.f, 3.f}});
+                    sf::RectangleShapeData{.position = {(cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter()
+                                                                               : textStatusBuffer.getBottomCenter()) +
+                                                        sf::Vector2f{0.f, 2.f}},
+                                           .origin   = {32.f, 0.f},
+                                           .outlineTextureRect = txrWhiteDot,
+                                           .fillColor          = sf::Color::White.withAlpha(128u),
+                                           .outlineColor       = textOutlineColor,
+                                           .outlineThickness   = 1.f,
+                                           .size               = {cat.cooldown.value / maxCooldown * 64.f, 3.f}});
             }
         };
     }
@@ -7097,6 +7104,7 @@ Using prestige points, TODO P0
 
         auto& window = *optWindow;
 
+        fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         fpsClock.restart();
 
         sf::base::Optional<sf::Vector2f> clickPosition;
