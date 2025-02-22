@@ -32,7 +32,6 @@ TEST_CASE("[Graphics] sf::RenderStates")
             CHECK(renderStates.blendMode == sf::BlendAlpha);
             CHECK(renderStates.stencilMode == sf::StencilMode{});
             CHECK(renderStates.transform == sf::Transform());
-            CHECK(renderStates.coordinateType == sf::CoordinateType::Pixels);
             CHECK(renderStates.texture == nullptr);
             CHECK(renderStates.shader == nullptr);
         }
@@ -43,7 +42,6 @@ TEST_CASE("[Graphics] sf::RenderStates")
         CHECK(sf::RenderStates::Default.blendMode == sf::BlendAlpha);
         CHECK(sf::RenderStates::Default.stencilMode == sf::StencilMode{});
         CHECK(sf::RenderStates::Default.transform == sf::Transform());
-        CHECK(sf::RenderStates::Default.coordinateType == sf::CoordinateType::Pixels);
         CHECK(sf::RenderStates::Default.texture == nullptr);
         CHECK(sf::RenderStates::Default.shader == nullptr);
     }

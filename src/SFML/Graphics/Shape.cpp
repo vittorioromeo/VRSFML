@@ -201,8 +201,7 @@ void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount, const 
 void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const
 {
     states.transform *= getTransform();
-    states.coordinateType = CoordinateType::Pixels;
-    states.texture        = texture;
+    states.texture = texture;
 
     // Render the inside
     renderTarget.drawVertices(m_vertices.data(), m_verticesEndIndex, PrimitiveType::TriangleFan, states);

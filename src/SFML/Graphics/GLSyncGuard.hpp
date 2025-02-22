@@ -17,11 +17,13 @@ namespace sf
 class GLSyncGuard
 {
 public:
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] explicit GLSyncGuard() :
     m_sync(glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)))
     {
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] ~GLSyncGuard()
     {
         while (true)
@@ -37,13 +39,18 @@ public:
         glCheck(glDeleteSync(m_sync));
     }
 
+    ////////////////////////////////////////////////////////////
     GLSyncGuard(const GLSyncGuard&)            = delete;
     GLSyncGuard& operator=(const GLSyncGuard&) = delete;
 
+    ////////////////////////////////////////////////////////////
     GLSyncGuard(GLSyncGuard&&)            = delete;
     GLSyncGuard& operator=(GLSyncGuard&&) = delete;
 
 private:
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
     GLsync m_sync;
 };
 

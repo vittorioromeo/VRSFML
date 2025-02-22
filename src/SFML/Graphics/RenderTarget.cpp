@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/GLBufferObject.hpp"
@@ -284,10 +283,9 @@ struct [[nodiscard]] StatesCache
 
     unsigned int lastVaoGroup{0u}; //!< Last bound vertex array object id
 
-    BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
-    StencilMode    lastStencilMode;                                //!< Cached stencil
-    base::U64      lastTextureId{0u};                              //!< Cached texture
-    CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
+    BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
+    StencilMode lastStencilMode;           //!< Cached stencil
+    base::U64   lastTextureId{0u};         //!< Cached texture
 
     GLuint lastProgramId{0u}; //!< GL id of the last used shader program
 };
@@ -495,8 +493,7 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
 
     Vertex buffer[4];
 
@@ -514,8 +511,7 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params, RenderStates states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
 
     const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
 
@@ -533,8 +529,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
 
     Vertex buffer[4];
     appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
@@ -890,8 +885,7 @@ void RenderTarget::unapplyTexture()
 {
     Texture::unbind();
 
-    m_impl->cache.lastTextureId      = 0ul;
-    m_impl->cache.lastCoordinateType = CoordinateType::Pixels;
+    m_impl->cache.lastTextureId = 0ul;
 }
 
 
@@ -1003,8 +997,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
 
     // Should the texture be bound?
     const bool mustApplyTexture = !m_impl->cache.enable || usedTexture.m_fboAttachment ||
-                                  usedTexture.m_cacheId != m_impl->cache.lastTextureId ||
-                                  states.coordinateType != m_impl->cache.lastCoordinateType;
+                                  usedTexture.m_cacheId != m_impl->cache.lastTextureId;
 
     // If not, exit early
     if (!mustApplyTexture)
@@ -1014,8 +1007,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
     usedTexture.bind();
 
     // Update basic cache texture stuff
-    m_impl->cache.lastTextureId      = usedTexture.m_cacheId;
-    m_impl->cache.lastCoordinateType = states.coordinateType;
+    m_impl->cache.lastTextureId = usedTexture.m_cacheId;
 }
 
 

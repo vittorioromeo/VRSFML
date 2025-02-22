@@ -1,4 +1,4 @@
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 uniform float     blur_radius;
 
 in vec4 sf_v_color;

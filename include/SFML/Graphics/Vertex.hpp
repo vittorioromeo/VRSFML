@@ -90,7 +90,6 @@ struct [[nodiscard]] Vertex
 /// };
 /// \endcode
 ///
-///
 /// Note: Although texture coordinates are supposed to be an integer
 /// amount of pixels, their type is float because of some buggy graphics
 /// drivers that are not able to process integer coordinates correctly.

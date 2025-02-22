@@ -66,8 +66,6 @@ layout(triangle_strip, max_vertices = 4) out;
 // Output texture coordinates
 out vec2 sf_v_texCoord;
 
-layout(location = 1) uniform vec3 sf_u_texParams;
-
 out vec4 sf_v_color; // Pass through to fragment
 
 // Main entry point
@@ -114,7 +112,7 @@ void main()
 
 constexpr auto fragmentSource = R"glsl(
 
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 layout(location = 6) uniform float     blink_alpha;
 
 in vec4 sf_v_color;

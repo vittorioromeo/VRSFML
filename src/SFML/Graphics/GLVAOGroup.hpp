@@ -17,10 +17,12 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct GLVAOGroup
 {
+    ////////////////////////////////////////////////////////////
     GLVertexArrayObject   vao; //!< Vertex array object
     GLVertexBufferObject  vbo; //!< Associated vertex buffer object
     GLElementBufferObject ebo; //!< Associated element index buffer object
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
         vao.bind();
@@ -28,6 +30,7 @@ struct GLVAOGroup
         ebo.bind();
     }
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] unsigned int getId() const
     {
         return vao.getId();

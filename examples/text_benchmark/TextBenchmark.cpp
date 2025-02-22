@@ -174,7 +174,7 @@ int main()
     const char* shaderSrc = R"glsl(
 // This shader draws texture on the left using RB channels and
 // texture2 on the right using G channel
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 uniform sampler2D texture2;
 
 in vec4 sf_v_color;

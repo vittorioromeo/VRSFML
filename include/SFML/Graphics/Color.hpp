@@ -129,78 +129,78 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     static const Color Cyan;        //!< Cyan predefined color
     static const Color Transparent; //!< Transparent (black) predefined color
 
-    static const sf::Color Brown;    //!< Brown predefined color
-    static const sf::Color Orange;   //!< Orange predefined color
-    static const sf::Color Pink;     //!< Pink predefined color
-    static const sf::Color BabyPink; //!< Baby pink predefined color
-    static const sf::Color HotPink;  //!< Hot pink predefined color
-    static const sf::Color Salmon;   //!< Salmon predefined color
-    static const sf::Color Violet;   //!< Violet predefined color
-    static const sf::Color Purple;   //!< Purple predefined color
-    static const sf::Color Peach;    //!< Peach predefined color
-    static const sf::Color Lime;     //!< Lime predefined color
-    static const sf::Color Mint;     //!< Mint predefined color
-    static const sf::Color Gray;     //!< Gray predefined color
+    static const Color Brown;    //!< Brown predefined color
+    static const Color Orange;   //!< Orange predefined color
+    static const Color Pink;     //!< Pink predefined color
+    static const Color BabyPink; //!< Baby pink predefined color
+    static const Color HotPink;  //!< Hot pink predefined color
+    static const Color Salmon;   //!< Salmon predefined color
+    static const Color Violet;   //!< Violet predefined color
+    static const Color Purple;   //!< Purple predefined color
+    static const Color Peach;    //!< Peach predefined color
+    static const Color Lime;     //!< Lime predefined color
+    static const Color Mint;     //!< Mint predefined color
+    static const Color Gray;     //!< Gray predefined color
 
-    static const sf::Color LightBlack;    //!< Light black predefined color
-    static const sf::Color LightBlue;     //!< Light blue predefined color
-    static const sf::Color LightRed;      //!< Light red predefined color
-    static const sf::Color LightMagenta;  //!< Light magenta predefined color
-    static const sf::Color LightGreen;    //!< Light green predefined color
-    static const sf::Color LightCyan;     //!< Light cyan predefined color
-    static const sf::Color LightYellow;   //!< Light yellow predefined color
-    static const sf::Color LightBrown;    //!< Light brown predefined color
-    static const sf::Color LightOrange;   //!< Light orange predefined color
-    static const sf::Color LightPink;     //!< Light pink predefined color
-    static const sf::Color LightBabyPink; //!< Light baby pink predefined color
-    static const sf::Color LightHotPink;  //!< Light hot pink predefined color
-    static const sf::Color LightSalmon;   //!< Light salmon predefined color
-    static const sf::Color LightViolet;   //!< Light violet predefined color
-    static const sf::Color LightPurple;   //!< Light purple predefined color
-    static const sf::Color LightPeach;    //!< Light peach predefined color
-    static const sf::Color LightLime;     //!< Light lime predefined color
-    static const sf::Color LightMint;     //!< Light mint predefined color
-    static const sf::Color LightGray;     //!< Light gray predefined color
+    static const Color LightBlack;    //!< Light black predefined color
+    static const Color LightBlue;     //!< Light blue predefined color
+    static const Color LightRed;      //!< Light red predefined color
+    static const Color LightMagenta;  //!< Light magenta predefined color
+    static const Color LightGreen;    //!< Light green predefined color
+    static const Color LightCyan;     //!< Light cyan predefined color
+    static const Color LightYellow;   //!< Light yellow predefined color
+    static const Color LightBrown;    //!< Light brown predefined color
+    static const Color LightOrange;   //!< Light orange predefined color
+    static const Color LightPink;     //!< Light pink predefined color
+    static const Color LightBabyPink; //!< Light baby pink predefined color
+    static const Color LightHotPink;  //!< Light hot pink predefined color
+    static const Color LightSalmon;   //!< Light salmon predefined color
+    static const Color LightViolet;   //!< Light violet predefined color
+    static const Color LightPurple;   //!< Light purple predefined color
+    static const Color LightPeach;    //!< Light peach predefined color
+    static const Color LightLime;     //!< Light lime predefined color
+    static const Color LightMint;     //!< Light mint predefined color
+    static const Color LightGray;     //!< Light gray predefined color
 
-    static const sf::Color DarkBlue;     //!< Dark blue predefined color
-    static const sf::Color DarkRed;      //!< Dark red predefined color
-    static const sf::Color DarkMagenta;  //!< Dark magenta predefined color
-    static const sf::Color DarkGreen;    //!< Dark green predefined color
-    static const sf::Color DarkCyan;     //!< Dark cyan predefined color
-    static const sf::Color DarkYellow;   //!< Dark yellow predefined color
-    static const sf::Color DarkWhite;    //!< Dark white predefined color
-    static const sf::Color DarkBrown;    //!< Dark brown predefined color
-    static const sf::Color DarkOrange;   //!< Dark orange predefined color
-    static const sf::Color DarkPink;     //!< Dark pink predefined color
-    static const sf::Color DarkBabyPink; //!< Dark baby pink predefined color
-    static const sf::Color DarkHotPink;  //!< Dark hot pink predefined color
-    static const sf::Color DarkSalmon;   //!< Dark salmon predefined color
-    static const sf::Color DarkViolet;   //!< Dark violet predefined color
-    static const sf::Color DarkPurple;   //!< Dark purple predefined color
-    static const sf::Color DarkPeach;    //!< Dark peach predefined color
-    static const sf::Color DarkLime;     //!< Dark lime predefined color
-    static const sf::Color DarkMint;     //!< Dark mint predefined color
-    static const sf::Color DarkGray;     //!< Dark gray predefined color
+    static const Color DarkBlue;     //!< Dark blue predefined color
+    static const Color DarkRed;      //!< Dark red predefined color
+    static const Color DarkMagenta;  //!< Dark magenta predefined color
+    static const Color DarkGreen;    //!< Dark green predefined color
+    static const Color DarkCyan;     //!< Dark cyan predefined color
+    static const Color DarkYellow;   //!< Dark yellow predefined color
+    static const Color DarkWhite;    //!< Dark white predefined color
+    static const Color DarkBrown;    //!< Dark brown predefined color
+    static const Color DarkOrange;   //!< Dark orange predefined color
+    static const Color DarkPink;     //!< Dark pink predefined color
+    static const Color DarkBabyPink; //!< Dark baby pink predefined color
+    static const Color DarkHotPink;  //!< Dark hot pink predefined color
+    static const Color DarkSalmon;   //!< Dark salmon predefined color
+    static const Color DarkViolet;   //!< Dark violet predefined color
+    static const Color DarkPurple;   //!< Dark purple predefined color
+    static const Color DarkPeach;    //!< Dark peach predefined color
+    static const Color DarkLime;     //!< Dark lime predefined color
+    static const Color DarkMint;     //!< Dark mint predefined color
+    static const Color DarkGray;     //!< Dark gray predefined color
 
-    static const sf::Color VeryDarkBlue;     //!< Very dark blue predefined color
-    static const sf::Color VeryDarkRed;      //!< Very dark red predefined color
-    static const sf::Color VeryDarkMagenta;  //!< Very dark magenta predefined color
-    static const sf::Color VeryDarkGreen;    //!< Very dark green predefined color
-    static const sf::Color VeryDarkCyan;     //!< Very dark cyan predefined color
-    static const sf::Color VeryDarkYellow;   //!< Very dark yellow predefined color
-    static const sf::Color VeryDarkWhite;    //!< Very dark white predefined color
-    static const sf::Color VeryDarkBrown;    //!< Very dark brown predefined color
-    static const sf::Color VeryDarkOrange;   //!< Very dark orange predefined color
-    static const sf::Color VeryDarkPink;     //!< Very dark pink predefined color
-    static const sf::Color VeryDarkBabyPink; //!< Very dark babyPink predefined color
-    static const sf::Color VeryDarkHotPink;  //!< Very dark hotPink predefined color
-    static const sf::Color VeryDarkSalmon;   //!< Very dark salmon predefined color
-    static const sf::Color VeryDarkViolet;   //!< Very dark violet predefined color
-    static const sf::Color VeryDarkPurple;   //!< Very dark purple predefined color
-    static const sf::Color VeryDarkPeach;    //!< Very dark peach predefined color
-    static const sf::Color VeryDarkLime;     //!< Very dark lime predefined color
-    static const sf::Color VeryDarkMint;     //!< Very dark mint predefined color
-    static const sf::Color VeryDarkGray;     //!< Very dark gray predefined color
+    static const Color VeryDarkBlue;     //!< Very dark blue predefined color
+    static const Color VeryDarkRed;      //!< Very dark red predefined color
+    static const Color VeryDarkMagenta;  //!< Very dark magenta predefined color
+    static const Color VeryDarkGreen;    //!< Very dark green predefined color
+    static const Color VeryDarkCyan;     //!< Very dark cyan predefined color
+    static const Color VeryDarkYellow;   //!< Very dark yellow predefined color
+    static const Color VeryDarkWhite;    //!< Very dark white predefined color
+    static const Color VeryDarkBrown;    //!< Very dark brown predefined color
+    static const Color VeryDarkOrange;   //!< Very dark orange predefined color
+    static const Color VeryDarkPink;     //!< Very dark pink predefined color
+    static const Color VeryDarkBabyPink; //!< Very dark babyPink predefined color
+    static const Color VeryDarkHotPink;  //!< Very dark hotPink predefined color
+    static const Color VeryDarkSalmon;   //!< Very dark salmon predefined color
+    static const Color VeryDarkViolet;   //!< Very dark violet predefined color
+    static const Color VeryDarkPurple;   //!< Very dark purple predefined color
+    static const Color VeryDarkPeach;    //!< Very dark peach predefined color
+    static const Color VeryDarkLime;     //!< Very dark lime predefined color
+    static const Color VeryDarkMint;     //!< Very dark mint predefined color
+    static const Color VeryDarkGray;     //!< Very dark gray predefined color
     // NOLINTEND(readability-identifier-naming)
 
     ////////////////////////////////////////////////////////////
