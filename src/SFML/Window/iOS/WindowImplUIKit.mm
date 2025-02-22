@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -15,6 +16,7 @@
 #include <UIKit/UIKit.h>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 
 namespace sf::priv
 {

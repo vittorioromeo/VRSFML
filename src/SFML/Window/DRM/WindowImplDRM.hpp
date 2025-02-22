@@ -1,11 +1,13 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowImpl.hpp"
+
 
 namespace sf::priv
 {
