@@ -85,7 +85,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -132,7 +131,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -146,7 +144,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -160,7 +157,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     }
