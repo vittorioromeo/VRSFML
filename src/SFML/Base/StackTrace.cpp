@@ -31,7 +31,7 @@ void printStackTrace()
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     char callstack[4096];
-    emscripten_get_callstack(EM_LOG_NO_PATHS | EM_LOG_JS_STACK | EM_LOG_FUNC_PARAMS, callstack, sizeof(callstack));
+    emscripten_get_callstack(EM_LOG_NO_PATHS | EM_LOG_JS_STACK, callstack, sizeof(callstack));
     std::puts(callstack);
 #else
     cpptrace::generate_trace().print();
