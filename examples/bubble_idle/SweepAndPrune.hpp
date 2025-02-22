@@ -8,6 +8,7 @@
 #include <latch>
 
 #include <cassert>
+#include <cstddef>
 
 
 class SweepAndPrune
@@ -66,7 +67,7 @@ public:
         }
 
         // Initialize latch for the asynchronous tasks only.
-        std::latch latch{nWorkers - 1u};
+        std::latch latch{static_cast<std::ptrdiff_t>(nWorkers - 1u)};
 
         // Process the first chunk on the main thread.
         {
