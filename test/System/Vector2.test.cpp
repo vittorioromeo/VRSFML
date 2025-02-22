@@ -353,4 +353,40 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         constexpr sf::Vector2f v(2.4f, 3.0f);
         CHECK(v + sf::Vector2f::fromAngle(10.f, -158.9902_deg) == v.movedTowards(10.f, -158.9902_deg));
     }
+
+    SECTION("addX")
+    {
+        const sf::Vector2<TestType> vector(1, 2);
+
+        const auto result = vector.addX(3);
+        CHECK(result.x == 4);
+        CHECK(result.y == 2);
+    }
+
+    SECTION("addY")
+    {
+        const sf::Vector2<TestType> vector(1, 2);
+
+        const auto result = vector.addY(3);
+        CHECK(result.x == 1);
+        CHECK(result.y == 5);
+    }
+
+    SECTION("clampX")
+    {
+        const sf::Vector2<TestType> vector(100, 2);
+
+        const auto result = vector.clampX(0, 50);
+        CHECK(result.x == 50);
+        CHECK(result.y == 2);
+    }
+
+    SECTION("clampY")
+    {
+        const sf::Vector2<TestType> vector(2, 100);
+
+        const auto result = vector.clampY(0, 50);
+        CHECK(result.x == 2);
+        CHECK(result.y == 50);
+    }
 }

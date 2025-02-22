@@ -32,7 +32,7 @@
 
 
 #ifndef DIDFT_OPTIONAL
-#define DIDFT_OPTIONAL 0x80000000
+#define DIDFT_OPTIONAL 0x80000000<
 #endif
 
 

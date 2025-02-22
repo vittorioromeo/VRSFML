@@ -5,7 +5,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -128,12 +127,14 @@ constexpr Color Color::withHueMod(const float hueMod) const
     return Color::fromHSLA(hsl, a);
 }
 
+#define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
+    (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
 
 ////////////////////////////////////////////////////////////
 constexpr Color Color::withSaturation(const float saturation) const
 {
     auto hsl       = toHSL();
-    hsl.saturation = base::clamp(saturation, 0.f, 1.f);
+    hsl.saturation = SFML_PRIV_CLAMP_BY_VALUE(saturation, 0.f, 1.f);
     return Color::fromHSLA(hsl, a);
 }
 
@@ -142,7 +143,7 @@ constexpr Color Color::withSaturation(const float saturation) const
 constexpr Color Color::withLightness(const float lightness) const
 {
     auto hsl      = toHSL();
-    hsl.lightness = base::clamp(lightness, 0.f, 1.f);
+    hsl.lightness = SFML_PRIV_CLAMP_BY_VALUE(lightness, 0.f, 1.f);
     return Color::fromHSLA(hsl, a);
 }
 
@@ -152,11 +153,12 @@ template <typename TVec4>
 constexpr Color Color::fromVec4(const TVec4& vec)
 {
     const auto convert = []<typename T>(const T value)
-    { return static_cast<sf::base::U8>(sf::base::clamp(value * T{255}, T{0}, T{255})); };
+    { return static_cast<sf::base::U8>(SFML_PRIV_CLAMP_BY_VALUE(value * T{255}, T{0}, T{255})); };
 
     return {convert(vec.x), convert(vec.y), convert(vec.z), convert(vec.w)};
 }
 
+#undef SFML_PRIV_CLAMP_BY_VALUE
 
 ////////////////////////////////////////////////////////////
 template <typename TVec4>

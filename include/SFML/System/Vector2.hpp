@@ -166,6 +166,58 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
 
+#define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
+    (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseClamp(
+        const Vector2 mins,
+        const Vector2 maxs) const
+    {
+        return {SFML_PRIV_CLAMP_BY_VALUE(x, mins.x, maxs.x), SFML_PRIV_CLAMP_BY_VALUE(y, mins.y, maxs.y)};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampX(const T minX, const T maxX) const
+    {
+        return {SFML_PRIV_CLAMP_BY_VALUE(x, minX, maxX), y};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampY(const T minY, const T maxY) const
+    {
+        return {x, SFML_PRIV_CLAMP_BY_VALUE(y, minY, maxY)};
+    }
+
+#undef SFML_PRIV_CLAMP_BY_VALUE
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 addX(const T addedX) const
+    {
+        return {x + addedX, y};
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 addY(const T addedY) const
+    {
+        return {x, y + addedY};
+    }
+
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector2` of type `OtherVector2`
     ///
