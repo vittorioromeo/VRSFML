@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -21,8 +22,8 @@ Transform TransformableMixinBase::getTransform(const Vector2f position,
 {
     const auto [sine, cosine] = base::fastSinCos(radians);
 
-    SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
-    SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+    SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
     return Transform::from(position, scale, origin, sine, cosine);
 }

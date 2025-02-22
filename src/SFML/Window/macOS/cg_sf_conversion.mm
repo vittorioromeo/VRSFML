@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -7,6 +8,7 @@
 #include "SFML/Window/macOS/cg_sf_conversion.hpp"
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 
 namespace sf::priv
 {
