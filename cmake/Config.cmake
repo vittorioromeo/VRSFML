@@ -143,12 +143,6 @@ elseif(${EMSCRIPTEN})
         -sJSPI=1                            # Use VM support for the JavaScript Promise Integration proposal
     )
 
-    if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
-        # Using `--post-js` here instead of `--pre-js` as the latter seem to cause issues in examples with threading
-        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
-        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
-    endif()
-
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
