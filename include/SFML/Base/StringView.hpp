@@ -401,10 +401,28 @@ public:
         return !(lhs == rhs);
     }
 
+
+    //////////////////////////////////////////
+    template <typename StringLike>
+    [[nodiscard, gnu::always_inline]] StringLike toString() const
+    {
+        return StringLike{m_data, m_size};
+    }
+
 private:
     const char* m_data;
     SizeT       m_size;
 };
+
+
+//////////////////////////////////////////
+template <typename StreamLike>
+StreamLike& operator<<(StreamLike& stream, const StringView& stringView)
+    requires(requires { stream.write(stringView.data(), static_cast<long>(stringView.size())); })
+{
+    stream.write(stringView.data(), static_cast<long>(stringView.size()));
+    return stream;
+}
 
 } // namespace sf::base
 

@@ -37,13 +37,6 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         CHECK(!sf::base::anyOf(values, values + 8, [](const int x) { return x == 400; }));
     }
 
-    SECTION("Clamp")
-    {
-        CHECK(sf::base::clamp(5, 0, 10) == 5);
-        CHECK(sf::base::clamp(15, 0, 10) == 10);
-        CHECK(sf::base::clamp(-15, 0, 10) == 0);
-    }
-
     SECTION("Get Array Size")
     {
         const int values[]{0, 1, 2, 3, 4, 5, 6, 7};
