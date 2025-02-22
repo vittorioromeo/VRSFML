@@ -165,6 +165,7 @@ elseif(${EMSCRIPTEN})
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size
+        -sTOTAL_MEMORY=64mb                 # Set the total memory size (needed for `bubble_idle` example)
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
 
