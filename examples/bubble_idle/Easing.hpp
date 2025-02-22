@@ -7,8 +7,6 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 
-#include <iostream>
-
 
 ////////////////////////////////////////////////////////////
 using EasingFn = float (*)(const float);

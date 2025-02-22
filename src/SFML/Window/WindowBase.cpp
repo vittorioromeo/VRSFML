@@ -14,8 +14,8 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 
@@ -122,11 +122,8 @@ void WindowBase::setSize(Vector2u size)
     const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u{});
     const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
 
-    const auto width  = base::clamp(size.x, minimumSize.x, maximumSize.x);
-    const auto height = base::clamp(size.y, minimumSize.y, maximumSize.y);
-
     // Do nothing if requested size matches current size
-    const Vector2u clampedSize(width, height);
+    const auto clampedSize = size.componentWiseClamp(minimumSize, maximumSize);
     if (clampedSize == m_size)
         return;
 

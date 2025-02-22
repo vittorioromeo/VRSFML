@@ -1,5 +1,4 @@
 #pragma once
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 ////////////////////////////////////////////////////////////
@@ -7,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -33,7 +31,9 @@ struct Sprite;
 struct Transform;
 
 struct CircleShapeData;
+struct EllipseShapeData;
 struct RectangleShapeData;
+struct RoundedRectangleShapeData;
 } // namespace sf
 
 
@@ -64,25 +64,25 @@ struct CPUStorage
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(base::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(const base::SizeT count)
     {
         return vertices.reserveMore(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(base::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const base::SizeT count)
     {
         return indices.reserveMore(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const base::SizeT count)
     {
         vertices.unsafeSetSize(vertices.size() + count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const base::SizeT count)
     {
         indices.unsafeSetSize(indices.size() + count);
     }
@@ -126,13 +126,13 @@ struct PersistentGPUStorage
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreVertices(base::SizeT count)
+    [[gnu::always_inline]] void commitMoreVertices(const base::SizeT count)
     {
         nVertices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreIndices(base::SizeT count)
+    [[gnu::always_inline]] void commitMoreIndices(const base::SizeT count)
     {
         nIndices += static_cast<IndexType>(count);
     }
@@ -210,7 +210,19 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    void add(const EllipseShapeData& sdEllipse);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void add(const RectangleShapeData& sdRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RoundedRectangleShapeData& sdRoundedRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -243,7 +255,6 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     TStorage m_storage;
-    Shape    m_shapeBuffer{{}}; //!< Used to store shape data temporarily
 };
 
 ////////////////////////////////////////////////////////////

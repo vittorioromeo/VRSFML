@@ -6,9 +6,11 @@
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
+#include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Sprite.hpp"
@@ -16,6 +18,10 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/Builtins/Unreachable.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 
@@ -271,28 +277,51 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 {
+    const float angleStep = computeAngleStep(sdCircle.pointCount);
+
     drawShapeFromPoints(sdCircle.pointCount,
                         sdCircle,
                         [&](const base::SizeT i) __attribute__((always_inline, flatten))
-    {
-        const float angleStep = sf::base::tau / static_cast<float>(sdCircle.pointCount);
-        return computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius);
-    });
+    { return computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius); });
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
+{
+    const float angleStep = computeAngleStep(sdEllipse.pointCount);
+
+    drawShapeFromPoints(sdEllipse.pointCount,
+                        sdEllipse,
+                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+    { return computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius); });
+}
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
-    const Vector2f points[]{{0.f, 0.f},
-                            {sdRectangle.size.x, 0.f},
-                            {sdRectangle.size.x, sdRectangle.size.y},
-                            {0.f, sdRectangle.size.y}};
-
     drawShapeFromPoints(4u,
                         sdRectangle,
-                        [&](const base::SizeT i) __attribute__((always_inline, flatten)) { return points[i]; });
+                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+    { return computeRectanglePoint(i, sdRectangle.size); });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
+{
+    drawShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
+                        sdRoundedRectangle,
+                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+    {
+        return computeRoundedRectanglePoint(i,
+                                            sdRoundedRectangle.size,
+                                            sdRoundedRectangle.cornerRadius,
+                                            sdRoundedRectangle.cornerPointCount);
+    });
 }
 
 

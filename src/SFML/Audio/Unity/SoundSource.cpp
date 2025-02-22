@@ -9,7 +9,7 @@
 
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Macros.hpp"
 
 #include <miniaudio.h>

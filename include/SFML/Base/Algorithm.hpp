@@ -98,14 +98,6 @@ template <typename Iter, typename Predicate>
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue) noexcept
-{
-    return (value < minValue) ? minValue : ((value > maxValue) ? maxValue : value);
-}
-
-
-////////////////////////////////////////////////////////////
 template <typename T, auto N>
 [[nodiscard, gnu::always_inline, gnu::const]] consteval SizeT getArraySize(const T (&)[N]) noexcept
 {

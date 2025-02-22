@@ -24,6 +24,7 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #include <array>
