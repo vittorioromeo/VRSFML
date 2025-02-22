@@ -77,25 +77,25 @@ struct CPUStorage
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const base::SizeT count) noexcept
     {
         vertices.unsafeSetSize(vertices.size() + count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const base::SizeT count) noexcept
     {
         indices.unsafeSetSize(indices.size() + count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
     {
         return static_cast<IndexType>(vertices.size());
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
     {
         return static_cast<IndexType>(indices.size());
     }
@@ -127,25 +127,25 @@ struct PersistentGPUStorage
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreVertices(const base::SizeT count)
+    [[gnu::always_inline]] void commitMoreVertices(const base::SizeT count) noexcept
     {
         nVertices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreIndices(const base::SizeT count)
+    [[gnu::always_inline]] void commitMoreIndices(const base::SizeT count) noexcept
     {
         nIndices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
     {
         return nVertices;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
     {
         return nIndices;
     }

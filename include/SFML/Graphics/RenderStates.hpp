@@ -8,7 +8,6 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
-#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
@@ -48,8 +47,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 
     const Texture* texture{}; //!< Texture
     const Shader*  shader{};  //!< Shader
-
-    CoordinateType coordinateType{CoordinateType::Pixels}; //!< Texture coordinate type
 };
 
 inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};
@@ -66,7 +63,6 @@ inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};
 /// \li the blend mode: how pixels of the object are blended with the background
 /// \li the stencil mode: how pixels of the object interact with the stencil buffer
 /// \li the transform: how the object is positioned/rotated/scaled
-/// \li the texture coordinate type: how texture coordinates are interpreted
 /// \li the texture: what image is mapped to the object
 /// \li the shader: what custom effect is applied to the object
 ///
