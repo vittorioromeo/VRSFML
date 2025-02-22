@@ -14,8 +14,8 @@
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Vector3.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"

@@ -4,6 +4,10 @@
 
 #include <CommonTraits.hpp>
 #include <StringifyPathUtil.hpp>
+#include <StringifyStringViewUtil.hpp>
+
+#include <string>
+
 
 TEST_CASE("[Network] sf::Ftp")
 {
