@@ -11,16 +11,22 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/StringView.hpp"
 
-#include <string>
-#include <vector>
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class IpAddress;
+}
 
 
 namespace sf
 {
-class IpAddress;
-
 ////////////////////////////////////////////////////////////
 /// \brief A FTP client
 ///
@@ -122,7 +128,18 @@ public:
         /// \param message Response message
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, std::string message = "");
+        [[nodiscard]] explicit Response(Status code = Status::InvalidResponse, base::StringView message = "");
+
+        ////////////////////////////////////////////////////////////
+        ~Response();
+
+        ////////////////////////////////////////////////////////////
+        Response(const Response&);
+        Response& operator=(const Response&);
+
+        ////////////////////////////////////////////////////////////
+        Response(Response&&) noexcept;
+        Response& operator=(Response&&) noexcept;
 
         ////////////////////////////////////////////////////////////
         /// \brief Check if the status code means a success
@@ -149,14 +166,14 @@ public:
         /// \return The response message
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] const std::string& getMessage() const;
+        [[nodiscard]] base::StringView getMessage() const;
 
     private:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        Status      m_status;  //!< Status code returned from the server
-        std::string m_message; //!< Last message received from the server
+        struct Impl;
+        base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -166,6 +183,18 @@ public:
     class SFML_NETWORK_API DirectoryResponse : public Response
     {
     public:
+        ////////////////////////////////////////////////////////////
+        DirectoryResponse();
+        ~DirectoryResponse();
+
+        ////////////////////////////////////////////////////////////
+        DirectoryResponse(const DirectoryResponse&);
+        DirectoryResponse& operator=(const DirectoryResponse&);
+
+        ////////////////////////////////////////////////////////////
+        DirectoryResponse(DirectoryResponse&&) noexcept;
+        DirectoryResponse& operator=(DirectoryResponse&&) noexcept;
+
         ////////////////////////////////////////////////////////////
         /// \brief Default constructor
         ///
@@ -203,7 +232,18 @@ public:
         /// \param data      Data containing the raw listing
         ///
         ////////////////////////////////////////////////////////////
-        [[nodiscard]] ListingResponse(const Response& response, const std::string& data);
+        [[nodiscard]] ListingResponse(const Response& response, base::StringView data);
+
+        ////////////////////////////////////////////////////////////
+        ~ListingResponse();
+
+        ////////////////////////////////////////////////////////////
+        ListingResponse(const ListingResponse&);
+        ListingResponse& operator=(const ListingResponse&);
+
+        ////////////////////////////////////////////////////////////
+        ListingResponse(ListingResponse&&) noexcept;
+        ListingResponse& operator=(ListingResponse&&) noexcept;
 
         ////////////////////////////////////////////////////////////
         /// \brief Return the array of directory/file names
@@ -217,7 +257,8 @@ public:
         ////////////////////////////////////////////////////////////
         // Member data
         ////////////////////////////////////////////////////////////
-        std::vector<std::string> m_listing; //!< Directory/file names extracted from the data
+        struct Impl;
+        base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
     };
 
     ////////////////////////////////////////////////////////////
@@ -303,7 +344,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response login(const std::string& name, const std::string& password);
+    [[nodiscard]] Response login(base::StringView name, base::StringView password);
 
     ////////////////////////////////////////////////////////////
     /// \brief Send a null command to keep the connection alive
@@ -344,7 +385,7 @@ public:
     /// \see `getWorkingDirectory`, `changeDirectory`, `parentDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ListingResponse getDirectoryListing(const std::string& directory = "");
+    [[nodiscard]] ListingResponse getDirectoryListing(base::StringView directory = "");
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current working directory
@@ -358,7 +399,7 @@ public:
     /// \see `getWorkingDirectory`, `getDirectoryListing`, `parentDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response changeDirectory(const std::string& directory);
+    [[nodiscard]] Response changeDirectory(base::StringView directory);
 
     ////////////////////////////////////////////////////////////
     /// \brief Go to the parent directory of the current one
@@ -383,7 +424,7 @@ public:
     /// \see `deleteDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response createDirectory(const std::string& name);
+    [[nodiscard]] Response createDirectory(base::StringView name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Remove an existing directory
@@ -400,7 +441,7 @@ public:
     /// \see `createDirectory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response deleteDirectory(const std::string& name);
+    [[nodiscard]] Response deleteDirectory(base::StringView name);
 
     ////////////////////////////////////////////////////////////
     /// \brief Rename an existing file
@@ -499,7 +540,7 @@ public:
     /// \return Server response to the request
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response sendCommand(const std::string& command, const std::string& parameter = "");
+    [[nodiscard]] Response sendCommand(base::StringView command, base::StringView parameter = "");
 
 private:
     ////////////////////////////////////////////////////////////
@@ -525,8 +566,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    TcpSocket   m_commandSocket; //!< Socket holding the control connection with the server
-    std::string m_receiveBuffer; //!< Received command data that is yet to be processed
+    struct Impl;
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
 } // namespace sf

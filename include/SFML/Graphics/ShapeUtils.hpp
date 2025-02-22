@@ -22,51 +22,119 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vector2f computeCirclePointFromAngleStep(
-    const sf::base::SizeT index,
-    const float           angleStep,
-    const float           radius)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computeAngleStep(
+    const unsigned int pointCount) noexcept
 {
-    const float radians       = static_cast<float>(index) * angleStep;
-    const auto [sine, cosine] = sf::base::fastSinCos(radians);
+    return base::tau / static_cast<float>(pointCount);
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePointFromAngleStep(
+    const base::SizeT index,
+    const float       angleStep,
+    const float       hRadius,
+    const float       vRadius) noexcept
+{
+    const auto [sine, cosine] = base::fastSinCos(static_cast<float>(index) * angleStep);
 
     SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
     SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
 
-    return {radius * (1.f + sine), radius * (1.f + cosine)};
+    return {hRadius * (1.f + sine), vRadius * (1.f + cosine)};
 }
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computeAngleStep(const unsigned int pointCount)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePoint(
+    const base::SizeT  index,
+    const unsigned int pointCount,
+    const float        hRadius,
+    const float        vRadius) noexcept
 {
-    return sf::base::tau / static_cast<float>(pointCount);
+    return computeEllipsePointFromAngleStep(index, computeAngleStep(pointCount), hRadius, vRadius);
 }
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vector2f computeCirclePoint(
-    const sf::base::SizeT index,
-    const unsigned int    pointCount,
-    const float           radius) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePointFromAngleStep(
+    const base::SizeT index,
+    const float       angleStep,
+    const float       radius) noexcept
+{
+    return computeEllipsePointFromAngleStep(index, angleStep, radius, radius);
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePoint(
+    const base::SizeT  index,
+    const unsigned int pointCount,
+    const float        radius) noexcept
 {
     return computeCirclePointFromAngleStep(index, computeAngleStep(pointCount), radius);
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeRectanglePoint(
+    const base::SizeT index,
+    const Vector2f    size) noexcept
+{
+    SFML_BASE_ASSERT(index <= 4u);
+    SFML_BASE_ASSUME(index <= 4u);
+
+    const Vector2f points[]{{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
+    return points[index];
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeRoundedRectanglePoint(
+    const base::SizeT  index,
+    const Vector2f     size,
+    const float        cornerRadius,
+    const unsigned int cornerPointCount) noexcept
+{
+    const auto totalNumPoints = cornerPointCount * 4u;
+
+    SFML_BASE_ASSERT(index < totalNumPoints);
+    SFML_BASE_ASSUME(index < totalNumPoints);
+
+    const base::SizeT centerIndex = index / cornerPointCount;
+    SFML_BASE_ASSERT(centerIndex >= 0u && centerIndex <= 3u);
+    SFML_BASE_ASSUME(centerIndex >= 0u && centerIndex <= 3u);
+
+    const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
+
+    const Vector2f center{(centerIndex == 0 || centerIndex == 3) ? size.x - cornerRadius : cornerRadius,
+                          (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
+
+    const auto [sine, cosine] = base::fastSinCos(deltaAngle * static_cast<float>(index - centerIndex));
+    return center + sf::Vector2f{cornerRadius * cosine, -cornerRadius * sine};
 }
 
 ////////////////////////////////////////////////////////////
 /// \brief Compute the normal of a segment
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline sf::Vector2f computeSegmentNormal(const sf::Vector2f p1,
-                                                                                       const sf::Vector2f p2) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] inline Vector2f computeSegmentNormal(const Vector2f p1, const Vector2f p2) noexcept
 {
     // Compute the difference and its perpendicular.
-    const sf::Vector2f diff   = p2 - p1;
-    const sf::Vector2f normal = {-diff.y, diff.x};
+    const Vector2f diff   = p2 - p1;
+    const Vector2f normal = {-diff.y, diff.x};
 
     // Compute squared length of the normal.
     const float lenSq = normal.x * normal.x + normal.y * normal.y;
@@ -78,7 +146,7 @@ namespace sf
     if (lenSq == 0.f)
         return normal;
 
-    const float invLen = 1.f / sf::base::sqrt(lenSq);
+    const float invLen = 1.f / base::sqrt(lenSq);
     return {normal.x * invLen, normal.y * invLen};
 }
 
@@ -86,7 +154,7 @@ namespace sf
 /// \brief Get bounds of a vertex range
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline constexpr sf::FloatRect getVertexRangeBounds(const sf::Vertex* data, const sf::base::SizeT nVertices) noexcept
+[[nodiscard]] inline constexpr FloatRect getVertexRangeBounds(const Vertex* data, const base::SizeT nVertices) noexcept
 {
     if (nVertices == 0u)
         return {};

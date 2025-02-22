@@ -194,7 +194,7 @@ ErrStream::Guard& ErrStream::Guard::operator<<(const T& value)
 {
     if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
     {
-        m_stream << std::string_view{value.data(), value.size()};
+        m_stream.write(value.data(), static_cast<std::streamsize>(value.size()));
     }
     else
     {

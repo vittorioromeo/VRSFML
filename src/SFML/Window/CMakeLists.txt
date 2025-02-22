@@ -78,6 +78,8 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
                 ${SRCROOT}/EGL/EGLCheck.hpp
                 ${SRCROOT}/EGL/EGLContext.cpp
                 ${SRCROOT}/EGL/EGLContext.hpp
+                ${SRCROOT}/EGL/EGLGlad.cpp
+                ${SRCROOT}/EGL/EGLGlad.hpp
             )
         else()
              list(APPEND PLATFORM_SRC
@@ -176,16 +178,16 @@ elseif(SFML_OS_IOS)
     )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
+        ${SRCROOT}/Android/InputImpl.cpp
+        ${SRCROOT}/Android/SensorImpl.cpp
+        ${SRCROOT}/Android/SensorImpl.hpp
+        ${SRCROOT}/Android/VideoModeImpl.cpp
+        ${SRCROOT}/Android/WindowImplAndroid.cpp
+        ${SRCROOT}/Android/WindowImplAndroid.hpp
         ${SRCROOT}/EGL/EGLCheck.cpp
         ${SRCROOT}/EGL/EGLCheck.hpp
         ${SRCROOT}/EGL/EGLContext.cpp
         ${SRCROOT}/EGL/EGLContext.hpp
-        ${SRCROOT}/Android/WindowImplAndroid.hpp
-        ${SRCROOT}/Android/WindowImplAndroid.cpp
-        ${SRCROOT}/Android/VideoModeImpl.cpp
-        ${SRCROOT}/Android/InputImpl.cpp
-        ${SRCROOT}/Android/SensorImpl.hpp
-        ${SRCROOT}/Android/SensorImpl.cpp
     )
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC

@@ -4,6 +4,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/ShapeUtils.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -40,9 +41,7 @@ Vector2f RectangleShape::getSize() const
 Vector2f RectangleShape::getPoint(base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < 4u && "Index is out of bounds");
-
-    const Vector2f points[]{{0.f, 0.f}, {m_size.x, 0.f}, {m_size.x, m_size.y}, {0.f, m_size.y}};
-    return points[index];
+    return computeRectanglePoint(index, m_size);
 }
 
 

@@ -4,7 +4,7 @@
 
 #include "SFML/Graphics/Text.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Clamp.hpp"
 
 
 ////////////////////////////////////////////////////////////
