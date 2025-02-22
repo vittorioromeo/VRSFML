@@ -7677,7 +7677,7 @@ Using prestige points, TODO P0
 
     static inline constexpr const char* fragmentSrc = R"glsl(
 
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 
 in vec4 sf_v_color;
 in vec2 sf_v_texCoord;
@@ -7704,7 +7704,7 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    vec2 texCoord = sf_v_texCoord / vec2(textureSize(sf_u_texture, 0));
+    vec2 texCoord = sf_v_texCoord;
     vec4 texColor = texture(sf_u_texture, texCoord);
 
     const vec2 flagTarget = vec2(1.0/255.0);

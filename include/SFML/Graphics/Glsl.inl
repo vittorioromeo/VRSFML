@@ -12,10 +12,14 @@
 #include "SFML/Base/Builtins/Memcpy.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 struct Transform;
 } // namespace sf
+
 
 namespace sf::priv
 {
@@ -34,7 +38,6 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
 {
     SFML_BASE_MEMCPY(dest, source, elements * sizeof(float));
 }
-
 
 ////////////////////////////////////////////////////////////
 /// \brief Matrix type, used to set uniforms in GLSL

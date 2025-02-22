@@ -19,21 +19,25 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct GLVertexArrayObjectFuncs
 {
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void create(unsigned int& id)
     {
         glCheck(glGenVertexArrays(1, &id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
         glCheck(glDeleteVertexArrays(1, &id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void bind(unsigned int id)
     {
         glCheck(glBindVertexArray(id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void get(unsigned int& id)
     {
         glCheck(glGetIntegerv(GL_VERTEX_ARRAY_BINDING, reinterpret_cast<GLint*>(&id)));

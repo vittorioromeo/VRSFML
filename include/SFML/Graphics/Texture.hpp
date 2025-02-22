@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/CoordinateType.hpp"
-
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -436,7 +434,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] FloatRect getRect() const;
 
-    // TODO P1: coordinateType docs???
     ////////////////////////////////////////////////////////////
     /// \brief Bind a texture for rendering
     ///
@@ -454,18 +451,6 @@ public:
     /// sf::Texture::unbind();
     /// // draw OpenGL stuff that use no texture...
     /// \endcode
-    ///
-    /// The `coordinateType` argument controls how texture
-    /// coordinates will be interpreted. If Normalized (the default), they
-    /// must be in range [0 .. 1], which is the default way of handling
-    /// texture coordinates with OpenGL. If Pixels, they must be given
-    /// in pixels (range [0 .. size]). This mode is used internally by
-    /// the graphics classes of SFML, it makes the definition of texture
-    /// coordinates more intuitive for the high-level API, users don't need
-    /// to compute normalized values.
-    ///
-    /// \param texture Pointer to the texture to bind, can be null to use no texture
-    /// \param coordinateType Type of texture coordinates to use
     ///
     ////////////////////////////////////////////////////////////
     void bind() const;
