@@ -44,6 +44,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -76,6 +77,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
@@ -91,7 +93,6 @@
 #include <algorithm>
 #include <array>
 #include <iostream>
-#include <latch>
 #include <random>
 #include <string>
 #include <unordered_map>
@@ -218,9 +219,9 @@ void drawMinimap(sf::Shader&             shader,
     //
     // Blue rectangle showing current visible area
     const sf::RectangleShape minimapIndicator{
-        {.position     = minimapPos + sf::Vector2f{(gameView.center.x - gameScreenSize.x / 2.f) / minimapScale, 0.f},
-         .fillColor    = sf::Color::Transparent,
-         .outlineColor = sf::Color::Blue,
+        {.position         = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
+         .fillColor        = sf::Color::Transparent,
+         .outlineColor     = sf::Color::Blue,
          .outlineThickness = 2.f,
          .size             = sf::Vector2f{gameScreenSize / minimapScale}}};
 
@@ -228,15 +229,12 @@ void drawMinimap(sf::Shader&             shader,
     // Convert minimap dimensions to normalized `[0, 1]` range for scissor rectangle
     const float progressRatio = sf::base::clamp(mapLimit / boundaries.x, 0.f, 1.f);
 
-    auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale);
-    auto minimapScaledSize     = minimapSize.componentWiseDiv(resolution / hudScale);
+    const auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale)
+                                           .componentWiseClamp({0.f, 0.f}, {1.f, 1.f});
 
-    minimapScaledPosition.x = sf::base::clamp(minimapScaledPosition.x, 0.f, 1.f);
-    minimapScaledPosition.y = sf::base::clamp(minimapScaledPosition.y, 0.f, 1.f);
-    minimapScaledSize.y     = sf::base::clamp(minimapScaledSize.y, 0.f, 1.f - minimapScaledPosition.y);
-
-    if (progressRatio * minimapScaledSize.x > 1.f - minimapScaledPosition.x)
-        minimapScaledSize.x = (1.f - minimapScaledPosition.x) / progressRatio;
+    const auto minimapScaledSize = minimapSize.componentWiseDiv(resolution / hudScale)
+                                       .clampX(0.f, (1.f - minimapScaledPosition.x) / progressRatio)
+                                       .clampY(0.f, 1.f - minimapScaledPosition.y);
 
     //
     // Special view that renders the world scaled down for minimap
@@ -442,7 +440,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // HUD combo text
     sf::Text        comboText{fontSuperBakery,
-                              {.position         = moneyText.position + sf::Vector2f{0.f, 35.f},
+                              {.position         = moneyText.position.addY(35.f),
                                .string           = "x1",
                                .characterSize    = 48u,
                                .fillColor        = sf::Color::White,
@@ -453,7 +451,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // HUD buff text
     sf::Text buffText{fontSuperBakery,
-                      {.position         = comboText.position + sf::Vector2f{0.f, 35.f},
+                      {.position         = comboText.position.addY(35.f),
                        .string           = "",
                        .characterSize    = 48u,
                        .fillColor        = sf::Color::White,
@@ -654,7 +652,7 @@ struct Main
     [[nodiscard]] static unsigned int getTPWorkerCount()
     {
         const unsigned int numThreads = std::thread::hardware_concurrency();
-        return (numThreads == 0u) ? 4u : numThreads;
+        return (numThreads == 0u) ? 3u : numThreads - 1u;
     }
 
     ////////////////////////////////////////////////////////////
@@ -3916,7 +3914,7 @@ Using prestige points, TODO P0
             if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
                     {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
-                     .velocity      = sf::Vector2f{-0.25f, 0.f},
+                     .velocity      = {-0.25f, 0.f},
                      .scale         = 0.25f,
                      .accelerationY = 0.f,
                      .opacity       = 0.f,
@@ -4339,7 +4337,7 @@ Using prestige points, TODO P0
         cat.hexedTimer.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
         cat.wobbleRadians = 0.f;
 
-        spawnParticle({.position      = cat.getDrawPosition() + sf::Vector2f{0.f, 29.f},
+        spawnParticle({.position      = cat.getDrawPosition().addY(29.f),
                        .velocity      = {0.f, 0.f},
                        .scale         = 0.2f,
                        .accelerationY = -0.00015f,
@@ -4681,10 +4679,8 @@ Using prestige points, TODO P0
             }
 
             if (!cat.astroState.hasValue())
-            {
-                cat.position.x = sf::base::clamp(cat.position.x, catRadius, pt.getMapLimit() - catRadius);
-                cat.position.y = sf::base::clamp(cat.position.y, catRadius, boundaries.y - catRadius);
-            }
+                cat.position = cat.position.componentWiseClamp({catRadius, catRadius},
+                                                               {pt.getMapLimit() - catRadius, boundaries.y - catRadius});
 
             const auto maxCooldown  = pt.getComputedCooldownByCatType(cat.type);
             const auto range        = pt.getComputedRangeByCatType(cat.type);
@@ -6208,7 +6204,7 @@ Using prestige points, TODO P0
 
                 // Name text
                 textNameBuffer.setString(catNameBuffer);
-                textNameBuffer.position = cat.position + sf::Vector2f{0.f, 48.f};
+                textNameBuffer.position = cat.position.addY(48.f);
                 textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
                 textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f};
                 textNameBuffer.setOutlineColor(textOutlineColor);
@@ -6220,7 +6216,7 @@ Using prestige points, TODO P0
                     actionString += " (x" + std::to_string(pt.mouseCatCombo + 1) + ")";
 
                 textStatusBuffer.setString(actionString);
-                textStatusBuffer.position = cat.position + sf::Vector2f{0.f, 68.f};
+                textStatusBuffer.position = cat.position.addY(68.f);
                 textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
                 textStatusBuffer.setFillColor(sf::Color::White);
                 textStatusBuffer.setOutlineColor(textOutlineColor);
@@ -6235,7 +6231,7 @@ Using prestige points, TODO P0
                     std::sprintf(moneyFmtBuffer, "$%s", toStringWithSeparators(cat.moneyEarned));
 
                     textMoneyBuffer.setString(moneyFmtBuffer);
-                    textMoneyBuffer.position = cat.position + sf::Vector2f{0.f, 84.f};
+                    textMoneyBuffer.position = cat.position.addY(84.f);
                     textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
                     textMoneyBuffer.setOutlineColor(textOutlineColor);
                     cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
@@ -6243,16 +6239,17 @@ Using prestige points, TODO P0
                     catTextDrawableBatch.add(textMoneyBuffer);
                 }
 
-                catTextDrawableBatch.add(
-                    sf::RectangleShapeData{.position = {(cat.moneyEarned != 0u ? textMoneyBuffer.getBottomCenter()
-                                                                               : textStatusBuffer.getBottomCenter()) +
-                                                        sf::Vector2f{0.f, 2.f}},
-                                           .origin   = {32.f, 0.f},
-                                           .outlineTextureRect = txrWhiteDot,
-                                           .fillColor          = sf::Color::White.withAlpha(128u),
-                                           .outlineColor       = textOutlineColor,
-                                           .outlineThickness   = 1.f,
-                                           .size               = {cat.cooldown.value / maxCooldown * 64.f, 3.f}});
+                catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
+                    .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
+                    .origin             = {32.f, 0.f},
+                    .outlineTextureRect = txrWhiteDot,
+                    .fillColor          = sf::Color::White.withAlpha(128u),
+                    .outlineColor       = textOutlineColor,
+                    .outlineThickness   = 1.f,
+                    .size             = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, FLT_MAX),
+                    .cornerRadius     = 1.f,
+                    .cornerPointCount = 8u,
+                });
             }
         };
     }
@@ -6316,7 +6313,7 @@ Using prestige points, TODO P0
             });
 
             textNameBuffer.setString(shrineNames[asIdx(shrine.type)]);
-            textNameBuffer.position = shrine.position + sf::Vector2f{0.f, 48.f};
+            textNameBuffer.position = shrine.position.addY(48.f);
             textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
             textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * invDeathProgress;
             textNameBuffer.setOutlineColor(textOutlineColor);
@@ -6339,7 +6336,7 @@ Using prestige points, TODO P0
                 textStatusBuffer.setString("Inactive");
             }
 
-            textStatusBuffer.position = shrine.position + sf::Vector2f{0.f, 68.f};
+            textStatusBuffer.position = shrine.position.addY(68.f);
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
             textStatusBuffer.setOutlineColor(textOutlineColor);
             shrine.textStatusShakeEffect.applyToText(textStatusBuffer);
@@ -6640,7 +6637,7 @@ Using prestige points, TODO P0
                                  .textureRect = txTipByte.getRect(),
                                  .color       = sf::Color::White.withAlpha(alpha)};
 
-        tipByteSprite.setCenter(tipSprite.getCenterRight() + sf::Vector2f{-40.f, 0.f});
+        tipByteSprite.setCenter(tipSprite.getCenterRight().addY(-40.f));
         getWindow().draw(tipByteSprite, txTipByte);
 
         tipText.setTopLeft(tipSprite.getTopLeft() + sf::Vector2f{45.f, 65.f});
@@ -6740,11 +6737,7 @@ Using prestige points, TODO P0
         };
 
         const unsigned int nWorkers = threadPool.getWorkerCount();
-        std::latch latch{nWorkers};
-
-        sweepAndPrune.forEachUniqueIndexPair(nWorkers, latch, threadPool, func);
-
-        latch.wait();
+        sweepAndPrune.forEachUniqueIndexPair(nWorkers, threadPool, func);
     }
 
     ////////////////////////////////////////////////////////////
@@ -6948,7 +6941,10 @@ Using prestige points, TODO P0
         const float fixedBgX = 2100.f * sf::base::fmod(fixedBgSlide, 3.f);
         window.setView(nonScaledHUDView);
         window.draw(txFixedBg,
-                    {.position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f}, .scale = {ratio, ratio}},
+                    {
+                        .position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f},
+                        .scale    = {ratio, ratio},
+                    },
                     {.shader = &shader});
     }
 
@@ -6978,7 +6974,7 @@ Using prestige points, TODO P0
             playSound(sounds.coin, /* maxOverlap */ 64);
 
             spawnSpentCoinParticle(
-                {.position      = moneyText.getCenterRight() + sf::Vector2f{0.f, rng.getF(-12.f, 12.f)},
+                {.position      = moneyText.getCenterRight().addY(rng.getF(-12.f, 12.f)),
                  .velocity      = sf::Vector2f{3.f, 0.f},
                  .scale         = 0.35f,
                  .accelerationY = 0.f,

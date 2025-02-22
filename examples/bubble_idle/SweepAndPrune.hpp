@@ -9,6 +9,7 @@
 
 #include <cassert>
 
+
 class SweepAndPrune
 {
 private:
@@ -22,64 +23,79 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    void forEachUniqueIndexPair(const unsigned int nWorkers, std::latch& latch, auto& pool, auto& func)
+    void forEachUniqueIndexPair(const unsigned int nWorkers, auto& pool, auto& func)
     {
         const sf::base::SizeT numObjects = m_aabbs.size();
+
         if (numObjects < 2)
+            return;
+
+        // Compute a chunk size for dividing the outer loop among tasks.
+        const sf::base::SizeT chunkSize = (numObjects + nWorkers - 1) / nWorkers;
+
+        const auto processChunk = [this, numObjects, &func](sf::base::SizeT start, sf::base::SizeT end)
         {
-            latch.count_down(nWorkers);
+            for (sf::base::SizeT i = start; i < end; ++i)
+            {
+                const AABB& aabb1 = m_aabbs[i];
+
+                for (sf::base::SizeT j = i + 1; j < numObjects; ++j)
+                {
+                    const AABB& aabb2 = m_aabbs[j];
+
+                    // Early exit: since `m_aabbs` is sorted by `minX`,
+                    // if `aabb2.minX` is greater than `aabb1.maxX`, no further objects will overlap on the x-axis.
+                    if (aabb2.minX > aabb1.maxX)
+                        break;
+
+                    // Since the x intervals overlap, check the y intervals.
+                    if (aabb1.minY <= aabb2.maxY && aabb1.maxY >= aabb2.minY)
+                    {
+                        // Call the user-supplied function with the indices in sorted order.
+                        func(sf::base::min(aabb1.objIdx, aabb2.objIdx), sf::base::max(aabb1.objIdx, aabb2.objIdx));
+                    }
+                }
+            }
+        };
+
+        // If there's only one worker, process synchronously.
+        if (nWorkers <= 1)
+        {
+            processChunk(0u, numObjects);
             return;
         }
 
-        // Compute a chunk size for dividing the outer loop among tasks.
-        // (Note: Some chunks will have more work than others, since early exits in the inner loop
-        // mean that iterations with low 'i' do more work. For more even load balancing,
-        // consider dynamic task scheduling or a work-stealing scheduler.)
-        const sf::base::SizeT chunkSize = (numObjects + nWorkers - 1) / nWorkers;
+        // Initialize latch for the asynchronous tasks only.
+        std::latch latch{nWorkers - 1u};
 
-        for (unsigned int iWorker = 0u; iWorker < nWorkers; ++iWorker)
+        // Process the first chunk on the main thread.
         {
-            // Calculate the start and end indices for this chunk.
+            const sf::base::SizeT start = 0;
+            const sf::base::SizeT end   = sf::base::min(chunkSize, numObjects);
+            processChunk(start, end);
+        }
+
+        // Launch asynchronous tasks for remaining chunks.
+        for (unsigned int iWorker = 1u; iWorker < nWorkers; ++iWorker)
+        {
             const sf::base::SizeT start = iWorker * chunkSize;
-            const sf::base::SizeT end   = sf::base::min((iWorker + 1) * chunkSize, numObjects);
+            const sf::base::SizeT end   = sf::base::min((iWorker + 1u) * chunkSize, numObjects);
 
             if (start >= numObjects)
             {
+                // If there is no work for this task, decrement the latch for each missing task.
                 latch.count_down(nWorkers - iWorker);
                 break;
             }
 
-            // Launch an asynchronous task to process the chunk.
-            pool.post([start, end, numObjects, &func, &latch, this]
+            pool.post([start, end, &latch, processChunk]()
             {
-                // Process each object in the chunk.
-                for (sf::base::SizeT i = start; i < end; ++i)
-                {
-                    const AABB& aabb1 = m_aabbs[i];
-
-                    // Check against all objects with a greater index.
-                    for (sf::base::SizeT j = i + 1; j < numObjects; ++j)
-                    {
-                        const AABB& aabb2 = m_aabbs[j];
-
-                        // Early exit: since m_aabbs is sorted by minX,
-                        // if aabb2.minX is greater than aabb1.maxX, no further objects
-                        // will overlap on the x-axis.
-                        if (aabb2.minX > aabb1.maxX)
-                            break;
-
-                        // Since the x intervals overlap, check the y intervals.
-                        if (aabb1.minY <= aabb2.maxY && aabb1.maxY >= aabb2.minY)
-                        {
-                            // Call the user-supplied function with the indices in sorted order.
-                            func(sf::base::min(aabb1.objIdx, aabb2.objIdx), sf::base::max(aabb1.objIdx, aabb2.objIdx));
-                        }
-                    }
-                }
-
+                processChunk(start, end);
                 latch.count_down();
             });
         }
+
+        latch.wait();
     }
 
     ////////////////////////////////////////////////////////////

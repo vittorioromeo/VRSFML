@@ -12,11 +12,13 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 
 #include <fstream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 #include <cctype>
 
@@ -61,29 +63,51 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::Response(Status code, std::string message) : m_status(code), m_message(SFML_BASE_MOVE(message))
+struct Ftp::Response::Impl
+{
+    Status      status;  //!< Status code returned from the server
+    std::string message; //!< Last message received from the server
+};
+
+
+////////////////////////////////////////////////////////////
+Ftp::Response::Response(Status code, base::StringView message) : m_impl{code, message.toString<std::string>()}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
+Ftp::Response::~Response() = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::Response::Response(const Response&)                 = default;
+Ftp::Response& Ftp::Response::operator=(const Response&) = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::Response::Response(Response&&) noexcept                 = default;
+Ftp::Response& Ftp::Response::operator=(Response&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 bool Ftp::Response::isOk() const
 {
-    return static_cast<int>(m_status) < 400;
+    return static_cast<int>(m_impl->status) < 400;
 }
 
 
 ////////////////////////////////////////////////////////////
 Ftp::Response::Status Ftp::Response::getStatus() const
 {
-    return m_status;
+    return m_impl->status;
 }
 
 
 ////////////////////////////////////////////////////////////
-const std::string& Ftp::Response::getMessage() const
+base::StringView Ftp::Response::getMessage() const
 {
-    return m_message;
+    return m_impl->message;
 }
 
 
@@ -95,9 +119,24 @@ Ftp::DirectoryResponse::DirectoryResponse(const Ftp::Response& response) : Ftp::
         // Extract the directory from the server response
         const std::string::size_type begin = getMessage().find('"', 0);
         const std::string::size_type end   = getMessage().find('"', begin + 1);
-        m_directory                        = getMessage().substr(begin + 1, end - begin - 1);
+        m_directory = getMessage().substrByPosLen(begin + 1, end - begin - 1).toString<std::string>();
     }
 }
+
+
+////////////////////////////////////////////////////////////
+Ftp::DirectoryResponse::DirectoryResponse()  = default;
+Ftp::DirectoryResponse::~DirectoryResponse() = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::DirectoryResponse::DirectoryResponse(const DirectoryResponse&)                 = default;
+Ftp::DirectoryResponse& Ftp::DirectoryResponse::operator=(const DirectoryResponse&) = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::DirectoryResponse::DirectoryResponse(DirectoryResponse&&) noexcept                 = default;
+Ftp::DirectoryResponse& Ftp::DirectoryResponse::operator=(DirectoryResponse&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -108,7 +147,14 @@ const Path& Ftp::DirectoryResponse::getDirectory() const
 
 
 ////////////////////////////////////////////////////////////
-Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, const std::string& data) : Ftp::Response(response)
+struct Ftp::ListingResponse::Impl
+{
+    std::vector<std::string> listing; //!< Directory/file names extracted from the data
+};
+
+
+////////////////////////////////////////////////////////////
+Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, base::StringView data) : Ftp::Response(response)
 {
     if (isOk())
     {
@@ -116,7 +162,7 @@ Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, const std::
         std::string::size_type lastPos = 0;
         for (std::string::size_type pos = data.find("\r\n"); pos != std::string::npos; pos = data.find("\r\n", lastPos))
         {
-            m_listing.push_back(data.substr(lastPos, pos - lastPos));
+            m_impl->listing.push_back(data.substrByPosLen(lastPos, pos - lastPos).toString<std::string>());
             lastPos = pos + 2;
         }
     }
@@ -124,14 +170,36 @@ Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, const std::
 
 
 ////////////////////////////////////////////////////////////
+Ftp::ListingResponse::~ListingResponse() = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::ListingResponse::ListingResponse(const ListingResponse&)                 = default;
+Ftp::ListingResponse& Ftp::ListingResponse::operator=(const ListingResponse&) = default;
+
+
+////////////////////////////////////////////////////////////
+Ftp::ListingResponse::ListingResponse(ListingResponse&&) noexcept                 = default;
+Ftp::ListingResponse& Ftp::ListingResponse::operator=(ListingResponse&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
 base::Span<const std::string> Ftp::ListingResponse::getListing() const
 {
-    return {m_listing.data(), m_listing.size()};
+    return {m_impl->listing.data(), m_impl->listing.size()};
 }
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Ftp() : m_commandSocket(/* isBlocking */ true)
+struct Ftp::Impl
+{
+    TcpSocket   commandSocket; //!< Socket holding the control connection with the server
+    std::string receiveBuffer; //!< Received command data that is yet to be processed
+};
+
+
+////////////////////////////////////////////////////////////
+Ftp::Ftp() : m_impl{TcpSocket{/* isBlocking */ true}, ""}
 {
 }
 
@@ -147,7 +215,7 @@ Ftp::~Ftp()
 Ftp::Response Ftp::connect(IpAddress server, unsigned short port, Time timeout)
 {
     // Connect to the server
-    if (m_commandSocket.connect(server, port, timeout) != Socket::Status::Done)
+    if (m_impl->commandSocket.connect(server, port, timeout) != Socket::Status::Done)
         return Response(Response::Status::ConnectionFailed);
 
     // Get the response to the connection
@@ -163,7 +231,7 @@ Ftp::Response Ftp::login()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::login(const std::string& name, const std::string& password)
+Ftp::Response Ftp::login(base::StringView name, base::StringView password)
 {
     Response response = sendCommand("USER", name);
     if (response.isOk())
@@ -180,7 +248,7 @@ Ftp::Response Ftp::disconnect()
     Response response = sendCommand("QUIT");
     if (response.isOk())
     {
-        [[maybe_unused]] const bool rc = m_commandSocket.disconnect();
+        [[maybe_unused]] const bool rc = m_impl->commandSocket.disconnect();
         SFML_BASE_ASSERT(rc);
     }
 
@@ -203,7 +271,7 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::ListingResponse Ftp::getDirectoryListing(const std::string& directory)
+Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
     std::ostringstream directoryData;
@@ -228,7 +296,7 @@ Ftp::ListingResponse Ftp::getDirectoryListing(const std::string& directory)
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::changeDirectory(const std::string& directory)
+Ftp::Response Ftp::changeDirectory(base::StringView directory)
 {
     return sendCommand("CWD", directory);
 }
@@ -242,14 +310,14 @@ Ftp::Response Ftp::parentDirectory()
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::createDirectory(const std::string& name)
+Ftp::Response Ftp::createDirectory(base::StringView name)
 {
     return sendCommand("MKD", name);
 }
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::deleteDirectory(const std::string& name)
+Ftp::Response Ftp::deleteDirectory(base::StringView name)
 {
     return sendCommand("RMD", name);
 }
@@ -354,13 +422,23 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response Ftp::sendCommand(const std::string& command, const std::string& parameter)
+Ftp::Response Ftp::sendCommand(base::StringView command, base::StringView parameter)
 {
     // Build the command string
-    const std::string commandStr = parameter.empty() ? command + "\r\n" : command + " " + parameter + "\r\n";
+    auto commandStr = command.toString<std::string>();
+
+    if (parameter.empty())
+        commandStr += "\r\n";
+    else
+    {
+        // TODO P2: concat utility from Open Hexagon?
+        commandStr += ' ';
+        commandStr += parameter.toString<std::string>();
+        commandStr += "\r\n";
+    }
 
     // Send it to the server
-    if (m_commandSocket.send(commandStr.c_str(), commandStr.length()) != Socket::Status::Done)
+    if (m_impl->commandSocket.send(commandStr.c_str(), commandStr.length()) != Socket::Status::Done)
         return Response(Response::Status::ConnectionClosed);
 
     // Get the response
@@ -384,16 +462,16 @@ Ftp::Response Ftp::getResponse()
         char        buffer[1024];
         base::SizeT length = 0;
 
-        if (m_receiveBuffer.empty())
+        if (m_impl->receiveBuffer.empty())
         {
-            if (m_commandSocket.receive(buffer, sizeof(buffer), length) != Socket::Status::Done)
+            if (m_impl->commandSocket.receive(buffer, sizeof(buffer), length) != Socket::Status::Done)
                 return Response(Response::Status::ConnectionClosed);
         }
         else
         {
-            base::copy(m_receiveBuffer.begin(), m_receiveBuffer.end(), buffer);
-            length = m_receiveBuffer.size();
-            m_receiveBuffer.clear();
+            base::copy(m_impl->receiveBuffer.begin(), m_impl->receiveBuffer.end(), buffer);
+            length = m_impl->receiveBuffer.size();
+            m_impl->receiveBuffer.clear();
         }
 
         // There can be several lines inside the received buffer, extract them all
@@ -451,8 +529,8 @@ Ftp::Response Ftp::getResponse()
                         }
 
                         // Save the remaining data for the next time getResponse() is called
-                        m_receiveBuffer.assign(buffer + static_cast<base::SizeT>(in.tellg()),
-                                               length - static_cast<base::SizeT>(in.tellg()));
+                        m_impl->receiveBuffer.assign(buffer + static_cast<base::SizeT>(in.tellg()),
+                                                     length - static_cast<base::SizeT>(in.tellg()));
 
                         // Return the response code and message
                         return Response(static_cast<Response::Status>(code), message);
@@ -523,11 +601,11 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
     if (response.isOk())
     {
         // Extract the connection address and port from the response
-        const std::string::size_type begin = response.getMessage().find_first_of("0123456789");
+        const std::string::size_type begin = response.getMessage().findFirstOf("0123456789");
         if (begin != std::string::npos)
         {
             base::U8    data[6] = {0, 0, 0, 0, 0, 0};
-            std::string str     = response.getMessage().substr(begin);
+            auto        str     = response.getMessage().substrByPosLen(begin).toString<std::string>();
             base::SizeT index   = 0;
             for (unsigned char& datum : data)
             {
