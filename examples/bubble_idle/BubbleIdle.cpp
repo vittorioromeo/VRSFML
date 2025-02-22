@@ -7704,8 +7704,7 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    vec2 texCoord = sf_v_texCoord;
-    vec4 texColor = texture(sf_u_texture, texCoord);
+    vec4 texColor = texture(sf_u_texture, sf_v_texCoord);
 
     const vec2 flagTarget = vec2(1.0/255.0);
     const vec2 epsilon = vec2(0.001);
