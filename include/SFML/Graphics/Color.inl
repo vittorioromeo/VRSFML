@@ -128,6 +128,7 @@ constexpr Color Color::withHueMod(const float hueMod) const
     return Color::fromHSLA(hsl, a);
 }
 
+
 #define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
     (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
 
@@ -160,6 +161,7 @@ constexpr Color Color::fromVec4(const TVec4& vec)
 }
 
 #undef SFML_PRIV_CLAMP_BY_VALUE
+
 
 ////////////////////////////////////////////////////////////
 template <typename TVec4>

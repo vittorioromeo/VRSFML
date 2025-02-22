@@ -362,8 +362,7 @@ FloatRect Text::getGlobalBounds() const
 void Text::draw(RenderTarget& target, RenderStates states) const
 {
     states.transform *= getTransform();
-    states.texture        = &m_font->getTexture();
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &m_font->getTexture();
 
     const auto [vertexData, vertexSize] = getVertices();
 
