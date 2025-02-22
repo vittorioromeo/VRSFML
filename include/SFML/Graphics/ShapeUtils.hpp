@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -19,7 +20,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes the angular step between vertices.
+///
+/// Given the number of points for a circle or ellipse, this function
+/// calculates the angle (in radians) between consecutive vertices.
+///
+/// \param pointCount Number of points/vertices.
+///
+/// \return The angular step in radians.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computeAngleStep(
@@ -29,7 +37,18 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes a point on an ellipse using a precomputed angle step.
+///
+/// This function calculates the 2D position of a vertex on an ellipse
+/// given its horizontal and vertical radii. It uses a precomputed angular
+/// step multiplied by the vertex index.
+///
+/// \param index The index of the vertex.
+/// \param angleStep The angular increment between vertices (in radians).
+/// \param hRadius The horizontal radius of the ellipse.
+/// \param vRadius The vertical radius of the ellipse.
+///
+/// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePointFromAngleStep(
@@ -40,14 +59,24 @@ namespace sf
 {
     const auto [sine, cosine] = base::fastSinCos(static_cast<float>(index) * angleStep);
 
-    SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
-    SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+    SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
     return {hRadius * (1.f + sine), vRadius * (1.f + cosine)};
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes a point on an ellipse.
+///
+/// Given the vertex index and total number of points defining the ellipse,
+/// this function computes the vertex position by first calculating the angle step.
+///
+/// \param index The index of the vertex.
+/// \param pointCount The total number of vertices.
+/// \param hRadius The horizontal radius of the ellipse.
+/// \param vRadius The vertical radius of the ellipse.
+///
+/// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePoint(
@@ -60,7 +89,16 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes a point on a circle using a precomputed angle step.
+///
+/// This function calculates the position of a vertex on a circle, reusing the
+/// ellipse computation by passing the same value for both radii.
+///
+/// \param index The index of the vertex.
+/// \param angleStep The angular increment between vertices (in radians).
+/// \param radius The radius of the circle.
+///
+/// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePointFromAngleStep(
@@ -72,7 +110,16 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes a point on a circle.
+///
+/// Given the vertex index and total number of vertices for a circle,
+/// this function computes the position of the vertex.
+///
+/// \param index The index of the vertex.
+/// \param pointCount The total number of vertices.
+/// \param radius The radius of the circle.
+///
+/// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePoint(
@@ -127,7 +174,15 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief Compute the normal of a segment
+/// \brief Computes the normalized perpendicular of a segment.
+///
+/// Given two points defining a line segment, this function calculates the unit vector
+/// perpendicular to that segment.
+///
+/// \param p1 The starting point of the segment.
+/// \param p2 The ending point of the segment.
+///
+/// \return The normal vector (normalized).
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] inline Vector2f computeSegmentNormal(const Vector2f p1, const Vector2f p2) noexcept
@@ -178,7 +233,15 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Computes the bounding rectangle of a range of vertices.
+///
+/// This function iterates through a sequence of vertices and determines the
+/// smallest axis-aligned rectangle that encloses all the vertices.
+///
+/// \param data Pointer to the first vertex.
+/// \param nVertices The number of vertices in the range.
+///
+/// \return A rect representing the bounding rectangle.
 ///
 ////////////////////////////////////////////////////////////
 inline constexpr void updateOutlineImpl(const float       outlineThickness,

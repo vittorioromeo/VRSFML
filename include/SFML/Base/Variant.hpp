@@ -17,6 +17,7 @@
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 
+
 namespace sfvr::impl
 {
 using sf::base::SizeT;
