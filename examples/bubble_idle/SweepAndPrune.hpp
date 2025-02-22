@@ -85,7 +85,7 @@ public:
             if (start >= numObjects)
             {
                 // If there is no work for this task, decrement the latch for each missing task.
-                latch.count_down(nWorkers - iWorker);
+                latch.count_down(static_cast<std::ptrdiff_t>(nWorkers - iWorker));
                 break;
             }
 
