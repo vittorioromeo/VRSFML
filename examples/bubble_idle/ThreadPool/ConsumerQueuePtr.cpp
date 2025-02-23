@@ -4,7 +4,8 @@
 
 #include "ConsumerQueuePtr.hpp"
 
-#include "Types.hpp"
+#include "TaskQueue.hpp"
+#include "TaskQueueConsumerToken.hpp"
 
 #include "SFML/Base/Assert.hpp"
 
