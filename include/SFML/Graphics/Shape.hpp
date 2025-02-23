@@ -253,7 +253,7 @@ protected:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void updateImplFromVerticesPositions(base::SizeT pointCount, bool mustUpdateBounds);
+    void updateImplFromVerticesPositions(base::SizeT pointCount);
 
 private:
     friend RenderTarget;
@@ -289,7 +289,7 @@ private:
     /// \brief Update the outline vertices' position
     ///
     ////////////////////////////////////////////////////////////
-    void updateOutline(bool mustUpdateBounds);
+    void updateOutline();
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the outline vertices' color
