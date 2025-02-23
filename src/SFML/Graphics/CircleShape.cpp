@@ -78,6 +78,8 @@ Vector2f CircleShape::getGeometricCenter() const
 ////////////////////////////////////////////////////////////
 void CircleShape::updateCircleGeometry()
 {
+    // TODO P0: replace with updateFromFunc
+
     if (!Shape::updateImplResizeVerticesVector(m_pointCount)) [[unlikely]]
         return;
 
