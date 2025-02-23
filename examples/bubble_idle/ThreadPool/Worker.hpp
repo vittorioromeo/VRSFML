@@ -5,23 +5,21 @@
 
 #pragma once
 
-#include "ConsumerQueuePtr.hpp"
-#include "MovableAtomic.hpp"
-
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
-
-#include <atomic>
-#include <thread>
 
 
 namespace hg::ThreadPool
 {
+class TaskQueue;
+
 ////////////////////////////////////////////////////////////
 /// \brief Wraps an `std::thread`, `ConsumerQueuePtr` and atomic control
 /// variables.
 class [[nodiscard]] Worker
 {
 private:
+    ////////////////////////////////////////////////////////////
     enum class [[nodiscard]] State : sf::base::U8
     {
         // Initial state of the worker.
@@ -36,27 +34,20 @@ private:
         Stopped = 2u,
     };
 
-    /// \brief Worker thread.
-    std::thread m_thread;
-
-    /// \brief Pointer to queue + consumer token.
-    ConsumerQueuePtr m_queue;
-
-    /// \brief State of the worker, controlled both by the pool and internally.
-    Utils::MovableAtomic<State> m_state;
-
-    /// \brief Signals when the worker is done processing tasks in blocking
-    /// mode. Controlled internally, checked by the pool to start posting dummy
-    /// tasks.
-    Utils::MovableAtomic<bool> m_doneBlockingProcessing;
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    sf::base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 
 public:
+    ////////////////////////////////////////////////////////////
     Worker(TaskQueue& queue) noexcept;
+    ~Worker();
 
+    ////////////////////////////////////////////////////////////
     Worker(Worker&&) noexcept;
     Worker& operator=(Worker&&) noexcept;
 
-    void start(std::atomic<unsigned int>& remainingInits);
+    void start(void* remainingInitsPtr); // points to atomic uint
 
     /// \brief Sets the running flag to false, preventing the worker to
     /// accept tasks.
