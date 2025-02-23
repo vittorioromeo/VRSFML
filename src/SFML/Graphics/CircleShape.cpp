@@ -78,18 +78,11 @@ Vector2f CircleShape::getGeometricCenter() const
 ////////////////////////////////////////////////////////////
 void CircleShape::updateCircleGeometry()
 {
-    // TODO P0: replace with updateFromFunc
-
-    if (!Shape::updateImplResizeVerticesVector(m_pointCount)) [[unlikely]]
-        return;
-
-    // Position
     const float angleStep = sf::base::tau / static_cast<float>(m_pointCount);
 
-    for (unsigned int i = 0u; i < m_pointCount; ++i)
-        m_vertices[i + 1].position = computeCirclePointFromAngleStep(i, angleStep, m_radius);
-
-    Shape::updateImplFromVerticesPositions(m_pointCount);
+    updateFromFunc([&](const base::SizeT i) __attribute__((always_inline, flatten))
+    { return computeCirclePointFromAngleStep(i, angleStep, m_radius); },
+                   m_pointCount);
 }
 
 } // namespace sf
