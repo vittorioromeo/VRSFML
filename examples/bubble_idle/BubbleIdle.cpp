@@ -299,7 +299,12 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Shader with hue support
-    sf::Shader shader{sf::Shader::loadFromMemory(sf::GraphicsContext::getBuiltInShaderVertexSrc(), fragmentSrc).value()};
+    sf::Shader shader{[]
+    {
+        auto result = sf::Shader::loadFromMemory(sf::GraphicsContext::getBuiltInShaderVertexSrc(), fragmentSrc).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
 
     ////////////////////////////////////////////////////////////
     // Context settings
@@ -7803,6 +7808,7 @@ int main()
 }
 
 // TODO IDEAS:
+// - reduce size of game textures and try to reduce atlas size
 // - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // - bubble collisions with wind enabled seem fucked, is it a data race?
 // - crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x multiplier with corrupted zalgo names

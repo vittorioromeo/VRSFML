@@ -18,6 +18,7 @@
 #include "SFML/Window/iOS/ClipboardImpl.hpp"
 #elif defined(SFML_SYSTEM_EMSCRIPTEN) || defined(SFML_SYSTEM_ANDROID) || defined(SFML_USE_DRM)
 #include "SFML/Window/Stub/StubClipboardImpl.hpp"
+// TODO P1: emscripten https://github.com/Armchair-Software/emscripten-browser-clipboard
 namespace sf::priv
 {
 using ClipboardImpl = StubClipboardImpl;

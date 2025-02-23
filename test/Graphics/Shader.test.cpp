@@ -17,6 +17,7 @@ namespace
 constexpr auto vertexSource = R"glsl(
 
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
+layout(location = 1) uniform sampler2D sf_u_texture;
 
 layout(location = 3) uniform vec2 storm_position;
 layout(location = 4) uniform float storm_total_radius;
@@ -43,7 +44,7 @@ void main()
     }
 
     gl_Position   = sf_u_mvpMatrix * vec4(newPosition, 0.0, 1.0);
-    sf_v_texCoord = sf_a_texCoord;
+    sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
     sf_v_color    = sf_a_color;
 }
 

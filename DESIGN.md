@@ -62,13 +62,14 @@
     - This fork provides built-in shaders that use the following API:
         ```glsl
         layout(location = 0) uniform mat4 sf_u_mvpMatrix;
+        layout(location = 1) uniform sampler2D sf_u_texture;
 
         layout(location = 0) in vec2 sf_a_position;
         layout(location = 1) in vec4 sf_a_color;
-        layout(location = 2) in vec2 sf_a_texCoord;
+        layout(location = 2) in vec2 sf_a_texCoord; // non-normalized
 
-        layout(location = 0) out vec4 sf_v_color;
-        layout(location = 1) out vec2 sf_v_texCoord;
+        out vec4 sf_v_color;
+        out vec2 sf_v_texCoord; // normalized
         ```
 
 <br>

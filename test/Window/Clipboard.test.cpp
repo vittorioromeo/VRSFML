@@ -11,6 +11,7 @@
 #include <string>
 
 
+#ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: clipboard not implemented for emscripten
 TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
 {
     // Capture current clipboard state
@@ -50,3 +51,4 @@ TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
     // by having an open window for which events are being handled.
     CHECK(sf::Clipboard::getString() == currentClipboard);
 }
+#endif
