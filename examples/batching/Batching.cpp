@@ -310,6 +310,9 @@ int main()
 
                 circleShape.position = sprite.position;
                 circleShape.rotation = sprite.rotation;
+
+                if(getRndFloat(0, 100) < 1)
+                circleShape.setOutlineThickness(getRndFloat(1, 20));
             }
 
             samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);

@@ -115,7 +115,9 @@ void Shape::setOutlineThickness(float thickness)
     const base::SizeT pointCount = m_verticesEndIndex - 2u;
 
     m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
-    updateImplFromVerticesPositions(pointCount);
+
+    updateOutline();
+    updateOutlineTexCoords();
 }
 
 
@@ -157,49 +159,7 @@ FloatRect Shape::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 {
-    if (!updateImplResizeVerticesVector(pointCount))
-        return;
-
-    // Position
-    for (base::SizeT i = 0; i < pointCount; ++i)
-        m_vertices[i + 1].position = points[i];
-
-    updateImplFromVerticesPositions(pointCount);
-}
-
-
-////////////////////////////////////////////////////////////
-bool Shape::updateImplResizeVerticesVector(const base::SizeT pointCount)
-{
-    if (pointCount < 3u)
-    {
-        m_vertices.clear();
-        m_verticesEndIndex = 0;
-        return false;
-    }
-
-    m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
-    m_verticesEndIndex = pointCount + 2u;
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////
-void Shape::updateImplFromVerticesPositions(const base::SizeT pointCount)
-{
-    m_vertices[pointCount + 1].position = m_vertices[1].position; // repeated first point
-
-    // Update the bounding rectangle
-    m_insideBounds = getVertexRangeBounds(m_vertices.data() + 1, m_verticesEndIndex - 1u); // skip center
-
-    // Compute the center and make it the first vertex
-    m_vertices[0].position = m_insideBounds.getCenter();
-
-    // Updates
-    updateFillColors();
-    updateTexCoords();
-    updateOutline();
-    updateOutlineTexCoords();
+    updateFromFunc([&points](const base::SizeT i) __attribute__((always_inline, flatten)) { return points[i]; }, pointCount);
 }
 
 
