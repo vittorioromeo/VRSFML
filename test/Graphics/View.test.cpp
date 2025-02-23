@@ -7,6 +7,7 @@
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::View")
 {
     SECTION("Type traits")
