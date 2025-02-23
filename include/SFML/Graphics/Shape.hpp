@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
+#include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -241,19 +242,45 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Vector2f* points, base::SizeT pointCount); // TODO P1: make public and also add updateFromFunc?
+    void update(const sf::Vector2f* points, base::SizeT pointCount); // TODO P1: make public?
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Recompute the internal geometry of the shape
+    ///
+    /// This function must be called by the derived class every time
+    /// the shape's points change (i.e. the result of either
+    /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateImplResizeVerticesVector(base::SizeT pointCount);
+    void updateFromFunc(auto&& getPointFunc, const base::SizeT pointCount) // TODO P1: make public?
+    {
+        if (pointCount < 3u)
+        {
+            m_vertices.clear();
+            m_verticesEndIndex = 0;
+            return;
+        }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void updateImplFromVerticesPositions(base::SizeT pointCount);
+        m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
+        m_verticesEndIndex = pointCount + 2u;
+
+        for (base::SizeT i = 0u; i < pointCount; ++i)
+            m_vertices[i + 1u].position = getPointFunc(i);
+
+        m_vertices[pointCount + 1u].position = m_vertices[1].position; // repeated first point
+
+        // Update the bounding rectangle
+        m_insideBounds = getVertexRangeBounds(m_vertices.data() + 1u, m_verticesEndIndex - 1u); // skip center
+
+        // Compute the center and make it the first vertex
+        m_vertices[0].position = m_insideBounds.getCenter();
+
+        // Updates
+        updateFillColors();
+        updateTexCoords();
+        updateOutline();
+        updateOutlineTexCoords();
+    }
 
 private:
     friend RenderTarget;
@@ -306,13 +333,11 @@ private:
     Color     m_outlineColor{Color::White}; //!< Outline color
     float     m_outlineThickness{};         //!< Thickness of the shape's outline
 
-protected:
     base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
+    base::SizeT m_verticesEndIndex = 0u;    //!< Index where the fill vertices end and outline vertices begin
 
-private:
-    base::SizeT m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
-    FloatRect   m_insideBounds;          //!< Bounding rectangle of the inside (fill)
-    FloatRect   m_bounds;                //!< Bounding rectangle of the whole shape (outline + fill)
+    FloatRect m_insideBounds; //!< Bounding rectangle of the inside (fill)
+    FloatRect m_bounds;       //!< Bounding rectangle of the whole shape (outline + fill)
 };
 
 } // namespace sf
