@@ -19,12 +19,10 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/System/Vector2.hpp"
+
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Assume.hpp"
-#include "SFML/Base/Builtins/Unreachable.hpp"
-#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
 
 
 namespace sf::priv
@@ -169,108 +167,95 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
 
     // TODO P1: improve, also add to RenderTarget
 
-    const base::SizeT vertexCount   = nPoints + 2u; // + 2 for center and repeated first point
-    const IndexType   nextFillIndex = m_storage.getNumVertices();
+    const base::SizeT fillVertexCount = nPoints + 2u;                  // +2 for center and repeated first point
+    const IndexType firstFillVertexIndex = m_storage.getNumVertices(); // index of 1st fill vertex (center of the triangle fan)
 
-    Vertex* vertices = m_storage.reserveMoreVertices(vertexCount);
-    m_storage.commitMoreVertices(vertexCount);
-
-    //
-    // Update vertex positions
-    for (unsigned int i = 0u; i < nPoints; ++i)
-        vertices[1u + i].position = transform.transformPoint(pointFn(i));
-
-    vertices[1u + nPoints].position = vertices[1].position;
+    Vertex* fillVertices = m_storage.reserveMoreVertices(fillVertexCount);
+    m_storage.commitMoreVertices(fillVertexCount);
 
     //
-    // Update the bounding rectangle
-    vertices[0]             = vertices[1]; // so that the result of getBounds() is correct
-    const auto insideBounds = getVertexRangeBounds(vertices, vertexCount);
+    // Update fill vertex positions and compute inside bounds
+    fillVertices[1].position        = transform.transformPoint(pointFn(0u)); // first point
+    sf::Vector2f fillBoundsPosition = fillVertices[1].position;              // left and top
 
-    // Compute the center and make it the first vertex
-    vertices[0].position = insideBounds.getCenter();
+    float fillBoundsMaxX = fillVertices[1].position.x; // right
+    float fillBoundsMaxY = fillVertices[1].position.y; // bottom
 
-    //
-    // Update fill color
+    for (unsigned int i = 1u; i < nPoints; ++i)
     {
-        const auto* end = vertices + vertexCount;
-        for (Vertex* vertex = vertices; vertex != end; ++vertex)
-            vertex->color = descriptor.fillColor;
+        Vertex& v = fillVertices[1u + i];
+
+        v.position = transform.transformPoint(pointFn(i));
+
+        fillBoundsPosition.x = base::min(fillBoundsPosition.x, v.position.x);
+        fillBoundsPosition.y = base::min(fillBoundsPosition.y, v.position.y);
+
+        fillBoundsMaxX = base::max(fillBoundsMaxX, v.position.x);
+        fillBoundsMaxY = base::max(fillBoundsMaxY, v.position.y);
     }
 
-    //
-    // Update tex coords
-    {
-        // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
-        const Vector2f safeInsideSize(insideBounds.size.x > 0 ? insideBounds.size.x : 1.f,
-                                      insideBounds.size.y > 0 ? insideBounds.size.y : 1.f);
+    const sf::Vector2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
 
-        const auto* end = vertices + vertexCount;
-        for (Vertex* vertex = vertices; vertex != end; ++vertex)
+    fillVertices[0].position            = fillBoundsPosition + fillBoundsSize / 2.f; // center
+    fillVertices[1u + nPoints].position = fillVertices[1].position;                  // repeated first point
+
+    //
+    // Update fill color and tex coords (if the shape's fill is visible)
+    if (fillBoundsSize.x > 0.f && fillBoundsSize.y > 0.f) [[likely]]
+    {
+        const Vertex* end = fillVertices + fillVertexCount;
+        for (Vertex* vertex = fillVertices; vertex != end; ++vertex)
         {
-            const Vector2f ratio = (vertex->position - insideBounds.position).componentWiseDiv(safeInsideSize);
+            vertex->color = descriptor.fillColor;
+
+            const Vector2f ratio = (vertex->position - fillBoundsPosition).componentWiseDiv(fillBoundsSize);
             vertex->texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratio);
         }
     }
 
-    const base::SizeT indexCount = 3u * (vertexCount - 2u);
+    const base::SizeT fillIndexCount = 3u * (fillVertexCount - 2u);
 
-    auto* indexPtr = m_storage.reserveMoreIndices(indexCount);
+    IndexType* indexPtr = m_storage.reserveMoreIndices(fillIndexCount);
 
-    for (IndexType i = 1u; i < vertexCount - 1; ++i)
-        appendTriangleFanIndices(indexPtr, nextFillIndex, i);
+    for (IndexType i = 1u; i < fillVertexCount - 1u; ++i)
+        appendTriangleFanIndices(indexPtr, firstFillVertexIndex, i);
 
-    m_storage.commitMoreIndices(indexCount);
+    m_storage.commitMoreIndices(fillIndexCount);
 
     //
     // Update outline if needed
     if (descriptor.outlineThickness == 0.f)
         return;
 
+    const base::SizeT outlineVertexCount = (nPoints + 1u) * 2u;
+
+    const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
+
+    Vertex* outlineVertices = m_storage.reserveMoreVertices(outlineVertexCount);
+    m_storage.commitMoreVertices(outlineVertexCount);
+
+    // Cannot use `vertices` here as the earlier reserve may have invalidated the pointer
+    updateOutlineImpl(descriptor.outlineThickness, outlineVertices - fillVertexCount, outlineVertices, nPoints);
+
+    //
+    // Update outline colors and outline tex coords
     {
-        if constexpr (SFML_BASE_IS_SAME(decltype(m_storage), CPUStorage))
-        {
-            SFML_BASE_ASSERT(m_storage.vertices.data() + nextFillIndex == vertices);
-        }
-
-        const base::SizeT count        = vertexCount - 2u;
-        const base::SizeT outlineCount = (count + 1u) * 2u;
-
-        const IndexType nextOutlineIndex = m_storage.getNumVertices();
-
-        Vertex* outlineVertices = m_storage.reserveMoreVertices(outlineCount);
-        m_storage.commitMoreVertices(outlineCount);
-
-        if constexpr (SFML_BASE_IS_SAME(decltype(m_storage), CPUStorage))
-        {
-            SFML_BASE_ASSERT(m_storage.vertices.data() + nextFillIndex == outlineVertices - vertexCount);
-        }
-
-        updateOutlineImpl(descriptor.outlineThickness, vertexCount, outlineVertices - vertexCount, count);
-
-        //
-        // Update outline colors
-        {
-            const auto* end = outlineVertices + outlineCount;
-            for (Vertex* vertex = outlineVertices; vertex != end; ++vertex)
-                vertex->color = descriptor.outlineColor;
-        }
-
-        //
-        // Update outline tex coords
-        const auto* end = outlineVertices + outlineCount;
+        const Vertex* end = outlineVertices + outlineVertexCount;
         for (Vertex* vertex = outlineVertices; vertex != end; ++vertex)
-            vertex->texCoords = descriptor.outlineTextureRect.position;
-
-        const base::SizeT outlineIndexCount = 3u * (outlineCount - 2u);
-
-        auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
-
-        for (IndexType i = 0u; i < outlineCount - 2; ++i)
-            appendTriangleIndices(outlineIndexPtr, nextOutlineIndex + i);
-
-        m_storage.commitMoreIndices(outlineIndexCount);
+        {
+            vertex->color     = descriptor.outlineColor;
+            vertex->texCoords = descriptor.outlineTextureRect.position; // TODO P1: review this logic
+        }
     }
+
+    const base::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u);
+
+    auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
+
+    for (IndexType i = 0u; i < outlineVertexCount - 2; ++i)
+        appendTriangleIndices(outlineIndexPtr, firstOutlineVertexIndex + i);
+
+    m_storage.commitMoreIndices(outlineIndexCount);
 }
 
 
