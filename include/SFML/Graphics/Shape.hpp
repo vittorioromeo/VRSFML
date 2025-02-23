@@ -241,7 +241,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Vector2f* points, base::SizeT pointCount);
+    void update(const sf::Vector2f* points, base::SizeT pointCount); // TODO P1: make public and also add updateFromFunc?
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
