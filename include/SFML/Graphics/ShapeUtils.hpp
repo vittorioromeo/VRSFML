@@ -10,7 +10,9 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/Builtins/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
@@ -206,13 +208,20 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief Get bounds of a vertex range
+/// \brief Computes the bounding rectangle of a range of vertices.
+///
+/// This function iterates through a sequence of vertices and determines the
+/// smallest axis-aligned rectangle that encloses all the vertices.
+///
+/// \param data Pointer to the first vertex.
+/// \param nVertices The number of vertices in the range.
+///
+/// \return A rect representing the bounding rectangle.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline constexpr FloatRect getVertexRangeBounds(const Vertex* data, const base::SizeT nVertices) noexcept
 {
-    if (nVertices == 0u)
-        return {};
+    SFML_BASE_ASSERT(nVertices > 0u);
 
     float left   = data[0].position.x;
     float top    = data[0].position.y;
@@ -233,25 +242,16 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-/// \brief Computes the bounding rectangle of a range of vertices.
-///
-/// This function iterates through a sequence of vertices and determines the
-/// smallest axis-aligned rectangle that encloses all the vertices.
-///
-/// \param data Pointer to the first vertex.
-/// \param nVertices The number of vertices in the range.
-///
-/// \return A rect representing the bounding rectangle.
+/// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-inline constexpr void updateOutlineImpl(const float       outlineThickness,
-                                        const base::SizeT verticesEndIndex,
-                                        Vertex*           vertices,
-                                        const base::SizeT count)
+inline constexpr void updateOutlineImpl(const float                      outlineThickness,
+                                        const Vertex* SFML_BASE_RESTRICT fillVertices,
+                                        Vertex* SFML_BASE_RESTRICT       outlineVertices,
+                                        const base::SizeT                pointCount) noexcept
 {
     // Cache the center (`vertices[0]` is the center of the shape)
-    const Vector2f    center      = vertices[0].position;
-    const base::SizeT outlineBase = verticesEndIndex;
+    const Vector2f center = fillVertices[0].position;
 
     // Lambda that computes and writes the outline for a single segment
     // - `i` is the logical index (used to compute the output position)
@@ -273,30 +273,30 @@ inline constexpr void updateOutlineImpl(const float       outlineThickness,
         const float factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
 
         const Vector2f    normal = (n1 + n2) / factor;
-        const base::SizeT outIdx = outlineBase + (i << 1u); // Shift is equivalent to `i * 2`
+        const base::SizeT outIdx = i << 1u; // Equivalent to `i * 2`
 
-        vertices[outIdx + 0u].position = p1;
-        vertices[outIdx + 1u].position = p1 + normal * outlineThickness;
+        outlineVertices[outIdx + 0u].position = p1;
+        outlineVertices[outIdx + 1u].position = p1 + normal * outlineThickness;
     };
 
     // Handle the first segment (wrap-around):
     // `p0` is from the last vertex (wrap-around), `p1` is the first point (after center),
     // and `p2` is the second point.
-    updateSegment(0u, vertices[count].position, vertices[1].position, vertices[2].position);
+    updateSegment(0u, fillVertices[pointCount].position, fillVertices[1].position, fillVertices[2].position);
 
     // Process the remaining segments.
-    for (base::SizeT i = 1; i < count; ++i)
+    for (base::SizeT i = 1; i < pointCount; ++i)
     {
         // For `i >= 1`, the three points are consecutive:
         // `p0` is `vertices[i]`, `p1` is `vertices[i + 1]`, `p2` is `vertices[i + 2]`.
-        updateSegment(i, vertices[i].position, vertices[i + 1].position, vertices[i + 2].position);
+        updateSegment(i, fillVertices[i].position, fillVertices[i + 1].position, fillVertices[i + 2].position);
     }
 
     // Duplicate the first outline vertex at the end to close the outline loop.
-    const base::SizeT dupIndex = outlineBase + (count << 1u); // Shift is equivalent to `i * 2`
+    const base::SizeT dupIndex = pointCount << 1u; // Equivalent to `pointCount * 2`
 
-    vertices[dupIndex + 0].position = vertices[outlineBase + 0].position;
-    vertices[dupIndex + 1].position = vertices[outlineBase + 1].position;
+    outlineVertices[dupIndex + 0].position = outlineVertices[0].position;
+    outlineVertices[dupIndex + 1].position = outlineVertices[1].position;
 }
 
 } // namespace sf
