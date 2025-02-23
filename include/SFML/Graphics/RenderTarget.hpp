@@ -399,17 +399,19 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawPersistentMappedVertices(base::SizeT         vertexCount,
-                                      PrimitiveType       type,
-                                      const RenderStates& states = RenderStates::Default);
+    void drawPersistentMappedVertices(const PersistentGPUDrawableBatch& batch,
+                                      base::SizeT                       vertexCount,
+                                      PrimitiveType                     type,
+                                      const RenderStates&               states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawPersistentMappedIndexedVertices(base::SizeT         indexCount,
-                                             PrimitiveType       type,
-                                             const RenderStates& states = RenderStates::Default);
+    void drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
+                                             base::SizeT                       indexCount,
+                                             PrimitiveType                     type,
+                                             const RenderStates&               states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -546,20 +548,6 @@ protected:
     [[nodiscard]] explicit RenderTarget(const View& currentView);
 
 private:
-    friend priv::PersistentGPUStorage;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& getVBOPersistentBuffer();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& getEBOPersistentBuffer();
-
     ////////////////////////////////////////////////////////////
     /// \brief Perform common cleaning operations prior to GL calls
     ///
@@ -600,7 +588,7 @@ private:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(bool persistent, const RenderStates& states);
+    void setupDraw(const PersistentGPUDrawableBatch* persistentBatch, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: MVP matrix
