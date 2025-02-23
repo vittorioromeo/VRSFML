@@ -294,31 +294,23 @@ struct [[nodiscard]] StatesCache
 ////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
+    ////////////////////////////////////////////////////////////
+    View                     view;     //!< Current view
+    StatesCache              cache{};  //!< Render states cache
+    RenderTargetImpl::IdType id{};     //!< Unique number that identifies the render target
+    GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
+
+    ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
     view(theView),
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
-    vaoGroup(),
-    persistentVaoGroup(),
-    vboPersistentBuffer(persistentVaoGroup.vbo),
-    eboPersistentBuffer(persistentVaoGroup.ebo)
+    vaoGroup()
     {
         vaoGroup.bind();
-        persistentVaoGroup.bind();
     }
 
-    View view; //!< Current view
-
-    StatesCache cache{}; //!< Render states cache
-
-    RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
-
-    GLVAOGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
-    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
-
-    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< Persistent VBO buffer (used for batching)
-    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< Persistent EBO buffer (used for batching)
-
-    void bindGLObjects(GLVAOGroup& theVAOGroup)
+    ////////////////////////////////////////////////////////////
+    void bindGLObjects(const GLVAOGroup& theVAOGroup)
     {
         theVAOGroup.bind();
         cache.lastVaoGroup = theVAOGroup.getId();
@@ -344,20 +336,6 @@ RenderTarget::RenderTarget(RenderTarget&&) noexcept = default;
 
 ////////////////////////////////////////////////////////////
 RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& RenderTarget::getVBOPersistentBuffer() // TODO P1: encapsulate in its own class
-{
-    return m_impl->vboPersistentBuffer;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& RenderTarget::getEBOPersistentBuffer()
-{
-    return m_impl->eboPersistentBuffer;
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -551,7 +529,7 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
     if (vertexData == nullptr || vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(/* persistentBatch */ nullptr, states);
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
 
@@ -573,7 +551,7 @@ void RenderTarget::drawIndexedVertices(
     if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(/* persistentBatch */ nullptr, states);
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
     RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
@@ -584,13 +562,16 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch& batch,
+                                                const base::SizeT                 vertexCount,
+                                                const PrimitiveType               type,
+                                                const RenderStates&               states)
 {
     // Nothing to draw or inactive target
     if (vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ true, states);
+    setupDraw(/* persistentBatch */ &batch, states);
 
     {
         GLSyncGuard syncGuard;
@@ -602,13 +583,16 @@ void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, Primiti
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedIndexedVertices(base::SizeT indexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
+                                                       const base::SizeT                 indexCount,
+                                                       PrimitiveType                     type,
+                                                       const RenderStates&               states)
 {
     // Nothing to draw or inactive target
     if (indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ true, states);
+    setupDraw(/* persistentBatch */ &batch, states);
 
     {
         GLSyncGuard syncGuard;
@@ -637,7 +621,7 @@ void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates stat
 void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
 {
     states.transform *= drawableBatch.getTransform();
-    drawPersistentMappedIndexedVertices(drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
+    drawPersistentMappedIndexedVertices(drawableBatch, drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
 }
 
 
@@ -663,7 +647,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     if (!vertexCount || !vertexBuffer.getNativeHandle() || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(/* persistentBatch */ nullptr, states);
 
     // Bind vertex buffer
     vertexBuffer.bind();
@@ -890,7 +874,7 @@ void RenderTarget::unapplyTexture()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
+void RenderTarget::setupDraw(const PersistentGPUDrawableBatch* persistentBatch, const RenderStates& states)
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
@@ -913,7 +897,8 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         resetGLStates();
 
     // Bind GL objects
-    if (GLVAOGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
+    if (const GLVAOGroup& vaoGroupToBind = persistentBatch != nullptr ? persistentBatch->m_storage.getVAOGroup()
+                                                                      : m_impl->vaoGroup;
         !m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroupToBind.getId())
     {
         m_impl->cache.lastVaoGroup = vaoGroupToBind.getId();

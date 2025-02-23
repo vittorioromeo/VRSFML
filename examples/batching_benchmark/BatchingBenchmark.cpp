@@ -138,7 +138,7 @@ int main()
     //
     // Set up benchmark
     // sf::CPUDrawableBatch drawableBatch;
-    sf::PersistentGPUDrawableBatch drawableBatch(window);
+    sf::PersistentGPUDrawableBatch drawableBatch;
     populateEntities(static_cast<std::size_t>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 

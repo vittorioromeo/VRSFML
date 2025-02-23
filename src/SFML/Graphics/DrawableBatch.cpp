@@ -9,6 +9,7 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/GLPersistentBuffer.hpp"
+#include "SFML/Graphics/GLVAOGroup.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
@@ -27,28 +28,53 @@
 
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
+struct PersistentGPUStorage::Impl
+{
+    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the batch (persistent storage)
+
+    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< GPU persistent buffer for vertices
+    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< GPU persistent buffer for indices
+
+    Impl() :
+    persistentVaoGroup(),
+    vboPersistentBuffer(persistentVaoGroup.vbo),
+    eboPersistentBuffer(persistentVaoGroup.ebo)
+    {
+        persistentVaoGroup.bind();
+    }
+};
+
 
 ////////////////////////////////////////////////////////////
-PersistentGPUStorage::PersistentGPUStorage(RenderTarget& renderTarget) :
-vboPersistentBuffer{renderTarget.getVBOPersistentBuffer()},
-eboPersistentBuffer{renderTarget.getEBOPersistentBuffer()}
+PersistentGPUStorage::PersistentGPUStorage() = default;
+
+
+////////////////////////////////////////////////////////////
+PersistentGPUStorage::~PersistentGPUStorage() = default;
+
+
+////////////////////////////////////////////////////////////
+PersistentGPUStorage::PersistentGPUStorage(PersistentGPUStorage&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+PersistentGPUStorage& PersistentGPUStorage::operator=(PersistentGPUStorage&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
 {
+    impl->vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
+    return static_cast<Vertex*>(impl->vboPersistentBuffer.data()) + nVertices;
 }
 
 
 ////////////////////////////////////////////////////////////
-Vertex* PersistentGPUStorage::reserveMoreVertices(base::SizeT count)
+IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 {
-    vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
-    return static_cast<Vertex*>(vboPersistentBuffer.data()) + nVertices;
-}
-
-
-////////////////////////////////////////////////////////////
-IndexType* PersistentGPUStorage::reserveMoreIndices(base::SizeT count)
-{
-    eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
-    return static_cast<IndexType*>(eboPersistentBuffer.data()) + nIndices;
+    impl->eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
+    return static_cast<IndexType*>(impl->eboPersistentBuffer.data()) + nIndices;
 }
 
 
@@ -61,6 +87,13 @@ void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const
 
     appendTransformedVertices(transform, data, size, m_storage.reserveMoreVertices(size));
     m_storage.commitMoreVertices(size);
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] const GLVAOGroup& PersistentGPUStorage::getVAOGroup() const
+{
+    return impl->persistentVaoGroup;
 }
 
 

@@ -10,6 +10,7 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
@@ -22,6 +23,8 @@ namespace sf
 {
 template <typename TBufferObject>
 class GLPersistentBuffer;
+
+struct GLVAOGroup;
 
 class RenderTarget;
 class Shape;
@@ -114,7 +117,16 @@ struct CPUStorage
 struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
-    explicit PersistentGPUStorage(RenderTarget& renderTarget); // TODO P1: bad coupling here
+    explicit PersistentGPUStorage();
+    ~PersistentGPUStorage();
+
+    ////////////////////////////////////////////////////////////
+    PersistentGPUStorage(const PersistentGPUStorage&)            = delete;
+    PersistentGPUStorage& operator=(const PersistentGPUStorage&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    PersistentGPUStorage(PersistentGPUStorage&&) noexcept;
+    PersistentGPUStorage& operator=(PersistentGPUStorage&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()
@@ -151,10 +163,13 @@ struct PersistentGPUStorage
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] const GLVAOGroup& getVAOGroup() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer; //!< GPU persistent buffer for vertices
-    GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer; //!< GPU persistent buffer for indices
+    struct Impl;
+    base::InPlacePImpl<Impl, 64> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
