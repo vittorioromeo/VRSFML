@@ -87,7 +87,7 @@ void CircleShape::updateCircleGeometry()
     for (unsigned int i = 0u; i < m_pointCount; ++i)
         m_vertices[i + 1].position = computeCirclePointFromAngleStep(i, angleStep, m_radius);
 
-    Shape::updateImplFromVerticesPositions(m_pointCount, /* mustUpdateBounds */ true);
+    Shape::updateImplFromVerticesPositions(m_pointCount);
 }
 
 } // namespace sf
