@@ -4,11 +4,13 @@
 
 #pragma once
 
-#include "Types.hpp"
+#include "TaskQueueConsumerToken.hpp"
 
 
 namespace hg::ThreadPool
 {
+class TaskQueue;
+
 ////////////////////////////////////////////////////////////
 /// \brief Wraps a `TaskQueue` pointer and a consumer token.
 class [[nodiscard]] ConsumerQueuePtr
