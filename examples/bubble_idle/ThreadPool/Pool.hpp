@@ -5,31 +5,24 @@
 
 #pragma once
 
-#include "Types.hpp"
+#include "Task.hpp"
 
-#include <atomic>
-#include <vector>
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 namespace hg::ThreadPool
 {
-
 class Worker;
 
 class Pool
 {
 private:
-    TaskQueue                 m_queue;
-    std::vector<Worker>       m_workers;
-    std::atomic<unsigned int> m_remainingInits;
+    struct Impl;
+    sf::base::InPlacePImpl<Impl, 896> m_impl;
 
     /// \brief  Returns `true` if all workers have finished processing packets
     /// in a blocking manner.
     [[nodiscard]] bool areAllWorkersDoneBlockingProcessing() const noexcept;
-
-    /// \brief Posts a dummy empty task, used to unblock workers waiting to
-    /// be destroyed.
-    void postDummyTask();
 
 public:
     explicit Pool(unsigned int workerCount);
