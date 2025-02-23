@@ -453,3 +453,5 @@ int main()
                         " || D: " + std::to_string(samplesDrawMs.getAverage()));
     }
 }
+
+// TODO P0: new "shape_batching" example that compares cached shapes vs immediate batched shapes (also compare shapes that mutate with shapes that do not)
