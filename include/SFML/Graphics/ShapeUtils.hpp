@@ -16,6 +16,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -172,7 +173,7 @@ namespace sf
                           (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
 
     const auto [sine, cosine] = base::fastSinCos(deltaAngle * static_cast<float>(index - centerIndex));
-    return center + sf::Vector2f{cornerRadius * cosine, -cornerRadius * sine};
+    return center + Vector2f{cornerRadius * cosine, -cornerRadius * sine};
 }
 
 ////////////////////////////////////////////////////////////
@@ -297,6 +298,54 @@ inline constexpr void updateOutlineImpl(const float                      outline
 
     outlineVertices[dupIndex + 0].position = outlineVertices[0].position;
     outlineVertices[dupIndex + 1].position = outlineVertices[1].position;
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* points, const base::SizeT pointCount)
+{
+    SFML_BASE_ASSERT(pointCount > 0u && "Cannot calculate geometric center of shape with no points");
+
+    if (pointCount == 1u)
+        return points[0];
+
+    if (pointCount == 2u)
+        return (points[0] + points[1]) / 2.f;
+
+    Vector2f centroid{};
+    float    twiceArea = 0;
+
+    auto previousPoint = points[pointCount - 1];
+    for (base::SizeT i = 0; i < pointCount; ++i)
+    {
+        const auto  currentPoint = points[i];
+        const float product      = previousPoint.cross(currentPoint);
+        twiceArea += product;
+        centroid += (currentPoint + previousPoint) * product;
+
+        previousPoint = currentPoint;
+    }
+
+    if (twiceArea != 0.f)
+        return centroid / 3.f / twiceArea;
+
+    // Fallback for no area - find the center of the bounding box
+    Vector2f minPoint = points[0];
+    Vector2f maxPoint = minPoint;
+
+    for (base::SizeT i = 1; i < pointCount; ++i)
+    {
+        const auto currentPoint = points[i];
+
+        minPoint.x = base::min(minPoint.x, currentPoint.x);
+        maxPoint.x = base::max(maxPoint.x, currentPoint.x);
+        minPoint.y = base::min(minPoint.y, currentPoint.y);
+        maxPoint.y = base::max(maxPoint.y, currentPoint.y);
+    }
+
+    return (maxPoint + minPoint) / 2.f;
 }
 
 } // namespace sf
