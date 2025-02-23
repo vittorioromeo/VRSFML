@@ -101,7 +101,7 @@ namespace
 {
 ///////////////////////////////////////////////////////////
 constinit sf::base::Optional<GraphicsContextImpl> installedGraphicsContext;
-constinit std::atomic<unsigned int> graphicsContextRC{0u};
+constinit std::atomic<unsigned int>               graphicsContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////

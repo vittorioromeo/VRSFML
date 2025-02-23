@@ -184,10 +184,8 @@ layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {
-    vec2 normalizedTexCoord = sf_v_texCoord / vec2(textureSize(sf_u_texture, 0));
-
-	vec4 color1 = texture( sf_u_texture, normalizedTexCoord * vec2( 2.0, 1.0 ) + vec2( 0.0, 0.0 ));
-	vec4 color2 = texture( texture2, normalizedTexCoord * vec2( 2.0, 1.0 ) + vec2( -1.0, 0.0 ));
+	vec4 color1 = texture( sf_u_texture, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( 0.0, 0.0 ));
+	vec4 color2 = texture( texture2, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( -1.0, 0.0 ));
 	sf_fragColor = sf_v_color * ( vec4(color2.x, color1.y, color2.z, 1.0 ));
 }
 )glsl";
