@@ -5270,7 +5270,12 @@ Using prestige points, TODO P0
                         bubble.rotation += deltaTimeMs * 0.025f;
 
                         if (bubble.rotation >= sf::base::tau)
+                        {
+                            sounds.absorb.setPosition({bubble.position.x, bubble.position.y});
+                            playSound(sounds.absorb, /* maxOverlap */ 1u);
+
                             turnBubbleNormal(bubble);
+                        }
                     }
                 }
                 else if (shrine.type == ShrineType::Repulsion)
