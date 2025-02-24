@@ -366,7 +366,7 @@ int main()
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize(ImVec2{350.f, 304.f});
+            ImGui::SetWindowSize(ImVec2{360.f, 350.f});
 
             const auto clearSamples = [&]
             {
@@ -399,13 +399,10 @@ int main()
             if (ImGui::Checkbox("Shapes", &drawShapes))
                 clearSamples();
 
-            ImGui::NewLine();
-
             ImGui::Checkbox("Multithreaded Update", &multithreadedUpdate);
-            ImGui::SameLine();
 
             ImGui::BeginDisabled(batchType != BatchType::CPUStorage);
-            ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
+            ImGui::Checkbox("Multithreaded Draw (CPU Storage only)", &multithreadedDraw);
             ImGui::EndDisabled();
 
             ImGui::NewLine();
