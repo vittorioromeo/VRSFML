@@ -7,7 +7,7 @@ ninja "$1" && (
   for suffix in ".exe" "-d.exe" "" "-d"; do
     executable="../../$basepwd/bin/$1$suffix"
     if [ -x "$executable" ]; then
-       gdb -ex run "$executable"
+      lldb "$executable"
       exit
     fi
   done
