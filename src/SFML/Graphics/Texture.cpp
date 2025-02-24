@@ -39,7 +39,7 @@ constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no
 
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
 {
-    return nextUniqueId.fetch_add(1u, std::memory_order_relaxed);
+    return nextUniqueId.fetch_add(1u, std::memory_order::relaxed);
 }
 
 } // namespace TextureImpl
