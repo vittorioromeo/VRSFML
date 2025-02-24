@@ -149,6 +149,7 @@ struct Playthrough
         bool windPurchased                        = false;
         bool astroCatInspirePurchased             = false;
         bool starpawConversionIgnoreBombs         = false;
+        bool starpawNova                          = false;
         bool repulsoCatFilterPurchased            = false;
         bool repulsoCatConverterPurchased         = false;
         bool attractoCatFilterPurchased           = false;
@@ -160,6 +161,8 @@ struct Playthrough
         bool shrineCompletedOnceByType[nCatTypes] = {};
         bool unsealedByType[nCatTypes]            = {};
         bool wizardCatDoubleMewltiplierDuration   = false;
+        bool unicatTranscendencePurchased         = false;
+        bool unicatTranscendenceAOEPurchased      = false;
     };
 
     Permanent perm = {};
@@ -245,8 +248,8 @@ struct Playthrough
     ////////////////////////////////////////////////////////////
     void onPrestige(const PrestigePointsType prestigePointReward)
     {
-        psvComboStartTime.nPurchases      = 0u;
-        psvMapExtension.nPurchases        = 0u;
+        psvComboStartTime.nPurchases = 0u;
+        // psvMapExtension.nPurchases        = 0u;
         psvShrineActivation.nPurchases    = 0u;
         psvBubbleCount.nPurchases         = 0u;
         psvSpellCount.nPurchases          = 0u;
@@ -263,11 +266,11 @@ struct Playthrough
         for (auto& psv : psvRangeDivsPerCatType)
             psv.nPurchases = 0u;
 
-        money = perm.starterPackPurchased ? 1'000u : 0u;
+        money = perm.starterPackPurchased ? 1000u : 0u;
         prestigePoints += prestigePointReward;
 
         comboPurchased = false;
-        mapPurchased   = false;
+        // mapPurchased   = false;
 
         manaTimer            = 0.f;
         mana                 = 0u;
@@ -316,6 +319,7 @@ struct Playthrough
                                   1u,  // Normal
                                   15u, // Star
                                   1u,  // Bomb
+                                  50u, // Nova
                               });
 
         return baseRewards[asIdx(type)] * static_cast<MoneyType>(psvBubbleValue.currentValue() + 1.f);
@@ -328,7 +332,7 @@ struct Playthrough
                               baseRequiredRewards,
                               nShrineTypes,
                               {
-                                  1'000,             // Voodoo
+                                  1000,              // Voodoo
                                   75'000,            // Magic
                                   150'000,           // Clicking
                                   2'500'000,         // Automation

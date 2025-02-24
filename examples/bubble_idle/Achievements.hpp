@@ -182,6 +182,26 @@ inline constexpr AchievementData achievementData[] = {
     {"Celestial Overlords", "Pop 1,000,000 star bubbles via cats."},
     {"Cosmic Cataclysm", "Pop 10,000,000 star bubbles via cats."},
 
+    {"TODONAME", "Pop a nova bubble with at least x5 combo multiplier."},
+    {"TODONAME", "Pop a nova bubble with at least x10 combo multiplier."},
+    {"TODONAME", "Pop a nova bubble with at least x15 combo multiplier."},
+    {"TODONAME", "Pop a nova bubble with at least x20 combo multiplier."},
+    {"TODONAME", "Pop a nova bubble with at least x25 combo multiplier."},
+
+    {"TODONAME", "Pop your first nova bubble by hand."},
+    {"TODONAME", "Pop 100 nova bubbles by hand."},
+    {"TODONAME", "Pop 1,000 nova bubbles by hand."},
+    {"TODONAME", "Pop 10,000 nova bubbles by hand."},
+    {"TODONAME", "Pop 100,000 nova bubbles by hand."},
+
+    {"TODONAME", "Pop your first nova bubble via cats."},
+    {"TODONAME", "Pop 100 nova bubbles via cats."},
+    {"TODONAME", "Pop 1,000 nova bubbles via cats."},
+    {"TODONAME", "Pop 10,000 nova bubbles via cats."},
+    {"TODONAME", "Pop 100,000 nova bubbles via cats."},
+    {"TODONAME", "Pop 1,000,000 nova bubbles via cats."},
+    {"TODONAME", "Pop 10,000,000 nova bubbles via cats."},
+
     {"Explosive Management", "Pop your first bomb by hand."},
     {"Hand Grenade Hero", "Pop 100 bombs by hand."},
     {"Dynamite Digits", "Pop 1,000 bombs by hand."},
