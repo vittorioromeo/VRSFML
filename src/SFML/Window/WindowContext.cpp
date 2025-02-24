@@ -84,7 +84,7 @@ namespace
     const void* /* userParam */)
 {
     // ignore non-significant error/warning codes
-    if (id == 131169 || id == 131185 || id == 131218 || id == 131204)
+    if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204)
         return;
 
     auto& multiLineErr = priv::err(true /* multiLine */);
@@ -145,7 +145,6 @@ thread_local constinit struct
 
 } // namespace
 
-
 ////////////////////////////////////////////////////////////
 struct WindowContextImpl
 {
@@ -181,7 +180,6 @@ struct WindowContextImpl
     }
 };
 
-
 namespace
 {
 ////////////////////////////////////////////////////////////
@@ -202,7 +200,6 @@ WindowContextImpl& ensureInstalled()
 }
 
 } // namespace
-
 
 ////////////////////////////////////////////////////////////
 base::Optional<WindowContext> WindowContext::create()

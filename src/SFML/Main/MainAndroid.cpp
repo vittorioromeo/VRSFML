@@ -58,6 +58,7 @@ void initializeMain(sf::priv::ActivityStates& states)
     AConfiguration_fromAssetManager(states.config, states.activity->assetManager);
 }
 
+
 ////////////////////////////////////////////////////////////
 void terminateMain(sf::priv::ActivityStates& states)
 {
@@ -69,10 +70,12 @@ void terminateMain(sf::priv::ActivityStates& states)
     ANativeActivity_finish(states.activity);
 }
 
+
 ////////////////////////////////////////////////////////////
 void onStart(ANativeActivity* /* activity */)
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 int getAndroidApiLevel(ANativeActivity& activity)
@@ -93,12 +96,14 @@ int getAndroidApiLevel(ANativeActivity& activity)
     return sdkInt;
 }
 
+
 ////////////////////////////////////////////////////////////
 sf::priv::ActivityStates& retrieveStates(ANativeActivity& activity)
 {
     // Hide the ugly cast we find in each callback function
     return *static_cast<sf::priv::ActivityStates*>(activity.instance);
 }
+
 
 ////////////////////////////////////////////////////////////
 void goToFullscreenMode(ANativeActivity& activity)
@@ -158,6 +163,7 @@ void goToFullscreenMode(ANativeActivity& activity)
     jmethodID methodsetSystemUiVisibility = lJNIEnv.GetMethodID(classView, "setSystemUiVisibility", "(I)V");
     lJNIEnv.CallVoidMethod(objectDecorView, methodsetSystemUiVisibility, flags);
 }
+
 
 ////////////////////////////////////////////////////////////
 void getScreenSizeInPixels(ANativeActivity& activity, int& width, int& height)
@@ -259,6 +265,7 @@ void onResume(ANativeActivity* activity)
     states.forwardEvent(sf::Event::MouseEntered{});
 }
 
+
 ////////////////////////////////////////////////////////////
 void onPause(ANativeActivity* activity)
 {
@@ -270,10 +277,12 @@ void onPause(ANativeActivity* activity)
     states.forwardEvent(sf::Event::MouseLeft{});
 }
 
+
 ////////////////////////////////////////////////////////////
 void onStop(ANativeActivity* /* activity */)
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 void onDestroy(ANativeActivity* activity)
@@ -315,6 +324,7 @@ void onDestroy(ANativeActivity* activity)
     // The application should now terminate
 }
 
+
 ////////////////////////////////////////////////////////////
 void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
 {
@@ -336,6 +346,7 @@ void onNativeWindowCreated(ANativeActivity* activity, ANativeWindow* window)
         states.mutex.lock();
     }
 }
+
 
 ////////////////////////////////////////////////////////////
 void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* /* window */)
@@ -359,15 +370,18 @@ void onNativeWindowDestroyed(ANativeActivity* activity, ANativeWindow* /* window
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 void onNativeWindowRedrawNeeded(ANativeActivity* /* activity */, ANativeWindow* /* window */)
 {
 }
 
+
 ////////////////////////////////////////////////////////////
 void onNativeWindowResized(ANativeActivity* /* activity */, ANativeWindow* /* window */)
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
@@ -383,6 +397,7 @@ void onInputQueueCreated(ANativeActivity* activity, AInputQueue* queue)
         states.inputQueue = queue;
     }
 }
+
 
 ////////////////////////////////////////////////////////////
 void onInputQueueDestroyed(ANativeActivity* activity, AInputQueue* queue)
@@ -401,10 +416,12 @@ void onInputQueueDestroyed(ANativeActivity* activity, AInputQueue* queue)
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 void onWindowFocusChanged(ANativeActivity* /* activity */, int /* focused */)
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 void onContentRectChanged(ANativeActivity* activity, const ARect* /* rect */)
@@ -423,10 +440,12 @@ void onContentRectChanged(ANativeActivity* activity, const ARect* /* rect */)
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 void onConfigurationChanged(ANativeActivity* /* activity */)
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 void* onSaveInstanceState(ANativeActivity* /* activity */, base::SizeT* outLen)
@@ -434,6 +453,7 @@ void* onSaveInstanceState(ANativeActivity* /* activity */, base::SizeT* outLen)
     *outLen = 0;
     return nullptr;
 }
+
 
 ////////////////////////////////////////////////////////////
 void onLowMemory(ANativeActivity* /* activity */)
@@ -464,7 +484,6 @@ void* main(ActivityStates* states)
     return nullptr;
 }
 } // namespace sf::priv
-
 
 ////////////////////////////////////////////////////////////
 JNIEXPORT void ANativeActivity_onCreate(ANativeActivity* activity, void* savedState, base::SizeT savedStateSize)

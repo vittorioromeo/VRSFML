@@ -34,7 +34,6 @@ using WriterCheckFnPtr = bool (*)(const sf::Path&);
 using ReaderFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileReader>, ReaderCheckFnPtr>;
 using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, WriterCheckFnPtr>;
 
-
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ReaderFactoryMap& getReaderFactoryMap()
 {
@@ -62,6 +61,7 @@ using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, Wr
 }
 
 } // namespace
+
 
 namespace sf
 {

@@ -32,7 +32,6 @@ class Texture;
 class Window;
 } // namespace sf
 
-
 namespace sf::ImGui
 {
 class [[nodiscard]] SFML_IMGUI_API ImGuiContext
@@ -205,19 +204,19 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.0f);
+    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRect(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F, float thickness = 1.0f);
+    void drawRect(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
+    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

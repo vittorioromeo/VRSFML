@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp>
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -215,8 +216,8 @@ int SocketImpl::select(SocketHandle handle, long long timeoutUs)
 
     // Setup the timeout
     timeval time{};
-    time.tv_sec  = static_cast<long>(timeoutUs / 1000000);
-    time.tv_usec = static_cast<int>(timeoutUs % 1000000);
+    time.tv_sec  = static_cast<long>(timeoutUs / 1'000'000);
+    time.tv_usec = static_cast<int>(timeoutUs % 1'000'000);
 
     // Wait for something to write on our socket (which means that the connection request has returned)
     return ::select(static_cast<int>(handle + 1), nullptr, &selector, nullptr, &time);
@@ -274,6 +275,7 @@ bool SocketImpl::disableSigpipe([[maybe_unused]] SocketHandle handle)
 #endif
 }
 
+
 ////////////////////////////////////////////////////////////
 bool SocketImpl::enableBroadcast(SocketHandle handle)
 {
@@ -294,6 +296,7 @@ NetworkSSizeT SocketImpl::sendTo(SocketHandle handle, const char* buf, SocketImp
 {
     return ::sendto(handle, buf, len, flags, reinterpret_cast<sockaddr*>(&*address.m_impl), address.size());
 }
+
 
 ////////////////////////////////////////////////////////////
 NetworkSSizeT SocketImpl::recv(SocketHandle handle, char* buf, SocketImpl::Size len, int flags)
@@ -337,6 +340,7 @@ bool SocketImpl::fdIsSet(SocketHandle handle, const FDSet& fdSet)
     return FD_ISSET(handle, static_cast<const fd_set*>(fdSet.asPtr()));
 }
 
+
 ////////////////////////////////////////////////////////////
 void SocketImpl::fdClear(SocketHandle handle, FDSet& fdSet)
 {
@@ -370,8 +374,8 @@ int SocketImpl::select(int nfds, FDSet* readfds, FDSet* writefds, FDSet* exceptf
 {
     // Setup the timeout
     timeval time{};
-    time.tv_sec  = static_cast<long>(timeoutUs / 1000000);
-    time.tv_usec = static_cast<int>(timeoutUs % 1000000);
+    time.tv_sec  = static_cast<long>(timeoutUs / 1'000'000);
+    time.tv_usec = static_cast<int>(timeoutUs % 1'000'000);
 
     return ::select(nfds,
                     static_cast<fd_set*>(readfds->asPtr()),

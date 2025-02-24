@@ -21,6 +21,7 @@
 
 #include <cerrno>
 
+
 namespace
 {
 struct UdevDeleter
@@ -481,6 +482,7 @@ bool JoystickImpl::isConnected(unsigned int index)
     // Then check if the joystick is connected
     return joystickList[index].plugged;
 }
+
 
 ////////////////////////////////////////////////////////////
 bool JoystickImpl::open(unsigned int index)

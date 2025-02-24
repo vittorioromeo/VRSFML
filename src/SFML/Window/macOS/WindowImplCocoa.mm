@@ -22,6 +22,7 @@
 #import <SFML/Window/macOS/Scaling.h>
 #include <limits>
 
+
 namespace sf::priv
 {
 

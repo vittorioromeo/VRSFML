@@ -49,7 +49,7 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
         CHECK(triangleShape.getTextureRect() == sf::FloatRect());
         CHECK(triangleShape.getFillColor() == sf::Color::White);
         CHECK(triangleShape.getOutlineColor() == sf::Color::White);
-        CHECK(triangleShape.getOutlineThickness() == 0.0f);
+        CHECK(triangleShape.getOutlineThickness() == 0.f);
         CHECK(triangleShape.getLocalBounds() == sf::FloatRect());
         CHECK(triangleShape.getGlobalBounds() == sf::FloatRect());
     }

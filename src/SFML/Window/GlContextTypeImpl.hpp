@@ -12,55 +12,55 @@
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-#if defined(SFML_OPENGL_ES)
+    #if defined(SFML_OPENGL_ES)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+        #include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
-#else
+    #else
 
-#include "SFML/Window/Win32/WglContext.hpp"
+        #include "SFML/Window/Win32/WglContext.hpp"
 using DerivedGlContextType = sf::priv::WglContext;
 
-#endif
+    #endif
 
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
-#if defined(SFML_USE_DRM)
+    #if defined(SFML_USE_DRM)
 
-#include "SFML/Window/DRM/DRMContext.hpp"
+        #include "SFML/Window/DRM/DRMContext.hpp"
 using DerivedGlContextType = sf::priv::DRMContext;
 
-#elif defined(SFML_OPENGL_ES)
+    #elif defined(SFML_OPENGL_ES)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+        #include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
-#else
+    #else
 
-#include "SFML/Window/Unix/GlxContext.hpp"
+        #include "SFML/Window/Unix/GlxContext.hpp"
 using DerivedGlContextType = sf::priv::GlxContext;
 
-#endif
+    #endif
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include "SFML/Window/macOS/SFContext.hpp"
+    #include "SFML/Window/macOS/SFContext.hpp"
 using DerivedGlContextType = sf::priv::SFContext;
 
 #elif defined(SFML_SYSTEM_IOS)
 
-#include "SFML/Window/iOS/EaglContext.hpp"
+    #include "SFML/Window/iOS/EaglContext.hpp"
 using DerivedGlContextType = sf::priv::EaglContext;
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+    #include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-#include "SFML/Window/EGL/EGLContext.hpp"
+    #include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
 #endif
@@ -86,41 +86,41 @@ using glIsEnabledFuncType   = GLboolean (*)(GLenum);
 #endif
 
 #if !defined(GL_MULTISAMPLE)
-#define GL_MULTISAMPLE 0x809D
+    #define GL_MULTISAMPLE 0x80'9D
 #endif
 
 #if !defined(GL_MAJOR_VERSION)
-#define GL_MAJOR_VERSION 0x821B
+    #define GL_MAJOR_VERSION 0x82'1B
 #endif
 
 #if !defined(GL_MINOR_VERSION)
-#define GL_MINOR_VERSION 0x821C
+    #define GL_MINOR_VERSION 0x82'1C
 #endif
 
 #if !defined(GL_NUM_EXTENSIONS)
-#define GL_NUM_EXTENSIONS 0x821D
+    #define GL_NUM_EXTENSIONS 0x82'1D
 #endif
 
 #if !defined(GL_CONTEXT_FLAGS)
-#define GL_CONTEXT_FLAGS 0x821E
+    #define GL_CONTEXT_FLAGS 0x82'1E
 #endif
 
 #if !defined(GL_FRAMEBUFFER_SRGB)
-#define GL_FRAMEBUFFER_SRGB 0x8DB9
+    #define GL_FRAMEBUFFER_SRGB 0x8D'B9
 #endif
 
 #if !defined(GL_CONTEXT_FLAG_DEBUG_BIT)
-#define GL_CONTEXT_FLAG_DEBUG_BIT 0x00000002
+    #define GL_CONTEXT_FLAG_DEBUG_BIT 0x00'00'00'02
 #endif
 
 #if !defined(GL_CONTEXT_PROFILE_MASK)
-#define GL_CONTEXT_PROFILE_MASK 0x9126
+    #define GL_CONTEXT_PROFILE_MASK 0x91'26
 #endif
 
 #if !defined(GL_CONTEXT_CORE_PROFILE_BIT)
-#define GL_CONTEXT_CORE_PROFILE_BIT 0x00000001
+    #define GL_CONTEXT_CORE_PROFILE_BIT 0x00'00'00'01
 #endif
 
 #if !defined(GL_CONTEXT_COMPATIBILITY_PROFILE_BIT)
-#define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00000002
+    #define GL_CONTEXT_COMPATIBILITY_PROFILE_BIT 0x00'00'00'02
 #endif

@@ -28,7 +28,7 @@ constexpr float Time::asSeconds() const
 ////////////////////////////////////////////////////////////
 constexpr base::I32 Time::asMilliseconds() const
 {
-    return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1'000.f);
+    return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1000.f);
 }
 
 
@@ -49,7 +49,7 @@ constexpr Time seconds(float amount)
 ////////////////////////////////////////////////////////////
 constexpr Time milliseconds(base::I32 amount)
 {
-    return Time(amount * 1'000);
+    return Time(amount * 1000);
 }
 
 

@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/SoundFileFactory.hpp" // NOLINT(misc-header-include-cycle)
 
-
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -16,6 +15,7 @@ base::UniquePtr<SoundFileReader> createReader()
     return base::makeUnique<T>();
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 base::UniquePtr<SoundFileWriter> createWriter()
@@ -24,6 +24,7 @@ base::UniquePtr<SoundFileWriter> createWriter()
 }
 
 } // namespace sf::priv
+
 
 namespace sf
 {

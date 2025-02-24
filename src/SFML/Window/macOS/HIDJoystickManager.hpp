@@ -8,6 +8,7 @@
 #include <IOKit/hid/IOHIDDevice.h>
 #include <IOKit/hid/IOHIDManager.h>
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

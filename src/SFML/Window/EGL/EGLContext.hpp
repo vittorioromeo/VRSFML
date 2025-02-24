@@ -8,7 +8,7 @@
 #include "SFML/Config.hpp"
 
 #ifndef SFML_OPENGL_ES
-#error "EGLContext included but ES disabled"
+    #error "EGLContext included but ES disabled"
 #endif
 
 #include "SFML/Window/ContextSettings.hpp"
@@ -17,8 +17,8 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
+    #include <X11/Xlib.h>
+    #include <X11/Xutil.h>
 #endif
 
 

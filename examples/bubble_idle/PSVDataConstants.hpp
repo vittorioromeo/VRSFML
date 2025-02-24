@@ -17,7 +17,7 @@ inline constexpr PSVData mapExtension //
 
 inline constexpr PSVData shrineActivation //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 15000.f, .linear = -56500.f, .exponential = 7.5f, .flat = -13500.f},
+     .cost          = {.initial = 15000.f, .linear = -56'500.f, .exponential = 7.5f, .flat = -13'500.f},
      .value         = {}};
 
 inline constexpr PSVData bubbleCount //
@@ -40,7 +40,7 @@ inline constexpr PSVData catNormal //
 
 inline constexpr PSVData catNormalCooldownMult //
     {.nMaxPurchases = 12u,
-     .cost          = {.initial = 2500.f, .exponential = 1.85f, .flat = -1500.f},
+     .cost          = {.initial = 2'500.f, .exponential = 1.85f, .flat = -1500.f},
      .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
 inline constexpr PSVData catNormalRangeDiv //
@@ -53,12 +53,12 @@ inline constexpr PSVData catUni //
 
 inline constexpr PSVData catUniCooldownMult //
     {.nMaxPurchases = 12u,
-     .cost          = {.initial = 8500.f, .exponential = 1.85f, .flat = -4500.f},
+     .cost          = {.initial = 8'500.f, .exponential = 1.85f, .flat = -4'500.f},
      .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
 inline constexpr PSVData catUniRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 10000.f, .exponential = 1.85f, .flat = -2500.f},
+     .cost          = {.initial = 10'000.f, .exponential = 1.85f, .flat = -2'500.f},
      .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
 
 inline constexpr PSVData catDevil //
@@ -105,7 +105,7 @@ inline constexpr PSVData catMouse //
 
 inline constexpr PSVData catMouseCooldownMult //
     {.nMaxPurchases = 12u,
-     .cost          = {.initial = 125'000.f, .exponential = 1.75f},
+     .cost          = {.initial = 125000.f, .exponential = 1.75f},
      .value         = {.initial = 1.f, .linear = 0.015f, .multiplicative = 0.05f, .exponential = 0.8f}};
 
 inline constexpr PSVData catMouseRangeDiv //
@@ -136,7 +136,7 @@ inline constexpr PSVData catRepulsoCooldownMult //
 
 inline constexpr PSVData catRepulsoRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 225'000.f, .exponential = 1.85f},
+     .cost          = {.initial = 225000.f, .exponential = 1.85f},
      .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
 
 inline constexpr PSVData catAttracto //
@@ -149,7 +149,7 @@ inline constexpr PSVData catAttractoCooldownMult //
 
 inline constexpr PSVData catAttractoRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 275'000.f, .exponential = 1.85f},
+     .cost          = {.initial = 275000.f, .exponential = 1.85f},
      .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
 
 inline constexpr PSVData catAstro //
@@ -168,7 +168,7 @@ inline constexpr PSVData catAstroRangeDiv //
 inline constexpr PSVData multiPopRange //
     {.nMaxPurchases = 24u,
      .cost          = {.initial = 1.f, .linear = 2.f, .exponential = 1.75f},
-     .value         = {.initial = 64.0f, .linear = 8.0f}};
+     .value         = {.initial = 64.f, .linear = 8.f}};
 
 inline constexpr PSVData inspireDurationMult //
     {.nMaxPurchases = 16u,
@@ -187,7 +187,7 @@ inline constexpr PSVData manaMaxMult //
 
 inline constexpr PSVData spellCount //
     {.nMaxPurchases = 4u,
-     .cost          = {.initial = 3500.f, .linear = -24000.f, .exponential = 8.f, .flat = -3250.f},
+     .cost          = {.initial = 3'500.f, .linear = -24000.f, .exponential = 8.f, .flat = -3250.f},
      .value         = {.initial = 0.f, .linear = 1.f}};
 
 inline constexpr PSVData mouseCatGlobalBonusMult //

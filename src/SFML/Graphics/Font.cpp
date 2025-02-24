@@ -20,7 +20,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/ResourceStream.hpp"
+    #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 #include "SFML/System/Err.hpp"
 #include "SFML/System/InputStream.hpp"

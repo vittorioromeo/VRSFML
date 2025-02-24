@@ -9,7 +9,7 @@
 #include "SFML/System/TimeChronoUtil.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/SuspendAwareClock.hpp"
+    #include "SFML/System/SuspendAwareClock.hpp"
 #endif
 
 #include <chrono>

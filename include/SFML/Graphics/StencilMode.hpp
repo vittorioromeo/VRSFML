@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #ifdef Always // Might be defined by X11
-#undef Always
+    #undef Always
 #endif
 
 namespace sf
