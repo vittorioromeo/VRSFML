@@ -61,8 +61,8 @@ struct [[nodiscard]] Transform
         const float    sine,
         const float    cosine)
     {
-        SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
-        SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
+        SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
+        SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
         const float sxc = scale.x * cosine;
         const float syc = scale.y * cosine;

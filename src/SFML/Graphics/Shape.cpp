@@ -10,7 +10,6 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/Transformable.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -22,12 +21,15 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Shape::Shape(const Settings& settings) :
-Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
 m_textureRect{settings.textureRect},
 m_outlineTextureRect{settings.outlineTextureRect},
+m_outlineThickness{settings.outlineThickness},
 m_fillColor{settings.fillColor},
 m_outlineColor{settings.outlineColor},
-m_outlineThickness{settings.outlineThickness}
+position{settings.position},
+scale{settings.scale},
+origin{settings.origin},
+rotation{settings.rotation}
 {
 }
 

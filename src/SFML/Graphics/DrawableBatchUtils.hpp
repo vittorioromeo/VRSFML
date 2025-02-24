@@ -83,13 +83,13 @@ using IndexType = unsigned int;
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedQuadVertices(
-    Vertex* SFML_BASE_RESTRICT& SFML_BASE_RESTRICT vertexPtr,
-    const Transform&                               transform,
-    const Vertex& SFML_BASE_RESTRICT               a,
-    const Vertex& SFML_BASE_RESTRICT               b,
-    const Vertex& SFML_BASE_RESTRICT               c,
-    const Vertex& SFML_BASE_RESTRICT               d) noexcept
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedTextQuadVertices(
+    Vertex* const SFML_BASE_RESTRICT vertexPtr,
+    const Transform&                 transform,
+    const Vertex& SFML_BASE_RESTRICT a,
+    const Vertex& SFML_BASE_RESTRICT b,
+    const Vertex& SFML_BASE_RESTRICT c,
+    const Vertex& SFML_BASE_RESTRICT d) noexcept
 {
     SFML_BASE_ASSUME(a.position.x == c.position.x);
     SFML_BASE_ASSUME(b.position.x == d.position.x);
@@ -97,10 +97,10 @@ using IndexType = unsigned int;
     SFML_BASE_ASSUME(a.position.y == b.position.y);
     SFML_BASE_ASSUME(c.position.y == d.position.y);
 
-    *vertexPtr++ = {transform.transformPoint(a.position), a.color, a.texCoords};
-    *vertexPtr++ = {transform.transformPoint(b.position), b.color, b.texCoords};
-    *vertexPtr++ = {transform.transformPoint(c.position), c.color, c.texCoords};
-    *vertexPtr++ = {transform.transformPoint(d.position), d.color, d.texCoords};
+    vertexPtr[0] = {transform.transformPoint(a.position), a.color, a.texCoords};
+    vertexPtr[1] = {transform.transformPoint(b.position), b.color, b.texCoords};
+    vertexPtr[2] = {transform.transformPoint(c.position), c.color, c.texCoords};
+    vertexPtr[3] = {transform.transformPoint(d.position), d.color, d.texCoords};
 }
 
 ////////////////////////////////////////////////////////////
@@ -127,12 +127,12 @@ using IndexType = unsigned int;
         appendQuadIndices(indexPtr, nextIndex + (i * 4u));
 
     for (IndexType i = 0u; i < numQuads; ++i)
-        appendPreTransformedQuadVertices(vertexPtr,
-                                         transform,
-                                         data[(i * 4u) + 0u],
-                                         data[(i * 4u) + 1u],
-                                         data[(i * 4u) + 2u],
-                                         data[(i * 4u) + 3u]);
+        appendPreTransformedTextQuadVertices(vertexPtr + (i * 4u),
+                                             transform,
+                                             data[(i * 4u) + 0u],
+                                             data[(i * 4u) + 1u],
+                                             data[(i * 4u) + 2u],
+                                             data[(i * 4u) + 3u]);
 }
 
 ////////////////////////////////////////////////////////////
