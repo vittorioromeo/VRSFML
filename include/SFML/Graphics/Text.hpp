@@ -441,7 +441,11 @@ public:
     /// - The remaining subrange contains all text fill vertices, if any.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getVertices() const;
+    [[nodiscard, gnu::always_inline]] base::Span<const Vertex> getVertices() const
+    {
+        ensureGeometryUpdate(*m_font);
+        return {m_vertices.data(), m_vertices.size()};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a mutable span to the text's vertices.
@@ -449,13 +453,20 @@ public:
     /// \see `getVertices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<Vertex> getVerticesMut();
+    [[nodiscard, gnu::always_inline]] base::Span<Vertex> getVerticesMut()
+    {
+        ensureGeometryUpdate(*m_font);
+        return {m_vertices.data(), m_vertices.size()};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the index of the first fill vertex.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getFillVerticesStartIndex() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::SizeT getFillVerticesStartIndex() const
+    {
+        return m_fillVerticesStartIndex;
+    }
 
 private:
     ////////////////////////////////////////////////////////////
