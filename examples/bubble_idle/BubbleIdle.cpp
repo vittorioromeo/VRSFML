@@ -368,10 +368,12 @@ struct Main
     sf::FloatRect txrWhiteDot{textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value()};
     sf::FloatRect txrBubble{addImgResourceToAtlas("bubble2.png")};
     sf::FloatRect txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
+    sf::FloatRect txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
     sf::FloatRect txrCat{addImgResourceToAtlas("cat.png")};
     sf::FloatRect txrSmartCat{addImgResourceToAtlas("smartcat.png")};
     sf::FloatRect txrGeniusCat{addImgResourceToAtlas("geniuscat.png")};
     sf::FloatRect txrUniCat{addImgResourceToAtlas("unicat.png")};
+    sf::FloatRect txrUniCat2{addImgResourceToAtlas("unicat2.png")};
     sf::FloatRect txrDevilCat{addImgResourceToAtlas("devilcat.png")};
     sf::FloatRect txrCatPaw{addImgResourceToAtlas("catpaw.png")};
     sf::FloatRect txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
@@ -825,6 +827,13 @@ struct Main
     {
         withAllStats([&](Stats& stats)
         { stats.highestStarBubblePopCombo = sf::base::max(stats.highestStarBubblePopCombo, comboValue); });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void statHighestNovaBubblePopCombo(const sf::base::U64 comboValue)
+    {
+        withAllStats([&](Stats& stats)
+        { stats.highestNovaBubblePopCombo = sf::base::max(stats.highestNovaBubblePopCombo, comboValue); });
     }
 
     ////////////////////////////////////////////////////////////
@@ -1768,8 +1777,10 @@ Using prestige points, TODO P0
         static thread_local std::vector<float> sampleBuffer(60);
         samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
 
+        const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverage());
+
         static thread_local char avgBuffer[64];
-        std::sprintf(avgBuffer, "%.2f $/s", samplerMoneyPerSecond.getAverage());
+        std::sprintf(avgBuffer, "%s $/s", toStringWithSeparators(average));
 
         ImGui::PlotLines("##dpsmeter",
                          sampleBuffer.data(),
@@ -2048,7 +2059,9 @@ Using prestige points, TODO P0
             if (catUnicornUpgradesUnlocked)
             {
                 makeCooldownButton("- cooldown", CatType::Uni);
-                // makeRangeButton("- range", CatType::Uni);
+
+                if (pt.perm.unicatTranscendencePurchased)
+                    makeRangeButton("- range", CatType::Uni);
             }
 
             ImGui::Separator();
@@ -2539,7 +2552,35 @@ Using prestige points, TODO P0
             uiBeginColumns();
         }
 
-        // TODO: unicats, devilcats
+        // TODO: devilcats
+
+        if (pt.psvBubbleValue.nPurchases >= 5)
+        {
+            ImGui::Separator();
+
+            ImGui::Columns(1);
+            ImGui::Text("Unicats");
+            uiBeginColumns();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Unicats transcend their physical form, becoming a higher entity that transforms bubbles into "
+                         "nova bubbles, worth x50.");
+            uiLabelBuffer[0] = '\0';
+
+            if (makePurchasablePPButtonOneTime("- transcendence", 96u, pt.perm.unicatTranscendencePurchased))
+                doTip("Are you ready for x50 nova bubbles?", /* maxPrestigeLevel */ UINT_MAX);
+
+            if (pt.perm.unicatTranscendencePurchased)
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Unicats can now transform all bubbles in range at once. Also unlocks unicat range "
+                             "upgrades.");
+                uiLabelBuffer[0] = '\0';
+
+                if (makePurchasablePPButtonOneTime("- nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
+                    doTip("Are you ready for x50 nova bubbles?", /* maxPrestigeLevel */ UINT_MAX);
+            }
+        }
 
         if (pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3)
         {
@@ -2644,6 +2685,13 @@ Using prestige points, TODO P0
                          "into star bubbles.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.starpawConversionIgnoreBombs);
+
+            if (pt.perm.unicatTranscendencePurchased && pt.perm.starpawConversionIgnoreBombs)
+            {
+                std::sprintf(uiTooltipBuffer, "Starpaw conversion now turns all normal bubbles into nova bubbles.");
+                uiLabelBuffer[0] = '\0';
+                (void)makePurchasablePPButtonOneTime("- Nova starpaw", 64u, pt.perm.starpawNova);
+            }
 
             std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 5s to 10s.");
             uiLabelBuffer[0] = '\0';
@@ -2958,7 +3006,7 @@ Using prestige points, TODO P0
                         if (rng.getF(0.f, 99.f) > pt.psvStarpawPercentage.currentValue())
                             return ControlFlow::Continue;
 
-                        bubble.type   = BubbleType::Star;
+                        bubble.type   = pt.perm.starpawNova ? BubbleType::Nova : BubbleType::Star;
                         bubble.hueMod = rng.getF(0.f, 360.f);
                         bubble.velocity.y -= rng.getF(0.025f, 0.05f);
 
@@ -3905,6 +3953,9 @@ Using prestige points, TODO P0
         if (byPlayerClick && bubble.type == BubbleType::Star)
             statHighestStarBubblePopCombo(static_cast<sf::base::U64>(combo));
 
+        if (byPlayerClick && bubble.type == BubbleType::Nova)
+            statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(combo));
+
         Shrine* collectorShrine = nullptr;
         for (Shrine& shrine : pt.shrines)
         {
@@ -3960,7 +4011,7 @@ Using prestige points, TODO P0
         spawnParticles(32, bubble.position, ParticleType::Bubble, 0.5f, 0.5f);
         spawnParticles(8, bubble.position, ParticleType::Bubble, 1.2f, 0.25f);
 
-        if (bubble.type == BubbleType::Star)
+        if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
         {
             spawnParticles(16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
         }
@@ -4028,20 +4079,20 @@ Using prestige points, TODO P0
             if (bubble.type == BubbleType::Bomb)
                 bubble.rotation += deltaTimeMs * 0.01f;
 
-            if (bubble.type == BubbleType::Star)
+            if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                 bubble.hueMod += deltaTimeMs * 0.1f;
 
             auto& pos = bubble.position;
 
-            constexpr float windMult[4]           = {0.f, 0.00011f, 0.00022f, 0.00055f};
-            constexpr float windStartVelocityY[4] = {0.075f, 0.2f, 0.3f, 0.6f};
+            constexpr float windMult[4]           = {0.f, 0.00009f, 0.00018f, 0.0005f};
+            constexpr float windStartVelocityY[4] = {0.07f, 0.18f, 0.25f, 0.55f};
 
-            const float horizontalWindStrength = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.1f : 1.f);
+            const float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.05f : 0.9f);
 
             if (pt.perm.windPurchased)
             {
-                bubble.velocity.x += horizontalWindStrength * deltaTimeMs;
-                bubble.velocity.y += horizontalWindStrength * deltaTimeMs;
+                bubble.velocity.x += (windVelocity * 0.5f) * deltaTimeMs;
+                bubble.velocity.y += windVelocity * deltaTimeMs;
             }
 
             pos += bubble.velocity * deltaTimeMs;
@@ -4069,14 +4120,16 @@ Using prestige points, TODO P0
                 const bool willBeStar = uniBuffEnabled && rng.getF(0.f, 100.f) <= 15.f;  // TODO P1: improve with PPs?
                 const bool willBeBomb = devilBuffEnabled && rng.getF(0.f, 100.f) <= 1.f; // TODO P1: improve with PPs?
 
+                const auto starType = pt.perm.unicatTranscendencePurchased ? BubbleType::Nova : BubbleType::Star;
+
                 if (!willBeStar && !willBeBomb)
                     turnBubbleNormal(bubble);
                 else if (willBeBomb && willBeStar)
-                    bubble.type = rng.getF(0.f, 1.f) > 0.5f ? BubbleType::Star : BubbleType::Bomb;
+                    bubble.type = rng.getF(0.f, 1.f) > 0.5f ? starType : BubbleType::Bomb;
                 else if (willBeBomb)
                     bubble.type = BubbleType::Bomb;
                 else if (willBeStar)
-                    bubble.type = BubbleType::Star;
+                    bubble.type = starType;
             }
             else if (pos.y + radius < 0.f)
             {
@@ -4223,7 +4276,7 @@ Using prestige points, TODO P0
 
         if (!pt.perm.geniusCatsPurchased)
         {
-            if (Bubble* specialBubble = pickAny(BubbleType::Star, BubbleType::Bomb))
+            if (Bubble* specialBubble = pickAny(BubbleType::Nova, BubbleType::Star, BubbleType::Bomb))
                 normalCatPopBubble(*specialBubble);
             else if (Bubble* b = pickRandomBubbleInRadius({cx, cy}, range))
                 normalCatPopBubble(*b);
@@ -4233,6 +4286,8 @@ Using prestige points, TODO P0
 
         if (Bubble* bBomb = pickAny(BubbleType::Bomb); bBomb != nullptr && !pt.geniusCatIgnoreBubbles.bomb)
             normalCatPopBubble(*bBomb);
+        else if (Bubble* bNova = pickAny(BubbleType::Nova); bNova != nullptr && !pt.geniusCatIgnoreBubbles.star)
+            normalCatPopBubble(*bNova);
         else if (Bubble* bStar = pickAny(BubbleType::Star); bStar != nullptr && !pt.geniusCatIgnoreBubbles.star)
             normalCatPopBubble(*bStar);
         else if (Bubble* bNormal = pickAny(BubbleType::Normal); bNormal != nullptr && !pt.geniusCatIgnoreBubbles.normal)
@@ -4242,34 +4297,69 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     {
+        const auto starBubbleType = pt.perm.unicatTranscendenceAOEPurchased ? BubbleType::Nova : BubbleType::Star;
+        const auto nStarParticles = pt.perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
+
+        const auto transformBubble = [&](Bubble& bToTransform)
+        {
+            bToTransform.type       = starBubbleType;
+            bToTransform.hueMod     = rng.getF(0.f, 360.f);
+            bToTransform.velocity.y = rng.getF(-0.1f, -0.05f);
+
+            spawnParticles(nStarParticles, bToTransform.position, ParticleType::Star, 0.5f, 0.35f);
+            ++cat.hits;
+        };
+
         const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
         const auto range       = pt.getComputedRangeByCatType(cat.type);
 
-        Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat),
-                                                     range,
-                                                     [&](const Bubble& bubble)
-        { return bubble.type == BubbleType::Normal; });
+        if (pt.perm.unicatTranscendenceAOEPurchased)
+        {
+            Bubble* firstBubble = nullptr;
 
-        if (b == nullptr)
-            return;
+            forEachBubbleInRadius(getCatRangeCenter(cat),
+                                  range,
+                                  [&](Bubble& bubble)
+            {
+                if (bubble.type != BubbleType::Normal)
+                    return ControlFlow::Continue;
 
-        Bubble& bubble = *b;
+                if (firstBubble == nullptr)
+                    firstBubble = &bubble;
 
-        cat.pawPosition = bubble.position;
-        cat.pawOpacity  = 255.f;
-        cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
+                transformBubble(bubble);
+                return ControlFlow::Continue;
+            });
 
-        bubble.type       = BubbleType::Star;
-        bubble.hueMod     = rng.getF(0.f, 360.f);
-        bubble.velocity.y = rng.getF(-0.1f, -0.05f);
-        sounds.shine.setPosition({bubble.position.x, bubble.position.y});
-        playSound(sounds.shine);
+            if (firstBubble == nullptr)
+                return;
 
-        spawnParticles(4, bubble.position, ParticleType::Star, 0.5f, 0.35f);
+            cat.pawPosition = firstBubble->position;
+            cat.pawOpacity  = 255.f;
+            cat.pawRotation = (firstBubble->position - cat.position).angle() + sf::degrees(45);
+
+            sounds.shine.setPosition({firstBubble->position.x, firstBubble->position.y});
+            playSound(sounds.shine); // TODO P1: play a different sound?
+        }
+        else
+        {
+            Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat),
+                                                         range,
+                                                         [&](const Bubble& bubble)
+            { return bubble.type == BubbleType::Normal; });
+
+            if (b == nullptr)
+                return;
+
+            cat.pawPosition = b->position;
+            cat.pawOpacity  = 255.f;
+            cat.pawRotation = (b->position - cat.position).angle() + sf::degrees(45);
+
+            sounds.shine.setPosition({b->position.x, b->position.y});
+            playSound(sounds.shine);
+        }
 
         cat.textStatusShakeEffect.bump(rng, 1.5f);
-        ++cat.hits;
-
         cat.cooldown.value = maxCooldown;
     }
 
@@ -4426,7 +4516,7 @@ Using prestige points, TODO P0
 
             constexpr float offset = 64.f;
 
-            for (SizeT i = 0u; i < nDollsToSpawn * 10; ++i)
+            for (SizeT i = 0u; i < nDollsToSpawn; ++i)
             {
                 auto& d = pt.dolls.emplace_back(
                     Doll{.position = rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset}),
@@ -4472,7 +4562,7 @@ Using prestige points, TODO P0
 
         const auto findRotatedStarBubble = [&](Bubble& bubble)
         {
-            if (bubble.type != BubbleType::Star || bubble.rotation == 0.f)
+            if ((bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova) || bubble.rotation == 0.f)
                 return ControlFlow::Continue;
 
             starBubble = &bubble;
@@ -4484,7 +4574,8 @@ Using prestige points, TODO P0
         if (starBubble == nullptr)
             starBubble = pickRandomBubbleInRadiusMatching({cx, cy},
                                                           range,
-                                                          [&](Bubble& bubble) { return bubble.type == BubbleType::Star; });
+                                                          [&](Bubble& bubble)
+            { return bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova; });
 
         if (starBubble == nullptr)
             return;
@@ -4653,7 +4744,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getWindRepulsionMult() const
     {
-        constexpr float windRepulsionMults[4] = {1.f, 4.f, 8.f, 12.f};
+        constexpr float windRepulsionMults[4] = {1.f, 5.f, 10.f, 15.f};
         return windRepulsionMults[pt.windStrength];
     }
 
@@ -4669,7 +4760,7 @@ Using prestige points, TODO P0
             // Buff cats in shrine of automation
             for (Shrine& shrine : pt.shrines)
             {
-                if (shrine.type == ShrineType::Clicking && shrine.isActive())
+                if (shrine.type == ShrineType::Clicking && shrine.isActive() && cat.type != CatType::Mouse)
                 {
                     const auto diff = (shrine.position - cat.position);
                     if (diff.lengthSquared() < shrine.getRangeSquared() * 1.35f)
@@ -4832,7 +4923,7 @@ Using prestige points, TODO P0
             }
 
             if (cat.type == CatType::Uni)
-                cat.hue += deltaTimeMs * 0.1f;
+                cat.hue += deltaTimeMs * (pt.perm.unicatTranscendencePurchased ? 0.25f : 0.1f);
 
             if (cat.type == CatType::Astro && cat.astroState.hasValue())
             {
@@ -4962,7 +5053,7 @@ Using prestige points, TODO P0
                     if (ignoreNormalBubbles && bubble.type == BubbleType::Normal)
                         return ControlFlow::Continue;
 
-                    if (ignoreStarBubbles && bubble.type == BubbleType::Star)
+                    if (ignoreStarBubbles && (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
                         return ControlFlow::Continue;
 
                     if (ignoreBombBubbles && bubble.type == BubbleType::Bomb)
@@ -5169,7 +5260,7 @@ Using prestige points, TODO P0
 
                 if (shrine.type == ShrineType::Magic)
                 {
-                    if (bubble.type == BubbleType::Star)
+                    if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                     {
                         if (rng.getF(0.f, 1.f) > 0.85f)
                             spawnParticlesWithHue(230.f, 1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
@@ -5807,6 +5898,29 @@ Using prestige points, TODO P0
         unlockIf(nStarBubblesPoppedByCat >= 1'000'000);
         unlockIf(nStarBubblesPoppedByCat >= 10'000'000);
 
+        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 5);
+        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 10);
+        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 15);
+        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 20);
+        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 25);
+
+        const auto nNovaBubblesPoppedByHand = profile.statsLifetime.getNBubblesHandPopped(BubbleType::Nova);
+        const auto nNovaBubblesPoppedByCat  = profile.statsLifetime.getNBubblesCatPopped(BubbleType::Nova);
+
+        unlockIf(nNovaBubblesPoppedByHand >= 1);
+        unlockIf(nNovaBubblesPoppedByHand >= 100);
+        unlockIf(nNovaBubblesPoppedByHand >= 1000);
+        unlockIf(nNovaBubblesPoppedByHand >= 10'000);
+        unlockIf(nNovaBubblesPoppedByHand >= 100'000);
+
+        unlockIf(nNovaBubblesPoppedByCat >= 1);
+        unlockIf(nNovaBubblesPoppedByCat >= 100);
+        unlockIf(nNovaBubblesPoppedByCat >= 1000);
+        unlockIf(nNovaBubblesPoppedByCat >= 10'000);
+        unlockIf(nNovaBubblesPoppedByCat >= 100'000);
+        unlockIf(nNovaBubblesPoppedByCat >= 1'000'000);
+        unlockIf(nNovaBubblesPoppedByCat >= 10'000'000);
+
         const auto nBombBubblesPoppedByHand = profile.statsLifetime.getNBubblesHandPopped(BubbleType::Bomb);
         const auto nBombBubblesPoppedByCat  = profile.statsLifetime.getNBubblesCatPopped(BubbleType::Bomb);
 
@@ -6016,7 +6130,8 @@ Using prestige points, TODO P0
     {
         sf::Sprite tempSprite;
 
-        const sf::FloatRect bubbleRects[3]{txrBubble, txrBubbleStar, txrBomb};
+        const sf::FloatRect bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
+        static_assert(sf::base::getArraySize(bubbleRects) == nBubbleTypes);
 
         for (SizeT i = 0u; i < pt.bubbles.size(); ++i)
         {
@@ -6039,6 +6154,10 @@ Using prestige points, TODO P0
             {
                 tempSprite.color = hueColor(wrapHue(bubble.hueMod), 255);
             }
+            else if (bubble.type == BubbleType::Nova)
+            {
+                tempSprite.color = hueColor(wrapHue(bubble.hueMod * 2.f), 255);
+            }
             else
             {
                 constexpr float hueRange = 60.f;
@@ -6057,11 +6176,14 @@ Using prestige points, TODO P0
                                                   : pt.perm.smartCatsPurchased ? &txrSmartCat
                                                                                : &txrCat;
 
+        // TODO P0: add transcendent unicat txr
+        const sf::FloatRect* const unicatTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2 : &txrUniCat;
+
         const sf::FloatRect* const astroCatTxr = pt.perm.astroCatInspirePurchased ? &txrAstroCatWithFlag : &txrAstroCat;
 
         const sf::FloatRect* const catTxrsByType[] = {
             normalCatTxr, // Normal
-            &txrUniCat,   // Uni
+            unicatTxr,    // Uni
             &txrDevilCat, // Devil
             astroCatTxr,  // Astro
 
@@ -6805,8 +6927,13 @@ Using prestige points, TODO P0
     void gameLoopUpdateCollisionsCatShrine(const float deltaTimeMs)
     {
         for (Cat& cat : pt.cats)
+        {
+            if (cat.isAstroAndInFlight())
+                continue;
+
             for (Shrine& shrine : pt.shrines)
                 handleCatShrineCollision(deltaTimeMs, cat, shrine);
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -7357,8 +7484,36 @@ Using prestige points, TODO P0
             {
                 if (inPrestigeTransition && !pt.cats.empty())
                 {
+                    for (auto& cat : pt.cats)
+                    {
+                        cat.astroState.reset();
+                        cat.cooldown.value = 100.f;
+                    }
+
+                    // Find rightmost cat
+                    auto rightmostIt = std::max_element(pt.cats.begin(),
+                                                        pt.cats.end(),
+                                                        [](const Cat& a, const Cat& b)
+                    { return a.position.x < b.position.x; });
+
+                    scroll = rightmostIt->position.x / 2.f - gameScreenSize.x / 4.f;
+
+                    if (rightmostIt != pt.cats.end())
+                        std::swap(*rightmostIt, pt.cats.back());
+
                     const auto cPos = pt.cats.back().position;
                     pt.cats.pop_back();
+
+                    spawnParticle({.position      = cPos.addY(29.f),
+                                   .velocity      = {0.f, 0.f},
+                                   .scale         = 0.2f,
+                                   .accelerationY = -0.00015f,
+                                   .opacity       = 200.f,
+                                   .opacityDecay  = 0.0002f,
+                                   .rotation      = 0.f,
+                                   .torque        = rng.getF(-0.0002f, 0.0002f)},
+                                  /* hue */ 0.f,
+                                  ParticleType::CatSoul);
 
                     spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                     playReversePopAt(cPos);
@@ -7430,6 +7585,9 @@ Using prestige points, TODO P0
             {
                 inPrestigeTransition = false;
                 pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
+
+                pt.mapPurchased               = false;
+                pt.psvMapExtension.nPurchases = 0u;
 
                 scroll                   = 0.f;
                 draggedCat               = nullptr;
@@ -7821,6 +7979,9 @@ int main()
 }
 
 // TODO IDEAS:
+// - configurable particle spawn chance
+// - configurable pop sound play chance
+// - drag and drop multiple cats
 // - reduce size of game textures and try to reduce atlas size
 // - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // - bubble collisions with wind enabled seem fucked, is it a data race?
