@@ -4131,7 +4131,7 @@ Using prestige points, TODO P0
                 else if (willBeStar)
                     bubble.type = starType;
             }
-            else if (pos.y + radius < 0.f)
+            else if (pos.y + radius < -128.f)
             {
                 turnBubbleNormal(bubble);
             }
@@ -4351,6 +4351,8 @@ Using prestige points, TODO P0
             if (b == nullptr)
                 return;
 
+            transformBubble(*b);
+
             cat.pawPosition = b->position;
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (b->position - cat.position).angle() + sf::degrees(45);
@@ -4537,7 +4539,7 @@ Using prestige points, TODO P0
             cat.textStatusShakeEffect.bump(rng, 1.5f);
             cat.hits += 1u;
 
-            if (pt.dollTipShown)
+            if (!pt.dollTipShown)
             {
                 pt.dollTipShown = true;
                 doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
