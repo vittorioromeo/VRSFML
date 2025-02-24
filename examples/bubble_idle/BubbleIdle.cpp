@@ -77,6 +77,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
@@ -4425,7 +4426,7 @@ Using prestige points, TODO P0
 
             constexpr float offset = 64.f;
 
-            for (SizeT i = 0u; i < nDollsToSpawn; ++i)
+            for (SizeT i = 0u; i < nDollsToSpawn * 10; ++i)
             {
                 auto& d = pt.dolls.emplace_back(
                     Doll{.position = rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset}),
@@ -6196,7 +6197,7 @@ Using prestige points, TODO P0
             if (!cat.hexedTimer.hasValue())
                 cpuDrawableBatch.add(
                     sf::Sprite{.position    = cat.pawPosition,
-                               .scale       = {0.1f, 0.1f},
+                               .scale       = {0.2f, 0.2f},
                                .origin      = catPawTxr.size / 2.f,
                                .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
                                .textureRect = catPawTxr,
@@ -6376,11 +6377,13 @@ Using prestige points, TODO P0
             const auto dollColor = hueColor(doll.hue, dollAlpha);
 
             // TODO P1: tilt rotation a bit as well
-            cpuDrawableBatch.add(sf::Sprite{.position    = doll.getDrawPosition(),
-                                            .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
-                                            .origin      = txrDoll.size / 2.f,
-                                            .textureRect = txrDoll,
-                                            .color       = dollColor});
+            cpuDrawableBatch.add(
+                sf::Sprite{.position    = doll.getDrawPosition(),
+                           .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
+                           .origin      = txrDoll.size / 2.f,
+                           .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
+                           .textureRect = txrDoll,
+                           .color       = dollColor});
         }
     }
 
