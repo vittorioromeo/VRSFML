@@ -35,6 +35,7 @@ class Texture;
 class VertexBuffer;
 struct BlendMode;
 struct GLElementBufferObject;
+struct GLVAOGroup;
 struct GLVertexBufferObject;
 struct Sprite;
 struct StencilMode;
@@ -589,7 +590,7 @@ private:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void setupDraw(const PersistentGPUDrawableBatch* persistentBatch, const RenderStates& states);
+    void setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: MVP matrix
