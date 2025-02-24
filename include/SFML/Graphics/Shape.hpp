@@ -225,13 +225,20 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getFillVertices() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getFillVertices() const
+    {
+        return {m_vertices.data(), m_verticesEndIndex};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getOutlineVertices() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getOutlineVertices() const
+    {
+        return {m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex};
+    }
+
 
 protected:
     ////////////////////////////////////////////////////////////

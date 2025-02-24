@@ -145,20 +145,6 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::Span<const Vertex> Shape::getFillVertices() const
-{
-    return {m_vertices.data(), m_verticesEndIndex};
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] base::Span<const Vertex> Shape::getOutlineVertices() const
-{
-    return {m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex};
-}
-
-
-////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 {
     updateFromFunc([&points](const base::SizeT i) __attribute__((always_inline, flatten)) { return points[i]; }, pointCount);
