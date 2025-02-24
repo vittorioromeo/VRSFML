@@ -24,85 +24,19 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/ThreadPool.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include <condition_variable>
-#include <functional>
-#include <future>
-#include <mutex>
-#include <queue>
+#include <latch>
 #include <random>
-#include <stdexcept>
 #include <string>
 #include <thread>
 #include <vector>
 
 #include <cstddef>
 #include <cstdio>
-
-//==============================================================================
-// A minimal thread pool implementation (no external dependencies)
-//==============================================================================
-class ThreadPool
-{
-public:
-    ThreadPool(std::size_t threads) : stop(false)
-    {
-        for (std::size_t i = 0; i < threads; ++i)
-            workers.emplace_back([this]
-            {
-                for (;;)
-                {
-                    std::function<void()> task;
-                    {
-                        std::unique_lock<std::mutex> lock(queue_mutex);
-                        condition.wait(lock, [this] { return stop || !tasks.empty(); });
-                        if (stop && tasks.empty())
-                            return;
-                        task = std::move(tasks.front());
-                        tasks.pop();
-                    }
-                    task();
-                }
-            });
-    }
-
-    template <class F, class... Args>
-    auto enqueue(F&& f, Args&&... args) -> std::future<std::result_of_t<F(Args...)>>
-    {
-        using return_type = std::result_of_t<F(Args...)>;
-        auto taskPtr = std::make_shared<std::packaged_task<return_type()>>([func = std::forward<F>(f)] { func(); });
-        std::future<return_type> res = taskPtr->get_future();
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            if (stop)
-                throw std::runtime_error("enqueue on stopped ThreadPool");
-            tasks.emplace([taskPtr]() { (*taskPtr)(); });
-        }
-        condition.notify_one();
-        return res;
-    }
-
-    ~ThreadPool()
-    {
-        {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-            stop = true;
-        }
-        condition.notify_all();
-        for (auto& worker : workers)
-            worker.join();
-    }
-
-private:
-    std::vector<std::thread>          workers;
-    std::queue<std::function<void()>> tasks;
-    std::mutex                        queue_mutex;
-    std::condition_variable           condition;
-    bool                              stop;
-};
 
 
 ////////////////////////////////////////////////////////////
@@ -181,7 +115,7 @@ int main()
     { return std::uniform_int_distribution<unsigned int>{min, max}(rng); };
 
     const auto getRndU8 = [&](sf::base::U8 min, sf::base::U8 max)
-    { return static_cast<sf::base::U8>(getRndUInt(min, max)); };
+    { return std::uniform_int_distribution<sf::base::U8>{min, max}(rng); };
 
     //
     //
@@ -286,11 +220,11 @@ int main()
                 sf::CircleShape{
                     {.textureRect        = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
                      .outlineTextureRect = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
-                     .fillColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
-                     .outlineColor = {getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(0.f, 255.f), getRndU8(125.f, 255.f)},
+                     .fillColor    = {getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(125u, 255u)},
+                     .outlineColor = {getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(125u, 255u)},
                      .outlineThickness = 3.f,
                      .radius           = getRndFloat(3.f, 8.f),
-                     .pointCount       = getRndUInt(3, 8)}});
+                     .pointCount       = getRndUInt(3u, 8u)}});
 
             sprite.origin   = textureRect.size / 2.f;
             sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
@@ -325,13 +259,18 @@ int main()
     int         numEntities         = 500;
     std::size_t drawnVertices       = 0u;
 
+    //
+    //
     // Set up drawable batches
-    const sf::base::SizeT          nWorkers = 12u;
-    sf::CPUDrawableBatch           cpuDrawableBatches[nWorkers];
-    sf::PersistentGPUDrawableBatch gpuDrawableBatches[nWorkers];
+    const sf::base::SizeT nWorkers = std::thread::hardware_concurrency();
 
-    // Create our thread pool (it lives for the duration of the simulation)
-    ThreadPool pool(nWorkers);
+    std::vector<sf::CPUDrawableBatch> cpuDrawableBatches(nWorkers);
+    sf::PersistentGPUDrawableBatch    gpuDrawableBatch;
+
+    //
+    //
+    // Set up thread pool
+    sf::base::ThreadPool pool(nWorkers);
 
     // Set up clock and time sampling
     sf::Clock clock;
@@ -387,9 +326,6 @@ int main()
 
                 circleShape.position = sprite.position;
                 circleShape.rotation = sprite.rotation;
-
-                if (getRndFloat(0, 100) < 1)
-                    circleShape.setOutlineThickness(getRndFloat(1, 20));
             };
 
             if (!multithreadedUpdate)
@@ -399,25 +335,25 @@ int main()
             }
             else
             {
-                std::vector<std::future<void>> futures;
-                futures.reserve(nWorkers);
+                const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
+
+                std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
 
                 for (std::size_t i = 0u; i < nWorkers; ++i)
                 {
-                    futures.push_back(pool.enqueue([=, &entities, &updateEntity]()
+                    pool.post([&, i]
                     {
-                        const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
-                        const sf::base::SizeT batchStartIdx    = i * entitiesPerBatch;
+                        const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
                         const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
 
                         for (sf::base::SizeT j = batchStartIdx; j < batchEndIdx; ++j)
-                        {
                             updateEntity(entities[j]);
-                        }
-                    }));
+
+                        latch.count_down();
+                    });
                 }
-                for (auto& f : futures)
-                    f.get();
+
+                latch.wait();
             }
 
             samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
@@ -468,7 +404,7 @@ int main()
             ImGui::Checkbox("Multithreaded Update", &multithreadedUpdate);
             ImGui::SameLine();
 
-            ImGui::BeginDisabled(batchType == BatchType::Disabled);
+            ImGui::BeginDisabled(batchType != BatchType::CPUStorage);
             ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
             ImGui::EndDisabled();
 
@@ -515,135 +451,95 @@ int main()
 
             window.clear();
 
-            if (batchType == BatchType::Disabled || !multithreadedDraw)
+            const auto drawEntity = [&](const Entity& entity, std::size_t& drawnVertexCounter, auto&& drawFn)
+            {
+                if (drawSprites)
+                {
+                    drawFn(entity.sprite, textureAtlas.getTexture());
+                    drawnVertexCounter += 4u;
+                }
+
+                if (drawText)
+                {
+                    drawFn(entity.text);
+                    drawnVertexCounter += entity.text.getVertices().size();
+                }
+
+                if (drawShapes)
+                {
+                    drawFn(entity.circleShape, &textureAtlas.getTexture());
+
+                    drawnVertexCounter += entity.circleShape.getFillVertices().size() +
+                                          entity.circleShape.getOutlineVertices().size();
+                }
+            };
+
+            if (batchType != BatchType::CPUStorage || !multithreadedDraw)
             {
                 cpuDrawableBatches[0].clear();
-                gpuDrawableBatches[0].clear();
+                gpuDrawableBatch.clear();
 
                 drawnVertices = 0u;
 
-                const auto drawImpl = [&](const auto& drawable, const auto&... args)
-                {
-                    if (batchType == BatchType::Disabled)
-                        window.draw(drawable, args...);
-                    else if (batchType == BatchType::CPUStorage)
-                        cpuDrawableBatches[0].add(drawable);
-                    else if (batchType == BatchType::GPUStorage)
-                        gpuDrawableBatches[0].add(drawable);
-                };
-
                 for (const Entity& entity : entities)
-                {
-                    if (drawSprites)
+                    drawEntity(entity,
+                               drawnVertices,
+                               [&](const auto& drawable, const auto&... args)
                     {
-                        drawImpl(entity.sprite, textureAtlas.getTexture());
-                        drawnVertices += 4u;
-                    }
-
-                    if (drawText)
-                    {
-                        drawImpl(entity.text);
-                        drawnVertices += entity.text.getVertices().size();
-                    }
-
-                    if (drawShapes)
-                    {
-                        drawImpl(entity.circleShape, &textureAtlas.getTexture());
-
-                        drawnVertices += entity.circleShape.getFillVertices().size() +
-                                         entity.circleShape.getOutlineVertices().size();
-                    }
-                }
+                        if (batchType == BatchType::Disabled)
+                            window.draw(drawable, args...);
+                        else if (batchType == BatchType::CPUStorage)
+                            cpuDrawableBatches[0].add(drawable);
+                        else if (batchType == BatchType::GPUStorage)
+                            gpuDrawableBatch.add(drawable);
+                    });
 
                 if (batchType == BatchType::CPUStorage)
                     window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
+                    window.draw(gpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
 
                 samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
             }
             else
             {
-                auto forBatches = [&](auto&& f)
-                {
-                    if (batchType == BatchType::CPUStorage)
-                    {
-                        for (auto& batch : cpuDrawableBatches)
-                            f(batch);
-                    }
-                    else if (batchType == BatchType::GPUStorage)
-                    {
-                        for (auto& batch : gpuDrawableBatches)
-                            f(batch);
-                    }
-                };
-
-                forBatches([](auto& batch) { batch.clear(); });
+                for (auto& batch : cpuDrawableBatches)
+                    batch.clear();
 
                 // Initialize per-worker drawn vertex counts
-                std::size_t chunkDrawnVertices[nWorkers] = {};
+                std::vector<std::size_t> totalChunkDrawnVertices(nWorkers);
 
-                std::vector<std::future<void>> futures;
-                futures.reserve(nWorkers);
+                const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
+
+                std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
 
                 for (std::size_t i = 0u; i < nWorkers; ++i)
                 {
-                    futures.push_back(pool.enqueue(
-                        [=,
-                         &entities,
-                         &chunkDrawnVertices,
-                         &cpuDrawableBatches,
-                         &gpuDrawableBatches,
-                         &drawSprites,
-                         &drawText,
-                         &drawShapes,
-                         &batchType]()
+                    pool.post([&, i]
                     {
-                        const auto drawImpl = [&](const auto& drawable)
-                        {
-                            if (batchType == BatchType::CPUStorage)
-                                cpuDrawableBatches[i].add(drawable);
-                            else if (batchType == BatchType::GPUStorage)
-                                gpuDrawableBatches[i].add(drawable);
-                        };
+                        std::size_t chunkDrawnVertices = 0u;
 
-                        const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
-                        const sf::base::SizeT batchStartIdx    = i * entitiesPerBatch;
+                        const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
                         const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
 
                         for (sf::base::SizeT j = batchStartIdx; j < batchEndIdx; ++j)
-                        {
-                            const Entity& entity = entities[j];
+                            drawEntity(entities[j],
+                                       chunkDrawnVertices,
+                                       [&](const auto& drawable, const auto&...) { cpuDrawableBatches[i].add(drawable); });
 
-                            if (drawSprites)
-                            {
-                                drawImpl(entity.sprite);
-                                chunkDrawnVertices[i] += 4u;
-                            }
-
-                            if (drawText)
-                            {
-                                drawImpl(entity.text);
-                                chunkDrawnVertices[i] += entity.text.getVertices().size();
-                            }
-
-                            if (drawShapes)
-                            {
-                                drawImpl(entity.circleShape);
-                                chunkDrawnVertices[i] += entity.circleShape.getFillVertices().size() +
-                                                         entity.circleShape.getOutlineVertices().size();
-                            }
-                        }
-                    }));
+                        totalChunkDrawnVertices[i] += chunkDrawnVertices;
+                        latch.count_down();
+                    });
                 }
-                for (auto& f : futures)
-                    f.get();
+
+                latch.wait();
 
                 drawnVertices = 0u;
-                for (const auto v : chunkDrawnVertices)
+                for (const auto v : totalChunkDrawnVertices)
                     drawnVertices += v;
 
-                forBatches([&](auto& batch) { window.draw(batch, {.texture = &textureAtlas.getTexture()}); });
+                for (auto& batch : cpuDrawableBatches)
+                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
 
                 samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
             }

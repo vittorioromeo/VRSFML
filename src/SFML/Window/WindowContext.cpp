@@ -186,7 +186,7 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 constinit base::Optional<WindowContextImpl> installedWindowContext;
-constinit std::atomic<unsigned int> windowContextRC{0u};
+constinit std::atomic<unsigned int>         windowContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -277,7 +277,7 @@ base::Optional<WindowContext> WindowContext::create()
 ////////////////////////////////////////////////////////////
 WindowContext::WindowContext(base::PassKey<WindowContext>&&)
 {
-    windowContextRC.fetch_add(1u, std::memory_order_relaxed);
+    windowContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
 
 
@@ -296,7 +296,7 @@ WindowContext::WindowContext(WindowContext&&) noexcept : WindowContext(base::Pas
 ////////////////////////////////////////////////////////////
 WindowContext::~WindowContext()
 {
-    if (windowContextRC.fetch_sub(1u, std::memory_order_relaxed) > 1u)
+    if (windowContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
         return;
 
     SFML_BASE_ASSERT(ensureInstalled().unsharedFrameBuffers.empty());
@@ -340,7 +340,7 @@ void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsi
     const auto iter = base::findIf(wc.unsharedFrameBuffers.begin(),
                                    wc.unsharedFrameBuffers.end(),
                                    [&](const WindowContextImpl::UnsharedFrameBuffer& obj)
-                                   { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
+    { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
     if (iter != wc.unsharedFrameBuffers.end())
     {

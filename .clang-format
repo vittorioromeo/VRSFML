@@ -116,7 +116,7 @@ IncludeCategories:
   - Priority: 1
     Regex: '^\"(.+)\"$'
   - Priority: 11
-    Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest)'
+    Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest|blockingconcurrentqueue|concurrentqueue)'
   - Priority: 12
     Regex: '^<(CommonTraits|AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyStringViewUtil|SStringifyArrayUtil|LoadIntoMemoryUtil)'
   - Priority: 13
