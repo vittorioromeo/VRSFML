@@ -42,22 +42,22 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::TestingModeGuard()
 {
-    lifetimeTrackingTestingMode.store(true, std::memory_order_seq_cst);
+    lifetimeTrackingTestingMode.store(true, std::memory_order::seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
-    lifetimeTrackingTestingMode.store(false, std::memory_order_seq_cst);
-    lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order_seq_cst);
+    lifetimeTrackingTestingMode.store(false, std::memory_order::seq_cst);
+    lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order::seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
 bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered()
 {
-    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order_seq_cst);
+    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order::seq_cst);
 }
 
 
@@ -86,7 +86,7 @@ m_dependeeName(rhs.m_dependeeName),
 m_dependantName(rhs.m_dependantName)
 {
     SFML_BASE_PLACEMENT_NEW(m_dependantCount)
-    AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed));
+    AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order::relaxed));
 
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
     // if it wasn't `0u` when the move occurred.
@@ -105,7 +105,7 @@ LifetimeDependee& LifetimeDependee::operator=(const LifetimeDependee& rhs)
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-    asAtomicUInt(m_dependantCount).store(0u, std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount).store(0u, std::memory_order::relaxed);
 
     return *this;
 }
@@ -120,7 +120,7 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
     asAtomicUInt(m_dependantCount)
-        .store(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order_relaxed), std::memory_order_relaxed);
+        .store(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order::relaxed), std::memory_order::relaxed);
 
     // See rationale in move constructor for not resetting `rhs.m_dependantCount`.
 
@@ -131,7 +131,7 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 LifetimeDependee::~LifetimeDependee()
 {
-    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed);
+    const unsigned int finalCount = asAtomicUInt(m_dependantCount).load(std::memory_order::relaxed);
     asAtomicUInt(m_dependantCount).~AtomicUInt();
 
     if (finalCount == 0u)
@@ -214,15 +214,15 @@ LifetimeDependee::~LifetimeDependee()
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::addDependant()
 {
-    asAtomicUInt(m_dependantCount).fetch_add(1u, std::memory_order_relaxed);
+    asAtomicUInt(m_dependantCount).fetch_add(1u, std::memory_order::relaxed);
 }
 
 
 ////////////////////////////////////////////////////////////
 void LifetimeDependee::subDependant()
 {
-    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order_relaxed) > 0u);
-    asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order_relaxed);
+    SFML_BASE_ASSERT(asAtomicUInt(m_dependantCount).load(std::memory_order::relaxed) > 0u);
+    asAtomicUInt(m_dependantCount).fetch_sub(1u, std::memory_order::relaxed);
 }
 
 } // namespace sf::priv
