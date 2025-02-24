@@ -9,8 +9,8 @@
 #include "SFML/Base/Optional.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/Activity.hpp"
-#include "SFML/System/Android/ResourceStream.hpp"
+    #include "SFML/System/Android/Activity.hpp"
+    #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
 #include "SFML/System/FileUtils.hpp"

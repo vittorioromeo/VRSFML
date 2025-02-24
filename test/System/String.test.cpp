@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 
+
 namespace
 {
 // Return either argument depending on whether wchar_t is 16 or 32 bits

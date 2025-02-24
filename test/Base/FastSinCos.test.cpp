@@ -8,7 +8,7 @@ static_assert(sizeof(float) == 4);
 
 
 ////////////////////////////////////////////////////////////
-static_assert(sf::base::priv::radToIndex >= 10430.0f);
+static_assert(sf::base::priv::radToIndex >= 10430.f);
 static_assert(sf::base::priv::radToIndex <= 10430.9f);
 
 

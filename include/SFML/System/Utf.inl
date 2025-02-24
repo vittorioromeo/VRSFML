@@ -126,7 +126,7 @@ Out Utf<8>::encode(char32_t input, Out output, base::U8 replacement)
     static constexpr base::U8 firstBytes[7] = {0x00, 0x00, 0xC0, 0xE0, 0xF0, 0xF8, 0xFC};
 
     // encode the character
-    if ((input > 0x0010FFFF) || ((input >= 0xD800) && (input <= 0xDBFF)))
+    if ((input > 0x00'10'FF'FF) || ((input >= 0xD8'00) && (input <= 0xDB'FF)))
     {
         // Invalid character
         if (replacement)
@@ -348,15 +348,15 @@ In Utf<16>::decode(In begin, In end, char32_t& output, char32_t replacement)
     const char16_t first = *begin++;
 
     // If it's a surrogate pair, first convert to a single UTF-32 character
-    if ((first >= 0xD800) && (first <= 0xDBFF))
+    if ((first >= 0xD8'00) && (first <= 0xDB'FF))
     {
         if (begin != end)
         {
             const base::U32 second = *begin++;
-            if ((second >= 0xDC00) && (second <= 0xDFFF))
+            if ((second >= 0xDC'00) && (second <= 0xDF'FF))
             {
                 // The second element is valid: convert the two elements to a UTF-32 character
-                output = ((first - 0xD800u) << 10) + (second - 0xDC00) + 0x0010000;
+                output = ((first - 0xD8'00u) << 10) + (second - 0xDC'00) + 0x0'01'00'00;
             }
             else
             {
@@ -385,10 +385,10 @@ In Utf<16>::decode(In begin, In end, char32_t& output, char32_t replacement)
 template <typename Out>
 Out Utf<16>::encode(char32_t input, Out output, char16_t replacement)
 {
-    if (input <= 0xFFFF)
+    if (input <= 0xFF'FF)
     {
         // The character can be copied directly, we just need to check if it's in the valid range
-        if ((input >= 0xD800) && (input <= 0xDFFF))
+        if ((input >= 0xD8'00) && (input <= 0xDF'FF))
         {
             // Invalid character (this range is reserved)
             if (replacement)
@@ -400,7 +400,7 @@ Out Utf<16>::encode(char32_t input, Out output, char16_t replacement)
             *output++ = static_cast<char16_t>(input);
         }
     }
-    else if (input > 0x0010FFFF)
+    else if (input > 0x00'10'FF'FF)
     {
         // Invalid character (greater than the maximum Unicode value)
         if (replacement)
@@ -409,9 +409,9 @@ Out Utf<16>::encode(char32_t input, Out output, char16_t replacement)
     else
     {
         // The input character will be converted to two UTF-16 elements
-        input -= 0x0010000;
-        *output++ = static_cast<char16_t>((input >> 10) + 0xD800);
-        *output++ = static_cast<char16_t>((input & 0x3FFUL) + 0xDC00);
+        input -= 0x0'01'00'00;
+        *output++ = static_cast<char16_t>((input >> 10) + 0xD8'00);
+        *output++ = static_cast<char16_t>((input & 0x3'FFUL) + 0xDC'00);
     }
 
     return output;
@@ -720,6 +720,7 @@ Out Utf<32>::toUtf8(In begin, In end, Out output)
     return output;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename In, typename Out>
 Out Utf<32>::toUtf16(In begin, In end, Out output)
@@ -799,7 +800,7 @@ Out Utf<32>::encodeWide(char32_t codepoint, Out output, wchar_t replacement)
     }
     else
     {
-        if ((codepoint <= 0xFFFF) && ((codepoint < 0xD800) || (codepoint > 0xDFFF)))
+        if ((codepoint <= 0xFF'FF) && ((codepoint < 0xD8'00) || (codepoint > 0xDF'FF)))
         {
             *output++ = static_cast<wchar_t>(codepoint);
         }

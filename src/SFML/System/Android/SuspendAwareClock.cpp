@@ -18,7 +18,7 @@ SuspendAwareClock::time_point SuspendAwareClock::now() noexcept
 #ifdef CLOCK_BOOTTIME
     clock_gettime(CLOCK_BOOTTIME, &ts);
 #else
-#error "CLOCK_BOOTTIME is essential for SuspendAwareClock to work"
+    #error "CLOCK_BOOTTIME is essential for SuspendAwareClock to work"
 #endif // CLOCK_BOOTTIME
     return time_point(std::chrono::seconds(ts.tv_sec) + std::chrono::nanoseconds(ts.tv_nsec));
 }

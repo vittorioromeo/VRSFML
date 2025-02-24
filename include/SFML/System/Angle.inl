@@ -78,7 +78,7 @@ constexpr Angle Angle::rotatedTowards(const Angle other, const float speed) cons
 
     float result = m_radians;
 
-    if (diff > 0.0f)
+    if (diff > 0.f)
     {
         result += speed;
     }
@@ -90,13 +90,14 @@ constexpr Angle Angle::rotatedTowards(const Angle other, const float speed) cons
     // Normalize to [0, base::tau)
     result = base::fmod(result, base::tau);
 
-    if (result < 0.0f)
+    if (result < 0.f)
     {
         result += base::tau;
     }
 
     return Angle{result};
 }
+
 
 ////////////////////////////////////////////////////////////
 constexpr Angle::Angle(float radians) : m_radians(radians)
@@ -260,7 +261,6 @@ constexpr Angle& operator%=(Angle& lhs, Angle rhs)
     return lhs;
 }
 
-
 namespace Literals
 {
 ////////////////////////////////////////////////////////////
@@ -291,7 +291,6 @@ constexpr Angle operator""_rad(unsigned long long angle)
 }
 
 } // namespace Literals
-
 
 ////////////////////////////////////////////////////////////
 // Static member data

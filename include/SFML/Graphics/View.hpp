@@ -34,12 +34,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vector2f thePosition, Vector2f theSize) :
         FloatRect{thePosition, theSize}
         {
-            SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
-            SFML_BASE_ASSERT(size.x >= 0.0f && "size.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(size.y >= 0.0f && "size.y must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.x + size.x <= 1.0f && "position.x + size.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
 
         [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
@@ -86,7 +86,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
+    Vector2f center{500.f, 500.f};   //!< Center of the view, in scene coordinates
     Vector2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)

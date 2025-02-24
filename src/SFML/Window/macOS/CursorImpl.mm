@@ -10,6 +10,7 @@
 
 #import <AppKit/AppKit.h>
 
+
 namespace
 {
 
@@ -24,6 +25,7 @@ NSCursor* loadFromSelector(SEL selector)
 }
 
 } // namespace
+
 
 namespace sf::priv
 {

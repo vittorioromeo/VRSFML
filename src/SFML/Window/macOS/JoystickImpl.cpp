@@ -13,7 +13,6 @@
 
 #include <algorithm> // std::sort
 
-
 namespace
 {
 
@@ -41,7 +40,6 @@ std::string getDeviceString(IOHIDDeviceRef ref, CFStringRef prop, unsigned int i
                     << "' for joystick at index " << index;
     return "Unknown Joystick";
 }
-
 
 // Get HID device property key as an unsigned int
 unsigned int getDeviceUint(IOHIDDeviceRef ref, CFStringRef prop, unsigned int index)

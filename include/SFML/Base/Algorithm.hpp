@@ -8,7 +8,6 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -21,7 +20,6 @@ template <typename Iter, typename TargetIter>
     return targetIter;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
@@ -32,7 +30,6 @@ template <typename Iter, typename T>
 
     return rangeEnd;
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
@@ -45,7 +42,6 @@ template <typename Iter, typename Predicate>
     return rangeEnd;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
@@ -56,7 +52,6 @@ template <typename Iter, typename Predicate>
 
     return false;
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename Iter>
@@ -71,7 +66,6 @@ template <typename Iter>
     return result;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
@@ -85,7 +79,6 @@ template <typename Iter, typename Predicate>
     return result;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool allOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
@@ -97,7 +90,6 @@ template <typename Iter, typename Predicate>
     return true;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
 [[nodiscard, gnu::always_inline, gnu::const]] consteval SizeT getArraySize(const T (&)[N]) noexcept
@@ -105,14 +97,12 @@ template <typename T, auto N>
     return N;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename S, typename T, auto N>
 [[nodiscard, gnu::always_inline, gnu::const]] consteval auto getArraySize(const T (S::*)[N]) noexcept
 {
     return N;
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -157,7 +147,6 @@ public:
     }
 };
 
-
 ////////////////////////////////////////////////////////////
 template <typename T, typename U = T>
 [[nodiscard, gnu::always_inline]] inline constexpr T exchange(T& obj, U&& newVal)
@@ -166,7 +155,6 @@ template <typename T, typename U = T>
     obj      = SFML_BASE_FORWARD(newVal);
     return oldVal;
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
@@ -182,7 +170,6 @@ template <typename Iter, typename Predicate>
     return first;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Vector, typename Predicate>
 [[gnu::always_inline]] inline constexpr SizeT vectorEraseIf(Vector& vector, Predicate&& predicate)
@@ -194,7 +181,6 @@ template <typename Vector, typename Predicate>
     return nRemoved;
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[gnu::always_inline]] constexpr void swap(T& a, T& b) noexcept
@@ -204,7 +190,6 @@ template <typename T>
     b       = SFML_BASE_MOVE(tempA);
 }
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter1, typename Iter2>
 [[gnu::always_inline]] constexpr void iterSwap(Iter1 a, Iter2 b)
@@ -212,7 +197,6 @@ template <typename Iter1, typename Iter2>
     using base::swap;
     swap(*a, *b);
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename Iter1, typename Iter2>
@@ -223,7 +207,6 @@ template <typename Iter1, typename Iter2>
 
     return first2;
 }
-
 
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Comparer>

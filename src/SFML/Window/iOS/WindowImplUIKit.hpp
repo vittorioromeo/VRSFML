@@ -14,7 +14,6 @@ SFML_DECLARE_OBJC_CLASS(UIWindow);
 SFML_DECLARE_OBJC_CLASS(SFView);
 SFML_DECLARE_OBJC_CLASS(SFViewController);
 
-
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

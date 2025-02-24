@@ -31,7 +31,7 @@ public:
     ////////////////////////////////////////////////////////////
     enum : base::SizeT
     {
-        MaxDatagramSize = 65507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
+        MaxDatagramSize = 65'507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
     };
 
     ////////////////////////////////////////////////////////////

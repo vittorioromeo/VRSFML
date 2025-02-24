@@ -8,7 +8,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -22,13 +21,11 @@ struct [[nodiscard]] Span
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span(decltype(nullptr), SizeT) = delete;
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span(T* data, SizeT size) : m_data{data}, m_size{size}
     {
         SFML_BASE_ASSERT(data != nullptr || (data == nullptr && size == 0u));
     }
-
 
     ////////////////////////////////////////////////////////////
     template <SizeT N>
@@ -36,13 +33,11 @@ struct [[nodiscard]] Span
     {
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* data() const
     {
         return m_data;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT size() const
@@ -50,20 +45,17 @@ struct [[nodiscard]] Span
         return m_size;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* begin() const
     {
         return m_data;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* end() const
     {
         return m_data + m_size;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator[](SizeT i) const
@@ -72,13 +64,11 @@ struct [[nodiscard]] Span
         return *(m_data + i);
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const
     {
         return m_size == 0u;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool valueEquals(const T* rhsData, SizeT rhsSize) const
@@ -93,13 +83,11 @@ struct [[nodiscard]] Span
         return true;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool valueEquals(const Span& rhs) const
     {
         return valueEquals(rhs.m_data, rhs.m_size);
     }
-
 
     ////////////////////////////////////////////////////////////
     // Member data

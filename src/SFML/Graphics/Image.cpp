@@ -23,8 +23,8 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/Activity.hpp"
-#include "SFML/System/Android/ResourceStream.hpp"
+    #include "SFML/System/Android/Activity.hpp"
+    #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
 #define STB_IMAGE_STATIC
@@ -46,6 +46,7 @@ int read(void* user, char* data, int size)
     return count.hasValue() ? static_cast<int>(*count) : -1;
 }
 
+
 ////////////////////////////////////////////////////////////
 void skip(void* user, int size)
 {
@@ -54,12 +55,14 @@ void skip(void* user, int size)
         sf::priv::err() << "Failed to seek image loader input stream";
 }
 
+
 ////////////////////////////////////////////////////////////
 int eof(void* user)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     return stream.tell().value() >= stream.getSize().value();
 }
+
 
 ////////////////////////////////////////////////////////////
 // Deleter for STB pointers
@@ -70,6 +73,7 @@ struct StbDeleter
         stbi_image_free(image);
     }
 };
+
 
 ////////////////////////////////////////////////////////////
 using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;

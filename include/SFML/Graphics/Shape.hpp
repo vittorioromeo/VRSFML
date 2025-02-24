@@ -32,12 +32,12 @@ struct Color;
 struct RenderStates;
 } // namespace sf
 
+
 namespace sf::priv
 {
 template <typename TStorage>
 class DrawableBatchImpl;
 }
-
 
 namespace sf
 {

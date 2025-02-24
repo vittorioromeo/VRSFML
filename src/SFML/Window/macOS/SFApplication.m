@@ -12,7 +12,6 @@
 ////////////////////////////////////////////////////////////
 @implementation SFApplication
 
-
 ////////////////////////////////////////////////////////////
 + (void)processEvent
 {
@@ -27,7 +26,6 @@
         [NSApp sendEvent:event];
     }
 }
-
 
 ////////////////////////////////////////////////////////
 + (void)setUpMenuBar
@@ -61,7 +59,6 @@
 
     [pool drain];
 }
-
 
 ////////////////////////////////////////////////////////
 + (NSMenu*)newAppleMenu
@@ -138,7 +135,6 @@
     return appleMenu;
 }
 
-
 ////////////////////////////////////////////////////////
 + (NSMenu*)newFileMenu
 {
@@ -160,7 +156,6 @@
 
     return fileMenu;
 }
-
 
 ////////////////////////////////////////////////////////
 + (NSMenu*)newWindowMenu
@@ -196,7 +191,6 @@
     return windowMenu;
 }
 
-
 ////////////////////////////////////////////////////////
 + (NSString*)applicationName
 {
@@ -214,14 +208,12 @@
     return appName;
 }
 
-
 ////////////////////////////////////////////////////////
 - (void)bringAllToFront:(id)sender
 {
     (void)sender;
     [[NSApp windows] makeObjectsPerformSelector:@selector(orderFrontRegardless)];
 }
-
 
 ////////////////////////////////////////////////////////
 - (void)sendEvent:(NSEvent*)anEvent
@@ -238,6 +230,5 @@
         [super sendEvent:anEvent];
     }
 }
-
 
 @end

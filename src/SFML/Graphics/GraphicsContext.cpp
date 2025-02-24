@@ -69,7 +69,6 @@ void main()
 
 )glsl";
 
-
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::Optional<Shader> createBuiltInShader(const char* vertexSrc, const char* fragmentSrc)
 {
@@ -88,14 +87,12 @@ void main()
 
 } // namespace
 
-
 ///////////////////////////////////////////////////////////
 struct GraphicsContextImpl
 {
     Shader  builtInShader;
     Texture builtInWhiteDotTexture;
 };
-
 
 namespace
 {
@@ -117,7 +114,6 @@ GraphicsContextImpl& ensureInstalled()
 }
 
 } // namespace
-
 
 ////////////////////////////////////////////////////////////
 base::Optional<GraphicsContext> GraphicsContext::create()

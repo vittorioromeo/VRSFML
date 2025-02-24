@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] sf::View")
         {
             const sf::View view;
             CHECK(view.center == sf::Vector2f{500, 500});
-            CHECK(view.size == sf::Vector2f{1000, 1000});
+            CHECK(view.size == sf::Vector2f{1'000, 1'000});
             CHECK(view.rotation == sf::Angle::Zero);
             CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));

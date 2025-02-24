@@ -19,7 +19,7 @@ using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
 
-#include "SFML/Base/IntTypes.hpp"
+    #include "SFML/Base/IntTypes.hpp"
 
 using VkSurfaceKHR = sf::base::U64;
 

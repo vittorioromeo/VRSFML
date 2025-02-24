@@ -17,7 +17,6 @@
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 
-
 namespace sfvr::impl
 {
 using sf::base::SizeT;
@@ -56,7 +55,7 @@ template <typename T, typename... Ts>
             return i;
 
     return bad_index;
-};
+}
 
 template <typename>
 struct inplace_type_t
@@ -467,7 +466,6 @@ public:
             return *(SFML_BASE_LAUNDER_CAST(R*, ret_buffer));
         }
     }
-
 
     template <typename Visitor,
               typename R = decltype(impl::declval<Visitor&&>()(

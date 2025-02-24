@@ -16,10 +16,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 constexpr Color Color::fromRGBA(const base::U32 color)
 {
-    return {static_cast<base::U8>((color & 0xff000000) >> 24),
-            static_cast<base::U8>((color & 0x00ff0000) >> 16),
-            static_cast<base::U8>((color & 0x0000ff00) >> 8),
-            static_cast<base::U8>(color & 0x000000ff)};
+    return {static_cast<base::U8>((color & 0xff'00'00'00) >> 24),
+            static_cast<base::U8>((color & 0x00'ff'00'00) >> 16),
+            static_cast<base::U8>((color & 0x00'00'ff'00) >> 8),
+            static_cast<base::U8>((color & 0x00'00'00'ff) >> 0)};
 }
 
 
@@ -128,7 +128,6 @@ constexpr Color Color::withHueMod(const float hueMod) const
     return Color::fromHSLA(hsl, a);
 }
 
-
 #define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
     (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
 
@@ -161,7 +160,6 @@ constexpr Color Color::fromVec4(const TVec4& vec)
 }
 
 #undef SFML_PRIV_CLAMP_BY_VALUE
-
 
 ////////////////////////////////////////////////////////////
 template <typename TVec4>

@@ -90,6 +90,7 @@ SensorManager::SensorManager()
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 SensorManager::~SensorManager()
 {

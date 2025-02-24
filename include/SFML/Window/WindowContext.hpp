@@ -27,6 +27,7 @@ class SensorManager;
 class WindowImpl;
 } // namespace sf::priv
 
+
 namespace sf
 {
 class GraphicsContext;

@@ -205,7 +205,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
 
     SECTION("Length and normalization")
     {
-        constexpr sf::Vector3f v(2.4f, 3.0f, 5.2f);
+        constexpr sf::Vector3f v(2.4f, 3.f, 5.2f);
 
         CHECK(v.length() == Approx(6.46529f));
         CHECK(v.lengthSquared() == Approx(41.79997f));
@@ -214,7 +214,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector3", "", int, float)
 
     SECTION("Products and quotients")
     {
-        constexpr sf::Vector3f v(2.4f, 3.0f, 5.2f);
+        constexpr sf::Vector3f v(2.4f, 3.f, 5.2f);
         constexpr sf::Vector3f w(-0.7f, -2.2f, -4.8f);
 
         CHECK(v.dot(w) == Approx(-33.24f));
