@@ -29,7 +29,6 @@
 #include "SweepAndPrune.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
-#include "ThreadPool/Pool.hpp"
 #include "Timer.hpp"
 
 #include "SFML/ImGui/ImGui.hpp"
@@ -85,6 +84,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/ThreadPool.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -599,7 +599,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Thread pool
-    hg::ThreadPool::Pool threadPool{getTPWorkerCount()};
+    sf::base::ThreadPool threadPool{getTPWorkerCount()};
 
     ////////////////////////////////////////////////////////////
     // Cached views
@@ -6742,7 +6742,7 @@ Using prestige points, TODO P0
             handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]);
         };
 
-        const unsigned int nWorkers = threadPool.getWorkerCount();
+        const sf::base::SizeT nWorkers = threadPool.getWorkerCount();
         sweepAndPrune.forEachUniqueIndexPair(nWorkers, threadPool, func);
     }
 

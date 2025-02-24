@@ -303,7 +303,7 @@ struct RenderTarget::Impl
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
     view(theView),
-    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
+    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed)),
     vaoGroup()
     {
         vaoGroup.bind();

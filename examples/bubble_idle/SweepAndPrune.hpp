@@ -24,7 +24,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    void forEachUniqueIndexPair(const unsigned int nWorkers, auto& pool, auto& func)
+    void forEachUniqueIndexPair(const sf::base::SizeT nWorkers, auto& pool, auto& func)
     {
         const sf::base::SizeT numObjects = m_aabbs.size();
 
@@ -32,7 +32,7 @@ public:
             return;
 
         // Compute a chunk size for dividing the outer loop among tasks.
-        const sf::base::SizeT chunkSize = (numObjects + nWorkers - 1) / nWorkers;
+        const sf::base::SizeT chunkSize = (numObjects + nWorkers - 1u) / nWorkers;
 
         const auto processChunk = [this, numObjects, &func](sf::base::SizeT start, sf::base::SizeT end)
         {
@@ -60,7 +60,7 @@ public:
         };
 
         // If there's only one worker, process synchronously.
-        if (nWorkers <= 1)
+        if (nWorkers <= 1u)
         {
             processChunk(0u, numObjects);
             return;
