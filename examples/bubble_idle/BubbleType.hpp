@@ -10,6 +10,7 @@ enum class [[nodiscard]] BubbleType : sf::base::U8
     Normal = 0u,
     Star   = 1u,
     Bomb   = 2u,
+    Nova   = 3u,
 
     Count
 };
