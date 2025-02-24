@@ -27,6 +27,11 @@
 #include <cstddef>
 #include <cstdio>
 
+
+////////////////////////////////////////////////////////////
+/// Main
+///
+////////////////////////////////////////////////////////////
 int main()
 {
     //
@@ -134,11 +139,16 @@ int main()
     int  numEntities = 50'000;
     int  numFrames   = 240;
 
-    //
-    //
-    // Set up benchmark
-    // sf::CPUDrawableBatch drawableBatch;
+//
+//
+// Set up benchmark
+#ifndef SFML_OPENGL_ES
+    std::cout << "OpenGL ES not detected, using persistent GPU batching\n";
     sf::PersistentGPUDrawableBatch drawableBatch;
+#else
+    std::cout << "OpenGL ES detected, using CPU storage-backed batching\n";
+    sf::CPUDrawableBatch drawableBatch;
+#endif
     populateEntities(static_cast<std::size_t>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
