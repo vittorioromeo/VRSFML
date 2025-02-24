@@ -18,6 +18,7 @@ struct [[nodiscard]] Stats
     sf::base::U64 explosionRevenue                                        = 0u;
     sf::base::U64 flightRevenue                                           = 0u;
     sf::base::U64 highestStarBubblePopCombo                               = 0u;
+    sf::base::U64 highestNovaBubblePopCombo                               = 0u;
     sf::base::U64 nAbsorbedStarBubbles                                    = 0u;
     sf::base::U64 nSpellCasts[PSVDataConstants::spellCount.nMaxPurchases] = {};
     sf::base::U64 nWitchcatRitualsPerCatType[nCatTypes]                   = {};
