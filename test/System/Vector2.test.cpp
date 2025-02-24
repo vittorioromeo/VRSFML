@@ -254,7 +254,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
     SECTION("Length and normalization")
     {
-        constexpr sf::Vector2f v(2.4f, 3.0f);
+        constexpr sf::Vector2f v(2.4f, 3.f);
 
         CHECK(v.length() == Approx(3.84187f));
         CHECK(v.lengthSquared() == Approx(14.7599650969f));
@@ -269,7 +269,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
     SECTION("Rotations and angles")
     {
-        constexpr sf::Vector2f v(2.4f, 3.0f);
+        constexpr sf::Vector2f v(2.4f, 3.f);
 
         CHECK(v.angle() == Approx(51.3402_deg));
         CHECK(sf::Vector2f{1.f, 0.f}.angleTo(v) == Approx(51.3402_deg));
@@ -288,17 +288,17 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         CHECK(v.rotatedBy(-158.9902_deg) * ratio == Approx(w));
         CHECK(w.rotatedBy(158.9902_deg) / ratio == Approx(v));
 
-        STATIC_CHECK(v.perpendicular() == sf::Vector2f(-3.0f, 2.4f));
+        STATIC_CHECK(v.perpendicular() == sf::Vector2f(-3.f, 2.4f));
         STATIC_CHECK(v.perpendicular().perpendicular().perpendicular().perpendicular() == v);
 
-        CHECK(v.rotatedBy(90_deg) == Approx(sf::Vector2f(-3.0f, 2.4f)));
+        CHECK(v.rotatedBy(90_deg) == Approx(sf::Vector2f(-3.f, 2.4f)));
         CHECK(v.rotatedBy(27.14_deg) == Approx(sf::Vector2f(0.767248f, 3.76448f)));
         CHECK(v.rotatedBy(-36.11_deg) == Approx(sf::Vector2f(3.70694f, 1.00925f)));
     }
 
     SECTION("Products and quotients")
     {
-        constexpr sf::Vector2f v(2.4f, 3.0f);
+        constexpr sf::Vector2f v(2.4f, 3.f);
         constexpr sf::Vector2f w(-0.7f, -2.2f);
 
         CHECK(v.dot(w) == Approx(-8.28f));
@@ -315,7 +315,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
 
     SECTION("Projection")
     {
-        constexpr sf::Vector2f v(2.4f, 3.0f);
+        constexpr sf::Vector2f v(2.4f, 3.f);
         constexpr sf::Vector2f w(-0.7f, -2.2f);
 
         CHECK(v.projectedOnto(w) == Approx(sf::Vector2f(1.087430f, 3.417636f)));
@@ -324,8 +324,8 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
         CHECK(w.projectedOnto(v) == Approx(sf::Vector2f(-1.346342f, -1.682927f)));
         CHECK(w.projectedOnto(v) == Approx(-0.560976f * v));
 
-        CHECK(v.projectedOnto(sf::Vector2f{1.f, 0.f}) == Approx(sf::Vector2f(2.4f, 0.0f)));
-        CHECK(v.projectedOnto(sf::Vector2f{0.f, 1.f}) == Approx(sf::Vector2f(0.0f, 3.0f)));
+        CHECK(v.projectedOnto(sf::Vector2f{1.f, 0.f}) == Approx(sf::Vector2f(2.4f, 0.f)));
+        CHECK(v.projectedOnto(sf::Vector2f{0.f, 1.f}) == Approx(sf::Vector2f(0.f, 3.f)));
     }
 
     SECTION("Constexpr support")
@@ -350,7 +350,7 @@ TEMPLATE_TEST_CASE("[System] sf::Vector2", "", int, float)
     {
         CHECK(sf::Vector2f{}.rotatedBy(-158.9902_deg) == sf::Vector2f{}.movedTowards(0.f, -158.9902_deg));
 
-        constexpr sf::Vector2f v(2.4f, 3.0f);
+        constexpr sf::Vector2f v(2.4f, 3.f);
         CHECK(v + sf::Vector2f::fromAngle(10.f, -158.9902_deg) == v.movedTowards(10.f, -158.9902_deg));
     }
 

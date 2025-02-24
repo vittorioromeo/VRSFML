@@ -104,7 +104,6 @@ SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomRight,  {1.f,  1.f});
         position = newPosition + getAnchorPointOffset(factors);
     }
 
-
 #define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                                \
     [[gnu::always_inline, gnu::flatten]] constexpr void name(const Vector2<T> newPos) \
     {                                                                                 \

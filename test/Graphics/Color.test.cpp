@@ -56,17 +56,17 @@ TEST_CASE("[Graphics] sf::Color")
 
         SECTION("sf::base::I32 constructor")
         {
-            STATIC_CHECK(sf::Color::fromRGBA(0x00000000) == sf::Color(0, 0, 0, 0));
-            STATIC_CHECK(sf::Color::fromRGBA(0x01020304) == sf::Color(1, 2, 3, 4));
-            STATIC_CHECK(sf::Color::fromRGBA(0xFFFFFFFF) == sf::Color(255, 255, 255, 255));
+            STATIC_CHECK(sf::Color::fromRGBA(0x00'00'00'00) == sf::Color(0, 0, 0, 0));
+            STATIC_CHECK(sf::Color::fromRGBA(0x01'02'03'04) == sf::Color(1, 2, 3, 4));
+            STATIC_CHECK(sf::Color::fromRGBA(0xFF'FF'FF'FF) == sf::Color(255, 255, 255, 255));
         }
     }
 
     SECTION("toInteger()")
     {
-        STATIC_CHECK(sf::Color(0, 0, 0, 0).toInteger() == 0x00000000);
-        STATIC_CHECK(sf::Color(1, 2, 3, 4).toInteger() == 0x01020304);
-        STATIC_CHECK(sf::Color(255, 255, 255, 255).toInteger() == 0xFFFFFFFF);
+        STATIC_CHECK(sf::Color(0, 0, 0, 0).toInteger() == 0x00'00'00'00);
+        STATIC_CHECK(sf::Color(1, 2, 3, 4).toInteger() == 0x01'02'03'04);
+        STATIC_CHECK(sf::Color(255, 255, 255, 255).toInteger() == 0xFF'FF'FF'FF);
     }
 
     SECTION("Operations")
@@ -192,25 +192,25 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Primary colors")
         {
             // Red (Hue = 0)
-            CHECK(sf::Color::fromHSLA({0.0f, 1.0f, 0.5f}) == sf::Color(255, 0, 0));
+            CHECK(sf::Color::fromHSLA({0.f, 1.f, 0.5f}) == sf::Color(255, 0, 0));
 
             // Green (Hue = 120)
-            CHECK(sf::Color::fromHSLA({120.0f, 1.0f, 0.5f}) == sf::Color(0, 255, 0));
+            CHECK(sf::Color::fromHSLA({120.f, 1.f, 0.5f}) == sf::Color(0, 255, 0));
 
             // Blue (Hue = 240)
-            CHECK(sf::Color::fromHSLA({240.0f, 1.0f, 0.5f}) == sf::Color(0, 0, 255));
+            CHECK(sf::Color::fromHSLA({240.f, 1.f, 0.5f}) == sf::Color(0, 0, 255));
         }
 
         SECTION("Secondary colors")
         {
             // Yellow (Hue = 60)
-            CHECK(sf::Color::fromHSLA({60.0f, 1.0f, 0.5f}) == sf::Color(255, 255, 0));
+            CHECK(sf::Color::fromHSLA({60.f, 1.f, 0.5f}) == sf::Color(255, 255, 0));
 
             // Cyan (Hue = 180)
-            CHECK(sf::Color::fromHSLA({180.0f, 1.0f, 0.5f}) == sf::Color(0, 255, 255));
+            CHECK(sf::Color::fromHSLA({180.f, 1.f, 0.5f}) == sf::Color(0, 255, 255));
 
             // Magenta (Hue = 300)
-            CHECK(sf::Color::fromHSLA({300.0f, 1.0f, 0.5f}) == sf::Color(255, 0, 255));
+            CHECK(sf::Color::fromHSLA({300.f, 1.f, 0.5f}) == sf::Color(255, 0, 255));
         }
     }
 
@@ -219,14 +219,14 @@ TEST_CASE("[Graphics] sf::Color")
         SECTION("Grayscale (Saturation = 0)")
         {
             // Black
-            CHECK(sf::Color::fromHSLA({0.0f, 0.0f, 0.0f}) == sf::Color(0, 0, 0));
+            CHECK(sf::Color::fromHSLA({0.f, 0.f, 0.f}) == sf::Color(0, 0, 0));
 
             // White
-            CHECK(sf::Color::fromHSLA({0.0f, 0.0f, 1.0f}) == sf::Color(255, 255, 255));
+            CHECK(sf::Color::fromHSLA({0.f, 0.f, 1.f}) == sf::Color(255, 255, 255));
 
             // 50% Gray (any hue)
-            CHECK(sf::Color::fromHSLA({0.0f, 0.0f, 0.5f}) == sf::Color(128, 128, 128));
-            CHECK(sf::Color::fromHSLA({180.0f, 0.0f, 0.5f}) == sf::Color(128, 128, 128));
+            CHECK(sf::Color::fromHSLA({0.f, 0.f, 0.5f}) == sf::Color(128, 128, 128));
+            CHECK(sf::Color::fromHSLA({180.f, 0.f, 0.5f}) == sf::Color(128, 128, 128));
         }
     }
 
@@ -234,7 +234,7 @@ TEST_CASE("[Graphics] sf::Color")
     {
         SECTION("Pastels (High lightness, medium saturation)")
         {
-            sf::Color pastelPink = sf::Color::fromHSLA({350.0f, 0.5f, 0.8f});
+            sf::Color pastelPink = sf::Color::fromHSLA({350.f, 0.5f, 0.8f});
             CHECK(pastelPink.r > 200);
             CHECK(pastelPink.g > 150);
             CHECK(pastelPink.b > 150);
@@ -242,7 +242,7 @@ TEST_CASE("[Graphics] sf::Color")
 
         SECTION("Deep colors (Low lightness, high saturation)")
         {
-            sf::Color deepBlue = sf::Color::fromHSLA({240.0f, 1.0f, 0.2f});
+            sf::Color deepBlue = sf::Color::fromHSLA({240.f, 1.f, 0.2f});
             CHECK(deepBlue.r < 50);
             CHECK(deepBlue.g < 50);
             CHECK(deepBlue.b > 100);
@@ -252,25 +252,25 @@ TEST_CASE("[Graphics] sf::Color")
     SECTION("Hue wrapping")
     {
         // Negative hue should wrap to positive
-        CHECK(sf::Color::fromHSLA({-120.0f, 1.0f, 0.5f}) == sf::Color::fromHSLA({240.0f, 1.0f, 0.5f}));
+        CHECK(sf::Color::fromHSLA({-120.f, 1.f, 0.5f}) == sf::Color::fromHSLA({240.f, 1.f, 0.5f}));
 
         // Hue > 360 should wrap
-        CHECK(sf::Color::fromHSLA({480.0f, 1.0f, 0.5f}) == sf::Color::fromHSLA({120.0f, 1.0f, 0.5f}));
+        CHECK(sf::Color::fromHSLA({480.f, 1.f, 0.5f}) == sf::Color::fromHSLA({120.f, 1.f, 0.5f}));
     }
 
     SECTION("Saturation and lightness clamping")
     {
         // Oversaturated should clamp to 1
-        CHECK(sf::Color::fromHSLA({0.0f, 1.5f, 0.5f}) == sf::Color::fromHSLA({0.0f, 1.0f, 0.5f}));
+        CHECK(sf::Color::fromHSLA({0.f, 1.5f, 0.5f}) == sf::Color::fromHSLA({0.f, 1.f, 0.5f}));
 
         // Negative saturation should clamp to 0
-        CHECK(sf::Color::fromHSLA({0.0f, -0.5f, 0.5f}) == sf::Color::fromHSLA({0.0f, 0.0f, 0.5f}));
+        CHECK(sf::Color::fromHSLA({0.f, -0.5f, 0.5f}) == sf::Color::fromHSLA({0.f, 0.f, 0.5f}));
 
         // Overlight should clamp to 1
-        CHECK(sf::Color::fromHSLA({0.0f, 1.0f, 1.5f}) == sf::Color::fromHSLA({0.0f, 1.0f, 1.0f}));
+        CHECK(sf::Color::fromHSLA({0.f, 1.f, 1.5f}) == sf::Color::fromHSLA({0.f, 1.f, 1.f}));
 
         // Negative lightness should clamp to 0
-        CHECK(sf::Color::fromHSLA({0.0f, 1.0f, -0.5f}) == sf::Color::fromHSLA({0.0f, 1.0f, 0.0f}));
+        CHECK(sf::Color::fromHSLA({0.f, 1.f, -0.5f}) == sf::Color::fromHSLA({0.f, 1.f, 0.f}));
     }
 
     SECTION("withHueMod modifier")
@@ -279,80 +279,80 @@ TEST_CASE("[Graphics] sf::Color")
         {
             // Red (0°) + 120° → Green (120°)
             sf::Color red   = sf::Color::Red;
-            sf::Color green = red.withHueMod(120.0f);
+            sf::Color green = red.withHueMod(120.f);
             CHECK(green == sf::Color::Green);
 
             // Green (120°) - 120° → Red (0°)
             sf::Color greenColor = sf::Color::Green;
-            sf::Color redColor   = greenColor.withHueMod(-120.0f);
+            sf::Color redColor   = greenColor.withHueMod(-120.f);
             CHECK(redColor == sf::Color::Red);
 
             // Blue (240°) + 60° → 300° (Magenta)
             sf::Color blue    = sf::Color::Blue;
-            sf::Color magenta = blue.withHueMod(60.0f);
+            sf::Color magenta = blue.withHueMod(60.f);
             CHECK(magenta == sf::Color::Magenta);
         }
 
         SECTION("Hue wrapping")
         {
             // 350° + 20° → 10° (wrapped within [0, 360))
-            sf::Color color        = sf::Color::fromHSLA({350.0f, 1.0f, 0.5f});
-            sf::Color shiftedColor = color.withHueMod(20.0f);
-            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({10.0f, 1.0f, 0.5f})));
+            sf::Color color        = sf::Color::fromHSLA({350.f, 1.f, 0.5f});
+            sf::Color shiftedColor = color.withHueMod(20.f);
+            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({10.f, 1.f, 0.5f})));
 
             // 30° - 50° → 340°
-            color        = sf::Color::fromHSLA({30.0f, 1.0f, 0.5f});
-            shiftedColor = color.withHueMod(-50.0f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({340.0f, 1.0f, 0.5f}));
+            color        = sf::Color::fromHSLA({30.f, 1.f, 0.5f});
+            shiftedColor = color.withHueMod(-50.f);
+            CHECK(shiftedColor == sf::Color::fromHSLA({340.f, 1.f, 0.5f}));
 
             // 300° + 120° → 60° (Yellow)
-            color        = sf::Color::fromHSLA({300.0f, 1.0f, 0.5f});
-            shiftedColor = color.withHueMod(120.0f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({60.0f, 1.0f, 0.5f}));
+            color        = sf::Color::fromHSLA({300.f, 1.f, 0.5f});
+            shiftedColor = color.withHueMod(120.f);
+            CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
 
             // 300° + 480° → (300 + 480) % 360 = 60°
-            shiftedColor = color.withHueMod(480.0f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({60.0f, 1.0f, 0.5f}));
+            shiftedColor = color.withHueMod(480.f);
+            CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
         }
 
         SECTION("Alpha preservation")
         {
             // Original alpha should remain unchanged
             sf::Color color{255, 0, 0, 128};
-            sf::Color shiftedColor = color.withHueMod(120.0f);
+            sf::Color shiftedColor = color.withHueMod(120.f);
             CHECK(shiftedColor.a == 128);
         }
 
         SECTION("Saturation and lightness unchanged")
         {
             // After hue shift, saturation and lightness should match original
-            sf::Color      color        = sf::Color::fromHSLA({180.0f, 0.8f, 0.6f}, 255);
-            sf::Color      shiftedColor = color.withHueMod(90.0f);
+            sf::Color      color        = sf::Color::fromHSLA({180.f, 0.8f, 0.6f}, 255);
+            sf::Color      shiftedColor = color.withHueMod(90.f);
             sf::Color::HSL hsla         = shiftedColor.toHSL();
             CHECK(hsla.saturation == Approx(0.8039f));
             CHECK(hsla.lightness == Approx(0.6f));
-            CHECK(hsla.hue == Approx(270.0f)); // 180° + 90°
+            CHECK(hsla.hue == Approx(270.f)); // 180° + 90°
         }
 
         SECTION("Edge cases")
         {
             // Shift by 0° (no change)
             sf::Color color     = sf::Color::Red;
-            sf::Color sameColor = color.withHueMod(0.0f);
+            sf::Color sameColor = color.withHueMod(0.f);
             CHECK(sameColor == color);
 
             // Shift by 360° (no change)
-            sameColor = color.withHueMod(360.0f);
+            sameColor = color.withHueMod(360.f);
             CHECK(sameColor == color);
 
             // Shift by 720° (equivalent to 0°)
-            sameColor = color.withHueMod(720.0f);
+            sameColor = color.withHueMod(720.f);
             CHECK(sameColor == color);
 
             // Negative shift wrapping (50° - 400° = -350° ≡ 10°)
-            color                  = sf::Color::fromHSLA({50.0f, 1.0f, 0.5f});
-            sf::Color shiftedColor = color.withHueMod(-400.0f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({10.0f, 1.0f, 0.5f}));
+            color                  = sf::Color::fromHSLA({50.f, 1.f, 0.5f});
+            sf::Color shiftedColor = color.withHueMod(-400.f);
+            CHECK(shiftedColor == sf::Color::fromHSLA({10.f, 1.f, 0.5f}));
         }
     }
 }

@@ -262,7 +262,8 @@ enum class Scan
     Numpad0,        //!< Keypad 0 and Insert key
     // For US keyboards doesn't exist
     // For Non-US keyboards mapped to key 45 (Microsoft Keyboard Scan Code Specification)
-    // Typical language mappings: Belg:<\> FrCa:«°» Dan:<\> Dutch:]|[ Fren:<> Ger:<|> Ital:<> LatAm:<> Nor:<> Span:<> Swed:<|> Swiss:<\> UK:\| Brazil: \|.
+    // Typical language mappings: Belg:<\> FrCa:«°» Dan:<\> Dutch:]|[ Fren:<> Ger:<|> Ital:<> LatAm:<> Nor:<> Span:<>
+    // Swed:<|> Swiss:<\> UK:\| Brazil: \|.
     NonUsBackslash,     //!< Keyboard Non-US \ and | key
     Application,        //!< Keyboard Application key
     Execute,            //!< Keyboard Execute key
@@ -308,7 +309,8 @@ using Scancode = Scan;
 ////////////////////////////////////////////////////////////
 enum : unsigned int
 {
-    ScancodeCount = static_cast<unsigned int>(Scan::LaunchMediaSelect) + 1u //!< Total number of scancodes, ignoring `Scan::Unknown`
+    ScancodeCount = static_cast<unsigned int>(Scan::LaunchMediaSelect) +
+                    1u //!< Total number of scancodes, ignoring `Scan::Unknown`
 };
 
 ////////////////////////////////////////////////////////////

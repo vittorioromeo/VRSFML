@@ -44,6 +44,7 @@ struct Vertex;
 struct View;
 } // namespace sf
 
+
 namespace sf::priv
 {
 struct PersistentGPUStorage;

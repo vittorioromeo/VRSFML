@@ -10,6 +10,7 @@
 
 #include "SFML/Base/IntTypes.hpp"
 
+
 ////////////////////////////////////////////////////////////
 /// Extends NSImage with a convenience method to load images
 /// from raw data.

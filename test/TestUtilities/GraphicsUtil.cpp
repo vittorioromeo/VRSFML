@@ -13,6 +13,7 @@
 #include <limits>
 #include <ostream>
 
+
 namespace sf
 {
 std::ostream& operator<<(std::ostream& os, const BlendMode& blendMode)

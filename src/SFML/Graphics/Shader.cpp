@@ -38,15 +38,15 @@ using GLhandle = GLuint;
 
 #if defined(SFML_SYSTEM_MACOS) || defined(SFML_SYSTEM_IOS)
 
-#include "SFML/Base/PtrDiffT.hpp"
+    #include "SFML/Base/PtrDiffT.hpp"
 
-#define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::sf::base::PtrDiffT{x})
-#define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::sf::base::PtrDiffT>(x))
+    #define castToGlHandle(x)   reinterpret_cast<GLEXT_GLhandle>(::sf::base::PtrDiffT{x})
+    #define castFromGlHandle(x) static_cast<unsigned int>(reinterpret_cast<::sf::base::PtrDiffT>(x))
 
 #else
 
-#define castToGlHandle(x)   (x)
-#define castFromGlHandle(x) (x)
+    #define castToGlHandle(x)   (x)
+    #define castFromGlHandle(x) (x)
 
 #endif
 
@@ -300,7 +300,7 @@ precision mediump float;
     buffer.emplaceRange(src.data(), src.size() - 1);
 
     return {buffer.data(), buffer.size()};
-};
+}
 
 } // namespace
 

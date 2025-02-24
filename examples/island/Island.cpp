@@ -95,19 +95,19 @@ struct Setting
 // Terrain noise parameters
 constexpr int perlinOctaves = 3;
 
-float perlinFrequency     = 7.0f;
-float perlinFrequencyBase = 4.0f;
+float perlinFrequency     = 7.f;
+float perlinFrequencyBase = 4.f;
 
 // Terrain generation parameters
-float heightBase          = 0.0f;
+float heightBase          = 0.f;
 float edgeFactor          = 0.9f;
 float edgeDropoffExponent = 1.5f;
 
 float snowcapHeight = 0.6f;
 
 // Terrain lighting parameters
-float heightFactor  = static_cast<float>(windowSize.y) / 2.0f;
-float heightFlatten = 3.0f;
+float heightFactor  = static_cast<float>(windowSize.y) / 2.f;
+float heightFlatten = 3.f;
 float lightFactor   = 0.7f;
 
 
@@ -120,7 +120,7 @@ float getElevation(sf::Vector2u position)
     const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
                                     sf::Vector2f(0.5f, 0.5f);
 
-    float elevation = 0.0f;
+    float elevation = 0.f;
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
@@ -131,9 +131,9 @@ float getElevation(sf::Vector2u position)
 
     elevation = (elevation + 1.f) / 2.f;
 
-    const float distance = 2.0f * normalized.length();
-    elevation            = (elevation + heightBase) * (1.0f - edgeFactor * std::pow(distance, edgeDropoffExponent));
-    elevation            = std::clamp(elevation, 0.0f, 1.0f);
+    const float distance = 2.f * normalized.length();
+    elevation            = (elevation + heightBase) * (1.f - edgeFactor * std::pow(distance, edgeDropoffExponent));
+    elevation            = std::clamp(elevation, 0.f, 1.f);
 
     return elevation;
 }
@@ -239,7 +239,7 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 sf::Color getTerrainColor(float elevation, float moisture)
 {
     if (elevation < 0.11f)
-        return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.0f)};
+        return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.f)};
 
     if (elevation < 0.14f)
         return {static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
@@ -249,7 +249,7 @@ sf::Color getTerrainColor(float elevation, float moisture)
     if (elevation < 0.16f)
         return {static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
                 static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<std::uint8_t>(127.0f + (0.16f - elevation) * 128.f / 0.02f)};
+                static_cast<std::uint8_t>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
 
     if (elevation < 0.17f)
         return {240, 230, 140};
@@ -277,7 +277,7 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 
     sf::Vector3f crossProduct = deltaX.cross(deltaY);
 
-    // Scale cross product to make z component 1.0f so we can drop it
+    // Scale cross product to make z component 1.f so we can drop it
     crossProduct /= crossProduct.z;
 
     // Return "compressed" normal
@@ -483,18 +483,18 @@ int main()
 
     // Create all of our graphics resources
     sf::Text hudText(font,
-                     {.position         = {5.0f, 5.0f},
+                     {.position         = {5.f, 5.f},
                       .characterSize    = 14,
                       .fillColor        = sf::Color::White,
                       .outlineColor     = sf::Color::Black,
-                      .outlineThickness = 2.0f});
+                      .outlineThickness = 2.f});
 
     sf::Text statusText(font,
                         {.string           = "Generating Terrain...",
                          .characterSize    = 28,
                          .fillColor        = sf::Color::White,
                          .outlineColor     = sf::Color::Black,
-                         .outlineThickness = 2.0f});
+                         .outlineThickness = 2.f});
 
     sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);

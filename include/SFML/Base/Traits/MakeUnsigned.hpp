@@ -4,8 +4,8 @@
 
 #if __has_builtin(__make_unsigned)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_UNSIGNED(...) __make_unsigned(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_MAKE_UNSIGNED(...) __make_unsigned(__VA_ARGS__)
 
 #else
 
@@ -29,12 +29,13 @@ template <> struct MakeUnsignedImpl<  signed long>      { using type = unsigned 
 template <> struct MakeUnsignedImpl<unsigned long>      { using type = unsigned long; };
 template <> struct MakeUnsignedImpl<  signed long long> { using type = unsigned long long; };
 template <> struct MakeUnsignedImpl<unsigned long long> { using type = unsigned long long; };
+
 // clang-format on
 
 } // namespace sf::base
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_UNSIGNED(...) typename ::sf::base::MakeUnsignedImpl<__VA_ARGS__>::type
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_MAKE_UNSIGNED(...) typename ::sf::base::MakeUnsignedImpl<__VA_ARGS__>::type
 
 #endif
 

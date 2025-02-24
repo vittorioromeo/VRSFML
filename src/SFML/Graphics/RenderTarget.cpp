@@ -146,7 +146,6 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 #undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
 
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
     sf::Vector2u         renderTargetSize,
@@ -222,6 +221,7 @@ enum : bool
 {
     streamToGPU(isOpenGLES ? GL_ELEMENT_ARRAY_BUFFER : bufferId, indexData, sizeof(sf::IndexType) * indexCount);
 }
+
 
 ////////////////////////////////////////////////////////////
 void setupVertexAttribPointers()
@@ -1036,7 +1036,6 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 }
 
 } // namespace sf
-
 
 ////////////////////////////////////////////////////////////
 // Render states caching strategies

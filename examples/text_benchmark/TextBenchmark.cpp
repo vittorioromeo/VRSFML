@@ -321,7 +321,7 @@ int main()
 
             drawableBatch.add(text1);
             sfmlLogo.position = {100.f, 50.f};
-            sfmlLogo.scale    = {1.0f, 1.0f};
+            sfmlLogo.scale    = {1.f, 1.f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text2);
@@ -331,7 +331,7 @@ int main()
 
             drawableBatch.add(text3);
             sfmlLogo.position = {250.f, 250.f};
-            sfmlLogo.scale    = {1.0f, 1.0f};
+            sfmlLogo.scale    = {1.f, 1.f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text4);
@@ -354,8 +354,8 @@ int main()
 
 int main()
 {
-    const float screenWidth  = 800.0f;
-    const float screenHeight = 600.0f;
+    const float screenWidth  = 800.f;
+    const float screenHeight = 600.f;
 
     const sf::Vector2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
 

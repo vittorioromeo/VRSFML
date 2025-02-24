@@ -49,6 +49,7 @@ struct SFML_AUDIO_API Listener
 
 } // namespace sf
 
+
 ////////////////////////////////////////////////////////////
 /// \namespace sf::Listener
 /// \ingroup audio

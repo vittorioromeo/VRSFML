@@ -19,9 +19,9 @@
 #include "SFML/Base/SizeT.hpp"
 
 #ifdef SFML_OPENGL_ES
-#include "SFML/System/Err.hpp"
+    #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Abort.hpp"
+    #include "SFML/Base/Abort.hpp"
 #endif
 
 

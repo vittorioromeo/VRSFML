@@ -565,13 +565,14 @@ void ensureMappings()
 
 } // namespace
 
+
 namespace sf::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
 bool isKeyPressed(Keyboard::Key key)
 {
     const int virtualKey = sfKeyToVirtualKey(key);
-    return (GetAsyncKeyState(virtualKey) & 0x8000) != 0;
+    return (GetAsyncKeyState(virtualKey) & 0x80'00) != 0;
 }
 
 
@@ -664,7 +665,7 @@ bool isMouseButtonPressed(Mouse::Button button)
         }
     }();
 
-    return (GetAsyncKeyState(virtualKey) & 0x8000) != 0;
+    return (GetAsyncKeyState(virtualKey) & 0x80'00) != 0;
 }
 
 

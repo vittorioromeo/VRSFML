@@ -317,6 +317,7 @@ void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
     { return computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius); });
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)

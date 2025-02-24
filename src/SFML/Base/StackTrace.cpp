@@ -10,13 +10,13 @@
 
 #ifdef SFML_ENABLE_STACK_TRACES
 
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <emscripten.h>
-#else
-#include <cpptrace/cpptrace.hpp>
-#endif
+    #ifdef SFML_SYSTEM_EMSCRIPTEN
+        #include <emscripten.h>
+    #else
+        #include <cpptrace/cpptrace.hpp>
+    #endif
 
-#include <cstdio>
+    #include <cstdio>
 
 #endif
 
@@ -29,13 +29,13 @@ void printStackTrace()
 #ifdef SFML_ENABLE_STACK_TRACES
     std::puts("");
 
-#ifdef SFML_SYSTEM_EMSCRIPTEN
+    #ifdef SFML_SYSTEM_EMSCRIPTEN
     char callstack[4096];
     emscripten_get_callstack(EM_LOG_NO_PATHS | EM_LOG_JS_STACK, callstack, sizeof(callstack));
     std::puts(callstack);
-#else
+    #else
     cpptrace::generate_trace().print();
-#endif
+    #endif
 
 #endif
 }

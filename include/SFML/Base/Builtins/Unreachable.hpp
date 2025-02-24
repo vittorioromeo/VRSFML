@@ -4,15 +4,15 @@
 
 #if __has_builtin(__builtin_unreachable)
 
-#define SFML_BASE_UNREACHABLE() __builtin_unreachable()
+    #define SFML_BASE_UNREACHABLE() __builtin_unreachable()
 
 #elif
 
-#define SFML_BASE_UNREACHABLE() __assume(false)
+    #define SFML_BASE_UNREACHABLE() __assume(false)
 
 #else
 
-#include "SFML/Base/Assert.hpp"
-#define SFML_BASE_UNREACHABLE() SFML_ASSERT(false)
+    #include "SFML/Base/Assert.hpp"
+    #define SFML_BASE_UNREACHABLE() SFML_ASSERT(false)
 
 #endif

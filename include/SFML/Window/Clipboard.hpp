@@ -47,7 +47,6 @@ SFML_WINDOW_API void setString(const String& text);
 
 } // namespace sf::Clipboard
 
-
 ////////////////////////////////////////////////////////////
 /// \namespace sf::Clipboard
 /// \ingroup window

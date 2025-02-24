@@ -58,14 +58,17 @@ bool altDown()
 {
     return keyMap[sf::Keyboard::Key::LAlt] || keyMap[sf::Keyboard::Key::RAlt];
 }
+
 bool controlDown()
 {
     return keyMap[sf::Keyboard::Key::LControl] || keyMap[sf::Keyboard::Key::RControl];
 }
+
 bool shiftDown()
 {
     return keyMap[sf::Keyboard::Key::LShift] || keyMap[sf::Keyboard::Key::RShift];
 }
+
 bool systemDown()
 {
     return keyMap[sf::Keyboard::Key::LSystem] || keyMap[sf::Keyboard::Key::RSystem];
@@ -100,7 +103,7 @@ bool keepFileDescriptor(int fileDesc)
     // This is the keyboard test used by SDL.
     // The first 32 bits are ESC, numbers and Q to D;  If we have any of those,
     // consider it a keyboard device; do not test for KEY_RESERVED, though
-    const bool isKeyboard = (bitmaskKey[0] & 0xFFFFFFFE);
+    const bool isKeyboard = (bitmaskKey[0] & 0xFF'FF'FF'FE);
 
     const bool isAbs = TEST_BIT(EV_ABS, bitmaskEv) && TEST_BIT(ABS_X, bitmaskAbs) && TEST_BIT(ABS_Y, bitmaskAbs);
 
@@ -522,6 +525,7 @@ void update()
         pushEvent(*event);
 }
 } // namespace
+
 
 namespace sf::priv::InputImpl
 {

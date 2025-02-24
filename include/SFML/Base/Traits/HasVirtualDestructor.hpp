@@ -4,15 +4,15 @@
 
 #if __has_builtin(__has_virtual_destructor)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(...) __has_virtual_destructor(__VA_ARGS__)
 
 #else
 
-#include <type_traits>
+    #include <type_traits>
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(...) ::std::has_virtual_destructor_v<__VA_ARGS__>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(...) ::std::has_virtual_destructor_v<__VA_ARGS__>
 
 #endif
 
