@@ -17,7 +17,6 @@ AutoreleasePool::AutoreleasePool()
     m_pool = [[NSAutoreleasePool alloc] init];
 }
 
-
 ////////////////////////////////////////////////////////
 AutoreleasePool::~AutoreleasePool()
 {

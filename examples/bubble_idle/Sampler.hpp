@@ -4,6 +4,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
+
 ////////////////////////////////////////////////////////////
 class Sampler
 {

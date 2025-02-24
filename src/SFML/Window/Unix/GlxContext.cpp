@@ -22,21 +22,20 @@
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
 #ifndef GLAD_GLX_IMPLEMENTATION_INCLUDED
-#define GLAD_GLX_IMPLEMENTATION_INCLUDED
-#define GLAD_GLX_IMPLEMENTATION
-#include <glad/glx.h>
+    #define GLAD_GLX_IMPLEMENTATION_INCLUDED
+    #define GLAD_GLX_IMPLEMENTATION
+    #include <glad/glx.h>
 #endif
 
 #if !defined(GLX_DEBUGGING) && defined(SFML_DEBUG)
 // Enable this to print messages to err() every time GLX produces errors
-//#define GLX_DEBUGGING
+// #define GLX_DEBUGGING
 #endif
 
 namespace
 {
 std::recursive_mutex glxErrorMutex;
 bool                 glxErrorOccurred = false;
-
 
 ////////////////////////////////////////////////////////////
 void ensureExtensionsInit(::Display* display, int screen)
@@ -56,13 +55,11 @@ void ensureExtensionsInit(::Display* display, int screen)
     // gladLoadGLX(display, screen, sf::priv::GlxContext::getFunction); // TODO P0:
 }
 
-
 int handleXError(::Display*, XErrorEvent*)
 {
     glxErrorOccurred = true;
     return 0;
 }
-
 
 class GlxErrorHandler
 {
@@ -288,7 +285,7 @@ XVisualInfo GlxContext::selectBestVisual(::Display* display, unsigned int bitsPe
     if (const auto visuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(display, 0, nullptr, &count)))
     {
         // Evaluate all the returned visuals, and pick the best one
-        int         bestScore  = 0x7FFFFFFF;
+        int         bestScore  = 0x7F'FF'FF'FF;
         XVisualInfo bestVisual = XVisualInfo();
         for (base::SizeT i = 0; i < static_cast<base::SizeT>(count); ++i)
         {
@@ -502,9 +499,9 @@ void GlxContext::createSurface(GlxContext* shared, Vector2u size, unsigned int b
     XSetWindowAttributes attributes;
     attributes.colormap = XCreateColormap(m_display.get(), RootWindow(m_display.get(), screen), visualInfo.visual, AllocNone);
 
-    // Note: bitsPerPixel is explicitly ignored. Instead, DefaultDepth() is used in order to avoid window creation failure due to
-    // a depth not supported by the X window system. On Unix/Linux, the window's pixel format is not directly associated with the
-    // rendering surface (unlike on Windows, for example).
+    // Note: bitsPerPixel is explicitly ignored. Instead, DefaultDepth() is used in order to avoid window creation
+    // failure due to a depth not supported by the X window system. On Unix/Linux, the window's pixel format is not
+    // directly associated with the rendering surface (unlike on Windows, for example).
     m_window = XCreateWindow(m_display.get(),
                              RootWindow(m_display.get(), screen),
                              0,

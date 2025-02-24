@@ -9,7 +9,6 @@
 
 #include <X11/Xlib.h> // XKeyEvent
 
-
 ////////////////////////////////////////////////////////////
 /// \brief sf::priv::KeyboardImpl helper
 ///

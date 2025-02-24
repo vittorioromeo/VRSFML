@@ -18,6 +18,7 @@ constexpr Time TimeChronoUtil::fromDuration(const std::chrono::duration<Rep, Per
     return Time(std::chrono::duration_cast<std::chrono::microseconds>(duration).count());
 }
 
+
 ////////////////////////////////////////////////////////////
 constexpr std::chrono::microseconds TimeChronoUtil::toDuration(Time time)
 {

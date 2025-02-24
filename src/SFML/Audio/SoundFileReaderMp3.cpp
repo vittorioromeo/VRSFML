@@ -6,24 +6,24 @@
 ////////////////////////////////////////////////////////////
 #define MINIMP3_IMPLEMENTATION // Minimp3 control define, places implementation in this file.
 #ifndef NOMINMAX
-#define NOMINMAX // To avoid windows.h and min/max issue
+    #define NOMINMAX // To avoid windows.h and min/max issue
 #endif
 #define MINIMP3_NO_STDIO // Minimp3 control define, eliminate file manipulation code which is useless here
 
 #ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable : 4242 4244 4267 4456 4706)
+    #pragma warning(push)
+    #pragma warning(disable : 4242 4244 4267 4456 4706)
 #else
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 
 #include <minimp3_ex.h>
 
 #ifdef _MSC_VER
-#pragma warning(pop)
+    #pragma warning(pop)
 #else
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif
 
 #undef NOMINMAX
@@ -69,6 +69,7 @@ namespace
 }
 
 } // namespace
+
 
 namespace sf::priv
 {

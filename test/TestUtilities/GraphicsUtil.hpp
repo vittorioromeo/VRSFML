@@ -9,6 +9,7 @@
 
 #include <iosfwd>
 
+
 namespace sf
 {
 enum class StencilComparison : unsigned int;

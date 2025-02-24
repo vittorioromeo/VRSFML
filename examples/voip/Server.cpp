@@ -116,7 +116,7 @@ private:
     ////////////////////////////////////////////////////////////
     void onSeek(sf::Time timeOffset) override
     {
-        m_offset = static_cast<std::size_t>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1000;
+        m_offset = static_cast<std::size_t>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1'000;
     }
 
     ////////////////////////////////////////////////////////////
@@ -196,11 +196,11 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
         sf::sleep(sf::milliseconds(100));
     }
 
-    std::cin.ignore(10000, '\n');
+    std::cin.ignore(10'000, '\n');
 
     // Wait until the user presses 'enter' key
     std::cout << "Press enter to replay the sound..." << std::endl;
-    std::cin.ignore(10000, '\n');
+    std::cin.ignore(10'000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play(playbackDevice);

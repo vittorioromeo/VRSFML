@@ -4,15 +4,15 @@
 
 #if __has_builtin(__is_base_of)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_BASE_OF(b, d) __is_base_of(b, d)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_BASE_OF(b, d) __is_base_of(b, d)
 
 #else
 
-#include <type_traits>
+    #include <type_traits>
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_BASE_OF(b, d) ::std::is_base_of_v<b, d>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_BASE_OF(b, d) ::std::is_base_of_v<b, d>
 
 #endif
 

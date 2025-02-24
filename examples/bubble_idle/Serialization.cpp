@@ -46,6 +46,7 @@ void to_json(nlohmann::json& j, const Optional<T>& p)
         j = nullptr;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
@@ -101,12 +102,14 @@ void to_json(nlohmann::json& j, const Timer& p)
     j = p.value;
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Timer& p)
 {
     p.value = j;
 }
+
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
@@ -116,6 +119,7 @@ void to_json(nlohmann::json& j, const BidirectionalTimer& p)
     j[1] = static_cast<bool>(p.direction);
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, BidirectionalTimer& p)
@@ -124,6 +128,7 @@ void from_json(const nlohmann::json& j, BidirectionalTimer& p)
     p.direction = static_cast<TimerDirection>(j[1].get<bool>());
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const Countdown& p)
@@ -131,12 +136,14 @@ void to_json(nlohmann::json& j, const Countdown& p)
     j = p.value;
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Countdown& p)
 {
     p.value = j;
 }
+
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
@@ -146,6 +153,7 @@ void to_json(nlohmann::json& j, const TargetedCountdown& p)
     j[1] = p.startingValue;
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, TargetedCountdown& p)
@@ -154,12 +162,14 @@ void from_json(const nlohmann::json& j, TargetedCountdown& p)
     p.startingValue = j[1];
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const OptionalTargetedCountdown& p)
 {
     to_json(j, p.asBase());
 }
+
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
@@ -168,6 +178,7 @@ void from_json(const nlohmann::json& j, OptionalTargetedCountdown& p)
     from_json(j, p.asBase());
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const PurchasableScalingValue& p)
@@ -175,12 +186,14 @@ void to_json(nlohmann::json& j, const PurchasableScalingValue& p)
     j = p.nPurchases;
 }
 
+
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, PurchasableScalingValue& p)
 {
     p.nPurchases = j;
 }
+
 
 ////////////////////////////////////////////////////////////
 template <SizeT N>
@@ -193,6 +206,7 @@ void to_json(nlohmann::json& j, const PurchasableScalingValue (&p)[N])
         j[i] = p[i].nPurchases;
 }
 
+
 ////////////////////////////////////////////////////////////
 template <SizeT N>
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
@@ -201,6 +215,7 @@ void from_json(const nlohmann::json& j, PurchasableScalingValue (&p)[N])
     for (SizeT i = 0u; i < N; ++i)
         p[i].nPurchases = j.at(i);
 }
+
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -422,6 +437,7 @@ try
 {
 }
 
+
 ////////////////////////////////////////////////////////////
 void doRotatingBackup(const std::string& filename)
 try
@@ -450,6 +466,7 @@ try
     std::cout << "Failed to save profile to file '" << filename << "' (" << ex.what() << ")\n";
 }
 
+
 ////////////////////////////////////////////////////////////
 void loadProfileFromFile(Profile& profile, const char* filename)
 try
@@ -459,6 +476,7 @@ try
 {
     std::cout << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
 }
+
 
 ////////////////////////////////////////////////////////////
 void savePlaythroughToFile(const Playthrough& playthrough, const char* filename)
@@ -471,6 +489,7 @@ try
 {
     std::cout << "Failed to save playthrough to file '" << filename << "' (" << ex.what() << ")\n";
 }
+
 
 ////////////////////////////////////////////////////////////
 void loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)

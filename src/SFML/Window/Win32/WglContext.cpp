@@ -28,9 +28,9 @@
 // We check for this definition in order to avoid multiple definitions of GLAD
 // entities during unity builds of SFML.
 #ifndef GLAD_WGL_IMPLEMENTATION_INCLUDED
-#define GLAD_WGL_IMPLEMENTATION_INCLUDED
-#define GLAD_WGL_IMPLEMENTATION
-#include <glad/wgl.h>
+    #define GLAD_WGL_IMPLEMENTATION_INCLUDED
+    #define GLAD_WGL_IMPLEMENTATION
+    #include <glad/wgl.h>
 #endif
 
 namespace
@@ -59,6 +59,7 @@ void ensureInit()
 
     gladLoadWGL(nullptr, getOpenGl32Function);
 }
+
 
 ////////////////////////////////////////////////////////////
 struct ExtensionInitState
@@ -312,7 +313,7 @@ int WglContext::selectBestPixelFormat(HDC deviceContext, unsigned int bitsPerPix
         // Get the best format among the returned ones
         if (isValid && (nbFormats > 0))
         {
-            int bestScore = 0x7FFFFFFF;
+            int bestScore = 0x7F'FF'FF'FF;
             for (UINT i = 0; i < nbFormats; ++i)
             {
                 // Extract the components of the current format

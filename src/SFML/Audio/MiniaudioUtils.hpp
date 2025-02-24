@@ -20,12 +20,12 @@
 struct ma_sound;
 using ma_sound_end_proc = void (*)(void*, ma_sound*);
 
+
 namespace sf
 {
 class EffectProcessor;
 class Time;
 } // namespace sf
-
 
 namespace sf::priv::MiniaudioUtils
 {

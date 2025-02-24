@@ -2,22 +2,22 @@
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/System/Err.hpp"
-#include "SFML/System/LifetimeDependee.hpp"
+    ////////////////////////////////////////////////////////////
+    // Headers
+    ////////////////////////////////////////////////////////////
+    #include "SFML/System/Err.hpp"
+    #include "SFML/System/LifetimeDependee.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Launder.hpp"
-#include "SFML/Base/PlacementNew.hpp"
-#include "SFML/Base/StackTrace.hpp"
+    #include "SFML/Base/Abort.hpp"
+    #include "SFML/Base/Assert.hpp"
+    #include "SFML/Base/Launder.hpp"
+    #include "SFML/Base/PlacementNew.hpp"
+    #include "SFML/Base/StackTrace.hpp"
 
-#include <atomic>
-#include <string>
+    #include <atomic>
+    #include <string>
 
-#include <cctype>
+    #include <cctype>
 
 
 using AtomicUInt = std::atomic<unsigned int>;
@@ -36,6 +36,7 @@ std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 }
 
 } // namespace
+
 
 namespace sf::priv
 {

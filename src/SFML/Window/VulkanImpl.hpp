@@ -8,7 +8,6 @@
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
-
 namespace sf::priv::VulkanImpl
 {
 ////////////////////////////////////////////////////////////

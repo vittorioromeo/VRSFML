@@ -177,7 +177,7 @@ void SoundFileWriterFlac::write(const base::I16* samples, base::U64 count)
     while (count > 0)
     {
         // Make sure that we don't process too many samples at once
-        const unsigned int frames = base::min(static_cast<unsigned int>(count / m_impl->channelCount), 10000u);
+        const unsigned int frames = base::min(static_cast<unsigned int>(count / m_impl->channelCount), 10'000u);
 
         // Convert the samples to 32-bits and remap the channels
         m_impl->samples32.clear();

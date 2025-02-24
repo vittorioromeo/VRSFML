@@ -120,7 +120,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     Equation alphaEquation{BlendMode::Equation::Add};             //!< Blending equation for the alpha channel
 };
 
-
 ////////////////////////////////////////////////////////////
 // Commonly used blending modes
 ////////////////////////////////////////////////////////////

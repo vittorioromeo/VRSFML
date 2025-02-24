@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/WindowBase.hpp" // NOLINT(misc-header-include-cycle)
 
-
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -36,6 +35,7 @@ auto functionPointerToFunctionObject(R (*f)(Args...))
 }
 
 } // namespace sf::priv
+
 
 namespace sf
 {

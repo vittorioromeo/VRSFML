@@ -41,14 +41,15 @@ void encode(std::ostream& stream, sf::base::U16 value)
 void encode(std::ostream& stream, sf::base::U32 value)
 {
     const char bytes[]{
-        static_cast<char>(value & 0x000000FF),
-        static_cast<char>((value & 0x0000FF00) >> 8),
-        static_cast<char>((value & 0x00FF0000) >> 16),
-        static_cast<char>((value & 0xFF000000) >> 24),
+        static_cast<char>((value & 0x00'00'00'FF) >> 0),
+        static_cast<char>((value & 0x00'00'FF'00) >> 8),
+        static_cast<char>((value & 0x00'FF'00'00) >> 16),
+        static_cast<char>((value & 0xFF'00'00'00) >> 24),
     };
     stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
 }
 } // namespace
+
 
 namespace sf::priv
 {
@@ -114,7 +115,8 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     }
     else
     {
-        // For WAVE channel mapping refer to: https://learn.microsoft.com/en-us/previous-versions/windows/hardware/design/dn653308(v=vs.85)#default-channel-ordering
+        // For WAVE channel mapping refer to:
+        // https://learn.microsoft.com/en-us/previous-versions/windows/hardware/design/dn653308(v=vs.85)#default-channel-ordering
         enum : unsigned int
         {
             speakerFrontLeft          = 0x1u,
@@ -125,16 +127,16 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
             speakerBackRight          = 0x20u,
             speakerFrontLeftOfCenter  = 0x40u,
             speakerFrontRightOfCenter = 0x80u,
-            speakerBackCenter         = 0x100u,
-            speakerSideLeft           = 0x200u,
-            speakerSideRight          = 0x400u,
-            speakerTopCenter          = 0x800u,
-            speakerTopFrontLeft       = 0x1000u,
-            speakerTopFrontCenter     = 0x2000u,
-            speakerTopFrontRight      = 0x4000u,
-            speakerTopBackLeft        = 0x8000u,
-            speakerTopBackCenter      = 0x10000u,
-            speakerTopBackRight       = 0x20000u
+            speakerBackCenter         = 0x1'00u,
+            speakerSideLeft           = 0x2'00u,
+            speakerSideRight          = 0x4'00u,
+            speakerTopCenter          = 0x8'00u,
+            speakerTopFrontLeft       = 0x10'00u,
+            speakerTopFrontCenter     = 0x20'00u,
+            speakerTopFrontRight      = 0x40'00u,
+            speakerTopBackLeft        = 0x80'00u,
+            speakerTopBackCenter      = 0x1'00'00u,
+            speakerTopBackRight       = 0x2'00'00u
         };
 
         struct SupportedChannel
@@ -193,8 +195,8 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         {
             if (base::findIf(targetChannelMap.begin(),
                              targetChannelMap.end(),
-                             [channel](const SupportedChannel& c) { return c.channel == channel; }) ==
-                targetChannelMap.end())
+                             [channel](const SupportedChannel& c)
+            { return c.channel == channel; }) == targetChannelMap.end())
             {
                 priv::err() << "Could not map all input channels to a channel supported by WAV";
                 return false;
@@ -273,7 +275,7 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         encode(m_impl->file, fmtChunkSize);
 
         // Write the format (Extensible)
-        const base::U16 format = 65534;
+        const base::U16 format = 65'534;
         encode(m_impl->file, format);
     }
     else

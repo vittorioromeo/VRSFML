@@ -51,10 +51,10 @@
 #include <vector>
 
 #ifdef SFML_OPENGL_ES
-#include "SFML/Window/EGL/EGLContext.hpp"
+    #include "SFML/Window/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 #else
-#include "SFML/Window/Unix/GlxContext.hpp"
+    #include "SFML/Window/Unix/GlxContext.hpp"
 using DerivedGlContextType = sf::priv::GlxContext;
 #endif
 
@@ -78,8 +78,8 @@ constexpr unsigned long eventMask = FocusChangeMask | ButtonPressMask | ButtonRe
 
 constexpr unsigned int maxTrialsCount = 5;
 
-// Filter the events received by windows (only allow those matching a specific window or those needed for the IM to work)
-// NOLINTNEXTLINE(readability-non-const-parameter)
+// Filter the events received by windows (only allow those matching a specific window or those needed for the IM to
+// work) NOLINTNEXTLINE(readability-non-const-parameter)
 Bool checkEvent(::Display*, XEvent* event, XPointer userData)
 {
     if (event->xany.window == reinterpret_cast<::Window>(userData) || event->type == GenericEvent)
@@ -245,7 +245,7 @@ bool ewmhSupported()
                                 rootWindow,
                                 netWmName,
                                 0,
-                                0x7fffffff,
+                                0x7f'ff'ff'ff,
                                 False,
                                 utf8StringType,
                                 &actualType,
@@ -503,7 +503,7 @@ m_cursorGrabbed(m_fullscreen)
     int     depth  = 0;
 
     // Check if the user chose to not create an OpenGL context (windowSettings.contextSettings.attributeFlags will be 0xFFFFFFFF) // TODO: P0?
-    if (windowSettings.contextSettings.attributeFlags == ContextSettings::Attribute{0xFFFFFFFF})
+    if (windowSettings.contextSettings.attributeFlags == ContextSettings::Attribute{0xFF'FF'FF'FF})
     {
         // Choose default visual since the user is going to use their own rendering API
         visual = DefaultVisual(m_display.get(), m_screen);
@@ -568,7 +568,7 @@ m_cursorGrabbed(m_fullscreen)
             constexpr unsigned long MWM_HINTS_FUNCTIONS   = 1 << 0;
             constexpr unsigned long MWM_HINTS_DECORATIONS = 1 << 1;
 
-            //constexpr unsigned long MWM_DECOR_ALL         = 1 << 0;
+            // constexpr unsigned long MWM_DECOR_ALL         = 1 << 0;
             constexpr unsigned long MWM_DECOR_BORDER   = 1 << 1;
             constexpr unsigned long MWM_DECOR_RESIZEH  = 1 << 2;
             constexpr unsigned long MWM_DECOR_TITLE    = 1 << 3;
@@ -576,12 +576,13 @@ m_cursorGrabbed(m_fullscreen)
             constexpr unsigned long MWM_DECOR_MINIMIZE = 1 << 5;
             constexpr unsigned long MWM_DECOR_MAXIMIZE = 1 << 6;
 
-            //constexpr unsigned long MWM_FUNC_ALL          = 1 << 0;
+            // constexpr unsigned long MWM_FUNC_ALL          = 1 << 0;
             constexpr unsigned long MWM_FUNC_RESIZE   = 1 << 1;
             constexpr unsigned long MWM_FUNC_MOVE     = 1 << 2;
             constexpr unsigned long MWM_FUNC_MINIMIZE = 1 << 3;
             constexpr unsigned long MWM_FUNC_MAXIMIZE = 1 << 4;
             constexpr unsigned long MWM_FUNC_CLOSE    = 1 << 5;
+
             // NOLINTEND(readability-identifier-naming)
 
             struct WMHints

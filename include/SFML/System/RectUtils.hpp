@@ -29,7 +29,6 @@ template <typename T>
 
 } // namespace sf
 
-
 #include "SFML/System/RectUtils.inl"
 
 

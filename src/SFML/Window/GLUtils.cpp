@@ -127,14 +127,13 @@ unsigned int generateAndBindFramebuffer()
 
 ////////////////////////////////////////////////////////////
 ScissorDisableGuard::ScissorDisableGuard() :
-m_savedState(
-    []
-    {
-        // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
-        GLboolean scissorEnabled;
-        glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
-        return scissorEnabled == GL_TRUE;
-    }())
+m_savedState([]
+{
+    // NOLINTNEXTLINE(cppcoreguidelines-init-variables)
+    GLboolean scissorEnabled;
+    glCheck(glGetBooleanv(GL_SCISSOR_TEST, &scissorEnabled));
+    return scissorEnabled == GL_TRUE;
+}())
 {
     if (m_savedState)
         glCheck(glDisable(GL_SCISSOR_TEST));

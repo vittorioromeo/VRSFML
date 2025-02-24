@@ -77,12 +77,14 @@ public:
         return operator Angle().asRadians();
     }
 
-    /// TODO P1: docs
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(Angle other, float speed) const
     {
         return operator Angle().rotatedTowards(other, speed);
     }
-
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

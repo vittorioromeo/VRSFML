@@ -251,6 +251,7 @@ void streamError(const FLAC__StreamDecoder*, FLAC__StreamDecoderErrorStatus, voi
 
 } // namespace
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

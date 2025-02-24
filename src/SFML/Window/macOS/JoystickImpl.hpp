@@ -13,6 +13,7 @@
 
 #include <CoreFoundation/CoreFoundation.h>
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

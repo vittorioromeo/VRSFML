@@ -13,7 +13,6 @@
 #include "SFML/Base/Traits/IsRvalueReference.hpp"
 #include "SFML/Base/Traits/RemoveReference.hpp"
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -59,7 +58,6 @@ public:
     {
     }
 
-
     ////////////////////////////////////////////////////////////
     /**
      * @brief FixedFunction Constructor from functional object.
@@ -102,7 +100,6 @@ public:
         m_allocPtr(objStorage, &f, isRvalueReference<TFFwd&&> ? Operation::MoveConstruct : Operation::CopyConstruct);
     }
 
-
     ////////////////////////////////////////////////////////////
     template <typename TFReturn, typename... TFs>
     FixedFunction(TFReturn (*f)(TFs...)) noexcept :
@@ -111,7 +108,6 @@ public:
     m_allocPtr{nullptr}
     {
     }
-
 
     ////////////////////////////////////////////////////////////
     FixedFunction(const FixedFunction& rhs) : FixedFunction()
@@ -129,7 +125,6 @@ public:
         SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
-
 
     ////////////////////////////////////////////////////////////
     FixedFunction& operator=(const FixedFunction& rhs)
@@ -150,7 +145,6 @@ public:
         return *this;
     }
 
-
     ////////////////////////////////////////////////////////////
     FixedFunction(FixedFunction&& rhs) noexcept : FixedFunction()
     {
@@ -167,7 +161,6 @@ public:
         SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
     }
-
 
     ////////////////////////////////////////////////////////////
     FixedFunction& operator=(FixedFunction&& rhs) noexcept
@@ -188,14 +181,12 @@ public:
         return *this;
     }
 
-
     ////////////////////////////////////////////////////////////
     ~FixedFunction() noexcept
     {
         if (m_allocPtr)
             m_allocPtr(objStorage, nullptr, Operation::Destroy);
     }
-
 
     ////////////////////////////////////////////////////////////
     template <typename... TArgs>
@@ -205,7 +196,6 @@ public:
         return m_methodPtr(objStorage, functionPtr, SFML_BASE_FORWARD(args)...);
     }
 
-
     ////////////////////////////////////////////////////////////
     template <typename... TArgs>
     RetType operator()(TArgs&&... args) const
@@ -213,7 +203,6 @@ public:
         SFML_BASE_ASSERT(m_methodPtr != nullptr);
         return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_BASE_FORWARD(args)...);
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit operator bool() const
@@ -223,7 +212,6 @@ public:
 };
 
 } // namespace sf::base
-
 
 ////////////////////////////////////////////////////////////
 /// \class sf::base::FixedFunction

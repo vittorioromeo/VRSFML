@@ -31,16 +31,16 @@
 
 // MinGW lacks the definition of some Win32 constants
 #ifndef XBUTTON1
-#define XBUTTON1 0x0001
+    #define XBUTTON1 0x00'01
 #endif
 #ifndef XBUTTON2
-#define XBUTTON2 0x0002
+    #define XBUTTON2 0x00'02
 #endif
 #ifndef WM_MOUSEHWHEEL
-#define WM_MOUSEHWHEEL 0x020E
+    #define WM_MOUSEHWHEEL 0x02'0E
 #endif
 #ifndef MAPVK_VK_TO_VSC
-#define MAPVK_VK_TO_VSC (0)
+    #define MAPVK_VK_TO_VSC (0)
 #endif
 
 namespace
@@ -50,7 +50,8 @@ unsigned int               handleCount      = 0; // All window handles
 const wchar_t*             className        = L"SFML_Window";
 sf::priv::WindowImplWin32* fullscreenWindow = nullptr;
 
-constexpr GUID guidDevinterfaceHid = {0x4d1e55b2, 0xf16f, 0x11cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30}};
+constexpr GUID guidDevinterfaceHid = {0x4d'1e'55'b2, 0xf1'6f, 0x11'cf, {0x88, 0xcb, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30}};
+
 
 ////////////////////////////////////////////////////////////
 void setProcessDpiAware()
@@ -110,6 +111,7 @@ void setProcessDpiAware()
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 float getScalingFactor(HWND hwnd)
 {
@@ -140,6 +142,7 @@ float getScalingFactor(HWND hwnd)
     // If all else fails, default to 1.0 (i.e., 96 DPI)
     return 1.f;
 }
+
 
 ////////////////////////////////////////////////////////////
 // Register a RAWINPUTDEVICE representing the mouse to receive raw
@@ -172,6 +175,7 @@ std::unordered_map<UINT32, TouchInfo> touchMap;
 
 } // namespace
 
+
 namespace sf::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
@@ -186,6 +190,7 @@ bool isTouchDown(unsigned int finger)
     return false;
 }
 
+
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int finger)
 {
@@ -197,6 +202,7 @@ Vector2i getTouchPosition(unsigned int finger)
 
     return {};
 }
+
 
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int finger, const WindowBase& window)
@@ -802,6 +808,7 @@ Keyboard::Scancode WindowImplWin32::toScancode(WPARAM wParam, LPARAM lParam)
     // clang-format on
 }
 
+
 ////////////////////////////////////////////////////////////
 void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -938,7 +945,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                 auto character = static_cast<char32_t>(wParam);
 
                 // Check if it is the first part of a surrogate pair, or a regular character
-                if ((character >= 0xD800) && (character <= 0xDBFF))
+                if ((character >= 0xD8'00) && (character <= 0xDB'FF))
                 {
                     // First part of a surrogate pair: store it and wait for the second one
                     m_surrogate = static_cast<char16_t>(character);
@@ -946,7 +953,7 @@ void WindowImplWin32::processEvent(UINT message, WPARAM wParam, LPARAM lParam)
                 else
                 {
                     // Check if it is the second part of a surrogate pair, or a regular character
-                    if ((character >= 0xDC00) && (character <= 0xDFFF))
+                    if ((character >= 0xDC'00) && (character <= 0xDF'FF))
                     {
                         // Convert the UTF-16 surrogate pair to a single UTF-32 value
                         char16_t utf16[]{m_surrogate, static_cast<char16_t>(character)};

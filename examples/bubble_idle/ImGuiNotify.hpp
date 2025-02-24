@@ -504,7 +504,7 @@ namespace ImGui
 
             // Set notification window position to bottom right corner of the main window, considering the main window size and location in relation to the display
             ImVec2 mainWindowPos = GetMainViewport()->Pos;
-            SetNextWindowPos(ImVec2(mainWindowPos.x + NOTIFY_PADDING_X, mainWindowPos.y + mainWindowSize.y - paddingY - height), ImGuiCond_Always, ImVec2(0.0f, 1.0f));
+            SetNextWindowPos(ImVec2(mainWindowPos.x + NOTIFY_PADDING_X, mainWindowPos.y + mainWindowSize.y - paddingY - height), ImGuiCond_Always, ImVec2(0.f, 1.f));
 
             Begin(windowName, nullptr, currentToast->getWindowFlags() );
             afterBegin();

@@ -16,6 +16,7 @@
 
 #import <AppKit/AppKit.h>
 
+
 ////////////////////////////////////////////////////////////
 /// In order to keep track of the keyboard's state and mouse buttons' state
 /// we use the HID manager. Mouse position is handled differently.
@@ -94,6 +95,7 @@ SFOpenGLView* getSFOpenGLViewFromSFMLWindow(const sf::WindowBase& window)
     return view;
 }
 } // namespace
+
 
 namespace sf::priv::InputImpl
 {

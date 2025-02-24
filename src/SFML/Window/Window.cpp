@@ -20,8 +20,8 @@
 #include "SFML/Base/Macros.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <emscripten.h>
-#include <emscripten/html5.h>
+    #include <emscripten.h>
+    #include <emscripten/html5.h>
 #endif
 
 

@@ -49,7 +49,7 @@ namespace
 constexpr auto windowWidth  = 800u;
 constexpr auto windowHeight = 600u;
 constexpr auto pi           = 3.14159265359f;
-constexpr auto sqrt2        = 2.0f * 0.707106781186547524401f;
+constexpr auto sqrt2        = 2.f * 0.707106781186547524401f;
 
 sf::Path resourcesDir()
 {
@@ -639,7 +639,7 @@ protected:
         m_music.setLooping(true);
 
         // Set attenuation to a nice value
-        m_music.setAttenuation(0.0f);
+        m_music.setAttenuation(0.f);
     }
 
 

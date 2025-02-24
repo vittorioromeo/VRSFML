@@ -32,7 +32,6 @@ namespace sf::EventUtils
 
 } // namespace sf::EventUtils
 
-
 ////////////////////////////////////////////////////////////
 /// \namespace sf::EventUtils
 /// \ingroup window

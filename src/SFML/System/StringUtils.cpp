@@ -23,6 +23,7 @@ T toLower(T str)
     return str;
 }
 
+
 ////////////////////////////////////////////////////////////
 template std::string toLower<std::string>(std::string);
 

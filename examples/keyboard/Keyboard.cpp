@@ -330,6 +330,7 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
     throw std::runtime_error("invalid keyboard scancode");
 }
 
+
 ////////////////////////////////////////////////////////////
 // Entity showing keyboard events and real-time state on a keyboard
 ////////////////////////////////////////////////////////////
@@ -656,6 +657,7 @@ private:
     std::array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
 };
 
+
 ////////////////////////////////////////////////////////////
 // Text with fading opacity outline
 ////////////////////////////////////////////////////////////
@@ -690,6 +692,7 @@ private:
     sf::Time                  m_remaining;
 };
 
+
 ////////////////////////////////////////////////////////////
 // Utilities to create text objets
 ////////////////////////////////////////////////////////////
@@ -721,6 +724,7 @@ sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vector2f p
 
     return text;
 }
+
 
 ////////////////////////////////////////////////////////////
 // Utilities to describe keyboard events

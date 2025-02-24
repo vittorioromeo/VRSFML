@@ -29,6 +29,7 @@ namespace sf
 class Cursor;
 } // namespace sf
 
+
 namespace sf::priv
 {
 class WindowImpl;
@@ -38,7 +39,6 @@ namespace sf::Vulkan
 {
 struct VulkanSurfaceData;
 } // namespace sf::Vulkan
-
 
 namespace sf
 {

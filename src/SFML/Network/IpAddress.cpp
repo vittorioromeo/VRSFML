@@ -23,7 +23,6 @@ const IpAddress IpAddress::Any(0, 0, 0, 0);
 const IpAddress IpAddress::LocalHost(127, 0, 0, 1);
 const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
-
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
 m_address(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
@@ -62,7 +61,7 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
     // Connect the socket to a public ip (here 1.1.1.1) on any
     // port. This will give the local address of the network interface
     // used for default routing which is usually what we want.
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(0x01010101, 9);
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(0x01'01'01'01, 9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);

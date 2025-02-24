@@ -382,7 +382,7 @@ struct Playthrough
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedManaCooldown() const
     {
-        return 10000.f * psvPPManaCooldownMult.currentValue();
+        return 10'000.f * psvPPManaCooldownMult.currentValue();
     }
 
     ////////////////////////////////////////////////////////////

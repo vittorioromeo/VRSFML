@@ -181,7 +181,7 @@ public:
         std::uniform_int_distribution<std::uint16_t> colorDistribution(0, 255);
 
         // Create the points
-        for (int i = 0; i < 40000; ++i)
+        for (int i = 0; i < 40'000; ++i)
         {
             const auto x = xDistribution(rng);
             const auto y = yDistribution(rng);
@@ -300,10 +300,10 @@ public:
     m_logoTexture(std::move(logoTexture)),
     m_shader(std::move(shader)),
     m_ulSize(m_shader.getUniformLocation("size").value()),
-    m_pointCloud(10000)
+    m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
-        for (std::size_t i = 0; i < 10000; ++i)
+        for (std::size_t i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
             std::uniform_real_distribution<float> positionDistribution(-480.f, 480.f);

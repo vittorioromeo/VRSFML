@@ -55,17 +55,17 @@ inline constexpr EXACT_ARRAY(
     baseCooldowns,
     nCatTypes,
     {
-        750.f,   // Normal
-        3000.f,  // Uni
-        7000.f,  // Devil
-        10000.f, // Astro
+        750.f,    // Normal
+        3000.f,   // Uni
+        7000.f,   // Devil
+        10'000.f, // Astro
 
-        80000.f, // Witch
-        1500.f,  // Wizard
-        400.f,   // Mouse
-        10000.f, // Engi
-        5.f,     // Repulso
-        5.f,     // Attracto (TODO P1: change?)
+        80'000.f, // Witch
+        1500.f,   // Wizard
+        400.f,    // Mouse
+        10'000.f, // Engi
+        5.f,      // Repulso
+        5.f,      // Attracto (TODO P1: change?)
     });
 
 ////////////////////////////////////////////////////////////

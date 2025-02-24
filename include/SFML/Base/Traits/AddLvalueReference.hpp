@@ -4,13 +4,12 @@
 
 #if __has_builtin(__add_lvalue_reference)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_ADD_LVALUE_REFERENCE(...) __add_lvalue_reference(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_ADD_LVALUE_REFERENCE(...) __add_lvalue_reference(__VA_ARGS__)
 
 #else
 
-#include "SFML/Base/Traits/VoidT.hpp"
-
+    #include "SFML/Base/Traits/VoidT.hpp"
 
 namespace sf::base::priv
 {
@@ -30,8 +29,8 @@ struct AddLvalueReferenceHelper<T, VoidT<T&>>
 
 } // namespace sf::base::priv
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_ADD_LVALUE_REFERENCE(...) typename ::sf::base::priv::AddLvalueReferenceHelper<__VA_ARGS__>::type
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_ADD_LVALUE_REFERENCE(...) typename ::sf::base::priv::AddLvalueReferenceHelper<__VA_ARGS__>::type
 
 #endif
 

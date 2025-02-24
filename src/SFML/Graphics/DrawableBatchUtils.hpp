@@ -20,7 +20,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 using IndexType = unsigned int;
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
                                                                                  const IndexType startIndex) noexcept
@@ -29,7 +28,6 @@ using IndexType = unsigned int;
     *indexPtr++ = startIndex + 1u;
     *indexPtr++ = startIndex + 2u;
 }
-
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleFanIndices(
@@ -42,14 +40,12 @@ using IndexType = unsigned int;
     *indexPtr++ = startIndex + i + 1u;
 }
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType*& indexPtr, const IndexType startIndex) noexcept
 {
     appendTriangleIndices(indexPtr, startIndex);      // Triangle strip: triangle #0
     appendTriangleIndices(indexPtr, startIndex + 1u); // Triangle strip: triangle #1
 }
-
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteVertices(
@@ -86,7 +82,6 @@ using IndexType = unsigned int;
     vertexPtr[3].texCoords = position + size;
 }
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedQuadVertices(
     Vertex* SFML_BASE_RESTRICT& SFML_BASE_RESTRICT vertexPtr,
@@ -108,7 +103,6 @@ using IndexType = unsigned int;
     *vertexPtr++ = {transform.transformPoint(d.position), d.color, d.texCoords};
 }
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
     const Sprite&   sprite,
@@ -119,7 +113,6 @@ using IndexType = unsigned int;
     appendQuadIndices(indexPtr, nextIndex);
     appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
-
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTextIndicesAndVertices(
@@ -142,7 +135,6 @@ using IndexType = unsigned int;
                                          data[(i * 4u) + 3u]);
 }
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
     const Transform&                 transform,
@@ -153,7 +145,6 @@ using IndexType = unsigned int;
     for (const auto* const target = data + size; data != target; ++data)
         *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
 }
-
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeFillIndicesAndVertices(
@@ -172,7 +163,6 @@ using IndexType = unsigned int;
     appendTransformedVertices(transform, fillData, fillSize, vertexPtr);
 }
 
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
     const Transform&                       transform,
@@ -189,7 +179,6 @@ using IndexType = unsigned int;
 
     appendTransformedVertices(transform, outlineData, outlineSize, vertexPtr);
 }
-
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendIncreasingIndices(const IndexType count,

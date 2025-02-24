@@ -25,6 +25,7 @@ int main()
 #include <cmath>
 #include <cstdlib>
 
+
 ////////////////////////////////////////////////////////////
 /// Initialize OpenGL states into the specified view
 ///
@@ -62,7 +63,7 @@ int main()
     glLoadIdentity();
     const float extent = std::tan(sf::degrees(45).asRadians());
 
-    glFrustum(-extent, extent, -extent, extent, 1.0f, 500.0f);
+    glFrustum(-extent, extent, -extent, extent, 1.f, 500.f);
 
     // Enable position and texture coordinates vertex components
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -70,6 +71,7 @@ int main()
 
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////
 /// Draw the OpenGL scene (a rotating cube) into
