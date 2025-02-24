@@ -230,6 +230,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     explosionRevenue,
     flightRevenue,
     highestStarBubblePopCombo,
+    highestNovaBubblePopCombo,
     nAbsorbedStarBubbles,
     nSpellCasts,
     nWitchcatRitualsPerCatType,
@@ -331,6 +332,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     windPurchased,
     astroCatInspirePurchased,
     starpawConversionIgnoreBombs,
+    starpawNova,
     repulsoCatFilterPurchased,
     repulsoCatConverterPurchased,
     attractoCatFilterPurchased,
@@ -341,7 +343,9 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     witchCatBuffOrbitalDolls,
     shrineCompletedOnceByType,
     unsealedByType,
-    wizardCatDoubleMewltiplierDuration);
+    wizardCatDoubleMewltiplierDuration,
+    unicatTranscendencePurchased,
+    unicatTranscendenceAOEPurchased);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
