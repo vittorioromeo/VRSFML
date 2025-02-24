@@ -1,3 +1,5 @@
+#include "../bubble_idle/Sampler.hpp"
+
 #include "SFML/ImGui/ImGui.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
@@ -22,6 +24,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -40,65 +43,6 @@
 
 
 ////////////////////////////////////////////////////////////
-/// Sampler class
-///
-////////////////////////////////////////////////////////////
-class Sampler
-{
-public:
-    enum : unsigned int
-    {
-        ToIgnore   = 32u,
-        MaxSamples = 512u
-    };
-
-    void record(float value)
-    {
-        if (m_toIgnore > 0u)
-        {
-            --m_toIgnore;
-            return;
-        }
-
-        m_data.push_back(value);
-
-        if (m_data.size() > MaxSamples)
-            m_data.erase(m_data.begin());
-    }
-
-    [[nodiscard]] double getAverage() const
-    {
-        double accumulator = 0.0;
-
-        for (auto value : m_data)
-            accumulator += static_cast<double>(value);
-
-        return accumulator / static_cast<double>(m_data.size());
-    }
-
-    [[nodiscard]] std::size_t size() const
-    {
-        return m_data.size();
-    }
-
-    [[nodiscard]] const float* data() const
-    {
-        return m_data.data();
-    }
-
-    void clear()
-    {
-        m_data.clear();
-        m_toIgnore = ToIgnore;
-    }
-
-private:
-    std::vector<float> m_data;
-    unsigned int       m_toIgnore = ToIgnore;
-};
-
-
-////////////////////////////////////////////////////////////
 /// Main
 ///
 ////////////////////////////////////////////////////////////
@@ -107,14 +51,15 @@ int main()
     //
     //
     // Set up random generator
-    // std::minstd_rand rng(std::random_device{}());
-    std::minstd_rand rng(100);
-    const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
+    std::minstd_rand rng(/* seed */ 1234);
 
-    const auto getRndUInt = [&](unsigned int min, unsigned int max)
+    const auto getRndFloat = [&](const float min, const float max)
+    { return std::uniform_real_distribution<float>{min, max}(rng); };
+
+    const auto getRndUInt = [&](const unsigned int min, const unsigned int max)
     { return std::uniform_int_distribution<unsigned int>{min, max}(rng); };
 
-    const auto getRndU8 = [&](sf::base::U8 min, sf::base::U8 max)
+    const auto getRndU8 = [&](const sf::base::U8 min, const sf::base::U8 max)
     { return std::uniform_int_distribution<sf::base::U8>{min, max}(rng); };
 
     //
@@ -127,8 +72,12 @@ int main()
     // Set up window
     constexpr sf::Vector2f windowSize{1680.f, 1050.f};
 
-    sf::RenderWindow window(
-        {.size = windowSize.toVector2u(), .title = "Vittorio's SFML fork: batching example", .resizable = false, .vsync = false});
+    sf::RenderWindow window({
+        .size      = windowSize.toVector2u(),
+        .title     = "Vittorio's SFML fork: batching example",
+        .resizable = false,
+        .vsync     = false,
+    });
 
     //
     //
@@ -141,6 +90,9 @@ int main()
     //
     // Set up texture atlas
     sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
+
+    const auto addImgResourceToAtlas = [&](const sf::Path& path)
+    { return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value(); };
 
     //
     //
@@ -155,23 +107,15 @@ int main()
 
     //
     //
-    // Load images
-    const auto imgElephant = sf::Image::loadFromFile("resources/elephant.png").value();
-    const auto imgGiraffe  = sf::Image::loadFromFile("resources/giraffe.png").value();
-    const auto imgMonkey   = sf::Image::loadFromFile("resources/monkey.png").value();
-    const auto imgPig      = sf::Image::loadFromFile("resources/pig.png").value();
-    const auto imgRabbit   = sf::Image::loadFromFile("resources/rabbit.png").value();
-    const auto imgSnake    = sf::Image::loadFromFile("resources/snake.png").value();
-
-    //
-    //
-    // Add images to texture atlas
-    const sf::FloatRect spriteTextureRects[]{textureAtlas.add(imgElephant).value(),
-                                             textureAtlas.add(imgGiraffe).value(),
-                                             textureAtlas.add(imgMonkey).value(),
-                                             textureAtlas.add(imgPig).value(),
-                                             textureAtlas.add(imgRabbit).value(),
-                                             textureAtlas.add(imgSnake).value()};
+    // Load images and add to texture atlas
+    const sf::FloatRect spriteTextureRects[]{
+        addImgResourceToAtlas("elephant.png"),
+        addImgResourceToAtlas("giraffe.png"),
+        addImgResourceToAtlas("monkey.png"),
+        addImgResourceToAtlas("pig.png"),
+        addImgResourceToAtlas("rabbit.png"),
+        addImgResourceToAtlas("snake.png"),
+    };
 
     //
     //
@@ -179,10 +123,10 @@ int main()
     struct Entity
     {
         sf::Text        text;
+        sf::CircleShape circleShape;
         sf::Sprite      sprite;
         sf::Vector2f    velocity;
         float           torque;
-        sf::CircleShape circleShape;
     };
 
     std::vector<Entity> entities;
@@ -208,15 +152,12 @@ int main()
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1)) + 1);
 
-            auto& [text, sprite, velocity, torque, circleShape] = entities.emplace_back(
+            auto& [text, circleShape, sprite, velocity, torque] = entities.emplace_back(
                 sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                          {.string           = labelBuffer,
                           .fillColor        = sf::Color::Black,
                           .outlineColor     = sf::Color::White,
                           .outlineThickness = 5.f}},
-                sf::Sprite{.textureRect = textureRect},
-                sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
-                getRndFloat(-0.05f, 0.05f),
                 sf::CircleShape{
                     {.textureRect        = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
                      .outlineTextureRect = {.position = whiteDotAtlasRect.position, .size{0.f, 0.f}},
@@ -224,7 +165,10 @@ int main()
                      .outlineColor = {getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(0u, 255u), getRndU8(125u, 255u)},
                      .outlineThickness = 3.f,
                      .radius           = getRndFloat(3.f, 8.f),
-                     .pointCount       = getRndUInt(3u, 8u)}});
+                     .pointCount       = getRndUInt(3u, 8u)}},
+                sf::Sprite{.textureRect = textureRect},
+                sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
+                getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
             sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
@@ -242,6 +186,12 @@ int main()
 
     //
     //
+    // Get hardware constants
+    const std::size_t nMaxWorkers   = std::thread::hardware_concurrency();
+    constexpr auto    cacheLineSize = static_cast<std::size_t>(std::hardware_destructive_interference_size);
+
+    //
+    //
     // Set up UI elements
     enum class BatchType : int
     {
@@ -256,29 +206,63 @@ int main()
     bool        drawShapes          = true;
     bool        multithreadedUpdate = false;
     bool        multithreadedDraw   = false;
+    std::size_t nWorkers            = nMaxWorkers;
     int         numEntities         = 500;
     std::size_t drawnVertices       = 0u;
 
     //
     //
     // Set up drawable batches
-    const sf::base::SizeT nWorkers = std::thread::hardware_concurrency();
+    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : sf::CPUDrawableBatch
+    {
+        using sf::CPUDrawableBatch::CPUDrawableBatch;
+    };
 
-    std::vector<sf::CPUDrawableBatch> cpuDrawableBatches(nWorkers);
-    sf::PersistentGPUDrawableBatch    gpuDrawableBatch;
+    struct alignas(cacheLineSize) AlignedGPUDrawableBatch : sf::PersistentGPUDrawableBatch
+    {
+        using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
+    };
+
+    std::vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
+    std::vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
 
     //
     //
     // Set up thread pool
-    sf::base::ThreadPool pool(nWorkers);
+    sf::base::ThreadPool pool(nMaxWorkers);
+
+    const auto doInBatches = [&](auto&& f)
+    {
+        const std::size_t entitiesPerBatch = entities.size() / nWorkers;
+
+        std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
+
+        for (std::size_t i = 0u; i < nWorkers; ++i)
+        {
+            pool.post([&, i]
+            {
+                const std::size_t batchStartIdx = i * entitiesPerBatch;
+                const std::size_t batchEndIdx   = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
+
+                f(i, batchStartIdx, batchEndIdx);
+
+                latch.count_down();
+            });
+        }
+
+        latch.wait();
+    };
 
     // Set up clock and time sampling
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    Sampler samplesUpdateMs;
-    Sampler samplesDrawMs;
-    Sampler samplesFPS;
+    Sampler samplesEventMs(/* capacity */ 64u);
+    Sampler samplesUpdateMs(/* capacity */ 64u);
+    Sampler samplesImGuiMs(/* capacity */ 64u);
+    Sampler samplesDrawMs(/* capacity */ 64u);
+    Sampler samplesDisplayMs(/* capacity */ 64u);
+    Sampler samplesFPS(/* capacity */ 64u);
 
     //
     //
@@ -295,23 +279,29 @@ int main()
         ////////////////////////////////////////////////////////////
         // Event handling
         ////////////////////////////////////////////////////////////
-        while (sf::base::Optional event = window.pollEvent())
+        // ---
+        clock.restart();
         {
-            imGuiContext.processEvent(window, *event);
+            while (sf::base::Optional event = window.pollEvent())
+            {
+                imGuiContext.processEvent(window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                    return EXIT_SUCCESS;
+            }
         }
+        samplesEventMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+        // ---
 
         ////////////////////////////////////////////////////////////
         // Update step
         ////////////////////////////////////////////////////////////
+        // ---
+        clock.restart();
         {
-            clock.restart();
-
             const auto updateEntity = [&](Entity& entity)
             {
-                auto& [text, sprite, velocity, torque, circleShape] = entity;
+                auto& [text, circleShape, sprite, velocity, torque] = entity;
 
                 sprite.position += velocity;
                 sprite.rotation += sf::radians(torque);
@@ -335,43 +325,35 @@ int main()
             }
             else
             {
-                const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
-
-                std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
-
-                for (std::size_t i = 0u; i < nWorkers; ++i)
+                doInBatches(
+                    [&](const std::size_t /* iBatch */, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
                 {
-                    pool.post([&, i]
-                    {
-                        const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
-                        const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
-
-                        for (sf::base::SizeT j = batchStartIdx; j < batchEndIdx; ++j)
-                            updateEntity(entities[j]);
-
-                        latch.count_down();
-                    });
-                }
-
-                latch.wait();
+                    for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                        updateEntity(entities[i]);
+                });
             }
-
-            samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         }
+        samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+        // ---
 
         ////////////////////////////////////////////////////////////
         // ImGui step
         ////////////////////////////////////////////////////////////
+        // ---
+        clock.restart();
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize(ImVec2{360.f, 350.f});
+            ImGui::SetWindowSize({340.f, 390.f});
 
             const auto clearSamples = [&]
             {
+                samplesEventMs.clear();
                 samplesUpdateMs.clear();
+                samplesImGuiMs.clear();
                 samplesDrawMs.clear();
+                samplesDisplayMs.clear();
                 samplesFPS.clear();
             };
 
@@ -401,9 +383,13 @@ int main()
 
             ImGui::Checkbox("Multithreaded Update", &multithreadedUpdate);
 
-            ImGui::BeginDisabled(batchType != BatchType::CPUStorage);
-            ImGui::Checkbox("Multithreaded Draw (CPU Storage only)", &multithreadedDraw);
+            ImGui::BeginDisabled(batchType == BatchType::Disabled);
+            ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
             ImGui::EndDisabled();
+
+            const std::size_t step = 1u;
+            ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
+            nWorkers = sf::base::clamp(nWorkers, std::size_t{2u}, nMaxWorkers);
 
             ImGui::NewLine();
 
@@ -430,22 +416,27 @@ int main()
                                  ImVec2{256.f, 32.f});
             };
 
-            plotGraph("Update (ms)", " ms", samplesUpdateMs, 10.f);
-            plotGraph("Draw (ms)", " ms", samplesDrawMs, 100.f);
+            plotGraph("Update", " ms", samplesUpdateMs, 10.f);
+            plotGraph("Draw", " ms", samplesDrawMs, 100.f);
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
+            // plotGraph("Events", " ms", samplesEventMs, 300.f);
+            // plotGraph("ImGui", " ms", samplesImGuiMs, 300.f);
+            plotGraph("Display", " ms", samplesDisplayMs, 300.f);
 
             ImGui::Spacing();
             ImGui::Text("Drawn vertices: %zu", drawnVertices);
 
             ImGui::End();
         }
+        samplesImGuiMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+        // ---
 
         ////////////////////////////////////////////////////////////
         // Draw step
         ////////////////////////////////////////////////////////////
+        // ---
+        clock.restart();
         {
-            clock.restart();
-
             window.clear();
 
             const auto drawEntity = [&](const Entity& entity, std::size_t& drawnVertexCounter, auto&& drawFn)
@@ -471,10 +462,38 @@ int main()
                 }
             };
 
-            if (batchType != BatchType::CPUStorage || !multithreadedDraw)
+            const auto doMultithreadedDraw = [&](auto& batchesArray)
+            {
+                for (auto& batch : batchesArray)
+                    batch.clear();
+
+                // Initialize per-worker drawn vertex counts
+                std::vector<std::size_t> totalChunkDrawnVertices(nMaxWorkers);
+
+                doInBatches([&](const std::size_t iBatch, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
+                {
+                    std::size_t chunkDrawnVertices = 0u; // avoid false sharing
+
+                    for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                        drawEntity(entities[i],
+                                   chunkDrawnVertices,
+                                   [&](const auto& drawable, const auto&...) { batchesArray[iBatch].add(drawable); });
+
+                    totalChunkDrawnVertices[iBatch] += chunkDrawnVertices;
+                });
+
+                drawnVertices = 0u;
+                for (const auto v : totalChunkDrawnVertices)
+                    drawnVertices += v;
+
+                for (auto& batch : batchesArray)
+                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
+            };
+
+            if (batchType == BatchType::Disabled || !multithreadedDraw)
             {
                 cpuDrawableBatches[0].clear();
-                gpuDrawableBatch.clear();
+                gpuDrawableBatches[0].clear();
 
                 drawnVertices = 0u;
 
@@ -488,67 +507,39 @@ int main()
                         else if (batchType == BatchType::CPUStorage)
                             cpuDrawableBatches[0].add(drawable);
                         else if (batchType == BatchType::GPUStorage)
-                            gpuDrawableBatch.add(drawable);
+                            gpuDrawableBatches[0].add(drawable);
                     });
 
                 if (batchType == BatchType::CPUStorage)
                     window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                    window.draw(gpuDrawableBatch, {.texture = &textureAtlas.getTexture()});
-
-                samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+                    window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
             }
-            else
+            else if (batchType == BatchType::CPUStorage)
             {
-                for (auto& batch : cpuDrawableBatches)
-                    batch.clear();
-
-                // Initialize per-worker drawn vertex counts
-                std::vector<std::size_t> totalChunkDrawnVertices(nWorkers);
-
-                const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
-
-                std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
-
-                for (std::size_t i = 0u; i < nWorkers; ++i)
-                {
-                    pool.post([&, i]
-                    {
-                        std::size_t chunkDrawnVertices = 0u;
-
-                        const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
-                        const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
-
-                        for (sf::base::SizeT j = batchStartIdx; j < batchEndIdx; ++j)
-                            drawEntity(entities[j],
-                                       chunkDrawnVertices,
-                                       [&](const auto& drawable, const auto&...) { cpuDrawableBatches[i].add(drawable); });
-
-                        totalChunkDrawnVertices[i] += chunkDrawnVertices;
-                        latch.count_down();
-                    });
-                }
-
-                latch.wait();
-
-                drawnVertices = 0u;
-                for (const auto v : totalChunkDrawnVertices)
-                    drawnVertices += v;
-
-                for (auto& batch : cpuDrawableBatches)
-                    window.draw(batch, {.texture = &textureAtlas.getTexture()});
-
-                samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+                doMultithreadedDraw(cpuDrawableBatches);
             }
+            else if (batchType == BatchType::GPUStorage)
+            {
+                // Must reserve in advance as reserving is not thread-safe
+                for (std::size_t iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                    gpuDrawableBatches[iBatch].reserveQuads(entities.size() / nWorkers * 32u);
 
+                doMultithreadedDraw(gpuDrawableBatches);
+            }
+        }
+        samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+        // ---
+
+        // ---
+        clock.restart();
+        {
             imGuiContext.render(window);
             window.display();
-
-            samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
-
-            window.setTitle("FPS: " + std::to_string(samplesFPS.getAverage()) +
-                            " || U: " + std::to_string(samplesUpdateMs.getAverage()) +
-                            " || D: " + std::to_string(samplesDrawMs.getAverage()));
         }
+        samplesDisplayMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
+        // ---
+
+        samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }
