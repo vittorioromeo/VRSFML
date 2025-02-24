@@ -31,7 +31,13 @@ struct GLVAOGroup
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] unsigned int getId() const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static unsigned int getBoundId()
+    {
+        return GLVertexArrayObject::getBoundId();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] unsigned int getId() const
     {
         return vao.getId();
     }
