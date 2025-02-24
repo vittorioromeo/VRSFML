@@ -82,15 +82,18 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Text::Text(const Font& font, const Settings& settings) :
-Transformable{.position = settings.position, .scale = settings.scale, .origin = settings.origin, .rotation = settings.rotation},
-m_font(&font),
 m_string(settings.string),
+m_font(&font),
 m_characterSize(settings.characterSize),
 m_letterSpacing(settings.letterSpacing),
 m_lineSpacing(settings.lineSpacing),
+m_outlineThickness(settings.outlineThickness),
 m_fillColor(settings.fillColor),
 m_outlineColor(settings.outlineColor),
-m_outlineThickness(settings.outlineThickness),
+position{settings.position},
+scale{settings.scale},
+origin{settings.origin},
+rotation{settings.rotation},
 m_style(settings.style),
 m_geometryNeedUpdate{true}
 {

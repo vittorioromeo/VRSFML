@@ -1,8 +1,5 @@
 #pragma once
-#include "GLBufferObject.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
-
 
 ////////////////////////////////////////////////////////////
 // Headers

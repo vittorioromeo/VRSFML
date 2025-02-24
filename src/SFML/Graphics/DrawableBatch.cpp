@@ -80,6 +80,24 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::reserveTriangles(const base::SizeT triangleCount)
+{
+    (void)m_storage.reserveMoreIndices(3u * triangleCount);
+    (void)m_storage.reserveMoreVertices(3u * triangleCount);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::reserveQuads(const base::SizeT quadCount)
+{
+    (void)m_storage.reserveMoreIndices(6u * quadCount);
+    (void)m_storage.reserveMoreVertices(4u * quadCount);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const Vertex* data, base::SizeT size)
 {
     appendIncreasingIndices(static_cast<IndexType>(size), m_storage.getNumVertices(), m_storage.reserveMoreIndices(size));
