@@ -21,6 +21,7 @@ namespace sf::priv
 class GlContext;
 } // namespace sf::priv
 
+
 namespace sf
 {
 class RenderTarget;

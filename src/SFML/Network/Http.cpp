@@ -24,11 +24,11 @@
 
 #include <cctype>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////
 using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
-
 
 ////////////////////////////////////////////////////////////
 void parseFields(std::istream& in, FieldTable& fields)

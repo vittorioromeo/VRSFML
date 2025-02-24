@@ -41,16 +41,16 @@
 #include <vector>
 
 #if defined(__APPLE__)
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+    #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif
 
 #ifdef ANDROID
-#ifdef USE_JNI
+    #ifdef USE_JNI
 
-#include "SFML/System/NativeActivity.hpp"
+        #include "SFML/System/NativeActivity.hpp"
 
-#include <android/native_activity.h>
-#include <jni.h>
+        #include <android/native_activity.h>
+        #include <jni.h>
 
 
 ////////////////////////////////////////////////////////////
@@ -109,7 +109,7 @@
     return keyboardIMEImpl(1);
 }
 
-#endif
+    #endif
 #endif
 
 // TODO P0: cleanup and rename funcs, etc
@@ -357,7 +357,6 @@ struct [[nodiscard]] TriggerInfo
 ////////////////////////////////////////////////////////////
 constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 
-
 ////////////////////////////////////////////////////////////
 [[nodiscard]] unsigned int getConnectedJoystickId()
 {
@@ -410,9 +409,9 @@ struct [[nodiscard]] ImGuiPerWindowContext
     }
 
 #ifdef ANDROID
-#ifdef USE_JNI
+    #ifdef USE_JNI
     bool wantTextInput{false};
-#endif
+    #endif
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -487,7 +486,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
         return true;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool updateFontTexture()
     {
@@ -504,13 +502,11 @@ struct [[nodiscard]] ImGuiPerWindowContext
         return true;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::Optional<Texture>& getFontTexture()
     {
         return fontTexture;
     }
-
 
     ////////////////////////////////////////////////////////////
     void updateJoystickButtonState(ImGuiIO& io) const
@@ -542,14 +538,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         io.AddKeyAnalogEvent(key, passedThresholdAndHasFocus, passedThresholdAndHasFocus ? base::fabs(pos / 100.f) : 0.f);
     }
 
-
     ////////////////////////////////////////////////////////////
     void updateJoystickAxisPair(ImGuiIO& io, ImGuiKey key1, ImGuiKey key2, Joystick::Axis axis, float threshold, bool inverted = false) const
     {
         updateJoystickAxis(io, key1, axis, -threshold, -100, inverted);
         updateJoystickAxis(io, key2, axis, threshold, 100, inverted);
     }
-
 
     ////////////////////////////////////////////////////////////
     void updateJoystickDPadState(ImGuiIO& io) const
@@ -568,7 +562,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
                                dPadInfo.threshold,
                                dPadInfo.yInverted);
     }
-
 
     ////////////////////////////////////////////////////////////
     void updateJoystickAxisState(ImGuiIO& io) const
@@ -605,13 +598,11 @@ struct [[nodiscard]] ImGuiPerWindowContext
         updateJoystickAxis(io, ImGuiKey_GamepadR2, rTriggerInfo.axis, rTriggerInfo.threshold, 100, false);
     }
 
-
     ////////////////////////////////////////////////////////////
     void loadMouseCursor(ImGuiMouseCursor imguiCursorType, Cursor::Type sfmlCursorType)
     {
         getMouseCursor(imguiCursorType) = Cursor::loadFromSystem(sfmlCursorType);
     }
-
 
     ////////////////////////////////////////////////////////////
     void processEvent(const Event& event)
@@ -774,7 +765,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
     }
 
-
     ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& theWindow, const ImGuiMouseCursor cursor) const
     {
@@ -788,7 +778,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
         theWindow.setMouseCursor(
             getMouseCursor(cursor).hasValue() ? *getMouseCursor(cursor) : *getMouseCursor(ImGuiMouseCursor_Arrow));
     }
-
 
     ////////////////////////////////////////////////////////////
     void update(Window& theWindow, RenderTarget& target, Time dt)
@@ -820,7 +809,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
     }
 
-
     ////////////////////////////////////////////////////////////
     void update(Vector2i mousePos, Vector2f displaySize, Time dt)
     {
@@ -850,7 +838,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
 
 #ifdef ANDROID
-#ifdef USE_JNI
+    #ifdef USE_JNI
         if (io.WantTextInput && !s_currWindowCtx->wantTextInput)
         {
             openKeyboardIME();
@@ -862,7 +850,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
             closeKeyboardIME();
             s_currWindowCtx->wantTextInput = false;
         }
-#endif
+    #endif
 #endif
 
         SFML_BASE_ASSERT(io.Fonts->Fonts.Size > 0); // You forgot to create and set up font atlas (see createFontTexture)
@@ -879,14 +867,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         ::ImGui::NewFrame();
     }
 
-
     ////////////////////////////////////////////////////////////
     void setActiveJoystickId(unsigned int newJoystickId)
     {
         SFML_BASE_ASSERT(newJoystickId < Joystick::MaxCount);
         joystickId = newJoystickId;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setJoystickDPadThreshold(float threshold)
@@ -895,14 +881,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         dPadInfo.threshold = threshold;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setJoystickLStickThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= 0.f && threshold <= 100.f);
         lStickInfo.threshold = threshold;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setJoystickRStickThreshold(float threshold)
@@ -911,7 +895,6 @@ struct [[nodiscard]] ImGuiPerWindowContext
         rStickInfo.threshold = threshold;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setJoystickLTriggerThreshold(float threshold)
     {
@@ -919,14 +902,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         lTriggerInfo.threshold = threshold;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setJoystickRTriggerThreshold(float threshold)
     {
         SFML_BASE_ASSERT(threshold >= -100.f && threshold <= 100.f);
         rTriggerInfo.threshold = threshold;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setJoystickMapping(int key, unsigned int joystickButton)
@@ -964,14 +945,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         joystickMapping[joystickButton] = finalKey;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setDPadXAxis(Joystick::Axis dPadXAxis, bool inverted = false)
     {
         dPadInfo.xAxis     = dPadXAxis;
         dPadInfo.xInverted = inverted;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setDPadYAxis(Joystick::Axis dPadYAxis, bool inverted = false)
@@ -980,14 +959,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         dPadInfo.yInverted = inverted;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setLStickXAxis(Joystick::Axis lStickXAxis, bool inverted = false)
     {
         lStickInfo.xAxis     = lStickXAxis;
         lStickInfo.xInverted = inverted;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setLStickYAxis(Joystick::Axis lStickYAxis, bool inverted = false)
@@ -996,14 +973,12 @@ struct [[nodiscard]] ImGuiPerWindowContext
         lStickInfo.yInverted = inverted;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setRStickXAxis(Joystick::Axis rStickXAxis, bool inverted = false)
     {
         rStickInfo.xAxis     = rStickXAxis;
         rStickInfo.xInverted = inverted;
     }
-
 
     ////////////////////////////////////////////////////////////
     void setRStickYAxis(Joystick::Axis rStickYAxis, bool inverted = false)
@@ -1012,20 +987,17 @@ struct [[nodiscard]] ImGuiPerWindowContext
         rStickInfo.yInverted = inverted;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setLTriggerAxis(Joystick::Axis lTriggerAxis)
     {
         rTriggerInfo.axis = lTriggerAxis;
     }
 
-
     ////////////////////////////////////////////////////////////
     void setRTriggerAxis(Joystick::Axis rTriggerAxis)
     {
         rTriggerInfo.axis = rTriggerAxis;
     }
-
 
     ////////////////////////////////////////////////////////////
     void initDefaultJoystickMapping()
@@ -1087,7 +1059,6 @@ struct [[nodiscard]] SpriteTextureData
 
 } // namespace
 
-
 ////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {
@@ -1095,7 +1066,6 @@ struct ImGuiContext::Impl
 
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
-
 
     ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& window) const

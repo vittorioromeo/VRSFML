@@ -715,6 +715,7 @@ void Texture::unbind()
     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
+
 ////////////////////////////////////////////////////////////
 unsigned int Texture::getMaximumSize()
 {

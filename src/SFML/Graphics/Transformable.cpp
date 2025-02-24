@@ -9,7 +9,6 @@
 
 #include "SFML/Base/FastSinCos.hpp"
 
-
 // The code below could be `constexpr` but the `FastSinCos` header is a heavy
 // compilation time hit.
 

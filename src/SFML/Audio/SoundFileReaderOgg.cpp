@@ -53,6 +53,7 @@ long tell(void* data)
 ov_callbacks callbacks = {&read, &seek, nullptr, &tell};
 } // namespace
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

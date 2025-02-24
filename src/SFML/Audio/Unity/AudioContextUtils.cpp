@@ -63,7 +63,7 @@ std::vector<PlaybackDeviceHandle> AudioContextUtils::getAvailablePlaybackDeviceH
          *static_cast<ma_context*>(audioContext.getMAContext()),
          "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
+    { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
 }
 
 
@@ -86,7 +86,7 @@ std::vector<CaptureDeviceHandle> AudioContextUtils::getAvailableCaptureDeviceHan
          *static_cast<ma_context*>(audioContext.getMAContext()),
          "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
+    { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
 }
 
 

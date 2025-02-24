@@ -16,10 +16,7 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-concept LocaleLike = requires
-{
-    typename T::category;
-};
+concept LocaleLike = requires { typename T::category; };
 
 ////////////////////////////////////////////////////////////
 template <typename T>

@@ -34,14 +34,15 @@ namespace
                                                          .antiAliasingLevel = 0,
                                                          .majorVersion      = 0,
                                                          .minorVersion      = 0,
-                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFFFFFFFFu},
-                                                         .sRgbCapable    = false};
+                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFF'FF'FF'FFu},
+                                                         .sRgbCapable = false};
 
     return windowSettings;
 }
 
 
 } // namespace
+
 
 namespace sf
 {
@@ -70,6 +71,7 @@ WindowBase::WindowBase(const Settings& windowSettings) :
 WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))

@@ -135,6 +135,7 @@ bool handleBubbleCollision(const float deltaTimeMs, Bubble& iBubble, Bubble& jBu
     return true;
 }
 
+
 ////////////////////////////////////////////////////////////
 bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
 {
@@ -153,6 +154,7 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
     return true;
 }
 
+
 ////////////////////////////////////////////////////////////
 bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 {
@@ -164,6 +166,7 @@ bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
     cat.position += result->iDisplacement;
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline Bubble makeRandomBubble(Playthrough& pt, RNG& rng, const float mapLimit, const float maxY)
@@ -177,6 +180,7 @@ bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
             .type     = BubbleType::Normal};
 }
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr auto playerComboDecay   = 0.95f;
 inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat (higher reward)
@@ -186,6 +190,7 @@ inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat 
 {
     return (1.f - sf::base::pow(decay, static_cast<float>(n))) / (1.f - decay);
 }
+
 
 ////////////////////////////////////////////////////////////
 void drawMinimap(sf::Shader&             shader,
@@ -265,6 +270,7 @@ void drawMinimap(sf::Shader&             shader,
     window.draw(minimapBorder, /* texture */ nullptr);    // Draw border frame
     window.draw(minimapIndicator, /* texture */ nullptr); // Draw current view indicator
 }
+
 
 ////////////////////////////////////////////////////////////
 void drawSplashScreen(sf::RenderWindow&        window,
@@ -887,7 +893,7 @@ struct Main
     [[nodiscard]] sf::FloatRect addImgResourceToAtlas(const sf::Path& path)
     {
         return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value();
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     void playSound(const Sounds::LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
@@ -977,7 +983,7 @@ struct Main
     {
         ++pt.psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
         return spawnCat(pos, catType, /* hue */ 0.f);
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     void doTip(const std::string& str, const SizeT maxPrestigeLevel = 0u)
@@ -1421,13 +1427,13 @@ Using prestige points, TODO P0
                 .size     = originalSize,
                 .viewport = {(windowSize - scaledSize).componentWiseDiv(windowSize * 2.f),
                              scaledSize.componentWiseDiv(windowSize)}};
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::View makeScaledHUDView(const sf::Vector2f& resolution, float scale) const
     {
         return {.center = {resolution.x / (2.f * scale), resolution.y / (2.f * scale)}, .size = resolution / scale};
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f getHUDMousePos() const
@@ -1543,7 +1549,7 @@ Using prestige points, TODO P0
 
         ImGui::EndDisabled();
         return result;
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     template <typename T>
@@ -2353,7 +2359,8 @@ Using prestige points, TODO P0
         uiBeginColumns();
 
         uiButtonHueMod = 120.f;
-        ImGui::BeginDisabled(!pt.canBuyNextPrestige()); // TODO P0: Bugged, must multiply with times to figure out needed shrines!
+        ImGui::BeginDisabled(
+            !pt.canBuyNextPrestige()); // TODO P0: Bugged, must multiply with times to figure out needed shrines!
         if (makePSVButtonEx("Prestige", pt.psvBubbleValue, times, maxCost))
         {
             playSound(sounds.prestige);
@@ -3002,7 +3009,7 @@ Using prestige points, TODO P0
                                             rng.getF(0.25f, 1.25f),
                                             rng.getF(0.50f, 3.f));
 
-                    pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 10000.f : 5000.f;
+                    pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 10'000.f : 5000.f;
 
                     done = false;
                     ++wizardCat->hits;
@@ -3022,9 +3029,9 @@ Using prestige points, TODO P0
             }
 
             //
-            // SPELL 2 (TODO P0: should cost 30 mana, and is usually unlocked around prestige 4, so both devils and astros exist)
-            // idea: stasis, makes all bubbles stationary and when popped they do not disappear (except bombs maybe)
-            // make it refresh witch cooldown
+            // SPELL 2 (TODO P0: should cost 30 mana, and is usually unlocked around prestige 4, so both devils and
+            // astros exist) idea: stasis, makes all bubbles stationary and when popped they do not disappear (except
+            // bombs maybe) make it refresh witch cooldown
             if (pt.psvSpellCount.nPurchases >= 3)
             {
                 ImGui::Separator();
@@ -3088,7 +3095,7 @@ Using prestige points, TODO P0
         };
 
         return Result{seconds / 3600u, (seconds / 60u) % 60u, seconds % 60u};
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     void uiTabBarStats()
@@ -3339,7 +3346,8 @@ Using prestige points, TODO P0
         const bool popperCatIsMousecat = !byPlayerClick && popperCat->type == CatType::Mouse;
         const bool popperCatIsNormal   = !byPlayerClick && popperCat->type == CatType::Normal;
 
-        const bool mustApplyHandMult = byPlayerClick || popperCatIsMousecat; // mousecat benefits from both click and cat multipliers
+        const bool mustApplyHandMult = byPlayerClick ||
+                                       popperCatIsMousecat; // mousecat benefits from both click and cat multipliers
         const bool mustApplyCatMult = !byPlayerClick;
 
         const bool nearShrineOfClicking = byPlayerClick && ([&]
@@ -3723,7 +3731,7 @@ Using prestige points, TODO P0
 
                 ImGui::SetNextItemWidth(140.f * getUIScalingFactor());
                 if (ImGui::InputScalar(lbuf.c_str(), ImGuiDataType_Float, &value, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
-                    value = sf::base::clamp(value, 0.f, 10000.f);
+                    value = sf::base::clamp(value, 0.f, 10'000.f);
             };
 
             const auto psvScalarInput = [&](const char* label, PurchasableScalingValue& psv)
@@ -3974,7 +3982,7 @@ Using prestige points, TODO P0
 
         bubble = makeRandomBubble(pt, rng, pt.getMapLimit(), 0.f);
         bubble.position.y -= bubble.radius;
-    };
+    }
 
     ////////////////////////////////////////////////////////////
     void gameLoopCheats()
@@ -4737,7 +4745,7 @@ Using prestige points, TODO P0
                         playSound(sounds.ritual);
                     }
 
-                    const float intensity = remap(cat.cooldown.value, 0.f, 10000.f, 1.f, 0.f);
+                    const float intensity = remap(cat.cooldown.value, 0.f, 10'000.f, 1.f, 0.f);
 
                     for (Cat& otherCat : pt.cats)
                     {
@@ -4746,7 +4754,7 @@ Using prestige points, TODO P0
 
                         if (&otherCat == &cat)
                             cat.hue = sf::base::sin(sf::base::fmod(cat.cooldown.value /
-                                                                       remap(cat.cooldown.value, 0.f, 10000.f, 15.f, 150.f),
+                                                                       remap(cat.cooldown.value, 0.f, 10'000.f, 15.f, 150.f),
                                                                    sf::base::tau)) *
                                       50.f * intensity;
 
@@ -5400,8 +5408,8 @@ Using prestige points, TODO P0
                 {
                     /*
                         case CatType::Repulso:
-                            // TODO P0: ??? something with wind? or stop bubbles from falling? blows special bubbles from below?
-                        case CatType::Attracto:
+                            // TODO P0: ??? something with wind? or stop bubbles from falling? blows special bubbles
+                       from below? case CatType::Attracto:
                             // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
                     */
 
@@ -5632,14 +5640,14 @@ Using prestige points, TODO P0
         unlockIf(bubblesHandPopped >= 1);
         unlockIf(bubblesHandPopped >= 10);
         unlockIf(bubblesHandPopped >= 100);
-        unlockIf(bubblesHandPopped >= 1'000);
+        unlockIf(bubblesHandPopped >= 1000);
         unlockIf(bubblesHandPopped >= 10'000);
         unlockIf(bubblesHandPopped >= 100'000);
         unlockIf(bubblesHandPopped >= 1'000'000);
 
         unlockIf(bubblesCatPopped >= 1);
         unlockIf(bubblesCatPopped >= 100);
-        unlockIf(bubblesCatPopped >= 1'000);
+        unlockIf(bubblesCatPopped >= 1000);
         unlockIf(bubblesCatPopped >= 10'000);
         unlockIf(bubblesCatPopped >= 100'000);
         unlockIf(bubblesCatPopped >= 1'000'000);
@@ -5786,13 +5794,13 @@ Using prestige points, TODO P0
 
         unlockIf(nStarBubblesPoppedByHand >= 1);
         unlockIf(nStarBubblesPoppedByHand >= 100);
-        unlockIf(nStarBubblesPoppedByHand >= 1'000);
+        unlockIf(nStarBubblesPoppedByHand >= 1000);
         unlockIf(nStarBubblesPoppedByHand >= 10'000);
         unlockIf(nStarBubblesPoppedByHand >= 100'000);
 
         unlockIf(nStarBubblesPoppedByCat >= 1);
         unlockIf(nStarBubblesPoppedByCat >= 100);
-        unlockIf(nStarBubblesPoppedByCat >= 1'000);
+        unlockIf(nStarBubblesPoppedByCat >= 1000);
         unlockIf(nStarBubblesPoppedByCat >= 10'000);
         unlockIf(nStarBubblesPoppedByCat >= 100'000);
         unlockIf(nStarBubblesPoppedByCat >= 1'000'000);
@@ -5803,12 +5811,12 @@ Using prestige points, TODO P0
 
         unlockIf(nBombBubblesPoppedByHand >= 1);
         unlockIf(nBombBubblesPoppedByHand >= 100);
-        unlockIf(nBombBubblesPoppedByHand >= 1'000);
+        unlockIf(nBombBubblesPoppedByHand >= 1000);
         unlockIf(nBombBubblesPoppedByHand >= 10'000);
 
         unlockIf(nBombBubblesPoppedByCat >= 1);
         unlockIf(nBombBubblesPoppedByCat >= 100);
-        unlockIf(nBombBubblesPoppedByCat >= 1'000);
+        unlockIf(nBombBubblesPoppedByCat >= 1000);
         unlockIf(nBombBubblesPoppedByCat >= 10'000);
         unlockIf(nBombBubblesPoppedByCat >= 100'000);
 
@@ -5874,7 +5882,7 @@ Using prestige points, TODO P0
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1);
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10);
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 100);
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1'000);
+        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1000);
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10'000);
 
         unlockIf(pt.perm.witchCatBuffPowerScalesWithNCats);
@@ -5904,7 +5912,7 @@ Using prestige points, TODO P0
 
         unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 1);
         unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 100);
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 1'000);
+        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 1000);
         unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 10'000);
         unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 100'000);
 
@@ -5916,22 +5924,22 @@ Using prestige points, TODO P0
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1);
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 10);
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1'000);
+        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1000);
 
         unlockIf(profile.statsLifetime.nSpellCasts[1] >= 1);
         unlockIf(profile.statsLifetime.nSpellCasts[1] >= 10);
         unlockIf(profile.statsLifetime.nSpellCasts[1] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 1'000);
+        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 1000);
 
         unlockIf(profile.statsLifetime.nSpellCasts[2] >= 1);
         unlockIf(profile.statsLifetime.nSpellCasts[2] >= 10);
         unlockIf(profile.statsLifetime.nSpellCasts[2] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 1'000);
+        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 1000);
 
         unlockIf(profile.statsLifetime.nSpellCasts[3] >= 1);
         unlockIf(profile.statsLifetime.nSpellCasts[3] >= 10);
         unlockIf(profile.statsLifetime.nSpellCasts[3] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 1'000);
+        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 1000);
 
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 1);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 3);
@@ -5975,7 +5983,7 @@ Using prestige points, TODO P0
         unlockIf(profile.statsLifetime.nMaintenances >= 1);
         unlockIf(profile.statsLifetime.nMaintenances >= 10);
         unlockIf(profile.statsLifetime.nMaintenances >= 100);
-        unlockIf(profile.statsLifetime.nMaintenances >= 1'000);
+        unlockIf(profile.statsLifetime.nMaintenances >= 1000);
         unlockIf(profile.statsLifetime.nMaintenances >= 10'000);
         unlockIf(profile.statsLifetime.nMaintenances >= 100'000);
         unlockIf(profile.statsLifetime.nMaintenances >= 1'000'000);
@@ -6453,9 +6461,9 @@ Using prestige points, TODO P0
         const auto bezier = [](const sf::Vector2f& start, const sf::Vector2f& end, const float t)
         {
             const sf::Vector2f control(start.x, end.y);
-            const float        u = 1.0f - t;
+            const float        u = 1.f - t;
 
-            return u * u * start + 2.0f * u * t * control + t * t * end;
+            return u * u * start + 2.f * u * t * control + t * t * end;
         };
 
         for (const auto& particle : earnedCoinParticles)
@@ -6600,8 +6608,8 @@ Using prestige points, TODO P0
 
         float fade = 255.f;
 
-        if (tipTimer > 5500.f)
-            fade = remap(tipTimer, 5500.f, 6000.f, 255.f, 0.f);
+        if (tipTimer > 5'500.f)
+            fade = remap(tipTimer, 5'500.f, 6000.f, 255.f, 0.f);
         else if (tipTimer < 500.f)
             fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
 
@@ -6614,7 +6622,7 @@ Using prestige points, TODO P0
                           .scale            = {0.5f, 0.5f},
                           .string           = tipString.substr(0,
                                                      static_cast<SizeT>(
-                                                         sf::base::clamp((5100.f - tipTimer) / 25.f,
+                                                         sf::base::clamp((5'100.f - tipTimer) / 25.f,
                                                                          0.f,
                                                                          static_cast<float>(tipString.size())))),
                           .characterSize    = 60u,
@@ -7418,7 +7426,7 @@ Using prestige points, TODO P0
             if (inPrestigeTransition && pt.cats.empty() && pt.shrines.empty() && pt.bubbles.empty() && pt.dolls.empty())
             {
                 inPrestigeTransition = false;
-                pt.money             = pt.perm.starterPackPurchased ? 1'000u : 0u;
+                pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
 
                 scroll                   = 0.f;
                 draggedCat               = nullptr;
@@ -7765,7 +7773,7 @@ void main()
         particles.reserve(512);
         spentCoinParticles.reserve(512);
         textParticles.reserve(256);
-        pt.bubbles.reserve(32768);
+        pt.bubbles.reserve(32'768);
         pt.cats.reserve(512);
 
         //
@@ -7799,6 +7807,7 @@ void main()
     }
 };
 
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -7812,75 +7821,62 @@ int main()
 // - reduce size of game textures and try to reduce atlas size
 // - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // - bubble collisions with wind enabled seem fucked, is it a data race?
-// - crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x multiplier with corrupted zalgo names
+// - crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x multiplier
+// with corrupted zalgo names
 // - prestige upgrade for unicats that makes star bubbles worth 30x instead of 15x, around 64pps
-// - prestige upgrade for unicats that makes all bubbles in range converted at once, and enables range upgrades (need to be expensive), around 128pps
+// - prestige upgrade for unicats that makes all bubbles in range converted at once, and enables range upgrades (need to
+// be expensive), around 128pps
 // - some prestige upgrade for devilcats, maybe make bombs transformable by unicats
 // - prestige 8 (first prestige where repulsion shrine is required) takes too long
 // - maybe 64PP prestige buff for multipop that allows "misses"
-// - rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also upgrade time needed to trigger
+// - rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also
+// upgrade time needed to trigger
 // - sounds for hexing/unhexing (meows)
 // - disable exiting with escape key, or add popup to confirm
-// - leveling cat (2000-2500 pops is a good milestone for 1st lvl up, 5000 for 2nd, 10000 for 3rd), level up should increase reward by 2...1.75...1.5, etc
+// - leveling cat (2000-2500 pops is a good milestone for 1st lvl up, 5000 for 2nd, 10000 for 3rd), level up should
+// increase reward by 2...1.75...1.5, etc
 // - maybe unlock leveling via prestige
 // - change bg when unlocking new cat type or prestiging?
 // - steam achievements
 // - find better word for "prestige"
-// - prestige should scale indefinitely...? or make PP costs scale linearly, max is 20 -- or maybe when we reach max bubble value just purchase prestige points
-// - other prestige ideas: cat multipop, unicat multitransform, unicat trasnform twice in a row, unlock random special bubbles
+// - prestige should scale indefinitely...? or make PP costs scale linearly, max is 20 -- or maybe when we reach max
+// bubble value just purchase prestige points
+// - other prestige ideas: cat multipop, unicat multitransform, unicat trasnform twice in a row, unlock random special
+// bubbles
 // - achievements for speedrunning milestones
 // - ignore clicks done on top of imgui
 // - "resting powerup" via PPs that increases cat multiplier when not clicking for a while, maybe around 16PPs
 // - maybe make "autocast spell selector" a PP upgrade for around 128PPs
 
-// x - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat cooldowns)
-// x - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs
-// x - display cat text always on top of cats
-// x - dragging the window stops execution and deltatime accumulates
-// x - make cats wobble back and forth when ritual
-// x - witchcat sound gets out of sync if shes inspired or boosted, split in two separate sounds...?
-// x - mousecat combo should cap at x999, and perhaps give a flat bonus there and needs achievement ("mouse broke")
-// x - witchcat needs to delay ritual until all dolls are collected
-// x - witchcat stacking same buff needs diminishing return, promote having different buffs stacked, also should probably have 90s cap
-// x - does astrocat have a speed limit? needs one for endless flight buff
-// x - make bombs less affected by wind
-// x - smart/genius cat name prefix
-// x - pp point ideas: start with stuff unlocked, start with a bit of money
-// x - maybe 64PP prestige buff that doubles duration of mewltiplier aura
-// x - mousecat might need a buff
-// x - maybe add checkbox to giant fan to choose power between fast (current) and slow
-// x - queue imgui toasts to avoid spamming and sound spam
-// x - notification when wizard mana is full? or when witch is ready to cast? maybe make them optional in settings?
-// x - mousecat witch buff a bit too weak probably
-// x - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph
-// x - astrocats collide with each other when one flies but the other doesn't
-// x - add big flashing arrow when map scrolling is first unlocked to force player to scroll
-// x - bubbleValue.nPurchases == 1 and money > 500 and prestigePoints > 0 -> tip to remind to spend prestige points
-// x - show wizard buffs in buff HUD string
-// x - maybe get rid of range upgrades for uni and devil cats
-// x - cooldown/range tips for special cats should have more descriptive tooltips
-// x - genius cats x2 bonus
-// x - make rituals a bit less frequent and a bit more powerful
-// x - "tweaks menu" unlockable with PP that allows any purchased cooldown/range upgrade to be tweaked, or just allow selling via right click...?
-// x - resolution should be calculated from user desktop size
-// x - setting to disable draw particles
-// x - consider allowing menu to be outside game view when resizing or in separate widnow
-// x - milestone system with time per milestone,
-// x - mousecat global click multiplier should be upgradable with PPs, start around 24PPs
-// x - engicat global cat multiplier should be upgradable with PPs, start around 32PPs
-// x - maybe make "starpaw conversion ignore bombs" a PP upgrade for around 64PPs
-// x - mouse cat could keep up his own combo, and his paw should be a cursor
-// x - setting to show/hide cat text
-// x - decouple resolution and "map chunk size"
-// x - genius cats should also be able to only hit bombs
-// x - tooltips in menus
-// x - always use events to avoid out of focus keypresses
-// x - make astrocat unselectable during flight
-// x - pp upgrade "genius cats" always prioritize bombs
-// x - add astrocat inspiration time multiplier upgrade
-// x - astrocat inspiration could be purchased with PPs and add flag to the sprite
-// x - genius cat pp upgrade could add brain in the jar to the sprite (TODO: redo art)
-// x - genius cat pp upgrade should also add "pop bombs only" or "ignore normal bubbles" options
+// x - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat
+// cooldowns) x - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs x -
+// display cat text always on top of cats x - dragging the window stops execution and deltatime accumulates x - make
+// cats wobble back and forth when ritual x - witchcat sound gets out of sync if shes inspired or boosted, split in two
+// separate sounds...? x - mousecat combo should cap at x999, and perhaps give a flat bonus there and needs achievement
+// ("mouse broke") x - witchcat needs to delay ritual until all dolls are collected x - witchcat stacking same buff
+// needs diminishing return, promote having different buffs stacked, also should probably have 90s cap x - does astrocat
+// have a speed limit? needs one for endless flight buff x - make bombs less affected by wind x - smart/genius cat name
+// prefix x - pp point ideas: start with stuff unlocked, start with a bit of money x - maybe 64PP prestige buff that
+// doubles duration of mewltiplier aura x - mousecat might need a buff x - maybe add checkbox to giant fan to choose
+// power between fast (current) and slow x - queue imgui toasts to avoid spamming and sound spam x - notification when
+// wizard mana is full? or when witch is ready to cast? maybe make them optional in settings? x - mousecat witch buff a
+// bit too weak probably x - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph x - astrocats
+// collide with each other when one flies but the other doesn't x - add big flashing arrow when map scrolling is first
+// unlocked to force player to scroll x - bubbleValue.nPurchases == 1 and money > 500 and prestigePoints > 0 -> tip to
+// remind to spend prestige points x - show wizard buffs in buff HUD string x - maybe get rid of range upgrades for uni
+// and devil cats x - cooldown/range tips for special cats should have more descriptive tooltips x - genius cats x2
+// bonus x - make rituals a bit less frequent and a bit more powerful x - "tweaks menu" unlockable with PP that allows
+// any purchased cooldown/range upgrade to be tweaked, or just allow selling via right click...? x - resolution should
+// be calculated from user desktop size x - setting to disable draw particles x - consider allowing menu to be outside
+// game view when resizing or in separate widnow x - milestone system with time per milestone, x - mousecat global click
+// multiplier should be upgradable with PPs, start around 24PPs x - engicat global cat multiplier should be upgradable
+// with PPs, start around 32PPs x - maybe make "starpaw conversion ignore bombs" a PP upgrade for around 64PPs x - mouse
+// cat could keep up his own combo, and his paw should be a cursor x - setting to show/hide cat text x - decouple
+// resolution and "map chunk size" x - genius cats should also be able to only hit bombs x - tooltips in menus x -
+// always use events to avoid out of focus keypresses x - make astrocat unselectable during flight x - pp upgrade
+// "genius cats" always prioritize bombs x - add astrocat inspiration time multiplier upgrade x - astrocat inspiration
+// could be purchased with PPs and add flag to the sprite x - genius cat pp upgrade could add brain in the jar to the
+// sprite (TODO: redo art) x - genius cat pp upgrade should also add "pop bombs only" or "ignore normal bubbles" options
 // x - astrocat stats
 // x - astrocat should inspire cats touched while flying
 // x - unicat cooldown scaling should be less powerful and capped

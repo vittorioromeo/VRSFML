@@ -18,6 +18,7 @@ namespace sf
 class String;
 } // namespace sf
 
+
 namespace sf::priv
 {
 class JoystickManager;

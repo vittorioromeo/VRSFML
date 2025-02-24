@@ -113,7 +113,6 @@ struct RenderTexture::Impl
     bool depth{};       //!< Has depth attachment
     bool sRgb{};        //!< Must encode drawn pixels into sRGB color space
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Impl(Texture&& theTexture) :
     texture(SFML_BASE_MOVE(theTexture)),
@@ -129,8 +128,7 @@ private:
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, 0u));
         priv::err() << "Impossible to create render texture (" << what << ")";
         return false;
-    };
-
+    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool completeAuxFramebufferCreation(GLuint auxFramebufferId)
@@ -147,7 +145,6 @@ private:
 
         return true;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createAuxMultisampleFramebuffer()
@@ -166,7 +163,6 @@ private:
         return completeAuxFramebufferCreation(multisampleFramebufferId);
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createAuxTempFramebuffer()
     {
@@ -183,7 +179,6 @@ private:
 
         return completeAuxFramebufferCreation(tempFramebufferId);
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createFramebuffer()
@@ -292,7 +287,6 @@ public:
         return true;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool activate(bool active)
     {
@@ -318,7 +312,6 @@ public:
 
         return createFramebuffer();
     }
-
 
     ////////////////////////////////////////////////////////////
     void updateTexture()

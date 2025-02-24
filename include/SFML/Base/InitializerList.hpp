@@ -4,9 +4,9 @@
 
 #if !defined(_LIBCPP_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST_)
 
-#define _LIBCPP_INITIALIZER_LIST // libcpp
-#define _INITIALIZER_LIST        // libstdc++
-#define _INITIALIZER_LIST_       // msstl
+    #define _LIBCPP_INITIALIZER_LIST // libcpp
+    #define _INITIALIZER_LIST        // libstdc++
+    #define _INITIALIZER_LIST_       // msstl
 
 namespace std
 {

@@ -10,7 +10,7 @@ ContinuationIndentWidth: 4
 IndentCaseLabels: true
 IndentCaseBlocks: false
 IndentExternBlock: Indent
-IndentPPDirectives: None
+IndentPPDirectives: BeforeHash
 IndentRequires: true
 IndentWidth: 4
 IndentWrappedFunctionNames: true
@@ -141,7 +141,7 @@ PenaltyReturnTypeOnItsOwnLine: 500
 PointerAlignment: Left
 
 # Comments
-ReflowComments: false
+ReflowComments: true
 
 # Spaces
 SpaceAfterCStyleCast: false
@@ -171,10 +171,24 @@ UseCRLF: false
 
 # Qualifiers (const, volatile, static, etc)
 QualifierAlignment: Custom
-QualifierOrder: ['static', 'inline', 'constexpr', 'const', 'volatile', 'type']
+QualifierOrder: ['friend', 'static', 'inline', 'constexpr', 'const', 'volatile', 'type']
 
 # Lambdas
 LambdaBodyIndentation: OuterScope
+
+# Digit separators
+IntegerLiteralSeparator:
+  Binary: 0
+  Decimal: 3
+  Hex: 2
+  DecimalMinDigits: 5
+
+# Other
+InsertNewlineAtEOF: true
+LineEnding: LF
+# RemoveEmptyLinesInUnwrappedLines: true
+RemoveSemicolon: true
+# SeparateDefinitionBlocks: Always
 
 ---
 Language: ObjC
