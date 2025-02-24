@@ -12,6 +12,7 @@
 // The code below could be `constexpr` but the `FastSinCos` header is a heavy
 // compilation time hit.
 
+
 namespace sf
 {
 Transform TransformableMixinBase::getTransform(const Vector2f position,

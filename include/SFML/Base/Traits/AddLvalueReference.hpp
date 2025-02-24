@@ -11,6 +11,7 @@
 
     #include "SFML/Base/Traits/VoidT.hpp"
 
+
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
