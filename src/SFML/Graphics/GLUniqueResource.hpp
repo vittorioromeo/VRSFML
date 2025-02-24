@@ -82,7 +82,7 @@ public:
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource& operator=(GLUniqueResource&& rhs) noexcept = default;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] unsigned int getId() const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static unsigned int getBoundId()
     {
         unsigned int out{};
         TFuncs::get(out);
@@ -90,9 +90,15 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] unsigned int getId() const
+    {
+        return m_id.value;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] bool isBound() const
     {
-        return getId() != 0u;
+        return getBoundId() == m_id.value;
     }
 
     ////////////////////////////////////////////////////////////

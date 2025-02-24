@@ -8,8 +8,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/GLBufferObject.hpp"
-#include "SFML/Graphics/GLPersistentBuffer.hpp"
 #include "SFML/Graphics/GLSyncGuard.hpp"
 #include "SFML/Graphics/GLVAOGroup.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -304,7 +302,7 @@ struct RenderTarget::Impl
     explicit Impl(const View& theView) :
     view(theView),
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed)),
-    vaoGroup()
+    vaoGroup{}
     {
         vaoGroup.bind();
     }
@@ -529,7 +527,7 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
     if (vertexData == nullptr || vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistentBatch */ nullptr, states);
+    setupDraw(m_impl->vaoGroup, states);
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
 
@@ -551,7 +549,7 @@ void RenderTarget::drawIndexedVertices(
     if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistentBatch */ nullptr, states);
+    setupDraw(m_impl->vaoGroup, states);
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
     RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
@@ -571,7 +569,7 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
     if (vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistentBatch */ &batch, states);
+    setupDraw(batch.m_storage.getVAOGroup(), states);
 
     {
         GLSyncGuard syncGuard;
@@ -592,7 +590,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
     if (indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistentBatch */ &batch, states);
+    setupDraw(batch.m_storage.getVAOGroup(), states);
 
     {
         GLSyncGuard syncGuard;
@@ -647,7 +645,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     if (!vertexCount || !vertexBuffer.getNativeHandle() || !setActive(true))
         return;
 
-    setupDraw(/* persistentBatch */ nullptr, states);
+    setupDraw(m_impl->vaoGroup, states);
 
     // Bind vertex buffer
     vertexBuffer.bind();
@@ -874,7 +872,7 @@ void RenderTarget::unapplyTexture()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDraw(const PersistentGPUDrawableBatch* persistentBatch, const RenderStates& states)
+void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& states)
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
@@ -897,12 +895,10 @@ void RenderTarget::setupDraw(const PersistentGPUDrawableBatch* persistentBatch, 
         resetGLStates();
 
     // Bind GL objects
-    if (const GLVAOGroup& vaoGroupToBind = persistentBatch != nullptr ? persistentBatch->m_storage.getVAOGroup()
-                                                                      : m_impl->vaoGroup;
-        !m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroupToBind.getId())
+    if (!m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroup.getId())
     {
-        m_impl->cache.lastVaoGroup = vaoGroupToBind.getId();
-        m_impl->bindGLObjects(vaoGroupToBind);
+        m_impl->cache.lastVaoGroup = vaoGroup.getId();
+        m_impl->bindGLObjects(vaoGroup);
     }
 
     // Select shader to be used

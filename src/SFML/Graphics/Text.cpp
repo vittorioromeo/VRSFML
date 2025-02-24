@@ -378,31 +378,6 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
 
 ////////////////////////////////////////////////////////////
-base::Span<const Vertex> Text::getVertices() const
-{
-    ensureGeometryUpdate(*m_font);
-
-    return {m_vertices.data(), m_vertices.size()};
-}
-
-
-////////////////////////////////////////////////////////////
-base::Span<Vertex> Text::getVerticesMut()
-{
-    ensureGeometryUpdate(*m_font);
-
-    return {m_vertices.data(), m_vertices.size()};
-}
-
-
-////////////////////////////////////////////////////////////
-base::SizeT Text::getFillVerticesStartIndex() const
-{
-    return m_fillVerticesStartIndex;
-}
-
-
-////////////////////////////////////////////////////////////
 void Text::ensureGeometryUpdate(const Font& font) const
 {
     // Do nothing, if geometry has not changed and the font texture has not changed
