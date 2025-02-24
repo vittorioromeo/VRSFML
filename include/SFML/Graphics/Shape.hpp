@@ -9,7 +9,7 @@
 
 #include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
 #include "SFML/Graphics/ShapeUtils.hpp"
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
@@ -45,7 +45,7 @@ namespace sf
 /// \brief Base class for textured shapes with outline
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shape : public Transformable, public AnchorPointMixin<Shape>
+class SFML_GRAPHICS_API Shape : public TransformableMixin<Shape>, public AnchorPointMixin<Shape>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -327,17 +327,22 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect m_textureRect{};              //!< Area of the source texture to display for the fill
-    FloatRect m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
-    Color     m_fillColor{Color::White};    //!< Fill color
-    Color     m_outlineColor{Color::White}; //!< Outline color
-    float     m_outlineThickness{};         //!< Thickness of the shape's outline
-
+    /* Ordered to minimize padding */
     base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
     base::SizeT m_verticesEndIndex = 0u;    //!< Index where the fill vertices end and outline vertices begin
 
-    FloatRect m_insideBounds; //!< Bounding rectangle of the inside (fill)
-    FloatRect m_bounds;       //!< Bounding rectangle of the whole shape (outline + fill)
+    FloatRect m_textureRect{};        //!< Area of the source texture to display for the fill
+    FloatRect m_outlineTextureRect{}; //!< Area of the source texture to display for the outline
+    FloatRect m_insideBounds;         //!< Bounding rectangle of the inside (fill)
+    FloatRect m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
+
+    float m_outlineThickness{}; //!< Thickness of the shape's outline
+
+    Color m_fillColor{Color::White};    //!< Fill color
+    Color m_outlineColor{Color::White}; //!< Outline color
+
+public:
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 };
 
 } // namespace sf

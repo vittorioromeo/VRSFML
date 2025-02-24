@@ -20,6 +20,7 @@
 #include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 
+
 namespace sf::base::priv
 {
 ///////////////////////////////////////////////////////// ///

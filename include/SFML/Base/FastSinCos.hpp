@@ -10,6 +10,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
+
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////

@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
@@ -34,7 +34,7 @@ struct RenderStates;
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Transformable, public AnchorPointMixin<Text>
+class SFML_GRAPHICS_API Text : public TransformableMixin<Text>, public AnchorPointMixin<Text>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -54,7 +54,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
+    struct [[nodiscard]] Settings // TODO P1: to text descriptor and add immediate batching
     {
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
 
@@ -470,20 +470,25 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const Font*  m_font{};                     //!< Font used to display the string
-    String       m_string;                     //!< String to display
-    unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
-    float        m_letterSpacing{1.f};         //!< Spacing factor between letters
-    float        m_lineSpacing{1.f};           //!< Spacing factor between lines
-    Color        m_fillColor{Color::White};    //!< Text fill color
-    Color        m_outlineColor{Color::Black}; //!< Text outline color
-    float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
-    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
+    /* Ordered to minimize padding */
+    String                              m_string;     //!< String to display
+    mutable base::TrivialVector<Vertex> m_vertices;   //!< Vertex array containing the outline and fill geometry
+    mutable FloatRect                   m_bounds;     //!< Bounding rectangle of the text (in local coordinates)
+    const Font*                         m_font{};     //!< Font used to display the string
+    mutable base::SizeT m_fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
+    unsigned int        m_characterSize{30u};         //!< Base size of characters, in pixels
+    float               m_letterSpacing{1.f};         //!< Spacing factor between letters
+    float               m_lineSpacing{1.f};           //!< Spacing factor between lines
+    float               m_outlineThickness{0.f};      //!< Thickness of the text's outline
+    Color               m_fillColor{Color::White};    //!< Text fill color
+    Color               m_outlineColor{Color::Black}; //!< Text outline color
 
-    mutable base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the outline and fill geometry
-    mutable base::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
-    mutable FloatRect   m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool        m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+public:
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+
+private:
+    Style        m_style{Style::Regular}; //!< Text style (see Style enum)
+    mutable bool m_geometryNeedUpdate{};  //!< Does the geometry need to be recomputed?
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
