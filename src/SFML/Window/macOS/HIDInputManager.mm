@@ -10,11 +10,13 @@
 
 #include <AppKit/AppKit.h>
 
+
 namespace
 {
 const base::U8 unknownVirtualCode = 0xff;
 const bool         isIsoKeyboard      = (KBGetLayoutType(LMGetKbdType()) == kKeyboardISO);
 } // namespace
+
 
 namespace sf::priv
 {

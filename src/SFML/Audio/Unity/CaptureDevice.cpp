@@ -91,7 +91,7 @@ struct CaptureDevice::Impl
     AudioContext*                  audioContext;        //!< Audio context
     CaptureDeviceHandle            captureDeviceHandle; //!< Capture device handle
     ma_uint32                      channelCount{1u};    //!< Number of recording channels
-    ma_uint32                      sampleRate{44100u};  //!< Sample rate
+    ma_uint32                      sampleRate{44'100u}; //!< Sample rate
     base::TrivialVector<base::I16> samples;             //!< Buffer to store captured samples
     ChannelMap channelMap{SoundChannel::Mono};          //!< The map of position in sample frame to sound channel
 
@@ -170,6 +170,7 @@ bool CaptureDevice::setSampleRate(unsigned int sampleRate)
     return true;
 }
 
+
 ////////////////////////////////////////////////////////////
 unsigned int CaptureDevice::getSampleRate() const
 {
@@ -215,6 +216,7 @@ unsigned int CaptureDevice::getSampleRate() const
 
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////
 bool CaptureDevice::setChannelCount(unsigned int channelCount)

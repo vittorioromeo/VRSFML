@@ -9,6 +9,7 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////

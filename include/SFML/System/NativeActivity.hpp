@@ -9,11 +9,12 @@
 
 
 #if !defined(SFML_SYSTEM_ANDROID)
-#error NativeActivity.hpp: This header is Android only.
+    #error NativeActivity.hpp: This header is Android only.
 #endif
 
 
 struct ANativeActivity;
+
 
 namespace sf
 {

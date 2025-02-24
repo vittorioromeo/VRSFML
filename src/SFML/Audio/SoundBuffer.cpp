@@ -25,7 +25,6 @@ namespace sf
 ////////////////////////////////////////////////////////////
 using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
 
-
 ////////////////////////////////////////////////////////////
 struct SoundBuffer::Impl
 {
@@ -35,11 +34,11 @@ struct SoundBuffer::Impl
     {
     }
 
-    base::TrivialVector<base::I16> samples;           //!< Samples buffer
-    unsigned int                   sampleRate{44100}; //!< Number of samples per second
-    ChannelMap        channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time              duration;                       //!< Sound duration
-    mutable SoundList sounds;                         //!< List of sounds that are using this buffer
+    base::TrivialVector<base::I16> samples;            //!< Samples buffer
+    unsigned int                   sampleRate{44'100}; //!< Number of samples per second
+    ChannelMap        channelMap{SoundChannel::Mono};  //!< The map of position in sample frame to sound channel
+    Time              duration;                        //!< Sound duration
+    mutable SoundList sounds;                          //!< List of sounds that are using this buffer
 };
 
 

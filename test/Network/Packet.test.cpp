@@ -293,4 +293,20 @@ TEST_CASE("[Network] sf::Packet")
         CHECK(packet.getData() != nullptr);
         CHECK(packet.getDataSize() == 6);
     }
+
+    SECTION("Attempt overflow")
+    {
+        static constexpr struct
+        {
+            sf::base::U32 length{std::numeric_limits<decltype(length)>::max()};
+            char          data[4]{'S', 'F', 'M', 'L'};
+        } string;
+
+        sf::Packet packet;
+        packet.append(&string, sizeof(string));
+
+        std::string out;
+        packet >> out; // Ensure this does not trigger a crash
+        CHECK(out.empty());
+    }
 }

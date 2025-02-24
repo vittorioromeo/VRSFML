@@ -73,7 +73,7 @@ TEST_CASE("[System] sf::Angle")
 
         SECTION("Exact rotation by speed amount")
         {
-            sf::Angle current = sf::radians(0.0f);
+            sf::Angle current = sf::radians(0.f);
             sf::Angle target  = sf::radians(pi / 2.f);
             REQUIRE(current.rotatedTowards(target, pi / 2).asRadians() == Approx(pi / 2));
         }
@@ -88,14 +88,14 @@ TEST_CASE("[System] sf::Angle")
         SECTION("Clockwise rotation")
         {
             sf::Angle current = sf::radians(pi / 2.f);
-            sf::Angle target  = sf::radians(0.0f);
+            sf::Angle target  = sf::radians(0.f);
             sf::Angle result  = current.rotatedTowards(target, pi / 4);
             REQUIRE(result.asRadians() == Approx(pi / 4));
         }
 
         SECTION("Counter-clockwise rotation")
         {
-            sf::Angle current = sf::radians(0.0f);
+            sf::Angle current = sf::radians(0.f);
             sf::Angle target  = sf::radians(pi / 2.f);
             sf::Angle result  = current.rotatedTowards(target, pi / 4);
             REQUIRE(result.asRadians() == Approx(pi / 4));
@@ -119,7 +119,7 @@ TEST_CASE("[System] sf::Angle")
 
         SECTION("Half-circle rotation (pi difference)")
         {
-            sf::Angle current = sf::radians(0.0f);
+            sf::Angle current = sf::radians(0.f);
             sf::Angle target  = sf::radians(pi);
             sf::Angle result  = current.rotatedTowards(target, pi / 2);
             REQUIRE(result.asRadians() == Approx(pi / 2));
@@ -156,8 +156,8 @@ TEST_CASE("[System] sf::Angle")
         STATIC_CHECK(angle == sf::degrees(15));
         CHECK(angle.asRadians() == Approx(0.26179939f));
 
-        constexpr sf::Angle bigAngle = sf::degrees(1000);
-        STATIC_CHECK(bigAngle == sf::degrees(1000));
+        constexpr sf::Angle bigAngle = sf::degrees(1'000);
+        STATIC_CHECK(bigAngle == sf::degrees(1'000));
         CHECK(bigAngle.asRadians() == Approx(17.453293f));
 
         constexpr sf::Angle bigNegativeAngle = sf::degrees(-4321);
@@ -311,11 +311,11 @@ TEST_CASE("[System] sf::Angle")
         {
             STATIC_CHECK(sf::radians(0) * 10 == sf::Angle::Zero);
             CHECK(sf::degrees(10) * 2.5f == Approx(sf::degrees(25)));
-            CHECK(sf::degrees(100) * 10.0f == Approx(sf::degrees(1000)));
+            CHECK(sf::degrees(100) * 10.f == Approx(sf::degrees(1'000)));
 
             STATIC_CHECK(10 * sf::radians(0) == sf::Angle::Zero);
             CHECK(2.5f * sf::degrees(10) == Approx(sf::degrees(25)));
-            CHECK(10.0f * sf::degrees(100) == Approx(sf::degrees(1000)));
+            CHECK(10.f * sf::degrees(100) == Approx(sf::degrees(1'000)));
         }
 
         SECTION("operator*=")

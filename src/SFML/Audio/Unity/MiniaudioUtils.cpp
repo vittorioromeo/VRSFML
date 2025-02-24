@@ -56,6 +56,7 @@ struct MiniaudioUtils::SoundBase::Impl
     [[maybe_unused]] bool effectNodeUninitialized{}; //!< Failsafe debug boolean to check if `onProcess` is called after destruction
 };
 
+
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                         thePlaybackDevice,
                                      const void*                             dataSourceVTable,

@@ -24,12 +24,14 @@
 #include <unordered_map>
 #include <utility>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////
 constexpr KeyCode nullKeyCode = 0;
 constexpr int     maxKeyCode  = 256;
-sf::base::EnumArray<sf::Keyboard::Scancode, KeyCode, sf::Keyboard::ScancodeCount> scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
+sf::base::EnumArray<sf::Keyboard::Scancode, KeyCode, sf::Keyboard::ScancodeCount>
+                                               scancodeToKeycode; ///< Mapping of SFML scancode to X11 KeyCode
 std::array<sf::Keyboard::Scancode, maxKeyCode> keycodeToScancode; ///< Mapping of X11 KeyCode to SFML scancode
 
 ////////////////////////////////////////////////////////////
@@ -257,6 +259,7 @@ sf::Keyboard::Scancode translateKeyCode(Display* display, KeyCode keycode)
     // clang-format on
 }
 
+
 ////////////////////////////////////////////////////////////
 std::unordered_map<std::string, sf::Keyboard::Scancode> getNameScancodeMap()
 {
@@ -431,6 +434,7 @@ std::unordered_map<std::string, sf::Keyboard::Scancode> getNameScancodeMap()
 
     };
 }
+
 
 ////////////////////////////////////////////////////////////
 void ensureMapping()

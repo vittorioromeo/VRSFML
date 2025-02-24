@@ -18,6 +18,7 @@
 
 #include <cstdlib>
 
+
 namespace sf::priv
 {
 template <>
@@ -128,12 +129,12 @@ bool CursorImpl::loadFromPixelsMonochrome(const base::U8* pixels, Vector2u size,
     // Define the foreground color as white and the background as black.
     XColor fg;
     XColor bg;
-    fg.red   = 0xFFFF;
-    fg.blue  = 0xFFFF;
-    fg.green = 0xFFFF;
-    bg.red   = 0x0000;
-    bg.blue  = 0x0000;
-    bg.green = 0x0000;
+    fg.red   = 0xFF'FF;
+    fg.blue  = 0xFF'FF;
+    fg.green = 0xFF'FF;
+    bg.red   = 0x00'00;
+    bg.blue  = 0x00'00;
+    bg.green = 0x00'00;
 
     // Create the monochrome cursor.
     m_cursor = XCreatePixmapCursor(m_display.get(), dataPixmap, maskPixmap, &fg, &bg, hotspot.x, hotspot.y);

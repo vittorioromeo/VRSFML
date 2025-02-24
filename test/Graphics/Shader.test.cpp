@@ -12,6 +12,7 @@
 
 #include <CommonTraits.hpp>
 
+
 namespace
 {
 constexpr auto vertexSource = R"glsl(

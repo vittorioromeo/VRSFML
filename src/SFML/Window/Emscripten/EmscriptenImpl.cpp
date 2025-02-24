@@ -31,7 +31,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 // TODO P0: focus seems not to work on mobile or unless alt tabbing
 // - this is an an issue caused by the fact that imguiperwindowcontext's window doesn't have
 //   focus on construction
@@ -954,6 +953,7 @@ bool InputImpl::isKeyPressed(Keyboard::Key key)
     return keyStatus[static_cast<base::SizeT>(key)];
 }
 
+
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(Keyboard::Scancode /* code */)
 {
@@ -991,6 +991,7 @@ void InputImpl::setVirtualKeyboardVisible(bool /* visible */)
 {
     // Not applicable
 }
+
 
 ////////////////////////////////////////////////////////////
 bool InputImpl::isMouseButtonPressed(Mouse::Button button)

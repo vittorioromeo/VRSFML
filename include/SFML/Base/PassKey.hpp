@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -23,8 +22,8 @@ private:
     {
     }
 
-    //NOLINTEND(modernize-use-equals-default)
-    //NOLINTEND(modernize-use-equals-delete)
+    // NOLINTEND(modernize-use-equals-default)
+    // NOLINTEND(modernize-use-equals-delete)
 
 public:
     PassKey(const PassKey&) = delete;

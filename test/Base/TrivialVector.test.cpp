@@ -15,6 +15,7 @@
 
 #include <Doctest.hpp>
 
+
 namespace
 {
 TEST_CASE("[Base] Base/TrivialVector.hpp")

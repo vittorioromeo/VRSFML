@@ -20,7 +20,6 @@
 #include <unordered_map>
 #include <vector>
 
-
 class SFML_SYSTEM_API LogcatStream : public std::streambuf
 {
 public:

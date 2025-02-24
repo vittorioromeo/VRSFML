@@ -39,6 +39,7 @@ void SFML_GRAPHICS_API copyMatrix(const Transform& source, Matrix<4, 4>& dest);
     SFML_BASE_MEMCPY(dest, source, elements * sizeof(float));
 }
 
+
 ////////////////////////////////////////////////////////////
 /// \brief Matrix type, used to set uniforms in GLSL
 ///
@@ -99,14 +100,14 @@ struct [[nodiscard]] Vector4
     ///
     ////////////////////////////////////////////////////////////
 #if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wshadow"
 #endif
     [[nodiscard, gnu::always_inline]] constexpr Vector4(T x, T y, T z, T w) : x(x), y(y), z(z), w(w)
     {
     }
 #if defined(__GNUC__)
-#pragma GCC diagnostic pop
+    #pragma GCC diagnostic pop
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -138,7 +139,6 @@ struct [[nodiscard]] Vector4
     T z{}; //!< 3rd component (Z) of the 4D vector
     T w{}; //!< 4th component (W) of the 4D vector
 };
-
 
 ////////////////////////////////////////////////////////////
 template <>

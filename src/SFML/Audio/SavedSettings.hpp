@@ -11,7 +11,7 @@
 #include "SFML/System/Vector3.hpp"
 
 #ifndef __FLT_MAX__
-#include <cfloat>
+    #include <cfloat>
 #endif
 
 
@@ -19,7 +19,6 @@
 // Forward declarations
 ////////////////////////////////////////////////////////////
 struct ma_sound;
-
 
 namespace sf::priv
 {

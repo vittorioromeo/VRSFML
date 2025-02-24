@@ -9,8 +9,8 @@
 
 // Emscripten does not use GLAD
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-#define KHRONOS_APIENTRY
-#include <EGL/egl.h>
+    #define KHRONOS_APIENTRY
+    #include <EGL/egl.h>
 #else
-#include <glad/egl.h>
+    #include <glad/egl.h>
 #endif

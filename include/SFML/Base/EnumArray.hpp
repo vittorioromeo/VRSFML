@@ -9,7 +9,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsEnum.hpp"
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////

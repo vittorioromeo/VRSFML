@@ -27,7 +27,7 @@ TEST_CASE("[System] sf::Time")
         SECTION("Default constructor")
         {
             constexpr sf::Time time;
-            STATIC_CHECK(time.asSeconds() == 0.0f);
+            STATIC_CHECK(time.asSeconds() == 0.f);
             STATIC_CHECK(time.asMilliseconds() == 0);
             STATIC_CHECK(time.asMicroseconds() == 0);
         }
@@ -35,11 +35,11 @@ TEST_CASE("[System] sf::Time")
         SECTION("Construct from seconds")
         {
             constexpr sf::Time time = sf::seconds(123);
-            STATIC_CHECK(time.asSeconds() == 123.0f);
+            STATIC_CHECK(time.asSeconds() == 123.f);
             STATIC_CHECK(time.asMilliseconds() == 123'000);
             STATIC_CHECK(time.asMicroseconds() == 123'000'000);
 
-            STATIC_CHECK(sf::seconds(1'000.0f).asMicroseconds() == 1'000'000'000);
+            STATIC_CHECK(sf::seconds(1000.f).asMicroseconds() == 1'000'000'000);
             STATIC_CHECK(sf::seconds(0.0000009f).asMicroseconds() == 0);
             STATIC_CHECK(sf::seconds(0.0000001f).asMicroseconds() == 0);
             STATIC_CHECK(sf::seconds(0.00000001f).asMicroseconds() == 0);
@@ -48,7 +48,7 @@ TEST_CASE("[System] sf::Time")
             STATIC_CHECK(sf::seconds(-0.00000001f).asMicroseconds() == 0);
             STATIC_CHECK(sf::seconds(-0.0000001f).asMicroseconds() == 0);
             STATIC_CHECK(sf::seconds(-0.0000009f).asMicroseconds() == 0);
-            STATIC_CHECK(sf::seconds(-1'000.0f).asMicroseconds() == -1'000'000'000);
+            STATIC_CHECK(sf::seconds(-1000.f).asMicroseconds() == -1'000'000'000);
         }
 
         SECTION("Construct from milliseconds")
@@ -152,7 +152,7 @@ TEST_CASE("[System] sf::Time")
 
     SECTION("Zero time")
     {
-        STATIC_CHECK(sf::Time::Zero.asSeconds() == 0.0f);
+        STATIC_CHECK(sf::Time::Zero.asSeconds() == 0.f);
         STATIC_CHECK(sf::Time::Zero.asMilliseconds() == 0);
         STATIC_CHECK(sf::Time::Zero.asMicroseconds() == 0);
     }
@@ -234,11 +234,11 @@ TEST_CASE("[System] sf::Time")
 
         SECTION("operator*")
         {
-            STATIC_CHECK(sf::seconds(1) * 2.0f == sf::seconds(2));
+            STATIC_CHECK(sf::seconds(1) * 2.f == sf::seconds(2));
             STATIC_CHECK(sf::seconds(12) * 0.5f == sf::seconds(6));
             STATIC_CHECK(sf::seconds(1) * sf::base::I64{2} == sf::seconds(2));
             STATIC_CHECK(sf::seconds(42) * sf::base::I64{2} == sf::seconds(84));
-            STATIC_CHECK(2.0f * sf::seconds(1) == sf::seconds(2));
+            STATIC_CHECK(2.f * sf::seconds(1) == sf::seconds(2));
             STATIC_CHECK(0.5f * sf::seconds(12) == sf::seconds(6));
             STATIC_CHECK(sf::base::I64{2} * sf::seconds(1) == sf::seconds(2));
             STATIC_CHECK(sf::base::I64{2} * sf::seconds(42) == sf::seconds(84));
@@ -255,11 +255,11 @@ TEST_CASE("[System] sf::Time")
 
         SECTION("operator/")
         {
-            STATIC_CHECK(sf::seconds(1) / 2.0f == sf::seconds(0.5f));
+            STATIC_CHECK(sf::seconds(1) / 2.f == sf::seconds(0.5f));
             STATIC_CHECK(sf::seconds(12) / 0.5f == sf::seconds(24));
             STATIC_CHECK(sf::seconds(1) / sf::base::I64{2} == sf::seconds(0.5f));
             STATIC_CHECK(sf::seconds(42) / sf::base::I64{2} == sf::seconds(21));
-            STATIC_CHECK(sf::seconds(1) / sf::seconds(1) == 1.0f);
+            STATIC_CHECK(sf::seconds(1) / sf::seconds(1) == 1.f);
             CHECK(sf::milliseconds(10) / sf::microseconds(1) == Approx(10'000.f));
         }
 

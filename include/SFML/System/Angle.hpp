@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
@@ -523,7 +522,7 @@ namespace Literals
 /// float radians = a1.asRadians(); // 1.5708f
 ///
 /// sf::Angle a2 = sf::radians(3.141592654f);
-/// float degrees = a2.asDegrees(); // 180.0f
+/// float degrees = a2.asDegrees(); // 180.f
 ///
 /// using namespace sf::Literals;
 /// sf::Angle a3 = 10_deg;   // 10 degrees

@@ -33,17 +33,19 @@ namespace
     return sf::microseconds(static_cast<sf::base::I64>((samples * 1'000'000u) / (channelCount * sampleRate)));
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard]] constexpr sf::base::U64 timeToSamples(unsigned int sampleRate, unsigned int channelCount, sf::Time position)
 {
     // Always ROUND, no unchecked truncation, hence the addition in the numerator.
     // This avoids most precision errors arising from "samples => Time => samples" conversions
-    // Original rounding calculation is ((Micros * Freq * Channels) / 1000000) + 0.5
+    // Original rounding calculation is ((Micros * Freq * Channels) / 1'000'000) + 0.5
     // We refactor it to keep sf::base::I64 as the data type throughout the whole operation.
     return ((static_cast<sf::base::U64>(position.asMicroseconds()) * sampleRate * channelCount) + 500'000u) / 1'000'000u;
 }
 
 } // namespace
+
 
 namespace sf
 {

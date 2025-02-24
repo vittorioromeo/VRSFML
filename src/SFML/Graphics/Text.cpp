@@ -41,10 +41,10 @@ void addLine(sf::Vertex*      vertices,
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
-    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
-    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
-    *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
+    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
+    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
+    *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
 
     index += 4u;
 }

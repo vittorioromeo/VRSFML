@@ -17,8 +17,8 @@
 
 // Define missing constants for older API levels
 #if __ANDROID_API__ < 13
-#define AMOTION_EVENT_ACTION_HOVER_MOVE 0x00000007
-#define AMOTION_EVENT_ACTION_SCROLL     0x00000008
+    #define AMOTION_EVENT_ACTION_HOVER_MOVE 0x00'00'00'07
+    #define AMOTION_EVENT_ACTION_SCROLL     0x00'00'00'08
 #endif
 
 ////////////////////////////////////////////////////////////
@@ -368,7 +368,7 @@ int WindowImplAndroid::processScrollEvent(AInputEvent* inputEvent, ActivityState
 
     // Call its getAxisValue() method to get the delta value of our wheel move event
     jmethodID    methodGetAxisValue = lJNIEnv->GetMethodID(classMotionEvent, "getAxisValue", "(I)F");
-    const jfloat delta              = lJNIEnv->CallFloatMethod(objectMotionEvent, methodGetAxisValue, 0x00000001);
+    const jfloat delta              = lJNIEnv->CallFloatMethod(objectMotionEvent, methodGetAxisValue, 0x00'00'00'01);
 
     lJNIEnv->DeleteLocalRef(classMotionEvent);
     lJNIEnv->DeleteLocalRef(objectMotionEvent);

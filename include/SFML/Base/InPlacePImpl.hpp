@@ -10,7 +10,6 @@
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -27,13 +26,11 @@ public:
         return SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] const T* operator->() const noexcept
     {
         return SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] T& operator*() noexcept
@@ -41,13 +38,11 @@ public:
         return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
-
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] const T& operator*() const noexcept
     {
         return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
-
 
     ////////////////////////////////////////////////////////////
     template <typename... Args>
@@ -58,7 +53,6 @@ public:
         SFML_BASE_PLACEMENT_NEW(m_buffer) T(static_cast<Args&&>(args)...);
     }
 
-
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(const InPlacePImpl& rhs)
@@ -66,14 +60,12 @@ public:
         SFML_BASE_PLACEMENT_NEW(m_buffer) T(*SFML_BASE_LAUNDER_CAST(const T*, rhs.m_buffer));
     }
 
-
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
     [[nodiscard, gnu::always_inline]] InPlacePImpl(InPlacePImpl&& rhs) noexcept
     {
         SFML_BASE_PLACEMENT_NEW(m_buffer) T(static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer)));
     }
-
 
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(bugprone-unhandled-self-assignment)
@@ -84,7 +76,6 @@ public:
         return *this;
     }
 
-
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] InPlacePImpl& operator=(InPlacePImpl&& rhs) noexcept
     {
@@ -92,7 +83,6 @@ public:
         *SFML_BASE_LAUNDER_CAST(T*, m_buffer) = static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, rhs.m_buffer));
         return *this;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~InPlacePImpl()

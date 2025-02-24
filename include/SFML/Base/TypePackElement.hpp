@@ -10,9 +10,8 @@
 
 #if __has_builtin(__type_pack_element)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) __type_pack_element<N, __VA_ARGS__>
-
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) __type_pack_element<N, __VA_ARGS__>
 
 namespace sf::base
 {
@@ -32,7 +31,6 @@ struct TypeWrapper
 {
     using type = T;
 };
-
 
 ////////////////////////////////////////////////////////////
 template <SizeT N,
@@ -66,7 +64,6 @@ template <SizeT N,
 
 } // namespace sf::base::priv
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -74,8 +71,8 @@ template <SizeT N, typename... Ts>
 using TypePackElement = typename decltype(priv::typePackElementImpl<N, Ts...>())::type;
 
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::TypePackElement<N, __VA_ARGS__>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::TypePackElement<N, __VA_ARGS__>
 
 } // namespace sf::base
 

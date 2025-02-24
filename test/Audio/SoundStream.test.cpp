@@ -13,6 +13,7 @@
 
 #include <vector>
 
+
 namespace
 {
 class TestSoundStream : public sf::SoundStream

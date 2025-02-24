@@ -118,7 +118,7 @@ struct Sound::Impl
         // If we don't have valid values yet, initialize with defaults so sound creation doesn't fail
         *format     = ma_format_s16;
         *channels   = buffer && buffer->getChannelCount() ? buffer->getChannelCount() : 1;
-        *sampleRate = buffer && buffer->getSampleRate() ? buffer->getSampleRate() : 44100;
+        *sampleRate = buffer && buffer->getSampleRate() ? buffer->getSampleRate() : 44'100;
 
         return MA_SUCCESS;
     }
@@ -380,6 +380,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
+
 
 ////////////////////////////////////////////////////////////
 void Sound::setPlayingOffset(Time playingOffset)

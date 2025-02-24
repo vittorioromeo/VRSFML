@@ -4,15 +4,15 @@
 
 #if __has_builtin(__underlying_type)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_UNDERLYING_TYPE(...) __underlying_type(__VA_ARGS__)
 
 #else
 
-#include <type_traits>
+    #include <type_traits>
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_UNDERLYING_TYPE(...) typename ::std::underlying_type<__VA_ARGS__>::type
 
 #endif
 

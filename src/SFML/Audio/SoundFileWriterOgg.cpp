@@ -196,7 +196,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
 void SoundFileWriterOgg::write(const base::I16* samples, base::U64 count)
 {
     // Vorbis has issues with buffers that are too large, so we ask for 64K
-    constexpr int bufferSize = 65536;
+    constexpr int bufferSize = 65'536;
 
     // A frame contains a sample from each channel
     int frameCount = static_cast<int>(count / m_impl->channelCount);
@@ -211,7 +211,7 @@ void SoundFileWriterOgg::write(const base::I16* samples, base::U64 count)
         for (int i = 0; i < base::min(frameCount, bufferSize); ++i)
         {
             for (unsigned int j = 0; j < m_impl->channelCount; ++j)
-                buffer[j][i] = samples[m_impl->remapTable[j]] / 32767.0f;
+                buffer[j][i] = samples[m_impl->remapTable[j]] / 32'767.f;
 
             samples += m_impl->channelCount;
         }

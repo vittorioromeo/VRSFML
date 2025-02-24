@@ -7,7 +7,6 @@
 #include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Touch.hpp"
 
-
 namespace sf::Touch
 {
 ////////////////////////////////////////////////////////////

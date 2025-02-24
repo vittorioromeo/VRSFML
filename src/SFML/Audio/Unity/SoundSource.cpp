@@ -26,6 +26,7 @@ struct SoundSource::Impl
     Time                playingOffset;
 };
 
+
 ////////////////////////////////////////////////////////////
 SoundSource::SoundSource() = default;
 

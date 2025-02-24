@@ -19,15 +19,15 @@
 #include <memory>
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/Activity.hpp"
+    #include "SFML/System/Android/Activity.hpp"
 
-#include <mutex>
+    #include <mutex>
 #endif
 
 #if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-#include "SFML/Window/Unix/Utils.hpp"
+    #include "SFML/Window/Unix/Utils.hpp"
 
-#include <X11/Xlib.h>
+    #include <X11/Xlib.h>
 #endif
 
 
@@ -113,7 +113,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
         sf::priv::err() << "Failed to get EGL configs (2nd call)";
 
     // Evaluate all the returned configs, and pick the best one
-    int       bestScore = 0x7FFFFFFF;
+    int       bestScore = 0x7F'FF'FF'FF;
     EGLConfig bestConfig{};
 
     for (sf::base::SizeT i = 0; i < static_cast<sf::base::SizeT>(configCount); ++i)
@@ -167,7 +167,7 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
         }
     }
 
-    SFML_BASE_ASSERT(bestScore < 0x7FFFFFFF && "Failed to calculate best config");
+    SFML_BASE_ASSERT(bestScore < 0x7F'FF'FF'FF && "Failed to calculate best config");
 
     return bestConfig;
 #else
@@ -182,17 +182,17 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_GREEN_SIZE,
          8,
          EGL_DEPTH_SIZE,
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+    #ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.depthBits),
-#else
+    #else
          24, // Not propagated to shared context settings from window context settings...
-#endif
+    #endif
          EGL_STENCIL_SIZE,
-#ifndef SFML_SYSTEM_EMSCRIPTEN
+    #ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.stencilBits),
-#else
+    #else
          8, // Not propagated to shared context settings from window context settings...
-#endif
+    #endif
          EGL_SAMPLE_BUFFERS,
          static_cast<EGLint>(contextSettings.antiAliasingLevel),
          EGL_SURFACE_TYPE,

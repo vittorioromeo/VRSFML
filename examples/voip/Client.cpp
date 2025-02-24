@@ -140,9 +140,9 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     NetworkRecorder recorder(server.value(), port);
 
     // Wait for user input...
-    std::cin.ignore(10000, '\n');
+    std::cin.ignore(10'000, '\n');
     std::cout << "Press enter to start recording audio";
-    std::cin.ignore(10000, '\n');
+    std::cin.ignore(10'000, '\n');
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44100))
@@ -152,7 +152,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     }
 
     std::cout << "Recording... press enter to stop";
-    std::cin.ignore(10000, '\n');
+    std::cin.ignore(10'000, '\n');
 
     if (!recorder.stop())
         std::cerr << "Failed to stop network recorder" << std::endl;

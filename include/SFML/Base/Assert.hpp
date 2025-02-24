@@ -17,18 +17,18 @@ namespace sf::base::priv
 
 } // namespace sf::base::priv
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_ASSERT(...)                                                  \
-    do                                                                         \
-    {                                                                          \
-        if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                      \
-            ::sf::base::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
-                                                                               \
-    } while (false)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_ASSERT(...)                                                  \
+        do                                                                         \
+        {                                                                          \
+            if (!static_cast<bool>(__VA_ARGS__)) [[unlikely]]                      \
+                ::sf::base::priv::assertFailure(#__VA_ARGS__, __FILE__, __LINE__); \
+                                                                                   \
+        } while (false)
 
 #else
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_ASSERT(...)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_ASSERT(...)
 
 #endif

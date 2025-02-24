@@ -11,9 +11,9 @@
 
 #ifdef SFML_DEBUG
 
-#include "SFML/Base/StackTrace.hpp"
+    #include "SFML/Base/StackTrace.hpp"
 
-#include <cstdio>
+    #include <cstdio>
 
 
 namespace sf::base::priv

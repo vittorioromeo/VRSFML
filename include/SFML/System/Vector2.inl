@@ -225,6 +225,7 @@ constexpr Vector2<T> Vector2<T>::movedTowards(T r, Angle phi) const
     return *this + Vector2<T>::fromAngle(r, phi);
 }
 
+
 ////////////////////////////////////////////////////////////
 template <typename T>
 constexpr Vector2<T> Vector2<T>::projectedOnto(Vector2<T> axis) const
