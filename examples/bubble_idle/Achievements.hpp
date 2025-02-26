@@ -317,6 +317,15 @@ inline constexpr AchievementData achievementData[] = {
     {"Triple Treat of Transcendence", "Remember Wizardcat's third spell."},
     {"Quartet of Quirky Conjuring", "Remember Wizardcat's fourth spell."},
 
+    {"TODONAME", "Improve \"Starpaw Conversion\" once."},
+    {"TODONAME", "Improve \"Starpaw Conversion\" 4 times."},
+    {"TODONAME", "Improve \"Starpaw Conversion\" 8 times."},
+
+    {"TODONAME", "Improve \"Mewltiplier Aura\" once."},
+    {"TODONAME", "Improve \"Mewltiplier Aura\" 5 times."},
+    {"TODONAME", "Improve \"Mewltiplier Aura\" 10 times."},
+    {"TODONAME", "Improve \"Mewltiplier Aura\" 15 times."},
+
     {"Starpaw Spark", "Cast \"Starpaw Conversion\" once."},
     {"Deca-Starpaw Dynamo", "Cast \"Starpaw Conversion\" 10 times."},
     {"Centipaw Catastrophe", "Cast \"Starpaw Conversion\" 100 times."},
@@ -336,8 +345,6 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Cast \"TODOSPELL #3\" 10 times."},
     {"TODONAME", "Cast \"TODOSPELL #3\" 100 times."},
     {"TODONAME", "Cast \"TODOSPELL #3\" 1,000 times."},
-
-    // TODO P0: wizardcat wisdom upgrade achievmenets
 
     {"Pawsitively Wise", "Improve Wizardcat cooldown once."},
     {"Triple-Wise Tabbies", "Improve Wizardcat cooldown 3 times."},
