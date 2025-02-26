@@ -74,6 +74,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cat::AstroState, startX, velocityX, particleT
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     Cat,
 
+  //  spawnEffectTimer,
     type,
     position,
     wobbleRadians,
