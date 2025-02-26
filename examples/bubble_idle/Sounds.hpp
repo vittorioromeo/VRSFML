@@ -79,6 +79,8 @@ struct Sounds
     LoadedSound ritual{"ritual.ogg"};
     LoadedSound ritualend{"ritualend.ogg"};
     LoadedSound purrmeow{"purrmeow.ogg"};
+    LoadedSound soulsteal{"soulsteal.ogg"};
+    LoadedSound soulreturn{"soulreturn.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -118,6 +120,8 @@ struct Sounds
         setupWorldSound(ritual, /* attenuationMult */ 0.1f);
         setupWorldSound(ritualend, /* attenuationMult */ 0.1f);
         setupWorldSound(purrmeow);
+        setupWorldSound(soulsteal);
+        setupWorldSound(soulreturn);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -139,6 +143,8 @@ struct Sounds
         buy.setVolume(75.f);
         explosion.setVolume(75.f);
         coin.setVolume(50.f);
+        buffon.setVolume(75.f);
+        buffoff.setVolume(75.f);
     }
 
     ////////////////////////////////////////////////////////////

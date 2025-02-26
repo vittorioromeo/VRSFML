@@ -578,8 +578,10 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat dragging state
-    Cat*  draggedCat{nullptr};
-    float catDragPressDuration{0.f};
+    Cat*                             draggedCat{nullptr};
+    float                            catDragPressDuration{0.f};
+    sf::base::Optional<sf::Vector2f> aoeDragOrigin;
+    std::vector<Cat*>                aoeDraggedCats;
 
     ////////////////////////////////////////////////////////////
     // Touch state
@@ -2418,12 +2420,8 @@ Using prestige points, TODO P0
         {
             playSound(sounds.prestige);
             inPrestigeTransition = true;
-
-            scroll = 0.f;
-
-            draggedCat           = nullptr;
-            catDragPressDuration = 0.f;
-
+            scroll               = 0.f;
+            resetAllDraggedCats();
             pt.onPrestige(ppReward);
         }
         ImGui::EndDisabled();
@@ -2889,6 +2887,84 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<sf::FloatRect> getAoEDragRect(const sf::Vector2f mousePos) const
+    {
+        if (!aoeDragOrigin.hasValue())
+            return sf::base::nullOpt;
+
+        return sf::base::makeOptional<sf::FloatRect>(*aoeDragOrigin, mousePos - *aoeDragOrigin);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void resetAllDraggedCats()
+    {
+        draggedCat           = nullptr;
+        catDragPressDuration = 0.f;
+        aoeDragOrigin.reset();
+        aoeDraggedCats.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::SizeT pickAoEDragCatPivotIndex() const
+    {
+        SFML_BASE_ASSERT(!aoeDraggedCats.empty());
+
+        // First calculate the centroid
+        sf::Vector2f centroid;
+
+        for (const Cat* cat : aoeDraggedCats)
+            centroid += cat->position;
+
+        centroid /= static_cast<float>(aoeDraggedCats.size());
+
+        // Find the position closest to the centroid
+        sf::base::SizeT closestIndex = 0u;
+        float           minDistance  = FLT_MAX;
+
+        for (sf::base::SizeT i = 0u; i < aoeDraggedCats.size(); ++i)
+        {
+            // Calculate squared distance (avoiding square root for performance)
+            const float distSquared = (aoeDraggedCats[i]->position - centroid).lengthSquared();
+
+            if (distSquared < minDistance)
+            {
+                minDistance  = distSquared;
+                closestIndex = i;
+            }
+        }
+
+        return closestIndex;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool anyCatBeingDragged() const
+    {
+        return draggedCat != nullptr || !aoeDraggedCats.empty();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isCatBeingDragged(const Cat& cat) const
+    {
+        return &cat == draggedCat || [&]
+        {
+            for (const Cat* c : aoeDraggedCats)
+                if (c == &cat)
+                    return true;
+
+            return false;
+        }();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] void stopDraggingCat(const Cat& cat)
+    {
+        if (draggedCat == &cat)
+            draggedCat = nullptr;
+
+        sf::base::vectorEraseIf(aoeDraggedCats, [&](const Cat* c) { return c == &cat; });
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isWizardBusy() const
     {
         const Cat* wizardCat = findFirstCatByType(CatType::Wizard);
@@ -2897,7 +2973,7 @@ Using prestige points, TODO P0
             return false;
 
         return pt.absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->hexedTimer.hasValue() ||
-               draggedCat == wizardCat;
+               isCatBeingDragged(*wizardCat);
     }
 
     ////////////////////////////////////////////////////////////
@@ -4134,6 +4210,24 @@ Using prestige points, TODO P0
         bubble.hueMod   = 0.f;
     }
 
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateScrolling(const float deltaTimeMs, const std::vector<sf::Vector2f>& downFingers)
+    {
+        // Reset map scrolling
+        if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(sf::Mouse::Button::Right)))
+            dragPosition.reset();
+
+        //
+        // Scrolling
+        scroll = sf::base::clamp(scroll,
+                                 0.f,
+                                 sf::base::min(pt.getMapLimit() / 2.f - gameScreenSize.x / 2.f,
+                                               (boundaries.x - gameScreenSize.x) / 2.f));
+
+        actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateTransitions(const float deltaTimeMs)
     {
         // Compute screen count
@@ -4281,8 +4375,8 @@ Using prestige points, TODO P0
             inPrestigeTransition = false;
             pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
 
-            draggedCat               = nullptr;
-            catDragPressDuration     = 0.f;
+            resetAllDraggedCats();
+
             spentMoney               = 0u;
             moneyGainedLastSecond    = 0u;
             moneyGainedUsAccumulator = 0u;
@@ -4301,6 +4395,10 @@ Using prestige points, TODO P0
 
         for (Bubble& bubble : pt.bubbles)
         {
+            const float maxVelocityMagnitude = 2.f;
+            if (bubble.velocity.lengthSquared() > maxVelocityMagnitude * maxVelocityMagnitude)
+                bubble.velocity = bubble.velocity.normalized() * maxVelocityMagnitude;
+
             if (bubble.type == BubbleType::Bomb)
                 bubble.rotation += deltaTimeMs * 0.01f;
 
@@ -4660,8 +4758,11 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void hexCat(Cat& cat)
     {
-        if (draggedCat == &cat)
-            draggedCat = nullptr;
+        if (isCatBeingDragged(cat))
+            stopDraggingCat(cat);
+
+        sounds.soulsteal.setPosition({cat.position.x, cat.position.y});
+        playSound(sounds.soulsteal);
 
         screenShakeAmount = 3.5f;
         screenShakeTimer  = 600.f;
@@ -4775,9 +4876,6 @@ Using prestige points, TODO P0
             }
 
             spawnParticles(128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
-
-            sounds.hex.setPosition({cx, cy});
-            playSound(sounds.hex);
 
             cat.textStatusShakeEffect.bump(rng, 1.5f);
             cat.hits += 1u;
@@ -5029,7 +5127,9 @@ Using prestige points, TODO P0
                 }
             }
 
-            if (!cat.astroState.hasValue())
+            const bool allowOOBCat = cat.astroState.hasValue() || (!aoeDraggedCats.empty() && isCatBeingDragged(cat));
+
+            if (!allowOOBCat)
                 cat.position = cat.position.componentWiseClamp({catRadius, catRadius},
                                                                {pt.getMapLimit() - catRadius, boundaries.y - catRadius});
 
@@ -5043,10 +5143,8 @@ Using prestige points, TODO P0
             cat.pawPosition -= diff * 0.01f * deltaTimeMs;
             cat.pawRotation = cat.pawRotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
 
-            if (draggedCat == &cat && (cat.pawPosition - drawPosition).length() > 16.f)
-            {
+            if (isCatBeingDragged(cat) && (cat.pawPosition - drawPosition).length() > 16.f)
                 cat.pawPosition = drawPosition + (cat.pawPosition - drawPosition).normalized() * 16.f;
-            }
 
             if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
@@ -5338,8 +5436,7 @@ Using prestige points, TODO P0
                                                        pt.attractoCatIgnoreBubbles.star,
                                                        pt.attractoCatIgnoreBubbles.bomb));
 
-            const bool beingDragged = &cat == draggedCat;
-            if (beingDragged)
+            if (isCatBeingDragged(cat))
                 continue;
 
             const float globalBoostMult = globalBoost > 0.f ? 2.f : 1.f;
@@ -5369,63 +5466,124 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isCatDraggable(const Cat& cat) const
+    {
+        if (cat.isAstroAndInFlight())
+            return false;
+
+        if (cat.hexedTimer.hasValue())
+            return false;
+
+        if (cat.type == CatType::Wizard && isWizardBusy())
+            return false;
+
+        if (cat.type == CatType::Witch && anyCatHexed())
+            return false;
+
+        if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
+            return false;
+
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vector2f mousePos)
     {
-        if (!mBtnDown(sf::Mouse::Button::Left) && countFingersDown != 1)
+        const bool aoeSelecting = keyDown(sf::Keyboard::Key::LShift) && mBtnDown(sf::Mouse::Button::Left);
+
+        if (aoeSelecting)
         {
-            if (draggedCat)
-            {
-                playSound(sounds.drop);
-                draggedCat = nullptr;
-            }
-
-            catDragPressDuration = 0.f;
-            return;
+            if (!aoeDragOrigin.hasValue())
+                aoeDragOrigin.emplace(mousePos);
         }
-
-        if (draggedCat)
+        else if (aoeDragOrigin.hasValue())
         {
-            draggedCat->position = exponentialApproach(draggedCat->position, mousePos + sf::Vector2f{-10.f, 13.f}, deltaTimeMs, 25.f);
-            return;
-        }
+            const auto dragRect = getAoEDragRect(mousePos).value();
+            aoeDragOrigin.reset();
+            aoeDraggedCats.clear();
 
-        constexpr float catDragPressDurationMax = 100.f;
-
-        Cat* hoveredCat = nullptr;
-
-        // Only check for hover targets during initial press phase
-        if (catDragPressDuration <= catDragPressDurationMax)
             for (Cat& cat : pt.cats)
             {
-                if (cat.isAstroAndInFlight())
+                if (!isCatDraggable(cat))
                     continue;
 
-                if (cat.hexedTimer.hasValue())
+                if (!dragRect.contains(cat.position))
                     continue;
 
-                if (cat.type == CatType::Wizard && isWizardBusy())
-                    continue;
+                aoeDraggedCats.push_back(&cat);
+            }
+        }
+        else
+        {
+            if (!mBtnDown(sf::Mouse::Button::Left) && countFingersDown != 1)
+            {
+                if (draggedCat || !aoeDraggedCats.empty())
+                    playSound(sounds.drop);
 
-                if (cat.type == CatType::Witch && anyCatHexed())
-                    continue;
-
-                if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
-                    continue;
-
-                if ((mousePos - cat.position).lengthSquared() > cat.getRadiusSquared())
-                    continue;
-
-                hoveredCat = &cat;
+                resetAllDraggedCats();
+                return;
             }
 
-        if (hoveredCat)
-        {
-            catDragPressDuration += deltaTimeMs;
-
-            if (catDragPressDuration >= catDragPressDurationMax)
+            if (!aoeDraggedCats.empty())
             {
-                draggedCat = hoveredCat;
-                playSound(sounds.grab);
+                const auto pivotCatIdx = pickAoEDragCatPivotIndex();
+                Cat&       pivotCat    = *aoeDraggedCats[pivotCatIdx];
+
+                static thread_local std::vector<sf::Vector2f> relativeCatPositions;
+                relativeCatPositions.clear();
+                relativeCatPositions.reserve(aoeDraggedCats.size());
+
+                for (const Cat* cat : aoeDraggedCats)
+                    relativeCatPositions.push_back(cat->position - pivotCat.position);
+
+                pivotCat.position = exponentialApproach(pivotCat.position, mousePos + sf::Vector2f{-10.f, 13.f}, deltaTimeMs, 25.f);
+
+                for (sf::base::SizeT i = 0u; i < aoeDraggedCats.size(); ++i)
+                {
+                    if (i == pivotCatIdx)
+                        continue;
+
+                    aoeDraggedCats[i]->position = pivotCat.position + relativeCatPositions[i];
+                }
+
+                return;
+            }
+
+            if (draggedCat)
+            {
+                draggedCat->position = exponentialApproach(draggedCat->position,
+                                                           mousePos + sf::Vector2f{-10.f, 13.f},
+                                                           deltaTimeMs,
+                                                           25.f);
+                return;
+            }
+
+            constexpr float catDragPressDurationMax = 100.f;
+
+            Cat* hoveredCat = nullptr;
+
+            // Only check for hover targets during initial press phase
+            if (catDragPressDuration <= catDragPressDurationMax)
+                for (Cat& cat : pt.cats)
+                {
+                    if (!isCatDraggable(cat))
+                        continue;
+
+                    if ((mousePos - cat.position).lengthSquared() > cat.getRadiusSquared())
+                        continue;
+
+                    hoveredCat = &cat;
+                }
+
+            if (hoveredCat)
+            {
+                catDragPressDuration += deltaTimeMs;
+
+                if (catDragPressDuration >= catDragPressDurationMax)
+                {
+                    draggedCat = hoveredCat;
+                    playSound(sounds.grab);
+                }
             }
         }
     }
@@ -5597,20 +5755,49 @@ Using prestige points, TODO P0
                         if (shrine.type == ShrineType::Voodoo)
                         {
                             doShrineReward(CatType::Witch);
-                            doTip(
-                                "The Witchcat has been unsealed!\nThey perform voodoo rituals on nearby cats,\ngiving "
-                                "you powerful timed buffs.");
+
+                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Witch)])
+                                doTip(
+                                    "The Witchcat has been unsealed!\nThey perform voodoo rituals on nearby "
+                                    "cats,\ngiving you powerful timed buffs.");
                         }
                         else if (shrine.type == ShrineType::Magic)
+                        {
                             doShrineReward(CatType::Wizard);
+
+                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Wizard)])
+                                doTip(
+                                    "The Wizardcat has been unsealed!\nThey absorb star bubbles to learn "
+                                    "spells,\nwhich can be casted on demand.");
+                        }
                         else if (shrine.type == ShrineType::Clicking)
+                        {
                             doShrineReward(CatType::Mouse);
+
+                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Mouse)])
+                                doTip(
+                                    "The Mousecat has been unsealed!\nThey combo-click bubbles, buff nearby cats,\nand "
+                                    "provide a global click buff.");
+                        }
                         else if (shrine.type == ShrineType::Automation)
+                        {
                             doShrineReward(CatType::Engi);
+
+                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Engi)])
+                                doTip(
+                                    "The Engicat has been unsealed!\nThey speed-up nearby cats and provide\na global "
+                                    "cat buff.");
+                        }
                         else if (shrine.type == ShrineType::Repulsion)
+                        {
                             doShrineReward(CatType::Repulso);
+                            // TODO: tip
+                        }
                         else if (shrine.type == ShrineType::Attraction)
+                        {
                             doShrineReward(CatType::Attracto);
+                            // TODO: tip
+                        }
                     }
                     else if (cdStatus == CountdownStatusStop::Running)
                     {
@@ -5658,8 +5845,7 @@ Using prestige points, TODO P0
 
         if (allDollsCollected)
         {
-            sounds.buffon.setPosition({d.position.x, d.position.y});
-            playSound(sounds.buffon); // TODO P0: change this sound, it sucks
+            playSound(sounds.buffon);
 
             constexpr float buffDurationMult[] = {
                 1.f, // Normal
@@ -5702,6 +5888,9 @@ Using prestige points, TODO P0
                            .torque        = rng.getF(-0.0002f, 0.0002f)},
                           /* hue */ 0.f,
                           ParticleType::CatSoul);
+
+            sounds.soulreturn.setPosition({d.position.x, d.position.y});
+            playSound(sounds.soulreturn);
         }
         else
         {
@@ -5791,7 +5980,7 @@ Using prestige points, TODO P0
     {
         for (Countdown& buffCountdown : pt.buffCountdownsPerType)
             if (buffCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                playSound(sounds.buffoff); // TODO P0: change this sound, it sucks
+                playSound(sounds.buffoff);
     }
 
     ////////////////////////////////////////////////////////////
@@ -6507,7 +6696,10 @@ Using prestige points, TODO P0
 
         for (Cat& cat : pt.cats)
         {
-            const bool beingDragged = &cat == draggedCat;
+            const bool beingDragged = isCatBeingDragged(cat);
+
+            const auto dragRect       = getAoEDragRect(mousePos);
+            const bool insideDragRect = dragRect.hasValue() && dragRect->contains(cat.position);
 
             U8 rangeInnerAlpha = 0u;
 
@@ -6571,6 +6763,7 @@ Using prestige points, TODO P0
             const auto range = pt.getComputedRangeByCatType(cat.type);
 
             const auto alpha = cat.hexedTimer.hasValue() ? static_cast<U8>(cat.hexedTimer->remap(255.f, 128.f))
+                               : insideDragRect          ? static_cast<U8>(128u)
                                                          : static_cast<U8>(255u);
 
             const auto catColor = hueColor(wrapHue(cat.hue), alpha);
@@ -7003,7 +7196,7 @@ Using prestige points, TODO P0
                 profile.cursorHue = wrapHue(profile.cursorHue);
             }
 
-            window.draw(draggedCat != nullptr || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
+            window.draw(anyCatBeingDragged() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
                         {.position = sf::Mouse::getPosition(window).toVector2f(),
                          .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
                                   ((1.f + easeInOutBack(cursorGrow)) * dpiScalingFactor),
@@ -7181,7 +7374,7 @@ Using prestige points, TODO P0
                 Cat& iCat = pt.cats[i];
                 Cat& jCat = pt.cats[j];
 
-                if (draggedCat == &iCat || draggedCat == &jCat)
+                if (isCatBeingDragged(iCat) || isCatBeingDragged(jCat))
                     continue;
 
                 const auto checkAstro = [this](auto& catA, auto& catB)
@@ -7676,8 +7869,6 @@ Using prestige points, TODO P0
             if (maybeFinger.hasValue())
                 downFingers.push_back(*maybeFinger);
 
-        const auto countFingersDown = downFingers.size();
-
         //
         // Map scrolling via keyboard and touch
         if (pt.mapPurchased)
@@ -7692,7 +7883,7 @@ Using prestige points, TODO P0
                 dragPosition.reset();
                 scroll += 2.f * deltaTimeMs;
             }
-            else if (countFingersDown == 2)
+            else if (downFingers.size() == 2)
             {
                 // TODO P1: check fingers distance
                 const auto [fingerPos0, fingerPos1] = [&]
@@ -7728,33 +7919,23 @@ Using prestige points, TODO P0
         }
 
         //
-        // Reset map scrolling
-        if (dragPosition.hasValue() && countFingersDown != 2u && !mBtnDown(sf::Mouse::Button::Right))
-            dragPosition.reset();
+        // Scrolling
+        gameLoopUpdateScrolling(deltaTimeMs, downFingers);
 
         //
-        // Scrolling
-        scroll = sf::base::clamp(scroll,
-                                 0.f,
-                                 sf::base::min(pt.getMapLimit() / 2.f - gameScreenSize.x / 2.f,
-                                               (boundaries.x - gameScreenSize.x) / 2.f));
-
-        actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
-
-        const auto screenShake = rng.getVec2f({-screenShakeAmount, -screenShakeAmount},
-                                              {screenShakeAmount, screenShakeAmount});
-
+        // Culling boundaries
         const sf::Vector2f resolution = getResolution();
 
         hudCullingBoundaries      = {0.f, resolution.x, 0.f, resolution.y};
         particleCullingBoundaries = getViewCullingBoundaries(/* offset */ 0.f);
         bubbleCullingBoundaries   = getViewCullingBoundaries(/* offset */ -64.f);
 
-        const auto windowSpaceMouseOrFingerPos = countFingersDown == 1u ? downFingers[0].toVector2i()
-                                                                        : sf::Mouse::getPosition(window);
+        //
+        // World-space mouse position
+        const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVector2i()
+                                                                          : sf::Mouse::getPosition(window);
 
         const auto mousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
-
 
         //
         // Game startup, prestige transitions, etc...
@@ -7790,7 +7971,7 @@ Using prestige points, TODO P0
 
         //
         // Update cats, shrines, dolls, buffs, and magic
-        gameLoopUpdateCatDragging(deltaTimeMs, countFingersDown, mousePos);
+        gameLoopUpdateCatDragging(deltaTimeMs, downFingers.size(), mousePos);
         gameLoopUpdateCatActions(deltaTimeMs);
         gameLoopUpdateShrines(deltaTimeMs);
         gameLoopUpdateDolls(deltaTimeMs, mousePos);
@@ -7851,6 +8032,9 @@ Using prestige points, TODO P0
 
         //
         // Compute views
+        const auto screenShake = rng.getVec2f({-screenShakeAmount, -screenShakeAmount},
+                                              {screenShakeAmount, screenShakeAmount});
+
         nonScaledHUDView             = {.center = resolution / 2.f, .size = resolution};
         scaledHUDView                = makeScaledHUDView(resolution, getHUDScalingFactor());
         gameView                     = createScaledGameView(gameScreenSize, resolution);
@@ -7894,6 +8078,17 @@ Using prestige points, TODO P0
         //
         // Scroll arrow hint
         gameLoopDrawScrollArrowHint(deltaTimeMs);
+
+        //
+        // AoE Dragging Reticle
+        if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
+            window.draw(sf::RectangleShape{{.position         = dragRect->position,
+                                            .origin           = {0.f, 0.f},
+                                            .fillColor        = sf::Color::White.withAlpha(64u),
+                                            .outlineColor     = sf::Color::White.withAlpha(176u),
+                                            .outlineThickness = 4.f,
+                                            .size             = dragRect->size}},
+                        /* texture */ nullptr);
 
         //
         // Draw border around gameview
@@ -8143,7 +8338,6 @@ int main()
 // TODO IDEAS:
 // - configurable particle spawn chance
 // - configurable pop sound play chance
-// - drag and drop multiple cats
 // - reduce size of game textures and try to reduce atlas size
 // - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // - bubble collisions with wind enabled seem fucked, is it a data race?
@@ -8173,52 +8367,6 @@ int main()
 // - ignore clicks done on top of imgui
 // - "resting powerup" via PPs that increases cat multiplier when not clicking for a while, maybe around 16PPs
 // - maybe make "autocast spell selector" a PP upgrade for around 128PPs
-
-// x - add a 0.5s pause on startup or game loading to avoid deltatime spikes screwing up timers (i.e. synced cat
-// cooldowns) x - one PP purchase before orbital dolls that allows dolls to be blown up by bombs, at 64PPs or 128PPs x -
-// display cat text always on top of cats x - dragging the window stops execution and deltatime accumulates x - make
-// cats wobble back and forth when ritual x - witchcat sound gets out of sync if shes inspired or boosted, split in two
-// separate sounds...? x - mousecat combo should cap at x999, and perhaps give a flat bonus there and needs achievement
-// ("mouse broke") x - witchcat needs to delay ritual until all dolls are collected x - witchcat stacking same buff
-// needs diminishing return, promote having different buffs stacked, also should probably have 90s cap x - does astrocat
-// have a speed limit? needs one for endless flight buff x - make bombs less affected by wind x - smart/genius cat name
-// prefix x - pp point ideas: start with stuff unlocked, start with a bit of money x - maybe 64PP prestige buff that
-// doubles duration of mewltiplier aura x - mousecat might need a buff x - maybe add checkbox to giant fan to choose
-// power between fast (current) and slow x - queue imgui toasts to avoid spamming and sound spam x - notification when
-// wizard mana is full? or when witch is ready to cast? maybe make them optional in settings? x - mousecat witch buff a
-// bit too weak probably x - $ per second stat / counter on HUD, useful for buffs, maybe use imgui graph x - astrocats
-// collide with each other when one flies but the other doesn't x - add big flashing arrow when map scrolling is first
-// unlocked to force player to scroll x - bubbleValue.nPurchases == 1 and money > 500 and prestigePoints > 0 -> tip to
-// remind to spend prestige points x - show wizard buffs in buff HUD string x - maybe get rid of range upgrades for uni
-// and devil cats x - cooldown/range tips for special cats should have more descriptive tooltips x - genius cats x2
-// bonus x - make rituals a bit less frequent and a bit more powerful x - "tweaks menu" unlockable with PP that allows
-// any purchased cooldown/range upgrade to be tweaked, or just allow selling via right click...? x - resolution should
-// be calculated from user desktop size x - setting to disable draw particles x - consider allowing menu to be outside
-// game view when resizing or in separate widnow x - milestone system with time per milestone, x - mousecat global click
-// multiplier should be upgradable with PPs, start around 24PPs x - engicat global cat multiplier should be upgradable
-// with PPs, start around 32PPs x - maybe make "starpaw conversion ignore bombs" a PP upgrade for around 64PPs x - mouse
-// cat could keep up his own combo, and his paw should be a cursor x - setting to show/hide cat text x - decouple
-// resolution and "map chunk size" x - genius cats should also be able to only hit bombs x - tooltips in menus x -
-// always use events to avoid out of focus keypresses x - make astrocat unselectable during flight x - pp upgrade
-// "genius cats" always prioritize bombs x - add astrocat inspiration time multiplier upgrade x - astrocat inspiration
-// could be purchased with PPs and add flag to the sprite x - genius cat pp upgrade could add brain in the jar to the
-// sprite (TODO: redo art) x - genius cat pp upgrade should also add "pop bombs only" or "ignore normal bubbles" options
-// x - astrocat stats
-// x - astrocat should inspire cats touched while flying
-// x - unicat cooldown scaling should be less powerful and capped
-// x - cat cooldown scaling should be a bit more powerful at the beginning and capped around 0.4
-// x - unicat range scaling should be much more exponential and be capped
-// x - cat after devil should be at least 150k
-// x - another prestige bonus could be toggleable wind
-// x - add stats to astrocats
-// x - stats tab
-// x - timer
-// x - bomb explosion should have circular range (slight nerf)
-// x - bomb should have higher mass for bubble collisions ??
-// x - cats can go out of bounds if pushed by other cats
-// x - cats should not be allowed next to the bounds, should be gently pushed away
-// x - gradually increase count of bubbles when purchasing and on startup
-// x - make combo end on misclick and play scratch sound
 
 // TODO PRE-RELEASE:
 // - release trailer with Byte and real life bubbles!
