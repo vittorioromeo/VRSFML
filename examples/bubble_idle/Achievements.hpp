@@ -86,7 +86,8 @@ inline constexpr AchievementData achievementData[] = {
     {"Constellation Coverage", "Improve Unicat range 6 times."},
     {"Celestial Dominion", "Improve Unicat range 9 times."},
 
-    // TODO P0: unicat transcension
+    {"TODONAME", "Purchase the \"Transcendence\" permanent upgrade."},
+    {"TODONAME", "Purchase the \"Nova Expanse\" permanent upgrade."},
 
     {"Chaos Catalyst", "Purchase your first Devilcat."},
     {"Demonic Delegation", "Purchase 5 Devilcats."},
