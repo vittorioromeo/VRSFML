@@ -18,6 +18,8 @@
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Cat
 {
+    Timer spawnEffectTimer;
+
     sf::Vector2f position;
 
     float     wobbleRadians;

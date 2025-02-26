@@ -60,6 +60,13 @@ struct [[nodiscard]] Countdown // TODO P2: turn to free funcs, or remove for Tim
     {
         return updateAndStop(deltaTimeMs) == CountdownStatusStop::Running;
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool isDone() const
+    {
+        SFML_BASE_ASSERT(value >= 0.f);
+        return value == 0.f;
+    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -101,13 +108,6 @@ struct [[nodiscard]] TargetedCountdown : Countdown
     [[nodiscard, gnu::always_inline, gnu::flatten]] float getProgressBounced() const
     {
         return 1.f - sf::base::fabs(getInvProgress() - 0.5f) * 2.f;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] bool isDone() const
-    {
-        SFML_BASE_ASSERT(value >= 0.f);
-        return value == 0.f;
     }
 };
 
