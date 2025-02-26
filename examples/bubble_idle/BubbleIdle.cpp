@@ -78,6 +78,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
@@ -107,7 +108,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_STR "v0.0.8"
+#define BUBBLEBYTE_VERSION_STR "v0.0.9"
 
 
 namespace
@@ -350,6 +351,16 @@ struct Main
     // Sound management
     Sounds       sounds;
     sf::Listener listener;
+
+    ////////////////////////////////////////////////////////////
+    // Delayed actions
+    struct DelayedAction
+    {
+        Countdown                            delayCountdown;
+        sf::base::FixedFunction<void(), 128> action;
+    };
+
+    std::vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -646,6 +657,10 @@ struct Main
     float fps{0.f};
 
     ////////////////////////////////////////////////////////////
+    // Debug stuff
+    bool debugHideUI = false;
+
+    ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
     {
         pt.money += reward;
@@ -912,6 +927,12 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void addDelayedAction(const float delayMs, sf::base::FixedFunction<void(), 128>&& f)
+    {
+        delayedActions.emplace_back(Countdown{.value = delayMs}, SFML_BASE_MOVE(f));
+    }
+
+    ////////////////////////////////////////////////////////////
     void forEachBubbleInRadius(const sf::Vector2f center, const float radius, auto&& func)
     {
         const float radiusSq = radius * radius;
@@ -961,9 +982,27 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnCat(const sf::Vector2f pos, const CatType catType, const float hue)
     {
+        const auto meowPitch = [&]() -> float
+        {
+            switch (catType)
+            {
+                case CatType::Uni:
+                    return rng.getF(1.20f, 1.30f);
+                case CatType::Devil:
+                    return rng.getF(0.70f, 0.80f);
+                default:
+                    return rng.getF(0.90f, 1.10f);
+            }
+        }();
+
+        sounds.purrmeow.setPosition({pos.x, pos.y});
+        sounds.purrmeow.setPitch(meowPitch);
+        playSound(sounds.purrmeow);
+
         spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
 
         return pt.cats.emplace_back(Cat{
+            .spawnEffectTimer      = {},
             .position              = pos,
             .wobbleRadians         = {},
             .cooldown              = {.value = pt.getComputedCooldownByCatType(catType)},
@@ -1729,7 +1768,7 @@ Using prestige points, TODO P0
 
         ImGui::GetIO().FontGlobalScale = newScalingFactor;
 
-        if (profile.showDpsMeter)
+        if (profile.showDpsMeter && !debugHideUI)
             uiDpsMeter();
 
         ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
@@ -3078,9 +3117,7 @@ Using prestige points, TODO P0
             }
 
             //
-            // SPELL 2 (TODO P0: should cost 30 mana, and is usually unlocked around prestige 4, so both devils and
-            // astros exist) idea: stasis, makes all bubbles stationary and when popped they do not disappear (except
-            // bombs maybe) make it refresh witch cooldown
+            // SPELL 2 (TODO P0: make it refresh witch cooldown)
             if (pt.psvSpellCount.nPurchases >= 3)
             {
                 ImGui::Separator();
@@ -3104,7 +3141,7 @@ Using prestige points, TODO P0
             }
 
             //
-            // SPELL 3 (TODO P0)
+            // SPELL 3 (TODO P0: buff next spell cast, or something similar)
             if (pt.psvSpellCount.nPurchases >= 4)
             {
                 ImGui::Separator();
@@ -3722,6 +3759,10 @@ Using prestige points, TODO P0
 
             uiPopButtonColors();
             uiButtonHueMod = 0.f;
+
+            ImGui::Separator();
+
+            ImGui::Checkbox("hide ui", &debugHideUI);
 
             ImGui::Separator();
 
@@ -4808,6 +4849,16 @@ Using prestige points, TODO P0
             if (cat.cooldown.value == 0.f && cat.pawOpacity > 10.f)
                 cat.pawOpacity -= 0.5f * deltaTimeMs;
 
+            // Spawn effect
+            const auto seStatus = cat.spawnEffectTimer.updateForwardAndStop(deltaTimeMs * 0.002f);
+            if (seStatus == TimerStatusStop::Running)
+                continue;
+
+            if (seStatus == TimerStatusStop::JustFinished)
+            {
+                spawnParticles(4, cat.position, ParticleType::Star, 0.5f, 0.75f);
+            }
+
             cat.update(deltaTimeMs);
 
             if (cat.hexedTimer.hasValue())
@@ -5821,10 +5872,10 @@ Using prestige points, TODO P0
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
+        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
+        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
+        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
+        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
 
         unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 1);
         unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 5);
@@ -6007,6 +6058,12 @@ Using prestige points, TODO P0
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1000);
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10'000);
 
+        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 1);
+        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 3);
+        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 6);
+        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 9);
+        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 12);
+
         unlockIf(pt.perm.witchCatBuffPowerScalesWithNCats);
         unlockIf(pt.perm.witchCatBuffPowerScalesWithMapSize);
         unlockIf(pt.perm.witchCatBuffFewerDolls);
@@ -6080,7 +6137,15 @@ Using prestige points, TODO P0
         unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 12);
         unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 16);
 
-        // TODO: other wizardcat prestiges
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 1);
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 4);
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 8);
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 12);
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 16);
+        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 20);
+
+        unlockIf(pt.perm.starpawConversionIgnoreBombs);
+        unlockIf(pt.perm.wizardCatDoubleMewltiplierDuration);
 
         unlockIf(pt.mouseCatCombo >= 25);
         unlockIf(pt.mouseCatCombo >= 50);
@@ -6101,6 +6166,12 @@ Using prestige points, TODO P0
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 3);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 6);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 9);
+
+        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 1);
+        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 2);
+        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 6);
+        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 10);
+        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 14);
 
         unlockIf(profile.statsLifetime.nMaintenances >= 1);
         unlockIf(profile.statsLifetime.nMaintenances >= 10);
@@ -6127,9 +6198,15 @@ Using prestige points, TODO P0
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 6);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 9);
 
+        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 1);
+        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 2);
+        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 6);
+        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 10);
+        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 14);
+
         unlockIf(buyReminder >= 5); // Secret
 
-        // TODO: witchcat achievements
+        // TODO P0: all repulsocat and attractocat achievements
     }
 
     ////////////////////////////////////////////////////////////
@@ -6312,9 +6389,11 @@ Using prestige points, TODO P0
                     .pointCount         = static_cast<unsigned int>(range / 3.f),
                 });
 
+            const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
+
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = beingDragged ? cat.position : cat.getDrawPosition(),
-                           .scale       = {0.2f, 0.2f},
+                           .scale       = sf::Vector2f{0.2f, 0.2f} * catScaleMult,
                            .origin      = catTxr.size / 2.f,
                            .rotation    = sf::radians(catRotation),
                            .textureRect = catTxr,
@@ -6326,12 +6405,11 @@ Using prestige points, TODO P0
             if (!cat.hexedTimer.hasValue())
                 cpuDrawableBatch.add(
                     sf::Sprite{.position    = cat.pawPosition,
-                               .scale       = {0.2f, 0.2f},
+                               .scale       = sf::Vector2f{0.2f, 0.2f} * catScaleMult,
                                .origin      = catPawTxr.size / 2.f,
                                .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
                                .textureRect = catPawTxr,
                                .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
-
 
             if (profile.showCatText)
             {
@@ -6350,7 +6428,7 @@ Using prestige points, TODO P0
                 textNameBuffer.setString(catNameBuffer);
                 textNameBuffer.position = cat.position.addY(48.f);
                 textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
-                textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f};
+                textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * catScaleMult;
                 textNameBuffer.setOutlineColor(textOutlineColor);
                 catTextDrawableBatch.add(textNameBuffer);
 
@@ -6365,7 +6443,7 @@ Using prestige points, TODO P0
                 textStatusBuffer.setFillColor(sf::Color::White);
                 textStatusBuffer.setOutlineColor(textOutlineColor);
                 cat.textStatusShakeEffect.applyToText(textStatusBuffer);
-                textStatusBuffer.scale *= 0.5f;
+                textStatusBuffer.scale *= 0.5f * catScaleMult;
                 catTextDrawableBatch.add(textStatusBuffer);
 
                 // Money text
@@ -6379,12 +6457,13 @@ Using prestige points, TODO P0
                     textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
                     textMoneyBuffer.setOutlineColor(textOutlineColor);
                     cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
-                    textMoneyBuffer.scale *= 0.5f;
+                    textMoneyBuffer.scale *= 0.5f * catScaleMult;
                     catTextDrawableBatch.add(textMoneyBuffer);
                 }
 
                 catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
                     .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
+                    .scale              = {catScaleMult, catScaleMult},
                     .origin             = {32.f, 0.f},
                     .outlineTextureRect = txrWhiteDot,
                     .fillColor          = sf::Color::White.withAlpha(128u),
@@ -7652,6 +7731,15 @@ Using prestige points, TODO P0
         gameLoopUpdateMana(deltaTimeMs);
 
         //
+        // Delayed actions
+        for (auto& [delayCountdown, func] : delayedActions)
+            if (delayCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                func();
+
+        sf::base::vectorEraseIf(delayedActions,
+                                [](const auto& delayedAction) { return delayedAction.delayCountdown.isDone(); });
+
+        //
         // Screen shake
         gameLoopUpdateScreenShake(deltaTimeMs);
 
@@ -7770,24 +7858,24 @@ Using prestige points, TODO P0
         // Money text & spent money effect
         gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
         gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
-        if (shouldDrawUI)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(moneyText);
 
         //
         // Combo text
         gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-        if (shouldDrawUI && pt.comboPurchased)
+        if (shouldDrawUI && !debugHideUI && pt.comboPurchased)
             window.draw(comboText);
 
         //
         // Buff text
         gameLoopUpdateBuffText();
-        if (shouldDrawUI)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(buffText);
 
         //
         // Combo bar
-        if (shouldDrawUI)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
                                             .fillColor = sf::Color{255, 255, 255, 75},
                                             .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
@@ -7795,7 +7883,7 @@ Using prestige points, TODO P0
 
         //
         // Minimap
-        if (shouldDrawUI && pt.mapPurchased)
+        if (shouldDrawUI && !debugHideUI && pt.mapPurchased)
             drawMinimap(shader,
                         profile.minimapScale,
                         pt.getMapLimit(),

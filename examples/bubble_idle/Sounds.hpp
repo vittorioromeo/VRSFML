@@ -78,6 +78,7 @@ struct Sounds
     LoadedSound maintenance{"maintenance.ogg"};
     LoadedSound ritual{"ritual.ogg"};
     LoadedSound ritualend{"ritualend.ogg"};
+    LoadedSound purrmeow{"purrmeow.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -116,6 +117,7 @@ struct Sounds
         setupWorldSound(maintenance);
         setupWorldSound(ritual, /* attenuationMult */ 0.1f);
         setupWorldSound(ritualend, /* attenuationMult */ 0.1f);
+        setupWorldSound(purrmeow);
 
         setupUISound(click);
         setupUISound(byteMeow);

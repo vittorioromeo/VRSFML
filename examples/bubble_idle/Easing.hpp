@@ -102,3 +102,16 @@ using EasingFn = float (*)(const float);
     ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
     return 1.f - sf::base::pow(1.f - x, 5.f);
 }
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float easeOutElastic(const float x) noexcept
+{
+    ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+
+    const float c4 = (2.f * sf::base::pi) / 3.f;
+
+    return x == 0.f   ? 0.f
+           : x == 1.f ? 1.f
+                      : sf::base::pow(2.f, -10.f * x) * sf::base::sin((x * 10.f - 0.75f) * c4) + 1.f;
+}
