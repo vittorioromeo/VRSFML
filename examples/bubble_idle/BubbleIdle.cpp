@@ -2607,7 +2607,7 @@ Using prestige points, TODO P0
             uiLabelBuffer[0] = '\0';
 
             if (makePurchasablePPButtonOneTime("- transcendence", 96u, pt.perm.unicatTranscendencePurchased))
-                doTip("Are you ready for x50 nova bubbles?", /* maxPrestigeLevel */ UINT_MAX);
+                doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
 
             if (pt.perm.unicatTranscendencePurchased)
             {
@@ -2617,7 +2617,7 @@ Using prestige points, TODO P0
                 uiLabelBuffer[0] = '\0';
 
                 if (makePurchasablePPButtonOneTime("- nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
-                    doTip("Are you ready for x50 nova bubbles?", /* maxPrestigeLevel */ UINT_MAX);
+                    doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
             }
         }
 
@@ -4528,9 +4528,6 @@ Using prestige points, TODO P0
         {
             // TODO P0:
             // - each in a different screen? more spread out
-            // - cats can kill dolls on prestige
-            // - magic spell to refresh witch cooldown immediately
-            // - nicer animations/effects/sounds
 
             SFML_BASE_ASSERT(selected != nullptr);
 
@@ -5858,6 +5855,9 @@ Using prestige points, TODO P0
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 3);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 6);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 9);
+
+        unlockIf(pt.perm.unicatTranscendencePurchased);
+        unlockIf(pt.perm.unicatTranscendenceAOEPurchased);
 
         unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 5);
