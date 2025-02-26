@@ -59,12 +59,12 @@ struct Playthrough
                     {&PSVDataConstants::catDevil},
                     {&PSVDataConstants::catAstro},
 
-                    {&PSVDataConstants::catWitch},
-                    {&PSVDataConstants::catWizard},   // TODO P1: unused?
-                    {&PSVDataConstants::catMouse},    // TODO P1: unused?
-                    {&PSVDataConstants::catEngi},     // TODO P1: unused?
-                    {&PSVDataConstants::catRepulso},  // TODO P1: unused?
-                    {&PSVDataConstants::catAttracto}, // TODO P1: unused?
+                    {&PSVDataConstants::catWitch},    // unused
+                    {&PSVDataConstants::catWizard},   // unused
+                    {&PSVDataConstants::catMouse},    // unused
+                    {&PSVDataConstants::catEngi},     // unused
+                    {&PSVDataConstants::catRepulso},  // unused
+                    {&PSVDataConstants::catAttracto}, // unused
                 });
 
     EXACT_ARRAY(PurchasableScalingValue,

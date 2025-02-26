@@ -2909,6 +2909,9 @@ Using prestige points, TODO P0
     {
         SFML_BASE_ASSERT(!aoeDraggedCats.empty());
 
+        if (aoeDraggedCats.size() <= 2u)
+            return 0u;
+
         // First calculate the centroid
         sf::Vector2f centroid;
 
@@ -2926,7 +2929,7 @@ Using prestige points, TODO P0
             // Calculate squared distance (avoiding square root for performance)
             const float distSquared = (aoeDraggedCats[i]->position - centroid).lengthSquared();
 
-            if (distSquared < minDistance)
+            if (minDistance - distSquared < 64.f)
             {
                 minDistance  = distSquared;
                 closestIndex = i;
@@ -5489,6 +5492,12 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vector2f mousePos)
     {
+        if (inPrestigeTransition)
+        {
+            resetAllDraggedCats();
+            return;
+        }
+
         const bool aoeSelecting = keyDown(sf::Keyboard::Key::LShift) && mBtnDown(sf::Mouse::Button::Left);
 
         if (aoeSelecting)
@@ -5512,6 +5521,8 @@ Using prestige points, TODO P0
 
                 aoeDraggedCats.push_back(&cat);
             }
+
+            playSound(sounds.grab);
         }
         else
         {
@@ -6494,6 +6505,15 @@ Using prestige points, TODO P0
         unlockIf(pt.psvSpellCount.nPurchases >= 3);
         unlockIf(pt.psvSpellCount.nPurchases >= 4);
 
+        unlockIf(pt.psvStarpawPercentage.nPurchases >= 1);
+        unlockIf(pt.psvStarpawPercentage.nPurchases >= 4);
+        unlockIf(pt.psvStarpawPercentage.nPurchases >= 8);
+
+        unlockIf(pt.psvMewltiplierMult.nPurchases >= 1);
+        unlockIf(pt.psvMewltiplierMult.nPurchases >= 5);
+        unlockIf(pt.psvMewltiplierMult.nPurchases >= 10);
+        unlockIf(pt.psvMewltiplierMult.nPurchases >= 15);
+
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1);
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 10);
         unlockIf(profile.statsLifetime.nSpellCasts[0] >= 100);
@@ -6860,7 +6880,10 @@ Using prestige points, TODO P0
                     catTextDrawableBatch.add(textMoneyBuffer);
                 }
 
-                if (!inPrestigeTransition)
+                const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso ||
+                                             cat.type == CatType::Attracto;
+
+                if (!hideCooldownBar)
                     catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
                         .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
                         .scale              = {catScaleMult, catScaleMult},
