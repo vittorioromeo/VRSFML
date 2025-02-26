@@ -27,8 +27,8 @@ inline constexpr PSVData bubbleCount //
 
 inline constexpr PSVData bubbleValue //
     {.nMaxPurchases = 19u,
-     .cost          = {.initial = 19000.f, .linear = -5000.f, .exponential = 4.2f, .flat = -14000.f},
-     .value         = {.initial = 0.f, .linear = 1.f}};
+     .cost  = {.initial = 19000.f, .linear = -620.f, .multiplicative = -800.f, .exponential = 4.1f, .flat = -14000.f},
+     .value = {.initial = 0.f, .linear = 1.f}};
 
 inline constexpr PSVData explosionRadiusMult //
     {.nMaxPurchases = 10u,
