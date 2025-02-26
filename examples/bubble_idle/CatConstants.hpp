@@ -25,8 +25,8 @@ inline constexpr EXACT_ARRAY(
         {123u, 108u, 191u}, // Wizard
         {175u, 175u, 175u}, // Mouse
         {72u, 51u, 33u},    // Engi
-        {132u, 132u, 132u}, // Repulso
-        {132u, 132u, 132u}, // Attracto (TODO P1: change?)
+        {182u, 110u, 135u}, // Repulso
+        {132u, 132u, 132u}, // Attracto
     });
 
 
@@ -41,12 +41,12 @@ inline constexpr EXACT_ARRAY(
         "IEDs",    // Devil
         "Flights", // Astro
 
-        "Rituals",     // Witch
-        "Spells",      // Wizard
-        "Clicks",      // Mouse
-        "Boosts",      // Engi
-        "Conversions", // Repulso
-        "TODO",        // Attracto
+        "Rituals", // Witch
+        "Spells",  // Wizard
+        "Clicks",  // Mouse
+        "Boosts",  // Engi
+        "TODO P1",    // Repulso
+        "TODO P1",    // Attracto
     });
 
 ////////////////////////////////////////////////////////////
@@ -65,7 +65,7 @@ inline constexpr EXACT_ARRAY(
         400.f,    // Mouse
         10'000.f, // Engi
         5.f,      // Repulso
-        5.f,      // Attracto (TODO P1: change?)
+        5.f,      // Attracto
     });
 
 ////////////////////////////////////////////////////////////
