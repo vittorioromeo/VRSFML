@@ -249,7 +249,7 @@ struct Playthrough
     void onPrestige(const PrestigePointsType prestigePointReward)
     {
         psvComboStartTime.nPurchases = 0u;
-        // psvMapExtension.nPurchases        = 0u;
+        // map extension is cleaned in the game loop (prestige transition)
         psvShrineActivation.nPurchases    = 0u;
         psvBubbleCount.nPurchases         = 0u;
         psvSpellCount.nPurchases          = 0u;
@@ -270,7 +270,7 @@ struct Playthrough
         prestigePoints += prestigePointReward;
 
         comboPurchased = false;
-        // mapPurchased   = false;
+        // map purchased is cleaned in the game loop (prestige transition)
 
         manaTimer            = 0.f;
         mana                 = 0u;
@@ -285,7 +285,7 @@ struct Playthrough
         multiPopMouseCatEnabled = false;
         windStrength            = 0;
 
-        // bubbles, cats, dolls, and shrines are cleaned in the game loop
+        // bubbles, cats, dolls, and shrines are cleaned in the game loop (prestige transition)
 
         nShrinesCompleted = 0u;
 
@@ -415,7 +415,7 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SizeT getShrinesCompletedNeededForNextPrestige() const
+    [[nodiscard, gnu::pure]] SizeT getShrinesCompletedNeededForNextPrestige() const
     {
         if (psvBubbleValue.nPurchases <= 0u)
             return 1u;

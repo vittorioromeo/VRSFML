@@ -1718,7 +1718,7 @@ Using prestige points, TODO P0
     }
 
     ////////////////////////////////////////////////////////////
-    void uiBeginColumns()
+    void uiBeginColumns() const
     {
         ImGui::Columns(2, "twoColumns", false);
         ImGui::SetColumnWidth(0, (uiWindowWidth - uiButtonWidth - 20.f) * getUIScalingFactor());
@@ -3762,6 +3762,28 @@ Using prestige points, TODO P0
 
             ImGui::Separator();
 
+            static int catTypeN = 0;
+            ImGui::SetNextItemWidth(320.f * getUIScalingFactor());
+            ImGui::Combo("typeN", &catTypeN, CatConstants::typeNames, nCatTypes);
+
+            if (ImGui::Button("Spawn"))
+            {
+                const auto catType = static_cast<CatType>(catTypeN);
+
+                if (isUniqueCatType(catType))
+                    spawnSpecialCat(gameScreenSize / 2.f, catType);
+                else
+                    spawnCat(gameScreenSize / 2.f, catType, 0.f);
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Do Ritual"))
+                if (auto* wc = findFirstCatByType(CatType::Witch))
+                    wc->cooldown.value = 10.f;
+
+            ImGui::Separator();
+
             ImGui::Checkbox("hide ui", &debugHideUI);
 
             ImGui::Separator();
@@ -4112,9 +4134,171 @@ Using prestige points, TODO P0
         bubble.hueMod   = 0.f;
     }
 
+    void gameLoopUpdateTransitions(const float deltaTimeMs)
+    {
+        // Compute screen count
+        constexpr auto nMaxScreens       = boundaries.x / gameScreenSize.x;
+        const auto     nPurchasedScreens = static_cast<SizeT>(pt.getMapLimit() / gameScreenSize.x) + 1u;
+
+        // Compute total target bubble count
+        const auto targetBubbleCountPerScreen = static_cast<SizeT>(pt.psvBubbleCount.currentValue() / nMaxScreens);
+        const auto targetBubbleCount          = targetBubbleCountPerScreen * nPurchasedScreens;
+
+        // Helper functions
+        const auto playReversePopAt = [this](const sf::Vector2f position)
+        {
+            // TODO P2: refactor into function for any sound and reuse
+            sounds.reversePop.setPosition({position.x, position.y});
+            playSound(sounds.reversePop, /* maxOverlap */ 1u);
+        };
+
+        // If we are still displaying the splash screen, exit early
+        if (splashCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::AlreadyFinished)
+            return;
+
+        // Spawn bubbles and shrines during normal gmaeplay
+        if (!inPrestigeTransition)
+        {
+            // Spawn shrines if required
+            pt.spawnAllShrinesIfNeeded();
+
+            // Spawn bubbles (or remove extra bubbles via debug menu)
+            if (pt.bubbles.size() < targetBubbleCount)
+            {
+                const SizeT times = (targetBubbleCount - pt.bubbles.size()) > 500u ? 25u : 1u;
+
+                for (SizeT i = 0; i < times; ++i)
+                {
+                    const auto bPos = pt.bubbles.emplace_back(makeRandomBubble(pt, rng, pt.getMapLimit(), boundaries.y)).position;
+
+                    spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
+                    playReversePopAt(bPos);
+                }
+            }
+            else if (pt.bubbles.size() > targetBubbleCount)
+            {
+                // Should only be triggered in testing via cheats
+                pt.bubbles.resize(targetBubbleCount);
+            }
+
+            return;
+        }
+
+        SFML_BASE_ASSERT(inPrestigeTransition);
+
+        // Despawn cats, dolls, and shrines
+        if (catRemoveTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
+        {
+            if (!pt.cats.empty())
+            {
+                for (auto& cat : pt.cats)
+                {
+                    cat.astroState.reset();
+                    cat.cooldown.value = 100.f;
+                }
+
+                // Find rightmost cat
+                const auto rightmostIt = std::max_element(pt.cats.begin(),
+                                                          pt.cats.end(),
+                                                          [](const Cat& a, const Cat& b)
+                { return a.position.x < b.position.x; });
+
+                const float targetScroll = (rightmostIt->position.x - gameScreenSize.x / 2.f) / 2.f;
+                scroll                   = exponentialApproach(scroll, targetScroll, deltaTimeMs, 15.f);
+
+                if (rightmostIt != pt.cats.end())
+                    std::swap(*rightmostIt, pt.cats.back());
+
+                const auto cPos = pt.cats.back().position;
+                pt.cats.pop_back();
+
+                spawnParticle({.position      = cPos.addY(29.f),
+                               .velocity      = {0.f, 0.f},
+                               .scale         = 0.2f,
+                               .accelerationY = -0.00015f,
+                               .opacity       = 200.f,
+                               .opacityDecay  = 0.0002f,
+                               .rotation      = 0.f,
+                               .torque        = rng.getF(-0.0002f, 0.0002f)},
+                              /* hue */ 0.f,
+                              ParticleType::CatSoul);
+
+                spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                playReversePopAt(cPos);
+            }
+
+            if (!pt.shrines.empty())
+            {
+                const auto cPos = pt.shrines.back().position;
+                pt.shrines.pop_back();
+
+                spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                playReversePopAt(cPos);
+            }
+
+            if (!pt.dolls.empty())
+            {
+                const auto cPos = pt.dolls.back().position;
+                pt.dolls.pop_back();
+
+                spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                playReversePopAt(cPos);
+            }
+        }
+
+        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty();
+
+        // Reset map extension and scroll, and remove bubbles outside of view
+        if (gameElementsRemoved)
+        {
+            pt.mapPurchased               = false;
+            pt.psvMapExtension.nPurchases = 0u;
+
+            scroll = 0.f;
+
+            sf::base::vectorEraseIf(pt.bubbles, [&](const Bubble& b) { return b.position.x > pt.getMapLimit() + 128.f; });
+        }
+
+        // Despawn bubbles after other things
+        if (gameElementsRemoved && !pt.bubbles.empty() &&
+            bubbleSpawnTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
+        {
+            const SizeT times = pt.bubbles.size() > 500u ? 25u : 1u;
+
+            for (SizeT i = 0; i < times; ++i)
+            {
+                const auto bPos = pt.bubbles.back().position;
+                pt.bubbles.pop_back();
+
+                spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
+                playReversePopAt(bPos);
+            }
+        }
+
+        // End prestige transition
+        if (gameElementsRemoved && pt.bubbles.empty())
+        {
+            inPrestigeTransition = false;
+            pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
+
+            draggedCat               = nullptr;
+            catDragPressDuration     = 0.f;
+            spentMoney               = 0u;
+            moneyGainedLastSecond    = 0u;
+            moneyGainedUsAccumulator = 0u;
+            samplerMoneyPerSecond.clear();
+            bombIdxToCatIdx.clear();
+
+            splashCountdown.restart();
+            playSound(sounds.byteMeow);
+        }
+    }
+
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateBubbles(const float deltaTimeMs)
     {
+        // TODO P1: maybe clamp or soft-clamp max velocity?
+
         for (Bubble& bubble : pt.bubbles)
         {
             if (bubble.type == BubbleType::Bomb)
@@ -4338,7 +4522,7 @@ Using prestige points, TODO P0
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto starBubbleType = pt.perm.unicatTranscendenceAOEPurchased ? BubbleType::Nova : BubbleType::Star;
+        const auto starBubbleType = pt.perm.unicatTranscendencePurchased ? BubbleType::Nova : BubbleType::Star;
         const auto nStarParticles = pt.perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
 
         const auto transformBubble = [&](Bubble& bToTransform)
@@ -4526,9 +4710,6 @@ Using prestige points, TODO P0
 
         if (otherCatCount > 0)
         {
-            // TODO P0:
-            // - each in a different screen? more spread out
-
             SFML_BASE_ASSERT(selected != nullptr);
 
             hexCat(*selected);
@@ -4554,12 +4735,36 @@ Using prestige points, TODO P0
 
             statRitual(selected->type);
 
-            constexpr float offset = 64.f;
+            const auto isPositionFarFromOtherDolls = [&](const sf::Vector2f& position) -> bool
+            {
+                for (const Doll& d : pt.dolls)
+                    if ((d.position - position).lengthSquared() < (256.f * 256.f))
+                        return false;
+
+                return true;
+            };
+
+            const auto rndDollPosition = [&]
+            {
+                constexpr float offset = 64.f;
+                return rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset});
+            };
+
+            const auto pickDollPosition = [&]
+            {
+                constexpr unsigned int maxRetries = 16u;
+
+                for (unsigned int retryCount = 0; retryCount < maxRetries; ++retryCount)
+                    if (const auto candidate = rndDollPosition(); isPositionFarFromOtherDolls(candidate))
+                        return candidate;
+
+                return rndDollPosition();
+            };
 
             for (SizeT i = 0u; i < nDollsToSpawn; ++i)
             {
                 auto& d = pt.dolls.emplace_back(
-                    Doll{.position = rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset}),
+                    Doll{.position      = pickDollPosition(),
                          .wobbleRadians = rng.getF(0.f, sf::base::tau),
                          .buffPower     = buffPower,
                          .catType       = selected->type,
@@ -5523,7 +5728,9 @@ Using prestige points, TODO P0
             return;
         }
 
-        SFML_BASE_ASSERT(hexedCat != nullptr);
+        // Can happen during prestige transition
+        if (hexedCat == nullptr)
+            return;
 
         for (Doll& d : pt.dolls)
         {
@@ -5778,8 +5985,6 @@ Using prestige points, TODO P0
                              achievementData[achievementId].name,
                              achievementData[achievementId].description);
         };
-
-        const auto skip = [&] { ++nextId; };
 
         const auto bubblesHandPopped = profile.statsLifetime.getTotalNBubblesHandPopped();
         const auto bubblesCatPopped  = profile.statsLifetime.getTotalNBubblesCatPopped();
@@ -6145,6 +6350,7 @@ Using prestige points, TODO P0
         unlockIf(pt.psvPPManaMaxMult.nPurchases >= 20);
 
         unlockIf(pt.perm.starpawConversionIgnoreBombs);
+        unlockIf(pt.perm.starpawNova);
         unlockIf(pt.perm.wizardCatDoubleMewltiplierDuration);
 
         unlockIf(pt.mouseCatCombo >= 25);
@@ -6377,7 +6583,7 @@ Using prestige points, TODO P0
             const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
-            if (bubbleCullingBoundaries.isInside(cat.position))
+            if (!inPrestigeTransition && bubbleCullingBoundaries.isInside(cat.position))
                 cpuDrawableBatch.add(sf::CircleShapeData{
                     .position           = getCatRangeCenter(cat),
                     .origin             = {range, range},
@@ -6461,18 +6667,19 @@ Using prestige points, TODO P0
                     catTextDrawableBatch.add(textMoneyBuffer);
                 }
 
-                catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
-                    .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
-                    .scale              = {catScaleMult, catScaleMult},
-                    .origin             = {32.f, 0.f},
-                    .outlineTextureRect = txrWhiteDot,
-                    .fillColor          = sf::Color::White.withAlpha(128u),
-                    .outlineColor       = textOutlineColor,
-                    .outlineThickness   = 1.f,
-                    .size             = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, FLT_MAX),
-                    .cornerRadius     = 1.f,
-                    .cornerPointCount = 8u,
-                });
+                if (!inPrestigeTransition)
+                    catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
+                        .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
+                        .scale              = {catScaleMult, catScaleMult},
+                        .origin             = {32.f, 0.f},
+                        .outlineTextureRect = txrWhiteDot,
+                        .fillColor          = sf::Color::White.withAlpha(128u),
+                        .outlineColor       = textOutlineColor,
+                        .outlineThickness   = 1.f,
+                        .size         = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, FLT_MAX),
+                        .cornerRadius = 1.f,
+                        .cornerPointCount = 8u,
+                    });
             }
         };
     }
@@ -7550,148 +7757,8 @@ Using prestige points, TODO P0
 
 
         //
-        // Target bubble count
-        const auto targetBubbleCountPerScreen = static_cast<SizeT>(
-            pt.psvBubbleCount.currentValue() / (boundaries.x / gameScreenSize.x));
-        const auto nScreens          = static_cast<SizeT>(pt.getMapLimit() / gameScreenSize.x) + 1;
-        const auto targetBubbleCount = targetBubbleCountPerScreen * nScreens;
-
-        //
-        // Startup and bubble spawning
-        const auto playReversePopAt = [this](const sf::Vector2f position)
-        {
-            sounds.reversePop.setPosition({position.x, position.y});
-            playSound(sounds.reversePop, /* maxOverlap */ 1u);
-        };
-
-        if (splashCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
-        {
-            if (catRemoveTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
-            {
-                if (inPrestigeTransition && !pt.cats.empty())
-                {
-                    for (auto& cat : pt.cats)
-                    {
-                        cat.astroState.reset();
-                        cat.cooldown.value = 100.f;
-                    }
-
-                    // Find rightmost cat
-                    auto rightmostIt = std::max_element(pt.cats.begin(),
-                                                        pt.cats.end(),
-                                                        [](const Cat& a, const Cat& b)
-                    { return a.position.x < b.position.x; });
-
-                    scroll = rightmostIt->position.x / 2.f - gameScreenSize.x / 4.f;
-
-                    if (rightmostIt != pt.cats.end())
-                        std::swap(*rightmostIt, pt.cats.back());
-
-                    const auto cPos = pt.cats.back().position;
-                    pt.cats.pop_back();
-
-                    spawnParticle({.position      = cPos.addY(29.f),
-                                   .velocity      = {0.f, 0.f},
-                                   .scale         = 0.2f,
-                                   .accelerationY = -0.00015f,
-                                   .opacity       = 200.f,
-                                   .opacityDecay  = 0.0002f,
-                                   .rotation      = 0.f,
-                                   .torque        = rng.getF(-0.0002f, 0.0002f)},
-                                  /* hue */ 0.f,
-                                  ParticleType::CatSoul);
-
-                    spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
-                    playReversePopAt(cPos);
-                }
-
-                if (inPrestigeTransition && !pt.shrines.empty())
-                {
-                    const auto cPos = pt.shrines.back().position;
-                    pt.shrines.pop_back();
-
-                    spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
-                    playReversePopAt(cPos);
-                }
-
-                if (inPrestigeTransition && !pt.dolls.empty())
-                {
-                    const auto cPos = pt.dolls.back().position;
-                    pt.dolls.pop_back();
-
-                    spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
-                    playReversePopAt(cPos);
-                }
-            }
-
-            if (bubbleSpawnTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
-            {
-                if (inPrestigeTransition)
-                {
-                    if (!pt.bubbles.empty())
-                    {
-                        const SizeT times = pt.bubbles.size() > 500 ? 25 : 1;
-
-                        for (SizeT i = 0; i < times; ++i)
-                        {
-                            const auto bPos = pt.bubbles.back().position;
-                            pt.bubbles.pop_back();
-
-                            spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
-                            playReversePopAt(bPos);
-                        }
-                    }
-                }
-                else
-                {
-                    if (pt.bubbles.size() < targetBubbleCount)
-                    {
-                        const SizeT times = (targetBubbleCount - pt.bubbles.size()) > 500 ? 25 : 1;
-
-                        for (SizeT i = 0; i < times; ++i)
-                        {
-                            const auto bPos = pt.bubbles
-                                                  .emplace_back(makeRandomBubble(pt, rng, pt.getMapLimit(), boundaries.y))
-                                                  .position;
-
-                            spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
-                            playReversePopAt(bPos);
-                        }
-                    }
-                    else if (pt.bubbles.size() > targetBubbleCount)
-                    {
-                        // Should only be triggered in testing via cheats
-                        pt.bubbles.resize(targetBubbleCount);
-                    }
-                }
-            }
-
-            // End prestige transition
-            if (inPrestigeTransition && pt.cats.empty() && pt.shrines.empty() && pt.bubbles.empty() && pt.dolls.empty())
-            {
-                inPrestigeTransition = false;
-                pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
-
-                pt.mapPurchased               = false;
-                pt.psvMapExtension.nPurchases = 0u;
-
-                scroll                   = 0.f;
-                draggedCat               = nullptr;
-                catDragPressDuration     = 0.f;
-                spentMoney               = 0u;
-                moneyGainedLastSecond    = 0u;
-                moneyGainedUsAccumulator = 0u;
-                samplerMoneyPerSecond.clear();
-                bombIdxToCatIdx.clear();
-
-                splashCountdown.restart();
-                playSound(sounds.byteMeow);
-            }
-
-            // Spawn shrines if required
-            if (!inPrestigeTransition)
-                pt.spawnAllShrinesIfNeeded();
-        }
+        // Game startup, prestige transitions, etc...
+        gameLoopUpdateTransitions(deltaTimeMs);
 
         //
         // Update spatial partitioning (needs to be done before updating bubbles)

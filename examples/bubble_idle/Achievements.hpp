@@ -364,6 +364,7 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Improve Wizardcat's mana limit 20 times"},
 
     {"Everyone But You", "Purchase the \"Selective Starpaw\" permanent upgrade."},
+    {"I Can Transcend As Well...", "Purchase the \"Starpaw Nova\" permanent upgrade."},
     {"It Takes Longer To Say It", "Purchase the \"Meeeeeewltiplier\" permanent upgrade."},
 
     // TODO P0: other wizardcat prestiges for other spells
