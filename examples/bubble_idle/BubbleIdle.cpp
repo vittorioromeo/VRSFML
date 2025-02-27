@@ -26,6 +26,7 @@
 #include "Shrine.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
+#include "Steam.hpp"
 #include "SweepAndPrune.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
@@ -8435,6 +8436,8 @@ void main()
 ////////////////////////////////////////////////////////////
 int main()
 {
+    hg::Steam::SteamManager steamMgr;
+
     Main{}.run();
 }
 
