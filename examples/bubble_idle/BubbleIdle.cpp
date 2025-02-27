@@ -8759,6 +8759,7 @@ int main()
 }
 
 // TODO:
+// - P1 steamDRM
 // - P2 configurable particle spawn chance
 // - P2 configurable pop sound play chance
 // - P2 reduce size of game textures and try to reduce atlas size
