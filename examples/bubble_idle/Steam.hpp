@@ -39,7 +39,7 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(std::string_view name);
+    bool unlockAchievement(std::size_t idx);
 
     bool setRichPresenceInGame(std::string_view levelNameFormat);
 
