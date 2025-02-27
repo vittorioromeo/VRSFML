@@ -85,7 +85,7 @@ private:
     bool m_initialized;
     bool m_gotStats;
 
-    std::unordered_set<std::string> m_unlockedAchievements;
+    std::unordered_set<std::size_t> m_unlockedAchievements;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -121,7 +121,7 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(std::string_view name);
+    bool unlockAchievement(std::size_t idx);
 
     bool setRichPresenceInGame(std::string_view levelNameFormat);
 
@@ -184,14 +184,26 @@ bool SteamManager::SteamManagerImpl::requestStatsAndAchievements()
         std::cout << "[Steam]: Attempted to request stats when uninitialized\n";
         return false;
     }
-    /*
-        if (!SteamUserStats()->RequestCurrentStats())
-        {
-            std::cout << "[Steam]: Failed to get stats and achievements\n";
-            m_gotStats = false;
+
+    static thread_local sf::base::Optional<CSteamID> cachedUserSteamId;
+
+    if (!cachedUserSteamId.hasValue())
+    {
+        cachedUserSteamId = getUserSteamId();
+
+        if (!cachedUserSteamId.hasValue())
             return false;
-        }
-    */
+
+        std::cout << "[Steam]: Cached User Steam ID: '" << cachedUserSteamId->ConvertToUint64() << "'\n";
+    }
+
+    if (!SteamUserStats()->RequestUserStats(cachedUserSteamId.value()))
+    {
+        std::cout << "[Steam]: Failed to get stats and achievements\n";
+        m_gotStats = false;
+        return false;
+    }
+
     std::cout << "[Steam]: Successfully requested stats and achievements\n";
     return true;
 }
@@ -230,8 +242,11 @@ bool SteamManager::SteamManagerImpl::storeStats()
     return true;
 }
 
-bool SteamManager::SteamManagerImpl::unlockAchievement(std::string_view name)
+bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
 {
+    if (idx > 50)
+        return false; // TODO P0: add more achievements on Steamworks
+
     if (!m_initialized)
     {
         std::cout << "[Steam]: Attempted to unlock achievement when uninitialized\n";
@@ -244,18 +259,21 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(std::string_view name)
         return false;
     }
 
-    if (m_unlockedAchievements.contains(std::string(name)))
+    if (m_unlockedAchievements.contains(idx))
     {
         return false;
     }
 
-    if (!SteamUserStats()->SetAchievement(name.data()))
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "ACH_%zu", idx);
+
+    if (!SteamUserStats()->SetAchievement(buf))
     {
-        std::cout << "[Steam]: Failed to unlock achievement " << name << '\n';
+        std::cout << "[Steam]: Failed to unlock achievement " << buf << '\n';
         return false;
     }
 
-    m_unlockedAchievements.emplace(name);
+    m_unlockedAchievements.emplace(idx);
     return storeStats();
 }
 
@@ -437,9 +455,9 @@ bool SteamManager::storeStats()
     return impl().storeStats();
 }
 
-bool SteamManager::unlockAchievement(std::string_view name)
+bool SteamManager::unlockAchievement(std::size_t idx)
 {
-    return impl().unlockAchievement(name);
+    return impl().unlockAchievement(idx);
 }
 
 bool SteamManager::setRichPresenceInGame(std::string_view levelNameFormat)

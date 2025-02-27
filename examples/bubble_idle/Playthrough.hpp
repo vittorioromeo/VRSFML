@@ -8,6 +8,7 @@
 #include "Constants.hpp"
 #include "Doll.hpp"
 #include "ExactArray.hpp"
+#include "HellPortal.hpp"
 #include "Milestones.hpp"
 #include "PSVDataConstants.hpp"
 #include "PurchasableScalingValue.hpp"
@@ -163,6 +164,7 @@ struct Playthrough
         bool wizardCatDoubleMewltiplierDuration   = false;
         bool unicatTranscendencePurchased         = false;
         bool unicatTranscendenceAOEPurchased      = false;
+        bool devilcatHellsingedPurchased          = false;
     };
 
     Permanent perm = {};
@@ -179,10 +181,11 @@ struct Playthrough
 
     //
     // Object state
-    std::vector<Bubble> bubbles;
-    std::vector<Cat>    cats;
-    std::vector<Shrine> shrines;
-    std::vector<Doll>   dolls;
+    std::vector<Bubble>     bubbles;
+    std::vector<Cat>        cats;
+    std::vector<Shrine>     shrines;
+    std::vector<Doll>       dolls;
+    std::vector<HellPortal> hellPortals;
 
     //
     // Shrines
@@ -285,7 +288,7 @@ struct Playthrough
         multiPopMouseCatEnabled = false;
         windStrength            = 0;
 
-        // bubbles, cats, dolls, and shrines are cleaned in the game loop (prestige transition)
+        // bubbles, cats, dolls, hell portals, and shrines are cleaned in the game loop (prestige transition)
 
         nShrinesCompleted = 0u;
 
