@@ -16,6 +16,7 @@ enum class [[nodiscard]] ParticleType : sf::base::U8
     Cog     = 6u,
     Coin    = 7u,
     CatSoul = 8u,
+    Fire2   = 9u,
 
     Count
 };
