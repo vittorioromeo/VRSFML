@@ -415,30 +415,39 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] SizeT getShrinesCompletedNeededForNextPrestige() const
+    [[nodiscard, gnu::const]] static constexpr SizeT getShrinesCompletedNeededForPrestigeLevel(const SizeT prestigeLevel)
     {
-        if (psvBubbleValue.nPurchases <= 0u)
+        if (prestigeLevel <= 0u)
             return 1u;
 
-        if (psvBubbleValue.nPurchases <= 1u)
+        if (prestigeLevel <= 1u)
+            return 1u;
+
+        if (prestigeLevel <= 2u)
             return 2u;
 
-        if (psvBubbleValue.nPurchases <= 3u)
+        if (prestigeLevel <= 4u)
             return 3u;
 
-        if (psvBubbleValue.nPurchases <= 7u)
+        if (prestigeLevel <= 8u)
             return 4u;
 
-        if (psvBubbleValue.nPurchases <= 10u)
+        if (prestigeLevel <= 11u)
             return 5u;
 
-        if (psvBubbleValue.nPurchases <= 13u)
+        if (prestigeLevel <= 14u)
             return 6u;
 
-        if (psvBubbleValue.nPurchases <= 16u)
+        if (prestigeLevel <= 17u)
             return 7u;
 
         return 8u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::pure]] SizeT getShrinesCompletedNeededForNextPrestige() const
+    {
+        return getShrinesCompletedNeededForPrestigeLevel(psvBubbleValue.nPurchases + 1u);
     }
 
     ////////////////////////////////////////////////////////////

@@ -30,11 +30,11 @@ struct [[nodiscard]] Milestones
     MilestoneTimestamp tenDevilcats = maxMilestone;
     MilestoneTimestamp tenAstrocats = maxMilestone;
 
-    MilestoneTimestamp prestigeLevel1  = maxMilestone;
     MilestoneTimestamp prestigeLevel2  = maxMilestone;
     MilestoneTimestamp prestigeLevel3  = maxMilestone;
     MilestoneTimestamp prestigeLevel4  = maxMilestone;
     MilestoneTimestamp prestigeLevel5  = maxMilestone;
+    MilestoneTimestamp prestigeLevel6  = maxMilestone;
     MilestoneTimestamp prestigeLevel10 = maxMilestone;
     MilestoneTimestamp prestigeLevel15 = maxMilestone;
     MilestoneTimestamp prestigeLevel20 = maxMilestone;
