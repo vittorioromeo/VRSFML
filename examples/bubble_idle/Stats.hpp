@@ -17,6 +17,7 @@ struct [[nodiscard]] Stats
     sf::base::U64 revenueHandByType[nBubbleTypes]                         = {};
     sf::base::U64 explosionRevenue                                        = 0u;
     sf::base::U64 flightRevenue                                           = 0u;
+    sf::base::U64 hellPortalRevenue                                       = 0u;
     sf::base::U64 highestStarBubblePopCombo                               = 0u;
     sf::base::U64 highestNovaBubblePopCombo                               = 0u;
     sf::base::U64 nAbsorbedStarBubbles                                    = 0u;

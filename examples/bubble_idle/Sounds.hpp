@@ -82,6 +82,8 @@ struct Sounds
     LoadedSound purrmeow{"purrmeow.ogg"};
     LoadedSound soulsteal{"soulsteal.ogg"};
     LoadedSound soulreturn{"soulreturn.ogg"};
+    LoadedSound portalon{"portalon.ogg"};
+    LoadedSound portaloff{"portaloff.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -124,6 +126,8 @@ struct Sounds
         setupWorldSound(purrmeow);
         setupWorldSound(soulsteal);
         setupWorldSound(soulreturn);
+        setupWorldSound(portalon);
+        setupWorldSound(portaloff);
 
         setupUISound(click);
         setupUISound(byteMeow);

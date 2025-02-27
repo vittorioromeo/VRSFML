@@ -82,12 +82,12 @@ inline constexpr AchievementData achievementData[] = {
     {"Double-Slit Experiment", "Improve Unicat cooldown 12 times."},
 
     {"Lunar Leash", "Improve Unicat range once."},
-    {"Solr Spana", "Improve Unicat range 3 times."},
+    {"Solar Span", "Improve Unicat range 3 times."},
     {"Constellation Coverage", "Improve Unicat range 6 times."},
     {"Celestial Dominion", "Improve Unicat range 9 times."},
 
-    {"TODONAME", "Purchase the \"Transcendence\" permanent upgrade."},
-    {"TODONAME", "Purchase the \"Nova Expanse\" permanent upgrade."},
+    {"I Can See Forever", "Purchase the \"Transcendence\" permanent upgrade."},
+    {"Spirit Bomb", "Purchase the \"Nova Expanse\" permanent upgrade."},
 
     {"Chaos Catalyst", "Purchase your first Devilcat."},
     {"Demonic Delegation", "Purchase 5 Devilcats."},
@@ -102,14 +102,16 @@ inline constexpr AchievementData achievementData[] = {
     {"Carpet Bombing", "Improve Devilcat cooldown 9 times."},
     {"WOPR", "Improve Devilcat cooldown 12 times."},
 
-    // {"Infernal Reach", "Improve Devilcat range once."},
-    // {"Hellish Horizon", "Improve Devilcat range 3 times."},
-    // {"Satanic Span", "Improve Devilcat range 6 times."},
-    // {"Abyssal Ambition", "Improve Devilcat range 9 times."},
+    {"Infernal Reach", "Improve Devilcat range once."},
+    {"Hellish Horizon", "Improve Devilcat range 3 times."},
+    {"Satanic Span", "Improve Devilcat range 6 times."},
+    {"Abyssal Ambition", "Improve Devilcat range 9 times."},
 
     {"Boom", "Improve Devilcat explosion radius once."},
     {"Boomer", "Improve Devilcat explosion radius 5 times."},
     {"Boomest", "Improve Devilcat explosion radius 10 times."},
+
+    {"Rebirth By Fire", "Purchase the \"Hellsinged\" permanent upgrade."},
 
     {"I Am A Leaf On The Wind", "Purchase your first Astrocat."},
     {"Engage", "Purchase 5 Astrocats."},
@@ -433,7 +435,30 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Improve Engicat buff multiplier 10 times."},
     {"TODONAME", "Improve Engicat buff multiplier 14 times."},
 
+    {"TODONAME", "Improve Repulsocat range once."},
+    {"TODONAME", "Improve Repulsocat range 3 times."},
+    {"TODONAME", "Improve Repulsocat range 6 times."},
+    {"TODONAME", "Improve Repulsocat range 9 times."},
+
+    {"TODONAME", "Purchase the \"Repulsion Filter\" permanent upgrade."},
+    {"TODONAME", "Purchase the \"Conversion Field\" permanent upgrade."},
+
+    {"TODONAME", "Improve Repulsocat conversion chance once."},
+    {"TODONAME", "Improve Repulsocat conversion chance 4 times."},
+    {"TODONAME", "Improve Repulsocat conversion chance 8 times."},
+    {"TODONAME", "Improve Repulsocat conversion chance 12 times."},
+    {"TODONAME", "Improve Repulsocat conversion chance 16 times."},
+
+    {"TODONAME", "Improve Attractocat range once."},
+    {"TODONAME", "Improve Attractocat range 3 times."},
+    {"TODONAME", "Improve Attractocat range 6 times."},
+    {"TODONAME", "Improve Attractocat range 9 times."},
+
+    {"TODONAME", "Purchase the \"Attraction Filter\" permanent upgrade."},
+
     {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
+    {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
+    {"Wasted Effort", "Perform a voodoo ritual with no cats around.", /* secret */ true},
 };
 
 ////////////////////////////////////////////////////////////
