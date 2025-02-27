@@ -45,8 +45,8 @@ inline constexpr EXACT_ARRAY(
         "Spells",  // Wizard
         "Clicks",  // Mouse
         "Boosts",  // Engi
-        "TODO P1",    // Repulso
-        "TODO P1",    // Attracto
+        "N/A",     // Repulso
+        "N/A",     // Attracto
     });
 
 ////////////////////////////////////////////////////////////
