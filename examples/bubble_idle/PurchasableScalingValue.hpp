@@ -13,47 +13,39 @@ struct [[nodiscard]] PurchasableScalingValue
     sf::base::SizeT nPurchases = 0u;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr float nextCost() const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float costAt(const sf::base::SizeT n) const
     {
-        return data->cost.computeGrowth(static_cast<float>(nPurchases));
+        return data->cost.computeGrowth(static_cast<float>(n));
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] inline constexpr float currentValue() const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float valueAt(const sf::base::SizeT n) const
     {
-        return data->value.computeGrowth(static_cast<float>(nPurchases));
+        return data->value.computeGrowth(static_cast<float>(n));
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr auto maxSubsequentPurchases(const MoneyType money) const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float nextCost() const
     {
-        struct Result
-        {
-            sf::base::SizeT times    = 0u;
-            MoneyType       maxCost  = 0u;
-            MoneyType       nextCost = 0u;
-        } result;
+        return costAt(nPurchases);
+    }
 
-        MoneyType       cumulative = 0;
-        sf::base::SizeT i          = nPurchases;
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float currentValue() const
+    {
+        return valueAt(nPurchases);
+    }
 
-        // Try to purchase as many subsequent upgrades as possible.
-        for (; i < data->nMaxPurchases; ++i)
-        {
-            const auto currentCost = static_cast<MoneyType>(data->cost.computeGrowth(static_cast<float>(i)));
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline constexpr float cumulativeCostBetween(
+        const sf::base::SizeT nStart /* inclusive */,
+        const sf::base::SizeT nEnd /* exclusive */) const
+    {
+        float totalCost = 0.f;
 
-            if (cumulative + currentCost > money)
-                break;
+        for (sf::base::SizeT i = nStart; i < nEnd; ++i)
+            totalCost += data->cost.computeGrowth(static_cast<float>(i));
 
-            cumulative += currentCost;
-            ++result.times;
-            result.maxCost = cumulative;
-        }
-
-        // If further purchases are possible, compute the cost for one more.
-        if (nPurchases < data->nMaxPurchases)
-            result.nextCost = cumulative + static_cast<MoneyType>(data->cost.computeGrowth(static_cast<float>(i)));
-
-        return result;
+        return totalCost;
     }
 };

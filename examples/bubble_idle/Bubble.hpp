@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BubbleType.hpp"
+#include "Countdown.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -14,6 +15,9 @@ struct [[nodiscard]] Bubble
     float radius; // TODO P2: if these three members are turned into U8 struct size goes from 32 to 20
     float rotation;
     float hueMod;
+
+    Countdown repelledCountdown;
+    Countdown attractedCountdown;
 
     BubbleType type;
 
