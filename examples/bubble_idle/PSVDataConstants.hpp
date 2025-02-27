@@ -71,7 +71,7 @@ inline constexpr PSVData catDevilCooldownMult //
 
 inline constexpr PSVData catDevilRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 850'000.f, .exponential = 1.85f},
+     .cost          = {.initial = 50'000'000.f, .exponential = 1.75f},
      .value         = {.initial = 0.6f, .multiplicative = -0.045f, .exponential = 0.85f, .flat = 0.4f}};
 
 inline constexpr PSVData catWitch //
@@ -201,9 +201,9 @@ inline constexpr PSVData engiCatGlobalBonusMult //
      .value         = {.initial = 1.25f, .linear = 0.125f}};
 
 inline constexpr PSVData repulsoCatConverterChance //
-    {.nMaxPurchases = 19u,
-     .cost          = {.initial = 128.f, .linear = 64.f, .exponential = 1.5f},
-     .value         = {.initial = 5.f, .linear = 5.f}};
+    {.nMaxPurchases = 16u,
+     .cost          = {.initial = 128.f, .linear = 32.f, .exponential = 1.35f},
+     .value         = {.initial = 6.f, .linear = 5.875f}};
 
 inline constexpr PSVData witchCatBuffDuration //
     {.nMaxPurchases = 12u,

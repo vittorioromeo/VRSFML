@@ -10,7 +10,9 @@
 #include "Constants.hpp"
 #include "ControlFlow.hpp"
 #include "Countdown.hpp"
+#include "Doll.hpp"
 #include "Easing.hpp"
+#include "HellPortal.hpp"
 #include "HueColor.hpp"
 #include "ImGuiNotify.hpp"
 #include "MathUtils.hpp"
@@ -387,12 +389,15 @@ struct Main
     sf::FloatRect txrUniCat{addImgResourceToAtlas("unicat.png")};
     sf::FloatRect txrUniCat2{addImgResourceToAtlas("unicat2.png")};
     sf::FloatRect txrDevilCat{addImgResourceToAtlas("devilcat.png")};
+    sf::FloatRect txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
     sf::FloatRect txrCatPaw{addImgResourceToAtlas("catpaw.png")};
     sf::FloatRect txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
     sf::FloatRect txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
+    sf::FloatRect txrDevilCatPaw2{addImgResourceToAtlas("devilcatpaw2.png")};
     sf::FloatRect txrParticle{addImgResourceToAtlas("particle.png")};
     sf::FloatRect txrStarParticle{addImgResourceToAtlas("starparticle.png")};
     sf::FloatRect txrFireParticle{addImgResourceToAtlas("fireparticle.png")};
+    sf::FloatRect txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
     sf::FloatRect txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
     sf::FloatRect txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
     sf::FloatRect txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
@@ -415,6 +420,7 @@ struct Main
     sf::FloatRect txrDoll{addImgResourceToAtlas("doll.png")};
     sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
     sf::FloatRect txrCatSoul{addImgResourceToAtlas("catsoul.png")};
+    sf::FloatRect txrHellPortal{addImgResourceToAtlas("hellportal.png")};
 
     ///////////////////////////////////////////////////////////
     const sf::FloatRect particleRects[nParticleTypes] = {
@@ -427,6 +433,7 @@ struct Main
         txrCogParticle,
         txrCoin,
         txrCatSoul,
+        txrFireParticle2,
     };
 
     ///////////////////////////////////////////////////////////
@@ -452,6 +459,10 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Buy combo reminder secret achievement
     int buyReminder = 0;
+
+    ////////////////////////////////////////////////////////////
+    // Wasted effort ritual secret achievement
+    bool wastedEffort = false;
 
     ////////////////////////////////////////////////////////////
     // HUD money text
@@ -663,6 +674,10 @@ struct Main
     bool debugHideUI = false;
 
     ////////////////////////////////////////////////////////////
+    // Steam manager
+    hg::Steam::SteamManager& steamMgr;
+
+    ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
     {
         pt.money += reward;
@@ -834,6 +849,12 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void statHellPortalRevenue(const MoneyType reward)
+    {
+        withAllStats([&](Stats& stats) { stats.hellPortalRevenue += reward; });
+    }
+
+    ////////////////////////////////////////////////////////////
     void statSecondsPlayed()
     {
         withAllStats([&](Stats& stats) { stats.secondsPlayed += 1u; });
@@ -935,14 +956,18 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void forEachBubbleInRadius(const sf::Vector2f center, const float radius, auto&& func)
+    void forEachBubbleInRadiusSquared(const sf::Vector2f center, const float radiusSq, auto&& func)
     {
-        const float radiusSq = radius * radius;
-
         for (Bubble& bubble : pt.bubbles)
             if ((bubble.position - center).lengthSquared() <= radiusSq)
                 if (func(bubble) == ControlFlow::Break)
                     break;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void forEachBubbleInRadius(const sf::Vector2f center, const float radius, auto&& func)
+    {
+        forEachBubbleInRadiusSquared(center, radius * radius, func);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1201,6 +1226,38 @@ Pops bubbles or bombs. Smart enough to prioritizes bombs and star bubbles over n
 We do not speak of the tuition fees.)";
             }
 
+            const char* catUniTooltip = R"(
+~~ Unicat ~~
+
+Imbued with the power of stars and rainbows, transforms bubbles into star bubbles, worth x15 more.
+
+Must have eaten something they weren't supposed to, because they keep changing color.
+)";
+
+            if (pt.perm.unicatTranscendencePurchased)
+                catUniTooltip = R"(
+~~ Transcended Unicat ~~
+
+Imbued with the power of the void, transforms bubbles into nova bubbles, worth x50 more.
+
+Radiates a somewhat creepy energy.
+)";
+
+            const char* catDevilTooltip = R"(
+~~ Devilcat ~~
+
+Hired diplomat of the NB (NOBUBBLES) political party. Convinces bubbles to turn into bombs and explode for the rightful cause.
+
+Bubbles caught in explosions are worth x10 more.)";
+
+            if (pt.perm.devilcatHellsingedPurchased)
+                catDevilTooltip = R"(
+~~ Hellsinged Devilcat ~~
+
+Sold their soul to the devil. Opens up portals to hells that absorb bubbles with a x50 multiplier.
+
+From politician to demon... the NB (NOBUBBLES) party is truly a mystery.)";
+
             const char* catAstroTooltip = R"(
 ~~ Astrocat ~~
 
@@ -1221,17 +1278,8 @@ Finally financed by the NB (NOBUBBLES) political party to inspire other cats to 
 
             const char* catTooltipsByType[]{
                 catNormalTooltip,
-                R"(
-~~ Unicat ~~
-
-Imbued with the power of stars and rainbows, transforms bubbles (or bombs) into star bubbles, worth x15 more.
-
-Must have eaten something they weren't supposed to, because they keep changing color.
-)",
-                R"(
-~~ Devilcat ~~
-
-Hired diplomat of the NB (NOBUBBLES) political party. Convinces bubbles to turn into bombs and explode for the rightful cause. Bubbles caught in explosions are worth x10 more.)",
+                catUniTooltip,
+                catDevilTooltip,
                 catAstroTooltip,
                 R"(
 ~~ Witchcat ~~
@@ -1288,7 +1336,7 @@ Continuously attracts bubbles with their huge magnet, because soap is definitely
 
 Bubbles being attracted by Attractocat are worth x2 more.
 
-Using prestige points, the magnet can be upgraded to filter specific bubble types. TODO P0: and increase value of bombs perhaps?
+Using prestige points, the magnet can be upgraded to filter specific bubble types.
 )",
             };
 
@@ -2133,14 +2181,19 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         /* maxPrestigeLevel */ 1);
             }
 
-            std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
-            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
-            makePSVButton("- Explosion radius", pt.psvExplosionRadiusMult);
+            if (!pt.perm.devilcatHellsingedPurchased)
+            {
+                std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
+                std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
+                makePSVButton("- Explosion radius", pt.psvExplosionRadiusMult);
+            }
 
             if (catDevilUpgradesUnlocked)
             {
                 makeCooldownButton("- cooldown", CatType::Devil);
-                // makeRangeButton("- range", CatType::Devil);
+
+                if (pt.perm.devilcatHellsingedPurchased)
+                    makeRangeButton("- range", CatType::Devil);
             }
 
             ImGui::Separator();
@@ -2656,9 +2709,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
         }
 
-        // TODO P1: devilcat prestiges?
-
-        if (pt.psvBubbleValue.nPurchases >= 5)
+        if (pt.psvBubbleValue.nPurchases >= 3)
         {
             ImGui::Separator();
 
@@ -2677,13 +2728,30 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             if (pt.perm.unicatTranscendencePurchased)
             {
                 std::sprintf(uiTooltipBuffer,
-                             "Unicats can now transform all bubbles in range at once. Also unlocks unicat range "
+                             "Unicats can now transform all bubbles in range at once. Also unlocks Unicat range "
                              "upgrades.");
                 uiLabelBuffer[0] = '\0';
 
                 if (makePurchasablePPButtonOneTime("- nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
                     doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
             }
+        }
+
+        if (pt.psvBubbleValue.nPurchases >= 3)
+        {
+            ImGui::Separator();
+
+            ImGui::Columns(1);
+            ImGui::Text("Devilcats");
+            uiBeginColumns();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Devilcats become touched by the flames of hell, opening stationary portals that teleport "
+                         "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
+            uiLabelBuffer[0] = '\0';
+
+            if (makePurchasablePPButtonOneTime("- hellsinged", 176u, pt.perm.devilcatHellsingedPurchased))
+                doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
         }
 
         if (pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3)
@@ -2742,8 +2810,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             std::sprintf(uiTooltipBuffer,
                          "The duration of Witchcat buffs scales with the number of cats that were in range while "
-                         "the "
-                         "ritual was performed.");
+                         "the ritual was performed.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("- Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
 
@@ -2886,6 +2953,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
                 makePrestigePurchasablePPButtonPSV("- Conversion chance", pt.psvPPRepulsoCatConverterChance);
             }
+
+            // TODO P0: nova upgrade
         }
 
         if (pt.perm.shrineCompletedOnceByType[asIdx(CatType::Attracto)])
@@ -2925,27 +2994,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::SetWindowFontScale(uiNormalFontScale);
                 uiBeginColumns();
             }
-
-            /* TODO P0:
-            std::sprintf(uiTooltipBuffer,
-                         "The Repulsocat does some more weird science to its magnet, giving it a chance to convert "
-                         "repelled bubbles to star bubbles.");
-            uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Conversion field", 256u, pt.attractoCatConverterPurchased);
-
-            if (pt.attractoCatConverterPurchased)
-            {
-                ImGui::SetWindowFontScale(uiSubBulletFontScale);
-         uiCheckbox("enable ##attractoconv", &pt.attractoCatConverterEnabled);
-                ImGui::SetWindowFontScale(uiNormalFontScale);
-                ImGui::NextColumn();
-                ImGui::NextColumn();
-
-                std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance.");
-                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
-                makePrestigePurchasablePPButtonPSV("- Conversion chance", pt.psvPPRepulsoCatConverterChance);
-            }
-            */
         }
 
         uiButtonHueMod = 0.f;
@@ -3353,6 +3401,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Text("By cats: $%s", toStringWithSeparators(bubblesPoppedRevenue - bubblesHandPoppedRevenue));
             ImGui::Text("Bombs:  $%s", toStringWithSeparators(stats.explosionRevenue));
             ImGui::Text("Flights: $%s", toStringWithSeparators(stats.flightRevenue));
+            ImGui::Text("Portals: $%s", toStringWithSeparators(stats.hellPortalRevenue));
             ImGui::Unindent();
 
             ImGui::Columns(1);
@@ -4035,6 +4084,29 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             psvScalarInput("PPEngiCatGlobalBonusMult", pt.psvPPEngiCatGlobalBonusMult);
             psvScalarInput("PPRepulsoCatConverterChance", pt.psvPPRepulsoCatConverterChance);
 
+            ImGui::Separator();
+
+            ImGui::Checkbox("starterPackPurchased", &pt.perm.starterPackPurchased);
+            ImGui::Checkbox("multiPopPurchased", &pt.perm.multiPopPurchased);
+            ImGui::Checkbox("smartCatsPurchased", &pt.perm.smartCatsPurchased);
+            ImGui::Checkbox("geniusCatsPurchased", &pt.perm.geniusCatsPurchased);
+            ImGui::Checkbox("windPurchased", &pt.perm.windPurchased);
+            ImGui::Checkbox("astroCatInspirePurchased", &pt.perm.astroCatInspirePurchased);
+            ImGui::Checkbox("starpawConversionIgnoreBombs", &pt.perm.starpawConversionIgnoreBombs);
+            ImGui::Checkbox("starpawNova", &pt.perm.starpawNova);
+            ImGui::Checkbox("repulsoCatFilterPurchased", &pt.perm.repulsoCatFilterPurchased);
+            ImGui::Checkbox("repulsoCatConverterPurchased", &pt.perm.repulsoCatConverterPurchased);
+            ImGui::Checkbox("attractoCatFilterPurchased", &pt.perm.attractoCatFilterPurchased);
+            ImGui::Checkbox("witchCatBuffPowerScalesWithNCats", &pt.perm.witchCatBuffPowerScalesWithNCats);
+            ImGui::Checkbox("witchCatBuffPowerScalesWithMapSize", &pt.perm.witchCatBuffPowerScalesWithMapSize);
+            ImGui::Checkbox("witchCatBuffFewerDolls", &pt.perm.witchCatBuffFewerDolls);
+            ImGui::Checkbox("witchCatBuffFlammableDolls", &pt.perm.witchCatBuffFlammableDolls);
+            ImGui::Checkbox("witchCatBuffOrbitalDolls", &pt.perm.witchCatBuffOrbitalDolls);
+            ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &pt.perm.wizardCatDoubleMewltiplierDuration);
+            ImGui::Checkbox("unicatTranscendencePurchased", &pt.perm.unicatTranscendencePurchased);
+            ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt.perm.unicatTranscendenceAOEPurchased);
+            ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
+
             ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::PopFont();
 
@@ -4408,9 +4480,18 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
             }
+
+            if (!pt.hellPortals.empty())
+            {
+                const auto cPos = pt.hellPortals.back().position;
+                pt.hellPortals.pop_back();
+
+                spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                playReversePopAt(cPos);
+            }
         }
 
-        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty();
+        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty() && pt.hellPortals.empty();
 
         // Reset map extension and scroll, and remove bubbles outside of view
         if (gameElementsRemoved)
@@ -4763,28 +4844,43 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
         const auto range       = pt.getComputedRangeByCatType(cat.type);
 
-        Bubble* b = pickRandomBubbleInRadius(getCatRangeCenter(cat), range);
-        if (b == nullptr)
-            return;
+        if (!pt.perm.devilcatHellsingedPurchased)
+        {
+            Bubble* b = pickRandomBubbleInRadius(getCatRangeCenter(cat), range);
+            if (b == nullptr)
+                return;
 
-        Bubble& bubble = *b;
+            Bubble& bubble = *b;
 
-        cat.pawPosition = bubble.position;
-        cat.pawOpacity  = 255.f;
-        cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
+            cat.pawPosition = bubble.position;
+            cat.pawOpacity  = 255.f;
+            cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
-        bubble.type = BubbleType::Bomb;
+            bubble.type = BubbleType::Bomb;
 
-        const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
-        const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt.cats.data());
+            const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
+            const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt.cats.data());
 
-        bombIdxToCatIdx[bubbleIdx] = catIdx;
+            bombIdxToCatIdx[bubbleIdx] = catIdx;
 
-        bubble.velocity.y += rng.getF(0.1f, 0.2f);
-        sounds.makeBomb.setPosition({bubble.position.x, bubble.position.y});
-        playSound(sounds.makeBomb);
+            bubble.velocity.y += rng.getF(0.1f, 0.2f);
+            sounds.makeBomb.setPosition({bubble.position.x, bubble.position.y});
+            playSound(sounds.makeBomb);
 
-        spawnParticles(8, bubble.position, ParticleType::Fire, 1.25f, 0.35f);
+            spawnParticles(8, bubble.position, ParticleType::Fire, 1.25f, 0.35f);
+        }
+        else
+        {
+            const auto portalPos = getCatRangeCenter(cat);
+
+            pt.hellPortals.push_back({
+                .position = portalPos,
+                .life     = Countdown{.value = 1750.f},
+            });
+
+            sounds.makeBomb.setPosition({portalPos.x, portalPos.y});
+            playSound(sounds.portalon);
+        }
 
         cat.textStatusShakeEffect.bump(rng, 1.5f);
         ++cat.hits;
@@ -4954,6 +5050,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 pt.dollTipShown = true;
                 doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
             }
+        }
+        else
+        {
+            wastedEffort = true;
         }
 
         cat.cooldown.value = maxCooldown;
@@ -5353,6 +5453,46 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (cat.type == CatType::Uni)
                 cat.hue += deltaTimeMs * (pt.perm.unicatTranscendencePurchased ? 0.25f : 0.1f);
+
+            if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
+            {
+                if (rng.getF(0.f, 1.f) > 0.75f)
+                {
+                    spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius + 15.f, +catRadius - 5.f),
+                                                                           catRadius - 20.f},
+                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .accelerationY = -0.0015f,
+                                   .opacity       = 255.f,
+                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f),
+                                   .rotation      = rng.getF(0.f, sf::base::tau),
+                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                  /* hue */ 0.f,
+                                  ParticleType::Fire2);
+
+                    spawnParticle({.position      = drawPosition + sf::Vector2f{-42.f * 0.2f, -85.f * 0.2f},
+                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .accelerationY = -0.0015f,
+                                   .opacity       = 255.f,
+                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
+                                   .rotation      = rng.getF(0.f, sf::base::tau),
+                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                  /* hue */ 0.f,
+                                  ParticleType::Fire2);
+
+                    spawnParticle({.position      = drawPosition + sf::Vector2f{-130.f * 0.2f, -90.f * 0.2f},
+                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .accelerationY = -0.0015f,
+                                   .opacity       = 255.f,
+                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
+                                   .rotation      = rng.getF(0.f, sf::base::tau),
+                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                  /* hue */ 0.f,
+                                  ParticleType::Fire2);
+                }
+            }
 
             if (cat.type == CatType::Astro && cat.astroState.hasValue())
             {
@@ -6043,6 +6183,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                             // TODO P0: ??? something with wind? or stop bubbles from falling? blows special bubbles
                        from below? case CatType::Attracto:
                             // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
+                        // TODO P0: change devilcat after portal upgrade
                     */
 
                     collectDoll(d);
@@ -6062,6 +6203,35 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         }
 
         sf::base::vectorEraseIf(pt.dolls, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateHellPortals(const float deltaTimeMs)
+    {
+        const float hellPortalRadius = pt.getComputedRangeByCatType(CatType::Devil);
+
+        for (HellPortal& hp : pt.hellPortals)
+        {
+            if (hp.life.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            {
+                sounds.makeBomb.setPosition({hp.position.x, hp.position.y});
+                playSound(sounds.portaloff);
+            }
+
+            spawnParticle({.position = hp.getDrawPosition() +
+                                       rng.getRandomDirection() * rng.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
+                           .velocity      = rng.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
+                           .scale         = rng.getF(0.08f, 0.27f) * 0.85f,
+                           .accelerationY = 0.f,
+                           .opacity       = 255.f,
+                           .opacityDecay  = rng.getF(0.00155f, 0.0145f),
+                           .rotation      = rng.getF(0.f, sf::base::tau),
+                           .torque        = rng.getF(-0.002f, 0.002f)},
+                          /* hue */ 0.f,
+                          ParticleType::Fire2);
+        }
+
+        sf::base::vectorEraseIf(pt.hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
     }
 
     ////////////////////////////////////////////////////////////
@@ -6253,6 +6423,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             const auto achievementId = nextId++;
 
+            if (steamMgr.isInitialized() && condition)
+                steamMgr.unlockAchievement(achievementId);
+
             if (profile.unlockedAchievements[achievementId] || !condition)
                 return;
 
@@ -6355,14 +6528,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 12);
 
-        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
-        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
-        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
-        // unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
 
         unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 1);
         unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 5);
         unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 10);
+
+        unlockIf(pt.perm.devilcatHellsingedPurchased);
 
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 1);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 5);
@@ -6697,9 +6872,30 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 10);
         unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 14);
 
-        unlockIf(buyReminder >= 5); // Secret
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 1);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 3);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 6);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 9);
 
-        // TODO P0: all repulsocat and attractocat achievements
+        unlockIf(pt.perm.repulsoCatFilterPurchased);
+        unlockIf(pt.perm.repulsoCatConverterPurchased);
+
+        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 1);
+        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 4);
+        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 8);
+        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 12);
+        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 16);
+
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 1);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 3);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 6);
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 9);
+
+        unlockIf(pt.perm.attractoCatFilterPurchased);
+
+        unlockIf(buyReminder >= 5); // Secret
+        unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
+        unlockIf(wastedEffort);
     }
 
     ////////////////////////////////////////////////////////////
@@ -6760,14 +6956,17 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                                   : pt.perm.smartCatsPurchased ? &txrSmartCat
                                                                                : &txrCat;
 
-        const sf::FloatRect* const unicatTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2 : &txrUniCat;
+        const sf::FloatRect* const uniCatTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2 : &txrUniCat;
+
+        const sf::FloatRect* const devilCatTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCat2 : &txrDevilCat;
+        const sf::FloatRect* const devilCatPawTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCatPaw2 : &txrDevilCatPaw;
 
         const sf::FloatRect* const astroCatTxr = pt.perm.astroCatInspirePurchased ? &txrAstroCatWithFlag : &txrAstroCat;
 
         const sf::FloatRect* const catTxrsByType[] = {
             normalCatTxr, // Normal
-            unicatTxr,    // Uni
-            &txrDevilCat, // Devil
+            uniCatTxr,    // Uni
+            devilCatTxr,  // Devil
             astroCatTxr,  // Astro
 
             &txrWitchCat,    // Witch
@@ -6781,10 +6980,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
 
         const sf::FloatRect* const catPawTxrsByType[] = {
-            &txrCatPaw,      // Normal
-            &txrUniCatPaw,   // Uni
-            &txrDevilCatPaw, // Devil
-            &txrWhiteDot,    // Astro
+            &txrCatPaw,     // Normal
+            &txrUniCatPaw,  // Uni
+            devilCatPawTxr, // Devil
+            &txrWhiteDot,   // Astro
 
             &txrWitchCatPaw,    // Witch
             &txrWizardCatPaw,   // Wizard
@@ -6916,6 +7115,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (profile.showCatText)
             {
+                // TODO P2: move to member data
                 static thread_local std::string catNameBuffer;
                 catNameBuffer.clear();
 
@@ -6938,9 +7138,25 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 // Status text
                 if (cat.type != CatType::Repulso && cat.type != CatType::Attracto)
                 {
-                    std::string actionString = std::to_string(cat.hits) + " " + CatConstants::actionNames[asIdx(cat.type)];
+                    const char* actionName = CatConstants::actionNames[asIdx(cat.type)];
+
+                    if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
+                        actionName = "Portals";
+
+                    // TODO P2: move to member data
+                    static thread_local std::string actionString;
+                    actionString.clear();
+
+                    actionString += std::to_string(cat.hits);
+                    actionString += " ";
+                    actionString += actionName;
+
                     if (cat.type == CatType::Mouse)
-                        actionString += " (x" + std::to_string(pt.mouseCatCombo + 1) + ")";
+                    {
+                        actionString += " (x";
+                        actionString += std::to_string(pt.mouseCatCombo + 1);
+                        actionString += ")";
+                    }
 
                     textStatusBuffer.setString(actionString);
                     textStatusBuffer.position = cat.position.addY(68.f);
@@ -7099,6 +7315,33 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                            .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
                            .textureRect = txrDoll,
                            .color       = hueColor(doll.hue, dollAlpha)});
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawHellPortals()
+    {
+        const float hellPortalRadius = pt.getComputedRangeByCatType(CatType::Devil);
+
+        for (HellPortal& hp : pt.hellPortals)
+        {
+            float scaleMult = 1.f;
+            if (hp.life.value > 1500.f)
+            {
+                scaleMult = easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f));
+            }
+            else if (hp.life.value < 250.f)
+            {
+                scaleMult = easeOutBack(remap(hp.life.value, 0.f, 250.f, 0.f, 1.f));
+            }
+
+            cpuDrawableBatch.add(
+                sf::Sprite{.position    = hp.getDrawPosition(),
+                           .scale       = sf::Vector2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
+                           .origin      = txrHellPortal.size / 2.f,
+                           .rotation    = sf::radians(hp.life.value / 200.f),
+                           .textureRect = txrHellPortal,
+                           .color       = sf::Color::White});
         }
     }
 
@@ -7545,6 +7788,40 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    void gameLoopUpdateCollisionsBubbleHellPortal()
+    {
+        const float hellPortalRadius        = pt.getComputedRangeByCatType(CatType::Devil) * 1.25f;
+        const float hellPortalRadiusSquared = hellPortalRadius * hellPortalRadius;
+
+        for (HellPortal& hellPortal : pt.hellPortals)
+        {
+            Cat* linkedCat = pt.cats.size() > hellPortal.catIdx ? &pt.cats[hellPortal.catIdx] : nullptr;
+
+            forEachBubbleInRadiusSquared(hellPortal.position,
+                                         hellPortalRadiusSquared,
+                                         [&](Bubble& bubble)
+            {
+                const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                            /* multiplier */ 50.f,
+                                                            /* comboMult  */ 1.f,
+                                                            /* popperCat  */ linkedCat);
+
+                statHellPortalRevenue(reward);
+
+                popWithRewardAndReplaceBubble(reward,
+                                              bubble,
+                                              /* combo */ 1,
+                                              /* popSoundOverlap */ rng.getF(0.f, 1.f) > 0.75f,
+                                              /* popperCat */ linkedCat);
+
+                linkedCat->textStatusShakeEffect.bump(rng, 1.5f);
+
+                return ControlFlow::Continue;
+            });
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateScreenShake(const float deltaTimeMs)
     {
         if (screenShakeTimer > 0.f)
@@ -7899,6 +8176,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoop()
     {
+        steamMgr.runCallbacks();
+
         if (!gameLoopRecreateWindowIfNeeded())
             return false;
 
@@ -8072,6 +8351,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         gameLoopUpdateCollisionsCatCat(deltaTimeMs);
         gameLoopUpdateCollisionsCatShrine(deltaTimeMs);
         gameLoopUpdateCollisionsCatDoll();
+        gameLoopUpdateCollisionsBubbleHellPortal();
 
         //
         // Update cats, shrines, dolls, buffs, and magic
@@ -8079,6 +8359,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         gameLoopUpdateCatActions(deltaTimeMs);
         gameLoopUpdateShrines(deltaTimeMs);
         gameLoopUpdateDolls(deltaTimeMs, mousePos);
+        gameLoopUpdateHellPortals(deltaTimeMs);
         gameLoopUpdateWitchBuffs(deltaTimeMs);
         gameLoopUpdateMana(deltaTimeMs);
 
@@ -8171,6 +8452,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         // Draw cats, shrines, dolls, particles, and text particles
         cpuDrawableBatch.clear();
         catTextDrawableBatch.clear();
+        gameLoopDrawHellPortals();
         gameLoopDrawCats(mousePos, deltaTimeMs);
         gameLoopDrawShrines(mousePos);
         gameLoopDrawDolls(mousePos);
@@ -8368,7 +8650,7 @@ void main()
     }
 
     ////////////////////////////////////////////////////////////
-    Main()
+    Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr)
     {
         //
         // Profile
@@ -8436,9 +8718,44 @@ void main()
 ////////////////////////////////////////////////////////////
 int main()
 {
-    hg::Steam::SteamManager steamMgr;
+#if 0
+    std::vector<std::string> apinames;
+    std::vector<std::string> displaynames;
+    std::vector<std::string> descriptions;
 
-    Main{}.run();
+    int idx = 0;
+    for (const auto& [name, description, secret] : achievementData)
+    {
+        apinames.emplace_back("ACH_" + std::to_string(idx));
+        displaynames.emplace_back(name);
+        descriptions.emplace_back(description);
+
+        std::cout << "ACH_" << idx << "\t" << name << "\t" << description << "\n";
+
+        ++idx;
+    }
+
+    std::cout << "const apinames = [\n";
+    for (const auto& name : apinames)
+        std::cout << "`" << name << "`, \n";
+    std::cout << "];\n\n";
+
+    std::cout << "const displaynames = [\n";
+    for (const auto& name : displaynames)
+        std::cout << "`" << name << "`, \n";
+    std::cout << "];\n\n";
+
+    std::cout << "const descriptions = [\n";
+    for (const auto& name : descriptions)
+        std::cout << "`" << name << "`, \n";
+    std::cout << "];\n\n";
+#endif
+
+    hg::Steam::SteamManager steamMgr;
+    steamMgr.requestStatsAndAchievements();
+    steamMgr.runCallbacks();
+
+    Main{steamMgr}.run();
 }
 
 // TODO:
@@ -8448,7 +8765,6 @@ int main()
 // - pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // - crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x multiplier
 // with corrupted zalgo names
-// - some prestige upgrade for devilcats, maybe make bombs transformable by unicats
 // - prestige 8 (first prestige where repulsion shrine is required) takes too long
 // - maybe 64PP prestige buff for multipop that allows "misses"
 // - rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also
