@@ -4,6 +4,7 @@
 #include "Bubble.hpp"
 #include "Cat.hpp"
 #include "Countdown.hpp"
+#include "HellPortal.hpp"
 #include "Milestones.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
@@ -91,6 +92,10 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Doll, position, wobbleRadians, hue, buffPower, catType, tcActivation, tcDeath);
+
+////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(modernize-use-constraints)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HellPortal, position, life);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -230,6 +235,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     revenueHandByType,
     explosionRevenue,
     flightRevenue,
+    hellPortalRevenue,
     highestStarBubblePopCombo,
     highestNovaBubblePopCombo,
     nAbsorbedStarBubbles,
@@ -346,7 +352,8 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     unsealedByType,
     wizardCatDoubleMewltiplierDuration,
     unicatTranscendencePurchased,
-    unicatTranscendenceAOEPurchased);
+    unicatTranscendenceAOEPurchased,
+    devilcatHellsingedPurchased);
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
@@ -411,6 +418,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     cats,
     shrines,
     dolls,
+    hellPortals,
 
     nShrinesCompleted,
 
