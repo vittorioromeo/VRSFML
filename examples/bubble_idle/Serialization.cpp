@@ -74,7 +74,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cat::AstroState, startX, velocityX, particleT
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     Cat,
 
-  //  spawnEffectTimer,
+    //  spawnEffectTimer,
     type,
     position,
     wobbleRadians,
@@ -258,11 +258,11 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
     tenDevilcats,
     tenAstrocats,
 
-    prestigeLevel1,
     prestigeLevel2,
     prestigeLevel3,
     prestigeLevel4,
     prestigeLevel5,
+    prestigeLevel6,
     prestigeLevel10,
     prestigeLevel15,
     prestigeLevel20,
