@@ -111,7 +111,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_STR "v0.0.9"
+#define BUBBLEBYTE_VERSION_STR "v0.0.10"
 
 
 namespace
