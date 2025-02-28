@@ -24,12 +24,23 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vector2f, x, y);
+template <typename T>
+// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
+void to_json(nlohmann::json& j, const Vector2<T>& p)
+{
+    j[0] = p.x;
+    j[1] = p.y;
+}
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Vector2u, x, y);
+template <typename T>
+// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
+void from_json(const nlohmann::json& j, Vector2<T>& p)
+{
+    p.x = j[0].get<T>();
+    p.y = j[1].get<T>();
+}
 
 } // namespace sf
 
@@ -61,6 +72,30 @@ void from_json(const nlohmann::json& j, Optional<T>& p)
 
 } // namespace sf::base
 
+
+////////////////////////////////////////////////////////////
+// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
+void to_json(nlohmann::json& j, const Bubble& p)
+{
+    j[0] = p.position;
+    j[1] = p.velocity;
+    j[2] = p.radius;
+    j[3] = p.rotation;
+    j[4] = p.type;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
+void from_json(const nlohmann::json& j, Bubble& p)
+{
+    p.position = j[0].get<decltype(p.position)>();
+    p.velocity = j[1].get<decltype(p.velocity)>();
+    p.radius   = j[2].get<decltype(p.radius)>();
+    p.rotation = j[3].get<decltype(p.rotation)>();
+    p.type     = j[4].get<decltype(p.type)>();
+}
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
