@@ -48,6 +48,7 @@ struct Sounds
     LoadedSound reversePop{"reversePop.ogg"};
     LoadedSound shine{"shine.ogg"};
     LoadedSound shine2{"shine2.ogg"};
+    LoadedSound shine3{"shine3.ogg"};
     LoadedSound click{"click2.ogg"};
     LoadedSound byteMeow{"bytemeow.ogg"};
     LoadedSound grab{"grab.ogg"};
@@ -107,6 +108,7 @@ struct Sounds
         setupWorldSound(reversePop);
         setupWorldSound(shine);
         setupWorldSound(shine2);
+        setupWorldSound(shine3);
         setupWorldSound(explosion);
         setupWorldSound(makeBomb);
         setupWorldSound(hex);
@@ -151,6 +153,7 @@ struct Sounds
         coin.setVolume(50.f);
         buffon.setVolume(65.f);
         buffoff.setVolume(65.f);
+        shine3.setVolume(25.f);
     }
 
     ////////////////////////////////////////////////////////////

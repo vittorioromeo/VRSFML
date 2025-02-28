@@ -111,7 +111,7 @@
 
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_STR "v0.0.10"
+#define BUBBLEBYTE_VERSION_STR "v0.0.12"
 
 
 namespace
@@ -340,6 +340,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // SFML fonts
     sf::Font fontSuperBakery{sf::Font::openFromFile("resources/superbakery.ttf", &textureAtlas).value()};
+    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/mouldycheese.ttf").value()};
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
@@ -536,6 +537,21 @@ struct Main
     // Combo state
     int       combo{0u};
     Countdown comboCountdown;
+
+    ////////////////////////////////////////////////////////////
+    // Accumulating combo effect and cursor combo text
+    int       comboNStars{0};
+    int       comboAccReward{0};
+    int       comboAccStarReward{0};
+    Countdown comboFailCountdown;
+
+    Countdown accComboDelay;
+    int       iComboAccReward{0};
+
+    Countdown accComboStarDelay;
+    int       iComboAccStarReward{0};
+
+    sf::Text cursorComboText{fontMouldyCheese, {.origin = {0.f, 0.f}, .characterSize = 48u, .outlineThickness = 4.f}};
 
     ////////////////////////////////////////////////////////////
     // Clock and accumulator for played time
@@ -3117,10 +3133,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    static void checkComboEnd(const float deltaTimeMs, int& xCombo, Countdown& xComboCountdown)
+    static bool checkComboEnd(const float deltaTimeMs, int& xCombo, Countdown& xComboCountdown)
     {
-        if (xComboCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
-            xCombo = 0;
+        if (xComboCountdown.updateAndStop(deltaTimeMs) != CountdownStatusStop::JustFinished)
+            return false;
+
+        xCombo = 0;
+        return true;
     }
 
     ////////////////////////////////////////////////////////////
@@ -3789,6 +3808,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             }
             ImGui::EndDisabled();
 
+            ImGui::Separator();
+
+            uiCheckbox("Accumulating combo effect", &profile.accumulatingCombo);
+            uiCheckbox("Show cursor combo text", &profile.showCursorComboText);
+
             ImGui::EndTabItem();
         }
 
@@ -4218,6 +4242,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vector2f fromWorldToHud(const sf::Vector2f point) const
+    {
+        // From game coordinates to screen coordinates
+        const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(point, gameView);
+
+        // From screen coordinates to HUD view coordinates
+        return getWindow().mapPixelToCoords(screenPos, scaledHUDView);
+    }
+
+    ////////////////////////////////////////////////////////////
     void popWithRewardAndReplaceBubble(const MoneyType reward, Bubble& bubble, int xCombo, bool popSoundOverlap, Cat* popperCat)
     {
         const bool byPlayerClick = popperCat == nullptr;
@@ -4249,6 +4283,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
         }
 
+        if (profile.accumulatingCombo && byPlayerClick && pt.comboPurchased &&
+            (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
+            comboNStars += 1;
+
         if (profile.showCoinParticles)
         {
             if (!collectedByShrine && profile.showCoinParticles)
@@ -4262,16 +4300,17 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                      .rotation      = rng.getF(0.f, sf::base::tau),
                      .torque        = 0.f});
 
-            // From game coordinates to screen coordinates
-            const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(bubble.position, gameView);
 
-            // From screen coordinates to HUD view coordinates
-            const sf::Vector2f hudPos = getWindow().mapPixelToCoords(screenPos, scaledHUDView);
+            const sf::Vector2f hudPos = fromWorldToHud(bubble.position);
 
-            if (!collectedByShrine && spawnEarnedCoinParticle(hudPos))
+            if ((!profile.accumulatingCombo || !pt.comboPurchased || !byPlayerClick) && !collectedByShrine &&
+                spawnEarnedCoinParticle(hudPos))
             {
                 sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
                                               getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
+
+                sounds.coindelay.setPitch(1.f);
+                sounds.coindelay.setVolume(50.f);
 
                 playSound(sounds.coindelay, /* maxOverlap */ 64);
             }
@@ -4811,7 +4850,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (firstBubble->position - cat.position).angle() + sf::degrees(45);
 
-            sounds.shine.setPosition({firstBubble->position.x, firstBubble->position.y});
+            sounds.shine2.setPosition({firstBubble->position.x, firstBubble->position.y});
             playSound(sounds.shine2);
         }
         else
@@ -7533,22 +7572,68 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         window.setMouseCursorVisible(!profile.highVisibilityCursor);
 
-        if (profile.highVisibilityCursor)
-        {
-            if (profile.multicolorCursor)
-            {
-                profile.cursorHue += deltaTimeMs * 0.5f;
-                profile.cursorHue = wrapHue(profile.cursorHue);
-            }
+        if (!profile.highVisibilityCursor)
+            return;
 
-            window.draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
-                        {.position = sf::Mouse::getPosition(window).toVector2f(),
-                         .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
-                                  ((1.f + easeInOutBack(cursorGrow)) * dpiScalingFactor),
-                         .origin = {5.f, 5.f},
-                         .color  = hueColor(wrapHue(profile.cursorHue), 255u)},
-                        {.shader = &shader});
+        if (profile.multicolorCursor)
+            profile.cursorHue += deltaTimeMs * 0.5f;
+
+        profile.cursorHue = wrapHue(profile.cursorHue);
+
+        window.draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
+                    {.position = sf::Mouse::getPosition(window).toVector2f(),
+                     .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
+                              ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
+                               dpiScalingFactor),
+                     .origin = {5.f, 5.f},
+                     .color  = hueColor(profile.cursorHue, 255u)},
+                    {.shader = &shader});
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawCursorComboText(const float deltaTimeMs, const float cursorGrow)
+    {
+        if (!pt.comboPurchased || !profile.showCursorComboText)
+            return;
+
+        auto& window = *optWindow;
+
+        static float alpha = 0.f;
+
+        if (combo >= 1)
+            alpha = 255.f;
+        else if (alpha > 0.f)
+            alpha -= deltaTimeMs * 0.5f;
+
+        const auto alphaU8 = static_cast<U8>(sf::base::clamp(alpha, 0.f, 255.f));
+
+        cursorComboText.position = sf::Mouse::getPosition(window).toVector2f() +
+                                   sf::Vector2f{30.f, 48.f} * profile.cursorScale * dpiScalingFactor;
+
+        cursorComboText.setFillColor(sf::Color::Black.withAlpha(alphaU8));
+        cursorComboText.setOutlineColor(sf::Color{111u, 170u, 244u}.withHueMod(profile.cursorHue).withAlpha(alphaU8));
+
+        if (combo > 0)
+            cursorComboText.setString("x" + std::to_string(combo + 1));
+
+        comboTextShakeEffect.applyToText(cursorComboText);
+
+        cursorComboText.scale *= (static_cast<float>(combo) * 0.65f) * cursorGrow * 0.3f;
+        cursorComboText.scale += {0.85f, 0.85f};
+        cursorComboText.scale += sf::Vector2f{1.f, 1.f} * comboFailCountdown.value / 325.f;
+        cursorComboText.scale *= profile.cursorScale * dpiScalingFactor;
+
+        const auto minScale = sf::Vector2f{0.25f, 0.25f} + sf::Vector2f{0.25f, 0.25f} * comboFailCountdown.value / 125.f;
+
+        cursorComboText.scale = cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
+
+        if (comboFailCountdown.value > 0.f)
+        {
+            cursorComboText.position += rng.getVec2f({-5.f, -5.f}, {5.f, 5.f});
+            cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
         }
+
+        window.draw(cursorComboText, {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7678,20 +7763,90 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCombo(const float                            deltaTimeMs,
                              const bool                             anyBubblePoppedByClicking,
+                             const sf::Vector2f                     mousePos,
                              const sf::base::Optional<sf::Vector2f> clickPosition)
     {
-        // Combo failure due to timer end
-        checkComboEnd(deltaTimeMs, combo, comboCountdown);
+        // Mousecat combo
         checkComboEnd(deltaTimeMs, pt.mouseCatCombo, pt.mouseCatComboCountdown);
 
-        // Combo failure due to missed click
+        // Combo failure countdown for red text effect
+        (void)comboFailCountdown.updateAndStop(deltaTimeMs);
+
+        // Player combo data
+        const auto playerLastCombo      = combo;
+        bool       playerJustEndedCombo = false;
+
+        // Player combo failure due to timer end
+        if (checkComboEnd(deltaTimeMs, combo, comboCountdown))
+            playerJustEndedCombo = true;
+
+
+        // Player combo failure due to missed click
         if (!anyBubblePoppedByClicking && clickPosition.hasValue())
         {
             if (combo > 1)
+            {
                 playSound(sounds.scratch);
+                comboFailCountdown.value = 250.f;
+            }
 
             combo                = 0;
             comboCountdown.value = 0.f;
+
+            playerJustEndedCombo = true;
+        }
+
+
+        if (playerJustEndedCombo && playerLastCombo > 2)
+        {
+            iComboAccReward     = 0;
+            iComboAccStarReward = 0;
+
+            comboAccReward     = 1 + static_cast<int>(std::pow(static_cast<float>(playerLastCombo), 1.2f));
+            comboAccStarReward = comboNStars;
+
+            comboNStars = 0;
+        }
+
+        if (profile.accumulatingCombo)
+        {
+            if (iComboAccReward < comboAccReward &&
+                accComboDelay.updateAndLoop(deltaTimeMs, 35.f) == CountdownStatusLoop::Looping)
+            {
+                ++iComboAccReward;
+                accComboDelay.value = 35.f;
+
+                spawnEarnedCoinParticle(fromWorldToHud(mousePos));
+                earnedCoinParticles.back().startPosition += rng.getVec2f({-25.f, -25.f}, {25.f, 25.f});
+
+                sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
+                                              getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
+                sounds.coindelay.setPitch(0.8f + static_cast<float>(iComboAccReward) * 0.04f);
+                sounds.coindelay.setVolume(100.f);
+
+                playSound(sounds.coindelay, /* maxOverlap */ 64);
+            }
+
+            if (iComboAccStarReward < comboAccStarReward &&
+                accComboStarDelay.updateAndLoop(deltaTimeMs, 75.f) == CountdownStatusLoop::Looping)
+            {
+                ++iComboAccStarReward;
+
+                sounds.shine3.setPosition({mousePos.x, mousePos.y});
+                sounds.shine3.setPitch(0.7f + static_cast<float>(iComboAccStarReward) * 0.075f);
+                playSound(sounds.shine3);
+
+                particles.emplace_back(ParticleData{.position      = mousePos,
+                                                    .velocity      = {0.f, 0.f},
+                                                    .scale         = rng.getF(0.08f, 0.27f) * 1.f,
+                                                    .accelerationY = -0.002f,
+                                                    .opacity       = 255.f,
+                                                    .opacityDecay  = rng.getF(0.00025f, 0.0020f),
+                                                    .rotation      = rng.getF(0.f, sf::base::tau),
+                                                    .torque        = rng.getF(-0.002f, 0.002f)},
+                                       0.f,
+                                       ParticleType::Star);
+            }
         }
     }
 
@@ -8338,7 +8493,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         //
         // Combo failure due to timer end
-        gameLoopUpdateCombo(deltaTimeMs, anyBubblePoppedByClicking, clickPosition);
+        gameLoopUpdateCombo(deltaTimeMs, anyBubblePoppedByClicking, mousePos, clickPosition);
 
         //
         // Update collisions
@@ -8555,6 +8710,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         // High visibility cursor
         window.setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
+        gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
 
         //
         // Splash screen
@@ -8774,3 +8930,4 @@ int main()
 // bubble value just purchase prestige points
 // - P0 achievements for speedrunning milestones
 // - P1 maybe make "autocast spell selector" a PP upgrade for around 128PPs
+// - P1 tooltips for options, reorganize them

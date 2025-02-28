@@ -73,6 +73,7 @@ void from_json(const nlohmann::json& j, Optional<T>& p)
 } // namespace sf::base
 
 
+/*
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const Bubble& p)
@@ -96,7 +97,7 @@ void from_json(const nlohmann::json& j, Bubble& p)
     p.rotation = j[3].get<decltype(p.rotation)>();
     p.type     = j[4].get<decltype(p.type)>();
 }
-
+*/
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(modernize-use-constraints)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Bubble, position, velocity, radius, rotation, type);
