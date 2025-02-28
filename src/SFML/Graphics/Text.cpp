@@ -367,13 +367,18 @@ void Text::draw(RenderTarget& target, RenderStates states) const
     states.transform *= getTransform();
     states.texture = &m_font->getTexture();
 
-    const auto [vertexData, vertexSize] = getVertices();
+    ensureGeometryUpdate(*m_font);
 
     static constexpr unsigned int precomputedIndices[]{
 #include "SFML/Graphics/PrecomputedQuadIndices.inl"
     };
 
-    target.drawIndexedVertices(vertexData, vertexSize, precomputedIndices, vertexSize / 4u * 6u, PrimitiveType::Triangles, states);
+    target.drawIndexedVertices(m_vertices.data(),
+                               m_vertices.size(),
+                               precomputedIndices,
+                               m_vertices.size() / 4u * 6u,
+                               PrimitiveType::Triangles,
+                               states);
 }
 
 
