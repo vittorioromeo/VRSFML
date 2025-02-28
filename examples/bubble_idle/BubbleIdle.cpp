@@ -8759,6 +8759,8 @@ int main()
 }
 
 // TODO:
+// - P1 rewrite serialization to accept versioning
+// - P1 encrypt save files
 // - P1 steamDRM
 // - P2 configurable particle spawn chance
 // - P2 configurable pop sound play chance
