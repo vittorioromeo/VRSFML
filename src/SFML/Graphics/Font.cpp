@@ -180,7 +180,7 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
 
     // Load the glyph corresponding to the code point
     FT_Int32 flags = FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT;
-    if (outlineThickness != 0)
+    if (outlineThickness != 0.f)
         flags |= FT_LOAD_NO_BITMAP;
 
     if (FT_Load_Char(face, codePoint, flags) != 0)
@@ -202,7 +202,7 @@ sf::Glyph loadGlyph(const FontHandles&                     fontHandles,
             FT_Outline_Embolden(&outlineGlyph->outline, weight);
         }
 
-        if (outlineThickness != 0)
+        if (outlineThickness != 0.f)
         {
             FT_Stroker stroker = fontHandles.stroker;
 

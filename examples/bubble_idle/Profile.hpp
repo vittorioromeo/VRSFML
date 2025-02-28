@@ -21,6 +21,8 @@ struct [[nodiscard]] Profile
     bool  showCatText           = true;
     bool  showParticles         = true;
     bool  showTextParticles     = true;
+    bool  accumulatingCombo     = true;
+    bool  showCursorComboText   = true;
 
     Stats statsLifetime;
 
