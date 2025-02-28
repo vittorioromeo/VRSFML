@@ -7325,15 +7325,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         for (HellPortal& hp : pt.hellPortals)
         {
-            float scaleMult = 1.f;
-            if (hp.life.value > 1500.f)
-            {
-                scaleMult = easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f));
-            }
-            else if (hp.life.value < 250.f)
-            {
-                scaleMult = easeOutBack(remap(hp.life.value, 0.f, 250.f, 0.f, 1.f));
-            }
+            const float scaleMult = //
+                (hp.life.value > 1500.f)  ? easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f))
+                : (hp.life.value < 250.f) ? easeOutBack(remap(hp.life.value, 0.f, 250.f, 0.f, 1.f))
+                                          : 1.f;
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = hp.getDrawPosition(),
