@@ -21,8 +21,6 @@ struct [[nodiscard]] Shrine
 
     float wobbleRadians = 0.f;
 
-    float mainOpacity = 255.f;
-
     OptionalTargetedCountdown tcActivation;
     OptionalTargetedCountdown tcDeath;
 
