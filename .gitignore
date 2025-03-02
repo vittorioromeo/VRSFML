@@ -20,6 +20,8 @@ imgui.ini
 *.log
 notes.yaml
 examples/batching/imgui.ini
+examples/bubble_idle/imgui.ini
+examples/bubble_idle/art
 compile_commands.json
 old/out.txt
 old/x.x
