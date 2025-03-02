@@ -85,6 +85,10 @@ struct Sounds
     LoadedSound soulreturn{"soulreturn.ogg"};
     LoadedSound portalon{"portalon.ogg"};
     LoadedSound portaloff{"portaloff.ogg"};
+    LoadedSound failcast{"failcast.ogg"};
+    LoadedSound unlock{"unlock.ogg"};
+    LoadedSound purchasable{"purchasable.ogg"};
+    LoadedSound shimmer{"shimmer.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -130,6 +134,7 @@ struct Sounds
         setupWorldSound(soulreturn);
         setupWorldSound(portalon);
         setupWorldSound(portaloff);
+        setupWorldSound(failcast, /* attenuationMult */ 0.1f);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -146,6 +151,9 @@ struct Sounds
         setupUISound(btnswitch);
         setupUISound(uitab);
         setupUISound(failpopui);
+        setupUISound(unlock);
+        setupUISound(purchasable);
+        setupUISound(shimmer);
 
         scratch.setVolume(35.f);
         buy.setVolume(75.f);
