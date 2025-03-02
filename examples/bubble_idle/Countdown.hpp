@@ -67,6 +67,18 @@ struct [[nodiscard]] Countdown // TODO P2: turn to free funcs, or remove for Tim
         SFML_BASE_ASSERT(value >= 0.f);
         return value == 0.f;
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] float getInvProgress(const float startingValue) const
+    {
+        return value / startingValue;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] float getProgressBounced(const float startingValue) const
+    {
+        return 1.f - sf::base::fabs(getInvProgress(startingValue) - 0.5f) * 2.f;
+    }
 };
 
 ////////////////////////////////////////////////////////////

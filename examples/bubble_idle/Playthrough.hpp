@@ -48,8 +48,9 @@ struct Playthrough
     PurchasableScalingValue psvSpellCount{&PSVDataConstants::spellCount};
     PurchasableScalingValue psvBubbleValue{&PSVDataConstants::bubbleValue}; // also tracks prestige level
     PurchasableScalingValue psvExplosionRadiusMult{&PSVDataConstants::explosionRadiusMult};
-    PurchasableScalingValue psvStarpawPercentage{&PSVDataConstants::starpawPercentage}; // uses WPs
-    PurchasableScalingValue psvMewltiplierMult{&PSVDataConstants::mewltiplierMult};     // uses WPs
+    PurchasableScalingValue psvStarpawPercentage{&PSVDataConstants::starpawPercentage};     // uses WPs
+    PurchasableScalingValue psvMewltiplierMult{&PSVDataConstants::mewltiplierMult};         // uses WPs
+    PurchasableScalingValue psvDarkUnionPercentage{&PSVDataConstants::darkUnionPercentage}; // uses WPs
 
     EXACT_ARRAY(PurchasableScalingValue,
                 psvPerCatType,
@@ -112,6 +113,8 @@ struct Playthrough
     PurchasableScalingValue psvPPEngiCatGlobalBonusMult{&PSVDataConstants::engiCatGlobalBonusMult};
     PurchasableScalingValue psvPPRepulsoCatConverterChance{&PSVDataConstants::repulsoCatConverterChance};
     PurchasableScalingValue psvPPWitchCatBuffDuration{&PSVDataConstants::witchCatBuffDuration};
+    PurchasableScalingValue psvPPUniRitualBuffPercentage{&PSVDataConstants::uniRitualBuffPercentage};
+    PurchasableScalingValue psvPPDevilRitualBuffPercentage{&PSVDataConstants::devilRitualBuffPercentage};
 
     //
     // Currencies
@@ -143,28 +146,40 @@ struct Playthrough
     // Permanent purchases
     struct Permanent
     {
-        bool starterPackPurchased                 = false;
-        bool multiPopPurchased                    = false;
-        bool smartCatsPurchased                   = false;
-        bool geniusCatsPurchased                  = false; // if true, `smartCatsPurchased` must be true
-        bool windPurchased                        = false;
-        bool astroCatInspirePurchased             = false;
-        bool starpawConversionIgnoreBombs         = false;
-        bool starpawNova                          = false;
-        bool repulsoCatFilterPurchased            = false;
-        bool repulsoCatConverterPurchased         = false;
-        bool attractoCatFilterPurchased           = false;
-        bool witchCatBuffPowerScalesWithNCats     = false;
-        bool witchCatBuffPowerScalesWithMapSize   = false;
-        bool witchCatBuffFewerDolls               = false;
-        bool witchCatBuffFlammableDolls           = false;
-        bool witchCatBuffOrbitalDolls             = false;
+        bool starterPackPurchased = false;
+
+        bool multiPopPurchased   = false;
+        bool smartCatsPurchased  = false;
+        bool geniusCatsPurchased = false; // if true, `smartCatsPurchased` must be true
+
+        bool windPurchased = false;
+
+        bool astroCatInspirePurchased = false;
+
+        bool starpawConversionIgnoreBombs = false;
+        bool starpawNova                  = false;
+
+        bool repulsoCatFilterPurchased        = false;
+        bool repulsoCatConverterPurchased     = false;
+        bool repulsoCatNovaConverterPurchased = false;
+
+        bool attractoCatFilterPurchased = false;
+
+        bool witchCatBuffPowerScalesWithNCats   = false;
+        bool witchCatBuffPowerScalesWithMapSize = false;
+        bool witchCatBuffFewerDolls             = false;
+        bool witchCatBuffFlammableDolls         = false;
+        bool witchCatBuffOrbitalDolls           = false;
+
         bool shrineCompletedOnceByType[nCatTypes] = {};
         bool unsealedByType[nCatTypes]            = {};
-        bool wizardCatDoubleMewltiplierDuration   = false;
-        bool unicatTranscendencePurchased         = false;
-        bool unicatTranscendenceAOEPurchased      = false;
-        bool devilcatHellsingedPurchased          = false;
+
+        bool wizardCatDoubleMewltiplierDuration = false;
+
+        bool unicatTranscendencePurchased    = false;
+        bool unicatTranscendenceAOEPurchased = false;
+
+        bool devilcatHellsingedPurchased = false;
     };
 
     Permanent perm = {};
@@ -259,6 +274,7 @@ struct Playthrough
         psvExplosionRadiusMult.nPurchases = 0u;
         psvStarpawPercentage.nPurchases   = 0u;
         psvMewltiplierMult.nPurchases     = 0u;
+        psvDarkUnionPercentage.nPurchases = 0u;
 
         for (auto& psv : psvPerCatType)
             psv.nPurchases = 0u;
