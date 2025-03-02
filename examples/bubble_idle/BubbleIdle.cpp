@@ -360,6 +360,11 @@ struct Main
     sf::ImGui::ImGuiContext imGuiContext;
 
     ////////////////////////////////////////////////////////////
+    // Exiting status
+    bool escWasPressed = false;
+    bool mustExit      = false;
+
+    ////////////////////////////////////////////////////////////
     // Texture atlas
     sf::TextureAtlas textureAtlas{sf::Texture::create({4096u, 4096u}, {.smooth = true}).value()};
 
@@ -1890,6 +1895,56 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    void uiDrawExitPopup(const float newScalingFactor)
+    {
+        if (!escWasPressed)
+            return;
+
+        constexpr float scaleMult = 1.25f;
+
+        ImGui::SetNextWindowPos({getResolution().x / 2.f, getResolution().y / 2.f}, 0, {0.5f, 0.5f});
+        ImGui::SetNextWindowSizeConstraints(ImVec2(400.f * scaleMult * newScalingFactor, 0.f),
+                                            ImVec2(400.f * scaleMult * newScalingFactor,
+                                                   300.f * scaleMult * newScalingFactor));
+
+        ImGui::Begin("##exit",
+                     nullptr,
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoTitleBar);
+
+        ImGui::SetWindowFontScale(scaleMult);
+
+        uiCenteredText("Are you sure you want to exit?");
+
+        ImGui::Dummy(ImVec2(0.f, 10.f * scaleMult));
+        constexpr float exitButtonWidth = 60.f * scaleMult;
+
+        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - exitButtonWidth * 2.f - 5.f) * 0.5f);
+
+        ImGui::BeginGroup();
+
+        if (ImGui::Button("Yes", ImVec2(exitButtonWidth, 0.f)))
+        {
+            playSound(sounds.uitab);
+            mustExit = true;
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("No", ImVec2(exitButtonWidth, 0.f)))
+        {
+            playSound(sounds.uitab);
+            escWasPressed = false;
+        }
+
+        ImGui::EndGroup();
+
+        ImGui::SetWindowFontScale(uiNormalFontScale);
+
+        ImGui::End();
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiDraw(const sf::Vector2f mousePos)
     {
         uiWidgetId = 0u;
@@ -1942,6 +1997,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         uiMakeShrineOrCatTooltip(mousePos);
 
         ImGui::End();
+
+        uiDrawExitPopup(newScalingFactor);
+
         ImGui::PopStyleVar();
         ImGui::PopFont();
     }
@@ -7938,6 +7996,56 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    void gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
+    {
+        for (auto& [y, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
+        {
+            if (countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
+            {
+                const float imguiWidth = uiWindowWidth * getUIScalingFactor();
+                float       x          = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
+                const auto  pos        = sf::Vector2f{uiGetWindowPos().x - x,
+                                              y + (14.f + rng.getF(-12.f, 12.f)) * getUIScalingFactor()};
+
+                spawnHUDTopParticle({.position      = pos,
+                                     .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
+                                     .scale         = rng.getF(0.08f, 0.27f) * 0.25f * getUIScalingFactor(),
+                                     .accelerationY = 0.f,
+                                     .opacity       = 1.f,
+                                     .opacityDecay  = rng.getF(0.00065f, 0.0055f),
+                                     .rotation      = rng.getF(0.f, sf::base::tau),
+                                     .torque        = rng.getF(-0.002f, 0.002f)},
+                                    /* hue */ wrapHue(165.f + hue),
+                                    ParticleType::Star);
+            }
+
+            if (arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
+            {
+                const float imguiWidth = uiWindowWidth * getUIScalingFactor();
+
+                const auto blinkFn = [](const float value)
+                { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
+
+                const float blinkProgress = blinkFn(arrowCountdown.getProgressBounced(2000.f));
+
+                const auto arrowAlpha = static_cast<sf::base::U8>(easeInOutCubic(blinkProgress) * 255.f);
+
+                const auto& tx = type == 0 ? txUnlock : txPurchasable;
+
+                getWindow().draw(tx,
+                                 {.position = {uiGetWindowPos().x - imguiWidth, y + 14.f * getUIScalingFactor()},
+                                  .scale    = sf::Vector2f{0.25f, 0.25f} *
+                                           (getUIScalingFactor() + -0.15f * easeInOutBack(blinkProgress)),
+                                  .origin = tx.getRect().getCenterRight(),
+                                  .color  = hueColor(hue, arrowAlpha)},
+                                 {.shader = &shader});
+            }
+        }
+
+        sf::base::vectorEraseIf(purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
     {
         auto& window = *optWindow;
@@ -8484,10 +8592,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const float fixedBgX = 2100.f * sf::base::fmod(fixedBgSlide, 3.f);
         window.setView(nonScaledHUDView);
         window.draw(txFixedBg,
-                    {
-                        .position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f},
-                        .scale    = {ratio, ratio},
-                    },
+                    {.position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f}, .scale = {ratio, ratio}},
                     {.shader = &shader});
     }
 
@@ -8708,6 +8813,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoop()
     {
+        if (mustExit)
+            return false;
+
+        //
+        // Only draw UI elements if not in prestige transition and splash is done
+        const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
+
         steamMgr.runCallbacks();
 
         if (!gameLoopRecreateWindowIfNeeded())
@@ -8724,7 +8836,17 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             imGuiContext.processEvent(window, *event);
 
-            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+            if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
+                event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
+            {
+                if (!escWasPressed)
+                {
+                    playSound(sounds.btnswitch);
+                    escWasPressed = true;
+                }
+            }
+
+            if (event->is<sf::Event::Closed>())
                 return false;
 
 #pragma GCC diagnostic push
@@ -8940,10 +9062,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         imGuiContext.update(window, deltaTime);
 
         //
-        // Only draw UI elements if not in prestige transition and splash is done
-        const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
-
-        //
         // Draw ImGui menu
         if (shouldDrawUI)
             uiDraw(mousePos);
@@ -9088,52 +9206,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         gameLoopDrawImGui();
 
         //
-        // TODO P0
-        for (auto& [y, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
-        {
-            if (countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
-            {
-                const float imguiWidth = uiWindowWidth * getUIScalingFactor();
-                float       x          = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
-                const auto  pos        = sf::Vector2f{uiGetWindowPos().x - x,
-                                              y + (14.f + rng.getF(-12.f, 12.f)) * getUIScalingFactor()};
-
-                spawnHUDTopParticle({.position      = pos,
-                                     .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
-                                     .scale         = rng.getF(0.08f, 0.27f) * 0.25f * getUIScalingFactor(),
-                                     .accelerationY = 0.f,
-                                     .opacity       = 1.f,
-                                     .opacityDecay  = rng.getF(0.00065f, 0.0055f),
-                                     .rotation      = rng.getF(0.f, sf::base::tau),
-                                     .torque        = rng.getF(-0.002f, 0.002f)},
-                                    /* hue */ wrapHue(165.f + hue),
-                                    ParticleType::Star);
-            }
-
-            if (arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
-            {
-                const float imguiWidth = uiWindowWidth * getUIScalingFactor();
-
-                const auto blinkFn = [](const float value)
-                { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
-
-                const float blinkProgress = blinkFn(arrowCountdown.getProgressBounced(2000.f));
-
-                const auto arrowAlpha = static_cast<sf::base::U8>(easeInOutCubic(blinkProgress) * 255.f);
-
-                const auto& tx = type == 0 ? txUnlock : txPurchasable;
-
-                window.draw(tx,
-                            {.position = {uiGetWindowPos().x - imguiWidth, y + 14.f * getUIScalingFactor()},
-                             .scale    = sf::Vector2f{0.25f, 0.25f} *
-                                      (getUIScalingFactor() + -0.15f * easeInOutBack(blinkProgress)),
-                             .origin = tx.getRect().getCenterRight(),
-                             .color  = hueColor(hue, arrowAlpha)},
-                            {.shader = &shader});
-            }
-        }
-
-        sf::base::vectorEraseIf(purchaseUnlockedEffects, [](const auto& pue) { return pue.arrowCountdown.isDone(); });
+        // Purchase unlocked/available effects
+        gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
 
         // Top-level hud particles
         if (shouldDrawUI)
@@ -9298,22 +9372,19 @@ int main()
     Main{steamMgr}.run();
 }
 
-// TODO:
-// - P0 achievements for speedrunning milestones
-// - P1 crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x
+// TODO P0: achievements for speedrunning milestones
+// TODO P1: crazy upgrade for like 512PPs "the brain takes over" that turns normal cats into brains with 10x or 50x
 // multiplier with corrupted zalgo names
-// - P1 disable exiting with escape key, or add popup to confirm
-// - P1 encrypt save files
-// - P1 maybe make "autocast spell selector" a PP upgrade for around 128PPs
-// - P1 pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
-// - P1 prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
-// - P1 rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe also
-// upgrade time needed to trigger
-// - P1 rewrite serialization to accept versioning
-// - P1 steamDRM
-// - P1 tooltips for options, reorganize them
-// - P2 configurable particle spawn chance
-// - P2 configurable pop sound play chance
-// - P2 find better word for "prestige"
-// - P2 maybe 64PP prestige buff for multipop that allows "misses"
-// - P2 reduce size of game textures and try to reduce atlas size
+// TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
+// TODO P1: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
+// TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
+// TODO P1: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe
+// also upgrade time needed to trigger
+// TODO P1: steamDRM
+// TODO P1: tooltips for options, reorganize them
+// TODO P2: encrypt save files
+// TODO P2: configurable particle spawn chance
+// TODO P2: configurable pop sound play chance
+// TODO P2: find better word for "prestige"
+// TODO P2: maybe 64PP prestige buff for multipop that allows "misses"
+// TODO P2: reduce size of game textures and try to reduce atlas size
