@@ -11,21 +11,27 @@
 #include "PurchasableScalingValue.hpp"
 #include "Shrine.hpp"
 #include "Timer.hpp"
+#include "Version.hpp"
 #include "json.hpp"
 
 #include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsArray.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Traits/RemoveCVRef.hpp"
 
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <string>
 
+// NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const Vector2<T>& p)
 {
     j[0] = p.x;
@@ -35,7 +41,6 @@ void to_json(nlohmann::json& j, const Vector2<T>& p)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Vector2<T>& p)
 {
     p.x = j[0].get<T>();
@@ -49,7 +54,6 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const Optional<T>& p)
 {
     if (p.hasValue())
@@ -61,7 +65,6 @@ void to_json(nlohmann::json& j, const Optional<T>& p)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Optional<T>& p)
 {
     if (j.is_null())
@@ -73,72 +76,256 @@ void from_json(const nlohmann::json& j, Optional<T>& p)
 } // namespace sf::base
 
 
-/*
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
-void to_json(nlohmann::json& j, const Bubble& p)
+namespace
 {
-    j[0] = p.position;
-    j[1] = p.velocity;
-    j[2] = p.radius;
-    j[3] = p.rotation;
-    j[4] = p.type;
+////////////////////////////////////////////////////////////
+template <typename>
+struct getArraySize;
+
+////////////////////////////////////////////////////////////
+template <typename T, auto N>
+struct getArraySize<T[N]>
+{
+    enum
+    {
+        value = N
+    };
+};
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[gnu::always_inline]] void atOr(const nlohmann::json& j, T& target, const sf::base::SizeT index)
+{
+    if (j.is_array() && j.size() > index)
+        j[index].get_to<T>(target);
+}
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[gnu::always_inline]] void serialize(nlohmann::json& j, const sf::base::SizeT index, const T& field)
+{
+    if constexpr (!SFML_BASE_IS_ARRAY(T))
+    {
+        j[index] = field;
+    }
+    else
+    {
+        constexpr auto arraySize = getArraySize<T>::value;
+        j[index]                 = nlohmann::json(arraySize, {});
+
+        for (sf::base::SizeT i = 0u; i < arraySize; ++i)
+            serialize(j[index], i, field[i]);
+    }
+}
+
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline]] void deserialize(const nlohmann::json& j, const sf::base::SizeT index, T& field)
+{
+    if constexpr (!SFML_BASE_IS_ARRAY(T))
+    {
+        atOr<T>(j, field, index);
+    }
+    else
+    {
+        constexpr auto arraySize = getArraySize<T>::value;
+
+        // Initialize with empty array
+        auto arr = nlohmann::json::array();
+
+        // Check if j[index] exists and is an array
+        if (j.is_array() && j.size() > index && j[index].is_array())
+            arr = j[index];
+
+        for (sf::base::SizeT i = 0u; i < arraySize; ++i)
+            deserialize(arr, i, field[i]);
+    }
+}
+
+////////////////////////////////////////////////////////////
+template <bool Serialize, typename TField>
+[[gnu::always_inline]] void twoWay(auto&& j, const sf::base::SizeT index, TField&& field)
+{
+    if constexpr (Serialize)
+    {
+        serialize<SFML_BASE_REMOVE_CVREF(TField)>(j, index, field);
+    }
+    else
+    {
+        deserialize<SFML_BASE_REMOVE_CVREF(TField)>(j, index, field);
+    }
+}
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+[[gnu::always_inline]] sf::base::SizeT twoWayAll(sf::base::SizeT index, auto&& j, auto&&... fields)
+{
+    (twoWay<Serialize>(j, index++, fields), ...);
+    return index;
+}
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+template <typename T, typename U>
+concept isSameDecayed = sf::base::isSame<SFML_BASE_REMOVE_CVREF(T), SFML_BASE_REMOVE_CVREF(U)>;
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+void to_json(nlohmann::json& j, const T& p)
+    requires(requires { twoWaySerializer<true>(j, p); })
+{
+    twoWaySerializer<true>(j, p);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
-void from_json(const nlohmann::json& j, Bubble& p)
+void from_json(const nlohmann::json& j, T& p)
+    requires(requires { twoWaySerializer<false>(j, p); })
 {
-    p.position = j[0].get<decltype(p.position)>();
-    p.velocity = j[1].get<decltype(p.velocity)>();
-    p.radius   = j[2].get<decltype(p.radius)>();
-    p.rotation = j[3].get<decltype(p.rotation)>();
-    p.type     = j[4].get<decltype(p.type)>();
+    twoWaySerializer<false>(j, p);
 }
-*/
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Bubble, position, velocity, radius, rotation, type);
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Cat::AstroState, startX, velocityX, particleTimer, wrapped);
+#define FIELD(...) p.__VA_ARGS__
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Cat,
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Bubble> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
 
-    //  spawnEffectTimer,
-    type,
-    position,
-    wobbleRadians,
-    cooldown,
-    hue,
-    inspiredCountdown,
-    boostCountdown,
-    nameIdx,
-    hits,
-    hexedTimer,
-    astroState,
-    moneyEarned);
+                         FIELD(position),
+                         FIELD(velocity),
 
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Doll, position, wobbleRadians, hue, buffPower, catType, tcActivation, tcDeath);
+                         FIELD(radius),
+                         FIELD(rotation),
+                         FIELD(hueMod),
+
+                         FIELD(repelledCountdown),
+                         FIELD(attractedCountdown),
+
+                         FIELD(type));
+}
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(HellPortal, position, life);
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Cat::AstroState> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(startX),
+
+                         FIELD(velocityX),
+                         FIELD(particleTimer),
+
+                         FIELD(wrapped));
+}
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Shrine, position, wobbleRadians, tcActivation, tcDeath, collectedReward, type);
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Cat> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(spawnEffectTimer),
+
+                         FIELD(position),
+
+                         FIELD(wobbleRadians),
+                         FIELD(cooldown),
+
+                         // FIELD(pawPosition),
+                         // FIELD(pawRotation),
+
+                         // FIELD(pawOpacity),
+
+                         FIELD(hue),
+
+                         FIELD(inspiredCountdown),
+                         FIELD(boostCountdown),
+
+                         FIELD(nameIdx),
+
+                         // FIELD(textStatusShakeEffect),
+                         // FIELD(textMoneyShakeEffect),
+
+                         FIELD(hits),
+
+                         FIELD(type),
+
+                         FIELD(hexedTimer),
+
+                         FIELD(moneyEarned),
+
+                         FIELD(astroState));
+}
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Doll> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(position),
+                         FIELD(buffPower),
+                         FIELD(wobbleRadians),
+                         FIELD(hue),
+                         FIELD(catType),
+
+                         FIELD(tcActivation),
+                         FIELD(tcDeath));
+}
+
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<HellPortal> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(position),
+                         FIELD(life),
+                         FIELD(catIdx));
+}
+
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Shrine> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(position),
+
+                         FIELD(wobbleRadians),
+
+                         FIELD(tcActivation),
+                         FIELD(tcDeath),
+
+                         // FIELD(textStatusShakeEffect),
+
+                         FIELD(collectedReward),
+
+                         FIELD(type));
+}
+
+
+////////////////////////////////////////////////////////////
 void to_json(nlohmann::json& j, const Timer& p)
 {
     j = p.value;
@@ -146,7 +333,6 @@ void to_json(nlohmann::json& j, const Timer& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Timer& p)
 {
     p.value = j;
@@ -154,7 +340,6 @@ void from_json(const nlohmann::json& j, Timer& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const BidirectionalTimer& p)
 {
     j[0] = p.value;
@@ -163,7 +348,6 @@ void to_json(nlohmann::json& j, const BidirectionalTimer& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, BidirectionalTimer& p)
 {
     p.value     = j[0];
@@ -172,7 +356,6 @@ void from_json(const nlohmann::json& j, BidirectionalTimer& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const Countdown& p)
 {
     j = p.value;
@@ -180,7 +363,6 @@ void to_json(nlohmann::json& j, const Countdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, Countdown& p)
 {
     p.value = j;
@@ -188,7 +370,6 @@ void from_json(const nlohmann::json& j, Countdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const TargetedCountdown& p)
 {
     j[0] = p.value;
@@ -197,7 +378,6 @@ void to_json(nlohmann::json& j, const TargetedCountdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, TargetedCountdown& p)
 {
     p.value         = j[0];
@@ -206,7 +386,6 @@ void from_json(const nlohmann::json& j, TargetedCountdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const OptionalTargetedCountdown& p)
 {
     to_json(j, p.asBase());
@@ -214,7 +393,6 @@ void to_json(nlohmann::json& j, const OptionalTargetedCountdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, OptionalTargetedCountdown& p)
 {
     from_json(j, p.asBase());
@@ -222,7 +400,6 @@ void from_json(const nlohmann::json& j, OptionalTargetedCountdown& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const PurchasableScalingValue& p)
 {
     j = p.nPurchases;
@@ -230,7 +407,6 @@ void to_json(nlohmann::json& j, const PurchasableScalingValue& p)
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, PurchasableScalingValue& p)
 {
     p.nPurchases = j;
@@ -239,7 +415,6 @@ void from_json(const nlohmann::json& j, PurchasableScalingValue& p)
 
 ////////////////////////////////////////////////////////////
 template <SizeT N>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void to_json(nlohmann::json& j, const PurchasableScalingValue (&p)[N])
 {
     j = nlohmann::json::array();
@@ -251,7 +426,6 @@ void to_json(nlohmann::json& j, const PurchasableScalingValue (&p)[N])
 
 ////////////////////////////////////////////////////////////
 template <SizeT N>
-// NOLINTNEXTLINE(readability-identifier-naming, misc-use-internal-linkage)
 void from_json(const nlohmann::json& j, PurchasableScalingValue (&p)[N])
 {
     for (SizeT i = 0u; i < N; ++i)
@@ -260,219 +434,305 @@ void from_json(const nlohmann::json& j, PurchasableScalingValue (&p)[N])
 
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Stats,
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Stats> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
 
-    secondsPlayed,
-    nBubblesPoppedByType,
-    revenueByType,
-    nBubblesHandPoppedByType,
-    revenueHandByType,
-    explosionRevenue,
-    flightRevenue,
-    hellPortalRevenue,
-    highestStarBubblePopCombo,
-    highestNovaBubblePopCombo,
-    nAbsorbedStarBubbles,
-    nSpellCasts,
-    nWitchcatRitualsPerCatType,
-    nMaintenances,
-    highestSimultaneousMaintenances);
+                         FIELD(secondsPlayed),
 
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Milestones,
+                         FIELD(nBubblesPoppedByType),
+                         FIELD(revenueByType),
 
-    firstCat,
-    firstUnicat,
-    firstDevilcat,
-    firstAstrocat,
+                         FIELD(nBubblesHandPoppedByType),
+                         FIELD(revenueHandByType),
 
-    fiveCats,
-    fiveUnicats,
-    fiveDevilcats,
-    fiveAstrocats,
+                         FIELD(explosionRevenue),
+                         FIELD(flightRevenue),
+                         FIELD(hellPortalRevenue),
 
-    tenCats,
-    tenUnicats,
-    tenDevilcats,
-    tenAstrocats,
+                         FIELD(highestStarBubblePopCombo),
+                         FIELD(highestNovaBubblePopCombo),
 
-    prestigeLevel2,
-    prestigeLevel3,
-    prestigeLevel4,
-    prestigeLevel5,
-    prestigeLevel6,
-    prestigeLevel10,
-    prestigeLevel15,
-    prestigeLevel20,
+                         FIELD(nAbsorbedStarBubbles),
 
-    revenue10000,
-    revenue100000,
-    revenue1000000,
-    revenue10000000,
-    revenue100000000,
-    revenue1000000000,
+                         FIELD(nSpellCasts),
 
-    shrineCompletions);
+                         FIELD(nWitchcatRitualsPerCatType),
+                         FIELD(nWitchcatDollsCollected),
+
+                         FIELD(nMaintenances),
+                         FIELD(highestSimultaneousMaintenances));
+}
+
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Profile,
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Milestones> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
 
-    masterVolume,
-    musicVolume,
-    playAudioInBackground,
-    playComboEndSound,
-    minimapScale,
-    hudScale,
-    uiScale,
-    tipsEnabled,
-    backgroundOpacity,
-    showCatText,
-    showParticles,
-    showTextParticles,
+                         FIELD(firstCat),
+                         FIELD(firstUnicat),
+                         FIELD(firstDevilcat),
+                         FIELD(firstAstrocat),
 
-    statsLifetime,
+                         FIELD(fiveCats),
+                         FIELD(fiveUnicats),
+                         FIELD(fiveDevilcats),
+                         FIELD(fiveAstrocats),
 
-    resWidth,
-    windowed,
-    vsync,
-    frametimeLimit,
+                         FIELD(tenCats),
+                         FIELD(tenUnicats),
+                         FIELD(tenDevilcats),
+                         FIELD(tenAstrocats),
 
-    highVisibilityCursor,
-    multicolorCursor,
-    cursorHue,
-    cursorScale,
+                         FIELD(prestigeLevel2),
+                         FIELD(prestigeLevel3),
+                         FIELD(prestigeLevel4),
+                         FIELD(prestigeLevel5),
+                         FIELD(prestigeLevel6),
+                         FIELD(prestigeLevel10),
+                         FIELD(prestigeLevel15),
+                         FIELD(prestigeLevel20),
 
-    showCoinParticles,
-    showDpsMeter,
+                         FIELD(revenue10000),
+                         FIELD(revenue100000),
+                         FIELD(revenue1000000),
+                         FIELD(revenue10000000),
+                         FIELD(revenue100000000),
+                         FIELD(revenue1000000000),
 
-    showFullManaNotification,
+                         FIELD(shrineCompletions));
+}
 
-    unlockedAchievements);
-
-////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(BubbleIgnoreFlags,
-
-                                   normal,
-                                   star,
-                                   bomb);
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Playthrough::Permanent,
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Profile> auto&& p)
+{
+    auto version = currentVersion;
+    twoWay<Serialize>(j, 0u, version);
 
-    starterPackPurchased,
-    multiPopPurchased,
-    smartCatsPurchased,
-    geniusCatsPurchased,
-    windPurchased,
-    astroCatInspirePurchased,
-    starpawConversionIgnoreBombs,
-    starpawNova,
-    repulsoCatFilterPurchased,
-    repulsoCatConverterPurchased,
-    attractoCatFilterPurchased,
-    witchCatBuffPowerScalesWithNCats,
-    witchCatBuffPowerScalesWithMapSize,
-    witchCatBuffFewerDolls,
-    witchCatBuffFlammableDolls,
-    witchCatBuffOrbitalDolls,
-    shrineCompletedOnceByType,
-    unsealedByType,
-    wizardCatDoubleMewltiplierDuration,
-    unicatTranscendencePurchased,
-    unicatTranscendenceAOEPurchased,
-    devilcatHellsingedPurchased);
+    twoWayAll<Serialize>(1u,
+                         j,
+
+                         FIELD(masterVolume),
+                         FIELD(musicVolume),
+
+                         FIELD(playAudioInBackground),
+                         FIELD(playComboEndSound),
+
+                         FIELD(minimapScale),
+                         FIELD(hudScale),
+                         FIELD(uiScale),
+
+                         FIELD(tipsEnabled),
+
+                         FIELD(backgroundOpacity),
+
+                         FIELD(showCatText),
+                         FIELD(showParticles),
+                         FIELD(showTextParticles),
+                         FIELD(accumulatingCombo),
+                         FIELD(showCursorComboText),
+                         FIELD(useBubbleShader),
+
+                         FIELD(bsIridescenceStrength),
+                         FIELD(bsEdgeFactorMin),
+                         FIELD(bsEdgeFactorMax),
+                         FIELD(bsEdgeFactorStrength),
+                         FIELD(bsDistortionStrength),
+                         FIELD(bsBubbleLightness),
+                         FIELD(bsLensDistortion),
+
+                         FIELD(statsLifetime),
+
+                         FIELD(resWidth),
+
+                         FIELD(windowed),
+                         FIELD(vsync),
+
+                         FIELD(frametimeLimit),
+
+                         FIELD(highVisibilityCursor),
+                         FIELD(multicolorCursor),
+
+                         FIELD(cursorHue),
+                         FIELD(cursorScale),
+
+                         FIELD(showCoinParticles),
+                         FIELD(showDpsMeter),
+
+                         FIELD(showFullManaNotification),
+
+                         FIELD(unlockedAchievements),
+
+                         FIELD(uiUnlocks));
+}
 
 ////////////////////////////////////////////////////////////
-// NOLINTNEXTLINE(modernize-use-constraints)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    Playthrough,
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<BubbleIgnoreFlags> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
 
-    seed,
-    nextCatNamePerType,
+                         FIELD(normal),
+                         FIELD(star),
+                         FIELD(bomb));
+}
 
-    psvComboStartTime,
-    psvMapExtension,
-    psvShrineActivation,
-    psvBubbleCount,
-    psvSpellCount,
-    psvBubbleValue,
-    psvExplosionRadiusMult,
-    psvStarpawPercentage,
-    psvMewltiplierMult,
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Playthrough::Permanent> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
 
-    psvPerCatType,
+                         FIELD(starterPackPurchased),
 
-    psvCooldownMultsPerCatType,
+                         FIELD(multiPopPurchased),
+                         FIELD(smartCatsPurchased),
+                         FIELD(geniusCatsPurchased),
 
-    psvRangeDivsPerCatType,
+                         FIELD(windPurchased),
 
-    psvPPMultiPopRange,
-    psvPPInspireDurationMult,
-    psvPPManaCooldownMult,
-    psvPPManaMaxMult,
-    psvPPMouseCatGlobalBonusMult,
-    psvPPEngiCatGlobalBonusMult,
-    psvPPRepulsoCatConverterChance,
-    psvPPWitchCatBuffDuration,
+                         FIELD(astroCatInspirePurchased),
 
-    money,
+                         FIELD(starpawConversionIgnoreBombs),
+                         FIELD(starpawNova),
 
-    prestigePoints,
+                         FIELD(repulsoCatFilterPurchased),
+                         FIELD(repulsoCatConverterPurchased),
+                         FIELD(repulsoCatNovaConverterPurchased),
 
-    comboPurchased,
-    mapPurchased,
+                         FIELD(attractoCatFilterPurchased),
 
-    manaTimer,
-    mana,
-    absorbingWisdom,
-    wisdom,
-    mewltiplierAuraTimer,
+                         FIELD(witchCatBuffPowerScalesWithNCats),
+                         FIELD(witchCatBuffPowerScalesWithMapSize),
+                         FIELD(witchCatBuffFewerDolls),
+                         FIELD(witchCatBuffFlammableDolls),
+                         FIELD(witchCatBuffOrbitalDolls),
 
-    mouseCatCombo,
-    mouseCatComboCountdown,
+                         FIELD(shrineCompletedOnceByType),
 
-    perm,
+                         FIELD(unsealedByType),
 
-    multiPopEnabled,
-    multiPopMouseCatEnabled,
-    windStrength,
-    geniusCatIgnoreBubbles,
-    repulsoCatIgnoreBubbles,
-    attractoCatIgnoreBubbles,
-    repulsoCatConverterEnabled,
+                         FIELD(wizardCatDoubleMewltiplierDuration),
 
-    bubbles,
-    cats,
-    shrines,
-    dolls,
-    hellPortals,
+                         FIELD(unicatTranscendencePurchased),
+                         FIELD(unicatTranscendenceAOEPurchased),
 
-    nShrinesCompleted,
+                         FIELD(devilcatHellsingedPurchased));
+}
 
-    statsTotal,
-    statsSession,
-    milestones,
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Playthrough> auto&& p)
+{
+    auto version = currentVersion;
+    twoWay<Serialize>(j, 0u, version);
 
-    achAstrocatPopBomb,
-    achAstrocatInspireByType,
+    twoWayAll<Serialize>(
+        1u,
+        j,
 
-    buffCountdownsPerType,
+        FIELD(seed),
+        FIELD(nextCatNamePerType),
 
-    prestigeTipShown,
-    shrineHoverTipShown,
-    shrineActivateTipShown,
-    dollTipShown,
-    spendPPTipShown,
-    shrinesSpawned);
+        FIELD(psvComboStartTime),
+        FIELD(psvMapExtension),
+        FIELD(psvShrineActivation),
+        FIELD(psvBubbleCount),
+        FIELD(psvSpellCount),
+        FIELD(psvBubbleValue),
+        FIELD(psvExplosionRadiusMult),
+        FIELD(psvStarpawPercentage),
+        FIELD(psvMewltiplierMult),
+        FIELD(psvDarkUnionPercentage),
+
+        FIELD(psvPerCatType),
+
+        FIELD(psvCooldownMultsPerCatType),
+
+        FIELD(psvRangeDivsPerCatType),
+
+        FIELD(psvPPMultiPopRange),
+        FIELD(psvPPInspireDurationMult),
+        FIELD(psvPPManaCooldownMult),
+        FIELD(psvPPManaMaxMult),
+        FIELD(psvPPMouseCatGlobalBonusMult),
+        FIELD(psvPPEngiCatGlobalBonusMult),
+        FIELD(psvPPRepulsoCatConverterChance),
+        FIELD(psvPPWitchCatBuffDuration),
+        FIELD(psvPPUniRitualBuffPercentage),
+        FIELD(psvPPDevilRitualBuffPercentage),
+
+        FIELD(money),
+
+        FIELD(prestigePoints),
+
+        FIELD(comboPurchased),
+        FIELD(mapPurchased),
+
+        FIELD(manaTimer),
+        FIELD(mana),
+        FIELD(absorbingWisdom),
+        FIELD(wisdom),
+        FIELD(mewltiplierAuraTimer),
+
+        FIELD(mouseCatCombo),
+        FIELD(mouseCatComboCountdown),
+
+        FIELD(perm),
+
+        FIELD(multiPopEnabled),
+        FIELD(multiPopMouseCatEnabled),
+        FIELD(windStrength),
+        FIELD(geniusCatIgnoreBubbles),
+        FIELD(repulsoCatIgnoreBubbles),
+        FIELD(attractoCatIgnoreBubbles),
+        FIELD(repulsoCatConverterEnabled),
+
+        FIELD(bubbles),
+        FIELD(cats),
+        FIELD(shrines),
+        FIELD(dolls),
+        FIELD(hellPortals),
+
+        FIELD(nShrinesCompleted),
+
+        FIELD(statsTotal),
+        FIELD(statsSession),
+        FIELD(milestones),
+
+        FIELD(achAstrocatPopBomb),
+        FIELD(achAstrocatInspireByType),
+
+        FIELD(buffCountdownsPerType),
+
+        FIELD(prestigeTipShown),
+        FIELD(shrineHoverTipShown),
+        FIELD(shrineActivateTipShown),
+        FIELD(dollTipShown),
+        FIELD(spendPPTipShown),
+        FIELD(shrinesSpawned));
+}
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Version> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(major),
+                         FIELD(minor),
+                         FIELD(patch));
+}
 
 namespace
 {
@@ -549,3 +809,5 @@ try
 {
     std::cout << "Failed to load playthrough from file '" << filename << "' (" << ex.what() << ")\n";
 }
+
+// NOLINTEND(readability-identifier-naming, misc-use-internal-linkage)
