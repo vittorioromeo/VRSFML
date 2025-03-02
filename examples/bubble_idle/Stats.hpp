@@ -10,22 +10,30 @@
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Stats
 {
-    sf::base::U64 secondsPlayed                                           = 0u;
-    sf::base::U64 nBubblesPoppedByType[nBubbleTypes]                      = {};
-    sf::base::U64 revenueByType[nBubbleTypes]                             = {};
-    sf::base::U64 nBubblesHandPoppedByType[nBubbleTypes]                  = {};
-    sf::base::U64 revenueHandByType[nBubbleTypes]                         = {};
-    sf::base::U64 explosionRevenue                                        = 0u;
-    sf::base::U64 flightRevenue                                           = 0u;
-    sf::base::U64 hellPortalRevenue                                       = 0u;
-    sf::base::U64 highestStarBubblePopCombo                               = 0u;
-    sf::base::U64 highestNovaBubblePopCombo                               = 0u;
-    sf::base::U64 nAbsorbedStarBubbles                                    = 0u;
+    sf::base::U64 secondsPlayed = 0u;
+
+    sf::base::U64 nBubblesPoppedByType[nBubbleTypes] = {};
+    sf::base::U64 revenueByType[nBubbleTypes]        = {};
+
+    sf::base::U64 nBubblesHandPoppedByType[nBubbleTypes] = {};
+    sf::base::U64 revenueHandByType[nBubbleTypes]        = {};
+
+    sf::base::U64 explosionRevenue  = 0u;
+    sf::base::U64 flightRevenue     = 0u;
+    sf::base::U64 hellPortalRevenue = 0u;
+
+    sf::base::U64 highestStarBubblePopCombo = 0u;
+    sf::base::U64 highestNovaBubblePopCombo = 0u;
+
+    sf::base::U64 nAbsorbedStarBubbles = 0u;
+
     sf::base::U64 nSpellCasts[PSVDataConstants::spellCount.nMaxPurchases] = {};
-    sf::base::U64 nWitchcatRitualsPerCatType[nCatTypes]                   = {};
-    sf::base::U64 nWitchcatDollsCollected                                 = 0u;
-    sf::base::U64 nMaintenances                                           = 0u;
-    sf::base::U64 highestSimultaneousMaintenances                         = 0u;
+
+    sf::base::U64 nWitchcatRitualsPerCatType[nCatTypes] = {};
+    sf::base::U64 nWitchcatDollsCollected               = 0u;
+
+    sf::base::U64 nMaintenances                   = 0u;
+    sf::base::U64 highestSimultaneousMaintenances = 0u;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] sf::base::U64 getTotalNBubblesPopped() const noexcept
