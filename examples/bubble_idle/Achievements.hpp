@@ -293,6 +293,18 @@ inline constexpr AchievementData achievementData[] = {
     {"Boomdoo", "Purchase the \"Flammable Dolls\" permanent upgrade."},
     {"Space Junk Cleanup", "Purchase the \"Orbital Dolls\" permanent upgrade."},
 
+    {"TODONAME", "Improve Unicat ritual buff percentage once."},
+    {"TODONAME", "Improve Unicat ritual buff percentage 6 times."},
+    {"TODONAME", "Improve Unicat ritual buff percentage 12 times."},
+    {"TODONAME", "Improve Unicat ritual buff percentage 18 times."},
+    {"TODONAME", "Improve Unicat ritual buff percentage 24 times."},
+
+    {"TODONAME", "Improve Devilcat ritual buff percentage once."},
+    {"TODONAME", "Improve Devilcat ritual buff percentage 6 times."},
+    {"TODONAME", "Improve Devilcat ritual buff percentage 12 times."},
+    {"TODONAME", "Improve Devilcat ritual buff percentage 18 times."},
+    {"TODONAME", "Improve Devilcat ritual buff percentage 24 times."},
+
     {"Double Mojo", "Have two Witchcat ritual buffs active at once."},
     {"Triple Mojo", "Have three Witchcat ritual buffs active at once."},
     {"Quadra Mojo", "Have four Witchcat ritual buffs active at once."},
@@ -328,6 +340,10 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Improve \"Mewltiplier Aura\" 10 times."},
     {"TODONAME", "Improve \"Mewltiplier Aura\" 15 times."},
 
+    {"TODONAME", "Improve \"Dark Union\" once."},
+    {"TODONAME", "Improve \"Dark Union\" 4 times."},
+    {"TODONAME", "Improve \"Dark Union\" 8 times."},
+
     {"Starpaw Spark", "Cast \"Starpaw Conversion\" once."},
     {"Deca-Starpaw Dynamo", "Cast \"Starpaw Conversion\" 10 times."},
     {"Centipaw Catastrophe", "Cast \"Starpaw Conversion\" 100 times."},
@@ -338,10 +354,10 @@ inline constexpr AchievementData achievementData[] = {
     {"Centimewltiplier Catastrophe", "Cast \"Mewltiplier Aura\" 100 times."},
     {"Kilo Mewltiplier Chaos", "Cast \"Mewltiplier Aura\" 1,000 times."},
 
-    {"TODONAME", "Cast \"TODOSPELL #2\" once."},
-    {"TODONAME", "Cast \"TODOSPELL #2\" 10 times."},
-    {"TODONAME", "Cast \"TODOSPELL #2\" 100 times."},
-    {"TODONAME", "Cast \"TODOSPELL #2\" 1,000 times."},
+    {"TODONAME", "Cast \"Dark Union\" once."},
+    {"TODONAME", "Cast \"Dark Union\" 10 times."},
+    {"TODONAME", "Cast \"Dark Union\" 100 times."},
+    {"TODONAME", "Cast \"Dark Union\" 1,000 times."},
 
     {"TODONAME", "Cast \"TODOSPELL #3\" once."},
     {"TODONAME", "Cast \"TODOSPELL #3\" 10 times."},
@@ -442,6 +458,7 @@ inline constexpr AchievementData achievementData[] = {
 
     {"TODONAME", "Purchase the \"Repulsion Filter\" permanent upgrade."},
     {"TODONAME", "Purchase the \"Conversion Field\" permanent upgrade."},
+    {"TODONAME", "Purchase the \"Nova Conversion\" permanent upgrade."},
 
     {"TODONAME", "Improve Repulsocat conversion chance once."},
     {"TODONAME", "Improve Repulsocat conversion chance 4 times."},
