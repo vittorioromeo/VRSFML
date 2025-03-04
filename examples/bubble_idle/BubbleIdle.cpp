@@ -30,6 +30,7 @@
 #include "Stats.hpp"
 #include "Steam.hpp"
 #include "SweepAndPrune.hpp"
+#include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
 #include "TextShakeEffect.hpp"
 #include "Timer.hpp"
@@ -37,6 +38,7 @@
 
 #include "SFML/ImGui/ImGui.hpp"
 
+#include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
@@ -92,6 +94,8 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+
+#include <cctype>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -267,9 +271,16 @@ void drawMinimap(sf::Shader&             shader,
     // Draw minimap contents
     window.setView(minimapView); // Use minimap projection
     window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries * hudScale}}, /* texture */ nullptr);
+
+    // The background has a repeating texture, and it's one tenth of the whole map
+    const sf::Vector2f backgroundRectSize = {txBackground.getSize().x * 10.f, static_cast<float>(txBackground.getSize().y)};
+
     window.draw(txBackground,
-                {.scale = {hudScale, hudScale}, .color = sf::Color::White.withAlpha(128)},
+                {.scale       = {hudScale, hudScale},
+                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
+                 .color       = sf::Color::White.withAlpha(128u)},
                 {.shader = &shader}); // Draw world background
+
     cpuDrawableBatch.scale = {hudScale, hudScale};
     window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader}); // Draw game objects
     cpuDrawableBatch.scale = {1.f, 1.f};
@@ -398,10 +409,16 @@ struct Main
     std::vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
+    // Background render texture
+    sf::base::Optional<sf::RenderTexture> rtBackground;
+
+    ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
     sf::Texture txLogo{sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()};
     sf::Texture txFixedBg{sf::Texture::loadFromFile("resources/fixedbg.png", {.smooth = true}).value()};
-    sf::Texture txBackground{sf::Texture::loadFromFile("resources/background.png", {.smooth = true}).value()};
+    sf::Texture txBackground{sf::Texture::loadFromFile("resources/backgroundchunk.png", {.smooth = true}).value()};
+    sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", {.smooth = true}).value()};
+    sf::Texture txDrawings{sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()};
     sf::Texture txByteTip{sf::Texture::loadFromFile("resources/bytetip.png", {.smooth = true}).value()};
     sf::Texture txTipBg{sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()};
     sf::Texture txTipByte{sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()};
@@ -418,13 +435,30 @@ struct Main
     sf::FloatRect txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
     sf::FloatRect txrBubbleNova{addImgResourceToAtlas("bubble4.png")};
     sf::FloatRect txrCat{addImgResourceToAtlas("cat.png")};
-    sf::FloatRect txrSmartCat{addImgResourceToAtlas("smartcat.png")};
-    sf::FloatRect txrGeniusCat{addImgResourceToAtlas("geniuscat.png")};
     sf::FloatRect txrUniCat{addImgResourceToAtlas("unicat.png")};
     sf::FloatRect txrUniCat2{addImgResourceToAtlas("unicat2.png")};
     sf::FloatRect txrDevilCat{addImgResourceToAtlas("devilcat.png")};
     sf::FloatRect txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
     sf::FloatRect txrCatPaw{addImgResourceToAtlas("catpaw.png")};
+    sf::FloatRect txrCatTail{addImgResourceToAtlas("cattail.png")};
+    sf::FloatRect txrSmartCatHat{addImgResourceToAtlas("smartcathat.png")};
+    sf::FloatRect txrSmartCatDiploma{addImgResourceToAtlas("smartcatdiploma.png")};
+    sf::FloatRect txrBrainBack{addImgResourceToAtlas("brainback.png")};
+    sf::FloatRect txrBrainFront{addImgResourceToAtlas("brainfront.png")};
+    sf::FloatRect txrUniCatTail{addImgResourceToAtlas("unicattail.png")};
+    sf::FloatRect txrUniCat2Tail{addImgResourceToAtlas("unicat2tail.png")};
+    sf::FloatRect txrDevilCatTail{addImgResourceToAtlas("devilcattail.png")};
+    sf::FloatRect txrDevilCatTail2{addImgResourceToAtlas("devilcattail2.png")};
+    sf::FloatRect txrAstroCatTail{addImgResourceToAtlas("astrocattail.png")};
+    sf::FloatRect txrAstroCatFlag{addImgResourceToAtlas("astrocatflag.png")};
+    sf::FloatRect txrWitchCatTail{addImgResourceToAtlas("witchcattail.png")};
+    sf::FloatRect txrWizardCatTail{addImgResourceToAtlas("wizardcattail.png")};
+    sf::FloatRect txrMouseCatTail{addImgResourceToAtlas("mousecattail.png")};
+    sf::FloatRect txrEngiCatTail{addImgResourceToAtlas("engicattail.png")};
+    sf::FloatRect txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
+    sf::FloatRect txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
+    sf::FloatRect txrAttractoCatTail{addImgResourceToAtlas("attractocattail.png")};
+    sf::FloatRect txrAttractoCatMagnet{addImgResourceToAtlas("attractocatmagnet.png")};
     sf::FloatRect txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
     sf::FloatRect txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
     sf::FloatRect txrDevilCatPaw2{addImgResourceToAtlas("devilcatpaw2.png")};
@@ -438,7 +472,6 @@ struct Main
     sf::FloatRect txrWitchCat{addImgResourceToAtlas("witchcat.png")};
     sf::FloatRect txrWitchCatPaw{addImgResourceToAtlas("witchcatpaw.png")};
     sf::FloatRect txrAstroCat{addImgResourceToAtlas("astromeow.png")};
-    sf::FloatRect txrAstroCatWithFlag{addImgResourceToAtlas("astromeowwithflag.png")};
     sf::FloatRect txrBomb{addImgResourceToAtlas("bomb.png")};
     sf::FloatRect txrShrine{addImgResourceToAtlas("shrine.png")};
     sf::FloatRect txrWizardCat{addImgResourceToAtlas("wizardcat.png")};
@@ -455,6 +488,122 @@ struct Main
     sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
     sf::FloatRect txrCatSoul{addImgResourceToAtlas("catsoul.png")};
     sf::FloatRect txrHellPortal{addImgResourceToAtlas("hellportal.png")};
+    sf::FloatRect txrCatEyeLid0{addImgResourceToAtlas("cateyelid0.png")};
+    sf::FloatRect txrCatEyeLid1{addImgResourceToAtlas("cateyelid1.png")};
+    sf::FloatRect txrCatEyeLid2{addImgResourceToAtlas("cateyelid2.png")};
+    sf::FloatRect txrCatWhiteEyeLid0{addImgResourceToAtlas("catwhiteeyelid0.png")};
+    sf::FloatRect txrCatWhiteEyeLid1{addImgResourceToAtlas("catwhiteeyelid1.png")};
+    sf::FloatRect txrCatWhiteEyeLid2{addImgResourceToAtlas("catwhiteeyelid2.png")};
+    sf::FloatRect txrCatDarkEyeLid0{addImgResourceToAtlas("catdarkeyelid0.png")};
+    sf::FloatRect txrCatDarkEyeLid1{addImgResourceToAtlas("catdarkeyelid1.png")};
+    sf::FloatRect txrCatDarkEyeLid2{addImgResourceToAtlas("catdarkeyelid2.png")};
+    sf::FloatRect txrCatGrayEyeLid0{addImgResourceToAtlas("catgrayeyelid0.png")};
+    sf::FloatRect txrCatGrayEyeLid1{addImgResourceToAtlas("catgrayeyelid1.png")};
+    sf::FloatRect txrCatGrayEyeLid2{addImgResourceToAtlas("catgrayeyelid2.png")};
+    sf::FloatRect txrCatEars0{addImgResourceToAtlas("catears0.png")};
+    sf::FloatRect txrCatEars1{addImgResourceToAtlas("catears1.png")};
+    sf::FloatRect txrCatEars2{addImgResourceToAtlas("catears2.png")};
+    sf::FloatRect txrCatYawn0{addImgResourceToAtlas("catyawn0.png")};
+    sf::FloatRect txrCatYawn1{addImgResourceToAtlas("catyawn1.png")};
+    sf::FloatRect txrCatYawn2{addImgResourceToAtlas("catyawn2.png")};
+    sf::FloatRect txrCatYawn3{addImgResourceToAtlas("catyawn3.png")};
+    sf::FloatRect txrCatYawn4{addImgResourceToAtlas("catyawn4.png")};
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: eye blinking
+    const sf::FloatRect* eyeLidRects[8]{
+        &txrCatEyeLid2,
+        &txrCatEyeLid1,
+        &txrCatEyeLid0,
+        &txrCatEyeLid0,
+        &txrCatEyeLid0,
+        &txrCatEyeLid0,
+        &txrCatEyeLid1,
+        &txrCatEyeLid2,
+    };
+
+    static inline constexpr auto nEyeLidRects = sf::base::getArraySize(&Main::eyeLidRects);
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: eye blinking (white)
+    const sf::FloatRect* whiteEyeLidRects[8]{
+        &txrCatWhiteEyeLid2,
+        &txrCatWhiteEyeLid1,
+        &txrCatWhiteEyeLid0,
+        &txrCatWhiteEyeLid0,
+        &txrCatWhiteEyeLid0,
+        &txrCatWhiteEyeLid0,
+        &txrCatWhiteEyeLid1,
+        &txrCatWhiteEyeLid2,
+    };
+
+    static inline constexpr auto nWhiteEyeLidRects = sf::base::getArraySize(&Main::whiteEyeLidRects);
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: eye blinking (dark)
+    const sf::FloatRect* darkEyeLidRects[8]{
+        &txrCatDarkEyeLid2,
+        &txrCatDarkEyeLid1,
+        &txrCatDarkEyeLid0,
+        &txrCatDarkEyeLid0,
+        &txrCatDarkEyeLid0,
+        &txrCatDarkEyeLid0,
+        &txrCatDarkEyeLid1,
+        &txrCatDarkEyeLid2,
+    };
+
+    static inline constexpr auto nDarkEyeLidRects = sf::base::getArraySize(&Main::darkEyeLidRects);
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: eye blinking (gray)
+    const sf::FloatRect* grayEyeLidRects[8]{
+        &txrCatGrayEyeLid2,
+        &txrCatGrayEyeLid1,
+        &txrCatGrayEyeLid0,
+        &txrCatGrayEyeLid0,
+        &txrCatGrayEyeLid0,
+        &txrCatGrayEyeLid0,
+        &txrCatGrayEyeLid1,
+        &txrCatGrayEyeLid2,
+    };
+
+    static inline constexpr auto nGrayEyeLidRects = sf::base::getArraySize(&Main::grayEyeLidRects);
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: ear flapping
+    const sf::FloatRect* earRects[8]{
+        &txrCatEars0,
+        &txrCatEars1,
+        &txrCatEars2,
+        &txrCatEars2,
+        &txrCatEars2,
+        &txrCatEars2,
+        &txrCatEars1,
+        &txrCatEars0,
+    };
+
+    static inline constexpr auto nEarRects = sf::base::getArraySize(&Main::earRects);
+
+    ////////////////////////////////////////////////////////////
+    // Cat animation rects: yawning
+    const sf::FloatRect* catYawnRects[14]{
+        &txrCatYawn0,
+        &txrCatYawn1,
+        &txrCatYawn2,
+        &txrCatYawn3,
+        &txrCatYawn4,
+        &txrCatYawn4,
+        &txrCatYawn4,
+        &txrCatYawn4,
+        &txrCatYawn4,
+        &txrCatYawn4,
+        &txrCatYawn3,
+        &txrCatYawn2,
+        &txrCatYawn1,
+        &txrCatYawn0,
+    };
+
+    static inline constexpr auto nYawnRects = sf::base::getArraySize(&Main::catYawnRects);
 
     ///////////////////////////////////////////////////////////
     const sf::FloatRect particleRects[nParticleTypes] = {
@@ -660,8 +809,14 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Tip state
-    float       tipTimer{0.f};
-    std::string tipString;
+    OptionalTargetedCountdown tipTCByte;
+    OptionalTargetedCountdown tipTCBackground;
+    OptionalTargetedCountdown tipTCByteEnd;
+    OptionalTargetedCountdown tipTCBackgroundEnd;
+    Countdown                 tipCountdownChar;
+    std::string               tipString;
+    TextEffectWiggle          tipStringWiggle{0.00175f, 4.f};
+    sf::base::SizeT           tipCharIdx{0u};
 
     ////////////////////////////////////////////////////////////
     // Text buffers
@@ -693,6 +848,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Cached views
     sf::View gameView;
+    sf::View gameViewNoScroll;
     sf::View nonScaledHUDView;
     sf::View scaledHUDView;
 
@@ -1114,6 +1270,10 @@ struct Main
             .type                  = catType,
             .hexedTimer            = {},
             .astroState            = {},
+            .blinkCountdown        = {},
+            .blinkAnimCountdown    = {},
+            .flapCountdown         = {},
+            .flapAnimCountdown     = {},
         });
     }
 
@@ -1132,14 +1292,31 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void resetTipState()
+    {
+        tipTCByte.reset();
+        tipTCBackground.reset();
+        tipTCByteEnd.reset();
+        tipTCBackgroundEnd.reset();
+        tipCountdownChar.value = 0.f;
+        tipString              = "";
+        tipCharIdx             = 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
     void doTip(const std::string& str, const SizeT maxPrestigeLevel = 0u)
     {
         if (!profile.tipsEnabled || pt.psvBubbleValue.nPurchases > maxPrestigeLevel)
             return;
 
-        playSound(sounds.byteMeow);
-        tipString = str;
-        tipTimer  = 6000.f;
+        playSound(sounds.byteMeow, /* maxOverlap */ 1u);
+
+        resetTipState();
+
+        tipTCByte.emplace(TargetedCountdown{.startingValue = 500.f});
+        tipTCByte->restart();
+
+        tipString = str + "\t\t\t\t\t";
     }
 
     ////////////////////////////////////////////////////////////
@@ -4066,6 +4243,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
 
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+            ImGui::SliderFloat("Background Hue", &profile.backgroundHue, -60.f, 60.f, "%.f%%");
+
             uiCheckbox("Show cat text", &profile.showCatText);
             uiCheckbox("Show particles", &profile.showParticles);
 
@@ -4083,11 +4263,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             {
                 ImGui::SetWindowFontScale(0.75f);
 
-                ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
-                ImGui::SliderFloat("Iridescence", &profile.bsIridescenceStrength, 0.f, 1.f, "%.2f");
-
                 if (isDebugModeEnabled())
                 {
+                    ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+                    ImGui::SliderFloat("Iridescence", &profile.bsIridescenceStrength, 0.f, 1.f, "%.2f");
+
                     ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
                     ImGui::SliderFloat("Edge Factor Min", &profile.bsEdgeFactorMin, 0.f, 1.f, "%.2f");
 
@@ -4096,16 +4276,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                     ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
                     ImGui::SliderFloat("Edge Factor Strength", &profile.bsEdgeFactorStrength, 0.f, 10.f, "%.2f");
+
+                    ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+                    ImGui::SliderFloat("Distortion Strength", &profile.bsDistortionStrength, 0.f, 1.f, "%.2f");
+
+                    ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+                    ImGui::SliderFloat("Lens Distortion", &profile.bsLensDistortion, 0.f, 10.f, "%.2f");
                 }
 
                 ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
-                ImGui::SliderFloat("Distortion Strength", &profile.bsDistortionStrength, 0.f, 1.f, "%.2f");
-
-                ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
                 ImGui::SliderFloat("Bubble Lightness", &profile.bsBubbleLightness, -1.f, 1.f, "%.2f");
-
-                ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
-                ImGui::SliderFloat("Lens Distortion", &profile.bsLensDistortion, 0.f, 2.f, "%.2f");
 
                 ImGui::SetWindowFontScale(uiNormalFontScale);
             }
@@ -4270,6 +4450,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             if (ImGui::Button("Do Ritual"))
                 if (auto* wc = findFirstCatByType(CatType::Witch))
                     wc->cooldown.value = 10.f;
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Tip"))
+                doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
 
             ImGui::Separator();
 
@@ -4897,7 +5082,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 bubble.rotation += deltaTimeMs * 0.01f;
 
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
-                bubble.hueMod += deltaTimeMs * 0.005f;
+                bubble.hueMod += deltaTimeMs * 0.085f;
 
             const float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
 
@@ -6321,8 +6506,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         playSound(sounds.woosh);
                         ++pt.nShrinesCompleted;
 
-                        pt.perm.shrineCompletedOnceByType[asIdx(shrineTypeToCatType(shrine.type))] = true;
-
                         const auto doShrineReward = [&](const CatType catType)
                         {
                             if (findFirstCatByType(catType) == nullptr)
@@ -6401,6 +6584,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                     "The Attractocat has been unsealed!\nNearby bubbles getting attracted to\nthem "
                                     "gain a x2 multiplier.");
                         }
+
+                        pt.perm.shrineCompletedOnceByType[asIdx(shrineTypeToCatType(shrine.type))] = true;
                     }
                     else if (cdStatus == CountdownStatusStop::Running)
                     {
@@ -7303,7 +7488,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             SFML_BASE_ASSERT(bubble.type == BubbleType::Normal);
 
-            constexpr float hueRange = 60.f;
+            constexpr float hueRange = 75.f;
 
             const bool beingRepelledOrAttracted = !bubble.attractedCountdown.isDone() || !bubble.repelledCountdown.isDone();
 
@@ -7361,7 +7546,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     {
         auto& window = getWindow();
 
-        if (!shader.setUniform(suBackgroundTexture, txBackground))
+        if (rtBackground.hasValue() && !shader.setUniform(suBackgroundTexture, rtBackground->getTexture()))
         {
             profile.useBubbleShader = false;
             gameLoopDisplayBubblesWithoutShader();
@@ -7400,7 +7585,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         window.draw(bubbleDrawableBatch, bubbleStates);
 
-        shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.5f);
+        shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
         shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
         shader.setUniform(suSubTexSize, txrBubbleStar.size);
 
@@ -7414,22 +7599,20 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCats(const sf::Vector2f mousePos, const float deltaTimeMs)
     {
-        const sf::FloatRect* const normalCatTxr = pt.perm.geniusCatsPurchased  ? &txrGeniusCat
-                                                  : pt.perm.smartCatsPurchased ? &txrSmartCat
-                                                                               : &txrCat;
-
+        ////////////////////////////////////////////////////////////
         const sf::FloatRect* const uniCatTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2 : &txrUniCat;
+        const sf::FloatRect* const uniCatTailTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2Tail : &txrUniCatTail;
 
         const sf::FloatRect* const devilCatTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCat2 : &txrDevilCat;
         const sf::FloatRect* const devilCatPawTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCatPaw2 : &txrDevilCatPaw;
+        const sf::FloatRect* const devilCatTailTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCatTail2 : &txrDevilCatTail;
 
-        const sf::FloatRect* const astroCatTxr = pt.perm.astroCatInspirePurchased ? &txrAstroCatWithFlag : &txrAstroCat;
-
+        ////////////////////////////////////////////////////////////
         const sf::FloatRect* const catTxrsByType[] = {
-            normalCatTxr, // Normal
+            &txrCat,      // Normal
             uniCatTxr,    // Uni
             devilCatTxr,  // Devil
-            astroCatTxr,  // Astro
+            &txrAstroCat, // Astro
 
             &txrWitchCat,    // Witch
             &txrWizardCat,   // Wizard
@@ -7441,6 +7624,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
 
+        ////////////////////////////////////////////////////////////
         const sf::FloatRect* const catPawTxrsByType[] = {
             &txrCatPaw,     // Normal
             &txrUniCatPaw,  // Uni
@@ -7456,6 +7640,56 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         };
 
         static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
+
+        ////////////////////////////////////////////////////////////
+        const sf::FloatRect* const catTailTxrsByType[] = {
+            &txrCatTail,      // Normal
+            uniCatTailTxr,    // Uni
+            devilCatTailTxr,  // Devil
+            &txrAstroCatTail, // Astro
+
+            &txrWitchCatTail,    // Witch
+            &txrWizardCatTail,   // Wizard
+            &txrMouseCatTail,    // Mouse
+            &txrEngiCatTail,     // Engi
+            &txrRepulsoCatTail,  // Repulso
+            &txrAttractoCatTail, // Attracto
+        };
+
+        static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
+
+        ////////////////////////////////////////////////////////////
+        const sf::Vector2f catTailOffsetsByType[] = {
+            {0.f, 0.f},    // Normal
+            {0.f, 69.f},   // Uni
+            {4.f, -6.f},   // Devil
+            {56.f, -80.f}, // Astro
+
+            {37.f, 165.f}, // Witch
+            {0.f, -35.f},  // Wizard
+            {0.f, 0.f},    // Mouse
+            {2.f, 43.f},   // Engi
+            {4.f, -29.f},  // Repulso
+            {0.f, 0.f},    // Attracto
+        };
+
+        static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
+
+        const float catHueByType[] = {
+            0.f,   // Normal
+            160.f, // Uni
+            -25.f, // Devil
+            0.f,   // Astro
+
+            80.f,   // Witch
+            -135.f, // Wizard
+            0.f,    // Mouse
+            -10.f,  // Engi
+            -40.f,  // Repulso
+            0.f,    // Attracto
+        };
+
+        static_assert(sf::base::getArraySize(catHueByType) == nCatTypes);
 
         bool anyCatHovered = false;
 
@@ -7526,9 +7760,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             }
 
             if (cat.type == CatType::Wizard)
-            {
                 catRotation += wizardcatSpin.value;
-            }
 
             const auto range = pt.getComputedRangeByCatType(cat.type);
 
@@ -7559,22 +7791,228 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 });
 
             const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
+            const auto  catScale     = sf::Vector2f{0.2f, 0.2f} * catScaleMult;
 
+            const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition();
+
+            const auto anchorOffset = [&](const sf::Vector2f offset)
+            { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
+
+            const auto tailWiggleRotation = sf::radians(catRotation + (beingDragged ? -0.2f : 0.f) +
+                                                        std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f));
+
+            const sf::Vector2f pushDown{0.f, beingDragged ? 75.f : 0.f};
+
+            const auto attachmentHue = hueColor(wrapHue(catHueByType[asIdx(cat.type)] + cat.hue), alpha);
+
+            //
+            // Draw brain jar in the background
+            if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+                               .scale       = catScale,
+                               .origin      = txrBrainBack.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = txrBrainBack,
+                               .color       = catColor});
+            }
+
+            //
+            // Draw cat main shape
             cpuDrawableBatch.add(
-                sf::Sprite{.position    = beingDragged ? cat.position : cat.getDrawPosition(),
-                           .scale       = sf::Vector2f{0.2f, 0.2f} * catScaleMult,
+                sf::Sprite{.position    = catAnchor,
+                           .scale       = catScale,
                            .origin      = catTxr.size / 2.f,
                            .rotation    = sf::radians(catRotation),
                            .textureRect = catTxr,
                            .color       = catColor});
+
+            //
+            // Draw graudation hat
+            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased)
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
+                               .scale       = catScale,
+                               .origin      = txrSmartCatHat.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = txrSmartCatHat,
+                               .color       = catColor});
+            }
+
+            //
+            // Ear flapping animation
+            if (cat.flapCountdown.isDone() && cat.flapAnimCountdown.isDone())
+            {
+                if (rng.getI(0, 100) > 92) // Double-flap chance
+                    cat.flapCountdown.value = 75.f;
+                else
+                    cat.flapCountdown.value = rng.getF(2500.f, 6500.f);
+            }
+
+            if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                cat.flapAnimCountdown.value = 75.f * nEarRects;
+
+            (void)cat.flapAnimCountdown.updateAndStop(deltaTimeMs);
+
+            if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffsetsByType[asIdx(cat.type)] + sf::Vector2f{-131.f, -365.f}),
+                               .scale    = catScale,
+                               .origin   = txrCatEars0.size / 2.f,
+                               .rotation = sf::radians(catRotation),
+                               .textureRect = *earRects[static_cast<unsigned int>(cat.flapAnimCountdown.value / 75.f) % nEarRects],
+                               .color = attachmentHue});
+            }
+
+            //
+            // Yawning animation
+            const auto yawnRectIdx = static_cast<unsigned int>(cat.yawnAnimCountdown.value / 75.f) % nYawnRects;
+
+            if (cat.type != CatType::Devil && cat.type != CatType::Wizard && cat.type != CatType::Mouse &&
+                cat.type != CatType::Engi)
+            {
+                if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
+                    cat.yawnCountdown.value = rng.getF(6500.f, 12500.f);
+
+                if (cat.blinkAnimCountdown.isDone() &&
+                    cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                    cat.yawnAnimCountdown.value = 75.f * nYawnRects;
+
+                (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
+
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffsetsByType[asIdx(cat.type)] + sf::Vector2f{-221.f, 25.f}),
+                               .scale       = catScale,
+                               .origin      = txrCatYawn0.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = *catYawnRects[yawnRectIdx],
+                               .color       = attachmentHue});
+            }
+            else
+            {
+                cat.yawnCountdown.value = cat.yawnAnimCountdown.value = 0.f;
+            }
+
+            //
+            // Draw attachments
+            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased) // Smart cat diploma
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {23.f, 150.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrSmartCatDiploma,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Astro && pt.perm.astroCatInspirePurchased) // Astro cat flag
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {98.f, 330.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrAstroCatFlag,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Engi) // Engi cat wrench
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {36.f, 167.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrEngiCatWrench,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Attracto) // Attracto cat magnet
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {142.f, 254.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrAttractoCatMagnet,
+                               .color       = catColor});
+            }
+
+            //
+            // Draw cat tail
+            cpuDrawableBatch.add(
+                sf::Sprite{.position = anchorOffset(catTailOffsetsByType[asIdx(cat.type)] + sf::Vector2f{475.f, 240.f}),
+                           .scale    = catScale,
+                           .origin   = {320.f, 32.f},
+                           .rotation = tailWiggleRotation,
+                           .textureRect = *catTailTxrsByType[asIdx(cat.type)],
+                           .color       = catColor});
+
+            //
+            // Eye blining animation
+            const auto& eyelidArray = //
+                (cat.type == CatType::Mouse || cat.type == CatType::Attracto) ? grayEyeLidRects
+                : (cat.type == CatType::Engi || (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased))
+                    ? darkEyeLidRects
+                : (cat.type == CatType::Astro || cat.type == CatType::Uni)
+                    ? whiteEyeLidRects
+                    : eyeLidRects;
+
+            if (cat.blinkCountdown.isDone() && cat.blinkAnimCountdown.isDone())
+            {
+                if (rng.getI(0, 100) > 90) // Double animation chance
+                    cat.blinkCountdown.value = 75.f;
+                else
+                    cat.blinkCountdown.value = rng.getF(800.f, 2500.f);
+            }
+
+            if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                cat.blinkAnimCountdown.value = 75.f * nEyeLidRects;
+
+            (void)cat.blinkAnimCountdown.updateAndStop(deltaTimeMs);
+
+            if (!cat.yawnAnimCountdown.isDone())
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffsetsByType[asIdx(cat.type)] + sf::Vector2f{-185.f, -185.f}),
+                               .scale       = catScale,
+                               .origin      = txrCatEyeLid0.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = *eyelidArray[static_cast<unsigned int>(
+                                   remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
+                               .color       = attachmentHue});
+            }
+            else if (!cat.blinkAnimCountdown.isDone())
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffsetsByType[asIdx(cat.type)] + sf::Vector2f{-185.f, -185.f}),
+                               .scale    = catScale,
+                               .origin   = txrCatEyeLid0.size / 2.f,
+                               .rotation = sf::radians(catRotation),
+                               .textureRect = *eyelidArray[static_cast<unsigned int>(cat.blinkAnimCountdown.value / 75.f) % nEyeLidRects],
+                               .color = attachmentHue});
+            }
+
+            if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+                               .scale       = catScale,
+                               .origin      = txrBrainFront.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = txrBrainFront,
+                               .color       = catColor});
+            }
 
             if (!bubbleCullingBoundaries.isInside(cat.position))
                 continue;
 
             if (!cat.hexedTimer.hasValue())
                 cpuDrawableBatch.add(
-                    sf::Sprite{.position    = cat.pawPosition,
-                               .scale       = sf::Vector2f{0.2f, 0.2f} * catScaleMult,
+                    sf::Sprite{.position = cat.pawPosition +
+                                           (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
+                               .scale       = catScale,
                                .origin      = catPawTxr.size / 2.f,
                                .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
                                .textureRect = catPawTxr,
@@ -7816,6 +8254,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                 gameScreenSize.x / 2.f,
                                 boundaries.x - gameScreenSize.x / 2.f),
                 gameScreenSize.y / 2.f};
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vector2f getViewCenterWithoutScroll() const
+    {
+        return {gameScreenSize.x / 2.f, gameScreenSize.y / 2.f};
     }
 
     ////////////////////////////////////////////////////////////
@@ -8119,69 +8563,136 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void gameLoopTips(const float deltaTimeMs)
     {
-        if (tipTimer <= 0.f)
-            return;
-
-        tipTimer -= deltaTimeMs;
-
         if (!profile.tipsEnabled)
+        {
+            resetTipState();
+            return;
+        }
+
+        if (!tipTCByte.hasValue())
             return;
 
-        float fade = 255.f;
+        bool mustSpawnByteParticles = false;
+        if (tipTCByte->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        {
+            mustSpawnByteParticles = true;
+            tipTCBackground.emplace(TargetedCountdown{.startingValue = 500.f});
+            tipTCBackground->restart();
+        }
 
-        if (tipTimer > 5'500.f)
-            fade = remap(tipTimer, 5'500.f, 6000.f, 255.f, 0.f);
-        else if (tipTimer < 500.f)
-            fade = remap(tipTimer, 0.f, 500.f, 0.f, 255.f);
+        if (tipTCBackground.hasValue())
+            (void)tipTCBackground->updateAndStop(deltaTimeMs);
 
-        const auto alpha = static_cast<U8>(sf::base::clamp(fade, 0.f, 255.f));
+        if (tipTCByteEnd.hasValue() && tipTCByteEnd->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        {
+            resetTipState();
+            return;
+        }
 
-        sounds.byteSpeak.setPitch(1.6f);
+        const float bgProgress = tipTCByteEnd.hasValue() ? tipTCByteEnd->getInvProgress() : tipTCBackground.getProgress();
+        const float byteProgress = tipTCByteEnd.hasValue() ? tipTCByteEnd->getInvProgress() : tipTCByte.getProgress();
 
-        sf::Text tipText{fontSuperBakery,
-                         {.position         = {},
-                          .scale            = {0.5f, 0.5f},
-                          .string           = tipString.substr(0,
-                                                     static_cast<SizeT>(
-                                                         sf::base::clamp((5'100.f - tipTimer) / 25.f,
-                                                                         0.f,
-                                                                         static_cast<float>(tipString.size())))),
-                          .characterSize    = 60u,
-                          .fillColor        = sf::Color::White.withAlpha(alpha),
-                          .outlineColor     = colorBlueOutline.withAlpha(alpha),
-                          .outlineThickness = 4.f}};
+        const float tipByteAlpha       = byteProgress * 255.f;
+        const float tipBackgroundAlpha = bgProgress * 255.f;
 
-        if (tipText.getString().getSize() < tipString.size() && tipText.getString().getSize() > 0)
-            playSound(sounds.byteSpeak, /* maxOverlap */ 1u);
+        sf::Sprite tipBackgroundSprite{.position = {},
+                                       .scale = sf::Vector2f{0.4f, 0.4f} + sf::Vector2f{0.4f, 0.4f} * easeInOutBack(bgProgress),
+                                       .origin      = txTipBg.getSize().toVector2f() / 2.f,
+                                       .textureRect = txTipBg.getRect(),
+                                       .color = sf::Color::White.withAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
-        sf::Sprite tipSprite{.position    = {},
-                             .scale       = {0.8f, 0.8f},
-                             .origin      = txTipBg.getSize().toVector2f() / 2.f,
-                             .textureRect = txTipBg.getRect(),
-                             .color       = sf::Color::White.withAlpha(static_cast<U8>(alpha * 0.85f))};
 
         SFML_BASE_ASSERT(profile.hudScale > 0.f);
 
-        tipSprite.setBottomCenter(
+        tipBackgroundSprite.setBottomCenter(
             {getResolution().x / 2.f / getHUDScalingFactor(), getResolution().y / getHUDScalingFactor() - 50.f});
-        getWindow().draw(tipSprite, txTipBg);
+
+        getWindow().draw(tipBackgroundSprite, txTipBg);
 
         sf::Sprite tipByteSprite{.position    = {},
-                                 .scale       = {0.7f, 0.7f},
+                                 .scale       = sf::Vector2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
                                  .origin      = txTipByte.getSize().toVector2f() / 2.f,
+                                 .rotation    = sf::radians(sf::base::tau * easeInOutBack(byteProgress)),
                                  .textureRect = txTipByte.getRect(),
-                                 .color       = sf::Color::White.withAlpha(alpha)};
+                                 .color       = sf::Color::White.withAlpha(static_cast<U8>(tipByteAlpha))};
 
-        tipByteSprite.setCenter(tipSprite.getCenterRight().addY(-40.f));
+        tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
         getWindow().draw(tipByteSprite, txTipByte);
 
-        tipText.setTopLeft(tipSprite.getTopLeft() + sf::Vector2f{45.f, 65.f});
+        if (mustSpawnByteParticles)
+        {
+            for (SizeT i = 0u; i < 32u; ++i)
+                spawnHUDTopParticle({.position      = tipByteSprite.position,
+                                     .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.1f}) * 1.5f,
+                                     .scale         = rng.getF(0.18f, 0.32f) * 1.55f,
+                                     .accelerationY = 0.0015f,
+                                     .opacity       = 1.f,
+                                     .opacityDecay  = rng.getF(0.00025f, 0.0015f) * 0.5f,
+                                     .rotation      = rng.getF(0.f, sf::base::tau),
+                                     .torque        = rng.getF(-0.002f, 0.002f)},
+                                    /* hue */ 0.f,
+                                    ParticleType::Star);
+        }
+
+        const auto getCharDelay = [](const char c)
+        {
+            if (c == '\t')
+                return 250.f;
+
+            if (c == '.' || c == ',' || c == '!' || c == '?' || c == ':')
+                return 250.f;
+
+            return 30.f;
+        };
+
+        const auto getCharSound = [](const char c) { return std::isalnum(c); };
+
+        if (tipTCBackground.hasValue() && tipTCBackground->isDone() && tipCharIdx < tipString.size() &&
+            tipCountdownChar.isDone())
+            tipCountdownChar.value = tipCharIdx > 0u ? getCharDelay(tipString[tipCharIdx - 1u]) : 50.f;
+
+        if (tipCountdownChar.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        {
+            if (getCharSound(tipString[tipCharIdx]))
+            {
+                sounds.byteSpeak.setPitch(1.6f);
+                playSound(sounds.byteSpeak, /* maxOverlap */ 1u);
+            }
+
+            ++tipCharIdx;
+
+            if (tipCharIdx == tipString.size())
+            {
+                tipTCByteEnd.emplace(TargetedCountdown{.startingValue = 750.f});
+                tipTCByteEnd->restart();
+            }
+        }
+
+        sf::Text tipText{fontSuperBakery,
+                         {.position         = {},
+                          .scale            = sf::Vector2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
+                          .string           = tipString.substr(0, tipCharIdx),
+                          .characterSize    = 60u,
+                          .fillColor        = sf::Color::White.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                          .outlineColor     = colorBlueOutline.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                          .outlineThickness = 4.f}};
+
+        tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vector2f{45.f, 65.f});
+
+        tipStringWiggle.advance(deltaTimeMs);
+        tipStringWiggle.apply(tipText);
+
         getWindow().draw(tipText);
+
+        tipStringWiggle.unapply(tipText);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoopRecreateWindowIfNeeded()
     {
+        // TODO P2: (lib) all this stuff shouldn't be needed, also it creates a brand new opengl context every time
+        // TODO P2: (lib) need test where glcontext 1 is active, rendertexture is created, then glcontext 1 is destroyed, and variations
+
         if (!mustRecreateWindow)
             return true;
 
@@ -8190,6 +8701,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const sf::Vector2u newResolution = profile.resWidth == sf::Vector2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
 
         const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
+
+        rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
 
         optWindow.emplace(
             sf::WindowSettings{.size            = newResolution,
@@ -8201,6 +8714,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                .vsync           = profile.vsync,
                                .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
                                .contextSettings = contextSettings});
+
+        rtBackground.emplace(
+            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = true}).value());
 
         dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
 
@@ -9071,11 +9587,26 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const auto screenShake = rng.getVec2f({-screenShakeAmount, -screenShakeAmount},
                                               {screenShakeAmount, screenShakeAmount});
 
-        nonScaledHUDView             = {.center = resolution / 2.f, .size = resolution};
-        scaledHUDView                = makeScaledHUDView(resolution, getHUDScalingFactor());
+        nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
+        scaledHUDView    = makeScaledHUDView(resolution, getHUDScalingFactor());
+
         gameView                     = createScaledGameView(gameScreenSize, resolution);
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
+
+        //  (TODO P0: cleanup)
+        // Calculate the scale factors for both dimensions
+        const float scaleX = resolution.x / gameScreenSize.x;
+        const float scaleY = resolution.y / gameScreenSize.y;
+
+        // Use the smaller scale factor to maintain aspect ratio
+        const float scale = std::min(scaleX, scaleY);
+
+        // Calculate the scaled dimensions
+        const sf::Vector2f scaledSize        = gameScreenSize * scale;
+        gameViewNoScroll                     = createScaledGameView(gameScreenSize, scaledSize);
+        gameViewNoScroll.viewport.position.x = 0.f;
+        gameViewNoScroll.center              = getViewCenterWithoutScroll() + screenShake;
 
         //
         // Clear window
@@ -9086,15 +9617,58 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
 
         //
-        // Background
-        window.setView(gameView);
-        window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries}}, /* texture */ nullptr);
-        window.draw(txBackground,
-                    {.color = sf::Color::White.withAlpha(static_cast<U8>(profile.backgroundOpacity / 100.f * 255.f))},
-                    {.shader = &shader});
+        // Background (TODO P0: cleanup)
+        static float backgroundScroll = 0.f;
+        backgroundScroll += deltaTimeMs * 0.01f;
+
+        if (rtBackground.hasValue())
+        {
+            rtBackground->clear(sf::Color::Black);
+
+            rtBackground->setView(gameViewNoScroll);
+            rtBackground->setRepeated(true);
+
+            const auto getAlpha = [&](const float mult)
+            { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
+
+            rtBackground->draw(txBackground,
+                               {
+                                   .scale       = {0.5f, 0.5f},
+                                   .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
+                                                   txBackground.getSize().toVector2f() * 2.f},
+                                   .color       = hueColor(wrapHue(profile.backgroundHue), getAlpha(255.f)),
+                               });
+
+            rtBackground->draw(txDrawings,
+                               {
+                                   .textureRect = {{actualScroll * 2.f, 0.f}, txBackground.getSize().toVector2f() * 2.f},
+                                   .color = sf::Color::White.withAlpha(getAlpha(200.f)),
+                               });
+
+            rtBackground->draw(txClouds,
+                               {
+                                   .scale       = {0.75f, 0.75f},
+                                   .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
+                                                   txBackground.getSize().toVector2f() * 1.5f},
+                                   .color       = sf::Color::White.withAlpha(getAlpha(175.f)),
+                               });
+
+            rtBackground->draw(txClouds,
+                               {
+                                   .scale       = {1.25f, 1.25f},
+                                   .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
+                                                   txBackground.getSize().toVector2f()},
+                                   .color       = sf::Color::White.withAlpha(getAlpha(128.f)),
+                               });
+
+            rtBackground->display();
+
+            window.draw(rtBackground->getTexture(), {.scale = {scale, scale}, .textureRect{{0.f, 0.f}, gameScreenSize}});
+        }
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
+        window.setView(gameView);
         bubbleDrawableBatch.clear();
         starBubbleDrawableBatch.clear();
         bombBubbleDrawableBatch.clear();
@@ -9266,6 +9840,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr)
     {
+        txBackground.setRepeated(true); // TODO P2: (lib) to texture settings
+        txClouds.setRepeated(true);     // TODO P2: (lib) to texture settings
+
         //
         // Profile
         if (sf::Path{"userdata/profile.json"}.exists())
