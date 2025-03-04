@@ -22,6 +22,7 @@ struct [[nodiscard]] Profile
     bool tipsEnabled = true;
 
     float backgroundOpacity = 100.f;
+    float backgroundHue     = 0.f;
 
     bool showCatText         = true;
     bool showParticles       = true;
@@ -30,13 +31,13 @@ struct [[nodiscard]] Profile
     bool showCursorComboText = true;
     bool useBubbleShader     = true;
 
-    float bsIridescenceStrength = 0.65f;
+    float bsIridescenceStrength = 0.7f;
     float bsEdgeFactorMin       = 0.f;
     float bsEdgeFactorMax       = 0.6f;
     float bsEdgeFactorStrength  = 1.35f;
     float bsDistortionStrength  = 0.085f;
     float bsBubbleLightness     = 0.25f;
-    float bsLensDistortion      = 0.4f;
+    float bsLensDistortion      = 6.5f;
 
     Stats statsLifetime;
 
