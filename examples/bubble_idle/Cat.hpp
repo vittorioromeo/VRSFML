@@ -18,6 +18,18 @@
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Cat
 {
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] AstroState
+    {
+        float startX;
+
+        float velocityX     = 0.f;
+        float particleTimer = 0.f;
+
+        bool wrapped = false;
+    };
+
+    ////////////////////////////////////////////////////////////
     Timer spawnEffectTimer;
 
     sf::Vector2f position;
@@ -48,18 +60,16 @@ struct [[nodiscard]] Cat
 
     MoneyType moneyEarned = 0u;
 
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] AstroState
-    {
-        float startX;
-
-        float velocityX     = 0.f;
-        float particleTimer = 0.f;
-
-        bool wrapped = false;
-    };
-
     sf::base::Optional<AstroState> astroState;
+
+    Countdown blinkCountdown;
+    Countdown blinkAnimCountdown;
+
+    Countdown flapCountdown;
+    Countdown flapAnimCountdown;
+
+    Countdown yawnCountdown;
+    Countdown yawnAnimCountdown;
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] inline void update(const float deltaTime)
