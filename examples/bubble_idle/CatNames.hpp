@@ -38,13 +38,13 @@ inline constexpr const char* uniCatNames[] =
      "Satoru",  "Shun",        "Saki",      "Mamoru",    "Maria"};
 
 ////////////////////////////////////////////////////////////
-inline constexpr const char* devilCatNames[] = {
-    "Atronach",       "Inferno",     "Satan",      "Lucifer",   "Beelzebub", "Mephisto",   "Diablo",       "Baphomet",
-    "Belial",         "Moloch",      "Asmodeus",   "Leviathan", "Behemoth",  "Krampus",    "Azazel",       "Abaddon",
-    "Astaroth",       "Lilith",      "Mammon",     "Baal",      "Samael",    "Belphegor",  "Nyarlathotep", "Cthulhu",
-    "Shub-Niggurath", "Yog-Sothoth", "Hastur",     "Dagon",     "Ithaqua",   "Tsathoggua", "Nodens",       "Yig",
-    "Ghatanothoa",    "Yibb-Tstll",  "Zoth-Ommog", "Cthugha",   "Hypnos",    "Nug",        "Yogash",       "Zoth",
-};
+inline constexpr const char* devilCatNames[] =
+    {"Atronach",       "Inferno",     "Satan",      "Lucifer",   "Beelzebub", "Mephisto",   "Diablo",       "Baphomet",
+     "Belial",         "Moloch",      "Asmodeus",   "Leviathan", "Behemoth",  "Krampus",    "Azazel",       "Abaddon",
+     "Astaroth",       "Lilith",      "Mammon",     "Baal",      "Samael",    "Belphegor",  "Nyarlathotep", "Cthulhu",
+     "Shub-Niggurath", "Yog-Sothoth", "Hastur",     "Dagon",     "Ithaqua",   "Tsathoggua", "Nodens",       "Yig",
+     "Ghatanothoa",    "Yibb-Tstll",  "Zoth-Ommog", "Cthugha",   "Hypnos",    "Nug",        "Yogash",       "Zoth",
+     "Karlach",        "Alfira",      "Zevlor",     "Dammon",    "Arabella",  "Raphael",    "Mizora"};
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* astroCatNames[] =
@@ -54,20 +54,22 @@ inline constexpr const char* astroCatNames[] =
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr const char* witchCatNames[] =
-    {"Bayou",
-     "Roux",
-     "Gumbo",
-     "Maman",
-     "Marinette",
-     "Simbi",
-     "Legba",
-     "Erzulie",
-     "Damballa",
-     "Ayida",
-     "Agwe",
-     "Marassa",
-     "Samedi"};
+inline constexpr const char* witchCatNames[] = {
+    "Bayou",
+    "Roux",
+    "Gumbo",
+    "Maman",
+    "Marinette",
+    "Simbi",
+    "Legba",
+    "Erzulie",
+    "Damballa",
+    "Ayida",
+    "Agwe",
+    "Marassa",
+    "Samedi",
+    "Ethel",
+};
 
 
 ////////////////////////////////////////////////////////////
@@ -80,22 +82,26 @@ inline constexpr const char* wizardCatNames[] = {
     "Zilean",
     "Veigar",
     "Ryze",
+    "Gale",
+    "Balthazar",
+    "Elminster",
 };
 
 ////////////////////////////////////////////////////////////
-inline constexpr const char* mouseCatNames[] =
-    {"Clicker",
-     "Squeaky",
-     "Nibbler",
-     "Twitch",
-     "Squealer",
-     "Kiroumaru",
-     "Yakomaru",
-     "Splinter",
-     "Remy",
-     "Jerry",
-     "Mickey",
-     "Fievel"};
+inline constexpr const char* mouseCatNames[] = {
+    "Clicker",
+    "Squeaky",
+    "Nibbler",
+    "Twitch",
+    "Squealer",
+    "Kiroumaru",
+    "Yakomaru",
+    "Splinter",
+    "Remy",
+    "Jerry",
+    "Mickey",
+    "Fievel",
+};
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* engiCatNames[] = {

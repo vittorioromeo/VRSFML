@@ -268,7 +268,17 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Cat>
 
                          FIELD(moneyEarned),
 
-                         FIELD(astroState));
+                         FIELD(astroState),
+
+                         FIELD(blinkCountdown),
+                         // FIELD(blinkAnimCountdown),
+
+                         FIELD(flapCountdown),
+                         // FIELD(flapAnimCountdown),
+
+                         FIELD(yawnCountdown)
+                         // FIELD(yawnAnimCountdown)
+    );
 }
 
 
@@ -570,7 +580,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
 
                          FIELD(unlockedAchievements),
 
-                         FIELD(uiUnlocks));
+                         FIELD(uiUnlocks),
+
+                         FIELD(backgroundHue)); // TODO P1: reorder to right position before release
 }
 
 ////////////////////////////////////////////////////////////
