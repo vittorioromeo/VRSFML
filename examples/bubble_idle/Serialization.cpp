@@ -542,6 +542,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(tipsEnabled),
 
                          FIELD(backgroundOpacity),
+                         FIELD(selectedBackground),
+                         FIELD(alwaysShowDrawings),
 
                          FIELD(showCatText),
                          FIELD(showParticles),
@@ -580,9 +582,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
 
                          FIELD(unlockedAchievements),
 
-                         FIELD(uiUnlocks),
-
-                         FIELD(backgroundHue)); // TODO P1: reorder to right position before release
+                         FIELD(uiUnlocks));
 }
 
 ////////////////////////////////////////////////////////////
@@ -629,7 +629,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                          FIELD(witchCatBuffFlammableDolls),
                          FIELD(witchCatBuffOrbitalDolls),
 
-                         FIELD(shrineCompletedOnceByType),
+                         FIELD(shrineCompletedOnceByCatType),
 
                          FIELD(unsealedByType),
 
