@@ -14,7 +14,7 @@
 #define BUBBLEBYTE_VERSION_MINOR 0
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 13
+#define BUBBLEBYTE_VERSION_PATCH 14
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
