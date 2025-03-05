@@ -39,10 +39,10 @@ inline constexpr AchievementData achievementData[] = {
     {"I Need Huge Numbers", "Purchase 20 upgrades of \"Longer Combos\"."},
 
     {"What's Over There?", "Purchase the \"Map Scrolling\" upgrade."},
-    {"Horizon Hoarder", "Extend the map up to 40%."},
-    {"Border-line Addict", "Extend the map up to 60%."},
-    {"Map Magnate", "Extend the map up to 80%."},
-    {"SpyCat Satellite", "Extend the map up to 100%."},
+    {"Horizon Hoarder", "Extend the map up to ~22%."},
+    {"Border-line Addict", "Extend the map up to ~44%."},
+    {"Map Magnate", "Extend the map up to ~66%."},
+    {"SpyCat Satellite", "Extend the map up to ~88%."},
 
     {"Keeping Kids Entertained", "Purchase the \"More Bubbles\" upgrade once."},
     {"The Screen Isn't Full Yet", "Purchase the \"More Bubbles\" upgrade 5 times."},
@@ -132,12 +132,12 @@ inline constexpr AchievementData achievementData[] = {
     {"Webb Space Telescope", "Improve Astrocat range 9 times."},
 
     {"Prestigious", "Prestige once."},
-    {"Groundhog Day", "Prestige 2 times."},
-    {"Triangle", "Prestige 3 times."},
-    {"Edge of Tomeowrrow", "Prestige 5 times."},
+    {"Groundcat Day", "Prestige 2 times."},
+    {"Catangle", "Prestige 3 times."},
+    {"Edge of Tomeowrrow", "Prestige 5 times."}, // TODO P0: STEAM <- stopped here
     {"The Cat Who Leapt Through Time", "Prestige 10 times."},
-    {"If I Had To Do It All Over Again", "Prestige 15 times."},
-    {"Whatever It Took To Get The JoJ", "Prestige 20 times."},
+    {"Primeower", "Prestige 15 times."},
+    {"Pawdestination", "Prestige 20 times."},
 
     {"Locked'n'Loaded", "Purchase the \"Starter Pack\" permanent upgrade."},
 
@@ -236,7 +236,6 @@ inline constexpr AchievementData achievementData[] = {
     {"Six-Pawed Spectacle", "Activate the 6th shrine."},
     {"Lucky Seven Lives", "Activate the 7th shrine."},
     {"Octo-Paws Overture", "Activate the 8th shrine."},
-    {"Nine Lives Activated", "Activate the 9th shrine."},
 
     {"Cat's Foot", "Complete the 1st shrine (\"Shrine of Voodoo\")."},
     {"Abraca-paw-dabra", "Complete the 2nd shrine (\"Shrine of Magic\")."},
@@ -244,9 +243,8 @@ inline constexpr AchievementData achievementData[] = {
     {"Auto-Mew-tation", "Complete the 4th shrine (\"Shrine of Automation\")."},
     {"Repulsolution", "Complete the 5th shrine (\"Shrine of Repulsion\")."},
     {"Attract-a-Paw", "Complete the 6th shrine (\"Shrine of Attraction\")."},
-    {"TODONAME", "Complete the 7th shrine (\"Shrine of TODO\")."},
-    {"TODONAME", "Complete the 8th shrine (\"Shrine of TODO\")."},
-    {"It's Finally Over", "Complete the 9th shrine (\"Shrine of Victory\")."},
+    {"TODONAME", "Complete the 7th shrine (\"Shrine of Camouflage\")."},
+    {"TODONAME", "Complete the 8th shrine (\"Shrine of Victory\")."},
 
     {"Unsealed. Moisturized. Happy.", "Unseal the Witchcat."},
     {"I Don't Recall Being in There", "Unseal the Wizardcat."},
@@ -254,6 +252,8 @@ inline constexpr AchievementData achievementData[] = {
     {"Shrine Lid Unscrewed", "Unseal the Engicat."},
     {"There's No Ceiling", "Unseal the Repulsocat."},
     {"Electronic Lock", "Unseal the Attractocat."},
+    // TODO P0: other cat
+    // TODO P0: other cat
 
     {"No Pops Allowed", "Perform a voodoo ritual on a cat."},
     {"I Hate Rainbows", "Perform a voodoo ritual on a Unicat."},
