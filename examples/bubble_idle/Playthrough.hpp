@@ -171,8 +171,8 @@ struct Playthrough
         bool witchCatBuffFlammableDolls         = false;
         bool witchCatBuffOrbitalDolls           = false;
 
-        bool shrineCompletedOnceByType[nCatTypes] = {};
-        bool unsealedByType[nCatTypes]            = {};
+        bool shrineCompletedOnceByCatType[nCatTypes] = {};
+        bool unsealedByType[nCatTypes]               = {};
 
         bool wizardCatDoubleMewltiplierDuration = false;
 
