@@ -26,6 +26,8 @@
 #include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
+#include "ShrineConstants.hpp"
+#include "ShrineType.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
 #include "Steam.hpp"
@@ -213,11 +215,12 @@ void drawMinimap(sf::Shader&             shader,
                  const sf::View&         gameView,
                  const sf::View&         hudView,
                  sf::RenderTarget&       window,
-                 const sf::Texture&      txBackground,
+                 const sf::Texture&      txBackgroundChunk,
                  sf::CPUDrawableBatch&   cpuDrawableBatch,
                  const sf::TextureAtlas& textureAtlas,
                  const sf::Vector2f      resolution,
-                 const float             hudScale)
+                 const float             hudScale,
+                 const float             hueMod)
 {
     //
     // Screen position of minimap's top-left corner
@@ -241,7 +244,7 @@ void drawMinimap(sf::Shader&             shader,
     const sf::RectangleShape minimapIndicator{
         {.position         = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
          .fillColor        = sf::Color::Transparent,
-         .outlineColor     = sf::Color::Blue,
+         .outlineColor     = sf::Color::Blue.withHueMod(hueMod),
          .outlineThickness = 2.f,
          .size             = sf::Vector2f{gameScreenSize / minimapScale}}};
 
@@ -273,12 +276,13 @@ void drawMinimap(sf::Shader&             shader,
     window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries * hudScale}}, /* texture */ nullptr);
 
     // The background has a repeating texture, and it's one tenth of the whole map
-    const sf::Vector2f backgroundRectSize = {txBackground.getSize().x * 10.f, static_cast<float>(txBackground.getSize().y)};
+    const sf::Vector2f backgroundRectSize = {txBackgroundChunk.getSize().x * 10.f,
+                                             static_cast<float>(txBackgroundChunk.getSize().y)};
 
-    window.draw(txBackground,
+    window.draw(txBackgroundChunk,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = sf::Color::White.withAlpha(128u)},
+                 .color       = hueColor(wrapHue(hueMod), 128u)},
                 {.shader = &shader}); // Draw world background
 
     cpuDrawableBatch.scale = {hudScale, hudScale};
@@ -409,15 +413,24 @@ struct Main
     std::vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
-    // Background render texture
+    // Background and ImGui render textures
     sf::base::Optional<sf::RenderTexture> rtBackground;
+    sf::base::Optional<sf::RenderTexture> rtImGui;
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
     sf::Texture txLogo{sf::Texture::loadFromFile("resources/logo.png", {.smooth = true}).value()};
     sf::Texture txFixedBg{sf::Texture::loadFromFile("resources/fixedbg.png", {.smooth = true}).value()};
-    sf::Texture txBackground{sf::Texture::loadFromFile("resources/backgroundchunk.png", {.smooth = true}).value()};
+    sf::Texture txBackgroundChunk{sf::Texture::loadFromFile("resources/backgroundchunk.png", {.smooth = true}).value()};
+    sf::Texture txBackgroundChunkDesaturated{
+        sf::Texture::loadFromFile("resources/backgroundchunkdesaturated.png", {.smooth = true}).value()};
     sf::Texture txClouds{sf::Texture::loadFromFile("resources/clouds.png", {.smooth = true}).value()};
+    sf::Texture txBgSwamp{sf::Texture::loadFromFile("resources/bgswamp.png", {.smooth = true}).value()};
+    sf::Texture txBgObservatory{sf::Texture::loadFromFile("resources/bgobservatory.png", {.smooth = true}).value()};
+    sf::Texture txBgAimTraining{sf::Texture::loadFromFile("resources/bgaimtraining.png", {.smooth = true}).value()};
+    sf::Texture txBgFactory{sf::Texture::loadFromFile("resources/bgfactory.png", {.smooth = true}).value()};
+    sf::Texture txBgWindTunnel{sf::Texture::loadFromFile("resources/bgwindtunnel.png", {.smooth = true}).value()};
+    sf::Texture txBgMagnetosphere{sf::Texture::loadFromFile("resources/bgmagnetosphere.png", {.smooth = true}).value()};
     sf::Texture txDrawings{sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()};
     sf::Texture txByteTip{sf::Texture::loadFromFile("resources/bytetip.png", {.smooth = true}).value()};
     sf::Texture txTipBg{sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()};
@@ -427,6 +440,25 @@ struct Main
     sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
     sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
     sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
+
+    ////////////////////////////////////////////////////////////
+    // Background hues
+    static inline constexpr EXACT_ARRAY(
+        float,
+        backgroundHues,
+        nShrineTypes + 1u,
+        {
+            0.f,    // Normal
+            -120.f, // Voodoo
+            47.f,   // Magic
+            -15.f,  // Clicking
+            180.f,  // Automation
+            121.f,  // Repulsion
+            -45.f,  // Attraction
+            0.f,    // Chaos
+            0.f,    // Transmutation
+            0.f,    // Victory
+        });
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
@@ -848,7 +880,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Cached views
     sf::View gameView;
-    sf::View gameViewNoScroll;
+    sf::View gameBackgroundView;
     sf::View nonScaledHUDView;
     sf::View scaledHUDView;
 
@@ -902,6 +934,12 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Steam manager
     hg::Steam::SteamManager& steamMgr;
+
+    ////////////////////////////////////////////////////////////
+    // Background hue changing based on shrine
+    sf::Angle currentBackgroundHue;
+    sf::Angle targetBackgroundHue;
+    sf::Color outlineHueColor{colorBlueOutline};
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -1240,11 +1278,11 @@ struct Main
             switch (catType)
             {
                 case CatType::Uni:
-                    return rng.getF(1.20f, 1.30f);
+                    return rng.getF(1.2f, 1.3f);
                 case CatType::Devil:
-                    return rng.getF(0.70f, 0.80f);
+                    return rng.getF(0.7f, 0.8f);
                 default:
-                    return rng.getF(0.90f, 1.10f);
+                    return rng.getF(0.9f, 1.1f);
             }
         }();
 
@@ -1761,16 +1799,20 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
+    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
     {
         // Calculate the scale factors for both dimensions
         const float scaleX = windowSize.x / originalSize.x;
         const float scaleY = windowSize.y / originalSize.y;
 
         // Use the smaller scale factor to maintain aspect ratio
-        const float scale = std::min(scaleX, scaleY);
+        return std::min(scaleX, scaleY);
+    }
 
-        // Calculate the scaled dimensions
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
+    {
+        const float        scale      = getAspectRatioScalingFactor(originalSize, windowSize);
         const sf::Vector2f scaledSize = originalSize * scale;
 
         return {.center   = originalSize / 2.f,
@@ -1829,7 +1871,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                      .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                      .rotation      = rng.getF(0.f, sf::base::tau),
                                      .torque        = rng.getF(-0.002f, 0.002f)},
-                                    /* hue */ wrapHue(165.f + uiButtonHueMod),
+                                    /* hue */ wrapHue(165.f + uiButtonHueMod + currentBackgroundHue.asDegrees()),
                                     ParticleType::Star);
         }
         else if (outcome == AnimatedButtonOutcome::ClickedWhileDisabled)
@@ -2220,14 +2262,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    ImGuiTabItemFlags_ shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+
+    ////////////////////////////////////////////////////////////
     void uiTabBar()
     {
-        static int  lastSelectedTabIdx = 1;
-        static auto selectOnce         = ImGuiTabItemFlags_SetSelected;
+        static int lastSelectedTabIdx = 1;
 
         const auto selectedTab = [&](int idx)
         {
-            if (selectOnce == ImGuiTabItemFlags_{} && lastSelectedTabIdx != idx)
+            if (shopSelectOnce == ImGuiTabItemFlags_{} && lastSelectedTabIdx != idx)
                 playSound(sounds.uitab);
 
             lastSelectedTabIdx = idx;
@@ -2240,11 +2284,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Shop", nullptr, selectOnce))
+        if (ImGui::BeginTabItem("Shop", nullptr, shopSelectOnce))
         {
             selectedTab(1);
 
-            selectOnce = {};
+            shopSelectOnce = {};
             uiTabBarShop();
             ImGui::EndTabItem();
         }
@@ -2915,6 +2959,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             scroll               = 0.f;
             resetAllDraggedCats();
             pt.onPrestige(ppReward);
+            profile.selectedBackground = 0u;
         }
         ImGui::EndDisabled();
 
@@ -3154,7 +3199,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         const auto makeUnsealButton = [&](const PrestigePointsType ppCost, const char* catName, const CatType type)
         {
-            if (!pt.perm.shrineCompletedOnceByType[asIdx(type)])
+            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(type)])
                 return;
 
             std::sprintf(uiTooltipBuffer,
@@ -3166,7 +3211,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             (void)makePurchasablePPButtonOneTime("- Break the seal", ppCost, pt.perm.unsealedByType[asIdx(type)]);
         };
 
-        if (checkUiUnlock(58u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Witch)]))
+        if (checkUiUnlock(58u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]))
         {
             ImGui::Separator();
 
@@ -3212,7 +3257,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             makePrestigePurchasablePPButtonPSV("- Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
         }
 
-        if (checkUiUnlock(59u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Wizard)]))
+        if (checkUiUnlock(59u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]))
         {
             ImGui::Separator();
 
@@ -3250,7 +3295,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             (void)makePurchasablePPButtonOneTime("- Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
         }
 
-        if (checkUiUnlock(60u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Mouse)]))
+        if (checkUiUnlock(60u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
         {
             ImGui::Separator();
 
@@ -3265,7 +3310,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             makePrestigePurchasablePPButtonPSV("- Global click mult", pt.psvPPMouseCatGlobalBonusMult);
         }
 
-        if (checkUiUnlock(61u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Engi)]))
+        if (checkUiUnlock(61u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]))
         {
             ImGui::Separator();
 
@@ -3280,7 +3325,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             makePrestigePurchasablePPButtonPSV("- Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
         }
 
-        if (checkUiUnlock(62u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Repulso)]))
+        if (checkUiUnlock(62u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]))
         {
             ImGui::Separator();
 
@@ -3340,7 +3385,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             }
         }
 
-        if (checkUiUnlock(65u, pt.perm.shrineCompletedOnceByType[asIdx(CatType::Attracto)]))
+        if (checkUiUnlock(65u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
         {
             ImGui::Separator();
 
@@ -3604,7 +3649,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                             wizardCat->position,
                                             ParticleType::Star,
                                             rng.getF(0.25f, 1.25f),
-                                            rng.getF(0.50f, 3.f));
+                                            rng.getF(0.5f, 3.f));
 
                     forEachBubbleInRadius(wizardCat->position,
                                           range,
@@ -3670,7 +3715,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                             wizardCat->position,
                                             ParticleType::Star,
                                             rng.getF(0.25f, 1.25f),
-                                            rng.getF(0.50f, 3.f));
+                                            rng.getF(0.5f, 3.f));
 
                     pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
 
@@ -3722,13 +3767,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                                 wizardCat->position,
                                                 ParticleType::Star,
                                                 rng.getF(0.25f, 1.25f),
-                                                rng.getF(0.50f, 3.f));
+                                                rng.getF(0.5f, 3.f));
 
                         spawnParticlesNoGravity(256,
                                                 witchCat->position,
                                                 ParticleType::Star,
                                                 rng.getF(0.25f, 1.25f),
-                                                rng.getF(0.50f, 3.f));
+                                                rng.getF(0.5f, 3.f));
 
                         witchCat->cooldown.value -= witchCat->cooldown.value *
                                                     (pt.psvDarkUnionPercentage.currentValue() / 100.f);
@@ -4243,8 +4288,67 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
 
+            static thread_local std::vector<int>         backgroundIdxs;
+            static thread_local std::vector<const char*> backgroundNames;
+
+            backgroundIdxs.clear();
+            backgroundNames.clear();
+
+            backgroundIdxs.push_back(0);
+            backgroundNames.push_back("Default");
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+            {
+                backgroundIdxs.push_back(1);
+                backgroundNames.push_back("Swamp");
+            }
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+            {
+                backgroundIdxs.push_back(2);
+                backgroundNames.push_back("Observatory");
+            }
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+            {
+                backgroundIdxs.push_back(3);
+                backgroundNames.push_back("Aim Labs");
+            }
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+            {
+                backgroundIdxs.push_back(4);
+                backgroundNames.push_back("Factory");
+            }
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+            {
+                backgroundIdxs.push_back(5);
+                backgroundNames.push_back("Wind Tunnel");
+            }
+
+            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+            {
+                backgroundIdxs.push_back(6);
+                backgroundNames.push_back("Magnetosphere");
+            }
+
+            static int selectedBgIndex = [&]
+            {
+                for (sf::base::SizeT i = 0u; i < backgroundIdxs.size(); ++i)
+                    if (profile.selectedBackground == backgroundIdxs[i])
+                        return static_cast<int>(i);
+
+                return 0;
+            }();
+
             ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
-            ImGui::SliderFloat("Background Hue", &profile.backgroundHue, -60.f, 60.f, "%.f%%");
+            ImGui::Combo("Background", &selectedBgIndex, backgroundNames.data(), static_cast<int>(backgroundNames.size()));
+
+            const auto selectedBgIndexU = static_cast<sf::base::SizeT>(selectedBgIndex);
+            profile.selectedBackground = selectedBgIndexU < backgroundIdxs.size() ? backgroundIdxs[selectedBgIndexU] : 0;
+
+            uiCheckbox("Always show drawings", &profile.alwaysShowDrawings);
 
             uiCheckbox("Show cat text", &profile.showCatText);
             uiCheckbox("Show particles", &profile.showParticles);
@@ -4424,6 +4528,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 hudTopParticles.clear();
                 textParticles.clear();
                 earnedCoinParticles.clear();
+
+                shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+
+                profile.selectedBackground = 0;
             }
 
             uiPopButtonColors();
@@ -4599,6 +4707,15 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt.perm.unicatTranscendenceAOEPurchased);
             ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
 
+            ImGui::Separator();
+
+            ImGui::Checkbox("shrineCompleted Witch", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]);
+            ImGui::Checkbox("shrineCompleted Wizard", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]);
+            ImGui::Checkbox("shrineCompleted Mouse", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]);
+            ImGui::Checkbox("shrineCompleted Engi", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
+            ImGui::Checkbox("shrineCompleted Attracto", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
+            ImGui::Checkbox("shrineCompleted Repulso", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
+
             ImGui::SetWindowFontScale(uiNormalFontScale);
             ImGui::PopFont();
 
@@ -4620,7 +4737,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
              .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
              .accelerationY = 0.0039f,
              .opacity       = 1.f,
-             .opacityDecay  = 0.00150f,
+             .opacityDecay  = 0.0015f,
              .rotation      = 0.f,
              .torque        = rng.getF(-0.002f, 0.002f)}});
     }
@@ -5082,7 +5199,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 bubble.rotation += deltaTimeMs * 0.01f;
 
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
-                bubble.hueMod += deltaTimeMs * 0.085f;
+                bubble.hueMod += deltaTimeMs * 0.125f;
 
             const float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
 
@@ -6534,7 +6651,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Witch);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Witch)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
                                 doTip(
                                     "The Witchcat has been unsealed!\nThey perform voodoo rituals on nearby "
                                     "cats,\ngiving you powerful timed buffs.");
@@ -6543,7 +6660,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Wizard);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Wizard)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
                                 doTip(
                                     "The Wizardcat has been unsealed!\nThey absorb star bubbles to learn "
                                     "spells,\nwhich can be casted on demand.");
@@ -6552,7 +6669,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Mouse);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Mouse)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
                                 doTip(
                                     "The Mousecat has been unsealed!\nThey combo-click bubbles, buff nearby cats,\nand "
                                     "provide a global click buff.");
@@ -6561,7 +6678,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Engi);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Engi)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
                                 doTip(
                                     "The Engicat has been unsealed!\nThey speed-up nearby cats and provide\na global "
                                     "cat buff.");
@@ -6570,7 +6687,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Repulso);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Repulso)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
                                 doTip(
                                     "The Repulsocat has been unsealed!\nNearby bubbles getting pushed away from\nthem "
                                     "gain a x2 multiplier.");
@@ -6579,13 +6696,18 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         {
                             doShrineReward(CatType::Attracto);
 
-                            if (!pt.perm.shrineCompletedOnceByType[asIdx(CatType::Attracto)])
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
                                 doTip(
                                     "The Attractocat has been unsealed!\nNearby bubbles getting attracted to\nthem "
                                     "gain a x2 multiplier.");
                         }
 
-                        pt.perm.shrineCompletedOnceByType[asIdx(shrineTypeToCatType(shrine.type))] = true;
+                        const auto catType = asIdx(shrineTypeToCatType(shrine.type));
+                        if (!pt.perm.shrineCompletedOnceByCatType[catType])
+                        {
+                            pt.perm.shrineCompletedOnceByCatType[catType] = true;
+                            profile.selectedBackground                    = static_cast<int>(shrine.type) + 1;
+                        }
                     }
                     else if (cdStatus == CountdownStatusStop::Running)
                     {
@@ -7585,6 +7707,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         window.draw(bubbleDrawableBatch, bubbleStates);
 
+        shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
         shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
         shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
         shader.setUniform(suSubTexSize, txrBubbleStar.size);
@@ -7848,7 +7971,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 if (rng.getI(0, 100) > 92) // Double-flap chance
                     cat.flapCountdown.value = 75.f;
                 else
-                    cat.flapCountdown.value = rng.getF(2500.f, 6500.f);
+                    cat.flapCountdown.value = rng.getF(4500.f, 12'500.f);
             }
 
             if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -7875,7 +7998,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 cat.type != CatType::Engi)
             {
                 if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
-                    cat.yawnCountdown.value = rng.getF(6500.f, 12500.f);
+                    cat.yawnCountdown.value = rng.getF(7500.f, 20'000.f);
 
                 if (cat.blinkAnimCountdown.isDone() &&
                     cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -7964,7 +8087,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 if (rng.getI(0, 100) > 90) // Double animation chance
                     cat.blinkCountdown.value = 75.f;
                 else
-                    cat.blinkCountdown.value = rng.getF(800.f, 2500.f);
+                    cat.blinkCountdown.value = rng.getF(1000.f, 4000.f);
             }
 
             if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -8389,7 +8512,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             const auto opacityAsAlpha = static_cast<sf::base::U8>(tp.opacity * 255.f);
             textStatusBuffer.setFillColor(sf::Color::White.withAlpha(opacityAsAlpha));
-            textStatusBuffer.setOutlineColor(colorBlueOutline.withAlpha(opacityAsAlpha));
+            textStatusBuffer.setOutlineColor(outlineHueColor.withAlpha(opacityAsAlpha));
 
             cpuDrawableBatch.add(textStatusBuffer);
         }
@@ -8436,7 +8559,19 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::PopFont();
         });
 
-        imGuiContext.render(*optWindow);
+        if (rtImGui.hasValue())
+        {
+            imGuiContext.setCurrentWindow(*optWindow);
+
+            rtImGui->setView(scaledHUDView);
+            rtImGui->clear(sf::Color::Transparent);
+            imGuiContext.render(*rtImGui);
+            rtImGui->display();
+
+            optWindow->draw(rtImGui->getTexture(),
+                            {.color = hueColor(wrapHue(currentBackgroundHue.asDegrees()), 255u)},
+                            {.shader = &shader});
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -8459,7 +8594,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                      .opacityDecay  = rng.getF(0.00065f, 0.0055f),
                                      .rotation      = rng.getF(0.f, sf::base::tau),
                                      .torque        = rng.getF(-0.002f, 0.002f)},
-                                    /* hue */ wrapHue(165.f + hue),
+                                    /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
                                     ParticleType::Star);
             }
 
@@ -8481,7 +8616,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                   .scale    = sf::Vector2f{0.25f, 0.25f} *
                                            (getUIScalingFactor() + -0.15f * easeInOutBack(blinkProgress)),
                                   .origin = tx.getRect().getCenterRight(),
-                                  .color  = hueColor(hue, arrowAlpha)},
+                                  .color  = hueColor(wrapHue(hue + currentBackgroundHue.asDegrees()), arrowAlpha)},
                                  {.shader = &shader});
             }
         }
@@ -8510,7 +8645,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                               ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
                                dpiScalingFactor),
                      .origin = {5.f, 5.f},
-                     .color  = hueColor(profile.cursorHue, 255u)},
+                     .color  = hueColor(wrapHue(profile.cursorHue + currentBackgroundHue.asDegrees()), 255u)},
                     {.shader = &shader});
     }
 
@@ -8535,7 +8670,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                    sf::Vector2f{30.f, 48.f} * profile.cursorScale * dpiScalingFactor;
 
         cursorComboText.setFillColor(sf::Color::Black.withAlpha(alphaU8));
-        cursorComboText.setOutlineColor(sf::Color{111u, 170u, 244u}.withHueMod(profile.cursorHue).withAlpha(alphaU8));
+        cursorComboText.setOutlineColor(
+            sf::Color{111u, 170u, 244u}.withHueMod(profile.cursorHue + currentBackgroundHue.asDegrees()).withAlpha(alphaU8));
 
         if (combo > 0)
             cursorComboText.setString("x" + std::to_string(combo + 1));
@@ -8674,7 +8810,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                           .string           = tipString.substr(0, tipCharIdx),
                           .characterSize    = 60u,
                           .fillColor        = sf::Color::White.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
-                          .outlineColor     = colorBlueOutline.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                          .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                           .outlineThickness = 4.f}};
 
         tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vector2f{45.f, 65.f});
@@ -8703,6 +8839,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
 
         rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
+        rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
 
         optWindow.emplace(
             sf::WindowSettings{.size            = newResolution,
@@ -8717,6 +8854,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         rtBackground.emplace(
             sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = true}).value());
+
+        rtImGui.emplace(
+            sf::RenderTexture::create(newResolution.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = false}).value());
 
         dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
 
@@ -8844,7 +8984,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                                     .scale         = rng.getF(0.08f, 0.27f) * 1.f,
                                                     .accelerationY = -0.002f,
                                                     .opacity       = 255.f,
-                                                    .opacityDecay  = rng.getF(0.00025f, 0.0020f),
+                                                    .opacityDecay  = rng.getF(0.00025f, 0.002f),
                                                     .rotation      = rng.getF(0.f, sf::base::tau),
                                                     .torque        = rng.getF(-0.002f, 0.002f)},
                                        0.f,
@@ -9108,14 +9248,110 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const float fixedBgX = 2100.f * sf::base::fmod(fixedBgSlide, 3.f);
         window.setView(nonScaledHUDView);
         window.draw(txFixedBg,
-                    {.position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f}, .scale = {ratio, ratio}},
+                    {.position = {resolution.x / 2.f - actualScroll / 20.f - fixedBgX, 0.f},
+                     .scale    = {ratio, ratio},
+                     .color    = hueColor(wrapHue(currentBackgroundHue.asDegrees()), 255u)},
                     {.shader = &shader});
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateAndDrawBackground(const float deltaTimeMs)
+    {
+        static float backgroundScroll = 0.f;
+        backgroundScroll += deltaTimeMs * 0.01f;
+
+        if (!rtBackground.hasValue())
+            return;
+
+        rtBackground->clear(outlineHueColor);
+
+        rtBackground->setView(gameBackgroundView);
+        rtBackground->setRepeated(true);
+
+        const auto getAlpha = [&](const float mult)
+        { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
+
+        ////////////////////////////////////////////////////////////
+        const sf::Texture* chunkTx[] = {
+            &txBackgroundChunk,            // Normal
+            &txBackgroundChunk,            // Voodoo
+            &txBackgroundChunk,            // Magic
+            &txBackgroundChunkDesaturated, // Clicking
+            &txBackgroundChunk,            // Automation
+            &txBackgroundChunk,            // Repulsion
+            &txBackgroundChunkDesaturated, // Attraction
+            &txBackgroundChunk,            // Chaos
+            &txBackgroundChunk,            // Transmutation
+            &txBackgroundChunk,            // Victory
+        };
+
+        static_assert(sf::base::getArraySize(chunkTx) == nShrineTypes + 1u);
+
+        ////////////////////////////////////////////////////////////
+        const sf::Texture* detailTx[] = {
+            &txClouds,          // Normal
+            &txBgSwamp,         // Voodoo
+            &txBgObservatory,   // Magic
+            &txBgAimTraining,   // Clicking
+            &txBgFactory,       // Automation
+            &txBgWindTunnel,    // Repulsion
+            &txBgMagnetosphere, // Attraction
+            &txClouds,          // Chaos
+            &txClouds,          // Transmutation
+            &txClouds,          // Victory
+        };
+
+        static_assert(sf::base::getArraySize(detailTx) == nShrineTypes + 1u);
+
+        ////////////////////////////////////////////////////////////
+        const auto idx = profile.selectedBackground;
+
+        targetBackgroundHue = sf::radians(sf::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
+        currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
+        outlineHueColor = colorBlueOutline.withHueMod(currentBackgroundHue.asDegrees());
+
+        rtBackground->draw(*chunkTx[idx],
+                           {
+                               .scale       = {0.5f, 0.5f},
+                               .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
+                                               txBackgroundChunk.getSize().toVector2f() * 2.f},
+                               .color       = hueColor(wrapHue(currentBackgroundHue.asDegrees()), getAlpha(255.f)),
+                           });
+
+        if (idx == 0u || profile.alwaysShowDrawings)
+            rtBackground->draw(txDrawings,
+                               {
+                                   .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVector2f() * 2.f},
+                                   .color = sf::Color::White.withAlpha(getAlpha(200.f)),
+                               });
+
+        rtBackground->draw(*detailTx[idx],
+                           {
+                               .scale       = {0.75f, 0.75f},
+                               .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
+                                               txBackgroundChunk.getSize().toVector2f() * 1.5f},
+                               .color       = sf::Color::White.withAlpha(getAlpha(175.f)),
+                           });
+
+        rtBackground->draw(txClouds,
+                           {
+                               .scale       = {1.25f, 1.25f},
+                               .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
+                                               txBackgroundChunk.getSize().toVector2f()},
+                               .color       = sf::Color::White.withAlpha(getAlpha(128.f)),
+                           });
+
+        rtBackground->display();
+
+        const float scale = getAspectRatioScalingFactor(gameScreenSize, getResolution());
+        getWindow().draw(rtBackground->getTexture(), {.scale = {scale, scale}, .textureRect{{0.f, 0.f}, gameScreenSize}});
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
     {
         moneyText.setString("$" + std::string(toStringWithSeparators(pt.money + spentMoney)));
+        moneyText.setOutlineColor(outlineHueColor);
         moneyText.scale  = {0.5f, 0.5f};
         moneyText.origin = moneyText.getLocalBounds().size / 2.f;
 
@@ -9166,6 +9402,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             return;
 
         comboText.setString("x" + std::to_string(combo + 1));
+        comboText.setOutlineColor(outlineHueColor);
 
         comboTextShakeEffect.update(deltaTimeMs);
         comboTextShakeEffect.applyToText(comboText);
@@ -9228,6 +9465,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         }
 
         buffText.setString(buffStrBuffer);
+        buffText.setOutlineColor(outlineHueColor);
+
         buffText.position.y = comboText.getBottomLeft().y + 10.f;
         buffText.scale      = {0.5f, 0.5f};
     }
@@ -9594,77 +9833,26 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
 
-        //  (TODO P0: cleanup)
-        // Calculate the scale factors for both dimensions
-        const float scaleX = resolution.x / gameScreenSize.x;
-        const float scaleY = resolution.y / gameScreenSize.y;
+        {
+            const float        scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
+            const sf::Vector2f scaledSize = gameScreenSize * scale;
 
-        // Use the smaller scale factor to maintain aspect ratio
-        const float scale = std::min(scaleX, scaleY);
-
-        // Calculate the scaled dimensions
-        const sf::Vector2f scaledSize        = gameScreenSize * scale;
-        gameViewNoScroll                     = createScaledGameView(gameScreenSize, scaledSize);
-        gameViewNoScroll.viewport.position.x = 0.f;
-        gameViewNoScroll.center              = getViewCenterWithoutScroll() + screenShake;
+            gameBackgroundView                     = createScaledGameView(gameScreenSize, scaledSize);
+            gameBackgroundView.viewport.position.x = 0.f;
+            gameBackgroundView.center              = getViewCenterWithoutScroll() + screenShake;
+        }
 
         //
         // Clear window
-        window.clear(sf::Color{157, 171, 191});
+        window.clear(outlineHueColor);
 
         //
         // Underlying menu background
         gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
 
         //
-        // Background (TODO P0: cleanup)
-        static float backgroundScroll = 0.f;
-        backgroundScroll += deltaTimeMs * 0.01f;
-
-        if (rtBackground.hasValue())
-        {
-            rtBackground->clear(sf::Color::Black);
-
-            rtBackground->setView(gameViewNoScroll);
-            rtBackground->setRepeated(true);
-
-            const auto getAlpha = [&](const float mult)
-            { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
-
-            rtBackground->draw(txBackground,
-                               {
-                                   .scale       = {0.5f, 0.5f},
-                                   .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
-                                                   txBackground.getSize().toVector2f() * 2.f},
-                                   .color       = hueColor(wrapHue(profile.backgroundHue), getAlpha(255.f)),
-                               });
-
-            rtBackground->draw(txDrawings,
-                               {
-                                   .textureRect = {{actualScroll * 2.f, 0.f}, txBackground.getSize().toVector2f() * 2.f},
-                                   .color = sf::Color::White.withAlpha(getAlpha(200.f)),
-                               });
-
-            rtBackground->draw(txClouds,
-                               {
-                                   .scale       = {0.75f, 0.75f},
-                                   .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
-                                                   txBackground.getSize().toVector2f() * 1.5f},
-                                   .color       = sf::Color::White.withAlpha(getAlpha(175.f)),
-                               });
-
-            rtBackground->draw(txClouds,
-                               {
-                                   .scale       = {1.25f, 1.25f},
-                                   .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
-                                                   txBackground.getSize().toVector2f()},
-                                   .color       = sf::Color::White.withAlpha(getAlpha(128.f)),
-                               });
-
-            rtBackground->display();
-
-            window.draw(rtBackground->getTexture(), {.scale = {scale, scale}, .textureRect{{0.f, 0.f}, gameScreenSize}});
-        }
+        // Game background
+        gameLoopUpdateAndDrawBackground(deltaTimeMs);
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
@@ -9714,7 +9902,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
         window.draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
                                         .fillColor        = sf::Color::Transparent,
-                                        .outlineColor     = colorBlueOutline,
+                                        .outlineColor     = outlineHueColor,
                                         .outlineThickness = 4.f,
                                         .size             = gameView.viewport.size.componentWiseMul(resolution)}},
                     /* texture */ nullptr);
@@ -9769,11 +9957,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         gameView,
                         scaledHUDView,
                         window,
-                        txBackground,
+                        txBackgroundChunk,
                         cpuDrawableBatch,
                         textureAtlas,
                         resolution,
-                        getHUDScalingFactor());
+                        getHUDScalingFactor(),
+                        currentBackgroundHue.asDegrees());
 
         //
         // UI and Toasts
@@ -9840,8 +10029,15 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr)
     {
-        txBackground.setRepeated(true); // TODO P2: (lib) to texture settings
-        txClouds.setRepeated(true);     // TODO P2: (lib) to texture settings
+        txBackgroundChunk.setRepeated(true);            // TODO P2: (lib) to texture settings
+        txBackgroundChunkDesaturated.setRepeated(true); // TODO P2: (lib) to texture settings
+        txClouds.setRepeated(true);                     // TODO P2: (lib) to texture settings
+        txBgSwamp.setRepeated(true);                    // TODO P2: (lib) to texture settings
+        txBgObservatory.setRepeated(true);              // TODO P2: (lib) to texture settings
+        txBgAimTraining.setRepeated(true);              // TODO P2: (lib) to texture settings
+        txBgFactory.setRepeated(true);                  // TODO P2: (lib) to texture settings
+        txBgWindTunnel.setRepeated(true);               // TODO P2: (lib) to texture settings
+        txBgMagnetosphere.setRepeated(true);            // TODO P2: (lib) to texture settings
 
         //
         // Profile
@@ -9957,7 +10153,6 @@ int main()
 // TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P1: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded up to 3x mult with PPs, maybe
 // also upgrade time needed to trigger
-// TODO P1: steamDRM
 // TODO P1: tooltips for options, reorganize them
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
