@@ -220,9 +220,9 @@ inline constexpr PSVData darkUnionPercentage //
     {.nMaxPurchases = 8u, .cost = {.initial = 50'000.f, .exponential = 1.25f}, .value = {.initial = 50.f, .linear = 5.f}};
 
 inline constexpr PSVData uniRitualBuffPercentage //
-    {.nMaxPurchases = 24u, .cost = {.initial = 4.0f, .exponential = 1.25f}, .value = {.initial = 15.0f, .linear = 2.5f}};
+    {.nMaxPurchases = 24u, .cost = {.initial = 4.f, .exponential = 1.25f}, .value = {.initial = 15.f, .linear = 2.5f}};
 
 inline constexpr PSVData devilRitualBuffPercentage //
-    {.nMaxPurchases = 24u, .cost = {.initial = 8.0f, .exponential = 1.25f}, .value = {.initial = 1.0f, .linear = 1.f}};
+    {.nMaxPurchases = 24u, .cost = {.initial = 8.f, .exponential = 1.25f}, .value = {.initial = 1.f, .linear = 1.f}};
 
 } // namespace PSVDataConstants
