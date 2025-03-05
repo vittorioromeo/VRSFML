@@ -21,8 +21,9 @@ struct [[nodiscard]] Profile
 
     bool tipsEnabled = true;
 
-    float backgroundOpacity = 100.f;
-    float backgroundHue     = 0.f;
+    float backgroundOpacity  = 100.f;
+    int   selectedBackground = 0; // `[0, nShrineTypes + 1)`
+    bool  alwaysShowDrawings = false;
 
     bool showCatText         = true;
     bool showParticles       = true;
