@@ -275,8 +275,8 @@ void drawMinimap(sf::Shader&             shader,
     window.setView(minimapView); // Use minimap projection
     window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries * hudScale}}, /* texture */ nullptr);
 
-    // The background has a repeating texture, and it's one tenth of the whole map
-    const sf::Vector2f backgroundRectSize = {txBackgroundChunk.getSize().x * 10.f,
+    // The background has a repeating texture, and it's one ninth of the whole map
+    const sf::Vector2f backgroundRectSize = {txBackgroundChunk.getSize().x * nGameScreens,
                                              static_cast<float>(txBackgroundChunk.getSize().y)};
 
     window.draw(txBackgroundChunk,
@@ -455,8 +455,7 @@ struct Main
             180.f,  // Automation
             121.f,  // Repulsion
             -45.f,  // Attraction
-            0.f,    // Chaos
-            0.f,    // Transmutation
+            0.f,    // Camouflage
             0.f,    // Victory
         });
 
@@ -7143,11 +7142,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         unlockIf(pt.psvComboStartTime.nPurchases >= 15);
         unlockIf(pt.psvComboStartTime.nPurchases >= 20);
 
-        unlockIf(pt.mapPurchased);
-        unlockIf(pt.psvMapExtension.nPurchases >= 2);
-        unlockIf(pt.psvMapExtension.nPurchases >= 4);
-        unlockIf(pt.psvMapExtension.nPurchases >= 6);
-        unlockIf(pt.psvMapExtension.nPurchases >= 8);
+        unlockIf(pt.mapPurchased); //
+        unlockIf(pt.psvMapExtension.nPurchases >= 1);
+        unlockIf(pt.psvMapExtension.nPurchases >= 3);
+        unlockIf(pt.psvMapExtension.nPurchases >= 5);
+        unlockIf(pt.psvMapExtension.nPurchases >= 7);
 
         unlockIf(pt.psvBubbleCount.nPurchases >= 1);
         unlockIf(pt.psvBubbleCount.nPurchases >= 5);
@@ -7350,7 +7349,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         unlockIf(pt.psvShrineActivation.nPurchases >= 6);
         unlockIf(pt.psvShrineActivation.nPurchases >= 7);
         unlockIf(pt.psvShrineActivation.nPurchases >= 8);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 9);
 
         unlockIf(pt.nShrinesCompleted >= 1);
         unlockIf(pt.nShrinesCompleted >= 2);
@@ -7360,7 +7358,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         unlockIf(pt.nShrinesCompleted >= 6);
         unlockIf(pt.nShrinesCompleted >= 7);
         unlockIf(pt.nShrinesCompleted >= 8);
-        unlockIf(pt.nShrinesCompleted >= 9);
 
         unlockIf(pt.perm.unsealedByType[asIdx(CatType::Witch)]);
         unlockIf(pt.perm.unsealedByType[asIdx(CatType::Wizard)]);
@@ -9280,8 +9277,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             &txBackgroundChunk,            // Automation
             &txBackgroundChunk,            // Repulsion
             &txBackgroundChunkDesaturated, // Attraction
-            &txBackgroundChunk,            // Chaos
-            &txBackgroundChunk,            // Transmutation
+            &txBackgroundChunk,            // Camouflage
             &txBackgroundChunk,            // Victory
         };
 
@@ -9296,8 +9292,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             &txBgFactory,       // Automation
             &txBgWindTunnel,    // Repulsion
             &txBgMagnetosphere, // Attraction
-            &txClouds,          // Chaos
-            &txClouds,          // Transmutation
+            &txClouds,          // Camouflage
             &txClouds,          // Victory
         };
 
