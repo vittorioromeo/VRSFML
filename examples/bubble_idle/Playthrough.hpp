@@ -351,15 +351,14 @@ struct Playthrough
                               baseRequiredRewards,
                               nShrineTypes,
                               {
-                                  1000,              // Voodoo
-                                  75'000,            // Magic
-                                  150'000,           // Clicking
-                                  2'500'000,         // Automation
-                                  25'000'000,        // Repulsion
-                                  500'000'000,       // Attraction
-                                  2'500'000'000,     // Chaos
-                                  10'000'000'000,    // Transmutation
-                                  1'000'000'000'000, // Victory
+                                  1000,           // Voodoo
+                                  75'000,         // Magic
+                                  150'000,        // Clicking
+                                  2'500'000,      // Automation
+                                  25'000'000,     // Repulsion
+                                  500'000'000,    // Attraction
+                                  2'500'000'000,  // Camouflage
+                                  10'000'000'000, // Victory
                               });
 
         return static_cast<MoneyType>(static_cast<float>(baseRequiredRewards[asIdx(type)]));

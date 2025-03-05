@@ -7,15 +7,14 @@
 ////////////////////////////////////////////////////////////
 enum class ShrineType : sf::base::U8
 {
-    Voodoo        = 0u,
-    Magic         = 1u,
-    Clicking      = 2u,
-    Automation    = 3u,
-    Repulsion     = 4u,
-    Attraction    = 5u,
-    Chaos         = 6u,
-    Transmutation = 7u,
-    Victory       = 8u,
+    Voodoo     = 0u,
+    Magic      = 1u,
+    Clicking   = 2u,
+    Automation = 3u,
+    Repulsion  = 4u,
+    Attraction = 5u,
+    Camouflage = 6u,
+    Victory    = 7u,
 
     Count
 };
