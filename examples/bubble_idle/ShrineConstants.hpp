@@ -16,9 +16,8 @@ inline constexpr EXACT_ARRAY(
         "Shrine Of Automation",
         "Shrine Of Repulsion",
         "Shrine Of Attraction",
-        "Shrine Of Chaos",         // TODO P0: implement jestercat
-        "Shrine Of Transmutation", // TODO P0: implement copycat
-        "Shrine Of Victory",       // TODO P0: implement rubber duck?
+        "Shrine Of Camouflage", // TODO P0: implement copycat
+        "Shrine Of Victory",    // TODO P0: implement rubber duck?
     });
 
 ////////////////////////////////////////////////////////////
@@ -33,8 +32,7 @@ inline constexpr EXACT_ARRAY(
         -15.f,  // Automation
         180.f,  // Repulsion
         -80.f,  // Attraction
-        0.f,    // Chaos
-        0.f,    // Transmutation
+        0.f,    // Camouflage
         0.f,    // Victory
     });
 
@@ -84,13 +82,7 @@ Electromagnetism readings suggest that an Attractocat is sealed inside, who cont
 
 The magnet is so powerful that its effects are felt even near the shrine.)",
         R"(
-~~ Shrine Of Chaos ~~
-
-Effects: TODO P1: complete
-
-Rewards: TODO P1: complete)",
-        R"(
-~~ Shrine Of Transmutation ~~
+~~ Shrine Of Camouflage ~~
 
 Effects: TODO P1: complete
 

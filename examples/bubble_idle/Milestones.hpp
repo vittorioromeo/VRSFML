@@ -56,8 +56,7 @@ struct [[nodiscard]] Milestones
                     maxMilestone, // Automation
                     maxMilestone, // Repulsion
                     maxMilestone, // Attraction
-                    maxMilestone, // Chaos
-                    maxMilestone, // Transmutation
+                    maxMilestone, // Camouflage
                     maxMilestone, // Victory
                 });
 

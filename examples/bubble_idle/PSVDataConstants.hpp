@@ -13,7 +13,7 @@ inline constexpr PSVData comboStartTime //
      .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f}};
 
 inline constexpr PSVData mapExtension //
-    {.nMaxPurchases = 8u, .cost = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f}, .value = {}};
+    {.nMaxPurchases = 7u, .cost = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f}, .value = {}};
 
 inline constexpr PSVData shrineActivation //
     {.nMaxPurchases = 9u,
