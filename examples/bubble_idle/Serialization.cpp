@@ -535,6 +535,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(playAudioInBackground),
                          FIELD(playComboEndSound),
 
+                         FIELD(selectedBGM),
+
                          FIELD(minimapScale),
                          FIELD(hudScale),
                          FIELD(uiScale),

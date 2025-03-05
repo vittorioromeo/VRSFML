@@ -395,7 +395,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Music
-    sf::Music musicBGM{sf::Music::openFromFile("resources/hibiscus.mp3").value()};
+    static inline constexpr const char* bgmPathNormal = "resources/hibiscus.mp3";
+    static inline constexpr const char* bgmPathWizard = "resources/bgmwizard.mp3";
+
+    const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
+
+    sf::base::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
+    Countdown       bgmTransition;            // fade in/out timer
+
+    sf::base::Array<sf::base::Optional<sf::Music>, 2u> bgmBuffers{sf::base::nullOpt, sf::base::nullOpt}; // for smooth fade
 
     ////////////////////////////////////////////////////////////
     // Sound management
@@ -440,6 +448,10 @@ struct Main
     sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
     sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
     sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
+    sf::Texture txShopIcon{sf::Texture::loadFromFile("resources/shopicon.png", {.smooth = true}).value()};
+    sf::Texture txIconVolumeOn{sf::Texture::loadFromFile("resources/iconvolumeon.png", {.smooth = true}).value()};
+    sf::Texture txIconMusicOn{sf::Texture::loadFromFile("resources/iconmusicon.png", {.smooth = true}).value()};
+    sf::Texture txIconBg{sf::Texture::loadFromFile("resources/iconbg.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Background hues
@@ -515,7 +527,15 @@ struct Main
     sf::FloatRect txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
     sf::FloatRect txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
     sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
-    sf::FloatRect txrDoll{addImgResourceToAtlas("doll.png")};
+    sf::FloatRect txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
+    sf::FloatRect txrDollUni{addImgResourceToAtlas("dolluni.png")};
+    sf::FloatRect txrDollDevil{addImgResourceToAtlas("dolldevil.png")};
+    sf::FloatRect txrDollAstro{addImgResourceToAtlas("dollastro.png")};
+    sf::FloatRect txrDollWizard{addImgResourceToAtlas("dollwizard.png")};
+    sf::FloatRect txrDollMouse{addImgResourceToAtlas("dollmouse.png")};
+    sf::FloatRect txrDollEngi{addImgResourceToAtlas("dollengi.png")};
+    sf::FloatRect txrDollRepulso{addImgResourceToAtlas("dollrepulso.png")};
+    sf::FloatRect txrDollAttracto{addImgResourceToAtlas("dollattracto.png")};
     sf::FloatRect txrCoin{addImgResourceToAtlas("bytecoin.png")};
     sf::FloatRect txrCatSoul{addImgResourceToAtlas("catsoul.png")};
     sf::FloatRect txrHellPortal{addImgResourceToAtlas("hellportal.png")};
@@ -1010,7 +1030,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    bool spawnEarnedCoinParticle(const sf::Vector2f startPosition)
+    [[nodiscard]] bool spawnEarnedCoinParticle(const sf::Vector2f startPosition)
     {
         if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
             return false;
@@ -1292,25 +1312,12 @@ struct Main
         spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
 
         return pt.cats.emplace_back(Cat{
-            .spawnEffectTimer      = {},
-            .position              = pos,
-            .wobbleRadians         = {},
-            .cooldown              = {.value = pt.getComputedCooldownByCatType(catType)},
-            .pawPosition           = pos,
-            .pawRotation           = sf::radians(0.f),
-            .hue                   = hue,
-            .inspiredCountdown     = {},
-            .boostCountdown        = {},
-            .nameIdx               = getNextCatNameIdx(catType),
-            .textStatusShakeEffect = {},
-            .textMoneyShakeEffect  = {},
-            .type                  = catType,
-            .hexedTimer            = {},
-            .astroState            = {},
-            .blinkCountdown        = {},
-            .blinkAnimCountdown    = {},
-            .flapCountdown         = {},
-            .flapAnimCountdown     = {},
+            .position    = pos,
+            .cooldown    = {.value = pt.getComputedCooldownByCatType(catType)},
+            .pawPosition = pos,
+            .hue         = hue,
+            .nameIdx     = getNextCatNameIdx(catType),
+            .type        = catType,
         });
     }
 
@@ -1416,9 +1423,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void uiBeginTooltip() const
+    void uiBeginTooltip(const float width) const
     {
-        ImGui::SetNextWindowSizeConstraints(ImVec2(uiTooltipWidth, 0), ImVec2(uiTooltipWidth, FLT_MAX));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, FLT_MAX));
 
         ImGui::BeginTooltip();
         ImGui::PushFont(fontImGuiMouldyCheese);
@@ -1434,14 +1441,16 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void uiMakeTooltip()
+    void uiMakeTooltip(bool small = false)
     {
         if (!ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) || std::strlen(uiTooltipBuffer) == 0u)
             return;
 
-        ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - uiTooltipWidth, ImGui::GetMousePos().y + 20));
+        const float width = small ? 176.f : uiTooltipWidth;
 
-        uiBeginTooltip();
+        ImGui::SetNextWindowPos(ImVec2(ImGui::GetMousePos().x - width, ImGui::GetMousePos().y + (small ? -40.f : 20.f)));
+
+        uiBeginTooltip(width);
         ImGui::TextWrapped("%s", uiTooltipBuffer);
         uiEndTooltip();
     }
@@ -1472,7 +1481,7 @@ struct Main
             return;
 
         ImGui::SetNextWindowPos(ImVec2(getResolution().x - 15.f, getResolution().y - 15.f), 0, ImVec2(1, 1));
-        uiBeginTooltip();
+        uiBeginTooltip(uiTooltipWidth);
 
         if (hoveredShrine != nullptr)
         {
@@ -1662,7 +1671,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                                 labelSize.x + ImGui::GetStyle().FramePadding.x * 2.f,
                                                 labelSize.y + ImGui::GetStyle().FramePadding.y * 2.f);
 
-        const ImRect bb(window->DC.CursorPos, ImVec2(window->DC.CursorPos.x + size.x, window->DC.CursorPos.y + size.y));
+        const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size);
         ImGui::ItemSize(bb);
 
         if (!ImGui::ItemAdd(bb, id))
@@ -1714,7 +1723,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         ImDrawList*  drawList    = window->DrawList;
 
         // Calculate center point for transformations
-        const ImVec2 center = ImVec2(bb.Min.x + size.x * 0.5f, bb.Min.y + size.y * 0.5f);
+        const ImVec2 center = bb.Min + size * 0.5f;
 
         // Apply transformations (with a small extra clip so nothing gets cut off)
         const ImVec2 clipMin{bb.Min.x - 20.f, bb.Min.y - 20.f};
@@ -1733,16 +1742,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const auto transformPoint = [&](const ImVec2& p) -> ImVec2
         {
             // Translate so that the center is at (0,0)
-            const ImVec2 centered{p.x - center.x, p.y - center.y};
+            const ImVec2 centered = p - center;
 
             // Apply scale
-            const ImVec2 scaled{centered.x * scale, centered.y * scale};
+            const ImVec2 scaled = centered * scale;
 
             // Apply rotation
             const ImVec2 rotated{scaled.x * tiltCos - scaled.y * tiltSin, scaled.x * tiltSin + scaled.y * tiltCos};
 
             // Translate back
-            return {center.x + rotated.x, center.y + rotated.y};
+            return center + rotated;
         };
 
         // ── Draw Button Background as a Rounded Rectangle ──
@@ -1776,7 +1785,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         // ── Draw Text with the Same Transformation ──
 
         // First, compute the untransformed text position.
-        const ImVec2 textPos{bb.Min.x + (size.x - labelSize.x) * 0.5f, bb.Min.y + (size.y - labelSize.y) * 0.5f};
+        const ImVec2 textPos = bb.Min + (size - labelSize) * 0.5f;
 
         // Record the current vertex buffer size...
         const int vtxBufferSizeBeforeTransformation = drawList->VtxBuffer.Size;
@@ -2163,6 +2172,201 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    static inline constexpr const char* bgmPaths[] = {
+        bgmPathNormal, // Normal
+        bgmPathNormal, // Voodoo
+        bgmPathWizard, // Magic
+        bgmPathNormal, // Clicking
+        bgmPathNormal, // Automation
+        bgmPathNormal, // Repulsion
+        bgmPathNormal, // Attraction
+        bgmPathNormal, // Camouflage
+        bgmPathNormal, // Victory
+    };
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Optional<sf::Music>& getCurrentBGMBuffer()
+    {
+        return bgmBuffers[currentBGMBufferIdx % 2u];
+    }
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Optional<sf::Music>& getNextBGMBuffer()
+    {
+        return bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
+    }
+
+    ////////////////////////////////////////////////////////////
+    void switchToBGM(const sf::base::SizeT index, const bool force)
+    {
+        if (!force && lastPlayedMusic == bgmPaths[index])
+            return;
+
+        lastPlayedMusic     = bgmPaths[index];
+        bgmTransition.value = 1000.f;
+
+        auto& optNextMusic = getNextBGMBuffer();
+
+        optNextMusic = sf::Music::openFromFile(bgmPaths[index]);
+        SFML_BASE_ASSERT(optNextMusic.hasValue());
+
+        optNextMusic->setVolume(0.f);
+        optNextMusic->setLooping(true);
+        optNextMusic->setAttenuation(0.f);
+        optNextMusic->setSpatializationEnabled(false);
+        optNextMusic->play(playbackDevice);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void uiDrawQuickbarBackgroundSelector(const sf::Vector2f quickBarPos)
+    {
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = {0.65f, 0.65f},
+                .origin      = txShopIcon.getSize().toVector2f(),
+                .textureRect = txShopIcon.getRect(),
+            },
+            txIconBg);
+
+        std::sprintf(uiTooltipBuffer, "Select background");
+        uiMakeTooltip(/* small */ true);
+
+        ImGui::SameLine();
+
+        if (ImGui::IsItemClicked())
+            ImGui::OpenPopup("BackgroundSelectorPopup");
+
+        ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
+        if (ImGui::BeginPopup("BackgroundSelectorPopup"))
+        {
+            auto& [entries, selectedIndex] = getBackgroundSelectorData();
+
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+
+            if (ImGui::BeginCombo("##backgroundsel", entries[static_cast<sf::base::SizeT>(selectedIndex)].name))
+            {
+                for (SizeT i = 0u; i < entries.size(); ++i)
+                    if (ImGui::Selectable(entries[i].name, selectedIndex == static_cast<int>(i)))
+                    {
+                        selectBackground(entries, static_cast<int>(i));
+
+                        playSound(sounds.uitab);
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void uiDrawQuickbarBGMSelector(const sf::Vector2f quickBarPos)
+    {
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = {0.65f, 0.65f},
+                .origin      = txShopIcon.getSize().toVector2f(),
+                .textureRect = txShopIcon.getRect(),
+            },
+            txIconMusicOn);
+
+        std::sprintf(uiTooltipBuffer, "Select music");
+        uiMakeTooltip(/* small */ true);
+
+        ImGui::SameLine();
+
+        if (ImGui::IsItemClicked())
+            ImGui::OpenPopup("MusicSelectorPopup");
+
+        ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
+        if (ImGui::BeginPopup("MusicSelectorPopup"))
+        {
+            auto& [entries, selectedIndex] = getBGMSelectorData();
+
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+
+            if (ImGui::BeginCombo("##musicsel", entries[static_cast<sf::base::SizeT>(selectedIndex)].name))
+            {
+                for (SizeT i = 0u; i < entries.size(); ++i)
+                    if (ImGui::Selectable(entries[i].name, selectedIndex == static_cast<int>(i)))
+                    {
+                        selectBGM(entries, static_cast<int>(i));
+                        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
+
+                        playSound(sounds.uitab);
+                        ImGui::CloseCurrentPopup();
+                    }
+
+                ImGui::EndCombo();
+            }
+
+            ImGui::EndPopup();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void uiDrawQuickbarVolumeControls(const sf::Vector2f quickBarPos)
+    {
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = {0.65f, 0.65f},
+                .origin      = txShopIcon.getSize().toVector2f(),
+                .textureRect = txShopIcon.getRect(),
+            },
+            txIconVolumeOn);
+
+        std::sprintf(uiTooltipBuffer, "Volume settings");
+        uiMakeTooltip(/* small */ true);
+
+        ImGui::SameLine();
+
+        if (ImGui::IsItemClicked())
+            ImGui::OpenPopup("VolumeSelectorPopup");
+
+        ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
+        if (ImGui::BeginPopup("VolumeSelectorPopup"))
+        {
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+            ImGui::SliderFloat("Master##popupmastervolume", &profile.masterVolume, 0.f, 100.f, "%.f%%");
+
+            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
+            ImGui::SliderFloat("Music##popupmusicvolume", &profile.musicVolume, 0.f, 100.f, "%.f%%");
+
+            ImGui::EndPopup();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void uiDrawQuickbar()
+    {
+        const sf::Vector2f quickBarPos{getAspectRatioScalingFactor(gameScreenSize, getResolution()) * gameScreenSize.x - 15.f,
+                                       getResolution().y - 15.f};
+
+        ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {1.f, 1.f});
+        ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, FLT_MAX));
+
+        ImGui::Begin("##quickmenu",
+                     nullptr,
+                     ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                         ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
+
+        if (getBackgroundSelectorData().entries.size() > 1u)
+            uiDrawQuickbarBackgroundSelector(quickBarPos);
+
+        if (getBGMSelectorData().entries.size() > 1u)
+            uiDrawQuickbarBGMSelector(quickBarPos);
+
+        uiDrawQuickbarVolumeControls(quickBarPos);
+
+        ImGui::End();
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiDraw(const sf::Vector2f mousePos)
     {
         uiWidgetId = 0u;
@@ -2194,6 +2398,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         if (profile.showDpsMeter && !debugHideUI)
             uiDpsMeter();
+
+        uiDrawQuickbar();
 
         ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
         ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth * newScalingFactor, 0.f),
@@ -2958,7 +3164,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             scroll               = 0.f;
             resetAllDraggedCats();
             pt.onPrestige(ppReward);
-            profile.selectedBackground = 0u;
+
+            profile.selectedBackground = 0;
+            profile.selectedBGM        = 0;
         }
         ImGui::EndDisabled();
 
@@ -4172,6 +4380,106 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    struct SelectorEntry
+    {
+        int         index;
+        const char* name;
+    };
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] int pickSelectedIndex(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    {
+        const auto selectedIndexU = static_cast<sf::base::SizeT>(selectedIndex);
+        return selectedIndexU < entries.size() ? entries[selectedIndexU].index : 0;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void selectBackground(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    {
+        profile.selectedBackground = pickSelectedIndex(entries, selectedIndex);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void selectBGM(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    {
+        profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
+    }
+
+    ////////////////////////////////////////////////////////////
+    struct SelectorData
+    {
+        std::vector<SelectorEntry> entries;
+        int                        selectedIndex = -1;
+    };
+
+    ////////////////////////////////////////////////////////////
+    SelectorData& getBGMSelectorData()
+    {
+        static thread_local SelectorData data;
+        data.entries.clear();
+
+        data.entries.emplace_back(0, "Default");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+            data.entries.emplace_back(2, "Old Wise One");
+
+        if (data.selectedIndex == -1)
+        {
+            data.selectedIndex = [&]
+            {
+                for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
+                    if (profile.selectedBGM == data.entries[i].index)
+                        return static_cast<int>(i);
+
+                return 0;
+            }();
+        }
+
+        return data;
+    }
+
+    ////////////////////////////////////////////////////////////
+    SelectorData& getBackgroundSelectorData()
+    {
+        static thread_local SelectorData data;
+        data.entries.clear();
+
+        data.entries.emplace_back(0, "Default");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+            data.entries.emplace_back(1, "Swamp");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+            data.entries.emplace_back(2, "Observatory");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+            data.entries.emplace_back(3, "Aim Labs");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+            data.entries.emplace_back(4, "Factory");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+            data.entries.emplace_back(5, "Wind Tunnel");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+            data.entries.emplace_back(6, "Magnetosphere");
+
+        if (data.selectedIndex == -1)
+        {
+            data.selectedIndex = [&]
+            {
+                for (sf::base::SizeT i = 0u; i < data.entries.size(); ++i)
+                    if (profile.selectedBackground == data.entries[i].index)
+                        return static_cast<int>(i);
+
+                return 0;
+            }();
+        }
+
+        return data;
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBarSettings()
     {
         bool sgActive = false;
@@ -4286,66 +4594,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
-
-            static thread_local std::vector<int>         backgroundIdxs;
-            static thread_local std::vector<const char*> backgroundNames;
-
-            backgroundIdxs.clear();
-            backgroundNames.clear();
-
-            backgroundIdxs.push_back(0);
-            backgroundNames.push_back("Default");
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
-            {
-                backgroundIdxs.push_back(1);
-                backgroundNames.push_back("Swamp");
-            }
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            {
-                backgroundIdxs.push_back(2);
-                backgroundNames.push_back("Observatory");
-            }
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
-            {
-                backgroundIdxs.push_back(3);
-                backgroundNames.push_back("Aim Labs");
-            }
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
-            {
-                backgroundIdxs.push_back(4);
-                backgroundNames.push_back("Factory");
-            }
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
-            {
-                backgroundIdxs.push_back(5);
-                backgroundNames.push_back("Wind Tunnel");
-            }
-
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
-            {
-                backgroundIdxs.push_back(6);
-                backgroundNames.push_back("Magnetosphere");
-            }
-
-            static int selectedBgIndex = [&]
-            {
-                for (sf::base::SizeT i = 0u; i < backgroundIdxs.size(); ++i)
-                    if (profile.selectedBackground == backgroundIdxs[i])
-                        return static_cast<int>(i);
-
-                return 0;
-            }();
-
-            ImGui::SetNextItemWidth(210.f * getUIScalingFactor());
-            ImGui::Combo("Background", &selectedBgIndex, backgroundNames.data(), static_cast<int>(backgroundNames.size()));
-
-            const auto selectedBgIndexU = static_cast<sf::base::SizeT>(selectedBgIndex);
-            profile.selectedBackground = selectedBgIndexU < backgroundIdxs.size() ? backgroundIdxs[selectedBgIndexU] : 0;
 
             uiCheckbox("Always show drawings", &profile.alwaysShowDrawings);
 
@@ -4531,6 +4779,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 shopSelectOnce = ImGuiTabItemFlags_SetSelected;
 
                 profile.selectedBackground = 0;
+                profile.selectedBGM        = 0;
             }
 
             uiPopButtonColors();
@@ -6702,10 +6951,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
-                        if (!pt.perm.shrineCompletedOnceByCatType[catType])
+                        // if (!pt.perm.shrineCompletedOnceByCatType[catType])
                         {
                             pt.perm.shrineCompletedOnceByCatType[catType] = true;
-                            profile.selectedBackground                    = static_cast<int>(shrine.type) + 1;
+
+                            profile.selectedBackground = static_cast<int>(shrine.type) + 1;
+                            profile.selectedBGM        = static_cast<int>(shrine.type) + 1;
+
+                            switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
                         }
                     }
                     else if (cdStatus == CountdownStatusStop::Running)
@@ -7795,6 +8048,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
 
+        ////////////////////////////////////////////////////////////
         const float catHueByType[] = {
             0.f,   // Normal
             160.f, // Uni
@@ -8325,8 +8579,27 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void gameLoopDrawDolls(const sf::Vector2f mousePos)
     {
+        ////////////////////////////////////////////////////////////
+        const sf::FloatRect* dollTxrs[] = {
+            &txrDollNormal,   // Normal
+            &txrDollUni,      // Uni
+            &txrDollDevil,    // Devil
+            &txrDollAstro,    // Astro
+            &txrDollNormal,   // Witch (missing)
+            &txrDollWizard,   // Wizard
+            &txrDollMouse,    // Mouse
+            &txrDollEngi,     // Engi
+            &txrDollRepulso,  // Repulso
+            &txrDollAttracto, // Attracto
+        };
+
+        static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
+
+        ////////////////////////////////////////////////////////////
         for (Doll& doll : pt.dolls)
         {
+            const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
+
             const float invDeathProgress = 1.f - doll.getDeathProgress();
             const float progress         = doll.tcDeath.hasValue() ? invDeathProgress : doll.getActivationProgress();
 
@@ -8338,9 +8611,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = doll.getDrawPosition(),
                            .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
-                           .origin      = txrDoll.size / 2.f,
+                           .origin      = dollTxr.size / 2.f,
                            .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
-                           .textureRect = txrDoll,
+                           .textureRect = dollTxr,
                            .color       = hueColor(doll.hue, dollAlpha)});
         }
     }
@@ -8821,6 +9094,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    void recreateImGuiRenderTexture(const sf::Vector2u newResolution)
+    {
+        rtImGui.emplace(sf::RenderTexture::create(newResolution, {.antiAliasingLevel = 4, .sRgbCapable = false}).value());
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoopRecreateWindowIfNeeded()
     {
         // TODO P2: (lib) all this stuff shouldn't be needed, also it creates a brand new opengl context every time
@@ -8852,8 +9131,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         rtBackground.emplace(
             sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = true}).value());
 
-        rtImGui.emplace(
-            sf::RenderTexture::create(newResolution.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = false}).value());
+        recreateImGuiRenderTexture(newResolution);
 
         dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
 
@@ -8874,7 +9152,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         return true;
     }
-
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float gameLoopUpdateCursorGrowthEffect(const float deltaTimeMs, const bool anyBubblePoppedByClicking)
@@ -8956,8 +9233,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ++iComboAccReward;
                 accComboDelay.value = 35.f;
 
-                spawnEarnedCoinParticle(fromWorldToHud(mousePos));
-                earnedCoinParticles.back().startPosition += rng.getVec2f({-25.f, -25.f}, {25.f, 25.f});
+                if (spawnEarnedCoinParticle(fromWorldToHud(mousePos)))
+                    earnedCoinParticles.back().startPosition += rng.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
                 sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
                                               getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
@@ -9173,22 +9450,46 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateSounds(const sf::Vector2f mousePos)
+    void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vector2f mousePos)
     {
+        const float volumeMult = profile.playAudioInBackground || getWindow().hasFocus() ? 1.f : 0.f;
+
         listener.position = {sf::base::clamp(mousePos.x, 0.f, pt.getMapLimit()),
                              sf::base::clamp(mousePos.y, 0.f, boundaries.y),
                              0.f};
 
-        musicBGM.setPosition(listener.position);
+        listener.volume = profile.masterVolume * volumeMult;
+
         (void)playbackDevice.updateListener(listener);
 
-        const float volumeMult = profile.playAudioInBackground || getWindow().hasFocus() ? 1.f : 0.f;
+        auto& optCurrentMusic = getCurrentBGMBuffer();
+        auto& optNextMusic    = getNextBGMBuffer();
 
-        listener.volume = profile.masterVolume * volumeMult;
-        musicBGM.setVolume(profile.musicVolume * volumeMult);
+        if (!bgmTransition.isDone())
+        {
+            SFML_BASE_ASSERT(optNextMusic.hasValue());
 
-        if (sounds.countPlayingPooled(sounds.prestige) > 0u)
-            musicBGM.setVolume(0.f);
+            const auto processMusic = [&](sf::base::Optional<sf::Music>& optMusic, const float transitionMult)
+            {
+                if (!optMusic.hasValue())
+                    return;
+
+                optMusic->setPosition(listener.position);
+                optMusic->setVolume(profile.musicVolume * volumeMult * transitionMult);
+
+                if (sounds.countPlayingPooled(sounds.prestige) > 0u)
+                    optMusic->setVolume(0.f);
+            };
+
+            processMusic(optCurrentMusic, bgmTransition.getInvProgress(1000.f));
+            processMusic(optNextMusic, bgmTransition.getProgress(1000.f));
+
+            if (bgmTransition.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            {
+                optCurrentMusic.reset();
+                ++currentBGMBufferIdx;
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -9338,8 +9639,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         rtBackground->display();
 
-        const float scale = getAspectRatioScalingFactor(gameScreenSize, getResolution());
-        getWindow().draw(rtBackground->getTexture(), {.scale = {scale, scale}, .textureRect{{0.f, 0.f}, gameScreenSize}});
+        auto gameViewNoScroll   = gameView;
+        gameViewNoScroll.center = getViewCenterWithoutScroll();
+
+        getWindow().setView(gameViewNoScroll);
+        getWindow().draw(rtBackground->getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
     }
 
     ////////////////////////////////////////////////////////////
@@ -9641,6 +9945,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                     scroll = dragPosition->x - static_cast<float>(e5->position.x);
                 }
             }
+            else if (const auto* e6 = event->getIf<sf::Event::Resized>())
+            {
+                recreateImGuiRenderTexture(e6->size);
+            }
 #pragma GCC diagnostic pop
         }
 
@@ -9787,7 +10095,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         //
         // Sounds and volume
-        gameLoopUpdateSounds(mousePos); // also updates listener
+        gameLoopUpdateSounds(deltaTimeMs, mousePos); // also updates listener
 
         //
         // Time played in microseconds
@@ -10078,10 +10386,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         //
         //
         // Background music
-        musicBGM.setLooping(true);
-        musicBGM.setAttenuation(0.f);
-        musicBGM.setSpatializationEnabled(false);
-        musicBGM.play(playbackDevice);
+        auto& [entries, selectedIndex] = getBGMSelectorData();
+        selectBGM(entries, selectedIndex);
+        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
 
         //
         // Game loop
