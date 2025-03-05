@@ -69,6 +69,12 @@ struct [[nodiscard]] Countdown // TODO P2: turn to free funcs, or remove for Tim
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] float getProgress(const float startingValue) const
+    {
+        return 1.f - getInvProgress(startingValue);
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] float getInvProgress(const float startingValue) const
     {
         return value / startingValue;

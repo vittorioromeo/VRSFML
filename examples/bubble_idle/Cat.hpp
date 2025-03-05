@@ -30,46 +30,46 @@ struct [[nodiscard]] Cat
     };
 
     ////////////////////////////////////////////////////////////
-    Timer spawnEffectTimer;
+    Timer spawnEffectTimer{};
 
     sf::Vector2f position;
 
-    float     wobbleRadians;
+    float     wobbleRadians{0.f};
     Countdown cooldown;
 
     sf::Vector2f pawPosition;
-    sf::Angle    pawRotation;
+    sf::Angle    pawRotation{sf::Angle::Zero};
 
     float pawOpacity = 255.f;
 
     float hue = 0.f;
 
-    Countdown inspiredCountdown;
-    Countdown boostCountdown;
+    Countdown inspiredCountdown{};
+    Countdown boostCountdown{};
 
     sf::base::SizeT nameIdx;
 
-    TextShakeEffect textStatusShakeEffect;
-    TextShakeEffect textMoneyShakeEffect;
+    TextShakeEffect textStatusShakeEffect{};
+    TextShakeEffect textMoneyShakeEffect{};
 
     sf::base::U32 hits = 0u;
 
     CatType type;
 
-    sf::base::Optional<BidirectionalTimer> hexedTimer;
+    sf::base::Optional<BidirectionalTimer> hexedTimer{sf::base::nullOpt};
 
     MoneyType moneyEarned = 0u;
 
-    sf::base::Optional<AstroState> astroState;
+    sf::base::Optional<AstroState> astroState{sf::base::nullOpt};
 
-    Countdown blinkCountdown;
-    Countdown blinkAnimCountdown;
+    Countdown blinkCountdown{};
+    Countdown blinkAnimCountdown{};
 
-    Countdown flapCountdown;
-    Countdown flapAnimCountdown;
+    Countdown flapCountdown{};
+    Countdown flapAnimCountdown{};
 
-    Countdown yawnCountdown;
-    Countdown yawnAnimCountdown;
+    Countdown yawnCountdown{};
+    Countdown yawnAnimCountdown{};
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] inline void update(const float deltaTime)
