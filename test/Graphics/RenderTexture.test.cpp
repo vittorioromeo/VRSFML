@@ -39,14 +39,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
         CHECK(!renderTexture.isSmooth());
-        CHECK(!renderTexture.isRepeated());
+        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(!renderTexture.isSrgb());
 
         const auto& texture = renderTexture.getTexture();
         CHECK(texture.getSize() == sf::Vector2u{360, 480});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
@@ -65,8 +65,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("Set/get repeated")
     {
         auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        renderTexture.setRepeated(true);
-        CHECK(renderTexture.isRepeated());
+        renderTexture.setWrapMode(sf::TextureWrapMode::Repeat);
+        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Repeat);
     }
 
     SECTION("generateMipmap()")

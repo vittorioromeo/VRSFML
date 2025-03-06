@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
 
@@ -17,10 +18,17 @@
 #include "SFML/Base/PassKey.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Texture;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Target for off-screen 2D rendering into a texture
 ///
@@ -111,25 +119,25 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable texture repeating
     ///
-    /// This function is similar to `Texture::setRepeated`.
+    /// This function is similar to `Texture::setWrapMode`.
     /// This parameter is disabled by default.
     ///
-    /// \param repeated `true` to enable repeating, `false` to disable it
+    /// \param wrapMode TODO P1: docs
     ///
-    /// \see `isRepeated`
+    /// \see `getWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    void setRepeated(bool repeated);
+    void setWrapMode(TextureWrapMode wrapMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether the texture is repeated or not
     ///
-    /// \return `true` if texture is repeated
+    /// \return TODO P1: docs
     ///
-    /// \see `setRepeated`
+    /// \see `setWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isRepeated() const;
+    [[nodiscard]] TextureWrapMode getWrapMode() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Generate a mipmap using the current texture data
