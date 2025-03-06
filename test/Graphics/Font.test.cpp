@@ -67,7 +67,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
                 CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
                 CHECK(texture.isSmooth());
                 CHECK(!texture.isSrgb());
-                CHECK(!texture.isRepeated());
+                CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
                 CHECK(texture.getNativeHandle() != 0);
                 CHECK(font.isSmooth());
             }
@@ -105,7 +105,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
-            CHECK(!texture.isRepeated());
+            CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
             CHECK(texture.getNativeHandle() != 0);
             CHECK(font.isSmooth());
         }
@@ -133,7 +133,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
         CHECK(texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
         CHECK(font.isSmooth());
     }
