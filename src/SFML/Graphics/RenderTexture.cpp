@@ -434,16 +434,16 @@ bool RenderTexture::isSmooth() const
 
 
 ////////////////////////////////////////////////////////////
-void RenderTexture::setRepeated(bool repeated)
+void RenderTexture::setWrapMode(TextureWrapMode wrapMode)
 {
-    m_impl->texture.setRepeated(repeated);
+    m_impl->texture.setWrapMode(wrapMode);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTexture::isRepeated() const
+TextureWrapMode RenderTexture::getWrapMode() const
 {
-    return m_impl->texture.isRepeated();
+    return m_impl->texture.getWrapMode();
 }
 
 
