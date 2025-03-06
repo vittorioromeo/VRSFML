@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureSaver.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/Window/GLCheck.hpp"
 #include "SFML/Window/GLUtils.hpp"
@@ -34,12 +35,23 @@ namespace
 // A nested named namespace is used here to allow unity builds of SFML.
 namespace TextureImpl
 {
+////////////////////////////////////////////////////////////
 // Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
 constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no texture"
 
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
 {
     return nextUniqueId.fetch_add(1u, std::memory_order::relaxed);
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr GLint wrapModeToGl(sf::TextureWrapMode wrapMode) noexcept
+{
+    return wrapMode == sf::TextureWrapMode::Clamp ? GL_CLAMP_TO_EDGE
+           : wrapMode == sf::TextureWrapMode::Repeat
+               ? GL_REPEAT
+               : GL_MIRRORED_REPEAT;
 }
 
 } // namespace TextureImpl
@@ -62,7 +74,7 @@ m_cacheId(TextureImpl::getUniqueId())
 Texture::Texture(const Texture& rhs) :
 m_isSmooth(rhs.m_isSmooth),
 m_sRgb(rhs.m_sRgb),
-m_isRepeated(rhs.m_isRepeated),
+m_wrapMode(rhs.m_wrapMode),
 m_cacheId(TextureImpl::getUniqueId())
 {
     base::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
@@ -100,7 +112,7 @@ m_size(base::exchange(right.m_size, {})),
 m_texture(base::exchange(right.m_texture, 0u)),
 m_isSmooth(base::exchange(right.m_isSmooth, false)),
 m_sRgb(base::exchange(right.m_sRgb, false)),
-m_isRepeated(base::exchange(right.m_isRepeated, false)),
+m_wrapMode(base::exchange(right.m_wrapMode, TextureWrapMode::Clamp)),
 m_fboAttachment(base::exchange(right.m_fboAttachment, false)),
 m_hasMipmap(base::exchange(right.m_hasMipmap, false)),
 m_cacheId(base::exchange(right.m_cacheId, 0u))
@@ -113,9 +125,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
 {
     // Catch self-moving.
     if (&right == this)
-    {
         return *this;
-    }
 
     // Destroy the OpenGL texture
     if (m_texture)
@@ -131,7 +141,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
     m_texture       = base::exchange(right.m_texture, 0u);
     m_isSmooth      = base::exchange(right.m_isSmooth, false);
     m_sRgb          = base::exchange(right.m_sRgb, false);
-    m_isRepeated    = base::exchange(right.m_isRepeated, false);
+    m_wrapMode      = base::exchange(right.m_wrapMode, TextureWrapMode::Clamp);
     m_fboAttachment = base::exchange(right.m_fboAttachment, false);
     m_hasMipmap     = base::exchange(right.m_hasMipmap, false);
     m_cacheId       = base::exchange(right.m_cacheId, 0u);
@@ -177,7 +187,7 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    const GLint textureWrapParam = GL_CLAMP_TO_EDGE;
+    const GLint textureWrapParam = TextureImpl::wrapModeToGl(settings.wrapMode);
 
     // Initialize the texture
     glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));
@@ -199,6 +209,7 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
     texture.m_hasMipmap = false;
 
     result->setSmooth(settings.smooth);
+    result->setWrapMode(settings.wrapMode);
 
     return result;
 }
@@ -251,7 +262,8 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
          (settings.area.size.y >= size.y)))
     {
         // Load the entire image
-        if ((result = sf::Texture::create(image.getSize(), {.sRgb = settings.sRgb, .smooth = settings.smooth})))
+        if ((result = sf::Texture::create(image.getSize(),
+                                          {.sRgb = settings.sRgb, .smooth = settings.smooth, .wrapMode = settings.wrapMode})))
         {
             result->update(image);
             return result;
@@ -271,7 +283,8 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(rectangle.size.toVector2u(), {.sRgb = settings.sRgb, .smooth = settings.smooth})))
+    if ((result = sf::Texture::create(rectangle.size.toVector2u(),
+                                      {.sRgb = settings.sRgb, .smooth = settings.smooth, .wrapMode = settings.wrapMode})))
     {
         SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
 
@@ -294,8 +307,6 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
         // in all contexts immediately (solves problems in multi-threaded apps)
         glCheck(glFlush());
     }
-
-    result->setSmooth(settings.smooth);
 
     // Error message generated in called function.
     return result;
@@ -628,32 +639,31 @@ bool Texture::isSrgb() const
 
 
 ////////////////////////////////////////////////////////////
-void Texture::setRepeated(bool repeated)
+void Texture::setWrapMode(TextureWrapMode wrapMode)
 {
     SFML_BASE_ASSERT(m_texture);
 
-    if (repeated == m_isRepeated)
+    if (wrapMode == m_wrapMode)
         return;
 
-    m_isRepeated = repeated;
+    m_wrapMode = wrapMode;
 
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-    const GLint textureWrapParam = m_isRepeated ? GL_REPEAT : GL_CLAMP_TO_EDGE;
 
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, textureWrapParam));
-    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, textureWrapParam));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TextureImpl::wrapModeToGl(wrapMode)));
+    glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TextureImpl::wrapModeToGl(wrapMode)));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::isRepeated() const
+TextureWrapMode Texture::getWrapMode() const
 {
-    return m_isRepeated;
+    return m_wrapMode;
 }
 
 
@@ -744,7 +754,7 @@ void Texture::swap(Texture& right) noexcept
     std::swap(m_texture, right.m_texture);
     std::swap(m_isSmooth, right.m_isSmooth);
     std::swap(m_sRgb, right.m_sRgb);
-    std::swap(m_isRepeated, right.m_isRepeated);
+    std::swap(m_wrapMode, right.m_wrapMode);
     std::swap(m_fboAttachment, right.m_fboAttachment);
     std::swap(m_hasMipmap, right.m_hasMipmap);
     std::swap(m_cacheId, right.m_cacheId);
