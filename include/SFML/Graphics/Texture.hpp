@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/TextureWrapMode.hpp"
+
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -16,6 +18,9 @@
 #include "SFML/Base/SizeT.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Image;
@@ -23,15 +28,20 @@ class InputStream;
 class Path;
 class TextureAtlas;
 class Window;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureCreateSettings
 {
-    bool sRgb   = false;
-    bool smooth = false;
+    bool            sRgb     = false;
+    bool            smooth   = false;
+    TextureWrapMode wrapMode = TextureWrapMode::Clamp;
 };
 
 ////////////////////////////////////////////////////////////
@@ -40,9 +50,10 @@ struct [[nodiscard]] TextureCreateSettings
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] TextureLoadSettings
 {
-    bool    sRgb   = false;
-    IntRect area   = {};
-    bool    smooth = false;
+    bool            sRgb     = false;
+    IntRect         area     = {};
+    bool            smooth   = false;
+    TextureWrapMode wrapMode = TextureWrapMode::Clamp;
 };
 
 ////////////////////////////////////////////////////////////
@@ -355,28 +366,25 @@ public:
     /// 3 * width, the texture will be repeated 3 times).
     /// If repeat mode is disabled, the "extra space" will instead
     /// be filled with border pixels.
-    /// Warning: on very old graphics cards, white pixels may appear
-    /// when the texture is repeated. With such cards, repeat mode
-    /// can be used reliably only if the texture has power-of-two
-    /// dimensions (such as 256x128).
+    ///
     /// Repeating is disabled by default.
     ///
-    /// \param repeated `true` to repeat the texture, `false` to disable repeating
+    /// \param wrapMode TODO P1: docs
     ///
-    /// \see `isRepeated`
+    /// \see `getWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    void setRepeated(bool repeated);
+    void setWrapMode(TextureWrapMode wrapMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether the texture is repeated or not
     ///
-    /// \return `true` if repeat mode is enabled, `false` if it is disabled
+    /// \return TODO P1: docs
     ///
-    /// \see `setRepeated`
+    /// \see `setWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isRepeated() const;
+    [[nodiscard]] TextureWrapMode getWrapMode() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Generate a mipmap using the current texture data
@@ -503,14 +511,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u     m_size;            //!< Public texture size
-    unsigned int m_texture{};       //!< Internal texture identifier
-    bool         m_isSmooth{};      //!< Status of the smooth filter
-    bool         m_sRgb{};          //!< Should the texture source be converted from sRGB?
-    bool         m_isRepeated{};    //!< Is the texture in repeat mode?
-    bool         m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
-    bool         m_hasMipmap{};     //!< Has the mipmap been generated?
-    unsigned int m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
+    Vector2u        m_size;            //!< Public texture size
+    unsigned int    m_texture{};       //!< Internal texture identifier
+    bool            m_isSmooth{};      //!< Status of the smooth filter
+    bool            m_sRgb{};          //!< Should the texture source be converted from sRGB?
+    TextureWrapMode m_wrapMode{};      //!< Is the texture in repeat mode?
+    bool            m_fboAttachment{}; //!< Is this texture owned by a framebuffer object?
+    bool            m_hasMipmap{};     //!< Has the mipmap been generated?
+    unsigned int    m_cacheId;         //!< Unique number that identifies the texture to the render target's cache
 };
 
 ////////////////////////////////////////////////////////////
