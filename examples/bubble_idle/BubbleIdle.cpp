@@ -397,7 +397,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Music
     static inline constexpr const char* bgmPathNormal = "resources/hibiscus.mp3";
+    static inline constexpr const char* bgmPathWitch  = "resources/bgmwitch.mp3";
     static inline constexpr const char* bgmPathWizard = "resources/bgmwizard.mp3";
+    static inline constexpr const char* bgmPathMouse  = "resources/bgmmouse.mp3";
 
     const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
 
@@ -453,9 +455,10 @@ struct Main
     sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
     sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
     sf::Texture txShopIcon{sf::Texture::loadFromFile("resources/shopicon.png", {.smooth = true}).value()};
-    sf::Texture txIconVolumeOn{sf::Texture::loadFromFile("resources/iconvolumeon.png", {.smooth = true}).value()};
-    sf::Texture txIconMusicOn{sf::Texture::loadFromFile("resources/iconmusicon.png", {.smooth = true}).value()};
+    sf::Texture txIconVolume{sf::Texture::loadFromFile("resources/iconvolumeon.png", {.smooth = true}).value()};
+    sf::Texture txIconBGM{sf::Texture::loadFromFile("resources/iconmusicon.png", {.smooth = true}).value()};
     sf::Texture txIconBg{sf::Texture::loadFromFile("resources/iconbg.png", {.smooth = true}).value()};
+    sf::Texture txIconCfg{sf::Texture::loadFromFile("resources/iconcfg.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // Background hues
@@ -1817,7 +1820,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
+    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
     {
         // Calculate the scale factors for both dimensions
         const float scaleX = windowSize.x / originalSize.x;
@@ -1828,7 +1831,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize)
+    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
     {
         const float        scale      = getAspectRatioScalingFactor(originalSize, windowSize);
         const sf::Vector2f scaledSize = originalSize * scale;
@@ -1849,12 +1852,6 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     [[nodiscard]] sf::Vector2f getHUDMousePos() const
     {
         return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), scaledHUDView);
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getHUDScalingFactor() const
-    {
-        return profile.hudScale;
     }
 
     ////////////////////////////////////////////////////////////
@@ -2122,7 +2119,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f uiGetWindowPos() const
     {
-        return {getResolution().x - 15.f, 15.f};
+        const float ratio = getAspectRatioScalingFactor(gameScreenSize, getResolution());
+
+        const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
+
+        const float rightAnchorX = sf::base::min(getResolution().x - scaledWindowWidth - 15.f,
+                                                 gameScreenSize.x * ratio + 30.f);
+
+        return {rightAnchorX, 15.f};
     }
 
     ////////////////////////////////////////////////////////////
@@ -2178,9 +2182,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     static inline constexpr const char* bgmPaths[] = {
         bgmPathNormal, // Normal
-        bgmPathNormal, // Voodoo
+        bgmPathWitch,  // Voodoo
         bgmPathWizard, // Magic
-        bgmPathNormal, // Clicking
+        bgmPathMouse,  // Clicking
         bgmPathNormal, // Automation
         bgmPathNormal, // Repulsion
         bgmPathNormal, // Attraction
@@ -2245,7 +2249,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         ImGui::SameLine();
 
         if (ImGui::IsItemClicked())
+        {
             ImGui::OpenPopup(popupLabel);
+            playSound(sounds.uitab);
+        }
 
         ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
         if (ImGui::BeginPopup(popupLabel))
@@ -2293,7 +2300,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 .origin      = txShopIcon.getSize().toVector2f(),
                 .textureRect = txShopIcon.getRect(),
             },
-            txIconMusicOn,
+            txIconBGM,
             sf::Color::White.withAlpha(opacity));
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
@@ -2304,7 +2311,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         ImGui::SameLine();
 
         if (ImGui::IsItemClicked())
+        {
             ImGui::OpenPopup(popupLabel);
+            playSound(sounds.uitab);
+        }
 
         ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
         if (ImGui::BeginPopup(popupLabel))
@@ -2341,6 +2351,78 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
+    void uiDrawQuickbarQuickSettings(const sf::Vector2f quickBarPos)
+    {
+        constexpr const char* popupLabel = "QuickSettingsPopup";
+        static sf::base::U8   opacity    = 168u;
+
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = {0.65f, 0.65f},
+                .origin      = txShopIcon.getSize().toVector2f(),
+                .textureRect = txShopIcon.getRect(),
+            },
+            txIconCfg,
+            sf::Color::White.withAlpha(opacity));
+
+        opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+
+        std::sprintf(uiTooltipBuffer, "Quick settings");
+        uiMakeTooltip(/* small */ true);
+
+        ImGui::SameLine();
+
+        if (ImGui::IsItemClicked())
+        {
+            ImGui::OpenPopup(popupLabel);
+            playSound(sounds.uitab);
+        }
+
+        ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
+        if (ImGui::BeginPopup(popupLabel))
+        {
+            uiCheckbox("Enable tips", &profile.tipsEnabled);
+            uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
+
+            ImGui::Separator();
+
+            uiCheckbox("Show cat range", &profile.showCatRange);
+            uiCheckbox("Show cat text", &profile.showCatText);
+            uiCheckbox("Show particles", &profile.showParticles);
+
+            ImGui::BeginDisabled(!profile.showParticles);
+            uiCheckbox("Show coin particles", &profile.showCoinParticles);
+            ImGui::EndDisabled();
+
+            uiCheckbox("Show text particles", &profile.showTextParticles);
+
+            ImGui::Separator();
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
+
+            uiCheckbox("Always show drawings", &profile.alwaysShowDrawings);
+
+            ImGui::Separator();
+
+            uiCheckbox("Bubble shader", &profile.useBubbleShader);
+
+            ImGui::BeginDisabled(!profile.useBubbleShader);
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Bubble Lightness", &profile.bsBubbleLightness, -1.f, 1.f, "%.2f");
+            ImGui::EndDisabled();
+
+            ImGui::Separator();
+
+            if (uiCheckbox("VSync", &profile.vsync))
+                optWindow->setVerticalSyncEnabled(profile.vsync);
+
+            ImGui::EndPopup();
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiDrawQuickbarVolumeControls(const sf::Vector2f quickBarPos)
     {
         constexpr const char* popupLabel = "VolumeSelectorPopup";
@@ -2353,7 +2435,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 .origin      = txShopIcon.getSize().toVector2f(),
                 .textureRect = txShopIcon.getRect(),
             },
-            txIconVolumeOn,
+            txIconVolume,
             sf::Color::White.withAlpha(opacity));
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
@@ -2364,7 +2446,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         ImGui::SameLine();
 
         if (ImGui::IsItemClicked())
+        {
             ImGui::OpenPopup(popupLabel);
+            playSound(sounds.uitab);
+        }
 
         ImGui::SetNextWindowPos(ImVec2(quickBarPos) - ImVec2{0.f, 64.f}, 0, {1.f, 1.f});
         if (ImGui::BeginPopup(popupLabel))
@@ -2400,6 +2485,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiDrawQuickbarBGMSelector(quickBarPos);
 
         uiDrawQuickbarVolumeControls(quickBarPos);
+
+        uiDrawQuickbarQuickSettings(quickBarPos);
 
         ImGui::End();
     }
@@ -2523,7 +2610,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         uiDrawQuickbar();
 
-        ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {1.f, 0.f});
+        ImGui::SetNextWindowPos({uiGetWindowPos().x, uiGetWindowPos().y}, 0, {0.f, 0.f});
         ImGui::SetNextWindowSizeConstraints(ImVec2(uiWindowWidth * newScalingFactor, 0.f),
                                             ImVec2(uiWindowWidth * newScalingFactor,
                                                    uiGetMaxWindowHeight() * newScalingFactor));
@@ -4561,8 +4648,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         data.entries.emplace_back(0, "Default");
 
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+            data.entries.emplace_back(1, "Ritual Circle");
+
         if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            data.entries.emplace_back(2, "Old Wise One");
+            data.entries.emplace_back(2, "The Wise One");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+            data.entries.emplace_back(3, "Click N Chill");
 
         if (data.selectedIndex == -1)
         {
@@ -4678,18 +4771,19 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             const auto makeUIScaleButton = [&](const char* label, const float scaleFactor)
             {
                 ImGui::SameLine();
-                if (ImGui::Button(label))
+                if (ImGui::Button(label, ImVec2{46.f * profile.uiScale, 0.f}))
                 {
                     playSound(sounds.buy);
                     profile.uiScale = scaleFactor;
                 }
             };
 
-            makeUIScaleButton(" XL ", 1.5f);
-            makeUIScaleButton(" L ", 1.25f);
-            makeUIScaleButton(" M ", 1.f);
-            makeUIScaleButton(" S ", 0.75f);
-            makeUIScaleButton(" XS ", 0.5f);
+            makeUIScaleButton("XXL", 1.75f);
+            makeUIScaleButton("XL", 1.5f);
+            makeUIScaleButton("L", 1.25f);
+            makeUIScaleButton("M", 1.f);
+            makeUIScaleButton("S", 0.75f);
+            makeUIScaleButton("XS", 0.5f);
 
             uiCheckbox("Enable tips", &profile.tipsEnabled);
             uiCheckbox("Enable full mana notification", &profile.showFullManaNotification);
@@ -4738,6 +4832,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             uiCheckbox("Always show drawings", &profile.alwaysShowDrawings);
 
+            uiCheckbox("Show cat range", &profile.showCatRange);
             uiCheckbox("Show cat text", &profile.showCatText);
             uiCheckbox("Show particles", &profile.showParticles);
 
@@ -4776,8 +4871,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                     ImGui::SliderFloat("Lens Distortion", &profile.bsLensDistortion, 0.f, 10.f, "%.2f");
                 }
 
+                ImGui::BeginDisabled(!profile.useBubbleShader);
                 ImGui::SetNextItemWidth(210.f * profile.uiScale);
                 ImGui::SliderFloat("Bubble Lightness", &profile.bsBubbleLightness, -1.f, 1.f, "%.2f");
+                ImGui::EndDisabled();
 
                 ImGui::SetWindowFontScale(uiNormalFontScale);
             }
@@ -4865,9 +4962,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Separator();
 
             if (uiCheckbox("VSync", &profile.vsync))
-            {
                 optWindow->setVerticalSyncEnabled(profile.vsync);
-            }
 
             static auto fpsLimit = static_cast<float>(profile.frametimeLimit);
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
@@ -4931,6 +5026,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 profile.selectedBackground = 0;
                 profile.selectedBGM        = 0;
+
+                switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
             }
 
             uiPopButtonColors();
@@ -7105,8 +7202,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
-                        // if (!pt.perm.shrineCompletedOnceByCatType[catType])
+                        if (!pt.perm.shrineCompletedOnceByCatType[catType])
                         {
+                            pushNotification("New unlocks!", "A new background and BGM have been unlocked!");
+
                             pt.perm.shrineCompletedOnceByCatType[catType] = true;
 
                             profile.selectedBackground = static_cast<int>(shrine.type) + 1;
@@ -8306,7 +8405,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
-            if (!inPrestigeTransition && bubbleCullingBoundaries.isInside(cat.position))
+            if (profile.showCatRange && !inPrestigeTransition && bubbleCullingBoundaries.isInside(cat.position))
                 cpuDrawableBatch.add(sf::CircleShapeData{
                     .position           = getCatRangeCenter(cat),
                     .origin             = {range, range},
@@ -8386,7 +8485,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                .origin      = txrDevilCat3Book.size / 2.f,
                                .rotation    = sf::radians(catRotation),
                                .textureRect = pt.perm.devilcatHellsingedPurchased ? txrDevilCat2Book : txrDevilCat3Book,
-                               .color       = hueColor(wrapHue(cat.hue * 2.f - 15.f), 255u)});
+                               .color = hueColor(wrapHue(sf::base::fmod(cat.hue * 2.f - 15.f + cat.nameIdx * 25.f, 60.f) - 30.f),
+                                                 255u)});
             }
 
             //
@@ -9056,7 +9156,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             rtImGui->display();
 
             optWindow->draw(rtImGui->getTexture(),
-                            {.scale = {1.f / getHUDScalingFactor(), 1.f / getHUDScalingFactor()},
+                            {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
                              .color = hueColor(wrapHue(currentBackgroundHue.asDegrees()), 255u)},
                             {.shader = &shader});
         }
@@ -9065,33 +9165,31 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
     {
+        const float imguiWidth = uiWindowWidth * profile.uiScale;
+        const auto  blinkFn = [](const float value) { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
+
         for (auto& [y, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
         {
             if (countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
             {
-                const float imguiWidth = uiWindowWidth * profile.uiScale;
-                float       x          = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
-                const auto pos = sf::Vector2f{uiGetWindowPos().x - x, y + (14.f + rng.getF(-12.f, 12.f)) * profile.uiScale};
+                float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
+                const auto pos = sf::Vector2f{uiGetWindowPos().x + x, y + (14.f + rng.getF(-14.f, 14.f)) * profile.uiScale};
 
-                spawnHUDTopParticle({.position      = pos,
-                                     .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
-                                     .scale         = rng.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
-                                     .accelerationY = 0.f,
-                                     .opacity       = 1.f,
-                                     .opacityDecay  = rng.getF(0.00065f, 0.0055f),
-                                     .rotation      = rng.getF(0.f, sf::base::tau),
-                                     .torque        = rng.getF(-0.002f, 0.002f)},
-                                    /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
-                                    ParticleType::Star);
+                for (sf::base::SizeT i = 0u; i < 2u; ++i)
+                    spawnHUDTopParticle({.position      = pos,
+                                         .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
+                                         .scale         = rng.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
+                                         .accelerationY = 0.f,
+                                         .opacity       = 1.f,
+                                         .opacityDecay  = rng.getF(0.00065f, 0.0055f),
+                                         .rotation      = rng.getF(0.f, sf::base::tau),
+                                         .torque        = rng.getF(-0.002f, 0.002f)},
+                                        /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
+                                        ParticleType::Star);
             }
 
             if (arrowCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
             {
-                const float imguiWidth = uiWindowWidth * profile.uiScale;
-
-                const auto blinkFn = [](const float value)
-                { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
-
                 const float blinkProgress = blinkFn(arrowCountdown.getProgressBounced(2000.f));
 
                 const auto arrowAlpha = static_cast<sf::base::U8>(easeInOutCubic(blinkProgress) * 255.f);
@@ -9099,7 +9197,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
                 getWindow().draw(tx,
-                                 {.position = {uiGetWindowPos().x - imguiWidth, y + 14.f * profile.uiScale},
+                                 {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
                                   .scale    = sf::Vector2f{0.25f, 0.25f} *
                                            (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                                   .origin = tx.getRect().getCenterRight(),
@@ -9234,7 +9332,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         SFML_BASE_ASSERT(profile.hudScale > 0.f);
 
         tipBackgroundSprite.setBottomCenter(
-            {getResolution().x / 2.f / getHUDScalingFactor(), getResolution().y / getHUDScalingFactor() - 50.f});
+            {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
         getWindow().draw(tipBackgroundSprite, txTipBg);
 
@@ -9457,14 +9555,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 accComboDelay.value = 35.f;
 
                 if (spawnEarnedCoinParticle(fromWorldToHud(mousePos)))
+                {
                     earnedCoinParticles.back().startPosition += rng.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
-                sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
-                                              getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
-                sounds.coindelay.setPitch(0.8f + static_cast<float>(iComboAccReward) * 0.04f);
-                sounds.coindelay.setVolume(100.f);
+                    sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
+                                                  getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
+                    sounds.coindelay.setPitch(0.8f + static_cast<float>(iComboAccReward) * 0.04f);
+                    sounds.coindelay.setVolume(100.f);
 
-                playSound(sounds.coindelay, /* maxOverlap */ 64);
+                    playSound(sounds.coindelay, /* maxOverlap */ 64);
+                }
             }
 
             if (iComboAccStarReward < comboAccStarReward &&
@@ -10363,7 +10463,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                               {screenShakeAmount, screenShakeAmount});
 
         nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
-        scaledHUDView    = makeScaledHUDView(resolution, getHUDScalingFactor());
+        scaledHUDView    = makeScaledHUDView(resolution, profile.hudScale);
 
         gameView                     = createScaledGameView(gameScreenSize, resolution);
         gameView.viewport.position.x = 0.f;
@@ -10498,7 +10598,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         cpuDrawableBatch,
                         textureAtlas,
                         resolution,
-                        getHUDScalingFactor(),
+                        profile.hudScale,
                         currentBackgroundHue.asDegrees());
 
         //
@@ -10507,6 +10607,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         //
         // Purchase unlocked/available effects
+        window.setView(nonScaledHUDView);
         gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
 
         // Top-level hud particles
@@ -10527,7 +10628,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         // Splash screen
         window.setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
-            drawSplashScreen(window, txLogo, splashCountdown, resolution, getHUDScalingFactor());
+            drawSplashScreen(window, txLogo, splashCountdown, resolution, profile.hudScale);
 
         //
         // Tips
