@@ -506,6 +506,20 @@ struct Main
 
 #undef PRESTIGESEP
 
+////////////////////////////////////////////////////////////
+// Magic menu separator textures
+#define MAGICSEP(idx)                                                                               \
+    sf::Texture txMagicSeparator##idx                                                               \
+    {                                                                                               \
+        sf::Texture::loadFromFile("resources/magicseparator" #idx ".png", {.smooth = true}).value() \
+    }
+
+    MAGICSEP(0);
+    MAGICSEP(1);
+    MAGICSEP(2);
+
+#undef MAGICSEP
+
     ////////////////////////////////////////////////////////////
     // Background hues
     static inline constexpr EXACT_ARRAY(
@@ -2188,7 +2202,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
 
         const float rightAnchorX = sf::base::min(getResolution().x - scaledWindowWidth - 15.f * profile.uiScale,
-                                                 gameScreenSize.x * ratio + 30.f* profile.uiScale);
+                                                 gameScreenSize.x * ratio + 30.f * profile.uiScale);
 
         return {rightAnchorX, 15.f};
     }
@@ -2919,7 +2933,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void imgsep(const sf::Texture& tx, const char* sepLabel)
     {
-        if (&tx != &txMenuSeparator0 && &tx != &txPrestigeSeparator0)
+        if (&tx != &txMenuSeparator0 && &tx != &txPrestigeSeparator0 && &tx != &txMagicSeparator0)
         {
             ImGui::Spacing();
             ImGui::Spacing();
@@ -3836,10 +3850,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(4u, "Witchcat", CatType::Witch);
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs.");
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvPPWitchCatBuffDuration.currentValue()));
             makePrestigePurchasablePPButtonPSV("Buff duration", pt.psvPPWitchCatBuffDuration);
+
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
                          "The duration of Witchcat buffs scales with the number of cats that were in range while "
@@ -3851,9 +3868,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
 
+            ImGui::Separator();
+
             std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
+
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
             uiLabelBuffer[0] = '\0';
@@ -3862,6 +3883,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Orbital dolls", 16u, pt.perm.witchCatBuffOrbitalDolls);
+
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
                          "Increase the star bubble spawn chance during the Unicat vododoo ritual buff.");
@@ -3880,6 +3903,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(8u, "Wizardcat", CatType::Wizard);
+            ImGui::Separator();
 
             // TODO P1: autocast
 
@@ -3890,6 +3914,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             std::sprintf(uiTooltipBuffer, "Increase the maximum mana.");
             std::sprintf(uiLabelBuffer, "%llu mana", pt.getComputedMaxMana());
             makePrestigePurchasablePPButtonPSV("Mana limit", pt.psvPPManaMaxMult);
+
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
@@ -3904,6 +3930,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 (void)makePurchasablePPButtonOneTime("Nova starpaw", 64u, pt.perm.starpawNova);
             }
 
+            ImGui::Separator();
+
             std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
@@ -3916,6 +3944,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(8u, "Mousecat", CatType::Mouse);
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier.");
             std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPMouseCatGlobalBonusMult.currentValue()));
@@ -3929,6 +3958,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(16u, "Engicat", CatType::Engi);
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier.");
             std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPEngiCatGlobalBonusMult.currentValue()));
@@ -3942,6 +3972,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
             uiLabelBuffer[0] = '\0';
@@ -4000,6 +4031,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiBeginColumns();
 
             makeUnsealButton(256u, "Attractocat", CatType::Attracto);
+            ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
                          "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
@@ -4176,9 +4208,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const auto range       = pt.getComputedRangeByCatType(CatType::Wizard);
         const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
 
-        ImGui::Text("Your wizard is %s!", shuffledCatNamesPerType[asIdx(CatType::Wizard)][wizardCat->nameIdx].c_str());
+        ImGui::Spacing();
+        ImGui::Spacing();
 
-        ImGui::Separator();
+        imgsep(txMagicSeparator0, "wisdom");
+        ImGui::Columns(1);
 
         ImGui::Text("Wisdom points: %llu WP", pt.wisdom);
 
@@ -4201,9 +4235,9 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                         "%s WP##%u");
 
         uiButtonHueMod = 0.f;
-        ImGui::Columns(1);
 
-        ImGui::Separator();
+        imgsep(txMagicSeparator1, "mana");
+        ImGui::Columns(1);
 
         ImGui::Text("Mana: %llu / %llu", pt.mana, pt.getComputedMaxMana());
 
@@ -4218,7 +4252,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         ImGui::Text("Wizard cooldown: %.2fs", static_cast<double>(wizardCat->cooldown.value / 1000.f));
 
-        ImGui::Separator();
+        imgsep(txMagicSeparator2, "spells");
 
         if (pt.psvSpellCount.nPurchases == 0)
         {
