@@ -461,6 +461,52 @@ struct Main
     sf::Texture txIconCfg{sf::Texture::loadFromFile("resources/iconcfg.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
+    // Shop menu separator textures
+#define MENUSEP(idx)                                                                               \
+    sf::Texture txMenuSeparator##idx                                                               \
+    {                                                                                              \
+        sf::Texture::loadFromFile("resources/menuseparator" #idx ".png", {.smooth = true}).value() \
+    }
+
+    MENUSEP(0);
+    MENUSEP(1);
+    MENUSEP(2);
+    MENUSEP(3);
+    MENUSEP(4);
+    MENUSEP(5);
+    MENUSEP(6);
+    MENUSEP(7);
+    MENUSEP(8);
+
+#undef MENUSEP
+
+////////////////////////////////////////////////////////////
+// Prestige menu separator textures
+#define PRESTIGESEP(idx)                                                                               \
+    sf::Texture txPrestigeSeparator##idx                                                               \
+    {                                                                                                  \
+        sf::Texture::loadFromFile("resources/prestigeseparator" #idx ".png", {.smooth = true}).value() \
+    }
+
+    PRESTIGESEP(0);
+    PRESTIGESEP(1);
+    PRESTIGESEP(2);
+    PRESTIGESEP(3);
+    PRESTIGESEP(4);
+    PRESTIGESEP(5);
+    PRESTIGESEP(6);
+    PRESTIGESEP(7);
+    PRESTIGESEP(8);
+    PRESTIGESEP(9);
+    PRESTIGESEP(10);
+    PRESTIGESEP(11);
+    PRESTIGESEP(12);
+    PRESTIGESEP(13);
+    PRESTIGESEP(14);
+
+#undef PRESTIGESEP
+
+    ////////////////////////////////////////////////////////////
     // Background hues
     static inline constexpr EXACT_ARRAY(
         float,
@@ -846,7 +892,7 @@ struct Main
         float top;
         float bottom;
 
-        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr inline bool isInside(
+        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(
             const sf::Vector2f point) const noexcept
         {
             return (point.x >= left) && (point.x <= right) && (point.y >= top) && (point.y <= bottom);
@@ -1377,8 +1423,8 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr float uiNormalFontScale    = 1.f;
-    static inline constexpr float uiSubBulletFontScale = 0.8f;
+    static inline constexpr float uiNormalFontScale    = 0.95f;
+    static inline constexpr float uiSubBulletFontScale = 0.75f;
     static inline constexpr float uiToolTipFontScale   = 0.65f;
     static inline constexpr float uiWindowWidth        = 425.f;
     static inline constexpr float uiButtonWidth        = 150.f;
@@ -1387,7 +1433,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float uiGetMaxWindowHeight() const
     {
-        return getResolution().y - 30.f;
+        return sf::base::max(getResolution().y - 30.f, (getResolution().y - 30.f) / profile.uiScale);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1396,20 +1442,36 @@ struct Main
     char         uiTooltipBuffer[1024]{};
     float        uiButtonHueMod = 0.f;
     unsigned int uiWidgetId     = 0u;
+    float        lastFontScale  = 1.f;
+
+    ////////////////////////////////////////////////////////////
+    void uiSetFontScale(const float scale)
+    {
+        lastFontScale = scale;
+        ImGui::SetWindowFontScale(scale);
+    }
 
     ////////////////////////////////////////////////////////////
     void uiMakeButtonLabels(const char* label, const char* xLabelBuffer)
     {
+        const char* readableLabelEnd = ImGui::FindRenderedTextEnd(label);
+
+        const bool subBullet = label[0] == ' ' && label[1] == ' ';
+
+        const char* labelStart = subBullet ? label + 2 : label;
+        const auto  labelSize  = readableLabelEnd - labelStart;
+
+
         // button label
-        ImGui::SetWindowFontScale((label[0] == '-' ? uiSubBulletFontScale : uiNormalFontScale) * 1.15f);
+        uiSetFontScale((subBullet ? uiSubBulletFontScale : uiNormalFontScale) * 1.15f);
         ImGui::AlignTextToFramePadding();
-        ImGui::Text("%s", label);
+        ImGui::Text("%.*s", static_cast<int>(labelSize), labelStart);
         ImGui::SameLine();
 
         // button top label
-        ImGui::SetWindowFontScale(0.5f);
+        uiSetFontScale(0.5f);
         ImGui::Text("%s", xLabelBuffer);
-        ImGui::SetWindowFontScale(label[0] == '-' ? uiSubBulletFontScale : uiNormalFontScale);
+        uiSetFontScale(subBullet ? uiSubBulletFontScale : uiNormalFontScale);
         ImGui::SameLine();
 
         ImGui::NextColumn();
@@ -1436,19 +1498,19 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void uiBeginTooltip(const float width) const
+    void uiBeginTooltip(const float width)
     {
         ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, FLT_MAX));
 
         ImGui::BeginTooltip();
         ImGui::PushFont(fontImGuiMouldyCheese);
-        ImGui::SetWindowFontScale(uiToolTipFontScale);
+        uiSetFontScale(uiToolTipFontScale);
     }
 
     ////////////////////////////////////////////////////////////
-    void uiEndTooltip() const
+    void uiEndTooltip()
     {
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
         ImGui::PopFont();
         ImGui::EndTooltip();
     }
@@ -1851,7 +1913,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f getHUDMousePos() const
     {
-        return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), scaledHUDView);
+        return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), nonScaledHUDView);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1904,8 +1966,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         uiMakeTooltip();
 
-        if (label[0] == '-')
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+        if (label[0] == ' ')
+            uiSetFontScale(uiNormalFontScale);
 
         ImGui::NextColumn();
         return clicked;
@@ -2105,14 +2167,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     void uiBeginColumns() const
     {
         ImGui::Columns(2, "twoColumns", false);
-        ImGui::SetColumnWidth(0, (uiWindowWidth - uiButtonWidth - 20.f) * profile.uiScale);
+        ImGui::SetColumnWidth(0, (uiWindowWidth - uiButtonWidth - 40.f) * profile.uiScale);
         ImGui::SetColumnWidth(1, (uiButtonWidth + 10.f) * profile.uiScale);
     }
 
     ////////////////////////////////////////////////////////////
-    void uiCenteredText(const char* str)
+    void uiCenteredText(const char* str, const float offsetX = 0.f, const float offsetY = 0.f)
     {
-        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(str).x) * 0.5f);
+        ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(str).x) * 0.5f + offsetX);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
+
         ImGui::Text("%s", str);
     }
 
@@ -2123,8 +2187,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         const float scaledWindowWidth = uiWindowWidth * profile.uiScale;
 
-        const float rightAnchorX = sf::base::min(getResolution().x - scaledWindowWidth - 15.f,
-                                                 gameScreenSize.x * ratio + 30.f);
+        const float rightAnchorX = sf::base::min(getResolution().x - scaledWindowWidth - 15.f * profile.uiScale,
+                                                 gameScreenSize.x * ratio + 30.f* profile.uiScale);
 
         return {rightAnchorX, 15.f};
     }
@@ -2147,12 +2211,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                          ImGuiWindowFlags_NoTitleBar);
 
-        ImGui::SetWindowFontScale(scaleMult);
+        uiSetFontScale(scaleMult);
 
         uiCenteredText("Are you sure you want to exit?");
 
         ImGui::Dummy(ImVec2(0.f, 10.f * scaleMult));
-        constexpr float exitButtonWidth = 60.f * scaleMult;
+        const float exitButtonWidth = 60.f * scaleMult * profile.uiScale;
 
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - exitButtonWidth * 2.f - 5.f) * 0.5f);
 
@@ -2174,7 +2238,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         ImGui::EndGroup();
 
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
 
         ImGui::End();
     }
@@ -2535,7 +2599,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             style.TouchExtraPadding         = touchExtraPadding * scale;
             style.IndentSpacing             = indentSpacing * scale;
             style.ColumnsMinSpacing         = columnsMinSpacing * scale;
-            style.ScrollbarSize             = scrollbarSize * scale;
+            style.ScrollbarSize             = scrollbarSize * scale * 0.5f;
             style.ScrollbarRounding         = scrollbarRounding * scale;
             style.GrabMinSize               = grabMinSize * scale;
             style.GrabRounding              = grabRounding * scale;
@@ -2638,7 +2702,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    void uiDpsMeter() const
+    void uiDpsMeter()
     {
         const auto resolution = getResolution();
 
@@ -2653,7 +2717,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                          ImGuiWindowFlags_NoTitleBar);
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
 
         static thread_local std::vector<float> sampleBuffer(60);
         samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
@@ -2681,6 +2745,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void uiTabBar()
     {
+        const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
+
         static int lastSelectedTabIdx = 1;
 
         const auto selectedTab = [&](int idx)
@@ -2703,7 +2769,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             selectedTab(1);
 
             shopSelectOnce = {};
+
+            ImGui::BeginChild("ShopScroll",
+                              ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
+                              0,
+                              ImGuiWindowFlags_AlwaysVerticalScrollbar);
             uiTabBarShop();
+
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
 
@@ -2711,7 +2784,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             selectedTab(2);
 
+            ImGui::BeginChild("MagicScroll",
+                              ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
+                              0,
+                              ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
             uiTabBarMagic();
+
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
 
@@ -2736,7 +2816,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             {
                 selectedTab(3);
 
+                ImGui::BeginChild("PrestigeScroll",
+                                  ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
+                                  0,
+                                  ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
                 uiTabBarPrestige();
+
+                ImGui::EndChild();
                 ImGui::EndTabItem();
             }
 
@@ -2748,7 +2835,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             selectedTab(4);
 
+            ImGui::BeginChild("StatsScroll",
+                              ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
+                              0,
+                              ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
             uiTabBarStats();
+
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
 
@@ -2756,7 +2850,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             selectedTab(5);
 
+            ImGui::BeginChild("OptionsScroll",
+                              ImVec2(ImGui::GetContentRegionAvail().x, childHeight),
+                              0,
+                              ImGuiWindowFlags_AlwaysVerticalScrollbar);
+
             uiTabBarSettings();
+
+            ImGui::EndChild();
             ImGui::EndTabItem();
         }
     }
@@ -2815,6 +2916,74 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         return 0;
     }
 
+    ////////////////////////////////////////////////////////////
+    void imgsep(const sf::Texture& tx, const char* sepLabel)
+    {
+        if (&tx != &txMenuSeparator0 && &tx != &txPrestigeSeparator0)
+        {
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Spacing();
+        }
+
+        ImGui::Columns(1);
+
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = sf::Vector2f{0.46f, 0.5f} * profile.uiScale,
+                .origin      = tx.getSize().toVector2f(),
+                .textureRect = tx.getRect(),
+            },
+            tx,
+            sf::Color::White);
+
+
+        const auto oldFontScale = lastFontScale;
+        uiSetFontScale(0.75f);
+        uiCenteredText(sepLabel, -5.f * profile.uiScale, -8.f * profile.uiScale);
+        uiSetFontScale(oldFontScale);
+
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        uiBeginColumns();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void imgsep2(const sf::Texture& tx, const char* sepLabel)
+    {
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        ImGui::Columns(1);
+
+        imGuiContext.image(
+            sf::Sprite{
+                .position    = {0.f, 0.f},
+                .scale       = sf::Vector2f{0.46f, 0.5f} * profile.uiScale,
+                .origin      = tx.getSize().toVector2f(),
+                .textureRect = tx.getRect(),
+            },
+            tx,
+            sf::Color::White);
+
+
+        const auto oldFontScale = lastFontScale;
+        uiSetFontScale(0.75f);
+        uiCenteredText(sepLabel, -5.f * profile.uiScale, -6.f * profile.uiScale);
+        uiSetFontScale(oldFontScale);
+
+        uiBeginColumns();
+    }
 
     ////////////////////////////////////////////////////////////
     void uiTabBarShop()
@@ -2834,7 +3003,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const bool anyUniqueCat = catWitch != nullptr || catWizard != nullptr || catMouse != nullptr ||
                                   catEngi != nullptr || catRepulso != nullptr || catAttracto != nullptr;
 
-        uiBeginColumns();
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        imgsep(txMenuSeparator0, "click upgrades");
 
         std::sprintf(uiTooltipBuffer,
                      "Build your combo by popping bubbles quickly, increasing the value of each subsequent "
@@ -2853,13 +3025,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!%s", mouseNote);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
-            makePSVButton("- Longer combo", pt.psvComboStartTime);
+            makePSVButton("  Longer combo", pt.psvComboStartTime);
         }
-
-        ImGui::Separator();
 
         if (checkUiUnlock(1u, nCatNormal > 0 && pt.psvComboStartTime.nPurchases > 0))
         {
+            imgsep(txMenuSeparator1, "exploration");
+
             std::sprintf(uiTooltipBuffer,
                          "Extend the map and enable scrolling (right click or drag with two fingers).\n\nExtending "
                          "the "
@@ -2879,14 +3051,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             {
                 std::sprintf(uiTooltipBuffer, "Extend the map further by one screen.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.getMapLimit() / boundaries.x * 100.f));
-                makePSVButton("- Extend map", pt.psvMapExtension);
+                makePSVButton("  Extend map", pt.psvMapExtension);
 
                 ImGui::BeginDisabled(pt.psvShrineActivation.nPurchases > pt.psvMapExtension.nPurchases);
                 std::sprintf(uiTooltipBuffer,
                              "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
                              "bubbles are absorbed by a shrine, it will grant a unique cat.");
                 std::sprintf(uiLabelBuffer, "%zu/9", pt.psvShrineActivation.nPurchases);
-                if (makePSVButton("- Activate next shrine", pt.psvShrineActivation))
+                if (makePSVButton("  Activate next shrine", pt.psvShrineActivation))
                 {
                     if (!pt.shrineActivateTipShown)
                     {
@@ -2906,19 +3078,19 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         if (checkUiUnlock(3u, nCatNormal > 0 && pt.psvComboStartTime.nPurchases > 0))
         {
-            ImGui::Separator();
+            imgsep(txMenuSeparator2, "bubble upgrades");
 
             std::sprintf(uiTooltipBuffer,
                          "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
                          "more money, fewer FPS!");
             std::sprintf(uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt.psvBubbleCount.currentValue()));
             makePSVButton("More bubbles", pt.psvBubbleCount);
-
-            ImGui::Separator();
         }
 
         if (checkUiUnlock(4u, pt.comboPurchased && pt.psvComboStartTime.nPurchases > 0))
         {
+            imgsep(txMenuSeparator3, "cats");
+
             std::sprintf(uiTooltipBuffer,
                          "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
                          "behavior "
@@ -2974,17 +3146,17 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const bool catUpgradesUnlocked = pt.psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
         if (checkUiUnlock(5u, catUpgradesUnlocked))
         {
-            makeCooldownButton("- cooldown", CatType::Normal);
-            makeRangeButton("- range", CatType::Normal);
+            makeCooldownButton("  cooldown", CatType::Normal);
+            makeRangeButton("  range", CatType::Normal);
         }
-
-        ImGui::Separator();
 
         // UNICAT
         const bool catUnicornUnlocked         = pt.psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
         const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
         if (checkUiUnlock(6u, catUnicornUnlocked))
         {
+            imgsep(txMenuSeparator4, "unicats");
+
             std::sprintf(uiTooltipBuffer,
                          "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
                          "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
@@ -2999,13 +3171,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (checkUiUnlock(7u, catUnicornUpgradesUnlocked))
             {
-                makeCooldownButton("- cooldown", CatType::Uni);
+                makeCooldownButton("  cooldown", CatType::Uni);
 
                 if (pt.perm.unicatTranscendencePurchased)
-                    makeRangeButton("- range", CatType::Uni);
+                    makeRangeButton("  range", CatType::Uni);
             }
-
-            ImGui::Separator();
         }
 
         // DEVILCAT
@@ -3014,6 +3184,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
         if (checkUiUnlock(8u, catDevilUnlocked))
         {
+            imgsep(txMenuSeparator5, "devilcats");
+
             std::sprintf(uiTooltipBuffer,
                          "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
                          "explosion are worth x10 more! Bomb explosion range can be upgraded.");
@@ -3033,18 +3205,16 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             {
                 std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
                 std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
-                makePSVButton("- Explosion radius", pt.psvExplosionRadiusMult);
+                makePSVButton("  Explosion radius", pt.psvExplosionRadiusMult);
             }
 
             if (checkUiUnlock(10u, catDevilUpgradesUnlocked))
             {
-                makeCooldownButton("- cooldown", CatType::Devil);
+                makeCooldownButton("  cooldown", CatType::Devil);
 
                 if (pt.perm.devilcatHellsingedPurchased)
-                    makeRangeButton("- range", CatType::Devil);
+                    makeRangeButton("  range", CatType::Devil);
             }
-
-            ImGui::Separator();
         }
 
         // ASTROCAT
@@ -3052,6 +3222,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
         if (checkUiUnlock(11u, astroCatUnlocked))
         {
+            imgsep(txMenuSeparator6, "astrocats");
+
             std::sprintf(uiTooltipBuffer,
                          "Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
                          "money "
@@ -3071,29 +3243,24 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (checkUiUnlock(12u, astroCatUpgradesUnlocked))
             {
-                makeCooldownButton("- cooldown", CatType::Astro);
-                makeRangeButton("- range", CatType::Astro);
+                makeCooldownButton("  cooldown", CatType::Astro);
+                makeRangeButton("  range", CatType::Astro);
             }
-
-            ImGui::Separator();
         }
 
         // UNIQUE CAT BONUSES
         if (anyUniqueCat)
         {
-            ImGui::Text("Unique cats");
-
-            ImGui::NextColumn();
-            ImGui::NextColumn();
+            imgsep(txMenuSeparator7, "unique cats");
 
             if (checkUiUnlock(13u, catWitch != nullptr))
             {
-                makeCooldownButton("- witchcat cooldown",
+                makeCooldownButton("  witchcat cooldown",
                                    CatType::Witch,
                                    "\n\nEffectively increases the frequency of rituals.");
 
                 if (checkUiUnlock(14u, pt.perm.witchCatBuffPowerScalesWithNCats))
-                    makeRangeButton("- witchcat range",
+                    makeRangeButton("  witchcat range",
                                     CatType::Witch,
                                     "\n\nAllows more cats to participate in group rituals, increasing the duration of "
                                     "buffs.");
@@ -3101,12 +3268,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (checkUiUnlock(15u, catWizard != nullptr))
             {
-                makeCooldownButton("- wizardcat cooldown",
+                ImGui::Separator();
+
+                makeCooldownButton("  wizardcat cooldown",
                                    CatType::Wizard,
                                    "\n\nDoes *not* increase mana generation rate, but increases star bubble absorption "
                                    "rate and decreases cooldown between spell casts.");
 
-                makeRangeButton("- wizardcat range",
+                makeRangeButton("  wizardcat range",
                                 CatType::Wizard,
                                 "\n\nEffectively increases the area of effect of most spells, and star bubble "
                                 "absorption range.");
@@ -3114,34 +3283,40 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             if (checkUiUnlock(16u, catMouse != nullptr))
             {
-                makeCooldownButton("- mousecat cooldown", CatType::Mouse);
-                makeRangeButton("- mousecat range", CatType::Mouse);
+                ImGui::Separator();
+
+                makeCooldownButton("  mousecat cooldown", CatType::Mouse);
+                makeRangeButton("  mousecat range", CatType::Mouse);
             }
 
             if (checkUiUnlock(17u, catEngi != nullptr))
             {
-                makeCooldownButton("- engicat cooldown",
+                ImGui::Separator();
+
+                makeCooldownButton("  engicat cooldown",
                                    CatType::Engi,
                                    "\n\nEffectively increases the frequency of maintenances.");
 
-                makeRangeButton("- engicat range",
+                makeRangeButton("  engicat range",
                                 CatType::Engi,
                                 "\n\nAllows more cats to be boosted by maintenance at once.");
             }
 
             if (checkUiUnlock(18u, catRepulso != nullptr))
             {
-                // makeCooldownButton("- repulsocat cooldown", CatType::Repulso);
-                makeRangeButton("- repulsocat range", CatType::Repulso);
+                ImGui::Separator();
+
+                // makeCooldownButton("  repulsocat cooldown", CatType::Repulso);
+                makeRangeButton("  repulsocat range", CatType::Repulso);
             }
 
             if (checkUiUnlock(19u, catAttracto != nullptr))
             {
-                // makeCooldownButton("- attractocat cooldown", CatType::Attracto);
-                makeRangeButton("- attractocat range", CatType::Attracto);
-            }
+                ImGui::Separator();
 
-            ImGui::Separator();
+                // makeCooldownButton("  attractocat cooldown", CatType::Attracto);
+                makeRangeButton("  attractocat range", CatType::Attracto);
+            }
         }
 
         const auto nextGoalsText = [&]() -> std::string
@@ -3174,13 +3349,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 // clang-format on
 
                 if (count < needed)
-                    result += "\n- buy " + std::to_string(needed - count) + " more " + name + "(s)";
+                    result += "\n  - buy " + std::to_string(needed - count) + " more " + name + "(s)";
             };
 
             if (!pt.mapPurchased)
             {
                 startList("to extend playing area:");
-                result += "\n- buy map scrolling";
+                result += "\n  - buy map scrolling";
             }
 
             if (!catUnicornUnlocked)
@@ -3188,7 +3363,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 startList("to unlock unicats:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
+                    result += "\n  - buy more bubbles";
 
                 needNCats(nCatNormal, 3);
             }
@@ -3198,7 +3373,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 startList("to unlock cat upgrades:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
+                    result += "\n  - buy more bubbles";
 
                 needNCats(nCatNormal, 2);
                 needNCats(nCatUni, 1);
@@ -3210,10 +3385,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 startList("to unlock prestige:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n- buy more bubbles";
+                    result += "\n  - buy more bubbles";
 
                 if (pt.nShrinesCompleted < 1)
-                    result += "\n- complete at least one shrine";
+                    result += "\n  - complete at least one shrine";
 
                 needNCats(nCatUni, 3);
             }
@@ -3223,10 +3398,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 startList("to unlock devilcats:");
 
                 if (pt.psvBubbleValue.nPurchases == 0)
-                    result += "\n- prestige at least once";
+                    result += "\n  - prestige at least once";
 
                 if (pt.nShrinesCompleted < 1)
-                    result += "\n- complete at least one shrine";
+                    result += "\n  - complete at least one shrine";
 
                 if (pt.psvBubbleValue.nPurchases > 0u)
                 {
@@ -3247,7 +3422,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 startList("to unlock astrocats:");
 
                 if (pt.nShrinesCompleted < 2)
-                    result += "\n- complete at least two shrines";
+                    result += "\n  - complete at least two shrines";
 
                 needNCats(nCatNormal, 10);
                 needNCats(nCatUni, 5);
@@ -3275,10 +3450,15 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         if (nextGoalsText != "")
         {
-            ImGui::SetWindowFontScale(uiSubBulletFontScale);
+            imgsep(txMenuSeparator8, "next goals");
+            ImGui::Columns(1);
+
+            uiSetFontScale(uiSubBulletFontScale);
             ImGui::Text("%s", nextGoalsText.c_str());
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
         }
+
+        ImGui::Columns(1);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3304,8 +3484,13 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void uiTabBarPrestige()
     {
-        ImGui::SetWindowFontScale(uiNormalFontScale);
-        ImGui::Separator();
+        ImGui::Spacing();
+        ImGui::Spacing();
+
+        imgsep(txPrestigeSeparator0, "prestige");
+        ImGui::Columns(1);
+
+        uiSetFontScale(uiNormalFontScale);
 
         std::sprintf(uiTooltipBuffer,
                      "WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
@@ -3352,21 +3537,21 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             const auto nextRequiredShrines = Playthrough::getShrinesCompletedNeededForPrestigeLevel(level);
 
-            ImGui::Text("- (level %zu -> %zu): $%s, %zu completed shrines",
+            ImGui::Text("    (level %zu -> %zu): $%s, %zu completed shrines",
                         currentPrestigeLevel + 1u,
                         level + 1u,
                         toStringWithSeparators(nextCost),
                         nextRequiredShrines);
         };
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
 
         const bool canPrestigePlus1 = maxPurchaseablePrestigeLevel + 1u < maxPrestigeLevel;
         const bool canPrestigePlus2 = maxPurchaseablePrestigeLevel + 2u < maxPrestigeLevel;
 
         if (canPrestigePlus1 || canPrestigePlus2)
         {
-            ImGui::Text("next prestige requirements:");
+            ImGui::Text("  next prestige requirements:");
 
             if (canPrestigePlus1)
                 printNextPrestigeRequirements(maxPurchaseablePrestigeLevel + 1u);
@@ -3378,7 +3563,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Spacing();
         }
 
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
 
         uiBeginColumns();
 
@@ -3401,14 +3586,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         ImGui::Columns(1);
 
         uiButtonHueMod = 0.f;
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
 
         const auto currentMult = static_cast<SizeT>(pt.psvBubbleValue.currentValue()) + 1u;
 
         if (prestigeTimes > 0u)
         {
             ImGui::Text(
-                "- prestige %zu time(s) at once\n- increase bubble value from x%zu to x%zu\n- obtain %llu prestige "
+                "  prestige %zu time(s) at once\n  - increase bubble value from x%zu to x%zu\n  - obtain %llu prestige "
                 "point(s)",
                 prestigeTimes,
                 currentMult,
@@ -3418,24 +3603,24 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         else
         {
             if (maxCost == 0u)
-                ImGui::Text("- not enough money to prestige");
+                ImGui::Text("  not enough money to prestige");
 
             const SizeT shrinesNeeded = pt.getShrinesCompletedNeededForNextPrestige();
 
             if (pt.nShrinesCompleted < shrinesNeeded)
-                ImGui::Text("- must complete %zu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
+                ImGui::Text("  must complete %zu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
         }
 
-        ImGui::SetWindowFontScale(uiNormalFontScale);
-        ImGui::Separator();
+        uiSetFontScale(uiNormalFontScale);
 
-        uiCenteredText("~~ permanent upgrades ~~");
+        imgsep(txPrestigeSeparator1, "permanent upgrades");
+        ImGui::Columns(1);
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(uiNormalFontScale * 1.1f);
         char ppBuf[256];
         std::snprintf(ppBuf, sizeof(ppBuf), "%llu PPs available", pt.prestigePoints);
         uiCenteredText(ppBuf);
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
 
         ImGui::Spacing();
         ImGui::Spacing();
@@ -3448,12 +3633,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         if (checkUiUnlock(48u, pt.psvBubbleValue.nPurchases >= 3u))
         {
+            imgsep2(txPrestigeSeparator4, "faster beginning");
+
             std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt.perm.starterPackPurchased);
-
-            ImGui::Separator();
         }
+
+        imgsep2(txPrestigeSeparator2, "clicking tools");
 
         std::sprintf(uiTooltipBuffer,
                      "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
@@ -3468,21 +3655,21 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         {
             std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
             std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
-            makePrestigePurchasablePPButtonPSV("- range", pt.psvPPMultiPopRange);
+            makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
 
-            ImGui::SetWindowFontScale(uiSubBulletFontScale);
+            uiSetFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
             if (findFirstCatByType(CatType::Mouse) != nullptr)
             {
                 ImGui::SameLine();
                 uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
             }
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
         }
 
-        ImGui::Separator();
+        imgsep2(txPrestigeSeparator3, "wind effects");
 
         std::sprintf(uiTooltipBuffer,
                      "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
@@ -3493,7 +3680,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         if (checkUiUnlock(50u, pt.perm.windPurchased))
         {
-            ImGui::SetWindowFontScale(uiSubBulletFontScale);
+            uiSetFontScale(uiSubBulletFontScale);
             ImGui::Columns(1);
 
             uiRadio("off##windOff", &pt.windStrength, 0);
@@ -3505,22 +3692,20 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             uiRadio("fast##windFast", &pt.windStrength, 3);
 
             uiBeginColumns();
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
         }
 
-        ImGui::Separator();
+        imgsep2(txPrestigeSeparator5, "cats");
 
-        ImGui::Columns(1);
-        ImGui::Text("Cats");
         uiBeginColumns();
 
         std::sprintf(uiTooltipBuffer,
                      "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
                      "for star bubbles and bombs first, ensuring they are not wasted!");
         uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("- Smart cats", 1u, pt.perm.smartCatsPurchased))
+        if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt.perm.smartCatsPurchased))
             doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
@@ -3533,7 +3718,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "power of their intellect, they also get a x2 multiplier on all bubble values.\n\n(Note: "
                          "this effect can be toggled at will.)");
             uiLabelBuffer[0] = '\0';
-            if (makePurchasablePPButtonOneTime("- genius cats", 8u, pt.perm.geniusCatsPurchased))
+            if (makePurchasablePPButtonOneTime("genius cats", 8u, pt.perm.geniusCatsPurchased))
                 doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                       /* maxPrestigeLevel */ UINT_MAX);
         }
@@ -3541,10 +3726,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         if (checkUiUnlock(52u, pt.perm.geniusCatsPurchased))
         {
             ImGui::Columns(1);
-            ImGui::SetWindowFontScale(uiSubBulletFontScale);
+            uiSetFontScale(uiSubBulletFontScale);
 
             ImGui::AlignTextToFramePadding();
-            ImGui::Text("- ignore: ");
+            ImGui::Text("  ignore: ");
             ImGui::SameLine();
 
             auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.geniusCatIgnoreBubbles;
@@ -3557,16 +3742,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             uiCheckbox("bombs##genius", &ignoreBomb);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             uiBeginColumns();
         }
 
         if (checkUiUnlock(53u, pt.psvBubbleValue.nPurchases >= 3))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator6, "unicats");
 
-            ImGui::Columns(1);
-            ImGui::Text("Unicats");
             uiBeginColumns();
 
             std::sprintf(uiTooltipBuffer,
@@ -3574,7 +3757,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "nova bubbles, worth x50.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("- transcendence", 96u, pt.perm.unicatTranscendencePurchased))
+            if (makePurchasablePPButtonOneTime("transcendence", 96u, pt.perm.unicatTranscendencePurchased))
                 doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
 
             if (checkUiUnlock(54u, pt.perm.unicatTranscendencePurchased))
@@ -3584,17 +3767,15 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                              "upgrades.");
                 uiLabelBuffer[0] = '\0';
 
-                if (makePurchasablePPButtonOneTime("- nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
+                if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
                     doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
             }
         }
 
         if (checkUiUnlock(55u, pt.psvBubbleValue.nPurchases >= 3))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator7, "devilcats");
 
-            ImGui::Columns(1);
-            ImGui::Text("Devilcats");
             uiBeginColumns();
 
             std::sprintf(uiTooltipBuffer,
@@ -3602,16 +3783,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("- hellsinged", 176u, pt.perm.devilcatHellsingedPurchased))
+            if (makePurchasablePPButtonOneTime("hellsinged", 176u, pt.perm.devilcatHellsingedPurchased))
                 doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
         }
 
         if (checkUiUnlock(56u, pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator8, "astrocats");
 
-            ImGui::Columns(1);
-            ImGui::Text("Astrocats");
             uiBeginColumns();
 
             std::sprintf(uiTooltipBuffer,
@@ -3619,7 +3798,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "them fly by to work faster!");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("- Space propaganda", 16u, pt.perm.astroCatInspirePurchased))
+            if (makePurchasablePPButtonOneTime("Space propaganda", 16u, pt.perm.astroCatInspirePurchased))
                 doTip("Astrocats will inspire other cats\nto work faster when flying by!",
                       /* maxPrestigeLevel */ UINT_MAX);
 
@@ -3628,7 +3807,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect.");
                 std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
 
-                makePrestigePurchasablePPButtonPSV("- inspire duration", pt.psvPPInspireDurationMult);
+                makePrestigePurchasablePPButtonPSV("inspire duration", pt.psvPPInspireDurationMult);
             }
         }
 
@@ -3643,61 +3822,61 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "1.5x the money it absorbed.)",
                          catName);
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Break the seal", ppCost, pt.perm.unsealedByType[asIdx(type)]);
+
+            char buf[256];
+            std::snprintf(buf, sizeof(buf), "%s##%s", "Break the seal", catName);
+
+            (void)makePurchasablePPButtonOneTime(buf, ppCost, pt.perm.unsealedByType[asIdx(type)]);
         };
 
         if (checkUiUnlock(58u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator9, "witchcat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Witchcat");
             uiBeginColumns();
 
             makeUnsealButton(4u, "Witchcat", CatType::Witch);
 
             std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs.");
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvPPWitchCatBuffDuration.currentValue()));
-            makePrestigePurchasablePPButtonPSV("- Buff duration", pt.psvPPWitchCatBuffDuration);
+            makePrestigePurchasablePPButtonPSV("Buff duration", pt.psvPPWitchCatBuffDuration);
 
             std::sprintf(uiTooltipBuffer,
                          "The duration of Witchcat buffs scales with the number of cats that were in range while "
                          "the ritual was performed.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
+            (void)makePurchasablePPButtonOneTime("Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
 
             std::sprintf(uiTooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
+            (void)makePurchasablePPButtonOneTime("Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
 
             std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
+            (void)makePurchasablePPButtonOneTime("Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
 
             std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Flammable dolls", 8u, pt.perm.witchCatBuffFlammableDolls);
+            (void)makePurchasablePPButtonOneTime("Flammable dolls", 8u, pt.perm.witchCatBuffFlammableDolls);
 
             std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Orbital dolls", 16u, pt.perm.witchCatBuffOrbitalDolls);
+            (void)makePurchasablePPButtonOneTime("Orbital dolls", 16u, pt.perm.witchCatBuffOrbitalDolls);
 
             std::sprintf(uiTooltipBuffer,
                          "Increase the star bubble spawn chance during the Unicat vododoo ritual buff.");
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPUniRitualBuffPercentage.currentValue()));
-            makePrestigePurchasablePPButtonPSV("- Star Spawn %", pt.psvPPUniRitualBuffPercentage);
+            makePrestigePurchasablePPButtonPSV("Star Spawn %", pt.psvPPUniRitualBuffPercentage);
 
             std::sprintf(uiTooltipBuffer, "Increase the bomb spawn chance during the Devil vododoo ritual buff.");
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPDevilRitualBuffPercentage.currentValue()));
-            makePrestigePurchasablePPButtonPSV("- Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
+            makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
         }
 
         if (checkUiUnlock(59u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator10, "wizardcat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Wizardcat");
             uiBeginColumns();
 
             makeUnsealButton(8u, "Wizardcat", CatType::Wizard);
@@ -3706,80 +3885,74 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             std::sprintf(uiTooltipBuffer, "Increase the speed of mana generation.");
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedManaCooldown() / 1000.f));
-            makePrestigePurchasablePPButtonPSV("- Mana cooldown", pt.psvPPManaCooldownMult);
+            makePrestigePurchasablePPButtonPSV("Mana cooldown", pt.psvPPManaCooldownMult);
 
             std::sprintf(uiTooltipBuffer, "Increase the maximum mana.");
             std::sprintf(uiLabelBuffer, "%llu mana", pt.getComputedMaxMana());
-            makePrestigePurchasablePPButtonPSV("- Mana limit", pt.psvPPManaMaxMult);
+            makePrestigePurchasablePPButtonPSV("Mana limit", pt.psvPPManaMaxMult);
 
             std::sprintf(uiTooltipBuffer,
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                          "into star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Selective starpaw", 8u, pt.perm.starpawConversionIgnoreBombs);
+            (void)makePurchasablePPButtonOneTime("Selective starpaw", 8u, pt.perm.starpawConversionIgnoreBombs);
 
             if (pt.perm.unicatTranscendencePurchased && pt.perm.starpawConversionIgnoreBombs)
             {
                 std::sprintf(uiTooltipBuffer, "Starpaw conversion now turns all normal bubbles into nova bubbles.");
                 uiLabelBuffer[0] = '\0';
-                (void)makePurchasablePPButtonOneTime("- Nova starpaw", 64u, pt.perm.starpawNova);
+                (void)makePurchasablePPButtonOneTime("Nova starpaw", 64u, pt.perm.starpawNova);
             }
 
             std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
+            (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
         }
 
         if (checkUiUnlock(60u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator11, "mousecat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Mousecat");
             uiBeginColumns();
 
             makeUnsealButton(8u, "Mousecat", CatType::Mouse);
 
             std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier.");
             std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPMouseCatGlobalBonusMult.currentValue()));
-            makePrestigePurchasablePPButtonPSV("- Global click mult", pt.psvPPMouseCatGlobalBonusMult);
+            makePrestigePurchasablePPButtonPSV("Global click mult", pt.psvPPMouseCatGlobalBonusMult);
         }
 
         if (checkUiUnlock(61u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator12, "engicat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Engicat");
             uiBeginColumns();
 
             makeUnsealButton(16u, "Engicat", CatType::Engi);
 
             std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier.");
             std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPEngiCatGlobalBonusMult.currentValue()));
-            makePrestigePurchasablePPButtonPSV("- Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
+            makePrestigePurchasablePPButtonPSV("Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
         }
 
         if (checkUiUnlock(62u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator13, "repulsocat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Repulsocat");
             uiBeginColumns();
 
             makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
 
             std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Repulsion filter", 16u, pt.perm.repulsoCatFilterPurchased);
+            (void)makePurchasablePPButtonOneTime("Repulsion filter", 16u, pt.perm.repulsoCatFilterPurchased);
 
             if (checkUiUnlock(63u, pt.perm.repulsoCatFilterPurchased))
             {
                 ImGui::Columns(1);
-                ImGui::SetWindowFontScale(uiSubBulletFontScale);
+                uiSetFontScale(uiSubBulletFontScale);
 
-                ImGui::Text("- ignore: ");
+                ImGui::Text("  ignore: ");
                 ImGui::SameLine();
 
                 auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.repulsoCatIgnoreBubbles;
@@ -3792,7 +3965,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 uiCheckbox("bombs##repulso", &ignoreBomb);
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
                 uiBeginColumns();
             }
 
@@ -3800,32 +3973,30 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                          "repelled bubbles to star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Conversion field", 32u, pt.perm.repulsoCatConverterPurchased);
+            (void)makePurchasablePPButtonOneTime("Conversion field", 32u, pt.perm.repulsoCatConverterPurchased);
 
             if (checkUiUnlock(64u, pt.perm.repulsoCatConverterPurchased))
             {
-                ImGui::SetWindowFontScale(uiSubBulletFontScale);
+                uiSetFontScale(uiSubBulletFontScale);
                 uiCheckbox("enable ##repulsoconv", &pt.repulsoCatConverterEnabled);
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
                 ImGui::NextColumn();
                 ImGui::NextColumn();
 
                 std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
-                makePrestigePurchasablePPButtonPSV("- Conversion chance", pt.psvPPRepulsoCatConverterChance);
+                makePrestigePurchasablePPButtonPSV("Conversion chance", pt.psvPPRepulsoCatConverterChance);
 
                 std::sprintf(uiTooltipBuffer, "Bubbles are converted into nova bubbles instead of star bubbles.");
                 uiLabelBuffer[0] = '\0';
-                (void)makePurchasablePPButtonOneTime("- Nova conversion", 96u, pt.perm.repulsoCatNovaConverterPurchased);
+                (void)makePurchasablePPButtonOneTime("Nova conversion", 96u, pt.perm.repulsoCatNovaConverterPurchased);
             }
         }
 
         if (checkUiUnlock(65u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
         {
-            ImGui::Separator();
+            imgsep2(txPrestigeSeparator14, "attactocat");
 
-            ImGui::Columns(1);
-            ImGui::Text("Attractocat");
             uiBeginColumns();
 
             makeUnsealButton(256u, "Attractocat", CatType::Attracto);
@@ -3834,14 +4005,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                          "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
                          "attracted bubbles by type.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("- Attraction filter", 96u, pt.perm.attractoCatFilterPurchased);
+            (void)makePurchasablePPButtonOneTime("Attraction filter", 96u, pt.perm.attractoCatFilterPurchased);
 
             if (checkUiUnlock(66u, pt.perm.attractoCatFilterPurchased))
             {
                 ImGui::Columns(1);
-                ImGui::SetWindowFontScale(uiSubBulletFontScale);
+                uiSetFontScale(uiSubBulletFontScale);
 
-                ImGui::Text("- ignore: ");
+                ImGui::Text("  ignore: ");
                 ImGui::SameLine();
 
                 auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.attractoCatIgnoreBubbles;
@@ -3854,7 +4025,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 uiCheckbox("bombs##attracto", &ignoreBomb);
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
                 uiBeginColumns();
             }
         }
@@ -3992,7 +4163,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     ////////////////////////////////////////////////////////////
     void uiTabBarMagic()
     {
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
 
         Cat* wizardCat = findFirstCatByType(CatType::Wizard);
 
@@ -4114,7 +4285,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("- higher percentage",
+                (void)makePSVButtonExByCurrency("  higher percentage",
                                                 pt.psvStarpawPercentage,
                                                 1u,
                                                 static_cast<MoneyType>(pt.psvStarpawPercentage.nextCost()),
@@ -4163,7 +4334,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 std::sprintf(uiTooltipBuffer, "Increase the multiplier applied while the aura is active.");
                 std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
-                (void)makePSVButtonExByCurrency("- higher multiplier",
+                (void)makePSVButtonExByCurrency("  higher multiplier",
                                                 pt.psvMewltiplierMult,
                                                 1u,
                                                 static_cast<MoneyType>(pt.psvMewltiplierMult.nextCost()),
@@ -4228,7 +4399,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                 std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvDarkUnionPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("- higher percentage",
+                (void)makePSVButtonExByCurrency("  higher percentage",
                                                 pt.psvDarkUnionPercentage,
                                                 1u,
                                                 static_cast<MoneyType>(pt.psvDarkUnionPercentage.nextCost()),
@@ -4335,12 +4506,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 lastSelectedTabIdx = idx;
             };
 
-            ImGui::SetWindowFontScale(0.75f);
+            uiSetFontScale(0.75f);
             if (ImGui::BeginTabItem(" Statistics "))
             {
                 selectedTab(0);
 
-                ImGui::SetWindowFontScale(0.75f);
+                uiSetFontScale(0.75f);
 
                 uiCenteredText(" ~~ Lifetime ~~ ");
                 displayStats(profile.statsLifetime);
@@ -4370,17 +4541,17 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::Text("Astrocat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Astro)]));
                 ImGui::Text("Mousecat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Mouse)]));
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
 
                 ImGui::EndTabItem();
             }
 
-            ImGui::SetWindowFontScale(0.75f);
+            uiSetFontScale(0.75f);
             if (ImGui::BeginTabItem(" Milestones "))
             {
                 selectedTab(1);
 
-                ImGui::SetWindowFontScale(0.75f);
+                uiSetFontScale(0.75f);
 
                 const auto doMilestone = [&](const char* name, const MilestoneTimestamp value)
                 {
@@ -4444,7 +4615,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::EndTabItem();
             }
 
-            ImGui::SetWindowFontScale(0.75f);
+            uiSetFontScale(0.75f);
             if (ImGui::BeginTabItem(" Achievements "))
             {
                 selectedTab(2);
@@ -4452,10 +4623,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 const sf::base::SizeT nAchievementsUnlocked = sf::base::count(profile.unlockedAchievements,
                                                                               profile.unlockedAchievements + nAchievements);
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
                 ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, sf::base::getArraySize(achievementData));
                 ImGui::Separator();
-                ImGui::SetWindowFontScale(0.75f);
+                uiSetFontScale(0.75f);
 
                 ImGui::BeginChild("AchScroll", ImVec2(ImGui::GetContentRegionAvail().x, uiGetMaxWindowHeight() - 125.f));
 
@@ -4467,11 +4638,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
                     const ImVec4 textColor{1.f, 1.f, 1.f, opacity};
 
-                    ImGui::SetWindowFontScale(1.f);
+                    uiSetFontScale(uiNormalFontScale);
                     ImGui::TextColored(textColor, "%llu - %s", id++, (!secret || unlocked) ? name : "???");
 
                     ImGui::PushFont(fontImGuiMouldyCheese);
-                    ImGui::SetWindowFontScale(0.75f);
+                    uiSetFontScale(0.75f);
                     ImGui::TextColored(textColor, "%s", (!secret || unlocked) ? description : "(...secret achievement...)");
                     ImGui::PopFont();
 
@@ -4481,7 +4652,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 uiButtonHueMod = 120.f;
                 uiPushButtonColors();
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
                 if (ImGui::Button("Reset stats and achievements"))
                 {
                     withAllStats([](Stats& stats) { stats = {}; });
@@ -4498,11 +4669,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::EndTabItem();
             }
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             ImGui::EndTabBar();
         }
 
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
     }
 
     ////////////////////////////////////////////////////////////
@@ -4733,12 +4904,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             lastSelectedTabIdx = idx;
         };
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
         if (ImGui::BeginTabItem(" Audio "))
         {
             selectedTab(0);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Master volume", &profile.masterVolume, 0.f, 100.f, "%.f%%");
@@ -4752,12 +4923,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::EndTabItem();
         }
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
         if (ImGui::BeginTabItem(" Interface "))
         {
             selectedTab(1);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Minimap Scale", &profile.minimapScale, 5.f, 40.f, "%.2f");
@@ -4796,7 +4967,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             ImGui::BeginDisabled(!profile.highVisibilityCursor);
             {
-                ImGui::SetWindowFontScale(0.75f);
+                uiSetFontScale(0.75f);
 
                 uiCheckbox("Multicolor", &profile.multicolorCursor);
 
@@ -4808,7 +4979,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::SetNextItemWidth(210.f * profile.uiScale);
                 ImGui::SliderFloat("Scale", &profile.cursorScale, 0.3f, 1.5f, "%.2f");
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
             }
             ImGui::EndDisabled();
 
@@ -4820,12 +4991,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::EndTabItem();
         }
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
         if (ImGui::BeginTabItem(" Graphics "))
         {
             selectedTab(2);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Background Opacity", &profile.backgroundOpacity, 0.f, 100.f, "%.f%%");
@@ -4848,7 +5019,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             ImGui::BeginDisabled(!profile.useBubbleShader);
             {
-                ImGui::SetWindowFontScale(0.75f);
+                uiSetFontScale(0.75f);
 
                 if (isDebugModeEnabled())
                 {
@@ -4876,23 +5047,23 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 ImGui::SliderFloat("Bubble Lightness", &profile.bsBubbleLightness, -1.f, 1.f, "%.2f");
                 ImGui::EndDisabled();
 
-                ImGui::SetWindowFontScale(uiNormalFontScale);
+                uiSetFontScale(uiNormalFontScale);
             }
             ImGui::EndDisabled();
 
             ImGui::EndTabItem();
         }
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
         if (ImGui::BeginTabItem(" Display "))
         {
             selectedTab(3);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::Text("Auto resolution");
 
-            ImGui::SetWindowFontScale(0.85f);
+            uiSetFontScale(0.85f);
             ImGui::AlignTextToFramePadding();
             ImGui::Text("Windowed");
 
@@ -4972,12 +5143,12 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 optWindow->setFramerateLimit(profile.frametimeLimit);
             }
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::EndTabItem();
         }
 
-        ImGui::SetWindowFontScale(0.75f);
+        uiSetFontScale(0.75f);
         if (isDebugModeEnabled() && ImGui::BeginTabItem(" Debug "))
         {
             selectedTab(4);
@@ -5070,7 +5241,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Separator();
 
             ImGui::PushFont(fontImGuiMouldyCheese);
-            ImGui::SetWindowFontScale(uiToolTipFontScale);
+            uiSetFontScale(uiToolTipFontScale);
 
             SizeT step    = 1u;
             SizeT counter = 0u;
@@ -5215,14 +5386,14 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
             ImGui::Checkbox("shrineCompleted Attracto", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
             ImGui::Checkbox("shrineCompleted Repulso", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
 
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             ImGui::PopFont();
 
             ImGui::EndTabItem();
         }
 
         ImGui::Separator();
-        ImGui::SetWindowFontScale(uiNormalFontScale);
+        uiSetFontScale(uiNormalFontScale);
 
         ImGui::Text("FPS: %.2f", static_cast<double>(fps));
     }
@@ -9138,11 +9309,11 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                    [&]
         {
             ImGui::PushFont(fontImGuiMouldyCheese);
-            ImGui::SetWindowFontScale(uiToolTipFontScale);
+            uiSetFontScale(uiToolTipFontScale);
         },
                                    [&]
         {
-            ImGui::SetWindowFontScale(uiNormalFontScale);
+            uiSetFontScale(uiNormalFontScale);
             ImGui::PopFont();
         });
 
