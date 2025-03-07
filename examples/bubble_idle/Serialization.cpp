@@ -548,6 +548,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(alwaysShowDrawings),
 
                          FIELD(showCatText),
+                         FIELD(showCatRange),
                          FIELD(showParticles),
                          FIELD(showTextParticles),
                          FIELD(accumulatingCombo),
