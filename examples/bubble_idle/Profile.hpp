@@ -20,6 +20,7 @@ struct [[nodiscard]] Profile
     float minimapScale = 20.f;
     float hudScale     = 1.f;
     float uiScale      = 1.f;
+    float uiOffsetX    = 0.f;
 
     bool tipsEnabled = true;
 
@@ -27,6 +28,7 @@ struct [[nodiscard]] Profile
     int   selectedBackground = 0; // `[0, nShrineTypes + 1)`
     bool  alwaysShowDrawings = false;
 
+    bool showCatRange        = true;
     bool showCatText         = true;
     bool showParticles       = true;
     bool showTextParticles   = true;
