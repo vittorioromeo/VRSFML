@@ -7,8 +7,8 @@
 #include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Remainder.hpp"
 
 
 namespace sf
@@ -28,9 +28,7 @@ constexpr Color Color::fromHSLA(HSL hsl, const base::U8 alpha)
 {
     auto& [hue, saturation, lightness] = hsl;
 
-    hue = base::fmod(hue, 360.f);
-    if (hue < 0.f)
-        hue += 360.f;
+    hue = base::positiveRemainder(hue, 360.f);
 
     const auto clampBetweenZeroAndOne = [](float value) -> float
     { return value < 0.f ? 0.f : (value > 1.f ? 1.f : value); };
@@ -109,7 +107,7 @@ constexpr Color::HSL Color::toHSL() const
         if (lightness == 0.f || lightness == 1.f)
             saturation = 0.f;
         else
-            saturation = chroma / (1.f - base::fabs(2.f * lightness - 1.f));
+            saturation = chroma / (1.f - SFML_BASE_MATH_FABSF(2.f * lightness - 1.f));
     }
 
     return {hue, saturation, lightness};
@@ -120,11 +118,7 @@ constexpr Color::HSL Color::toHSL() const
 constexpr Color Color::withHueMod(const float hueMod) const
 {
     auto hsl = toHSL();
-
-    hsl.hue = base::fmod(hsl.hue + hueMod, 360.f);
-    if (hsl.hue < 0.f)
-        hsl.hue += 360.f;
-
+    hsl.hue  = base::positiveRemainder(hsl.hue + hueMod, 360.f);
     return Color::fromHSLA(hsl, a);
 }
 

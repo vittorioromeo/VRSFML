@@ -95,6 +95,7 @@
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -281,13 +282,13 @@ void drawMinimap(sf::Shader&             shader,
     window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries * hudScale}}, /* texture */ nullptr);
 
     // The background has a repeating texture, and it's one ninth of the whole map
-    const sf::Vector2f backgroundRectSize = {txBackgroundChunk.getSize().x * nGameScreens,
-                                             static_cast<float>(txBackgroundChunk.getSize().y)};
+    const sf::Vector2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
+                                          static_cast<float>(txBackgroundChunk.getSize().y)};
 
     window.draw(txBackgroundChunk,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = hueColor(wrapHue(hueMod), 128u)},
+                 .color       = hueColor(hueMod, 128u)},
                 {.shader = &shader}); // Draw world background
 
     cpuDrawableBatch.scale = {hudScale, hudScale};
@@ -4091,7 +4092,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] void stopDraggingCat(const Cat& cat)
+    void stopDraggingCat(const Cat& cat)
     {
         sf::base::vectorEraseIf(draggedCats, [&](const Cat* c) { return c == &cat; });
     }
@@ -6709,9 +6710,10 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                             continue;
 
                         if (&otherCat == &cat)
-                            cat.hue = sf::base::sin(sf::base::fmod(cat.cooldown.value /
-                                                                       remap(cat.cooldown.value, 0.f, 10'000.f, 15.f, 150.f),
-                                                                   sf::base::tau)) *
+                            cat.hue = sf::base::sin(
+                                          sf::base::remainder(cat.cooldown.value /
+                                                                  remap(cat.cooldown.value, 0.f, 10'000.f, 15.f, 150.f),
+                                                              sf::base::tau)) *
                                       50.f * intensity;
 
                         const auto diff2 = otherCat.position - cat.position;
@@ -6905,7 +6907,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                     static float absorbSin = 0.f;
                     absorbSin += deltaTimeMs * 0.002f;
 
-                    cat.hue = wrapHue(sf::base::sin(sf::base::fmod(absorbSin, sf::base::tau)) * 25.f);
+                    cat.hue = wrapHue(sf::base::sin(sf::base::remainder(absorbSin, sf::base::tau)) * 25.f);
                 }
                 else
                 {
@@ -8295,7 +8297,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             const float magnetHueMod = (beingRepelledOrAttracted ? 180.f : 0.f);
 
-            return sf::base::fmod(static_cast<float>(idx) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
+            return sf::base::remainder(static_cast<float>(idx) * 2.f - hueRange / 2.f, hueRange) + magnetHueMod;
         };
 
         const sf::FloatRect bubbleRects[]{txrBubble, txrBubbleStar, txrBomb, txrBubbleNova};
@@ -8325,7 +8327,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                 .origin      = rect.size / 2.f,
                 .rotation    = sf::radians(bubble.rotation),
                 .textureRect = rect,
-                .color       = hueColor(wrapHue(getBubbleHue(i, bubble)), 255u),
+                .color       = hueColor(getBubbleHue(i, bubble), 255u),
             });
         }
     }
@@ -8571,7 +8573,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                : insideDragRect          ? static_cast<U8>(128u)
                                                          : static_cast<U8>(255u);
 
-            const auto catColor = hueColor(wrapHue(cat.hue), alpha);
+            const auto catColor = hueColor(cat.hue, alpha);
 
             const auto circleAlpha = cat.cooldown.value < 0.f
                                          ? static_cast<U8>(0u)
@@ -8609,7 +8611,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             const sf::Vector2f pushDown{0.f, beingDragged ? 75.f : 0.f};
 
-            const auto attachmentHue = hueColor(wrapHue(catHueByType[asIdx(cat.type)] + cat.hue), alpha);
+            const auto attachmentHue = hueColor(catHueByType[asIdx(cat.type)] + cat.hue, alpha);
 
             //
             // Devilcat: draw tail behind
@@ -8651,7 +8653,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                .origin      = txrUniCatWings.size / 2.f - sf::Vector2f{35.f, 10.f},
                                .rotation    = wingRotation,
                                .textureRect = txrUniCatWings,
-                               .color       = hueColor(wrapHue(cat.hue + 180.f), 180u)});
+                               .color       = hueColor(cat.hue + 180.f, 180u)});
             }
 
             //
@@ -8664,7 +8666,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                .origin      = txrDevilCat3Book.size / 2.f,
                                .rotation    = sf::radians(catRotation),
                                .textureRect = pt.perm.devilcatHellsingedPurchased ? txrDevilCat2Book : txrDevilCat3Book,
-                               .color = hueColor(wrapHue(sf::base::fmod(cat.hue * 2.f - 15.f + cat.nameIdx * 25.f, 60.f) - 30.f),
+                               .color = hueColor(sf::base::remainder(cat.hue * 2.f - 15.f + cat.nameIdx * 25.f, 60.f) - 30.f,
                                                  255u)});
             }
 
@@ -9295,8 +9297,8 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
         else
             (void)scrollArrowCountdown.updateAndStop(deltaTimeMs);
 
-        const float blinkOpacity = easeInOutSine(sf::base::fabs(
-                                       sf::base::sin(sf::base::fmod(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
+        const float blinkOpacity = easeInOutSine(sf::base::fabs(sf::base::sin(
+                                       sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                    255.f;
 
         getWindow().draw(txArrow,
@@ -9336,7 +9338,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
             optWindow->draw(rtImGui->getTexture(),
                             {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                             .color = hueColor(wrapHue(currentBackgroundHue.asDegrees()), 255u)},
+                             .color = hueColor(currentBackgroundHue.asDegrees(), 255u)},
                             {.shader = &shader});
         }
     }
@@ -9380,7 +9382,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                   .scale    = sf::Vector2f{0.25f, 0.25f} *
                                            (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                                   .origin = tx.getRect().getCenterRight(),
-                                  .color  = hueColor(wrapHue(hue + currentBackgroundHue.asDegrees()), arrowAlpha)},
+                                  .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
                                  {.shader = &shader});
             }
         }
@@ -9415,7 +9417,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                               ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
                                dpiScalingFactor),
                      .origin = {5.f, 5.f},
-                     .color  = hueColor(wrapHue(profile.cursorHue + currentBackgroundHue.asDegrees()), 255u)},
+                     .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
                     {.shader = &shader});
     }
 
@@ -10048,7 +10050,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 
         fixedBgSlide = exponentialApproach(fixedBgSlide, fixedBgSlideTarget, deltaTimeMs, 1000.f);
 
-        const float fixedBgX = 2100.f * ratio * 0.5f * sf::base::fmod(fixedBgSlide, 3.f);
+        const float fixedBgX = 2100.f * ratio * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
         const auto  sz       = txFixedBg.getSize().toVector2f();
 
         // Result of linear regression and trial-and-error >:3
@@ -10060,7 +10062,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                         .scale    = {ratio, ratio},
                         .origin   = {sz.x / 2.f, sz.y / 1.5f},
                         .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
-                        .color       = hueColor(wrapHue(currentBackgroundHue.asDegrees()), 255u),
+                        .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
                     },
                     {.shader = &shader});
     }
@@ -10124,7 +10126,7 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
                                .scale       = {0.5f, 0.5f},
                                .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
                                                txBackgroundChunk.getSize().toVector2f() * 2.f},
-                               .color       = hueColor(wrapHue(currentBackgroundHue.asDegrees()), getAlpha(255.f)),
+                               .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                            });
 
         if (idx == 0u || profile.alwaysShowDrawings)

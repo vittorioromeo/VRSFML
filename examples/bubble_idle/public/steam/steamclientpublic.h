@@ -7,6 +7,8 @@
 #ifndef STEAMCLIENTPUBLIC_H
 #define STEAMCLIENTPUBLIC_H
 
+#pragma GCC system_header
+
 #include "steamtypes.h"
 #include "steamuniverse.h"
 
@@ -15,7 +17,7 @@ enum EResult
 {
 	k_EResultNone = 0,							// no result
 	k_EResultOK	= 1,							// success
-	k_EResultFail = 2,							// generic failure 
+	k_EResultFail = 2,							// generic failure
 	k_EResultNoConnection = 3,					// no/failed network connection
 //	k_EResultNoConnectionRetry = 4,				// OBSOLETE - removed
 	k_EResultInvalidPassword = 5,				// password/ticket is invalid
@@ -80,8 +82,8 @@ enum EResult
 	k_EResultCannotUseOldPassword = 64,			// The requested new password is not legal
 	k_EResultInvalidLoginAuthCode = 65,			// account login denied due to auth code invalid
 	k_EResultAccountLogonDeniedNoMail = 66,		// account login denied due to 2nd factor auth failure - and no mail has been sent - partner site specific
-	k_EResultHardwareNotCapableOfIPT = 67,		// 
-	k_EResultIPTInitError = 68,					// 
+	k_EResultHardwareNotCapableOfIPT = 67,		//
+	k_EResultIPTInitError = 68,					//
 	k_EResultParentalControlRestricted = 69,	// operation failed due to parental control restrictions for current user
 	k_EResultFacebookQueryError = 70,			// Facebook query returned an error
 	k_EResultExpiredLoginAuthCode = 71,			// account login denied due to auth code expired
@@ -226,7 +228,7 @@ enum EUserHasLicenseForAppResult
 // Steam account types
 enum EAccountType
 {
-	k_EAccountTypeInvalid = 0,			
+	k_EAccountTypeInvalid = 0,
 	k_EAccountTypeIndividual = 1,		// single user account
 	k_EAccountTypeMultiseat = 2,		// multiseat (e.g. cybercafe) account
 	k_EAccountTypeGameServer = 3,		// game server account
@@ -249,7 +251,7 @@ enum EAccountType
 //-----------------------------------------------------------------------------
 enum EChatEntryType
 {
-	k_EChatEntryTypeInvalid = 0, 
+	k_EChatEntryTypeInvalid = 0,
 	k_EChatEntryTypeChatMsg = 1,		// Normal text message from another user
 	k_EChatEntryTypeTyping = 2,			// Another user is typing (not used in multi-user chat)
 	k_EChatEntryTypeInviteGame = 3,		// Invite from other user into that users current game
@@ -337,7 +339,7 @@ enum EBroadcastUploadResult
 	k_EBroadcastUploadResultMissingKeyFrames = 7,	// broadcast sending not enough key frames
 	k_EBroadcastUploadResultNoConnection = 8,	// broadcast client failed to connect to relay
 	k_EBroadcastUploadResultRelayFailed = 9,	// relay dropped the upload
-	k_EBroadcastUploadResultSettingsChanged = 10,	// the client changed broadcast settings 
+	k_EBroadcastUploadResultSettingsChanged = 10,	// the client changed broadcast settings
 	k_EBroadcastUploadResultMissingAudio = 11,	// client failed to send audio data
 	k_EBroadcastUploadResultTooFarBehind = 12,	// clients was too slow uploading
 	k_EBroadcastUploadResultTranscodeBehind = 13,	// server failed to keep up with transcode
@@ -346,11 +348,11 @@ enum EBroadcastUploadResult
 	k_EBroadcastUploadResultBanned = 16, // Account banned from community broadcast
 	k_EBroadcastUploadResultAlreadyActive = 17, // We already already have an stream running.
 	k_EBroadcastUploadResultForcedOff = 18, // We explicitly shutting down a broadcast
-	k_EBroadcastUploadResultAudioBehind = 19, // Audio stream was too far behind video 
+	k_EBroadcastUploadResultAudioBehind = 19, // Audio stream was too far behind video
 	k_EBroadcastUploadResultShutdown = 20,	// Broadcast Server was shut down
-	k_EBroadcastUploadResultDisconnect = 21,	// broadcast uploader TCP disconnected 
-	k_EBroadcastUploadResultVideoInitFailed = 22,	// invalid video settings 
-	k_EBroadcastUploadResultAudioInitFailed = 23,	// invalid audio settings 
+	k_EBroadcastUploadResultDisconnect = 21,	// broadcast uploader TCP disconnected
+	k_EBroadcastUploadResultVideoInitFailed = 22,	// invalid video settings
+	k_EBroadcastUploadResultAudioInitFailed = 23,	// invalid audio settings
 };
 
 
@@ -439,11 +441,11 @@ enum EDurationControlNotification
 {
 	k_EDurationControlNotification_None = 0,		// just informing you about progress, no notification to show
 	k_EDurationControlNotification_1Hour = 1,		// "you've been playing for N hours"
-	
+
 	k_EDurationControlNotification_3Hours = 2,		// deprecated - "you've been playing for 3 hours; take a break"
 	k_EDurationControlNotification_HalfProgress = 3,// deprecated - "your XP / progress is half normal"
 	k_EDurationControlNotification_NoProgress = 4,	// deprecated - "your XP / progress is zero"
-	
+
 	k_EDurationControlNotification_ExitSoon_3h = 5,	// allowed 3h time since 5h gap/break has elapsed, game should exit - steam will terminate the game soon
 	k_EDurationControlNotification_ExitSoon_5h = 6,	// allowed 5h time in calendar day has elapsed, game should exit - steam will terminate the game soon
 	k_EDurationControlNotification_ExitSoon_Night = 7,// game running after day period, game should exit - steam will terminate the game soon
@@ -508,7 +510,7 @@ public:
 	//-----------------------------------------------------------------------------
 	// Purpose: Constructor
 	// Input  : unAccountID -	32-bit account ID
-	//			unAccountInstance - instance 
+	//			unAccountInstance - instance
 	//			eUniverse -		Universe this account belongs to
 	//			eAccountType -	Type of account
 	//-----------------------------------------------------------------------------
@@ -762,7 +764,7 @@ public:
 	// simple accessors
 	void SetAccountID( uint32 unAccountID )		{ m_steamid.m_comp.m_unAccountID = unAccountID; }
 	void SetAccountInstance( uint32 unInstance ){ m_steamid.m_comp.m_unAccountInstance = unInstance; }
-		
+
 	AccountID_t GetAccountID() const			{ return m_steamid.m_comp.m_unAccountID; }
 	uint32 GetUnAccountInstance() const			{ return m_steamid.m_comp.m_unAccountInstance; }
 	EAccountType GetEAccountType() const		{ return ( EAccountType ) m_steamid.m_comp.m_EAccountType; }
@@ -783,7 +785,7 @@ public:
     // Returns whether the string parsed correctly.
 	bool SetFromStringStrict( const char *pchSteamID, EUniverse eDefaultUniverse );
 
-	inline bool operator==( const CSteamID &val ) const { return m_steamid.m_unAll64Bits == val.m_steamid.m_unAll64Bits; } 
+	inline bool operator==( const CSteamID &val ) const { return m_steamid.m_unAll64Bits == val.m_steamid.m_unAll64Bits; }
 	inline bool operator!=( const CSteamID &val ) const { return !operator==( val ); }
 	inline bool operator<( const CSteamID &val ) const { return m_steamid.m_unAll64Bits < val.m_steamid.m_unAll64Bits; }
 	inline bool operator>( const CSteamID &val ) const { return m_steamid.m_unAll64Bits > val.m_steamid.m_unAll64Bits; }
@@ -825,7 +827,7 @@ inline bool CSteamID::IsValid() const
 {
 	if ( m_steamid.m_comp.m_EAccountType <= k_EAccountTypeInvalid || m_steamid.m_comp.m_EAccountType >= k_EAccountTypeMax )
 		return false;
-	
+
 	if ( m_steamid.m_comp.m_EUniverse <= k_EUniverseInvalid || m_steamid.m_comp.m_EUniverse >= k_EUniverseMax )
 		return false;
 
@@ -850,7 +852,7 @@ inline bool CSteamID::IsValid() const
 	return true;
 }
 
-#if defined( INCLUDED_STEAM2_USERID_STRUCTS ) 
+#if defined( INCLUDED_STEAM2_USERID_STRUCTS )
 
 //-----------------------------------------------------------------------------
 // Purpose: Initializes a steam ID from a Steam2 ID structure
@@ -859,7 +861,7 @@ inline bool CSteamID::IsValid() const
 //-----------------------------------------------------------------------------
 inline CSteamID SteamIDFromSteam2UserID( TSteamGlobalUserID *pTSteamGlobalUserID, EUniverse eUniverse )
 {
-	uint32 unAccountID = pTSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits * 2 + 
+	uint32 unAccountID = pTSteamGlobalUserID->m_SteamLocalUserID.Split.Low32bits * 2 +
 		pTSteamGlobalUserID->m_SteamLocalUserID.Split.High32bits;
 
 	return CSteamID( unAccountID, k_unSteamUserDefaultInstance, eUniverse, k_EAccountTypeIndividual );
@@ -1019,7 +1021,7 @@ public:
 	{
 		return ( m_gameID.m_nType == k_EGameIDTypeApp );
 	}
-		
+
 	uint32 ModID() const
 	{
 		return m_gameID.m_nModID;
@@ -1074,7 +1076,7 @@ public:
 
 	}
 
-	void Reset() 
+	void Reset()
 	{
 		m_ulGameID = 0;
 	}
@@ -1143,7 +1145,7 @@ enum ESteamIPv6ConnectivityProtocol
 {
 	k_ESteamIPv6ConnectivityProtocol_Invalid = 0,
 	k_ESteamIPv6ConnectivityProtocol_HTTP = 1,		// because a proxy may make this different than other protocols
-	k_ESteamIPv6ConnectivityProtocol_UDP = 2,		// test UDP connectivity. Uses a port that is commonly needed for other Steam stuff. If UDP works, TCP probably works. 
+	k_ESteamIPv6ConnectivityProtocol_UDP = 2,		// test UDP connectivity. Uses a port that is commonly needed for other Steam stuff. If UDP works, TCP probably works.
 };
 
 // For the above transport protocol, what do we think the local machine's connectivity to the internet over ipv6 is like
@@ -1175,7 +1177,7 @@ enum ESteamIPv6ConnectivityState
 #pragma pack( push, 8 )
 #else
 #error ???
-#endif 
+#endif
 
 typedef struct ValvePackingSentinel_t
 {
