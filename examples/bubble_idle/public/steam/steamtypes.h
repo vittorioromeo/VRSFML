@@ -3,6 +3,8 @@
 #ifndef STEAMTYPES_H
 #define STEAMTYPES_H
 
+#pragma GCC system_header
+
 #define S_CALLTYPE __cdecl
 // WARNING: __cdecl is potentially #defined away in steam_api_common.h
 
@@ -90,7 +92,7 @@ typedef uint32 DepotId_t;
 const DepotId_t k_uDepotIdInvalid = 0x0;
 
 // RTime32.  Seconds elapsed since Jan 1 1970, i.e. unix timestamp.
-// It's the same as time_t, but it is always 32-bit and unsigned.  
+// It's the same as time_t, but it is always 32-bit and unsigned.
 typedef uint32 RTime32;
 
 // handle to a Steam API call
@@ -125,15 +127,15 @@ struct SteamIPAddress_t
 
 	ESteamIPType m_eType;
 
-	bool IsSet() const 
-	{ 
+	bool IsSet() const
+	{
 		if ( k_ESteamIPTypeIPv4 == m_eType )
 		{
 			return m_unIPv4 != 0;
 		}
-		else 
+		else
 		{
-			return m_ipv6Qword[0] !=0 || m_ipv6Qword[1] != 0; 
+			return m_ipv6Qword[0] !=0 || m_ipv6Qword[1] != 0;
 		}
 	}
 

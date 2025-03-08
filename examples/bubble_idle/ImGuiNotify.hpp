@@ -16,7 +16,6 @@
 #pragma GCC system_header
 
 #include <vector>			// Vector for storing notifications list
-#include <string>
 #include <chrono>			// For the notifications timed dissmiss
 
 #define IMGUI_DEFINE_MATH_OPERATORS

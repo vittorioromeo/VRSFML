@@ -356,6 +356,7 @@ public:
     //////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator==(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs == *rhs; }
     {
         return lhs.m_engaged == rhs.m_engaged && (!lhs.m_engaged || *lhs == *rhs);
     }
@@ -363,6 +364,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator!=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs != *rhs; }
     {
         return lhs.m_engaged != rhs.m_engaged || (lhs.m_engaged && *lhs != *rhs);
     }
@@ -370,6 +372,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator>=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs >= *rhs; }
     {
         return !rhs.m_engaged || (lhs.m_engaged && *lhs >= *rhs);
     }
@@ -377,6 +380,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator<=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs <= *rhs; }
     {
         return !lhs.m_engaged || (rhs.m_engaged && *lhs <= *rhs);
     }
@@ -384,6 +388,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator>(const Optional& lhs,
                                                                                         const Optional& rhs) noexcept
+        requires requires { *lhs > *rhs; }
     {
         return lhs.m_engaged && (!rhs.m_engaged || *lhs > *rhs);
     }
@@ -391,6 +396,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator<(const Optional& lhs,
                                                                                         const Optional& rhs) noexcept
+        requires requires { *lhs < *rhs; }
     {
         return rhs.m_engaged && (!lhs.m_engaged || *lhs < *rhs);
     }
