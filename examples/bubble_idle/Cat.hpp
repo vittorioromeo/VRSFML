@@ -12,6 +12,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -76,7 +77,7 @@ struct [[nodiscard]] Cat
     {
         textStatusShakeEffect.update(deltaTime);
         textMoneyShakeEffect.update(deltaTime);
-        wobbleRadians = sf::base::fmod(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
+        wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
     }
 
     ////////////////////////////////////////////////////////////

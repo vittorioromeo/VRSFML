@@ -8,6 +8,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
