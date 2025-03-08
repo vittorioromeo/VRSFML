@@ -10,6 +10,7 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
