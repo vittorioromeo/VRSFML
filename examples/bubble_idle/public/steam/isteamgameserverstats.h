@@ -1,4 +1,4 @@
-//====== Copyright © Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ Valve Corporation, All rights reserved. =======
 //
 // Purpose: interface for game servers to steam stats and achievements
 //
@@ -9,6 +9,8 @@
 #ifdef _WIN32
 #pragma once
 #endif
+
+#pragma GCC system_header
 
 #include "steam_api_common.h"
 
@@ -35,9 +37,9 @@ public:
 
 	virtual bool GetUserAchievement( CSteamID steamIDUser, const char *pchName, bool *pbAchieved ) = 0;
 
-	// Set / update stats and achievements. 
-	// Note: These updates will work only on stats game servers are allowed to edit and only for 
-	// game servers that have been declared as officially controlled by the game creators. 
+	// Set / update stats and achievements.
+	// Note: These updates will work only on stats game servers are allowed to edit and only for
+	// game servers that have been declared as officially controlled by the game creators.
 	// Set the IP range of your official servers on the Steamworks page
 
 	STEAM_FLAT_NAME( SetUserStatInt32 )
@@ -53,7 +55,7 @@ public:
 
 	// Store the current data on the server, will get a GSStatsStored_t callback when set.
 	//
-	// If the callback has a result of k_EResultInvalidParam, one or more stats 
+	// If the callback has a result of k_EResultInvalidParam, one or more stats
 	// uploaded has been rejected, either because they broke constraints
 	// or were out of date. In this case the server sends back updated values.
 	// The stats should be re-iterated to keep in sync.
@@ -74,7 +76,7 @@ STEAM_DEFINE_GAMESERVER_INTERFACE_ACCESSOR( ISteamGameServerStats *, SteamGameSe
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: called when the latests stats and achievements have been received

@@ -82,9 +82,7 @@ Music::~Music()
 {
     // We must stop before destroying the file
     if (m_impl != nullptr)
-    {
         stop();
-    }
 }
 
 

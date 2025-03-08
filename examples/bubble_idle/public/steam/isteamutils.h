@@ -7,6 +7,8 @@
 #ifndef ISTEAMUTILS_H
 #define ISTEAMUTILS_H
 
+#pragma GCC system_header
+
 #include "steam_api_common.h"
 
 
@@ -63,7 +65,7 @@ enum ETextFilteringContext
 class ISteamUtils
 {
 public:
-	// return the number of seconds since the user 
+	// return the number of seconds since the user
 	virtual uint32 GetSecondsSinceAppActive() = 0;
 	virtual uint32 GetSecondsSinceComputerActive() = 0;
 
@@ -123,10 +125,10 @@ public:
 	// start & hook the game process, so this function will initially return false while the overlay is loading.
 	virtual bool IsOverlayEnabled() = 0;
 
-	// Normally this call is unneeded if your game has a constantly running frame loop that calls the 
+	// Normally this call is unneeded if your game has a constantly running frame loop that calls the
 	// D3D Present API, or OGL SwapBuffers API every frame.
 	//
-	// However, if you have a game that only refreshes the screen on an event driven basis then that can break 
+	// However, if you have a game that only refreshes the screen on an event driven basis then that can break
 	// the overlay, as it uses your Present/SwapBuffers calls to drive it's internal frame loop and it may also
 	// need to Present() to the screen any time an even needing a notification happens or when the overlay is
 	// brought up over the game by a user.  You can use this API to ask the overlay if it currently need a present
@@ -135,7 +137,7 @@ public:
 	virtual bool BOverlayNeedsPresent() = 0;
 
 	// Asynchronous call to check if an executable file has been signed using the public key set on the signing tab
-	// of the partner site, for example to refuse to load modified executable files.  
+	// of the partner site, for example to refuse to load modified executable files.
 	// The result is returned in CheckFileSignature_t.
 	//   k_ECheckFileSignatureNoSignaturesFoundForThisApp - This app has not been configured on the signing tab of the partner site to enable this function.
 	//   k_ECheckFileSignatureNoSignaturesFoundForThisFile - This file is not listed on the signing tab for the partner site.
@@ -157,7 +159,7 @@ public:
 
 	// returns true if Steam itself is running in VR mode
 	virtual bool IsSteamRunningInVR() = 0;
-	
+
 	// Sets the inset of the overlay notification from the corner specified by SetOverlayNotificationPosition.
 	virtual void SetOverlayNotificationInset( int nHorizontalInset, int nVerticalInset ) = 0;
 
@@ -237,7 +239,7 @@ STEAM_DEFINE_INTERFACE_ACCESSOR( ISteamUtils *, SteamGameServerUtils, SteamInter
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: The country of the user changed

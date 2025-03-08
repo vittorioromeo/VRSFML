@@ -164,8 +164,8 @@ namespace sf
     SFML_BASE_ASSUME(index < totalNumPoints);
 
     const base::SizeT centerIndex = index / cornerPointCount;
-    SFML_BASE_ASSERT(centerIndex >= 0u && centerIndex <= 3u);
-    SFML_BASE_ASSUME(centerIndex >= 0u && centerIndex <= 3u);
+    SFML_BASE_ASSERT(centerIndex <= 3u);
+    SFML_BASE_ASSUME(centerIndex <= 3u);
 
     const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
 
@@ -204,7 +204,7 @@ namespace sf
     if (lenSq == 0.f)
         return normal;
 
-    const float invLen = 1.f / base::sqrt(lenSq);
+    const float invLen = 1.f / SFML_BASE_MATH_SQRTF(lenSq);
     return {normal.x * invLen, normal.y * invLen};
 }
 
