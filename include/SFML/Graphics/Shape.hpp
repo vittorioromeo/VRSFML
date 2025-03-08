@@ -8,9 +8,9 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
-#include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
