@@ -252,8 +252,8 @@ inline constexpr AchievementData achievementData[] = {
     {"Shrine Lid Unscrewed", "Unseal the Engicat."},
     {"There's No Ceiling", "Unseal the Repulsocat."},
     {"Electronic Lock", "Unseal the Attractocat."},
-    // TODO P0: other cat
-    // TODO P0: other cat
+    // TODO P0: other cat (copycat)
+    // TODO P0: other cat (or duck)
 
     {"No Pops Allowed", "Perform a voodoo ritual on a cat."},
     {"I Hate Rainbows", "Perform a voodoo ritual on a Unicat."},
