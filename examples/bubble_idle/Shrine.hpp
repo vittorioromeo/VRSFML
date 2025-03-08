@@ -12,6 +12,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -52,7 +53,7 @@ struct [[nodiscard]] Shrine
     [[gnu::always_inline]] inline void update(const float deltaTime)
     {
         textStatusShakeEffect.update(deltaTime);
-        wobbleRadians = sf::base::fmod(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, sf::base::tau);
+        wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f + getDeathProgress() * 0.2f, sf::base::tau);
     }
 
     ////////////////////////////////////////////////////////////

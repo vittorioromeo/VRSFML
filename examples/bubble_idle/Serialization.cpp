@@ -94,7 +94,7 @@ struct getArraySize<T[N]>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] void atOr(const nlohmann::json& j, T& target, const sf::base::SizeT index)
+[[gnu::always_inline]] inline void atOr(const nlohmann::json& j, T& target, const sf::base::SizeT index)
 {
     if (j.is_array() && j.size() > index)
         j[index].get_to<T>(target);
@@ -102,7 +102,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] void serialize(nlohmann::json& j, const sf::base::SizeT index, const T& field)
+void serialize(nlohmann::json& j, const sf::base::SizeT index, const T& field)
 {
     if constexpr (!SFML_BASE_IS_ARRAY(T))
     {
@@ -120,7 +120,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] void deserialize(const nlohmann::json& j, const sf::base::SizeT index, T& field)
+void deserialize(const nlohmann::json& j, const sf::base::SizeT index, T& field)
 {
     if constexpr (!SFML_BASE_IS_ARRAY(T))
     {
@@ -144,7 +144,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <bool Serialize, typename TField>
-[[gnu::always_inline]] void twoWay(auto&& j, const sf::base::SizeT index, TField&& field)
+[[gnu::always_inline]] inline void twoWay(auto&& j, const sf::base::SizeT index, TField&& field)
 {
     if constexpr (Serialize)
     {
@@ -158,7 +158,7 @@ template <bool Serialize, typename TField>
 
 ////////////////////////////////////////////////////////////
 template <bool Serialize>
-[[gnu::always_inline]] sf::base::SizeT twoWayAll(sf::base::SizeT index, auto&& j, auto&&... fields)
+[[gnu::always_inline]] inline sf::base::SizeT twoWayAll(sf::base::SizeT index, auto&& j, auto&&... fields)
 {
     (twoWay<Serialize>(j, index++, fields), ...);
     return index;

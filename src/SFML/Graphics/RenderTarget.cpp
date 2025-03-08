@@ -151,8 +151,10 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 {
     const auto [width, height] = renderTargetSize.toVector2f();
 
-    return sf::Rect<long>({sf::base::lround(width * inputRect.position.x), sf::base::lround(height * inputRect.position.y)},
-                          {sf::base::lround(width * inputRect.size.x), sf::base::lround(height * inputRect.size.y)})
+    return sf::Rect<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
+                           SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
+                          {SFML_BASE_MATH_LROUNDF(width * inputRect.size.x),
+                           SFML_BASE_MATH_LROUNDF(height * inputRect.size.y)})
         .to<sf::IntRect>();
 }
 
