@@ -10982,6 +10982,7 @@ int main(int argc, const char** argv)
 }
 
 // TODO P0: achievements for speedrunning milestones
+// TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
 // TODO P1: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
