@@ -9,22 +9,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Math/Fmod.hpp"
-
-
-namespace sf::priv
-{
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float positiveRemainder(float a, float b)
-{
-    SFML_BASE_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
-
-    // fmod seems to be slower
-    const auto val = a - static_cast<float>(static_cast<int>(a / b)) * b;
-    return val >= 0.f ? val : val + b;
-}
-
-} // namespace sf::priv
+#include "SFML/Base/Remainder.hpp"
 
 
 namespace sf
@@ -46,54 +31,42 @@ constexpr float Angle::asRadians() const
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapSigned() const
 {
-    return Angle(priv::positiveRemainder(m_radians + base::pi, base::tau) - base::pi);
+    return Angle(base::positiveRemainder(m_radians + base::pi, base::tau) - base::pi);
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::wrapUnsigned() const
 {
-    return Angle(priv::positiveRemainder(m_radians, base::tau));
+    return Angle(base::positiveRemainder(m_radians, base::tau));
 }
 
 
 ////////////////////////////////////////////////////////////
 constexpr Angle Angle::rotatedTowards(const Angle other, const float speed) const
 {
-    float diff = base::fmod(other.m_radians - m_radians, base::tau);
+    float diff = base::remainder(other.m_radians - m_radians, base::tau);
 
     if (diff > base::pi)
-    {
         diff -= base::tau;
-    }
     else if (diff < -base::pi)
-    {
         diff += base::tau;
-    }
 
-    if (base::fabs(diff) <= speed)
-    {
+    if (SFML_BASE_MATH_FABSF(diff) <= speed)
         return Angle{other.m_radians};
-    }
 
     float result = m_radians;
 
     if (diff > 0.f)
-    {
         result += speed;
-    }
     else
-    {
         result -= speed;
-    }
 
     // Normalize to [0, base::tau)
-    result = base::fmod(result, base::tau);
+    result = base::remainder(result, base::tau);
 
     if (result < 0.f)
-    {
         result += base::tau;
-    }
 
     return Angle{result};
 }
@@ -249,7 +222,7 @@ constexpr float operator/(Angle lhs, Angle rhs)
 constexpr Angle operator%(Angle lhs, Angle rhs)
 {
     SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator% cannot modulus by 0");
-    return Angle(priv::positiveRemainder(lhs.m_radians, rhs.m_radians));
+    return Angle(base::positiveRemainder(lhs.m_radians, rhs.m_radians));
 }
 
 
@@ -257,7 +230,7 @@ constexpr Angle operator%(Angle lhs, Angle rhs)
 constexpr Angle& operator%=(Angle& lhs, Angle rhs)
 {
     SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator%= cannot modulus by 0");
-    lhs.m_radians = priv::positiveRemainder(lhs.m_radians, rhs.m_radians);
+    lhs.m_radians = base::positiveRemainder(lhs.m_radians, rhs.m_radians);
     return lhs;
 }
 

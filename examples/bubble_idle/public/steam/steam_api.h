@@ -17,6 +17,8 @@
 #pragma once
 #endif
 
+#pragma GCC system_header
+
 // Basic stuff
 #include "steam_api_common.h"
 
@@ -65,16 +67,16 @@ enum ESteamAPIInitResult
 
 // Initializing the Steamworks SDK
 // -----------------------------
-// 
+//
 // There are three different methods you can use to initialize the Steamworks SDK, depending on
 // your project's environment. You should only use one method in your project.
-// 
+//
 // If you are able to include this C++ header in your project, we recommend using the following
 // initialization methods. They will ensure that all ISteam* interfaces defined in other
 // C++ header files have versions that are supported by the user's Steam Client:
 // - SteamAPI_InitEx() for new projects so you can show a detailed error message to the user
 // - SteamAPI_Init() for existing projects that only display a generic error message
-// 
+//
 // If you are unable to include this C++ header in your project and are dynamically loading
 // Steamworks SDK methods from dll/so, you can use the following method:
 // - SteamAPI_InitFlat()
@@ -86,7 +88,7 @@ enum ESteamAPIInitResult
 // it will receive an example error message, in English, that explains the reason for the failure.
 //
 // Example usage:
-// 
+//
 //   SteamErrMsg errMsg;
 //   if ( SteamAPI_Init(&errMsg) != k_ESteamAPIInitResult_OK )
 //       FatalError( "Failed to init Steam.  %s", errMsg );
@@ -230,7 +232,7 @@ S_API bool S_CALLTYPE SteamAPI_ManualDispatch_GetAPICallResult( HSteamPipe hStea
 S_API ESteamAPIInitResult S_CALLTYPE SteamInternal_SteamAPI_Init( const char *pszInternalCheckInterfaceVersions, SteamErrMsg *pOutErrMsg );
 inline ESteamAPIInitResult SteamAPI_InitEx( SteamErrMsg *pOutErrMsg )
 {
-	const char *pszInternalCheckInterfaceVersions = 
+	const char *pszInternalCheckInterfaceVersions =
 		STEAMUTILS_INTERFACE_VERSION "\0"
 		STEAMNETWORKINGUTILS_INTERFACE_VERSION "\0"
 		STEAMAPPS_INTERFACE_VERSION "\0"
