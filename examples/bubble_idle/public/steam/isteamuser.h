@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+#pragma GCC system_header
+
 #include "steam_api_common.h"
 
 //-----------------------------------------------------------------------------
@@ -23,7 +25,7 @@ public:
 	// this is only used internally by the API, and by a few select interfaces that support multi-user
 	virtual HSteamUser GetHSteamUser() = 0;
 
-	// returns true if the Steam client current has a live connection to the Steam servers. 
+	// returns true if the Steam client current has a live connection to the Steam servers.
 	// If false, it means there is no active connection due to either a networking issue on the local machine, or the Steam server is down/busy.
 	// The Steam client will automatically be trying to recreate the connection as often as possible.
 	virtual bool BLoggedOn() = 0;
@@ -33,7 +35,7 @@ public:
 	virtual CSteamID GetSteamID() = 0;
 
 	// Multiplayer Authentication functions
-	
+
 	// InitiateGameConnection() starts the state machine for authenticating the game client with the game server
 	// It is the client portion of a three-way handshake between the client, the game server, and the steam servers
 	//
@@ -122,7 +124,7 @@ public:
 	// which is usually 48000 or 44100.
 	virtual uint32 GetVoiceOptimalSampleRate() = 0;
 
-	// Retrieve ticket to be sent to the entity who wishes to authenticate you. 
+	// Retrieve ticket to be sent to the entity who wishes to authenticate you.
 	// pcbTicket retrieves the length of the actual ticket.
 	// SteamNetworkingIdentity is an optional input parameter to hold the public IP address or SteamID of the entity you are connecting to
 	// if an IP address is passed Steam will only allow the ticket to be used by an entity with that IP address
@@ -148,8 +150,8 @@ public:
 	// After receiving a user's authentication data, and passing it to BeginAuthSession, use this function
 	// to determine if the user owns downloadable content specified by the provided AppID.
 	virtual EUserHasLicenseForAppResult UserHasLicenseForApp( CSteamID steamID, AppId_t appID ) = 0;
-	
-	// returns true if this users looks like they are behind a NAT device. Only valid once the user has connected to steam 
+
+	// returns true if this users looks like they are behind a NAT device. Only valid once the user has connected to steam
 	// (i.e a SteamServersConnected_t has been issued) and may not catch all forms of NAT.
 	virtual bool BIsBehindNAT() = 0;
 
@@ -193,7 +195,7 @@ public:
 	STEAM_CALL_RESULT( StoreAuthURLResponse_t )
 	virtual SteamAPICall_t RequestStoreAuthURL( const char *pchRedirectURL ) = 0;
 
-	// gets whether the users phone number is verified 
+	// gets whether the users phone number is verified
 	virtual bool BIsPhoneVerified() = 0;
 
 	// gets whether the user has two factor enabled on their account
@@ -232,7 +234,7 @@ STEAM_DEFINE_USER_INTERFACE_ACCESSOR( ISteamUser *, SteamUser, STEAMUSER_INTERFA
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -249,7 +251,7 @@ struct SteamServersConnected_t
 
 //-----------------------------------------------------------------------------
 // Purpose: called when a connection attempt has failed
-//			this will occur periodically if the Steam client is not connected, 
+//			this will occur periodically if the Steam client is not connected,
 //			and has failed in it's retry to establish a connection
 //-----------------------------------------------------------------------------
 struct SteamServerConnectFailure_t
@@ -297,9 +299,9 @@ struct ClientGameServerDeny_t
 struct IPCFailure_t
 {
 	enum { k_iCallback = k_iSteamUserCallbacks + 17 };
-	enum EFailureType 
-	{ 
-		k_EFailureFlushedCallbackQueue, 
+	enum EFailureType
+	{
+		k_EFailureFlushedCallbackQueue,
 		k_EFailurePipeFail,
 	};
 	uint8 m_eFailureType;
@@ -333,7 +335,7 @@ struct ValidateAuthTicketResponse_t
 struct MicroTxnAuthorizationResponse_t
 {
 	enum { k_iCallback = k_iSteamUserCallbacks + 52 };
-	
+
 	uint32 m_unAppID;			// AppID for this microtransaction
 	uint64 m_ulOrderID;			// OrderID provided for the microtransaction
 	uint8 m_bAuthorized;		// if user authorized transaction
