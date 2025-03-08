@@ -617,7 +617,7 @@ float Font::getKerning(char32_t first, char32_t second, unsigned int characterSi
 
     // Combine kerning with compensation deltas and return the X advance
     // Flooring is required as we use FT_KERNING_UNFITTED flag which is not quantized in 64 based grid
-    return base::floor((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
+    return SFML_BASE_MATH_FLOORF((secondLsbDelta - firstRsbDelta + static_cast<float>(kerning.x) + 32) / float{1 << 6});
 }
 
 

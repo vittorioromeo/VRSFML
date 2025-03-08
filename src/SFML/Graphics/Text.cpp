@@ -36,8 +36,8 @@ void addLine(sf::Vertex*      vertices,
              float            thickness,
              float            outlineThickness = 0)
 {
-    const float top    = sf::base::floor(lineTop + offset - (thickness / 2) + 0.5f);
-    const float bottom = top + sf::base::floor(thickness + 0.5f);
+    const float top    = SFML_BASE_MATH_FLOORF(lineTop + offset - (thickness / 2) + 0.5f);
+    const float bottom = top + SFML_BASE_MATH_FLOORF(thickness + 0.5f);
 
     auto* ptr = vertices + index;
 
@@ -590,7 +590,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
     // If we're using outline, update the current bounds
     if (m_outlineThickness != 0.f)
     {
-        const float outline = base::fabs(base::ceil(m_outlineThickness));
+        const float outline = SFML_BASE_MATH_FABSF(SFML_BASE_MATH_CEILF(m_outlineThickness));
         minX -= outline;
         maxX += outline;
         minY -= outline;

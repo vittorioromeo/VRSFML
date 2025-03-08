@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+#pragma GCC system_header
+
 #include "steam_api_common.h"
 
 //-----------------------------------------------------------------------------
@@ -56,7 +58,7 @@ public:
 
 	// set the local IP and Port to bind to
 	// this must be set before CreateLocalUser()
-	virtual void SetLocalIPBinding( const SteamIPAddress_t &unIP, uint16 usPort ) = 0; 
+	virtual void SetLocalIPBinding( const SteamIPAddress_t &unIP, uint16 usPort ) = 0;
 
 	// returns the ISteamFriends interface
 	virtual ISteamFriends *GetISteamFriends( HSteamUser hSteamUser, HSteamPipe hSteamPipe, const char *pchVersion ) = 0;

@@ -1,6 +1,6 @@
-//====== Copyright © 1996-2008, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. =======
 //
-// Purpose: 
+// Purpose:
 //
 //=============================================================================
 
@@ -10,17 +10,19 @@
 #pragma once
 #endif
 
+#pragma GCC system_header
+
 #include "steam_api.h"
 #include "isteamgameserver.h"
 #include "isteamgameserverstats.h"
 
 enum EServerMode
 {
-	eServerModeInvalid = 0, // DO NOT USE		
+	eServerModeInvalid = 0, // DO NOT USE
 	eServerModeNoAuthentication = 1, // Don't authenticate user logins and don't list on the server list
 	eServerModeAuthentication = 2, // Authenticate users, list on the server list, don't run VAC on clients that connect
 	eServerModeAuthenticationAndSecure = 3, // Authenticate users, list on the server list and VAC protect clients
-};													
+};
 
 /// Pass to SteamGameServer_Init to indicate that the same UDP port will be used for game traffic
 /// UDP queries for server browser pings and LAN discovery.  In this case, Steam will not open up a
@@ -91,7 +93,7 @@ S_API uint64 SteamGameServer_GetSteamID();
 S_API ESteamAPIInitResult S_CALLTYPE SteamInternal_GameServer_Init_V2( uint32 unIP, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString, const char *pszInternalCheckInterfaceVersions, SteamErrMsg *pOutErrMsg );
 inline ESteamAPIInitResult SteamGameServer_InitEx( uint32 unIP, uint16 usGamePort, uint16 usQueryPort, EServerMode eServerMode, const char *pchVersionString, SteamErrMsg *pOutErrMsg )
 {
-	const char *pszInternalCheckInterfaceVersions = 
+	const char *pszInternalCheckInterfaceVersions =
 		STEAMUTILS_INTERFACE_VERSION "\0"
 		STEAMNETWORKINGUTILS_INTERFACE_VERSION "\0"
 
