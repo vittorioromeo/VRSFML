@@ -58,6 +58,7 @@ struct [[nodiscard]] Cat
     CatType type;
 
     sf::base::Optional<BidirectionalTimer> hexedTimer{sf::base::nullOpt};
+    sf::base::Optional<BidirectionalTimer> hexedCopyTimer{sf::base::nullOpt};
 
     MoneyType moneyEarned = 0u;
 
@@ -78,6 +79,26 @@ struct [[nodiscard]] Cat
         textStatusShakeEffect.update(deltaTime);
         textMoneyShakeEffect.update(deltaTime);
         wobbleRadians = sf::base::remainder(wobbleRadians + deltaTime * 0.002f, sf::base::tau);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline bool isHexedOrCopyHexed() const
+    {
+        return hexedTimer.hasValue() || hexedCopyTimer.hasValue();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::base::Optional<BidirectionalTimer>& getHexedTimer()
+    {
+        SFML_BASE_ASSERT(isHexedOrCopyHexed());
+        return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline const sf::base::Optional<BidirectionalTimer>& getHexedTimer() const
+    {
+        SFML_BASE_ASSERT(isHexedOrCopyHexed());
+        return hexedTimer.hasValue() ? hexedTimer : hexedCopyTimer;
     }
 
     ////////////////////////////////////////////////////////////
