@@ -27,6 +27,7 @@ inline constexpr EXACT_ARRAY(
         {72u, 51u, 33u},    // Engi
         {182u, 110u, 135u}, // Repulso
         {132u, 132u, 132u}, // Attracto
+        {35u, 35u, 35u},    // Copy
     });
 
 
@@ -47,6 +48,7 @@ inline constexpr EXACT_ARRAY(
         "Boosts",  // Engi
         "N/A",     // Repulso
         "N/A",     // Attracto
+        "N/A",     // Copy
     });
 
 ////////////////////////////////////////////////////////////
@@ -66,6 +68,7 @@ inline constexpr EXACT_ARRAY(
         10'000.f, // Engi
         5.f,      // Repulso
         5.f,      // Attracto
+        5.f,      // Copy
     });
 
 ////////////////////////////////////////////////////////////
@@ -85,6 +88,7 @@ inline constexpr EXACT_ARRAY(
         192.f, // Engi
         192.f, // Repulso
         192.f, // Attracto
+        192.f, // Copy
     });
 
 ////////////////////////////////////////////////////////////
@@ -104,6 +108,7 @@ inline constexpr EXACT_ARRAY(
         {0.f, 0.f}, // Engi
         {0.f, 0.f}, // Repulso
         {0.f, 0.f}, // Attracto
+        {0.f, 0.f}, // Copy
     });
 
 ////////////////////////////////////////////////////////////
@@ -123,6 +128,27 @@ inline constexpr EXACT_ARRAY(
         "Engi",
         "Repulso",
         "Attracto",
+        "Copy",
+    });
+
+////////////////////////////////////////////////////////////
+inline constexpr EXACT_ARRAY(
+    const char*,
+    typeNamesLong,
+    nCatTypes,
+    {
+        "Normal",
+        "Unicat",
+        "Devilcat",
+        "Astrocat",
+
+        "Witchcat",
+        "Wizardcat",
+        "Mousecat",
+        "Engicat",
+        "Repulsocat",
+        "Attractocat",
+        "Copycat",
     });
 
 } // namespace CatConstants
