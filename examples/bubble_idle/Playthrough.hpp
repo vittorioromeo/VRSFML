@@ -142,9 +142,12 @@ struct Playthrough
     float     mewltiplierAuraTimer = 0.f;
 
     //
-    // Mouse cat
+    // Mousecat
     int       mouseCatCombo = 0u;
     Countdown mouseCatComboCountdown;
+
+    // Copycat
+    CatType copycatCopiedCatType{CatType::Witch};
 
     //
     // Permanent purchases
@@ -204,6 +207,7 @@ struct Playthrough
     std::vector<Cat>        cats;
     std::vector<Shrine>     shrines;
     std::vector<Doll>       dolls;
+    std::vector<Doll>       copyDolls;
     std::vector<HellPortal> hellPortals;
 
     //
@@ -308,7 +312,7 @@ struct Playthrough
         multiPopMouseCatEnabled = false;
         windStrength            = 0;
 
-        // bubbles, cats, dolls, hell portals, and shrines are cleaned in the game loop (prestige transition)
+        // bubbles, cats, dolls, copydolls, hell portals, and shrines are cleaned in the game loop (prestige transition)
 
         nShrinesCompleted = 0u;
 
