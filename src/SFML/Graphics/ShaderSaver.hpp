@@ -5,33 +5,33 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Automatic wrapper for saving and restoring the current texture binding
+/// \brief Automatic wrapper for saving and restoring the current shader binding
 ///
 ////////////////////////////////////////////////////////////
-class TextureSaver
+class ShaderSaver
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// The current texture binding is saved.
+    /// The current shader binding is saved.
     ///
     ////////////////////////////////////////////////////////////
-    TextureSaver();
+    ShaderSaver();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
-    /// The previous texture binding is restored.
+    /// The previous shader binding is restored.
     ///
     ////////////////////////////////////////////////////////////
-    ~TextureSaver();
+    ~ShaderSaver();
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int m_textureBinding{}; //!< Texture binding to restore
+    int m_shaderBinding{}; //!< Shader binding to restore
 };
 
 } // namespace sf::priv

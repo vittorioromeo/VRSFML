@@ -506,6 +506,7 @@ struct Main
     sf::FloatRect txrPrestigeSeparator12{addImgResourceToUIAtlas("prestigeseparator12.png")};
     sf::FloatRect txrPrestigeSeparator13{addImgResourceToUIAtlas("prestigeseparator13.png")};
     sf::FloatRect txrPrestigeSeparator14{addImgResourceToUIAtlas("prestigeseparator14.png")};
+    sf::FloatRect txrPrestigeSeparator15{addImgResourceToUIAtlas("prestigeseparator15.png")};
 
     ////////////////////////////////////////////////////////////
     // Magic menu separator textures
@@ -1034,6 +1035,16 @@ struct Main
     sf::Angle currentBackgroundHue;
     sf::Angle targetBackgroundHue;
     sf::Color outlineHueColor{colorBlueOutline};
+
+    ////////////////////////////////////////////////////////////
+    // Cached unique cats
+    Cat* cachedWitchCat{nullptr};
+    Cat* cachedWizardCat{nullptr};
+    Cat* cachedMouseCat{nullptr};
+    Cat* cachedEngiCat{nullptr};
+    Cat* cachedRepulsoCat{nullptr};
+    Cat* cachedAttractoCat{nullptr};
+    Cat* cachedCopyCat{nullptr};
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -2602,8 +2613,8 @@ TODO P0: write tooltip
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
 
-        if (auto* copyCat = findFirstCatByType(CatType::Copy); copyCat != nullptr)
-            uiDrawQuickbarCopyCat(quickBarPos, *copyCat);
+        if (cachedCopyCat != nullptr)
+            uiDrawQuickbarCopyCat(quickBarPos, *cachedCopyCat);
 
         if (getBackgroundSelectorData().entries.size() > 1u)
             uiDrawQuickbarBackgroundSelector(quickBarPos);
@@ -2844,7 +2855,7 @@ TODO P0: write tooltip
             ImGui::EndTabItem();
         }
 
-        if (findFirstCatByType(CatType::Wizard) != nullptr && ImGui::BeginTabItem("Magic"))
+        if (cachedWizardCat != nullptr && ImGui::BeginTabItem("Magic"))
         {
             selectedTab(2);
 
@@ -3052,12 +3063,12 @@ TODO P0: write tooltip
         const auto nCatDevil  = pt.getCatCountByType(CatType::Devil);
         const auto nCatAstro  = pt.getCatCountByType(CatType::Astro);
 
-        Cat* catWitch    = findFirstCatByType(CatType::Witch);
-        Cat* catWizard   = findFirstCatByType(CatType::Wizard);
-        Cat* catMouse    = findFirstCatByType(CatType::Mouse);
-        Cat* catEngi     = findFirstCatByType(CatType::Engi);
-        Cat* catRepulso  = findFirstCatByType(CatType::Repulso);
-        Cat* catAttracto = findFirstCatByType(CatType::Attracto);
+        Cat* catWitch    = cachedWitchCat;
+        Cat* catWizard   = cachedWizardCat;
+        Cat* catMouse    = cachedMouseCat;
+        Cat* catEngi     = cachedEngiCat;
+        Cat* catRepulso  = cachedRepulsoCat;
+        Cat* catAttracto = cachedAttractoCat;
 
         const bool anyUniqueCat = catWitch != nullptr || catWizard != nullptr || catMouse != nullptr ||
                                   catEngi != nullptr || catRepulso != nullptr || catAttracto != nullptr;
@@ -3728,7 +3739,7 @@ TODO P0: write tooltip
 
             uiSetFontScale(uiSubBulletFontScale);
             uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
-            if (findFirstCatByType(CatType::Mouse) != nullptr)
+            if (cachedMouseCat != nullptr)
             {
                 ImGui::SameLine();
                 uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
@@ -4117,6 +4128,18 @@ TODO P0: write tooltip
             }
         }
 
+        if (checkUiUnlock(67u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]))
+        {
+            imgsep2(txrPrestigeSeparator15, "copycat");
+
+            uiBeginColumns();
+
+            makeUnsealButton(512u, "Copycat", CatType::Copy);
+            ImGui::Separator();
+
+            // TODO P1: something?
+        }
+
         uiButtonHueMod = 0.f;
 
         ImGui::Columns(1);
@@ -4193,7 +4216,7 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isWizardBusy() const
     {
-        const Cat* wizardCat = findFirstCatByType(CatType::Wizard);
+        const Cat* wizardCat = cachedWizardCat;
 
         if (wizardCat == nullptr)
             return false;
@@ -4250,8 +4273,8 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void doWizardSpellStarpawConversion(Cat& wizardCat)
     {
-        const auto range       = pt.getComputedRangeByCatType(CatType::Wizard);
-        const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
         sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
         playSound(sounds.cast0);
@@ -4284,7 +4307,7 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void doWizardSpellMewltiplierAura(Cat& wizardCat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
         sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
         playSound(sounds.cast0);
@@ -4300,10 +4323,10 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void doWizardSpellDarkUnion(Cat& wizardCat)
     {
-        const auto range       = pt.getComputedRangeByCatType(CatType::Wizard);
-        const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
-        Cat* witchCat = findFirstCatByType(CatType::Witch);
+        Cat* witchCat = cachedWitchCat;
 
         const bool castSuccessful = pt.dolls.empty() && witchCat != nullptr &&
                                     (witchCat->position - wizardCat.position).lengthSquared() <= range * range;
@@ -4334,7 +4357,7 @@ TODO P0: write tooltip
     {
         uiSetFontScale(uiNormalFontScale);
 
-        Cat* wizardCat = findFirstCatByType(CatType::Wizard);
+        Cat* wizardCat = cachedWizardCat;
 
         if (wizardCat == nullptr)
         {
@@ -4342,7 +4365,8 @@ TODO P0: write tooltip
             return;
         }
 
-        const auto range       = pt.getComputedRangeByCatType(CatType::Wizard);
+        Cat* copyCat = cachedCopyCat;
+
         const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
 
         ImGui::Spacing();
@@ -4420,7 +4444,9 @@ TODO P0: write tooltip
                     wizardcatSpin.value = sf::base::tau;
 
                     doWizardSpellStarpawConversion(*wizardCat);
-                    // TODO P0: copycat
+
+                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                        doWizardSpellStarpawConversion(*copyCat);
 
                     done = false;
                     statSpellCast(0u);
@@ -4458,7 +4484,9 @@ TODO P0: write tooltip
                     wizardcatSpin.value = sf::base::tau;
 
                     doWizardSpellMewltiplierAura(*wizardCat);
-                    // TODO P0: copycat
+
+                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                        doWizardSpellMewltiplierAura(*copyCat);
 
                     done = false;
                     statSpellCast(1u);
@@ -4492,7 +4520,9 @@ TODO P0: write tooltip
                     wizardcatSpin.value = sf::base::tau;
 
                     doWizardSpellDarkUnion(*wizardCat);
-                    // TODO P0: copycat
+
+                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                        doWizardSpellDarkUnion(*copyCat);
 
                     done = false;
                     statSpellCast(2u);
@@ -4783,13 +4813,23 @@ TODO P0: write tooltip
         if (pt.mewltiplierAuraTimer <= 0.f)
             return false;
 
-        const Cat* wizardCat = findFirstCatByType(CatType::Wizard);
+        const Cat* wizardCat = cachedWizardCat;
         if (wizardCat == nullptr)
             return false;
 
-        // TODO P0: copycat as well
-        return (wizardCat->position - bubblePosition).lengthSquared() <=
-               pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+        const float wizardCatRangeSquared = pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+
+        if ((wizardCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
+            return true;
+
+        const Cat* copyCat = cachedCopyCat;
+        if (copyCat == nullptr && copycatCopiedCatType != CatType::Wizard)
+            return false;
+
+        if ((copyCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
+            return true;
+
+        return false;
     }
 
     ////////////////////////////////////////////////////////////
@@ -4799,9 +4839,13 @@ TODO P0: write tooltip
                                                const Cat*    popperCat) const
     {
         // Determine some information about the reward
-        const bool byPlayerClick       = popperCat == nullptr;
-        const bool popperCatIsMousecat = !byPlayerClick && popperCat->type == CatType::Mouse; // TODO P0: copycat
-        const bool popperCatIsNormal   = !byPlayerClick && popperCat->type == CatType::Normal;
+        const bool byPlayerClick = popperCat == nullptr;
+
+        const bool popperCatIsMousecat = //
+            !byPlayerClick && (popperCat->type == CatType::Mouse ||
+                               (popperCat->type == CatType::Copy && copycatCopiedCatType == CatType::Mouse));
+
+        const bool popperCatIsNormal = !byPlayerClick && popperCat->type == CatType::Normal;
 
         const bool mustApplyHandMult = byPlayerClick || popperCatIsMousecat; // mousecat benefits from click and cat mults
         const bool mustApplyCatMult = !byPlayerClick;
@@ -4826,11 +4870,11 @@ TODO P0: write tooltip
             result *= pt.psvMewltiplierMult.currentValue();
 
         // Global bonus -- mousecat (applies to clicks)
-        if (mustApplyHandMult && findFirstCatByType(CatType::Mouse) != nullptr) // TODO P0: copycat, double buff
+        if (mustApplyHandMult && cachedMouseCat != nullptr) // TODO P0: copycat, double buff?
             result *= pt.psvPPMouseCatGlobalBonusMult.currentValue();
 
         // Global bonus -- engicat (applies to cats)
-        if (mustApplyCatMult && findFirstCatByType(CatType::Engi) != nullptr) // TODO P0: copycat, double buff
+        if (mustApplyCatMult && cachedEngiCat != nullptr) // TODO P0: copycat, double buff?
             result *= pt.psvPPEngiCatGlobalBonusMult.currentValue();
 
         // Shrine of clicking: x5 reward for clicks
@@ -5328,7 +5372,7 @@ TODO P0: write tooltip
             ImGui::SameLine();
 
             if (ImGui::Button("Do Ritual"))
-                if (auto* wc = findFirstCatByType(CatType::Witch))
+                if (auto* wc = cachedWitchCat)
                     wc->cooldown.value = 10.f;
 
             ImGui::SameLine();
@@ -6135,12 +6179,15 @@ TODO P0: write tooltip
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
-            const Cat* mouseCat = findFirstCatByType(CatType::Mouse); // TODO P0: copycat
+            const float squaredMouseCatRange = pt.getComputedSquaredRangeByCatType(CatType::Mouse);
 
-            const bool inMouseCatRange = mouseCat != nullptr && (mouseCat->position - cat.position).lengthSquared() <=
-                                                                    pt.getComputedSquaredRangeByCatType(CatType::Mouse);
+            const bool inMouseCatRange = cachedMouseCat != nullptr &&
+                                         (cachedMouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
-            const int comboMult = inMouseCatRange ? pt.mouseCatCombo : 1;
+            const bool inCopyMouseCatRange = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Mouse &&
+                                             (cachedCopyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
+
+            const int comboMult = (inMouseCatRange || inCopyMouseCatRange) ? pt.mouseCatCombo : 1;
 
             const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
                                                         /* multiplier */ 1.f,
@@ -6397,7 +6444,6 @@ TODO P0: write tooltip
 
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
-        const auto [cx, cy]    = getCatRangeCenter(cat);
 
         SizeT otherCatCount = 0u;
         Cat*  selected      = nullptr;
@@ -6766,8 +6812,8 @@ TODO P0: write tooltip
                 }
                 else if (shrine.type == ShrineType::Voodoo && shrine.isActive())
                 {
-                    if (shrine.isInRange(cat.position) && findFirstCatByType(CatType::Witch) == nullptr &&
-                        !anyCatHexed() && !cat.hexedTimer.hasValue())
+                    if (shrine.isInRange(cat.position) && cachedWitchCat == nullptr && !anyCatHexed() &&
+                        !cat.hexedTimer.hasValue())
                     {
                         hexCat(cat);
                     }
@@ -7064,7 +7110,7 @@ TODO P0: write tooltip
                 }
             }
 
-            if (cat.type == CatType::Mouse) // TODO P0: copycat too
+            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Mouse))
             {
                 for (const Cat& otherCat : pt.cats)
                 {
@@ -7116,7 +7162,7 @@ TODO P0: write tooltip
                 };
             };
 
-            if (cat.type == CatType::Repulso) // TODO P0: copycat too
+            if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Repulso))
                 forEachBubbleInRadius(cat.position,
                                       pt.getComputedRangeByCatType(cat.type),
                                       makeMagnetAction(&Bubble::repelledCountdown,
@@ -7125,7 +7171,7 @@ TODO P0: write tooltip
                                                        -1.f,
                                                        pt.repulsoCatIgnoreBubbles));
 
-            if (cat.type == CatType::Attracto) // TODO P0: copycat too
+            if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Attracto))
                 forEachBubbleInRadius(cat.position,
                                       pt.getComputedRangeByCatType(cat.type),
                                       makeMagnetAction(&Bubble::attractedCountdown,
@@ -7504,11 +7550,12 @@ TODO P0: write tooltip
                         }
                         else if (shrine.type == ShrineType::Camouflage)
                         {
-                            // TODO P0: implement (copycat) (consider using quick menu UI)
+                            doShrineReward(CatType::Copy);
 
-                            doTip(
-                                "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining their "
-                                "powers!.");
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+                                doTip(
+                                    "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining their "
+                                    "powers!.");
                         }
                         else if (shrine.type == ShrineType::Victory)
                         {
@@ -7632,7 +7679,7 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
     {
-        if (findFirstCatByType(CatType::Witch) == nullptr)
+        if (cachedWitchCat == nullptr)
             return;
 
         Cat* hexedCat = getHexedCat();
@@ -7683,6 +7730,8 @@ TODO P0: write tooltip
                        from below?
                        case CatType::Attracto:
                             // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
+                        case CatType::Copy:
+                            // TODO P0: ??
                     */
 
                     collectDoll(d);
@@ -7744,9 +7793,7 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMana(const float deltaTimeMs)
     {
-        Cat* wizardCat = findFirstCatByType(CatType::Wizard);
-
-        if (wizardCat == nullptr)
+        if (cachedWizardCat == nullptr)
             return;
 
         //
@@ -7777,19 +7824,28 @@ TODO P0: write tooltip
         // Arcane aura spell
         if (pt.mewltiplierAuraTimer > 0.f)
         {
-            // TODO P0: copycat as well
-
             pt.mewltiplierAuraTimer -= deltaTimeMs;
             pt.mewltiplierAuraTimer = sf::base::max(pt.mewltiplierAuraTimer, 0.f);
 
-            for (SizeT i = 0u; i < 8u; ++i)
-                spawnParticlesWithHueNoGravity(230.f,
-                                               1,
-                                               rng.getPointInCircle(wizardCat->position,
-                                                                    pt.getComputedRangeByCatType(CatType::Wizard)),
-                                               ParticleType::Star,
-                                               0.15f,
-                                               0.05f);
+            const float wizardRange = pt.getComputedRangeByCatType(CatType::Wizard);
+
+            if (cachedWizardCat != nullptr)
+                for (SizeT i = 0u; i < 8u; ++i)
+                    spawnParticlesWithHueNoGravity(230.f,
+                                                   1,
+                                                   rng.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                                   ParticleType::Star,
+                                                   0.15f,
+                                                   0.05f);
+
+            if (cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                for (SizeT i = 0u; i < 8u; ++i)
+                    spawnParticlesWithHueNoGravity(230.f,
+                                                   1,
+                                                   rng.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                                   ParticleType::Star,
+                                                   0.15f,
+                                                   0.05f);
         }
     }
 
@@ -8163,6 +8219,7 @@ TODO P0: write tooltip
         unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Engi)]);
         unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Repulso)]);
         unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Attracto)]);
+        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Copy)]);
 
         unlockIf(pt.psvShrineActivation.nPurchases >= 1);
         unlockIf(pt.psvShrineActivation.nPurchases >= 2);
@@ -8188,6 +8245,7 @@ TODO P0: write tooltip
         unlockIf(pt.perm.unsealedByType[asIdx(CatType::Engi)]);
         unlockIf(pt.perm.unsealedByType[asIdx(CatType::Repulso)]);
         unlockIf(pt.perm.unsealedByType[asIdx(CatType::Attracto)]);
+        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Copy)]);
 
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 1);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)] >= 1);
@@ -8198,6 +8256,7 @@ TODO P0: write tooltip
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)] >= 1);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)] >= 1);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)] >= 1);
+        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)] >= 1);
 
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 500);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)] >= 100);
@@ -8208,6 +8267,7 @@ TODO P0: write tooltip
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)] >= 10);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)] >= 10);
         unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)] >= 10);
+        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)] >= 10);
 
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1);
         unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10);
@@ -8708,7 +8768,7 @@ TODO P0: write tooltip
         {
             catRotation = -0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f;
         }
-        else if (Cat* witch = findFirstCatByType(CatType::Witch); witch != nullptr)
+        else if (Cat* witch = cachedWitchCat; witch != nullptr)
         {
             static float wobblePhase = 0.f;
 
@@ -9256,7 +9316,7 @@ TODO P0: write tooltip
             &txrDollEngi,     // Engi
             &txrDollRepulso,  // Repulso
             &txrDollAttracto, // Attracto
-            &txrDollAttracto, // Copy (TODO P0: change, or just copy whatever)
+            &txrDollAttracto, // Copy (TODO P0: change, or just copy whatever is copied?)
         };
 
         static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
@@ -10295,7 +10355,8 @@ TODO P0: write tooltip
                                .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
                                                txBackgroundChunk.getSize().toVector2f() * 2.f},
                                .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
-                           });
+                           },
+                           {.shader = &shader});
 
         if (idx == 0u || profile.alwaysShowDrawings)
             rtBackground->draw(txDrawings,
@@ -10411,7 +10472,7 @@ TODO P0: write tooltip
             "Global Maintenance (x2 Faster Cooldown)", // Engi
             "Repulso Buff TODO P0",                    // Repulso
             "Attracto Buff TODO P0",                   // Attracto
-            "Copy Buff TODO P0",                       // Copy
+            "Copy Buff TODO P0",                       // Copy TODO P0: maybe N/A?
         };
 
         static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
@@ -10702,6 +10763,16 @@ TODO P0: write tooltip
         }
 
         //
+        // Cache unique cats
+        cachedWitchCat    = findFirstCatByType(CatType::Witch);
+        cachedWizardCat   = findFirstCatByType(CatType::Wizard);
+        cachedMouseCat    = findFirstCatByType(CatType::Mouse);
+        cachedEngiCat     = findFirstCatByType(CatType::Engi);
+        cachedRepulsoCat  = findFirstCatByType(CatType::Repulso);
+        cachedAttractoCat = findFirstCatByType(CatType::Attracto);
+        cachedCopyCat     = findFirstCatByType(CatType::Copy);
+
+        //
         // Scrolling
         gameLoopUpdateScrolling(deltaTimeMs, downFingers);
 
@@ -10918,13 +10989,13 @@ TODO P0: write tooltip
         // Money text & spent money effect
         gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
         gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
-        if (shouldDrawUI && false)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(moneyText);
 
         //
         // Combo text
         gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-        if (shouldDrawUI && false && pt.comboPurchased)
+        if (shouldDrawUI && !debugHideUI && pt.comboPurchased)
             window.draw(comboText);
 
         //
@@ -10951,12 +11022,12 @@ TODO P0: write tooltip
         //
         // Buff text
         gameLoopUpdateBuffText();
-        if (shouldDrawUI && false)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(buffText);
 
         //
         // Combo bar
-        if (shouldDrawUI && false)
+        if (shouldDrawUI && !debugHideUI)
             window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
                                             .fillColor = sf::Color{255, 255, 255, 75},
                                             .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
