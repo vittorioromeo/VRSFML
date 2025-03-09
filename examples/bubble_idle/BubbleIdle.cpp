@@ -564,6 +564,7 @@ struct Main
     sf::FloatRect txrWitchCatTail{addImgResourceToAtlas("witchcattail.png")};
     sf::FloatRect txrWizardCatTail{addImgResourceToAtlas("wizardcattail.png")};
     sf::FloatRect txrMouseCatTail{addImgResourceToAtlas("mousecattail.png")};
+    sf::FloatRect txrMouseCatMouse{addImgResourceToAtlas("mousecatmouse.png")};
     sf::FloatRect txrEngiCatTail{addImgResourceToAtlas("engicattail.png")};
     sf::FloatRect txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
     sf::FloatRect txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
@@ -1746,7 +1747,22 @@ Using prestige points, the magnet can be upgraded to filter specific bubble type
 ~~ Copycat ~~
 (unique cat)
 
-TODO P0: write tooltip
+Mimics an existing unique cat, gaining their abilities and effects. (Note: the mimicked cat can be changed via the toolbar near the bottom of the screen.)
+
+TODO P0: witch behavior
+
+Special interactions:
+
+- Wizardcat
+  - Spells will also be casted by the Copycat.
+  - Mewliplier Aura's bonus does not stack twice.
+
+- Mousecat
+  - The combo multiplier is shared.
+  - The global clicking buff multiplier is doubled.
+
+- Engicat
+  - The global clicking buff multiplier is doubled.
 )",
             };
 
@@ -4873,12 +4889,14 @@ TODO P0: write tooltip
             result *= pt.psvMewltiplierMult.currentValue();
 
         // Global bonus -- mousecat (applies to clicks)
-        if (mustApplyHandMult && cachedMouseCat != nullptr) // TODO P0: copycat, double buff?
-            result *= pt.psvPPMouseCatGlobalBonusMult.currentValue();
+        const bool isMouseBeingCopied = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Mouse;
+        if (mustApplyHandMult && cachedMouseCat != nullptr)
+            result *= pt.psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
 
         // Global bonus -- engicat (applies to cats)
-        if (mustApplyCatMult && cachedEngiCat != nullptr) // TODO P0: copycat, double buff?
-            result *= pt.psvPPEngiCatGlobalBonusMult.currentValue();
+        const bool isEngiBeingCopied = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Engi;
+        if (mustApplyCatMult && cachedEngiCat != nullptr)
+            result *= pt.psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
 
         // Shrine of clicking: x5 reward for clicks
         if (mustApplyHandMult && nearShrineOfClicking)
@@ -8831,7 +8849,7 @@ TODO P0: write tooltip
         const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
         const auto  catScale     = sf::Vector2f{0.2f, 0.2f} * catScaleMult;
 
-        const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition();
+        const auto catAnchor = beingDragged ? cat position : cat.getDrawPosition();
 
         const auto anchorOffset = [&](const sf::Vector2f offset)
         { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
@@ -8840,6 +8858,10 @@ TODO P0: write tooltip
 
         const auto tailWiggleRotation = sf::radians(
             catRotation + ((beingDragged ? -0.2f : 0.f) +
+                           std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
+
+        const auto tailWiggleRotationInvertedDragged = sf::radians(
+            catRotation + ((beingDragged ? 0.2f : 0.f) +
                            std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
         const sf::Vector2f pushDown{0.f, beingDragged ? 75.f : 0.f};
@@ -8851,10 +8873,10 @@ TODO P0: write tooltip
         if (cat.type == CatType::Devil)
         {
             cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{905.f, 10.f}),
+                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{905.f, 10.f} + pushDown * 2.f),
                            .scale       = catScale * 1.25f,
                            .origin      = {320.f, 32.f},
-                           .rotation    = tailWiggleRotation,
+                           .rotation    = tailWiggleRotationInvertedDragged,
                            .textureRect = catTailTxr,
                            .color       = catColor});
         }
@@ -9038,6 +9060,7 @@ TODO P0: write tooltip
                            .color       = catColor});
         }
 
+
         //
         // Draw cat tail
         if (cat.type != CatType::Devil)
@@ -9051,6 +9074,19 @@ TODO P0: write tooltip
                            .origin   = originOffset + sf::Vector2f{320.f, 32.f},
                            .rotation = tailWiggleRotation,
                            .textureRect = catTailTxr,
+                           .color       = catColor});
+        }
+
+        //
+        // Mousecat: mouse
+        if (cat.type == CatType::Mouse)
+        {
+            cpuDrawableBatch.add(
+                sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
+                           .scale       = catScale,
+                           .origin      = {53.f, 77.f},
+                           .rotation    = tailWiggleRotationInvertedDragged,
+                           .textureRect = txrMouseCatMouse,
                            .color       = catColor});
         }
 
@@ -11226,7 +11262,9 @@ int main(int argc, const char** argv)
     Main{steamMgr}.run();
 }
 
+// TODO P0: exceeding max cooldown makes cooldown bar super long on wizard
 // TODO P0: achievements for speedrunning milestones
+// TODO P1: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
