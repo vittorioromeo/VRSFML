@@ -67,6 +67,7 @@ struct Playthrough
                     {&PSVDataConstants::catEngi},     // unused
                     {&PSVDataConstants::catRepulso},  // unused
                     {&PSVDataConstants::catAttracto}, // unused
+                    {&PSVDataConstants::catCopy},     // unused
                 });
 
     EXACT_ARRAY(PurchasableScalingValue,
@@ -84,6 +85,7 @@ struct Playthrough
                     {&PSVDataConstants::catEngiCooldownMult},
                     {&PSVDataConstants::catRepulsoCooldownMult},
                     {&PSVDataConstants::catAttractoCooldownMult},
+                    {&PSVDataConstants::catCopyCooldownMult}, // unused
                 });
 
     EXACT_ARRAY(PurchasableScalingValue,
@@ -101,6 +103,7 @@ struct Playthrough
                     {&PSVDataConstants::catEngiRangeDiv},
                     {&PSVDataConstants::catRepulsoRangeDiv},
                     {&PSVDataConstants::catAttractoRangeDiv},
+                    {&PSVDataConstants::catCopyRangeDiv}, // unused
                 });
 
     //
