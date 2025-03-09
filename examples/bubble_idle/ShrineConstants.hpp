@@ -16,8 +16,8 @@ inline constexpr EXACT_ARRAY(
         "Shrine Of Automation",
         "Shrine Of Repulsion",
         "Shrine Of Attraction",
-        "Shrine Of Camouflage", // TODO P0: implement copycat
-        "Shrine Of Victory",    // TODO P0: implement rubber duck?
+        "Shrine Of Camouflage",
+        "Shrine Of Victory", // TODO P0: implement rubber duck?
     });
 
 ////////////////////////////////////////////////////////////
