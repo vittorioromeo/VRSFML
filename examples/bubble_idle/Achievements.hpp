@@ -227,6 +227,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Ingeni-cat Instigator", "Have an Astrocat inspire the Engicat."},
     {"Purrfect Pushback", "Have an Astrocat inspire the Repulsocat."},
     {"Attracting Ad", "Have an Astrocat inspire the Attractocat."},
+    {"TODONAME", "Have an Astrocat inspire the Copycat."},
 
     {"Paws of Awakening", "Activate the 1st shrine."},
     {"Twin Paws, Double Power", "Activate the 2nd shrine."},
@@ -252,20 +253,21 @@ inline constexpr AchievementData achievementData[] = {
     {"Shrine Lid Unscrewed", "Unseal the Engicat."},
     {"There's No Ceiling", "Unseal the Repulsocat."},
     {"Electronic Lock", "Unseal the Attractocat."},
-    // TODO P0: other cat (copycat)
+    {"TODONAME", "Unseal the Copycat."},
     // TODO P0: other cat (or duck)
 
     {"No Pops Allowed", "Perform a voodoo ritual on a cat."},
     {"I Hate Rainbows", "Perform a voodoo ritual on a Unicat."},
     {"Demilitarization", "Perform a voodoo ritual on a Devilcat."},
-    {"Out of Fuel", "Perform a voodoo ritual on an Astrocat."},
-    {"Go to Bed, Gramps", "Perform a voodoo ritual on the Wizardcat."},
+    {"Out Of Fuel", "Perform a voodoo ritual on an Astrocat."},
+    {"Go To Bed, Gramps", "Perform a voodoo ritual on the Wizardcat."},
     {"Gamer Rage", "Perform a voodoo ritual on the Mousecat."},
     {"Hex Tech", "Perform a voodoo ritual on the Engicat."},
-    {"Not a Fan", "Perform a voodoo ritual on the Repulsocat."},
+    {"Not A Fan", "Perform a voodoo ritual on the Repulsocat."},
     {"Demagnetized", "Perform a voodoo ritual on the Attractocat."},
+    {"You're Just A Poser", "Perform a voodoo ritual on the Copycat."},
 
-    {"Black cat bone", "Perform 500 voodoo rituals on a cat."},
+    {"Black Cat Bone", "Perform 500 voodoo rituals on a cat."},
     {"Unibones", "Perform 100 voodoo rituals on a Unicat."},
     {"Hellbones", "Perform 100 voodoo rituals on a Devilcat."},
     {"Bone Voyage", "Perform 50 voodoo rituals on an Astrocat."},
@@ -274,6 +276,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Nuts And Bones", "Perform 10 voodoo rituals on an Engicat."},
     {"Bones, Come Back!", "Perform 10 voodoo rituals on a Repulsocat."},
     {"Ferromagnetic Bones", "Perform 10 voodoo rituals on an Attractocat."},
+    {"Fake Bones", "Perform 10 voodoo rituals on a Copycat."},
 
     {"TODONAME", "Collect a voodoo doll."},
     {"TODONAME", "Collect 10 voodoo dolls."},

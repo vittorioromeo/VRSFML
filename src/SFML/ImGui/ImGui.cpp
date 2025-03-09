@@ -12,8 +12,10 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/ShaderSaver.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
+#include "SFML/Graphics/TextureSaver.hpp"
 
 #include "SFML/Window/Clipboard.hpp"
 #include "SFML/Window/Cursor.hpp"
@@ -1215,6 +1217,9 @@ void ImGuiContext::render(RenderWindow& window)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::render(RenderTarget& target)
 {
+    sf::priv::TextureSaver textureSaver;
+    sf::priv::ShaderSaver  shaderSaver;
+
     target.resetGLStates();
     render();
 }
