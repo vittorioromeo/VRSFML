@@ -28,6 +28,7 @@ inline constexpr const char* normalCatNames[] =
      "Tewi",       "Aya",     "Sanae",     "Kanako",    "Suwako",     "Beethro",   "Halph",       "Dugan",   "Denfry",
      "Tendry",     "Gunthro", "Cannolo",   "Braciola",  "Granita",    "Shodan"};
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr const char* uniCatNames[] =
     {"Orion",   "Cassiopeia",  "Andromeda", "Ursa",      "Scorpius", "Lyra",    "Cygnus",    "Pegasus",
@@ -37,6 +38,7 @@ inline constexpr const char* uniCatNames[] =
      "Scorpio", "Taurus",      "Virgo",     "Polaris",   "Lucero",   "Halley",  "Comet",     "Astrid",
      "Satoru",  "Shun",        "Saki",      "Mamoru",    "Maria"};
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr const char* devilCatNames[] =
     {"Atronach",       "Inferno",     "Satan",      "Lucifer",   "Beelzebub", "Mephisto",   "Diablo",       "Baphomet",
@@ -45,6 +47,7 @@ inline constexpr const char* devilCatNames[] =
      "Shub-Niggurath", "Yog-Sothoth", "Hastur",     "Dagon",     "Ithaqua",   "Tsathoggua", "Nodens",       "Yig",
      "Ghatanothoa",    "Yibb-Tstll",  "Zoth-Ommog", "Cthugha",   "Hypnos",    "Nug",        "Yogash",       "Zoth",
      "Karlach",        "Alfira",      "Zevlor",     "Dammon",    "Arabella",  "Raphael",    "Mizora"};
+
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* astroCatNames[] =
@@ -87,6 +90,7 @@ inline constexpr const char* wizardCatNames[] = {
     "Elminster",
 };
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr const char* mouseCatNames[] = {
     "Clicker",
@@ -102,6 +106,7 @@ inline constexpr const char* mouseCatNames[] = {
     "Mickey",
     "Fievel",
 };
+
 
 ////////////////////////////////////////////////////////////
 inline constexpr const char* engiCatNames[] = {
@@ -122,6 +127,7 @@ inline constexpr const char* engiCatNames[] = {
     "Wily",
 };
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr const char* repulsoCatNames[] = {
     "Janna",
@@ -134,6 +140,7 @@ inline constexpr const char* repulsoCatNames[] = {
     "Aeolus",
 };
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr const char* attractoCatNames[] = {
     "Magneto",
@@ -142,6 +149,21 @@ inline constexpr const char* attractoCatNames[] = {
     "Neodymium",
     "Ferrite",
 };
+
+
+////////////////////////////////////////////////////////////
+inline constexpr const char* copyCatNames[] = {
+    "Bond",
+    "Chesire",
+    "Snake",
+    "Garrett",
+    "Fisher",
+    "Shadow",
+    "Lupin",
+    "Sly",
+    "Fortyseven",
+};
+
 
 ////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
@@ -160,6 +182,7 @@ inline constexpr EXACT_ARRAY(
         {engiCatNames, sf::base::getArraySize(engiCatNames)},         // Engi
         {repulsoCatNames, sf::base::getArraySize(repulsoCatNames)},   // Repulso
         {attractoCatNames, sf::base::getArraySize(attractoCatNames)}, // Attracto
+        {copyCatNames, sf::base::getArraySize(copyCatNames)},         // Copy
     });
 
 ////////////////////////////////////////////////////////////

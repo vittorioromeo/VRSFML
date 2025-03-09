@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+#pragma GCC system_header
+
 #include "steam_api_common.h"
 
 //-----------------------------------------------------------------------------
@@ -64,10 +66,10 @@ public:
 
 	/// Begin process of logging game server out of steam
 	virtual void LogOff() = 0;
-	
+
 	// status functions
 	virtual bool BLoggedOn() = 0;
-	virtual bool BSecure() = 0; 
+	virtual bool BSecure() = 0;
 	virtual CSteamID GetSteamID() = 0;
 
 	/// Returns true if the master server has requested a restart.
@@ -117,7 +119,7 @@ public:
 
 	/// Call this to clear the whole list of key/values that are sent in rules queries.
 	virtual void ClearAllKeyValues() = 0;
-	
+
 	/// Call this to add/update a key/value pair.
 	virtual void SetKeyValue( const char *pKey, const char *pValue ) = 0;
 
@@ -150,7 +152,7 @@ public:
 // Player list management / authentication.
 //
 
-	// Retrieve ticket to be sent to the entity who wishes to authenticate you ( using BeginAuthSession API ). 
+	// Retrieve ticket to be sent to the entity who wishes to authenticate you ( using BeginAuthSession API ).
 	// pcbTicket retrieves the length of the actual ticket.
 	// SteamNetworkingIdentity is an optional parameter to hold the public IP address of the entity you are connecting to
 	// if an IP address is passed Steam will only allow the ticket to be used by an entity with that IP address
@@ -181,7 +183,7 @@ public:
 	STEAM_CALL_RESULT( GSReputation_t )
 	virtual SteamAPICall_t GetServerReputation() = 0;
 
-	// Returns the public IP of the server according to Steam, useful when the server is 
+	// Returns the public IP of the server according to Steam, useful when the server is
 	// behind NAT and you want to advertise its IP in a lobby for other clients to directly
 	// connect to
 	virtual SteamIPAddress_t GetPublicIP() = 0;
@@ -192,10 +194,10 @@ public:
 
 	// These are used when you've elected to multiplex the game server's UDP socket
 	// rather than having the master server updater use its own sockets.
-	// 
-	// Source games use this to simplify the job of the server admins, so they 
+	//
+	// Source games use this to simplify the job of the server admins, so they
 	// don't have to open up more ports on their firewalls.
-	
+
 	// Call this when a packet that starts with 0xFFFFFFFF comes in. That means
 	// it's for us.
 	virtual bool HandleIncomingPacket( const void *pData, int cbData, uint32 srcIP, uint16 srcPort ) = 0;
@@ -213,7 +215,7 @@ public:
 	// associate this game server with this clan for the purposes of computing player compat
 	STEAM_CALL_RESULT( AssociateWithClanResult_t )
 	virtual SteamAPICall_t AssociateWithClan( CSteamID steamIDClan ) = 0;
-	
+
 	// ask if any of the current players dont want to play with this new player - or vice versa
 	STEAM_CALL_RESULT( ComputeNewPlayerCompatibilityResult_t )
 	virtual SteamAPICall_t ComputeNewPlayerCompatibility( CSteamID steamIDNewPlayer ) = 0;
@@ -222,8 +224,8 @@ public:
 
 
 	// Handles receiving a new connection from a Steam user.  This call will ask the Steam
-	// servers to validate the users identity, app ownership, and VAC status.  If the Steam servers 
-	// are off-line, then it will validate the cached ticket itself which will validate app ownership 
+	// servers to validate the users identity, app ownership, and VAC status.  If the Steam servers
+	// are off-line, then it will validate the cached ticket itself which will validate app ownership
 	// and identity.  The AuthBlob here should be acquired on the game client using SteamUser()->InitiateGameConnection()
 	// and must then be sent up to the game server for authentication.
 	//
@@ -235,8 +237,8 @@ public:
 	//              Please migrate to BeginAuthSession and related functions.
 	virtual bool SendUserConnectAndAuthenticate_DEPRECATED( uint32 unIPClient, const void *pvAuthBlob, uint32 cubAuthBlobSize, CSteamID *pSteamIDUser ) = 0;
 
-	// Creates a fake user (ie, a bot) which will be listed as playing on the server, but skips validation.  
-	// 
+	// Creates a fake user (ie, a bot) which will be listed as playing on the server, but skips validation.
+	//
 	// Return Value: Returns a SteamID for the user to be tracked with, you should call EndAuthSession()
 	// when this user leaves the server just like you would for a real user.
 	virtual CSteamID CreateUnauthenticatedUserConnection() = 0;
@@ -252,7 +254,7 @@ public:
 	// Update the data to be displayed in the server browser and matchmaking interfaces for a user
 	// currently connected to the server.  For regular users you must call this after you receive a
 	// GSUserValidationSuccess callback.
-	// 
+	//
 	// Return Value: true if successful, false if failure (ie, steamIDUser wasn't for an active player)
 	virtual bool BUpdateUserData( CSteamID steamIDUser, const char *pchPlayerName, uint32 uScore ) = 0;
 
@@ -279,7 +281,7 @@ STEAM_DEFINE_GAMESERVER_INTERFACE_ACCESSOR( ISteamGameServer *, SteamGameServer,
 #pragma pack( push, 8 )
 #else
 #error steam_api_common.h should define VALVE_CALLBACK_PACK_xxx
-#endif 
+#endif
 
 
 // client has been approved to connect to this game server
@@ -309,7 +311,7 @@ struct GSClientKick_t
 	EDenyReason m_eDenyReason;
 };
 
-// NOTE: callback values 4 and 5 are skipped because they are used for old deprecated callbacks, 
+// NOTE: callback values 4 and 5 are skipped because they are used for old deprecated callbacks,
 // do not reuse them here.
 
 
@@ -359,7 +361,7 @@ struct GSReputation_t
 	bool	m_bBanned;				// True if the server is banned from the Steam
 									// master servers
 
-	// The following members are only filled out if m_bBanned is true. They will all 
+	// The following members are only filled out if m_bBanned is true. They will all
 	// be set to zero otherwise. Master server bans are by IP so it is possible to be
 	// banned even when the score is good high if there is a bad server on another port.
 	// This information can be used to determine which server is bad.
