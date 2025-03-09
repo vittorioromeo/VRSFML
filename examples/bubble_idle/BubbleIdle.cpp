@@ -568,6 +568,7 @@ struct Main
     sf::FloatRect txrEngiCatWrench{addImgResourceToAtlas("engicatwrench.png")};
     sf::FloatRect txrRepulsoCatTail{addImgResourceToAtlas("repulsocattail.png")};
     sf::FloatRect txrAttractoCatTail{addImgResourceToAtlas("attractocattail.png")};
+    sf::FloatRect txrCopyCatTail{addImgResourceToAtlas("copycattail.png")};
     sf::FloatRect txrAttractoCatMagnet{addImgResourceToAtlas("attractocatmagnet.png")};
     sf::FloatRect txrUniCatPaw{addImgResourceToAtlas("unicatpaw.png")};
     sf::FloatRect txrDevilCatPaw{addImgResourceToAtlas("devilcatpaw.png")};
@@ -593,7 +594,9 @@ struct Main
     sf::FloatRect txrRepulsoCat{addImgResourceToAtlas("repulsocat.png")};
     sf::FloatRect txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
     sf::FloatRect txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
+    sf::FloatRect txrCopyCat{addImgResourceToAtlas("copycat.png")};
     sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
+    sf::FloatRect txrCopyCatPaw{addImgResourceToAtlas("copycatpaw.png")};
     sf::FloatRect txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
     sf::FloatRect txrDollUni{addImgResourceToAtlas("dolluni.png")};
     sf::FloatRect txrDollDevil{addImgResourceToAtlas("dolldevil.png")};
@@ -7154,7 +7157,7 @@ TODO P0: write tooltip
                         return ControlFlow::Continue;
 
                     const auto bcDiff   = (cat.position - bubble.position);
-                    const auto strength = (pt.getComputedRangeByCatType(cat.type) - bcDiff.length()) * 0.000017f;
+                    const auto strength = (getComputedRangeByCatTypeOrCopyCat(cat.type) - bcDiff.length()) * 0.000017f;
                     bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
 
                     (bubble.*countdownPm).value = sf::base::max((bubble.*countdownPm).value, countdownTime);
@@ -7164,7 +7167,7 @@ TODO P0: write tooltip
 
             if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Repulso))
                 forEachBubbleInRadius(cat.position,
-                                      pt.getComputedRangeByCatType(cat.type),
+                                      pt.getComputedRangeByCatType(CatType::Repulso),
                                       makeMagnetAction(&Bubble::repelledCountdown,
                                                        1500.f,
                                                        getWindRepulsionMult(),
@@ -7173,7 +7176,7 @@ TODO P0: write tooltip
 
             if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Attracto))
                 forEachBubbleInRadius(cat.position,
-                                      pt.getComputedRangeByCatType(cat.type),
+                                      pt.getComputedRangeByCatType(CatType::Attracto),
                                       makeMagnetAction(&Bubble::attractedCountdown,
                                                        750.f,
                                                        getWindAttractionMult(),
@@ -8623,7 +8626,7 @@ TODO P0: write tooltip
             &txrEngiCat,     // Engi
             &txrRepulsoCat,  // Repulso
             &txrAttractoCat, // Attracto
-            &txrAttractoCat, // Copy (TODO P0: change)
+            &txrCopyCat,     // Copy
         };
 
         static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
@@ -8641,7 +8644,7 @@ TODO P0: write tooltip
             &txrEngiCatPaw,     // Engi
             &txrRepulsoCatPaw,  // Repulso
             &txrAttractoCatPaw, // Attracto
-            &txrAttractoCatPaw, // Copy (TODO P0: change)
+            &txrCopyCatPaw,     // Copy
         };
 
         static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
@@ -8659,7 +8662,7 @@ TODO P0: write tooltip
             &txrEngiCatTail,     // Engi
             &txrRepulsoCatTail,  // Repulso
             &txrAttractoCatTail, // Attracto
-            &txrAttractoCatTail, // Copy (TODO P0: change)
+            &txrCopyCatTail,     // Copy
         };
 
         static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
@@ -9054,7 +9057,7 @@ TODO P0: write tooltip
         //
         // Eye blining animation
         const auto& eyelidArray = //
-            (cat.type == CatType::Mouse || cat.type == CatType::Attracto) ? grayEyeLidRects
+            (cat.type == CatType::Mouse || cat.type == CatType::Attracto || cat.type == CatType::Copy) ? grayEyeLidRects
             : (cat.type == CatType::Engi || (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased))
                 ? darkEyeLidRects
             : (cat.type == CatType::Astro || cat.type == CatType::Uni)
