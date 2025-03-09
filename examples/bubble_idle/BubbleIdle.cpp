@@ -2318,7 +2318,7 @@ TODO P0: write tooltip
     }
 
     ////////////////////////////////////////////////////////////
-    void uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos)
+    void uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
     {
         constexpr const char* popupLabel = "CopyCatSelectorPopup";
         static sf::base::U8   opacity    = 168u;
@@ -2353,10 +2353,16 @@ TODO P0: write tooltip
                     if (i == asIdx(CatType::Copy))
                         continue;
 
+                    if (findFirstCatByType(static_cast<CatType>(i)) == nullptr)
+                        continue;
+
                     const bool isSelected = copycatCopiedCatType == static_cast<CatType>(i);
                     if (ImGui::Selectable(CatConstants::typeNamesLong[i], isSelected))
                     {
                         copycatCopiedCatType = static_cast<CatType>(i);
+
+                        copyCat.cooldown.value = pt.getComputedCooldownByCatType(copycatCopiedCatType);
+                        copyCat.hits           = 0u;
 
                         // TODO P0: ?
 
@@ -2596,8 +2602,8 @@ TODO P0: write tooltip
                      ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
                          ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground);
 
-        if (findFirstCatByType(CatType::Copy) != nullptr)
-            uiDrawQuickbarCopyCat(quickBarPos);
+        if (auto* copyCat = findFirstCatByType(CatType::Copy); copyCat != nullptr)
+            uiDrawQuickbarCopyCat(quickBarPos, *copyCat);
 
         if (getBackgroundSelectorData().entries.size() > 1u)
             uiDrawQuickbarBackgroundSelector(quickBarPos);
@@ -6373,12 +6379,24 @@ TODO P0: write tooltip
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline float getComputedCooldownByCatTypeOrCopyCat(const CatType catType) const
+    {
+        return pt.getComputedCooldownByCatType(catType == CatType::Copy ? copycatCopiedCatType : catType);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline float getComputedRangeByCatTypeOrCopyCat(const CatType catType) const
+    {
+        return pt.getComputedRangeByCatType(catType == CatType::Copy ? copycatCopiedCatType : catType);
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionWitch(const float /* deltaTimeMs */, Cat& cat)
     {
         SFML_BASE_ASSERT(!anyCatHexed());
 
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
         const auto [cx, cy]    = getCatRangeCenter(cat);
 
         SizeT otherCatCount = 0u;
@@ -6490,8 +6508,8 @@ TODO P0: write tooltip
         if (!pt.absorbingWisdom)
             return;
 
-        const auto maxCooldown  = pt.getComputedCooldownByCatType(cat.type);
-        const auto range        = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
         const auto [cx, cy]     = getCatRangeCenter(cat);
         const auto drawPosition = cat.getDrawPosition();
 
@@ -6553,8 +6571,8 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionMouse(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
         Bubble* b = pickRandomBubbleInRadius(cat.position, range);
         if (b == nullptr)
@@ -6613,8 +6631,8 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionEngi(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown  = pt.getComputedCooldownByCatType(cat.type);
-        const auto range        = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
         const auto rangeSquared = range * range;
 
         SizeT nCatsHit = 0u;
@@ -6652,8 +6670,8 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionRepulso(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
         if (pt.repulsoCatConverterEnabled && !pt.repulsoCatIgnoreBubbles.normal)
         {
@@ -6679,8 +6697,8 @@ TODO P0: write tooltip
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionAttracto(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
+        const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
         // TODO P0: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
 
@@ -6688,14 +6706,20 @@ TODO P0: write tooltip
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCatActionCopy(const float /* deltaTimeMs */, Cat& cat)
+    void gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
-
-        // TODO P0: ?
-
-        cat.cooldown.value = maxCooldown;
+        if (copycatCopiedCatType == CatType::Witch)
+            gameLoopUpdateCatActionWitch(deltaTimeMs, cat);
+        else if (copycatCopiedCatType == CatType::Wizard)
+            gameLoopUpdateCatActionWizard(deltaTimeMs, cat);
+        else if (copycatCopiedCatType == CatType::Mouse)
+            gameLoopUpdateCatActionMouse(deltaTimeMs, cat);
+        else if (copycatCopiedCatType == CatType::Engi)
+            gameLoopUpdateCatActionEngi(deltaTimeMs, cat);
+        else if (copycatCopiedCatType == CatType::Repulso)
+            gameLoopUpdateCatActionRepulso(deltaTimeMs, cat);
+        else if (copycatCopiedCatType == CatType::Attracto)
+            gameLoopUpdateCatActionAttracto(deltaTimeMs, cat);
     }
 
     ////////////////////////////////////////////////////////////
@@ -8641,6 +8665,9 @@ TODO P0: write tooltip
         if (!bubbleCullingBoundaries.isInside(cat.position))
             return;
 
+        const auto isCopyCatWithType = [&](const CatType copiedType)
+        { return cat.type == CatType::Copy && copycatCopiedCatType == copiedType; };
+
         const bool beingDragged = isCatBeingDragged(cat);
 
         const sf::base::Optional<sf::FloatRect> dragRect = getAoEDragRect(mousePos);
@@ -8654,12 +8681,12 @@ TODO P0: write tooltip
 
         const U8 rangeInnerAlpha = shouldDisplayRangeCircle ? 75u : 0u;
 
-        const sf::FloatRect& catTxr        = *catTxrsByType[asIdx(cat.type)];
-        const sf::FloatRect& catPawTxr     = *catPawTxrsByType[asIdx(cat.type)];
+        const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
+        const sf::FloatRect& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
         const sf::FloatRect& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
         const sf::Vector2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
 
-        const float maxCooldown  = pt.getComputedCooldownByCatType(cat.type);
+        const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const float cooldownDiff = cat.cooldown.value;
 
         float catRotation = 0.f;
@@ -8710,7 +8737,7 @@ TODO P0: write tooltip
         if (cat.type == CatType::Wizard)
             catRotation += wizardcatSpin.value;
 
-        const auto range = pt.getComputedRangeByCatType(cat.type);
+        const auto range = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
         const auto alpha = cat.hexedTimer.hasValue() ? static_cast<U8>(cat.hexedTimer->remap(255.f, 128.f))
                            : insideDragRect          ? static_cast<U8>(128u)
@@ -9053,9 +9080,11 @@ TODO P0: write tooltip
             catTextDrawableBatch.add(textNameBuffer);
 
             // Status text
-            if (cat.type != CatType::Repulso && cat.type != CatType::Attracto)
+            if (cat.type != CatType::Repulso && cat.type != CatType::Attracto && !isCopyCatWithType(CatType::Repulso) &&
+                !isCopyCatWithType(CatType::Attracto))
             {
-                const char* actionName = CatConstants::actionNames[asIdx(cat.type)];
+                const char* actionName = CatConstants::actionNames[asIdx(
+                    cat.type == CatType::Copy ? copycatCopiedCatType : cat.type)];
 
                 if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
                     actionName = "Portals";
@@ -9068,7 +9097,7 @@ TODO P0: write tooltip
                 actionString += " ";
                 actionString += actionName;
 
-                if (cat.type == CatType::Mouse)
+                if (cat.type == CatType::Mouse || isCopyCatWithType(CatType::Mouse))
                 {
                     actionString += " (x";
                     actionString += std::to_string(pt.mouseCatCombo + 1);
@@ -10889,13 +10918,13 @@ TODO P0: write tooltip
         // Money text & spent money effect
         gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
         gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
-        if (shouldDrawUI && !debugHideUI)
+        if (shouldDrawUI && false)
             window.draw(moneyText);
 
         //
         // Combo text
         gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-        if (shouldDrawUI && !debugHideUI && pt.comboPurchased)
+        if (shouldDrawUI && false && pt.comboPurchased)
             window.draw(comboText);
 
         //
@@ -10922,12 +10951,12 @@ TODO P0: write tooltip
         //
         // Buff text
         gameLoopUpdateBuffText();
-        if (shouldDrawUI && !debugHideUI)
+        if (shouldDrawUI && false)
             window.draw(buffText);
 
         //
         // Combo bar
-        if (shouldDrawUI && !debugHideUI)
+        if (shouldDrawUI && false)
             window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
                                             .fillColor = sf::Color{255, 255, 255, 75},
                                             .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
