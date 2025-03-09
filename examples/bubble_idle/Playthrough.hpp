@@ -14,6 +14,7 @@
 #include "PurchasableScalingValue.hpp"
 #include "RNG.hpp"
 #include "Shrine.hpp"
+#include "ShrineType.hpp"
 #include "Stats.hpp"
 
 #include "SFML/System/Vector2.hpp"
@@ -240,9 +241,9 @@ struct Playthrough
             return;
 
         shrinesSpawned = true;
-        shrines.reserve(9u);
+        shrines.reserve(nShrineTypes);
 
-        for (SizeT i = 0u; i < 9u; ++i)
+        for (SizeT i = 0u; i < nShrineTypes; ++i)
             shrines.push_back({
                 .position              = (gameScreenSize / 2.f).addX(gameScreenSize.x * static_cast<float>(i + 1u)),
                 .tcActivation          = {},
