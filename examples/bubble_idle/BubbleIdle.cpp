@@ -165,10 +165,10 @@ bool handleCatCollision(const float deltaTimeMs, Cat& iCat, Cat& jCat)
     if (!result.hasValue())
         return false;
 
-    if (!iCat.hexedTimer.hasValue())
+    if (!iCat.isHexedOrCopyHexed())
         iCat.position += result->iDisplacement;
 
-    if (!jCat.hexedTimer.hasValue())
+    if (!jCat.isHexedOrCopyHexed())
         jCat.position += result->jDisplacement;
 
     return true;
@@ -318,7 +318,7 @@ void drawSplashScreen(sf::RenderWindow&        window,
     const auto progress = easeInOutCubic(splashCountdown.getProgressBounced());
 
     window.draw({.position    = resolution / 2.f / hudScale,
-                 .scale       = sf::Vector2f{0.7f, 0.7f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
+                 .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
                  .origin      = txLogo.getSize().toVector2f() / 2.f,
                  .textureRect = txLogo.getRect(),
                  .color       = sf::Color::White.withAlpha(static_cast<U8>(easeInOutSine(progress) * 255.f))},
@@ -578,6 +578,8 @@ struct Main
     sf::FloatRect txrStarParticle{addImgResourceToAtlas("starparticle.png")};
     sf::FloatRect txrFireParticle{addImgResourceToAtlas("fireparticle.png")};
     sf::FloatRect txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
+    sf::FloatRect txrSmokeParticle{addImgResourceToAtlas("smokeparticle.png")};
+    sf::FloatRect txrExplosionParticle{addImgResourceToAtlas("explosionparticle.png")};
     sf::FloatRect txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
     sf::FloatRect txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
     sf::FloatRect txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
@@ -630,6 +632,12 @@ struct Main
     sf::FloatRect txrCatYawn2{addImgResourceToAtlas("catyawn2.png")};
     sf::FloatRect txrCatYawn3{addImgResourceToAtlas("catyawn3.png")};
     sf::FloatRect txrCatYawn4{addImgResourceToAtlas("catyawn4.png")};
+    sf::FloatRect txrCCMaskWitch{addImgResourceToAtlas("ccmaskwitch.png")};
+    sf::FloatRect txrCCMaskWizard{addImgResourceToAtlas("ccmaskwizard.png")};
+    sf::FloatRect txrCCMaskMouse{addImgResourceToAtlas("ccmaskmouse.png")};
+    sf::FloatRect txrCCMaskEngi{addImgResourceToAtlas("ccmaskengi.png")};
+    sf::FloatRect txrCCMaskRepulso{addImgResourceToAtlas("ccmaskrepulso.png")};
+    sf::FloatRect txrCCMaskAttracto{addImgResourceToAtlas("ccmaskattracto.png")};
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
@@ -739,6 +747,8 @@ struct Main
         txrCoin,
         txrCatSoul,
         txrFireParticle2,
+        txrSmokeParticle,
+        txrExplosionParticle,
     };
 
     ///////////////////////////////////////////////////////////
@@ -770,12 +780,18 @@ struct Main
     bool wastedEffort = false;
 
     ////////////////////////////////////////////////////////////
+    // Witchcat animation
+    float witchcatWobblePhase{0.f};
+    float copyWitchcatWobblePhase{0.f};
+
+    ////////////////////////////////////////////////////////////
     // Wizardcat spin
     Countdown wizardcatSpin;
 
     ////////////////////////////////////////////////////////////
     // Copycat state
-    CatType copycatCopiedCatType{CatType::Copy};
+    Countdown copycatMaskAnimCd;
+    Countdown copycatMaskAnim;
 
     ////////////////////////////////////////////////////////////
     // HUD money text
@@ -1011,11 +1027,11 @@ struct Main
     // Purchase unlocked/available effects
     struct PurchaseUnlockedEffect
     {
-        float     y;
-        Countdown countdown;
-        Countdown arrowCountdown;
-        float     hue;
-        int       type;
+        std::string widgetLabel;
+        Countdown   countdown;
+        Countdown   arrowCountdown;
+        float       hue;
+        int         type;
     };
 
     std::vector<PurchaseUnlockedEffect>   purchaseUnlockedEffects;
@@ -1409,7 +1425,7 @@ struct Main
 
         return pt.cats.emplace_back(Cat{
             .position    = pos,
-            .cooldown    = {.value = pt.getComputedCooldownByCatType(catType)},
+            .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
             .pawPosition = pos,
             .hue         = hue,
             .nameIdx     = getNextCatNameIdx(catType),
@@ -1702,7 +1718,9 @@ Their dark magic is puzzling... but not as puzzling as the sheer number of dolls
 Ancient arcane feline capable of unleashing powerful spells, if only they could remember them.
 Can absorb the magic of star bubbles to recall their past lives and remember spells.
 
-The scriptures say that they "unlock a Magic menu", but nobody knows what that means.)",
+The scriptures say that they "unlock a Magic menu", but nobody knows what that means.
+
+Witchcat interaction: after being hexed, will grant a x3.5 faster mana regen buff.)",
                 R"(
 ~~ Mousecat ~~
 (unique cat)
@@ -1714,7 +1732,8 @@ Able to keep up a combo like for manual popping, and empowers nearby cats to pop
 Is affected by both cat reward value multipliers and click reward value multipliers, including their own buff.
 
 Provides a global click reward value multiplier (upgradable via PPs) by merely existing... Logicat does know how to make a good mouse.
-)",
+
+Witchcat interaction: after being hexed, will grant a x10 click reward buff.)",
                 R"(
 ~~ Engicat ~~
 (unique cat)
@@ -1722,7 +1741,8 @@ Provides a global click reward value multiplier (upgradable via PPs) by merely e
 Periodically performs maintenance on all nearby cats, temporarily increasing their engine efficiency and making them faster. (Note: this buff stacks with inspirational NB propaganda.)
 
 Provides a global cat reward value multiplier (upgradable via PPs) by merely existing... guess they're a "10x engineer"?
-)",
+
+Witchcat interaction: after being hexed, will grant a x2 global faster cat cooldown buff.)",
                 R"(
 ~~ Repulsocat ~~
 (unique cat)
@@ -1732,7 +1752,8 @@ Continuously pushes bubbles away with their powerful USB fan, powered by only Do
 Bubbles being pushed away by Repulsocat are worth x2 more.
 
 Using prestige points, the fan can be upgraded to filter specific bubble types and/or convert a percentage of bubbles to star bubbles.
-)",
+
+Witchcat interaction: TODO P0)",
                 R"(
 ~~ Attractocat ~~
 (unique cat)
@@ -1742,28 +1763,31 @@ Continuously attracts bubbles with their huge magnet, because soap is definitely
 Bubbles being attracted by Attractocat are worth x2 more.
 
 Using prestige points, the magnet can be upgraded to filter specific bubble types.
-)",
+
+Witchcat interaction: after being hexed, all bombs or hell portals will attract bubbles.)",
                 R"(
 ~~ Copycat ~~
 (unique cat)
 
 Mimics an existing unique cat, gaining their abilities and effects. (Note: the mimicked cat can be changed via the toolbar near the bottom of the screen.)
 
-TODO P0: witch behavior
-
 Special interactions:
 
-- Wizardcat
-  - Spells will also be casted by the Copycat.
-  - Mewliplier Aura's bonus does not stack twice.
+Mimicking Witchcat:
+- Two separate rituals will be performed.
 
-- Mousecat
-  - The combo multiplier is shared.
-  - The global clicking buff multiplier is doubled.
+Mimicking Wizardcat:
+- Spells will also be casted by the Copycat.
+- Mewliplier Aura's bonus does not stack twice.
 
-- Engicat
-  - The global clicking buff multiplier is doubled.
-)",
+Mimicking Mousecat:
+- The combo multiplier is shared.
+- The global clicking buff multiplier is doubled.
+
+Mimicking Engicat:
+- The global clicking buff multiplier is doubled.
+
+Witchcat interaction: TODO P0)",
             };
 
             static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
@@ -2130,23 +2154,38 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
+    std::unordered_map<std::string, float> uiLabelToY;
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool checkPurchasability(const char* label, const bool disabled)
     {
+        uiLabelToY[label] = ImGui::GetCursorScreenPos().y;
+
         if (disabled)
+        {
             btnWasDisabled[label] = true;
+        }
         else if (btnWasDisabled[label] && !disabled)
         {
             btnWasDisabled[label] = false;
 
+            const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(purchaseUnlockedEffects.begin(),
+                                                                                purchaseUnlockedEffects.end(),
+                                                                                [&](const PurchaseUnlockedEffect& effect)
+            { return effect.widgetLabel == label; });
+
             const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(purchaseUnlockedEffects.begin(),
                                                                             purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
-            { return effect.y == ImGui::GetCursorScreenPos().y; });
+            {
+                const auto it = uiLabelToY.find(effect.widgetLabel);
+                return it != uiLabelToY.end() && it->second == uiLabelToY[label];
+            });
 
-            if (!anyPurchaseUnlockedEffectWithSameY)
+            if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
             {
                 purchaseUnlockedEffects.push_back({
-                    .y              = ImGui::GetCursorScreenPos().y,
+                    .widgetLabel    = label,
                     .countdown      = Countdown{.value = 1000.f},
                     .arrowCountdown = Countdown{.value = 2000.f},
                     .hue            = uiButtonHueMod,
@@ -2350,12 +2389,24 @@ Special interactions:
     ////////////////////////////////////////////////////////////
     void uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
     {
+        const bool asWitchAndBusy = pt.copycatCopiedCatType == CatType::Witch &&
+                                    (anyCatCopyHexed() || !pt.copyDolls.empty());
+
+        const bool asWizardAndBusy = pt.copycatCopiedCatType == CatType::Wizard && isWizardBusy();
+
+        const bool mustDisable = asWitchAndBusy || asWizardAndBusy;
+
+        ImGui::BeginDisabled(mustDisable);
+
         constexpr const char* popupLabel = "CopyCatSelectorPopup";
         static sf::base::U8   opacity    = 168u;
 
-        uiImageFromAtlas(txrIconCopyCat, {.scale = {0.65f, 0.65f}, .color = sf::Color::White.withAlpha(opacity)});
+        uiImageFromAtlas(txrIconCopyCat,
+                         {.scale = {0.65f, 0.65f},
+                          .color = (mustDisable ? sf::Color::Gray : sf::Color::White).withAlpha(opacity)});
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
+
 
         std::sprintf(uiTooltipBuffer, "Select Copycat mask");
         uiMakeTooltip(/* small */ true);
@@ -2373,7 +2424,7 @@ Special interactions:
         {
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
 
-            if (ImGui::BeginCombo("##copycatsel", CatConstants::typeNamesLong[asIdx(copycatCopiedCatType)]))
+            if (ImGui::BeginCombo("##copycatsel", CatConstants::typeNamesLong[asIdx(pt.copycatCopiedCatType)]))
             {
                 for (SizeT i = asIdx(CatType::Normal); i < nCatTypes; ++i)
                 {
@@ -2386,15 +2437,28 @@ Special interactions:
                     if (findFirstCatByType(static_cast<CatType>(i)) == nullptr)
                         continue;
 
-                    const bool isSelected = copycatCopiedCatType == static_cast<CatType>(i);
+                    const bool isSelected = pt.copycatCopiedCatType == static_cast<CatType>(i);
                     if (ImGui::Selectable(CatConstants::typeNamesLong[i], isSelected))
                     {
-                        copycatCopiedCatType = static_cast<CatType>(i);
+                        pt.copycatCopiedCatType = static_cast<CatType>(i);
 
-                        copyCat.cooldown.value = pt.getComputedCooldownByCatType(copycatCopiedCatType);
+                        copyCat.cooldown.value = pt.getComputedCooldownByCatType(pt.copycatCopiedCatType);
                         copyCat.hits           = 0u;
 
-                        // TODO P0: ?
+                        sounds.smokebomb.setPosition({copyCat.position.x, copyCat.position.y});
+                        playSound(sounds.smokebomb);
+
+                        for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
+                            spawnParticle(ParticleData{.position      = copyCat.position,
+                                                       .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
+                                                       .scale         = rng.getF(0.75f, 1.f),
+                                                       .accelerationY = -0.00017f,
+                                                       .opacity       = 1.f,
+                                                       .opacityDecay  = rng.getF(0.00065f, 0.00075f),
+                                                       .rotation      = rng.getF(0.f, sf::base::tau),
+                                                       .torque        = rng.getF(-0.002f, 0.002f)},
+                                          0.f,
+                                          ParticleType::Smoke);
 
                         playSound(sounds.uitab);
                         ImGui::CloseCurrentPopup();
@@ -2409,6 +2473,8 @@ Special interactions:
 
             ImGui::EndPopup();
         }
+
+        ImGui::EndDisabled();
     }
 
     ////////////////////////////////////////////////////////////
@@ -2957,8 +3023,17 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
+    void uiSetUnlockLabelY(const sf::base::SizeT unlockId)
+    {
+        const std::string label = std::to_string(unlockId);
+        uiLabelToY[label]       = ImGui::GetCursorScreenPos().y;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondition)
     {
+        const std::string label = std::to_string(unlockId);
+
         if (!unlockCondition)
         {
             profile.uiUnlocks[unlockId] = false;
@@ -2969,15 +3044,23 @@ Special interactions:
         {
             profile.uiUnlocks[unlockId] = true;
 
+            const bool anyPurchaseUnlockedEffectWithSameLabel = sf::base::anyOf(purchaseUnlockedEffects.begin(),
+                                                                                purchaseUnlockedEffects.end(),
+                                                                                [&](const PurchaseUnlockedEffect& effect)
+            { return effect.widgetLabel == label; });
+
             const bool anyPurchaseUnlockedEffectWithSameY = sf::base::anyOf(purchaseUnlockedEffects.begin(),
                                                                             purchaseUnlockedEffects.end(),
                                                                             [&](const PurchaseUnlockedEffect& effect)
-            { return effect.y == ImGui::GetCursorScreenPos().y; });
+            {
+                const auto it = uiLabelToY.find(effect.widgetLabel);
+                return it != uiLabelToY.end() && it->second == uiLabelToY[label];
+            });
 
-            if (!anyPurchaseUnlockedEffectWithSameY)
+            if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
             {
                 purchaseUnlockedEffects.push_back({
-                    .y              = ImGui::GetCursorScreenPos().y,
+                    .widgetLabel    = label,
                     .countdown      = Countdown{.value = 1000.f},
                     .arrowCountdown = Countdown{.value = 2000.f},
                     .hue            = uiButtonHueMod,
@@ -3112,6 +3195,7 @@ Special interactions:
         {
             const char* mouseNote = catMouse == nullptr ? "" : "\n\n(Note: this also applies to the Mousecat!)";
 
+            uiSetUnlockLabelY(0u);
             std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!%s", mouseNote);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
             makePSVButton("  Longer combo", pt.psvComboStartTime);
@@ -3121,6 +3205,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator1, "exploration");
 
+            uiSetUnlockLabelY(1u);
             std::sprintf(uiTooltipBuffer,
                          "Extend the map and enable scrolling (right click or drag with two fingers).\n\nExtending "
                          "the "
@@ -3138,6 +3223,7 @@ Special interactions:
 
             if (checkUiUnlock(2u, pt.mapPurchased))
             {
+                uiSetUnlockLabelY(2u);
                 std::sprintf(uiTooltipBuffer, "Extend the map further by one screen.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.getMapLimit() / boundaries.x * 100.f));
                 makePSVButton("  Extend map", pt.psvMapExtension);
@@ -3169,6 +3255,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator2, "bubble upgrades");
 
+            uiSetUnlockLabelY(3u);
             std::sprintf(uiTooltipBuffer,
                          "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
                          "more money, fewer FPS!");
@@ -3180,6 +3267,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator3, "cats");
 
+            uiSetUnlockLabelY(4u);
             std::sprintf(uiTooltipBuffer,
                          "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
                          "behavior "
@@ -3235,6 +3323,7 @@ Special interactions:
         const bool catUpgradesUnlocked = pt.psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
         if (checkUiUnlock(5u, catUpgradesUnlocked))
         {
+            uiSetUnlockLabelY(5u);
             makeCooldownButton("  cooldown", CatType::Normal);
             makeRangeButton("  range", CatType::Normal);
         }
@@ -3246,6 +3335,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator4, "unicats");
 
+            uiSetUnlockLabelY(6u);
             std::sprintf(uiTooltipBuffer,
                          "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
                          "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
@@ -3260,6 +3350,7 @@ Special interactions:
 
             if (checkUiUnlock(7u, catUnicornUpgradesUnlocked))
             {
+                uiSetUnlockLabelY(7u);
                 makeCooldownButton("  cooldown", CatType::Uni);
 
                 if (pt.perm.unicatTranscendencePurchased)
@@ -3275,6 +3366,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator5, "devilcats");
 
+            uiSetUnlockLabelY(8u);
             std::sprintf(uiTooltipBuffer,
                          "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
                          "explosion are worth x10 more! Bomb explosion range can be upgraded.");
@@ -3292,6 +3384,7 @@ Special interactions:
 
             if (checkUiUnlock(9u, nCatDevil >= 1) && !pt.perm.devilcatHellsingedPurchased)
             {
+                uiSetUnlockLabelY(9u);
                 std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
                 std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
                 makePSVButton("  Explosion radius", pt.psvExplosionRadiusMult);
@@ -3299,6 +3392,7 @@ Special interactions:
 
             if (checkUiUnlock(10u, catDevilUpgradesUnlocked))
             {
+                uiSetUnlockLabelY(10u);
                 makeCooldownButton("  cooldown", CatType::Devil);
 
                 if (pt.perm.devilcatHellsingedPurchased)
@@ -3313,6 +3407,7 @@ Special interactions:
         {
             imgsep(txrMenuSeparator6, "astrocats");
 
+            uiSetUnlockLabelY(11u);
             std::sprintf(uiTooltipBuffer,
                          "Astrocats periodically fly across the map, popping bubbles they hit with a huge x20 "
                          "money "
@@ -3332,6 +3427,7 @@ Special interactions:
 
             if (checkUiUnlock(12u, astroCatUpgradesUnlocked))
             {
+                uiSetUnlockLabelY(12u);
                 makeCooldownButton("  cooldown", CatType::Astro);
                 makeRangeButton("  range", CatType::Astro);
             }
@@ -3344,21 +3440,26 @@ Special interactions:
 
             if (checkUiUnlock(13u, catWitch != nullptr))
             {
+                uiSetUnlockLabelY(13u);
                 makeCooldownButton("  witchcat cooldown",
                                    CatType::Witch,
                                    "\n\nEffectively increases the frequency of rituals.");
 
                 if (checkUiUnlock(14u, pt.perm.witchCatBuffPowerScalesWithNCats))
+                {
+                    uiSetUnlockLabelY(14u);
                     makeRangeButton("  witchcat range",
                                     CatType::Witch,
                                     "\n\nAllows more cats to participate in group rituals, increasing the duration of "
                                     "buffs.");
+                }
             }
 
             if (checkUiUnlock(15u, catWizard != nullptr))
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(15u);
                 makeCooldownButton("  wizardcat cooldown",
                                    CatType::Wizard,
                                    "\n\nDoes *not* increase mana generation rate, but increases star bubble absorption "
@@ -3374,6 +3475,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(16u);
                 makeCooldownButton("  mousecat cooldown", CatType::Mouse);
                 makeRangeButton("  mousecat range", CatType::Mouse);
             }
@@ -3382,6 +3484,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(17u);
                 makeCooldownButton("  engicat cooldown",
                                    CatType::Engi,
                                    "\n\nEffectively increases the frequency of maintenances.");
@@ -3395,6 +3498,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(18u);
                 // makeCooldownButton("  repulsocat cooldown", CatType::Repulso);
                 makeRangeButton("  repulsocat range", CatType::Repulso);
             }
@@ -3403,6 +3507,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(19u);
                 // makeCooldownButton("  attractocat cooldown", CatType::Attracto);
                 makeRangeButton("  attractocat range", CatType::Attracto);
             }
@@ -3679,6 +3784,11 @@ Special interactions:
 
             profile.selectedBackground = 0;
             profile.selectedBGM        = 0;
+
+            updateSelectedBackgroundSelectorIndex();
+            updateSelectedBGMSelectorIndex();
+
+            switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
         }
         ImGui::EndDisabled();
 
@@ -3734,6 +3844,7 @@ Special interactions:
         {
             imgsep2(txrPrestigeSeparator4, "faster beginning");
 
+            uiSetUnlockLabelY(48u);
             std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt.perm.starterPackPurchased);
@@ -3752,6 +3863,7 @@ Special interactions:
 
         if (checkUiUnlock(49u, pt.perm.multiPopPurchased))
         {
+            uiSetUnlockLabelY(49u);
             std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
             std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
             makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
@@ -3782,6 +3894,7 @@ Special interactions:
             uiSetFontScale(uiSubBulletFontScale);
             ImGui::Columns(1);
 
+            uiSetUnlockLabelY(50u);
             uiRadio("off##windOff", &pt.windStrength, 0);
             ImGui::SameLine();
             uiRadio("slow##windSlow", &pt.windStrength, 1);
@@ -3810,6 +3923,7 @@ Special interactions:
 
         if (checkUiUnlock(51u, pt.perm.smartCatsPurchased))
         {
+            uiSetUnlockLabelY(51u);
             std::sprintf(uiTooltipBuffer,
                          "Embrace the glorious evolution!\n\nCats have ascended beyond their primal "
                          "insticts and will now prioritize bombs, then star bubbles, then normal "
@@ -3827,6 +3941,7 @@ Special interactions:
             ImGui::Columns(1);
             uiSetFontScale(uiSubBulletFontScale);
 
+            uiSetUnlockLabelY(52u);
             ImGui::AlignTextToFramePadding();
             ImGui::Text("  ignore: ");
             ImGui::SameLine();
@@ -3851,6 +3966,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(53u);
             std::sprintf(uiTooltipBuffer,
                          "Unicats transcend their physical form, becoming a higher entity that transforms bubbles into "
                          "nova bubbles, worth x50.");
@@ -3861,6 +3977,7 @@ Special interactions:
 
             if (checkUiUnlock(54u, pt.perm.unicatTranscendencePurchased))
             {
+                uiSetUnlockLabelY(54u);
                 std::sprintf(uiTooltipBuffer,
                              "Unicats can now transform all bubbles in range at once. Also unlocks Unicat range "
                              "upgrades.");
@@ -3877,6 +3994,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(55u);
             std::sprintf(uiTooltipBuffer,
                          "Devilcats become touched by the flames of hell, opening stationary portals that teleport "
                          "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
@@ -3892,6 +4010,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(56u);
             std::sprintf(uiTooltipBuffer,
                          "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "
                          "them fly by to work faster!");
@@ -3903,6 +4022,7 @@ Special interactions:
 
             if (checkUiUnlock(57u, pt.perm.astroCatInspirePurchased))
             {
+                uiSetUnlockLabelY(57u);
                 std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect.");
                 std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
 
@@ -3934,6 +4054,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(58u);
             makeUnsealButton(4u, "Witchcat", CatType::Witch);
             ImGui::Separator();
 
@@ -3987,6 +4108,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(59u);
             makeUnsealButton(8u, "Wizardcat", CatType::Wizard);
             ImGui::Separator();
 
@@ -4028,6 +4150,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(60u);
             makeUnsealButton(8u, "Mousecat", CatType::Mouse);
             ImGui::Separator();
 
@@ -4042,6 +4165,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(61u);
             makeUnsealButton(16u, "Engicat", CatType::Engi);
             ImGui::Separator();
 
@@ -4056,6 +4180,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(62u);
             makeUnsealButton(128u, "Repulsocat", CatType::Repulso);
             ImGui::Separator();
 
@@ -4068,6 +4193,7 @@ Special interactions:
                 ImGui::Columns(1);
                 uiSetFontScale(uiSubBulletFontScale);
 
+                uiSetUnlockLabelY(63u);
                 ImGui::Text("  ignore: ");
                 ImGui::SameLine();
 
@@ -4094,6 +4220,7 @@ Special interactions:
             if (checkUiUnlock(64u, pt.perm.repulsoCatConverterPurchased))
             {
                 uiSetFontScale(uiSubBulletFontScale);
+                uiSetUnlockLabelY(64u);
                 uiCheckbox("enable ##repulsoconv", &pt.repulsoCatConverterEnabled);
                 uiSetFontScale(uiNormalFontScale);
                 ImGui::NextColumn();
@@ -4115,6 +4242,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(65u);
             makeUnsealButton(256u, "Attractocat", CatType::Attracto);
             ImGui::Separator();
 
@@ -4129,6 +4257,7 @@ Special interactions:
                 ImGui::Columns(1);
                 uiSetFontScale(uiSubBulletFontScale);
 
+                uiSetUnlockLabelY(66u);
                 ImGui::Text("  ignore: ");
                 ImGui::SameLine();
 
@@ -4153,6 +4282,7 @@ Special interactions:
 
             uiBeginColumns();
 
+            uiSetUnlockLabelY(67u);
             makeUnsealButton(512u, "Copycat", CatType::Copy);
             ImGui::Separator();
 
@@ -4240,7 +4370,7 @@ Special interactions:
         if (wizardCat == nullptr)
             return false;
 
-        return pt.absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->hexedTimer.hasValue() ||
+        return pt.absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->isHexedOrCopyHexed() ||
                isCatBeingDragged(*wizardCat);
     }
 
@@ -4448,6 +4578,7 @@ Special interactions:
             // SPELL 0
             if (checkUiUnlock(32u, pt.psvSpellCount.nPurchases >= 1))
             {
+                uiSetUnlockLabelY(32u);
                 std::sprintf(uiTooltipBuffer,
                              "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
                              "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
@@ -4464,7 +4595,7 @@ Special interactions:
 
                     doWizardSpellStarpawConversion(*wizardCat);
 
-                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
                         doWizardSpellStarpawConversion(*copyCat);
 
                     done = false;
@@ -4473,7 +4604,7 @@ Special interactions:
 
                 std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("  higher percentage",
+                (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
                                                 pt.psvStarpawPercentage,
                                                 1u,
                                                 static_cast<MoneyType>(pt.psvStarpawPercentage.nextCost()),
@@ -4487,6 +4618,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(33u);
                 std::sprintf(uiTooltipBuffer,
                              "Creates a value multiplier aura around the Wizardcat that affects all cats and "
                              "bubbles. "
@@ -4504,7 +4636,7 @@ Special interactions:
 
                     doWizardSpellMewltiplierAura(*wizardCat);
 
-                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
                         doWizardSpellMewltiplierAura(*copyCat);
 
                     done = false;
@@ -4527,6 +4659,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(34u);
                 std::sprintf(uiTooltipBuffer,
                              "The Wizardcat uses their magic to empower a nearby Witchcat, reducing their remaining "
                              "ritual cooldown.\n\nNote: This spell has no effect if there is no Witchcat "
@@ -4540,7 +4673,7 @@ Special interactions:
 
                     doWizardSpellDarkUnion(*wizardCat);
 
-                    if (copyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
                         doWizardSpellDarkUnion(*copyCat);
 
                     done = false;
@@ -4549,7 +4682,7 @@ Special interactions:
 
                 std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage.");
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvDarkUnionPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("  higher percentage",
+                (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
                                                 pt.psvDarkUnionPercentage,
                                                 1u,
                                                 static_cast<MoneyType>(pt.psvDarkUnionPercentage.nextCost()),
@@ -4563,6 +4696,7 @@ Special interactions:
             {
                 ImGui::Separator();
 
+                uiSetUnlockLabelY(35u);
                 std::sprintf(uiTooltipBuffer, "TODO");
                 std::sprintf(uiLabelBuffer, "TODO");
 
@@ -4842,7 +4976,7 @@ Special interactions:
             return true;
 
         const Cat* copyCat = cachedCopyCat;
-        if (copyCat == nullptr && copycatCopiedCatType != CatType::Wizard)
+        if (copyCat == nullptr && pt.copycatCopiedCatType != CatType::Wizard)
             return false;
 
         if ((copyCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
@@ -4862,7 +4996,7 @@ Special interactions:
 
         const bool popperCatIsMousecat = //
             !byPlayerClick && (popperCat->type == CatType::Mouse ||
-                               (popperCat->type == CatType::Copy && copycatCopiedCatType == CatType::Mouse));
+                               (popperCat->type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse));
 
         const bool popperCatIsNormal = !byPlayerClick && popperCat->type == CatType::Normal;
 
@@ -4889,12 +5023,12 @@ Special interactions:
             result *= pt.psvMewltiplierMult.currentValue();
 
         // Global bonus -- mousecat (applies to clicks)
-        const bool isMouseBeingCopied = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Mouse;
+        const bool isMouseBeingCopied = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Mouse;
         if (mustApplyHandMult && cachedMouseCat != nullptr)
             result *= pt.psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
 
         // Global bonus -- engicat (applies to cats)
-        const bool isEngiBeingCopied = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Engi;
+        const bool isEngiBeingCopied = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Engi;
         if (mustApplyCatMult && cachedEngiCat != nullptr)
             result *= pt.psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
 
@@ -4969,6 +5103,26 @@ Special interactions:
     void selectBGM(const std::vector<SelectorEntry>& entries, const int selectedIndex)
     {
         profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void updateSelectedBackgroundSelectorIndex()
+    {
+        auto& [entries, selectedIndex] = getBackgroundSelectorData();
+
+        for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
+            if (profile.selectedBackground == entries[i].index)
+                selectedIndex = static_cast<int>(i);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void updateSelectedBGMSelectorIndex()
+    {
+        auto& [entries, selectedIndex] = getBGMSelectorData();
+
+        for (sf::base::SizeT i = 0u; i < entries.size(); ++i)
+            if (profile.selectedBGM == entries[i].index)
+                selectedIndex = static_cast<int>(i);
     }
 
     ////////////////////////////////////////////////////////////
@@ -5365,6 +5519,9 @@ Special interactions:
                 profile.selectedBackground = 0;
                 profile.selectedBGM        = 0;
 
+                updateSelectedBackgroundSelectorIndex();
+                updateSelectedBGMSelectorIndex();
+
                 switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
             }
 
@@ -5394,6 +5551,12 @@ Special interactions:
 
             if (ImGui::Button("Do Ritual"))
                 if (auto* wc = cachedWitchCat)
+                    wc->cooldown.value = 10.f;
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Do Copy Ritual"))
+                if (auto* wc = cachedCopyCat)
                     wc->cooldown.value = 10.f;
 
             ImGui::SameLine();
@@ -5616,7 +5779,31 @@ Special interactions:
         sounds.explosion.setPosition({bubble.position.x, bubble.position.y});
         playSound(sounds.explosion);
 
-        spawnParticles(32, bubble.position, ParticleType::Fire, 3.f, 1.f);
+        spawnParticles(16, bubble.position, ParticleType::Fire, 3.f, 1.f);
+
+        for (sf::base::SizeT iP = 0u; iP < 16u; ++iP)
+            spawnParticle(ParticleData{.position      = bubble.position,
+                                       .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.55f,
+                                       .scale         = rng.getF(0.08f, 0.27f) * 3.75f,
+                                       .accelerationY = 0.00015f,
+                                       .opacity       = 0.75f,
+                                       .opacityDecay  = rng.getF(0.001f, 0.002f),
+                                       .rotation      = rng.getF(0.f, sf::base::tau),
+                                       .torque        = rng.getF(-0.001f, 0.001f)},
+                          0.f,
+                          ParticleType::Explosion);
+
+        for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
+            spawnParticle(ParticleData{.position      = bubble.position,
+                                       .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(-0.15f, 0.05f)},
+                                       .scale         = rng.getF(0.65f, 1.f) * 1.25f,
+                                       .accelerationY = -0.00017f,
+                                       .opacity       = rng.getF(0.5f, 0.75f),
+                                       .opacityDecay  = rng.getF(0.00035f, 0.00055f),
+                                       .rotation      = rng.getF(0.f, sf::base::tau),
+                                       .torque        = rng.getF(-0.002f, 0.002f)},
+                          0.f,
+                          ParticleType::Smoke);
 
         // TODO P2: cleanup
         const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
@@ -5653,16 +5840,15 @@ Special interactions:
         });
 
         if (pt.perm.witchCatBuffFlammableDolls)
+        {
             for (Doll& doll : pt.dolls)
-            {
-                const float dollDistance = (doll.position - bubble.position).length();
-
-                if (dollDistance > explosionRadius)
-                    continue;
-
-                if (!doll.tcDeath.hasValue())
+                if ((doll.position - bubble.position).length() <= explosionRadius && !doll.tcDeath.hasValue())
                     collectDoll(doll);
-            }
+
+            for (Doll& copyDoll : pt.copyDolls)
+                if ((copyDoll.position - bubble.position).length() <= explosionRadius && !copyDoll.tcDeath.hasValue())
+                    collectCopyDoll(copyDoll);
+        }
 
         if (catWhoMadeBomb != nullptr)
             bombIdxToCatIdx.erase(bombIdxItr);
@@ -5901,7 +6087,7 @@ Special interactions:
 
         SFML_BASE_ASSERT(inPrestigeTransition);
 
-        // Despawn cats, dolls, and shrines
+        // Despawn cats, dolls, copydolls, and shrines
         if (catRemoveTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
         {
             if (!pt.cats.empty())
@@ -5931,7 +6117,7 @@ Special interactions:
                                .velocity      = {0.f, 0.f},
                                .scale         = 0.2f,
                                .accelerationY = -0.00015f,
-                               .opacity       = 200.f,
+                               .opacity       = 1.f,
                                .opacityDecay  = 0.0002f,
                                .rotation      = 0.f,
                                .torque        = rng.getF(-0.0002f, 0.0002f)},
@@ -5960,6 +6146,15 @@ Special interactions:
                 playReversePopAt(cPos);
             }
 
+            if (!pt.copyDolls.empty())
+            {
+                const auto cPos = pt.copyDolls.back().position;
+                pt.copyDolls.pop_back();
+
+                spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
+                playReversePopAt(cPos);
+            }
+
             if (!pt.hellPortals.empty())
             {
                 const auto cPos = pt.hellPortals.back().position;
@@ -5970,7 +6165,8 @@ Special interactions:
             }
         }
 
-        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty() && pt.hellPortals.empty();
+        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty() &&
+                                         pt.copyDolls.empty() && pt.hellPortals.empty();
 
         // Reset map extension and scroll, and remove bubbles outside of view
         if (gameElementsRemoved)
@@ -6096,6 +6292,51 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
+    void gameLoopUpdateAttractoBuff(const float deltaTimeMs)
+    {
+        if (pt.buffCountdownsPerType[asIdx(CatType::Attracto)].value <= 0.f)
+            return;
+
+        const auto sqAttractoRange = pt.getComputedSquaredRangeByCatType(CatType::Attracto);
+        const auto attractoRange   = SFML_BASE_MATH_SQRTF(sqAttractoRange);
+
+        static thread_local std::vector<Bubble*> bombs;
+        bombs.clear();
+
+        for (Bubble& bubble : pt.bubbles)
+            if (bubble.type == BubbleType::Bomb)
+                bombs.push_back(&bubble);
+
+        const auto attract = [&](const sf::Vector2f pos, Bubble& bubble)
+        {
+            const auto diff     = (pos - bubble.position);
+            const auto sqLength = diff.lengthSquared();
+
+            if (sqLength > sqAttractoRange)
+                return;
+
+            const float length = SFML_BASE_MATH_SQRTF(sqLength);
+
+            const auto strength = (attractoRange - length) * 0.000017f;
+            bubble.velocity += (diff / length * strength * getWindAttractionMult()) * 1.f * deltaTimeMs;
+
+            bubble.attractedCountdown.value = sf::base::max(bubble.attractedCountdown.value, 750.f);
+        };
+
+        for (Bubble& bubble : pt.bubbles)
+        {
+            if (bubble.type == BubbleType::Bomb)
+                continue;
+
+            for (const HellPortal& hp : pt.hellPortals)
+                attract(hp.position, bubble);
+
+            for (const Bubble* bomb : bombs)
+                attract(bomb->position, bubble);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vector2f>& clickPosition)
     {
         if (!clickPosition.hasValue())
@@ -6205,7 +6446,7 @@ Special interactions:
             const bool inMouseCatRange = cachedMouseCat != nullptr &&
                                          (cachedMouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
-            const bool inCopyMouseCatRange = cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Mouse &&
+            const bool inCopyMouseCatRange = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Mouse &&
                                              (cachedCopyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
             const int comboMult = (inMouseCatRange || inCopyMouseCatRange) ? pt.mouseCatCombo : 1;
@@ -6414,13 +6655,37 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cat* getCopyHexedCat()
+    {
+        for (Cat& cat : pt.cats)
+            if (cat.hexedCopyTimer.hasValue())
+                return &cat;
+
+        return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool anyCatHexedOrCopyHexed() const
+    {
+        return sf::base::anyOf(pt.cats.begin(), pt.cats.end(), [](const Cat& cat) { return cat.isHexedOrCopyHexed(); });
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool anyCatHexed() const
     {
         return sf::base::anyOf(pt.cats.begin(), pt.cats.end(), [](const Cat& cat) { return cat.hexedTimer.hasValue(); });
     }
 
     ////////////////////////////////////////////////////////////
-    void hexCat(Cat& cat)
+    [[nodiscard]] bool anyCatCopyHexed() const
+    {
+        return sf::base::anyOf(pt.cats.begin(),
+                               pt.cats.end(),
+                               [](const Cat& cat) { return cat.hexedCopyTimer.hasValue(); });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void hexCat(Cat& cat, const bool copy)
     {
         if (isCatBeingDragged(cat))
             stopDraggingCat(cat);
@@ -6431,14 +6696,16 @@ Special interactions:
         screenShakeAmount = 3.5f;
         screenShakeTimer  = 600.f;
 
-        cat.hexedTimer.emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+        (copy ? cat.hexedTimer : cat.hexedCopyTimer).reset();
+        (copy ? cat.hexedCopyTimer : cat.hexedTimer).emplace(BidirectionalTimer{.direction = TimerDirection::Forward});
+
         cat.wobbleRadians = 0.f;
 
         spawnParticle({.position      = cat.getDrawPosition().addY(29.f),
                        .velocity      = {0.f, 0.f},
                        .scale         = 0.2f,
                        .accelerationY = -0.00015f,
-                       .opacity       = 200.f,
+                       .opacity       = 1.f,
                        .opacityDecay  = 0.0002f,
                        .rotation      = 0.f,
                        .torque        = rng.getF(-0.0002f, 0.0002f)},
@@ -6449,20 +6716,18 @@ Special interactions:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedCooldownByCatTypeOrCopyCat(const CatType catType) const
     {
-        return pt.getComputedCooldownByCatType(catType == CatType::Copy ? copycatCopiedCatType : catType);
+        return pt.getComputedCooldownByCatType(catType == CatType::Copy ? pt.copycatCopiedCatType : catType);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedRangeByCatTypeOrCopyCat(const CatType catType) const
     {
-        return pt.getComputedRangeByCatType(catType == CatType::Copy ? copycatCopiedCatType : catType);
+        return pt.getComputedRangeByCatType(catType == CatType::Copy ? pt.copycatCopiedCatType : catType);
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCatActionWitch(const float /* deltaTimeMs */, Cat& cat)
+    void gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */, Cat& cat, std::vector<Doll>& dollsToUse)
     {
-        SFML_BASE_ASSERT(!anyCatHexed());
-
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
@@ -6474,7 +6739,13 @@ Special interactions:
             if (otherCat.type == CatType::Witch)
                 continue;
 
+            if (otherCat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch)
+                continue;
+
             if ((otherCat.position - cat.position).length() > range)
+                continue;
+
+            if (otherCat.isHexedOrCopyHexed())
                 continue;
 
             ++otherCatCount;
@@ -6488,7 +6759,7 @@ Special interactions:
         {
             SFML_BASE_ASSERT(selected != nullptr);
 
-            hexCat(*selected);
+            hexCat(*selected, /* copy */ &dollsToUse == &pt.copyDolls);
 
             float buffPower = pt.psvPPWitchCatBuffDuration.currentValue();
 
@@ -6507,13 +6778,13 @@ Special interactions:
                                                      static_cast<SizeT>(
                                                          buffPower * (pt.perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
 
-            SFML_BASE_ASSERT(pt.dolls.empty());
+            SFML_BASE_ASSERT(dollsToUse.empty());
 
             statRitual(selected->type);
 
             const auto isPositionFarFromOtherDolls = [&](const sf::Vector2f& position) -> bool
             {
-                for (const Doll& d : pt.dolls)
+                for (const Doll& d : dollsToUse)
                     if ((d.position - position).lengthSquared() < (256.f * 256.f))
                         return false;
 
@@ -6539,7 +6810,7 @@ Special interactions:
 
             for (SizeT i = 0u; i < nDollsToSpawn; ++i)
             {
-                auto& d = pt.dolls.emplace_back(
+                auto& d = dollsToUse.emplace_back(
                     Doll{.position      = pickDollPosition(),
                          .wobbleRadians = rng.getF(0.f, sf::base::tau),
                          .buffPower     = buffPower,
@@ -6550,7 +6821,8 @@ Special interactions:
                 d.tcActivation.restart();
             }
 
-            spawnParticles(128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
+            const bool copy = &dollsToUse == &pt.copyDolls;
+            spawnParticlesWithHue(copy ? 180.f : 0.f, 128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
 
             cat.textStatusShakeEffect.bump(rng, 1.5f);
             cat.hits += 1u;
@@ -6567,6 +6839,13 @@ Special interactions:
         }
 
         cat.cooldown.value = maxCooldown;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateCatActionWitch(const float deltaTimeMs, Cat& cat)
+    {
+        SFML_BASE_ASSERT(!anyCatHexed());
+        gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt.dolls);
     }
 
     ////////////////////////////////////////////////////////////
@@ -6775,17 +7054,20 @@ Special interactions:
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
     {
-        if (copycatCopiedCatType == CatType::Witch)
-            gameLoopUpdateCatActionWitch(deltaTimeMs, cat);
-        else if (copycatCopiedCatType == CatType::Wizard)
+        if (pt.copycatCopiedCatType == CatType::Witch)
+        {
+            SFML_BASE_ASSERT(!anyCatCopyHexed());
+            gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt.copyDolls);
+        }
+        else if (pt.copycatCopiedCatType == CatType::Wizard)
             gameLoopUpdateCatActionWizard(deltaTimeMs, cat);
-        else if (copycatCopiedCatType == CatType::Mouse)
+        else if (pt.copycatCopiedCatType == CatType::Mouse)
             gameLoopUpdateCatActionMouse(deltaTimeMs, cat);
-        else if (copycatCopiedCatType == CatType::Engi)
+        else if (pt.copycatCopiedCatType == CatType::Engi)
             gameLoopUpdateCatActionEngi(deltaTimeMs, cat);
-        else if (copycatCopiedCatType == CatType::Repulso)
+        else if (pt.copycatCopiedCatType == CatType::Repulso)
             gameLoopUpdateCatActionRepulso(deltaTimeMs, cat);
-        else if (copycatCopiedCatType == CatType::Attracto)
+        else if (pt.copycatCopiedCatType == CatType::Attracto)
             gameLoopUpdateCatActionAttracto(deltaTimeMs, cat);
     }
 
@@ -6801,6 +7083,38 @@ Special interactions:
     {
         constexpr float mults[4] = {1.f, 1.5f, 3.f, 4.5f};
         return mults[pt.windStrength];
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] auto makeMagnetAction(
+        const sf::Vector2f position,
+        const CatType      catType,
+        const float        deltaTimeMs,
+        auto               countdownPm,
+        const float        countdownTime,
+        const float        strengthMult,
+        const float        direction,
+        BubbleIgnoreFlags& ignoreFlags)
+    {
+        return [this, &ignoreFlags, deltaTimeMs, position, catType, countdownPm, countdownTime, strengthMult, direction](
+                   Bubble& bubble)
+        {
+            if (ignoreFlags.normal && bubble.type == BubbleType::Normal)
+                return ControlFlow::Continue;
+
+            if (ignoreFlags.star && (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
+                return ControlFlow::Continue;
+
+            if (ignoreFlags.bomb && bubble.type == BubbleType::Bomb)
+                return ControlFlow::Continue;
+
+            const auto bcDiff   = (position - bubble.position);
+            const auto strength = (getComputedRangeByCatTypeOrCopyCat(catType) - bcDiff.length()) * 0.000017f;
+            bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
+
+            (bubble.*countdownPm).value = sf::base::max((bubble.*countdownPm).value, countdownTime);
+            return ControlFlow::Continue;
+        };
     }
 
     ////////////////////////////////////////////////////////////
@@ -6833,10 +7147,10 @@ Special interactions:
                 }
                 else if (shrine.type == ShrineType::Voodoo && shrine.isActive())
                 {
-                    if (shrine.isInRange(cat.position) && cachedWitchCat == nullptr && !anyCatHexed() &&
-                        !cat.hexedTimer.hasValue())
+                    if (shrine.isInRange(cat.position) && cachedWitchCat == nullptr && !anyCatHexedOrCopyHexed() &&
+                        !cat.isHexedOrCopyHexed())
                     {
-                        hexCat(cat);
+                        hexCat(cat, /* copy */ false);
                     }
                 }
             }
@@ -6875,40 +7189,40 @@ Special interactions:
 
             cat.update(deltaTimeMs);
 
-            if (cat.hexedTimer.hasValue())
+            if (cat.isHexedOrCopyHexed())
             {
-                const auto res = cat.hexedTimer->updateAndStop(deltaTimeMs * 0.001f);
+                const auto res = cat.getHexedTimer()->updateAndStop(deltaTimeMs * 0.001f);
 
-                if (cat.hexedTimer->direction == TimerDirection::Backwards && res == TimerStatusStop::JustFinished)
-                    cat.hexedTimer.reset();
+                if (cat.getHexedTimer()->direction == TimerDirection::Backwards && res == TimerStatusStop::JustFinished)
+                    cat.getHexedTimer().reset();
             }
 
-            if (cat.type == CatType::Witch && !anyCatHexed())
+            const auto doWitchBehavior = [&](const float hueMod, auto& soundRitual, auto& soundRitualEnd)
             {
                 if (cat.cooldown.value < 100.f)
                 {
-                    sounds.stopPlayingAll(sounds.ritual);
+                    sounds.stopPlayingAll(soundRitual);
 
-                    if (sounds.countPlayingPooled(sounds.ritualend) == 0u)
+                    if (sounds.countPlayingPooled(soundRitualEnd) == 0u)
                     {
-                        sounds.ritualend.setPosition({cat.position.x, cat.position.y});
-                        playSound(sounds.ritualend);
+                        soundRitualEnd.setPosition({cat.position.x, cat.position.y});
+                        playSound(soundRitualEnd);
                     }
                 }
 
                 if (cat.cooldown.value < 10'000.f)
                 {
-                    if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(sounds.ritual) == 0u)
+                    if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(soundRitual) == 0u)
                     {
-                        sounds.ritual.setPosition({cat.position.x, cat.position.y});
-                        playSound(sounds.ritual);
+                        soundRitual.setPosition({cat.position.x, cat.position.y});
+                        playSound(soundRitual);
                     }
 
                     const float intensity = remap(cat.cooldown.value, 0.f, 10'000.f, 1.f, 0.f);
 
                     for (Cat& otherCat : pt.cats)
                     {
-                        if (otherCat.hexedTimer.hasValue())
+                        if (otherCat.isHexedOrCopyHexed())
                             continue;
 
                         if (&otherCat == &cat)
@@ -6929,11 +7243,11 @@ Special interactions:
                                            .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                            .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
                                            .accelerationY = -0.0017f,
-                                           .opacity       = 255.f,
+                                           .opacity       = 1.f,
                                            .opacityDecay  = rng.getF(0.00035f, 0.0025f),
                                            .rotation      = rng.getF(0.f, sf::base::tau),
                                            .torque        = rng.getF(-0.002f, 0.002f)},
-                                          /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
+                                          /* hue */ wrapHue(rng.getF(-50.f, 50.f) + hueMod),
                                           ParticleType::Hex);
                     }
                 }
@@ -6941,7 +7255,13 @@ Special interactions:
                 {
                     sounds.stopPlayingAll(sounds.ritual);
                 }
-            }
+            };
+
+            if (cat.type == CatType::Witch && !anyCatHexed())
+                doWitchBehavior(/* hueMod */ 0.f, sounds.ritual, sounds.ritualend);
+
+            if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && !anyCatCopyHexed())
+                doWitchBehavior(/* hueMod */ 180.f, sounds.copyritual, sounds.copyritualend);
 
             if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt.dolls.empty())))
             {
@@ -6949,11 +7269,28 @@ Special interactions:
                                .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
                                .accelerationY = -0.0017f,
-                               .opacity       = 255.f,
+                               .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00035f, 0.0025f),
                                .rotation      = rng.getF(0.f, sf::base::tau),
                                .torque        = rng.getF(-0.002f, 0.002f)},
                               /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
+                              ParticleType::Hex);
+
+                continue;
+            }
+
+            if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch &&
+                                                  (anyCatCopyHexed() || !pt.copyDolls.empty())))
+            {
+                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
+                               .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                               .accelerationY = -0.0017f,
+                               .opacity       = 1.f,
+                               .opacityDecay  = rng.getF(0.00035f, 0.0025f),
+                               .rotation      = rng.getF(0.f, sf::base::tau),
+                               .torque        = rng.getF(-0.002f, 0.002f)},
+                              /* hue */ wrapHue(rng.getF(-50.f, 50.f) + 180.f),
                               ParticleType::Hex);
 
                 continue;
@@ -6967,7 +7304,7 @@ Special interactions:
                                .velocity = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale    = rng.getF(0.08f, 0.27f) * 0.2f,
                                .accelerationY = -0.002f,
-                               .opacity       = 255.f,
+                               .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                .rotation      = rng.getF(0.f, sf::base::tau),
                                .torque        = rng.getF(-0.002f, 0.002f)},
@@ -6982,7 +7319,7 @@ Special interactions:
                                .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.15f,
                                .accelerationY = -0.0015f,
-                               .opacity       = 255.f,
+                               .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00055f, 0.0045f),
                                .rotation      = rng.getF(0.f, sf::base::tau),
                                .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7002,7 +7339,7 @@ Special interactions:
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
                                    .accelerationY = -0.0015f,
-                                   .opacity       = 255.f,
+                                   .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f),
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7013,7 +7350,7 @@ Special interactions:
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
                                    .accelerationY = -0.0015f,
-                                   .opacity       = 255.f,
+                                   .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7024,7 +7361,7 @@ Special interactions:
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
                                    .accelerationY = -0.0015f,
-                                   .opacity       = 255.f,
+                                   .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7122,7 +7459,7 @@ Special interactions:
                                    .velocity = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                    .scale    = rng.getF(0.08f, 0.27f) * 0.2f,
                                    .accelerationY = -0.002f,
-                                   .opacity       = 255.f,
+                                   .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7131,7 +7468,7 @@ Special interactions:
                 }
             }
 
-            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Mouse))
+            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
             {
                 for (const Cat& otherCat : pt.cats)
                 {
@@ -7147,7 +7484,7 @@ Special interactions:
                                        .velocity      = rng.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
                                        .scale         = rng.getF(0.08f, 0.27f) * 0.4f,
                                        .accelerationY = -0.00015f,
-                                       .opacity       = 255.f,
+                                       .opacity       = 1.f,
                                        .opacityDecay  = rng.getF(0.0003f, 0.002f),
                                        .rotation      = -0.6f,
                                        .torque        = 0.f},
@@ -7156,46 +7493,25 @@ Special interactions:
                 }
             }
 
-            const auto makeMagnetAction =
-                [&](auto               countdownPm,
-                    const float        countdownTime,
-                    const float        strengthMult,
-                    const float        direction,
-                    BubbleIgnoreFlags& ignoreFlags)
-            {
-                return [&, countdownPm, countdownTime, strengthMult, direction](Bubble& bubble)
-                {
-                    if (ignoreFlags.normal && bubble.type == BubbleType::Normal)
-                        return ControlFlow::Continue;
-
-                    if (ignoreFlags.star && (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova))
-                        return ControlFlow::Continue;
-
-                    if (ignoreFlags.bomb && bubble.type == BubbleType::Bomb)
-                        return ControlFlow::Continue;
-
-                    const auto bcDiff   = (cat.position - bubble.position);
-                    const auto strength = (getComputedRangeByCatTypeOrCopyCat(cat.type) - bcDiff.length()) * 0.000017f;
-                    bubble.velocity += (bcDiff.normalized() * strength * strengthMult) * direction * deltaTimeMs;
-
-                    (bubble.*countdownPm).value = sf::base::max((bubble.*countdownPm).value, countdownTime);
-                    return ControlFlow::Continue;
-                };
-            };
-
-            if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Repulso))
+            if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Repulso))
                 forEachBubbleInRadius(cat.position,
                                       pt.getComputedRangeByCatType(CatType::Repulso),
-                                      makeMagnetAction(&Bubble::repelledCountdown,
+                                      makeMagnetAction(cat.position,
+                                                       cat.type,
+                                                       deltaTimeMs,
+                                                       &Bubble::repelledCountdown,
                                                        1500.f,
                                                        getWindRepulsionMult(),
                                                        -1.f,
                                                        pt.repulsoCatIgnoreBubbles));
 
-            if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && copycatCopiedCatType == CatType::Attracto))
+            if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto))
                 forEachBubbleInRadius(cat.position,
                                       pt.getComputedRangeByCatType(CatType::Attracto),
-                                      makeMagnetAction(&Bubble::attractedCountdown,
+                                      makeMagnetAction(cat.position,
+                                                       cat.type,
+                                                       deltaTimeMs,
+                                                       &Bubble::attractedCountdown,
                                                        750.f,
                                                        getWindAttractionMult(),
                                                        1.f,
@@ -7237,16 +7553,25 @@ Special interactions:
         if (cat.isAstroAndInFlight())
             return false;
 
-        if (cat.hexedTimer.hasValue())
+        if (cat.isHexedOrCopyHexed())
             return false;
 
         if (cat.type == CatType::Wizard && isWizardBusy())
             return false;
 
+        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Wizard && isWizardBusy())
+            return false;
+
         if (cat.type == CatType::Witch && anyCatHexed())
             return false;
 
+        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && anyCatCopyHexed())
+            return false;
+
         if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
+            return false;
+
+        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && cat.cooldown.value <= 10'000.f)
             return false;
 
         return true;
@@ -7593,6 +7918,9 @@ Special interactions:
                             profile.selectedBackground = static_cast<int>(shrine.type) + 1;
                             profile.selectedBGM        = static_cast<int>(shrine.type) + 1;
 
+                            updateSelectedBackgroundSelectorIndex();
+                            updateSelectedBGMSelectorIndex();
+
                             switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
                         }
                     }
@@ -7620,14 +7948,21 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
-    void collectDoll(Doll& d)
+    void collectDollImpl(Doll& d, const std::vector<Doll>& dollsToUse)
     {
         SFML_BASE_ASSERT(!d.tcDeath.hasValue());
+
+        const bool copy = &dollsToUse == &pt.copyDolls;
 
         statDollCollected();
 
         for (SizeT i = 0u; i < 8u; ++i)
-            spawnParticlesWithHue(wrapHue(rng.getF(-50.f, 50.f)), 8, d.getDrawPosition(), ParticleType::Hex, 0.5f, 0.35f);
+            spawnParticlesWithHue(wrapHue(rng.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
+                                  8,
+                                  d.getDrawPosition(),
+                                  ParticleType::Hex,
+                                  0.5f,
+                                  0.35f);
 
         screenShakeAmount = 1.5f;
         screenShakeTimer  = 500.f;
@@ -7635,8 +7970,8 @@ Special interactions:
         d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
         d.tcDeath->restart();
 
-        const bool allDollsCollected = sf::base::allOf(pt.dolls.begin(),
-                                                       pt.dolls.end(),
+        const bool allDollsCollected = sf::base::allOf(dollsToUse.begin(),
+                                                       dollsToUse.end(),
                                                        [&](const Doll& otherDoll)
         { return otherDoll.tcDeath.hasValue(); });
 
@@ -7673,14 +8008,14 @@ Special interactions:
 
             pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
 
-            const auto* hexedCat = getHexedCat();
+            const auto* hexedCat = copy ? getCopyHexedCat() : getHexedCat();
             SFML_BASE_ASSERT(hexedCat != nullptr);
 
             spawnParticle({.position      = d.getDrawPosition(),
                            .velocity      = (hexedCat->getDrawPosition() - d.getDrawPosition()).normalized() * 1.f,
                            .scale         = 0.2f,
                            .accelerationY = 0.f,
-                           .opacity       = 128.f,
+                           .opacity       = 1.f,
                            .opacityDecay  = 0.0015f,
                            .rotation      = 0.f,
                            .torque        = rng.getF(-0.0002f, 0.0002f)},
@@ -7698,17 +8033,26 @@ Special interactions:
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
+    void collectDoll(Doll& d)
     {
-        if (cachedWitchCat == nullptr)
-            return;
+        collectDollImpl(d, pt.dolls);
+    }
 
-        Cat* hexedCat = getHexedCat();
+    ////////////////////////////////////////////////////////////
+    void collectCopyDoll(Doll& d)
+    {
+        collectDollImpl(d, pt.copyDolls);
+    }
 
-        if (pt.dolls.empty())
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vector2f mousePos, std::vector<Doll>& dollsToUse, Cat* hexedCat)
+    {
+        const bool copy = &dollsToUse == &pt.copyDolls;
+
+        if (dollsToUse.empty())
         {
             if (hexedCat != nullptr)
-                hexedCat->hexedTimer->direction = TimerDirection::Backwards;
+                (copy ? hexedCat->hexedCopyTimer : hexedCat->hexedTimer)->direction = TimerDirection::Backwards;
 
             return;
         }
@@ -7717,7 +8061,7 @@ Special interactions:
         if (hexedCat == nullptr)
             return;
 
-        for (Doll& d : pt.dolls)
+        for (Doll& d : dollsToUse)
         {
             d.update(deltaTimeMs);
 
@@ -7734,11 +8078,11 @@ Special interactions:
                                    .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
                                    .accelerationY = -0.002f,
-                                   .opacity       = 255.f,
+                                   .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00025f, 0.0015f),
                                    .rotation      = rng.getF(0.f, sf::base::tau),
                                    .torque        = rng.getF(-0.002f, 0.002f)},
-                                  /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
+                                  /* hue */ wrapHue(rng.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   ParticleType::Hex);
 
                 const bool click = (mBtnDown(sf::Mouse::Button::Left) || sf::Touch::isDown(0u));
@@ -7751,18 +8095,22 @@ Special interactions:
                        from below?
                        case CatType::Attracto:
                             // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
+                            // All bombs/portals suck in bubbles?
                         case CatType::Copy:
                             // TODO P0: ??
                     */
 
-                    collectDoll(d);
+                    if (copy)
+                        collectCopyDoll(d);
+                    else
+                        collectDoll(d);
                 }
             }
             else
             {
                 (void)d.tcDeath->updateAndStop(deltaTimeMs);
 
-                spawnParticlesWithHue(wrapHue(d.hue),
+                spawnParticlesWithHue(wrapHue(d.hue + (copy ? 180.f : 0.f)),
                                       static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
                                       d.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                       ParticleType::Hex,
@@ -7771,7 +8119,25 @@ Special interactions:
             }
         }
 
-        sf::base::vectorEraseIf(pt.dolls, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
+        sf::base::vectorEraseIf(dollsToUse, [](const Doll& d) { return d.getDeathProgress() >= 1.f; });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
+    {
+        if (cachedWitchCat == nullptr)
+            return;
+
+        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt.dolls, getHexedCat());
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
+    {
+        if (cachedCopyCat == nullptr || pt.copycatCopiedCatType != CatType::Witch)
+            return;
+
+        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt.copyDolls, getCopyHexedCat());
     }
 
     ////////////////////////////////////////////////////////////
@@ -7792,7 +8158,7 @@ Special interactions:
                            .velocity      = rng.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
                            .scale         = rng.getF(0.08f, 0.27f) * 0.85f,
                            .accelerationY = 0.f,
-                           .opacity       = 255.f,
+                           .opacity       = 1.f,
                            .opacityDecay  = rng.getF(0.00155f, 0.0145f),
                            .rotation      = rng.getF(0.f, sf::base::tau),
                            .torque        = rng.getF(-0.002f, 0.002f)},
@@ -7859,7 +8225,7 @@ Special interactions:
                                                    0.15f,
                                                    0.05f);
 
-            if (cachedCopyCat != nullptr && copycatCopiedCatType == CatType::Wizard)
+            if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(230.f,
                                                    1,
@@ -8747,7 +9113,7 @@ Special interactions:
             return;
 
         const auto isCopyCatWithType = [&](const CatType copiedType)
-        { return cat.type == CatType::Copy && copycatCopiedCatType == copiedType; };
+        { return cat.type == CatType::Copy && pt.copycatCopiedCatType == copiedType; };
 
         const bool beingDragged = isCatBeingDragged(cat);
 
@@ -8772,6 +9138,30 @@ Special interactions:
 
         float catRotation = 0.f;
 
+        const auto doWitchAnimation = [&](float& wobblePhase, Cat& witch)
+        {
+            if (witch.cooldown.value >= 10'000.f)
+            {
+                wobblePhase = 0.f;
+            }
+            else
+            {
+                const float frequency = remap(witch.cooldown.value, 0.f, 10'000.f, 0.1f, 0.05f);
+                wobblePhase += frequency * deltaTimeMs * 0.005f;
+
+                const auto range        = pt.getComputedRangeByCatType(CatType::Witch);
+                const auto rangeSquared = range * range;
+
+                const bool catInWitchRange = (witch.position - cat.position).lengthSquared() <= rangeSquared;
+
+                if (&cat == &witch || (pt.perm.witchCatBuffPowerScalesWithNCats && catInWitchRange))
+                {
+                    const float amplitude = remap(witch.cooldown.value, 0.f, 10'000.f, 0.5f, 0.f);
+                    catRotation           = sf::base::sin(wobblePhase) * amplitude;
+                }
+            }
+        };
+
         if (cat.type == CatType::Astro)
         {
             if (cat.astroState.hasValue() && cat.isCloseToStartX())
@@ -8781,38 +9171,21 @@ Special interactions:
             else if (cat.astroState.hasValue())
                 catRotation = 0.523599f;
         }
-        else if (cat.hexedTimer.hasValue())
+        else if (cat.isHexedOrCopyHexed())
         {
-            catRotation = cat.hexedTimer->remap(0.f, cat.wobbleRadians);
+            catRotation = cat.getHexedTimer()->remap(0.f, cat.wobbleRadians);
         }
         else if (beingDragged)
         {
             catRotation = -0.22f + sf::base::sin(cat.wobbleRadians) * 0.12f;
         }
-        else if (Cat* witch = cachedWitchCat; witch != nullptr)
+        else if (cachedWitchCat != nullptr)
         {
-            static float wobblePhase = 0.f;
-
-            if (witch->cooldown.value >= 10'000.f)
-            {
-                wobblePhase = 0.f;
-            }
-            else
-            {
-                const float frequency = remap(witch->cooldown.value, 0.f, 10'000.f, 0.1f, 0.05f);
-                wobblePhase += frequency * deltaTimeMs * 0.005f;
-
-                const auto range        = pt.getComputedRangeByCatType(CatType::Witch);
-                const auto rangeSquared = range * range;
-
-                const bool catInWitchRange = (witch->position - cat.position).lengthSquared() <= rangeSquared;
-
-                if (&cat == witch || (pt.perm.witchCatBuffPowerScalesWithNCats && catInWitchRange))
-                {
-                    const float amplitude = remap(witch->cooldown.value, 0.f, 10'000.f, 0.5f, 0.f);
-                    catRotation           = sf::base::sin(wobblePhase) * amplitude;
-                }
-            }
+            doWitchAnimation(witchcatWobblePhase, *cachedWitchCat);
+        }
+        else if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Witch)
+        {
+            doWitchAnimation(copyWitchcatWobblePhase, *cachedCopyCat);
         }
 
         if (cat.type == CatType::Wizard)
@@ -8820,9 +9193,9 @@ Special interactions:
 
         const auto range = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
-        const auto alpha = cat.hexedTimer.hasValue() ? static_cast<U8>(cat.hexedTimer->remap(255.f, 128.f))
-                           : insideDragRect          ? static_cast<U8>(128u)
-                                                     : static_cast<U8>(255u);
+        const auto alpha = cat.isHexedOrCopyHexed() ? static_cast<U8>(cat.getHexedTimer()->remap(255.f, 128.f))
+                           : insideDragRect         ? static_cast<U8>(128u)
+                                                    : static_cast<U8>(255u);
 
         const auto catColor = hueColor(cat.hue, alpha);
 
@@ -8849,7 +9222,7 @@ Special interactions:
         const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
         const auto  catScale     = sf::Vector2f{0.2f, 0.2f} * catScaleMult;
 
-        const auto catAnchor = beingDragged ? cat position : cat.getDrawPosition();
+        const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition();
 
         const auto anchorOffset = [&](const sf::Vector2f offset)
         { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
@@ -9039,7 +9412,8 @@ Special interactions:
                            .textureRect = txrAstroCatFlag,
                            .color       = catColor});
         }
-        else if (cat.type == CatType::Engi) // Engi cat wrench
+        else if (cat.type == CatType::Engi ||
+                 (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
         {
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
@@ -9049,7 +9423,8 @@ Special interactions:
                            .textureRect = txrEngiCatWrench,
                            .color       = catColor});
         }
-        else if (cat.type == CatType::Attracto) // Attracto cat magnet
+        else if (cat.type == CatType::Attracto ||
+                 (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
         {
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
@@ -9079,7 +9454,7 @@ Special interactions:
 
         //
         // Mousecat: mouse
-        if (cat.type == CatType::Mouse)
+        if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
         {
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
@@ -9147,7 +9522,7 @@ Special interactions:
         }
 
 
-        if (!cat.hexedTimer.hasValue() && cat.type != CatType::Devil)
+        if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
             cpuDrawableBatch.add(
                 sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
                            .scale       = catScale,
@@ -9155,6 +9530,52 @@ Special interactions:
                            .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
                            .textureRect = catPawTxr,
                            .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
+
+        //
+        // Copycat: mask
+        if (cat.type == CatType::Copy)
+        {
+            if (copycatMaskAnim.isDone() &&
+                copycatMaskAnimCd.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
+                copycatMaskAnim.value = 3000.f;
+
+            if (copycatMaskAnimCd.isDone() && copycatMaskAnim.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                copycatMaskAnimCd.value = 4000.f;
+
+            const float foo = easeInOutBack(copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
+
+            const auto* txrMaskToUse = [&]() -> const sf::FloatRect*
+            {
+                if (pt.copycatCopiedCatType == CatType::Witch)
+                    return &txrCCMaskWitch;
+
+                if (pt.copycatCopiedCatType == CatType::Wizard)
+                    return &txrCCMaskWizard;
+
+                if (pt.copycatCopiedCatType == CatType::Mouse)
+                    return &txrCCMaskMouse;
+
+                if (pt.copycatCopiedCatType == CatType::Engi)
+                    return &txrCCMaskEngi;
+
+                if (pt.copycatCopiedCatType == CatType::Repulso)
+                    return &txrCCMaskRepulso;
+
+                if (pt.copycatCopiedCatType == CatType::Attracto)
+                    return &txrCCMaskAttracto;
+
+                return nullptr;
+            }();
+
+            if (txrMaskToUse != nullptr)
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
+                               .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                               .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
+                               .rotation    = sf::radians(catRotation + foo),
+                               .textureRect = *txrMaskToUse,
+                               .color       = catColor});
+        }
 
         if (profile.showCatText)
         {
@@ -9183,7 +9604,7 @@ Special interactions:
                 !isCopyCatWithType(CatType::Attracto))
             {
                 const char* actionName = CatConstants::actionNames[asIdx(
-                    cat.type == CatType::Copy ? copycatCopiedCatType : cat.type)];
+                    cat.type == CatType::Copy ? pt.copycatCopiedCatType : cat.type)];
 
                 if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
                     actionName = "Portals";
@@ -9349,7 +9770,7 @@ Special interactions:
             &txrDollUni,      // Uni
             &txrDollDevil,    // Devil
             &txrDollAstro,    // Astro
-            &txrDollNormal,   // Witch (missing, TODO P0: but what about copycat?)
+            &txrDollNormal,   // Witch (missing, hexing a witchcat is not possible, even with copycat)
             &txrDollWizard,   // Wizard
             &txrDollMouse,    // Mouse
             &txrDollEngi,     // Engi
@@ -9361,26 +9782,33 @@ Special interactions:
         static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        for (Doll& doll : pt.dolls)
+        const auto processDolls = [&](auto& container, const float hueMod)
         {
-            const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
+            for (Doll& doll : container)
+            {
+                const auto& dollTxr = *dollTxrs[asIdx(doll.catType)];
 
-            const float invDeathProgress = 1.f - doll.getDeathProgress();
-            const float progress         = doll.tcDeath.hasValue() ? invDeathProgress : doll.getActivationProgress();
+                const float invDeathProgress = 1.f - doll.getDeathProgress();
+                const float progress = doll.tcDeath.hasValue() ? invDeathProgress : doll.getActivationProgress();
 
-            auto dollAlpha = static_cast<U8>(remap(progress, 0.f, 1.f, 128.f, 255.f));
+                auto dollAlpha = static_cast<U8>(remap(progress, 0.f, 1.f, 128.f, 255.f));
 
-            if ((mousePos - doll.position).lengthSquared() <= doll.getRadiusSquared() && !mBtnDown(sf::Mouse::Button::Left))
-                dollAlpha = 128.f;
+                if ((mousePos - doll.position).lengthSquared() <= doll.getRadiusSquared() &&
+                    !mBtnDown(sf::Mouse::Button::Left))
+                    dollAlpha = 128.f;
 
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = doll.getDrawPosition(),
-                           .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
-                           .origin      = dollTxr.size / 2.f,
-                           .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
-                           .textureRect = dollTxr,
-                           .color       = hueColor(doll.hue, dollAlpha)});
-        }
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = doll.getDrawPosition(),
+                               .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
+                               .origin      = dollTxr.size / 2.f,
+                               .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
+                               .textureRect = dollTxr,
+                               .color       = hueColor(doll.hue + hueMod, dollAlpha)});
+            }
+        };
+
+        processDolls(pt.dolls, /* hueMod */ 0.f);
+        processDolls(pt.copyDolls, /* hueMod */ 180.f);
     }
 
     ////////////////////////////////////////////////////////////
@@ -9616,11 +10044,14 @@ Special interactions:
         const float imguiWidth = uiWindowWidth * profile.uiScale;
         const auto  blinkFn = [](const float value) { return (1 - sf::base::cos(2.f * sf::base::pi * value)) / 2.f; };
 
-        for (auto& [y, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
+        for (auto& [widgetLabel, countdown, arrowCountdown, hue, type] : purchaseUnlockedEffects)
         {
+            const float y = uiLabelToY[widgetLabel];
+
             if (countdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::Running)
             {
-                float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
+                const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
+
                 const auto pos = sf::Vector2f{uiGetWindowPos().x + x, y + (14.f + rng.getF(-14.f, 14.f)) * profile.uiScale};
 
                 for (sf::base::SizeT i = 0u; i < 2u; ++i)
@@ -10024,16 +10455,16 @@ Special interactions:
                 sounds.shine3.setPitch(0.75f + static_cast<float>(iComboAccStarReward) * 0.075f);
                 playSound(sounds.shine3);
 
-                particles.emplace_back(ParticleData{.position      = mousePos,
-                                                    .velocity      = {0.f, 0.f},
-                                                    .scale         = rng.getF(0.08f, 0.27f) * 1.f,
-                                                    .accelerationY = -0.002f,
-                                                    .opacity       = 255.f,
-                                                    .opacityDecay  = rng.getF(0.00025f, 0.002f),
-                                                    .rotation      = rng.getF(0.f, sf::base::tau),
-                                                    .torque        = rng.getF(-0.002f, 0.002f)},
-                                       0.f,
-                                       ParticleType::Star);
+                spawnParticle(ParticleData{.position      = mousePos,
+                                           .velocity      = {0.f, 0.f},
+                                           .scale         = rng.getF(0.08f, 0.27f) * 1.f,
+                                           .accelerationY = -0.002f,
+                                           .opacity       = 1.f,
+                                           .opacityDecay  = rng.getF(0.00025f, 0.002f),
+                                           .rotation      = rng.getF(0.f, sf::base::tau),
+                                           .torque        = rng.getF(-0.002f, 0.002f)},
+                              0.f,
+                              ParticleType::Star);
             }
         }
     }
@@ -10111,18 +10542,26 @@ Special interactions:
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsCatDoll()
     {
-        for (Doll& doll : pt.dolls)
+        const auto checkCollisionWithDoll = [&](Doll& d, auto collectFn)
+        {
             for (Cat& cat : pt.cats)
             {
                 if (!cat.isAstroAndInFlight())
                     continue;
 
-                if (pt.perm.witchCatBuffOrbitalDolls && doll.isActive() && !doll.tcDeath.hasValue() &&
-                    detectCollision(cat.position, doll.position, cat.getRadius(), doll.getRadius()))
+                if (pt.perm.witchCatBuffOrbitalDolls && d.isActive() && !d.tcDeath.hasValue() &&
+                    detectCollision(cat.position, d.position, cat.getRadius(), d.getRadius()))
                 {
-                    collectDoll(doll);
+                    collectFn(d);
                 }
             }
+        };
+
+        for (Doll& doll : pt.dolls)
+            checkCollisionWithDoll(doll, [&](Doll& d) { collectDoll(d); });
+
+        for (Doll& copyDoll : pt.copyDolls)
+            checkCollisionWithDoll(copyDoll, [&](Doll& d) { collectCopyDoll(d); });
     }
 
     ////////////////////////////////////////////////////////////
@@ -10261,6 +10700,23 @@ Special interactions:
                 optCurrentMusic.reset();
                 ++currentBGMBufferIdx;
             }
+        }
+        else
+        {
+            const auto processMusic = [&](sf::base::Optional<sf::Music>& optMusic)
+            {
+                if (!optMusic.hasValue())
+                    return;
+
+                optMusic->setPosition(listener.position);
+                optMusic->setVolume(profile.musicVolume * volumeMult);
+
+                if (sounds.countPlayingPooled(sounds.prestige) > 0u)
+                    optMusic->setVolume(0.f);
+            };
+
+            processMusic(optCurrentMusic);
+            processMusic(optNextMusic);
         }
     }
 
@@ -10505,13 +10961,13 @@ Special interactions:
             devilBuffName,                         // Devil
             "Endless Flight (Looping Astrocats)",  // Astro
 
-            "N/A",                                     // Witch
-            "Mana Overload (x3.5 Mana Regen)",         // Wizard
-            "Click Fever (x10 Click Reward)",          // Mouse
-            "Global Maintenance (x2 Faster Cooldown)", // Engi
-            "Repulso Buff TODO P0",                    // Repulso
-            "Attracto Buff TODO P0",                   // Attracto
-            "Copy Buff TODO P0",                       // Copy TODO P0: maybe N/A?
+            "N/A",                                         // Witch
+            "Mana Overload (x3.5 Mana Regen)",             // Wizard
+            "Click Fever (x10 Click Reward)",              // Mouse
+            "Global Maintenance (x2 Faster Cooldown)",     // Engi
+            "Repulso Buff TODO P0",                        // Repulso
+            "Demonic Attraction (Magnetic Bombs/Portals)", // Attracto
+            "N/A",                                         // Copy TODO P0:implement: buff whatever is mimicked
         };
 
         static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
@@ -10523,9 +10979,20 @@ Special interactions:
                                                       pt.dolls.end(),
                                                       [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
 
+        const SizeT nCopyDollsToClick = sf::base::countIf(pt.copyDolls.begin(),
+                                                          pt.copyDolls.end(),
+                                                          [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
+
         if (nDollsToClick > 0u)
             writeIdx += static_cast<SizeT>(
-                std::snprintf(buffStrBuffer, sizeof(buffStrBuffer), "Dolls to collect: %zu\n", nDollsToClick));
+                std::snprintf(buffStrBuffer + writeIdx, sizeof(buffStrBuffer) - writeIdx, "Dolls to collect: %zu\n", nDollsToClick));
+
+        if (nCopyDollsToClick > 0u)
+            writeIdx += static_cast<SizeT>(
+                std::snprintf(buffStrBuffer + writeIdx,
+                              sizeof(buffStrBuffer) - writeIdx,
+                              "Dolls (copy) to collect: %zu\n",
+                              nCopyDollsToClick));
 
         if (pt.mewltiplierAuraTimer > 0.f)
             writeIdx += static_cast<SizeT>(
@@ -10844,6 +11311,10 @@ Special interactions:
         gameLoopUpdateBubbles(deltaTimeMs);
 
         //
+        // Demonic attraction buff
+        gameLoopUpdateAttractoBuff(deltaTimeMs);
+
+        //
         // Process clicks
         const bool anyBubblePoppedByClicking = gameLoopUpdateBubbleClick(clickPosition);
 
@@ -10869,6 +11340,7 @@ Special interactions:
         gameLoopUpdateCatActions(deltaTimeMs);
         gameLoopUpdateShrines(deltaTimeMs);
         gameLoopUpdateDolls(deltaTimeMs, mousePos);
+        gameLoopUpdateCopyDolls(deltaTimeMs, mousePos);
         gameLoopUpdateHellPortals(deltaTimeMs);
         gameLoopUpdateWitchBuffs(deltaTimeMs);
         gameLoopUpdateMana(deltaTimeMs);
@@ -11264,6 +11736,7 @@ int main(int argc, const char** argv)
 
 // TODO P0: exceeding max cooldown makes cooldown bar super long on wizard
 // TODO P0: achievements for speedrunning milestones
+// TODO P1: when astrocat touches hellcat portal its buffed
 // TODO P1: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
@@ -11271,6 +11744,7 @@ int main(int argc, const char** argv)
 // TODO P1: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P1: tooltips for options, reorganize them
+// TODO P1: credits somewhere
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
