@@ -80,6 +80,8 @@ struct Sounds
     LoadedSound maintenance{"maintenance.ogg"};
     LoadedSound ritual{"ritual.ogg"};
     LoadedSound ritualend{"ritualend.ogg"};
+    LoadedSound copyritual{"copyritual.ogg"};
+    LoadedSound copyritualend{"copyritualend.ogg"};
     LoadedSound purrmeow{"purrmeow.ogg"};
     LoadedSound soulsteal{"soulsteal.ogg"};
     LoadedSound soulreturn{"soulreturn.ogg"};
@@ -89,6 +91,7 @@ struct Sounds
     LoadedSound unlock{"unlock.ogg"};
     LoadedSound purchasable{"purchasable.ogg"};
     LoadedSound shimmer{"shimmer.ogg"};
+    LoadedSound smokebomb{"smokebomb.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -129,12 +132,15 @@ struct Sounds
         setupWorldSound(maintenance);
         setupWorldSound(ritual, /* attenuationMult */ 0.1f);
         setupWorldSound(ritualend, /* attenuationMult */ 0.1f);
+        setupWorldSound(copyritual, /* attenuationMult */ 0.1f);
+        setupWorldSound(copyritualend, /* attenuationMult */ 0.1f);
         setupWorldSound(purrmeow);
         setupWorldSound(soulsteal);
         setupWorldSound(soulreturn);
         setupWorldSound(portalon);
         setupWorldSound(portaloff);
         setupWorldSound(failcast, /* attenuationMult */ 0.1f);
+        setupWorldSound(smokebomb);
 
         setupUISound(click);
         setupUISound(byteMeow);
