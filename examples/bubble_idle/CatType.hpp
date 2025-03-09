@@ -13,7 +13,7 @@ enum class [[nodiscard]] CatType : sf::base::U8
     Devil  = 2u,
     Astro  = 3u,
 
-    Witch    = 4u, // TODO P0: implement copycat logic
+    Witch    = 4u,
     Wizard   = 5u,
     Mouse    = 6u,
     Engi     = 7u,
