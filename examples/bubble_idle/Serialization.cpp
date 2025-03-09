@@ -265,6 +265,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Cat>
                          FIELD(type),
 
                          FIELD(hexedTimer),
+                         FIELD(hexedCopyTimer),
 
                          FIELD(moneyEarned),
 
@@ -702,6 +703,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
         FIELD(mouseCatCombo),
         FIELD(mouseCatComboCountdown),
 
+        FIELD(copycatCopiedCatType),
+
         FIELD(perm),
 
         FIELD(multiPopEnabled),
@@ -716,6 +719,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
         FIELD(cats),
         FIELD(shrines),
         FIELD(dolls),
+        FIELD(copyDolls),
         FIELD(hellPortals),
 
         FIELD(nShrinesCompleted),
