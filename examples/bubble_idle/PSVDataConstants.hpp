@@ -152,6 +152,15 @@ inline constexpr PSVData catAttractoRangeDiv //
      .cost          = {.initial = 275000.f, .exponential = 1.85f},
      .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
 
+inline constexpr PSVData catCopy //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catCopyCooldownMult //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catCopyRangeDiv //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
 inline constexpr PSVData catAstro //
     {.nMaxPurchases = 64u, .cost = {.initial = 1'000'000.f, .exponential = 1.85f}, .value = {}};
 
