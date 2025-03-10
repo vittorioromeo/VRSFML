@@ -556,6 +556,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(showCursorComboText),
                          FIELD(useBubbleShader),
 
+                         FIELD(cursorTrailMode),
+                         FIELD(cursorTrailScale),
+
                          FIELD(bsIridescenceStrength),
                          FIELD(bsEdgeFactorMin),
                          FIELD(bsEdgeFactorMax),
