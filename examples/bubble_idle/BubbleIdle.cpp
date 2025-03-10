@@ -11881,6 +11881,7 @@ int main(int argc, const char** argv)
     Main{steamMgr}.run();
 }
 
+// TODO P0: quickbar position is fckd on 16:9
 // TODO P0: achievements for speedrunning milestones
 // TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P1: copycat bg drawings
