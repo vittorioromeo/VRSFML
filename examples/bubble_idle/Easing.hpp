@@ -115,3 +115,24 @@ using EasingFn = float (*)(const float);
            : x == 1.f ? 1.f
                       : sf::base::pow(2.f, -10.f * x) * sf::base::sin((x * 10.f - 0.75f) * c4) + 1.f;
 }
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]]
+inline constexpr float unease(const float x, const float delta = 0.1f) noexcept
+{
+    ASSERT_AND_ASSUME(x >= 0.f && x <= 1.f);
+
+    // A helper smoothstep function that goes from 0 to 1 as t goes from 0 to 1.
+    constexpr auto smoothstep = [](const float t) noexcept -> float { return t * t * (3.f - 2.f * t); };
+
+    // Normalize x into [0, 1] over [0, delta] and scale from 0 to 0.5.
+    if (x < delta)
+        return smoothstep(x / delta) * 0.5f;
+
+    // Normalize x into [0, 1] over [1-delta, 1] and scale from 0.5 to 1.
+    if (x > 1.f - delta)
+        return 0.5f + smoothstep((x - (1.f - delta)) / delta) * 0.5f;
+
+    // For most of the domain, output is 0.5.
+    return 0.5f;
+}

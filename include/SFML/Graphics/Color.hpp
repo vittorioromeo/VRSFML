@@ -19,12 +19,28 @@ namespace sf
 struct [[nodiscard]] SFML_GRAPHICS_API Color
 {
     ////////////////////////////////////////////////////////////
+    /// \brief Construct a fully white color with a given alpha
+    ///
+    /// \param alpha Alpha channel of the white mask
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color whiteMask(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct a fully black color with a given alpha
+    ///
+    /// \param alpha Alpha channel of the black mask
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color blackMask(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer
     ///
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromRGBA(base::U32 color);
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromRGBA(base::U32 color);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -46,7 +62,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \param alpha      Alpha component (0 to 255)
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromHSLA(HSL hsl, base::U8 alpha = 255u);
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromHSLA(HSL hsl, base::U8 alpha = 255u);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -106,7 +122,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVec4>
-    [[nodiscard, gnu::always_inline, gnu::const]] constexpr static Color fromVec4(const TVec4& vec);
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromVec4(const TVec4& vec);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs, range [0, 1], xyzw
