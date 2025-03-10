@@ -14,6 +14,20 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+constexpr Color Color::whiteMask(const base::U8 alpha)
+{
+    return {255u, 255u, 255u, alpha};
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr Color Color::blackMask(const base::U8 alpha)
+{
+    return {0u, 0u, 0u, alpha};
+}
+
+
+////////////////////////////////////////////////////////////
 constexpr Color Color::fromRGBA(const base::U32 color)
 {
     return {static_cast<base::U8>((color & 0xff'00'00'00) >> 24),
