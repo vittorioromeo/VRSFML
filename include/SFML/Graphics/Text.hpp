@@ -257,6 +257,26 @@ public:
     void setOutlineColor(Color color);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the fill color alpha channel of the text
+    ///
+    /// \param color New fill color alpha channel of the text
+    ///
+    /// \see `getFillColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setFillColorAlpha(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the outline color alpha channel of the text
+    ///
+    /// \param color New outline color alpha channel of the text
+    ///
+    /// \see `getOutlineColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setOutlineColorAlpha(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set the thickness of the text's outline
     ///
     /// By default, the outline thickness is 0.
@@ -362,6 +382,27 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Color getOutlineColor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the fill color alpha channel of the text
+    ///
+    /// \return Fill color alpha channel of the text
+    ///
+    /// \see `setFillColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::U8 getFillColorAlpha() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the outline color alpha channel of the text
+    ///
+    /// \return Outline color alpha channel of the text
+    ///
+    /// \see `setOutlineColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::U8 getOutlineColorAlpha() const;
+    // TODO P2: add these to shape as well, maybe use a mixin?
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the outline thickness of the text
