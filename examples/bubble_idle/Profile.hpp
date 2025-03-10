@@ -36,6 +36,9 @@ struct [[nodiscard]] Profile
     bool showCursorComboText = true;
     bool useBubbleShader     = true;
 
+    int  cursorTrailMode     = 0; // 0=combo, 1=always, 2=off
+    float cursorTrailScale = 1.f;
+
     float bsIridescenceStrength = 0.7f;
     float bsEdgeFactorMin       = 0.f;
     float bsEdgeFactorMax       = 0.6f;
