@@ -218,20 +218,22 @@ inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat 
     return (1.f - sf::base::pow(decay, static_cast<float>(n))) / (1.f - decay);
 }
 
-
 ////////////////////////////////////////////////////////////
-void drawMinimap(sf::Shader&             shader,
-                 const float             minimapScale,
-                 const float             mapLimit,
-                 const sf::View&         gameView,
-                 const sf::View&         hudView,
-                 sf::RenderTarget&       window,
-                 const sf::Texture&      txBackgroundChunk,
-                 sf::CPUDrawableBatch&   cpuDrawableBatch,
-                 const sf::TextureAtlas& textureAtlas,
-                 const sf::Vector2f      resolution,
-                 const float             hudScale,
-                 const float             hueMod)
+void drawMinimap(
+    sf::Shader&             shader,
+    const float             minimapScale,
+    const float             mapLimit,
+    const sf::View&         gameView,
+    const sf::View&         hudView,
+    sf::RenderTarget&       window,
+    const sf::Texture&      txBackgroundChunk,
+    const sf::Texture&      txDrawings,
+    sf::CPUDrawableBatch&   batch,
+    const sf::TextureAtlas& textureAtlas,
+    const sf::Vector2f      resolution,
+    const float             hudScale,
+    const float             hueMod,
+    const sf::base::U8      shouldDrawUIAlpha)
 {
     //
     // Screen position of minimap's top-left corner
@@ -246,7 +248,7 @@ void drawMinimap(sf::Shader&             shader,
     const sf::RectangleShape minimapBorder{
         {.position         = minimapPos,
          .fillColor        = sf::Color::Transparent,
-         .outlineColor     = sf::Color::White,
+         .outlineColor     = sf::Color::whiteMask(shouldDrawUIAlpha),
          .outlineThickness = 2.f,
          .size             = sf::Vector2f{mapLimit / minimapScale, minimapSize.y}}};
 
@@ -255,7 +257,7 @@ void drawMinimap(sf::Shader&             shader,
     const sf::RectangleShape minimapIndicator{
         {.position         = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
          .fillColor        = sf::Color::Transparent,
-         .outlineColor     = sf::Color::Blue.withHueMod(hueMod),
+         .outlineColor     = sf::Color::Blue.withHueMod(hueMod).withAlpha(shouldDrawUIAlpha),
          .outlineThickness = 2.f,
          .size             = sf::Vector2f{gameScreenSize / minimapScale}}};
 
@@ -263,12 +265,15 @@ void drawMinimap(sf::Shader&             shader,
     // Convert minimap dimensions to normalized `[0, 1]` range for scissor rectangle
     const float progressRatio = sf::base::clamp(mapLimit / boundaries.x, 0.f, 1.f);
 
-    const auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale)
-                                           .componentWiseClamp({0.f, 0.f}, {1.f, 1.f});
+    auto minimapScaledPosition = minimapPos.componentWiseDiv(resolution / hudScale);
 
     const auto minimapScaledSize = minimapSize.componentWiseDiv(resolution / hudScale)
                                        .clampX(0.f, (1.f - minimapScaledPosition.x) / progressRatio)
                                        .clampY(0.f, 1.f - minimapScaledPosition.y);
+
+    minimapScaledPosition = minimapScaledPosition.componentWiseClamp({0.f, 0.f},
+                                                                     {sf::base::max(0.f, 1.f - minimapScaledSize.x),
+                                                                      sf::base::max(0.f, 1.f - minimapScaledSize.y)});
 
     //
     // Special view that renders the world scaled down for minimap
@@ -284,7 +289,8 @@ void drawMinimap(sf::Shader&             shader,
     //
     // Draw minimap contents
     window.setView(minimapView); // Use minimap projection
-    window.draw(sf::RectangleShape{{.fillColor = sf::Color::Black, .size = boundaries * hudScale}}, /* texture */ nullptr);
+    window.draw(sf::RectangleShape{{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale}},
+                /* texture */ nullptr);
 
     // The background has a repeating texture, and it's one ninth of the whole map
     const sf::Vector2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
@@ -293,12 +299,21 @@ void drawMinimap(sf::Shader&             shader,
     window.draw(txBackgroundChunk,
                 {.scale       = {hudScale, hudScale},
                  .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = hueColor(hueMod, 128u)},
+                 .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
                 {.shader = &shader}); // Draw world background
 
-    cpuDrawableBatch.scale = {hudScale, hudScale};
-    window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader}); // Draw game objects
-    cpuDrawableBatch.scale = {1.f, 1.f};
+    window.draw(txDrawings,
+                {.scale       = {hudScale, hudScale},
+                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
+                 .color = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(225u)))},
+                {.shader = &shader}); // Draw drawings
+
+    if (shouldDrawUIAlpha > 200u)
+    {
+        batch.scale = {hudScale, hudScale};
+        window.draw(batch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        batch.scale = {1.f, 1.f};
+    }
 
     //
     // Switch back to HUD view and draw overlay elements
@@ -321,7 +336,7 @@ void drawSplashScreen(sf::RenderWindow&        window,
                  .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
                  .origin      = txLogo.getSize().toVector2f() / 2.f,
                  .textureRect = txLogo.getRect(),
-                 .color       = sf::Color::White.withAlpha(static_cast<U8>(easeInOutSine(progress) * 255.f))},
+                 .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
                 txLogo);
 }
 
@@ -638,6 +653,18 @@ struct Main
     sf::FloatRect txrCCMaskEngi{addImgResourceToAtlas("ccmaskengi.png")};
     sf::FloatRect txrCCMaskRepulso{addImgResourceToAtlas("ccmaskrepulso.png")};
     sf::FloatRect txrCCMaskAttracto{addImgResourceToAtlas("ccmaskattracto.png")};
+    sf::FloatRect txrMMNormal{addImgResourceToAtlas("mmcatnormal.png")};
+    sf::FloatRect txrMMUni{addImgResourceToAtlas("mmcatuni.png")};
+    sf::FloatRect txrMMDevil{addImgResourceToAtlas("mmcatdevil.png")};
+    sf::FloatRect txrMMAstro{addImgResourceToAtlas("mmcatastro.png")};
+    sf::FloatRect txrMMWitch{addImgResourceToAtlas("mmcatwitch.png")};
+    sf::FloatRect txrMMWizard{addImgResourceToAtlas("mmcatwizard.png")};
+    sf::FloatRect txrMMMouse{addImgResourceToAtlas("mmcatmouse.png")};
+    sf::FloatRect txrMMEngi{addImgResourceToAtlas("mmcatengi.png")};
+    sf::FloatRect txrMMRepulso{addImgResourceToAtlas("mmcatrepulso.png")};
+    sf::FloatRect txrMMAttracto{addImgResourceToAtlas("mmcatattracto.png")};
+    sf::FloatRect txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
+    sf::FloatRect txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
 
     ////////////////////////////////////////////////////////////
     // Cat animation rects: eye blinking
@@ -900,6 +927,7 @@ struct Main
     sf::CPUDrawableBatch starBubbleDrawableBatch;
     sf::CPUDrawableBatch bombBubbleDrawableBatch;
     sf::CPUDrawableBatch cpuDrawableBatch;
+    sf::CPUDrawableBatch minimapDrawableBatch;
     sf::CPUDrawableBatch catTextDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
     sf::CPUDrawableBatch hudTopDrawableBatch; // drawn on top of ImGui
@@ -947,7 +975,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
-    TargetedCountdown splashCountdown{.startingValue = 2000.f};
+    TargetedCountdown splashCountdown{.startingValue = 2500.f};
 
     ////////////////////////////////////////////////////////////
     // Tip state
@@ -2483,7 +2511,7 @@ Witchcat interaction: TODO P0)",
         constexpr const char* popupLabel = "BackgroundSelectorPopup";
         static sf::base::U8   opacity    = 168u;
 
-        uiImageFromAtlas(txrIconBg, {.scale = {0.65f, 0.65f}, .color = sf::Color::White.withAlpha(opacity)});
+        uiImageFromAtlas(txrIconBg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -2537,7 +2565,7 @@ Witchcat interaction: TODO P0)",
         constexpr const char* popupLabel = "MusicSelectorPopup";
         static sf::base::U8   opacity    = 168u;
 
-        uiImageFromAtlas(txrIconBGM, {.scale = {0.65f, 0.65f}, .color = sf::Color::White.withAlpha(opacity)});
+        uiImageFromAtlas(txrIconBGM, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -2592,7 +2620,7 @@ Witchcat interaction: TODO P0)",
         constexpr const char* popupLabel = "QuickSettingsPopup";
         static sf::base::U8   opacity    = 168u;
 
-        uiImageFromAtlas(txrIconCfg, {.scale = {0.65f, 0.65f}, .color = sf::Color::White.withAlpha(opacity)});
+        uiImageFromAtlas(txrIconCfg, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -2634,6 +2662,34 @@ Witchcat interaction: TODO P0)",
 
             ImGui::Separator();
 
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Minimap Scale", &profile.minimapScale, 5.f, 40.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("HUD Scale", &profile.hudScale, 0.5f, 2.f, "%.2f");
+
+            ImGui::AlignTextToFramePadding();
+            ImGui::Text("UI Scale");
+
+            const auto makeUIScaleButton = [&](const char* label, const float scaleFactor)
+            {
+                ImGui::SameLine();
+                if (ImGui::Button(label, ImVec2{46.f * profile.uiScale, 0.f}))
+                {
+                    playSound(sounds.buy);
+                    profile.uiScale = scaleFactor;
+                }
+            };
+
+            makeUIScaleButton("XXL", 1.75f);
+            makeUIScaleButton("XL", 1.5f);
+            makeUIScaleButton("L", 1.25f);
+            makeUIScaleButton("M", 1.f);
+            makeUIScaleButton("S", 0.75f);
+            makeUIScaleButton("XS", 0.5f);
+
+            ImGui::Separator();
+
             uiCheckbox("Bubble shader", &profile.useBubbleShader);
 
             ImGui::BeginDisabled(!profile.useBubbleShader);
@@ -2656,7 +2712,7 @@ Witchcat interaction: TODO P0)",
         constexpr const char* popupLabel = "VolumeSelectorPopup";
         static sf::base::U8   opacity    = 168u;
 
-        uiImageFromAtlas(txrIconVolume, {.scale = {0.65f, 0.65f}, .color = sf::Color::White.withAlpha(opacity)});
+        uiImageFromAtlas(txrIconVolume, {.scale = {0.65f, 0.65f}, .color = sf::Color::whiteMask(opacity)});
 
         opacity = ImGui::IsItemHovered() || ImGui::IsPopupOpen(popupLabel) ? 255u : 168u;
 
@@ -4565,161 +4621,149 @@ Witchcat interaction: TODO P0)",
         imgsep(txrMagicSeparator2, "spells");
 
         if (pt.psvSpellCount.nPurchases == 0)
-        {
             ImGui::Text("No spells revealed yet...");
-        }
-        else
+
+        ImGui::BeginDisabled(isWizardBusy());
+        uiBeginColumns();
+        uiButtonHueMod = 45.f;
+
+        //
+        // SPELL 0
+        if (checkUiUnlock(32u, pt.psvSpellCount.nPurchases >= 1))
         {
-            ImGui::BeginDisabled(isWizardBusy());
-            uiBeginColumns();
-            uiButtonHueMod = 45.f;
+            uiSetUnlockLabelY(32u);
+            std::sprintf(uiTooltipBuffer,
+                         "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
+                         "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
+            uiLabelBuffer[0] = '\0';
+            bool done        = false;
 
-            //
-            // SPELL 0
-            if (checkUiUnlock(32u, pt.psvSpellCount.nPurchases >= 1))
+            if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion", done, ManaType{5u}, pt.mana, "%s mana##%u"))
             {
-                uiSetUnlockLabelY(32u);
-                std::sprintf(uiTooltipBuffer,
-                             "Transforms a percentage of bubbles around the Wizardcat into star bubbles "
-                             "immediately.\n\nCan be upgraded to ignore bombs with prestige points.");
-                uiLabelBuffer[0] = '\0';
-                bool done        = false;
+                wizardcatSpin.value = sf::base::tau;
 
-                if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
-                                                           done,
-                                                           ManaType{5u},
-                                                           pt.mana,
-                                                           "%s mana##%u"))
-                {
-                    wizardcatSpin.value = sf::base::tau;
+                doWizardSpellStarpawConversion(*wizardCat);
 
-                    doWizardSpellStarpawConversion(*wizardCat);
+                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+                    doWizardSpellStarpawConversion(*copyCat);
 
-                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                        doWizardSpellStarpawConversion(*copyCat);
-
-                    done = false;
-                    statSpellCast(0u);
-                }
-
-                std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
-                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
-                                                pt.psvStarpawPercentage,
-                                                1u,
-                                                static_cast<MoneyType>(pt.psvStarpawPercentage.nextCost()),
-                                                pt.wisdom,
-                                                "%s WP##%u");
+                done = false;
+                statSpellCast(0u);
             }
 
-            //
-            // SPELL 1
-            if (checkUiUnlock(33u, pt.psvSpellCount.nPurchases >= 2))
-            {
-                ImGui::Separator();
-
-                uiSetUnlockLabelY(33u);
-                std::sprintf(uiTooltipBuffer,
-                             "Creates a value multiplier aura around the Wizardcat that affects all cats and "
-                             "bubbles. "
-                             "Lasts 6 seconds.\n\nCasting this spell multiple times will accumulate the aura "
-                             "duration.");
-                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
-                bool done = false;
-                if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
-                                                           done,
-                                                           ManaType{20u},
-                                                           pt.mana,
-                                                           "%s mana##%u"))
-                {
-                    wizardcatSpin.value = sf::base::tau;
-
-                    doWizardSpellMewltiplierAura(*wizardCat);
-
-                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                        doWizardSpellMewltiplierAura(*copyCat);
-
-                    done = false;
-                    statSpellCast(1u);
-                }
-
-                std::sprintf(uiTooltipBuffer, "Increase the multiplier applied while the aura is active.");
-                std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
-                (void)makePSVButtonExByCurrency("  higher multiplier",
-                                                pt.psvMewltiplierMult,
-                                                1u,
-                                                static_cast<MoneyType>(pt.psvMewltiplierMult.nextCost()),
-                                                pt.wisdom,
-                                                "%s WP##%u");
-            }
-
-            //
-            // SPELL 2
-            if (checkUiUnlock(34u, pt.psvSpellCount.nPurchases >= 3))
-            {
-                ImGui::Separator();
-
-                uiSetUnlockLabelY(34u);
-                std::sprintf(uiTooltipBuffer,
-                             "The Wizardcat uses their magic to empower a nearby Witchcat, reducing their remaining "
-                             "ritual cooldown.\n\nNote: This spell has no effect if there is no Witchcat "
-                             "nearby, or if there are voodoo dolls left to collect.");
-                uiLabelBuffer[0] = '\0';
-
-                bool done = false;
-                if (makePurchasableButtonOneTimeByCurrency("Dark Union", done, ManaType{30u}, pt.mana, "%s mana##%u"))
-                {
-                    wizardcatSpin.value = sf::base::tau;
-
-                    doWizardSpellDarkUnion(*wizardCat);
-
-                    if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                        doWizardSpellDarkUnion(*copyCat);
-
-                    done = false;
-                    statSpellCast(2u);
-                }
-
-                std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage.");
-                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvDarkUnionPercentage.currentValue()));
-                (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
-                                                pt.psvDarkUnionPercentage,
-                                                1u,
-                                                static_cast<MoneyType>(pt.psvDarkUnionPercentage.nextCost()),
-                                                pt.wisdom,
-                                                "%s WP##%u");
-            }
-
-            //
-            // SPELL 3 (TODO P0: buff next spell cast, or something similar)
-            if (checkUiUnlock(35u, pt.psvSpellCount.nPurchases >= 4))
-            {
-                ImGui::Separator();
-
-                uiSetUnlockLabelY(35u);
-                std::sprintf(uiTooltipBuffer, "TODO");
-                std::sprintf(uiLabelBuffer, "TODO");
-
-                bool done = false;
-                if (makePurchasableButtonOneTimeByCurrency("TODO", done, ManaType{30u}, pt.mana, "%s mana##%u"))
-                {
-                    sounds.cast0.setPosition({wizardCat->position.x, wizardCat->position.y});
-                    playSound(sounds.cast0);
-
-                    // TODO P0: effect
-
-                    done = false;
-                    ++wizardCat->hits;
-                    wizardCat->cooldown.value = maxCooldown * 2.f;
-
-                    statSpellCast(3u);
-                }
-            }
-
-            uiButtonHueMod = 0.f;
-            ImGui::Columns(1);
-            ImGui::EndDisabled();
+            std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
+            (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
+                                            pt.psvStarpawPercentage,
+                                            1u,
+                                            static_cast<MoneyType>(pt.psvStarpawPercentage.nextCost()),
+                                            pt.wisdom,
+                                            "%s WP##%u");
         }
+
+        //
+        // SPELL 1
+        if (checkUiUnlock(33u, pt.psvSpellCount.nPurchases >= 2))
+        {
+            ImGui::Separator();
+
+            uiSetUnlockLabelY(33u);
+            std::sprintf(uiTooltipBuffer,
+                         "Creates a value multiplier aura around the Wizardcat that affects all cats and "
+                         "bubbles. "
+                         "Lasts 6 seconds.\n\nCasting this spell multiple times will accumulate the aura "
+                         "duration.");
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
+            bool done = false;
+            if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura", done, ManaType{20u}, pt.mana, "%s mana##%u"))
+            {
+                wizardcatSpin.value = sf::base::tau;
+
+                doWizardSpellMewltiplierAura(*wizardCat);
+
+                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+                    doWizardSpellMewltiplierAura(*copyCat);
+
+                done = false;
+                statSpellCast(1u);
+            }
+
+            std::sprintf(uiTooltipBuffer, "Increase the multiplier applied while the aura is active.");
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
+            (void)makePSVButtonExByCurrency("  higher multiplier",
+                                            pt.psvMewltiplierMult,
+                                            1u,
+                                            static_cast<MoneyType>(pt.psvMewltiplierMult.nextCost()),
+                                            pt.wisdom,
+                                            "%s WP##%u");
+        }
+
+        //
+        // SPELL 2
+        if (checkUiUnlock(34u, pt.psvSpellCount.nPurchases >= 3))
+        {
+            ImGui::Separator();
+
+            uiSetUnlockLabelY(34u);
+            std::sprintf(uiTooltipBuffer,
+                         "The Wizardcat uses their magic to empower a nearby Witchcat, reducing their remaining "
+                         "ritual cooldown.\n\nNote: This spell has no effect if there is no Witchcat "
+                         "nearby, or if there are voodoo dolls left to collect.");
+            uiLabelBuffer[0] = '\0';
+
+            bool done = false;
+            if (makePurchasableButtonOneTimeByCurrency("Dark Union", done, ManaType{30u}, pt.mana, "%s mana##%u"))
+            {
+                wizardcatSpin.value = sf::base::tau;
+
+                doWizardSpellDarkUnion(*wizardCat);
+
+                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+                    doWizardSpellDarkUnion(*copyCat);
+
+                done = false;
+                statSpellCast(2u);
+            }
+
+            std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage.");
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvDarkUnionPercentage.currentValue()));
+            (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
+                                            pt.psvDarkUnionPercentage,
+                                            1u,
+                                            static_cast<MoneyType>(pt.psvDarkUnionPercentage.nextCost()),
+                                            pt.wisdom,
+                                            "%s WP##%u");
+        }
+
+        //
+        // SPELL 3 (TODO P0: buff next spell cast, or something similar)
+        if (checkUiUnlock(35u, pt.psvSpellCount.nPurchases >= 4))
+        {
+            ImGui::Separator();
+
+            uiSetUnlockLabelY(35u);
+            std::sprintf(uiTooltipBuffer, "TODO");
+            std::sprintf(uiLabelBuffer, "TODO");
+
+            bool done = false;
+            if (makePurchasableButtonOneTimeByCurrency("TODO", done, ManaType{30u}, pt.mana, "%s mana##%u"))
+            {
+                sounds.cast0.setPosition({wizardCat->position.x, wizardCat->position.y});
+                playSound(sounds.cast0);
+
+                // TODO P0: effect
+
+                done = false;
+                ++wizardCat->hits;
+                wizardCat->cooldown.value = maxCooldown * 2.f;
+
+                statSpellCast(3u);
+            }
+        }
+
+        uiButtonHueMod = 0.f;
+        ImGui::Columns(1);
+        ImGui::EndDisabled();
     }
 
     ////////////////////////////////////////////////////////////
@@ -7382,6 +7426,19 @@ Witchcat interaction: TODO P0)",
                     playSound(sounds.rocket, /* maxOverlap */ 1u);
 
                     spawnParticles(1, drawPosition + sf::Vector2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
+
+                    if (rng.getI(0, 10) > 5)
+                        spawnParticle(ParticleData{.position      = drawPosition + sf::Vector2f{56.f, 45.f},
+                                                   .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
+                                                   .scale         = rng.getF(0.75f, 1.f) * 0.45f,
+                                                   .accelerationY = -0.00017f,
+                                                   .opacity       = 0.7f,
+                                                   .opacityDecay  = rng.getF(0.00065f, 0.00075f),
+                                                   .rotation      = rng.getF(0.f, sf::base::tau),
+                                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                      0.f,
+                                      ParticleType::Smoke);
+
                     particleTimer = 0.f;
                 }
 
@@ -9109,6 +9166,8 @@ Witchcat interaction: TODO P0)",
                          const sf::Vector2f (&catTailOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
+        const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
+
         if (!bubbleCullingBoundaries.isInside(cat.position))
             return;
 
@@ -9128,7 +9187,6 @@ Witchcat interaction: TODO P0)",
 
         const U8 rangeInnerAlpha = shouldDisplayRangeCircle ? 75u : 0u;
 
-        const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
         const sf::FloatRect& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
         const sf::FloatRect& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
         const sf::Vector2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
@@ -9657,12 +9715,12 @@ Witchcat interaction: TODO P0)",
                     .scale              = {catScaleMult, catScaleMult},
                     .origin             = {32.f, 0.f},
                     .outlineTextureRect = txrWhiteDot,
-                    .fillColor          = sf::Color::White.withAlpha(128u),
+                    .fillColor          = sf::Color::whiteMask(128u),
                     .outlineColor       = textOutlineColor,
                     .outlineThickness   = 1.f,
-                    .size             = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, FLT_MAX),
-                    .cornerRadius     = 1.f,
-                    .cornerPointCount = 8u,
+                    .size               = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, 64.f),
+                    .cornerRadius       = 1.f,
+                    .cornerPointCount   = 8u,
                 });
         }
     }
@@ -9718,7 +9776,7 @@ Witchcat interaction: TODO P0)",
                 .position           = shrine.position,
                 .origin             = {range, range},
                 .outlineTextureRect = txrWhiteDot,
-                .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
+                .fillColor          = circleOutlineColor.withAlpha(rangeInnerAlpha),
                 .outlineColor       = circleColor,
                 .outlineThickness   = 1.f,
                 .radius             = range,
@@ -9935,7 +9993,7 @@ Witchcat interaction: TODO P0)",
                 .origin      = txrCoin.size / 2.f,
                 .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
                 .textureRect = txrCoin,
-                .color       = sf::Color::White.withAlpha(static_cast<U8>(alpha)),
+                .color       = sf::Color::whiteMask(static_cast<U8>(alpha)),
             });
         }
     }
@@ -9974,7 +10032,7 @@ Witchcat interaction: TODO P0)",
             textStatusBuffer.origin   = textStatusBuffer.getLocalBounds().size / 2.f;
 
             const auto opacityAsAlpha = static_cast<sf::base::U8>(tp.opacity * 255.f);
-            textStatusBuffer.setFillColor(sf::Color::White.withAlpha(opacityAsAlpha));
+            textStatusBuffer.setFillColor(sf::Color::whiteMask(opacityAsAlpha));
             textStatusBuffer.setOutlineColor(outlineHueColor.withAlpha(opacityAsAlpha));
 
             cpuDrawableBatch.add(textStatusBuffer);
@@ -9999,16 +10057,16 @@ Witchcat interaction: TODO P0)",
         getWindow().draw(txArrow,
                          {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
                           .origin   = txArrow.getRect().getCenterRight(),
-                          .color    = sf::Color::White.withAlpha(static_cast<U8>(blinkOpacity))});
+                          .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
 
         getWindow().draw(txArrow,
                          {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
                           .origin = txArrow.getRect().getCenterRight(),
-                          .color  = sf::Color::White.withAlpha(static_cast<U8>(blinkOpacity))});
+                          .color  = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawImGui()
+    void gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
     {
         ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
                                    [&]
@@ -10033,7 +10091,7 @@ Witchcat interaction: TODO P0)",
 
             optWindow->draw(rtImGui->getTexture(),
                             {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                             .color = hueColor(currentBackgroundHue.asDegrees(), 255u)},
+                             .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
                             {.shader = &shader});
         }
     }
@@ -10139,9 +10197,9 @@ Witchcat interaction: TODO P0)",
         cursorComboText.position = sf::Mouse::getPosition(window).toVector2f() +
                                    sf::Vector2f{30.f, 48.f} * profile.cursorScale * dpiScalingFactor;
 
-        cursorComboText.setFillColor(sf::Color::Black.withAlpha(alphaU8));
+        cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
         cursorComboText.setOutlineColor(
-            sf::Color{111u, 170u, 244u}.withHueMod(profile.cursorHue + currentBackgroundHue.asDegrees()).withAlpha(alphaU8));
+            sf::Color{111u, 170u, 244u, alphaU8}.withHueMod(profile.cursorHue + currentBackgroundHue.asDegrees()));
 
         if (combo > 0)
             cursorComboText.setString("x" + std::to_string(combo + 1));
@@ -10205,7 +10263,7 @@ Witchcat interaction: TODO P0)",
                                        .scale = sf::Vector2f{0.4f, 0.4f} + sf::Vector2f{0.4f, 0.4f} * easeInOutBack(bgProgress),
                                        .origin      = txTipBg.getSize().toVector2f() / 2.f,
                                        .textureRect = txTipBg.getRect(),
-                                       .color = sf::Color::White.withAlpha(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
+                                       .color = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
 
         SFML_BASE_ASSERT(profile.hudScale > 0.f);
@@ -10220,7 +10278,7 @@ Witchcat interaction: TODO P0)",
                                  .origin      = txTipByte.getSize().toVector2f() / 2.f,
                                  .rotation    = sf::radians(sf::base::tau * easeInOutBack(byteProgress)),
                                  .textureRect = txTipByte.getRect(),
-                                 .color       = sf::Color::White.withAlpha(static_cast<U8>(tipByteAlpha))};
+                                 .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
         tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
         getWindow().draw(tipByteSprite, txTipByte);
@@ -10279,7 +10337,7 @@ Witchcat interaction: TODO P0)",
                           .scale            = sf::Vector2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
                           .string           = tipString.substr(0, tipCharIdx),
                           .characterSize    = 60u,
-                          .fillColor        = sf::Color::White.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
+                          .fillColor        = sf::Color::whiteMask(static_cast<sf::base::U8>(tipByteAlpha)),
                           .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                           .outlineThickness = 4.f}};
 
@@ -10857,7 +10915,7 @@ Witchcat interaction: TODO P0)",
             rtBackground->draw(txDrawings,
                                {
                                    .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVector2f() * 2.f},
-                                   .color = sf::Color::White.withAlpha(getAlpha(200.f)),
+                                   .color = sf::Color::whiteMask(getAlpha(200.f)),
                                });
 
         rtBackground->draw(*detailTx[idx],
@@ -10865,7 +10923,7 @@ Witchcat interaction: TODO P0)",
                                .scale       = {0.75f, 0.75f},
                                .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
                                                txBackgroundChunk.getSize().toVector2f() * 1.5f},
-                               .color       = sf::Color::White.withAlpha(getAlpha(175.f)),
+                               .color       = sf::Color::whiteMask(getAlpha(175.f)),
                            });
 
         rtBackground->draw(txClouds,
@@ -10873,7 +10931,7 @@ Witchcat interaction: TODO P0)",
                                .scale       = {1.25f, 1.25f},
                                .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
                                                txBackgroundChunk.getSize().toVector2f()},
-                               .color       = sf::Color::White.withAlpha(getAlpha(128.f)),
+                               .color       = sf::Color::whiteMask(getAlpha(128.f)),
                            });
 
         rtBackground->display();
@@ -11126,7 +11184,11 @@ Witchcat interaction: TODO P0)",
 
         //
         // Only draw UI elements if not in prestige transition and splash is done
-        const bool shouldDrawUI = !inPrestigeTransition && splashCountdown.value <= 0.f;
+        const bool shouldDrawUI      = !inPrestigeTransition && splashCountdown.value <= 0.f;
+        const auto shouldDrawUIAlpha = inPrestigeTransition || splashCountdown.getProgress() < 0.75f
+                                           ? static_cast<sf::base::U8>(0u)
+                                           : static_cast<sf::base::U8>(
+                                                 remap(easeInOutSine(splashCountdown.getProgress()), 0.75f, 1.f, 0.f, 255.f));
 
         steamMgr.runCallbacks();
 
@@ -11390,8 +11452,7 @@ Witchcat interaction: TODO P0)",
 
         //
         // Draw ImGui menu
-        if (shouldDrawUI)
-            uiDraw(mousePos);
+        uiDraw(mousePos);
 
         //
         // Compute views
@@ -11443,6 +11504,76 @@ Witchcat interaction: TODO P0)",
             gameLoopDisplayBubblesWithoutShader();
 
         //
+        // Draw minimap stuff (TODO P0: organize)
+        {
+            minimapDrawableBatch.clear();
+
+            const sf::FloatRect* mmCatTxrs[]{
+                &txrMMNormal,
+                &txrMMUni,
+                &txrMMDevil,
+                &txrMMAstro,
+                &txrMMWitch,
+                &txrMMWizard,
+                &txrMMMouse,
+                &txrMMEngi,
+                &txrMMRepulso,
+                &txrMMAttracto,
+                &txrMMCopy,
+            };
+
+            static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
+
+            for (const Shrine& shrine : pt.shrines)
+            {
+                const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
+
+                minimapDrawableBatch.add(
+                    sf::Sprite{.position    = shrine.position,
+                               .scale       = {0.7f, 0.7f},
+                               .origin      = txrMMShrine.size / 2.f,
+                               .rotation    = sf::radians(0.f),
+                               .textureRect = txrMMShrine,
+                               .color       = hueColor(shrine.getHue(), shrineAlpha)});
+            }
+
+            for (const Cat& cat : pt.cats)
+            {
+                const auto& catMMTxr = *mmCatTxrs[asIdx(cat.type)];
+
+                minimapDrawableBatch.add(
+                    sf::Sprite{.position    = cat.position,
+                               .scale       = {1.f, 1.f},
+                               .origin      = catMMTxr.size / 2.f,
+                               .rotation    = sf::radians(0.f),
+                               .textureRect = catMMTxr,
+                               .color       = hueColor(cat.hue, 255u)});
+            }
+
+            for (const Doll& doll : pt.dolls)
+            {
+                minimapDrawableBatch.add(
+                    sf::Sprite{.position    = doll.position,
+                               .scale       = {0.5f, 0.5f},
+                               .origin      = txrDollNormal.size / 2.f,
+                               .rotation    = sf::radians(0.f),
+                               .textureRect = txrDollNormal,
+                               .color       = hueColor(doll.hue, 255u)});
+            }
+
+            for (const Doll& doll : pt.copyDolls)
+            {
+                minimapDrawableBatch.add(
+                    sf::Sprite{.position    = doll.position,
+                               .scale       = {0.5f, 0.5f},
+                               .origin      = txrDollNormal.size / 2.f,
+                               .rotation    = sf::radians(0.f),
+                               .textureRect = txrDollNormal,
+                               .color       = hueColor(doll.hue + 180.f, 255u)});
+            }
+        }
+
+        //
         // Draw cats, shrines, dolls, particles, and text particles
         cpuDrawableBatch.clear();
         catTextDrawableBatch.clear();
@@ -11464,8 +11595,8 @@ Witchcat interaction: TODO P0)",
         if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
             window.draw(sf::RectangleShape{{.position         = dragRect->position,
                                             .origin           = {0.f, 0.f},
-                                            .fillColor        = sf::Color::White.withAlpha(64u),
-                                            .outlineColor     = sf::Color::White.withAlpha(176u),
+                                            .fillColor        = sf::Color::whiteMask(64u),
+                                            .outlineColor     = sf::Color::whiteMask(176u),
                                             .outlineThickness = 4.f,
                                             .size             = dragRect->size}},
                         /* texture */ nullptr);
@@ -11500,14 +11631,22 @@ Witchcat interaction: TODO P0)",
         // Money text & spent money effect
         gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
         gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
-        if (shouldDrawUI && !debugHideUI)
+        if (!debugHideUI)
+        {
+            moneyText.setFillColorAlpha(shouldDrawUIAlpha);
+            moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
             window.draw(moneyText);
+        }
 
         //
         // Combo text
         gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-        if (shouldDrawUI && !debugHideUI && pt.comboPurchased)
+        if (!debugHideUI && pt.comboPurchased)
+        {
+            comboText.setFillColorAlpha(shouldDrawUIAlpha);
+            comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
             window.draw(comboText);
+        }
 
         //
         // Portal storm buff
@@ -11533,8 +11672,12 @@ Witchcat interaction: TODO P0)",
         //
         // Buff text
         gameLoopUpdateBuffText();
-        if (shouldDrawUI && !debugHideUI)
+        if (!debugHideUI)
+        {
+            buffText.setFillColorAlpha(shouldDrawUIAlpha);
+            buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
             window.draw(buffText);
+        }
 
         //
         // Combo bar
@@ -11546,7 +11689,7 @@ Witchcat interaction: TODO P0)",
 
         //
         // Minimap
-        if (shouldDrawUI && !debugHideUI && pt.mapPurchased)
+        if (!debugHideUI && pt.mapPurchased)
             drawMinimap(shader,
                         profile.minimapScale,
                         pt.getMapLimit(),
@@ -11554,20 +11697,24 @@ Witchcat interaction: TODO P0)",
                         scaledHUDView,
                         window,
                         txBackgroundChunk,
-                        cpuDrawableBatch,
+                        txDrawings,
+                        minimapDrawableBatch,
                         textureAtlas,
                         resolution,
                         profile.hudScale,
-                        currentBackgroundHue.asDegrees());
+                        currentBackgroundHue.asDegrees(),
+                        shouldDrawUIAlpha);
 
         //
         // UI and Toasts
-        gameLoopDrawImGui();
+        gameLoopDrawImGui(shouldDrawUIAlpha);
 
         //
         // Purchase unlocked/available effects
         window.setView(nonScaledHUDView);
-        gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
+
+        if (shouldDrawUI)
+            gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
 
         // Top-level hud particles
         if (shouldDrawUI)
@@ -11734,9 +11881,9 @@ int main(int argc, const char** argv)
     Main{steamMgr}.run();
 }
 
-// TODO P0: exceeding max cooldown makes cooldown bar super long on wizard
 // TODO P0: achievements for speedrunning milestones
-// TODO P1: when astrocat touches hellcat portal its buffed
+// TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
+// TODO P1: copycat bg drawings
 // TODO P1: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
