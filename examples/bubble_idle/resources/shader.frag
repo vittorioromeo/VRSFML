@@ -42,8 +42,7 @@ vec3 hsv2rgb(vec3 c)
 
 void main()
 {
-    vec4  texColor = texture(sf_u_texture, sf_v_texCoord);
-    float alpha    = texColor.a;
+    vec4 texColor = texture(sf_u_texture, sf_v_texCoord);
 
     if (texColor.a < 0.01)
         discard;
@@ -129,7 +128,7 @@ void main()
     // Proper alpha premultiplication
     if (u_bubbleEffect)
     {
-        sf_fragColor = vec4(finalColor * alpha, alpha);
+        sf_fragColor = vec4(finalColor * texColor.a, texColor.a);
     }
     else
     {
