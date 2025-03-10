@@ -198,10 +198,8 @@ void Text::setFillColor(Color color)
     // Change vertex colors directly, no need to update whole geometry
     // (if geometry is updated anyway, we can skip this step)
     if (!m_geometryNeedUpdate)
-    {
         for (base::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
             m_vertices[i].color = m_fillColor;
-    }
 }
 
 
@@ -216,10 +214,40 @@ void Text::setOutlineColor(Color color)
     // Change vertex colors directly, no need to update whole geometry
     // (if geometry is updated anyway, we can skip this step)
     if (!m_geometryNeedUpdate)
-    {
         for (base::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
             m_vertices[i].color = m_outlineColor;
-    }
+}
+
+
+////////////////////////////////////////////////////////////
+void Text::setFillColorAlpha(base::U8 alpha)
+{
+    if (m_outlineColor.a == alpha)
+        return;
+
+    m_outlineColor.a = alpha;
+
+    // Change vertex colors directly, no need to update whole geometry
+    // (if geometry is updated anyway, we can skip this step)
+    if (!m_geometryNeedUpdate)
+        for (base::SizeT i = 0; i < m_fillVerticesStartIndex; ++i)
+            m_vertices[i].color.a = m_outlineColor.a;
+}
+
+
+////////////////////////////////////////////////////////////
+void Text::setOutlineColorAlpha(base::U8 alpha)
+{
+    if (m_fillColor.a == alpha)
+        return;
+
+    m_fillColor.a = alpha;
+
+    // Change vertex colors directly, no need to update whole geometry
+    // (if geometry is updated anyway, we can skip this step)
+    if (!m_geometryNeedUpdate)
+        for (base::SizeT i = m_fillVerticesStartIndex; i < m_vertices.size(); ++i)
+            m_vertices[i].color.a = m_fillColor.a;
 }
 
 
@@ -287,6 +315,20 @@ Color Text::getFillColor() const
 Color Text::getOutlineColor() const
 {
     return m_outlineColor;
+}
+
+
+////////////////////////////////////////////////////////////
+base::U8 Text::getFillColorAlpha() const
+{
+    return m_fillColor.a;
+}
+
+
+////////////////////////////////////////////////////////////
+base::U8 Text::getOutlineColorAlpha() const
+{
+    return m_outlineColor.a;
 }
 
 
