@@ -595,6 +595,7 @@ struct Main
     sf::FloatRect txrFireParticle2{addImgResourceToAtlas("fireparticle2.png")};
     sf::FloatRect txrSmokeParticle{addImgResourceToAtlas("smokeparticle.png")};
     sf::FloatRect txrExplosionParticle{addImgResourceToAtlas("explosionparticle.png")};
+    sf::FloatRect txrTrailParticle{addImgResourceToAtlas("trailparticle.png")};
     sf::FloatRect txrHexParticle{addImgResourceToAtlas("hexparticle.png")};
     sf::FloatRect txrShrineParticle{addImgResourceToAtlas("shrineparticle.png")};
     sf::FloatRect txrCogParticle{addImgResourceToAtlas("cogparticle.png")};
@@ -776,6 +777,7 @@ struct Main
         txrFireParticle2,
         txrSmokeParticle,
         txrExplosionParticle,
+        txrTrailParticle,
     };
 
     ///////////////////////////////////////////////////////////
@@ -964,6 +966,10 @@ struct Main
     CullingBoundaries bubbleCullingBoundaries{};
 
     ////////////////////////////////////////////////////////////
+    // Last frame mouse position (world space)
+    sf::Vector2f lastMousePos;
+
+    ////////////////////////////////////////////////////////////
     // Cat dragging state
     float                            catDragPressDuration{0.f};
     sf::base::Optional<sf::Vector2f> catDragOrigin;
@@ -1132,16 +1138,20 @@ struct Main
                                   const float        speedMult,
                                   const float        opacity = 1.f)
     {
-        return particles.emplace_back(ParticleData{.position = position,
-                                                   .velocity = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
-                                                   .scale         = rng.getF(0.08f, 0.27f) * scaleMult,
-                                                   .accelerationY = 0.002f,
-                                                   .opacity       = opacity,
-                                                   .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                                   .torque        = rng.getF(-0.002f, 0.002f)},
-                                      0.f,
-                                      particleType);
+        return particles.emplace_back(
+            ParticleData{
+                .position      = position,
+                .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
+                .scale         = rng.getF(0.08f, 0.27f) * scaleMult,
+                .scaleDecay    = 0.f,
+                .accelerationY = 0.002f,
+                .opacity       = opacity,
+                .opacityDecay  = rng.getF(0.00025f, 0.0015f),
+                .rotation      = rng.getF(0.f, sf::base::tau),
+                .torque        = rng.getF(-0.002f, 0.002f),
+            },
+            0.f,
+            particleType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1179,6 +1189,7 @@ struct Main
         if (!profile.showParticles || !particleCullingBoundaries.isInside(particleData.position))
             return;
 
+        // TODO P2: consider optimizing this pattern by just returning the emplaced particle and having the caller set the data
         particles.emplace_back(particleData, hueToByte(hue), particleType);
     }
 
@@ -2047,6 +2058,7 @@ Witchcat interaction: TODO P0)",
                 spawnHUDTopParticle({.position      = getHUDMousePos(),
                                      .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}),
                                      .scale         = rng.getF(0.08f, 0.27f) * 0.7f,
+                                     .scaleDecay    = 0.f,
                                      .accelerationY = 0.002f,
                                      .opacity       = 1.f,
                                      .opacityDecay  = rng.getF(0.00025f, 0.0015f),
@@ -2063,6 +2075,7 @@ Witchcat interaction: TODO P0)",
                 spawnHUDTopParticle({.position      = getHUDMousePos(),
                                      .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.5f,
                                      .scale         = rng.getF(0.08f, 0.27f),
+                                     .scaleDecay    = 0.f,
                                      .accelerationY = 0.002f * 0.75f,
                                      .opacity       = 1.f,
                                      .opacityDecay  = rng.getF(0.00025f, 0.0015f),
@@ -2480,6 +2493,7 @@ Witchcat interaction: TODO P0)",
                             spawnParticle(ParticleData{.position      = copyCat.position,
                                                        .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
                                                        .scale         = rng.getF(0.75f, 1.f),
+                                                       .scaleDecay    = -0.0005f,
                                                        .accelerationY = -0.00017f,
                                                        .opacity       = 1.f,
                                                        .opacityDecay  = rng.getF(0.00065f, 0.00075f),
@@ -2743,8 +2757,11 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void uiDrawQuickbar()
     {
-        const sf::Vector2f quickBarPos{getAspectRatioScalingFactor(gameScreenSize, getResolution()) * gameScreenSize.x - 15.f,
-                                       getResolution().y - 15.f};
+        const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) * gameScreenSize.x;
+
+        const float xStart = lastUiSelectedTabIdx == 0 ? xStartOverlay : sf::base::min(xStartOverlay, uiGetWindowPos().x);
+
+        const sf::Vector2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
 
         ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {1.f, 1.f});
         ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, FLT_MAX));
@@ -2956,21 +2973,21 @@ Witchcat interaction: TODO P0)",
     }
 
     ////////////////////////////////////////////////////////////
-    ImGuiTabItemFlags_ shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+    ImGuiTabItemFlags_ shopSelectOnce       = ImGuiTabItemFlags_SetSelected;
+    int                lastUiSelectedTabIdx = 1;
 
     ////////////////////////////////////////////////////////////
     void uiTabBar()
     {
         const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
 
-        static int lastSelectedTabIdx = 1;
 
         const auto selectedTab = [&](int idx)
         {
-            if (shopSelectOnce == ImGuiTabItemFlags_{} && lastSelectedTabIdx != idx)
+            if (shopSelectOnce == ImGuiTabItemFlags_{} && lastUiSelectedTabIdx != idx)
                 playSound(sounds.uitab);
 
-            lastSelectedTabIdx = idx;
+            lastUiSelectedTabIdx = idx;
         };
 
         if (ImGui::BeginTabItem("X"))
@@ -5328,6 +5345,16 @@ Witchcat interaction: TODO P0)",
 
             ImGui::Separator();
 
+            constexpr const char* trailModeNames[3]{"Combo only", "Always", "Never"};
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::Combo("Cursor trail mode", &profile.cursorTrailMode, trailModeNames, 3);
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Cursor trail scale", &profile.cursorTrailScale, 0.25f, 5.f, "%.2f");
+
+            ImGui::Separator();
+
             uiCheckbox("High-visibility cursor", &profile.highVisibilityCursor);
 
             ImGui::BeginDisabled(!profile.highVisibilityCursor);
@@ -5781,6 +5808,7 @@ Witchcat interaction: TODO P0)",
             {.position      = {position.x, position.y - 10.f},
              .velocity      = rng.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
              .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
+             .scaleDecay    = 0.f,
              .accelerationY = 0.0039f,
              .opacity       = 1.f,
              .opacityDecay  = 0.0015f,
@@ -5808,6 +5836,7 @@ Witchcat interaction: TODO P0)",
         spawnParticle({.position      = bubble.position,
                        .velocity      = -diff.normalized() * 0.5f,
                        .scale         = 1.5f,
+                       .scaleDecay    = 0.f,
                        .accelerationY = 0.f,
                        .opacity       = 1.f,
                        .opacityDecay  = 0.00135f + (shrine.getRange() - diff.length()) / 22000.f,
@@ -5829,6 +5858,7 @@ Witchcat interaction: TODO P0)",
             spawnParticle(ParticleData{.position      = bubble.position,
                                        .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.55f,
                                        .scale         = rng.getF(0.08f, 0.27f) * 3.75f,
+                                       .scaleDecay    = -0.0005f,
                                        .accelerationY = 0.00015f,
                                        .opacity       = 0.75f,
                                        .opacityDecay  = rng.getF(0.001f, 0.002f),
@@ -5841,6 +5871,7 @@ Witchcat interaction: TODO P0)",
             spawnParticle(ParticleData{.position      = bubble.position,
                                        .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(-0.15f, 0.05f)},
                                        .scale         = rng.getF(0.65f, 1.f) * 1.25f,
+                                       .scaleDecay    = -0.0005f,
                                        .accelerationY = -0.00017f,
                                        .opacity       = rng.getF(0.5f, 0.75f),
                                        .opacityDecay  = rng.getF(0.00035f, 0.00055f),
@@ -5968,6 +5999,7 @@ Witchcat interaction: TODO P0)",
                     {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
                      .velocity      = {-0.25f, 0.f},
                      .scale         = 0.25f,
+                     .scaleDecay    = 0.f,
                      .accelerationY = 0.f,
                      .opacity       = 0.f,
                      .opacityDecay  = -0.003f,
@@ -6160,6 +6192,7 @@ Witchcat interaction: TODO P0)",
                 spawnParticle({.position      = cPos.addY(29.f),
                                .velocity      = {0.f, 0.f},
                                .scale         = 0.2f,
+                               .scaleDecay    = 0.f,
                                .accelerationY = -0.00015f,
                                .opacity       = 1.f,
                                .opacityDecay  = 0.0002f,
@@ -6748,6 +6781,7 @@ Witchcat interaction: TODO P0)",
         spawnParticle({.position      = cat.getDrawPosition().addY(29.f),
                        .velocity      = {0.f, 0.f},
                        .scale         = 0.2f,
+                       .scaleDecay    = 0.f,
                        .accelerationY = -0.00015f,
                        .opacity       = 1.f,
                        .opacityDecay  = 0.0002f,
@@ -7286,6 +7320,7 @@ Witchcat interaction: TODO P0)",
                                                        sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
                                            .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                            .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                                           .scaleDecay    = 0.f,
                                            .accelerationY = -0.0017f,
                                            .opacity       = 1.f,
                                            .opacityDecay  = rng.getF(0.00035f, 0.0025f),
@@ -7312,6 +7347,7 @@ Witchcat interaction: TODO P0)",
                 spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                               .scaleDecay    = 0.f,
                                .accelerationY = -0.0017f,
                                .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00035f, 0.0025f),
@@ -7329,6 +7365,7 @@ Witchcat interaction: TODO P0)",
                 spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                               .scaleDecay    = 0.f,
                                .accelerationY = -0.0017f,
                                .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00035f, 0.0025f),
@@ -7344,9 +7381,10 @@ Witchcat interaction: TODO P0)",
 
             if (cat.inspiredCountdown.value > 0.f && rng.getF(0.f, 1.f) > 0.5f)
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
-                               .velocity = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale    = rng.getF(0.08f, 0.27f) * 0.2f,
+                spawnParticle({.position   = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
+                               .velocity   = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale      = rng.getF(0.08f, 0.27f) * 0.2f,
+                               .scaleDecay = 0.f,
                                .accelerationY = -0.002f,
                                .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00025f, 0.0015f),
@@ -7362,6 +7400,7 @@ Witchcat interaction: TODO P0)",
                 spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 25.f},
                                .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                .scale         = rng.getF(0.08f, 0.27f) * 0.15f,
+                               .scaleDecay    = 0.f,
                                .accelerationY = -0.0015f,
                                .opacity       = 1.f,
                                .opacityDecay  = rng.getF(0.00055f, 0.0045f),
@@ -7382,6 +7421,7 @@ Witchcat interaction: TODO P0)",
                                                                            catRadius - 20.f},
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f),
@@ -7393,6 +7433,7 @@ Witchcat interaction: TODO P0)",
                     spawnParticle({.position      = drawPosition + sf::Vector2f{-52.f * 0.2f, -85.f * 0.2f},
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
@@ -7404,6 +7445,7 @@ Witchcat interaction: TODO P0)",
                     spawnParticle({.position      = drawPosition + sf::Vector2f{-140.f * 0.2f, -90.f * 0.2f},
                                    .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
@@ -7431,6 +7473,7 @@ Witchcat interaction: TODO P0)",
                         spawnParticle(ParticleData{.position      = drawPosition + sf::Vector2f{56.f, 45.f},
                                                    .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
                                                    .scale         = rng.getF(0.75f, 1.f) * 0.45f,
+                                                   .scaleDecay    = -0.00025f,
                                                    .accelerationY = -0.00017f,
                                                    .opacity       = 0.7f,
                                                    .opacityDecay  = rng.getF(0.00065f, 0.00075f),
@@ -7515,6 +7558,7 @@ Witchcat interaction: TODO P0)",
                     spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
                                    .velocity = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                    .scale    = rng.getF(0.08f, 0.27f) * 0.2f,
+                                   .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00025f, 0.0015f),
@@ -7540,6 +7584,7 @@ Witchcat interaction: TODO P0)",
                                                    sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 25.f},
                                        .velocity      = rng.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
                                        .scale         = rng.getF(0.08f, 0.27f) * 0.4f,
+                                       .scaleDecay    = 0.f,
                                        .accelerationY = -0.00015f,
                                        .opacity       = 1.f,
                                        .opacityDecay  = rng.getF(0.0003f, 0.002f),
@@ -8071,6 +8116,7 @@ Witchcat interaction: TODO P0)",
             spawnParticle({.position      = d.getDrawPosition(),
                            .velocity      = (hexedCat->getDrawPosition() - d.getDrawPosition()).normalized() * 1.f,
                            .scale         = 0.2f,
+                           .scaleDecay    = 0.f,
                            .accelerationY = 0.f,
                            .opacity       = 1.f,
                            .opacityDecay  = 0.0015f,
@@ -8134,6 +8180,7 @@ Witchcat interaction: TODO P0)",
                     spawnParticle({.position      = d.getDrawPosition() + sf::Vector2f{rng.getF(-32.f, +32.f), 32.f},
                                    .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                    .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                                   .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rng.getF(0.00025f, 0.0015f),
@@ -8210,17 +8257,20 @@ Witchcat interaction: TODO P0)",
                 playSound(sounds.portaloff);
             }
 
-            spawnParticle({.position = hp.getDrawPosition() +
-                                       rng.getRandomDirection() * rng.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
-                           .velocity      = rng.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
-                           .scale         = rng.getF(0.08f, 0.27f) * 0.85f,
-                           .accelerationY = 0.f,
-                           .opacity       = 1.f,
-                           .opacityDecay  = rng.getF(0.00155f, 0.0145f),
-                           .rotation      = rng.getF(0.f, sf::base::tau),
-                           .torque        = rng.getF(-0.002f, 0.002f)},
-                          /* hue */ 0.f,
-                          ParticleType::Fire2);
+            for (sf::base::SizeT iP = 0u; iP < 2u; ++iP)
+                spawnParticle({.position = hp.getDrawPosition() +
+                                           rng.getRandomDirection() *
+                                               rng.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
+                               .velocity      = rng.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
+                               .scale         = rng.getF(0.08f, 0.27f) * 0.85f,
+                               .scaleDecay    = -0.00025f,
+                               .accelerationY = 0.f,
+                               .opacity       = 1.f,
+                               .opacityDecay  = rng.getF(0.00155f, 0.0145f),
+                               .rotation      = rng.getF(0.f, sf::base::tau),
+                               .torque        = rng.getF(-0.002f, 0.002f)},
+                              /* hue */ 0.f,
+                              ParticleType::Fire2);
         }
 
         sf::base::vectorEraseIf(pt.hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
@@ -8985,6 +9035,42 @@ Witchcat interaction: TODO P0)",
         window.draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         window.draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         window.draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawCursorTrail(const sf::Vector2f mousePos)
+    {
+        if (profile.cursorTrailMode == 2 /* disabled */)
+            return;
+
+        if (combo <= 0 && profile.cursorTrailMode == 0 /* combo mode */)
+            return;
+
+        const sf::Vector2f mousePosDiff    = lastMousePos - mousePos;
+        const float        mousePosDiffLen = mousePosDiff.length();
+
+        if (mousePosDiffLen == 0.f)
+            return;
+
+        const float chunks   = mousePosDiffLen / 0.5f;
+        const float chunkLen = mousePosDiffLen / chunks;
+
+        const float trailHue = wrapHue(profile.cursorHue + currentBackgroundHue.asDegrees());
+
+        const sf::Vector2f trailStep = mousePosDiff.normalized() * chunkLen;
+
+        for (float i = 0.f; i < chunks; ++i)
+            spawnParticle(ParticleData{.position      = mousePos + trailStep * i,
+                                       .velocity      = {0.f, 0.f},
+                                       .scale         = 0.075f * profile.cursorTrailScale,
+                                       .scaleDecay    = 0.0002f,
+                                       .accelerationY = 0.f,
+                                       .opacity       = 0.125f,
+                                       .opacityDecay  = 0.00075f,
+                                       .rotation      = 0.f,
+                                       .torque        = 0.f},
+                          trailHue,
+                          ParticleType::Trail);
     }
 
     ////////////////////////////////////////////////////////////
@@ -10116,6 +10202,7 @@ Witchcat interaction: TODO P0)",
                     spawnHUDTopParticle({.position      = pos,
                                          .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
                                          .scale         = rng.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
+                                         .scaleDecay    = 0.f,
                                          .accelerationY = 0.f,
                                          .opacity       = 1.f,
                                          .opacityDecay  = rng.getF(0.00065f, 0.0055f),
@@ -10289,6 +10376,7 @@ Witchcat interaction: TODO P0)",
                 spawnHUDTopParticle({.position      = tipByteSprite.position,
                                      .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.1f}) * 1.5f,
                                      .scale         = rng.getF(0.18f, 0.32f) * 1.55f,
+                                     .scaleDecay    = 0.f,
                                      .accelerationY = 0.0015f,
                                      .opacity       = 1.f,
                                      .opacityDecay  = rng.getF(0.00025f, 0.0015f) * 0.5f,
@@ -10516,6 +10604,7 @@ Witchcat interaction: TODO P0)",
                 spawnParticle(ParticleData{.position      = mousePos,
                                            .velocity      = {0.f, 0.f},
                                            .scale         = rng.getF(0.08f, 0.27f) * 1.f,
+                                           .scaleDecay    = 0.f,
                                            .accelerationY = -0.002f,
                                            .opacity       = 1.f,
                                            .opacityDecay  = rng.getF(0.00025f, 0.002f),
@@ -10695,6 +10784,7 @@ Witchcat interaction: TODO P0)",
                 p.rotation += p.torque * deltaTimeMs;
 
                 p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+                p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
             }
 
             sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
@@ -10973,6 +11063,7 @@ Witchcat interaction: TODO P0)",
                 {.position      = moneyText.getCenterRight().addY(rng.getF(-12.f, 12.f)),
                  .velocity      = sf::Vector2f{3.f, 0.f},
                  .scale         = 0.35f,
+                 .scaleDecay    = 0.f,
                  .accelerationY = 0.f,
                  .opacity       = 0.f,
                  .opacityDecay  = -0.015f,
@@ -11504,6 +11595,10 @@ Witchcat interaction: TODO P0)",
             gameLoopDisplayBubblesWithoutShader();
 
         //
+        // Combo trail
+        gameLoopDrawCursorTrail(mousePos);
+
+        //
         // Draw minimap stuff (TODO P0: organize)
         {
             minimapDrawableBatch.clear();
@@ -11618,7 +11713,10 @@ Witchcat interaction: TODO P0)",
         if (shouldDrawUI)
         {
             hudDrawableBatch.clear();
-            gameLoopDrawHUDParticles();
+
+            if (!debugHideUI)
+                gameLoopDrawHUDParticles();
+
             gameLoopDrawEarnedCoinParticles();
             window.draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
@@ -11759,6 +11857,10 @@ Witchcat interaction: TODO P0)",
         // Display window
         window.display();
 
+        //
+        // Save last mouse pos
+        lastMousePos = mousePos;
+
         return true;
     }
 
@@ -11881,7 +11983,6 @@ int main(int argc, const char** argv)
     Main{steamMgr}.run();
 }
 
-// TODO P0: quickbar position is fckd on 16:9
 // TODO P0: achievements for speedrunning milestones
 // TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P1: copycat bg drawings
