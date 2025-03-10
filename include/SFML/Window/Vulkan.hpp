@@ -82,7 +82,7 @@ struct VulkanSurfaceData
 ///
 /// \param name Name of the function to get the address of
 ///
-/// \return Address of the Vulkan function, 0 on failure
+/// \return Address of the Vulkan function, `nullptr` on failure
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);
