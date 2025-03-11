@@ -219,6 +219,28 @@ inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat 
 }
 
 ////////////////////////////////////////////////////////////
+// TODO P2: (lib) to lib?
+[[nodiscard, gnu::const]] constexpr sf::FloatRect clampScissorRect(sf::FloatRect rect)
+{
+    // Clamp the position to the range [0, 1]
+    rect.position.x = sf::base::clamp(rect.position.x, 0.f, 1.f);
+    rect.position.y = sf::base::clamp(rect.position.y, 0.f, 1.f);
+
+    // Ensure the size is non-negative
+    rect.size.x = sf::base::max(rect.size.x, 0.f);
+    rect.size.y = sf::base::max(rect.size.y, 0.f);
+
+    // Adjust the size so that position + size doesn't exceed 1
+    if (rect.position.x + rect.size.x > 1.f)
+        rect.size.x = 1.f - rect.position.x;
+
+    if (rect.position.y + rect.size.y > 1.f)
+        rect.size.y = 1.f - rect.position.y;
+
+    return rect;
+}
+
+////////////////////////////////////////////////////////////
 void drawMinimap(
     sf::Shader&             shader,
     const float             minimapScale,
@@ -271,20 +293,20 @@ void drawMinimap(
                                        .clampX(0.f, (1.f - minimapScaledPosition.x) / progressRatio)
                                        .clampY(0.f, 1.f - minimapScaledPosition.y);
 
-    minimapScaledPosition = minimapScaledPosition.componentWiseClamp({0.f, 0.f},
-                                                                     {sf::base::max(0.f, 1.f - minimapScaledSize.x),
-                                                                      sf::base::max(0.f, 1.f - minimapScaledSize.y)});
+    const sf::FloatRect preClampScissorRect{minimapScaledPosition, // Scissor rectangle position (normalized)
+                                            {
+                                                progressRatio * minimapScaledSize.x, // Only show accessible width
+                                                minimapScaledSize.y                  // Full height
+                                            }};
+
+    const auto clampedScissorRect = clampScissorRect(preClampScissorRect);
 
     //
     // Special view that renders the world scaled down for minimap
     const sf::View minimapView                                                  //
         {.center  = (resolution * 0.5f - minimapPos * hudScale) * minimapScale, // Offset center to align minimap
          .size    = resolution * minimapScale,                                  // Zoom out to show scaled-down world
-         .scissor = {minimapScaledPosition, // Scissor rectangle position (normalized)
-                     {
-                         progressRatio * minimapScaledSize.x, // Only show accessible width
-                         minimapScaledSize.y                  // Full height
-                     }}};
+         .scissor = clampedScissorRect};
 
     //
     // Draw minimap contents
@@ -305,7 +327,7 @@ void drawMinimap(
     rt.draw(txDrawings,
             {.scale       = {hudScale, hudScale},
              .textureRect = {{0.f, 0.f}, backgroundRectSize},
-             .color       = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(225u)))},
+             .color       = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(215u)))},
             {.shader = &shader}); // Draw drawings
 
     if (shouldDrawUIAlpha > 200u)
