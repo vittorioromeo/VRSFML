@@ -5505,7 +5505,7 @@ Witchcat interaction: TODO P0)",
             ImGui::SliderFloat("Saturation", &profile.ppSSaturation, 0.f, 2.f, "%.2f");
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
-            ImGui::SliderFloat("Lightness", &profile.ppSLightness, 0.f, 2.f, "%.2f");
+            ImGui::SliderFloat("Lightness", &profile.ppSLightness, 0.5f, 1.5f, "%.2f");
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Sharpness", &profile.ppSSharpness, 0.f, 1.f, "%.2f");
@@ -9098,8 +9098,6 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void gameLoopDisplayBubblesWithoutShader()
     {
-        auto& window = getWindow();
-
         shader.setUniform(suBubbleEffect, false);
 
         rtGame->draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
@@ -9146,8 +9144,6 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void gameLoopDisplayBubblesWithShader()
     {
-        auto& window = getWindow();
-
         if (rtBackground.hasValue() && !shader.setUniform(suBackgroundTexture, rtBackground->getTexture()))
         {
             profile.useBubbleShader = false;
@@ -10981,7 +10977,6 @@ Witchcat interaction: TODO P0)",
     void gameLoopUpdateAndDrawFixedMenuBackground(const float deltaTimeMs, const sf::base::I64 elapsedUs)
     {
         const auto resolution = getResolution();
-        auto&      window     = getWindow();
 
         const float ratio = resolution.x / 1250.f;
 
