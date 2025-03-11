@@ -585,6 +585,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(showCoinParticles),
                          FIELD(showDpsMeter),
 
+                         FIELD(enableNotifications),
                          FIELD(showFullManaNotification),
 
                          FIELD(unlockedAchievements),
