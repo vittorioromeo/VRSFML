@@ -225,7 +225,7 @@ void drawMinimap(
     const float             mapLimit,
     const sf::View&         gameView,
     const sf::View&         hudView,
-    sf::RenderTarget&       window,
+    sf::RenderTarget&       rt,
     const sf::Texture&      txBackgroundChunk,
     const sf::Texture&      txDrawings,
     sf::CPUDrawableBatch&   batch,
@@ -288,43 +288,43 @@ void drawMinimap(
 
     //
     // Draw minimap contents
-    window.setView(minimapView); // Use minimap projection
-    window.draw(sf::RectangleShape{{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale}},
-                /* texture */ nullptr);
+    rt.setView(minimapView); // Use minimap projection
+    rt.draw(sf::RectangleShape{{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale}},
+            /* texture */ nullptr);
 
     // The background has a repeating texture, and it's one ninth of the whole map
     const sf::Vector2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
                                           static_cast<float>(txBackgroundChunk.getSize().y)};
 
-    window.draw(txBackgroundChunk,
-                {.scale       = {hudScale, hudScale},
-                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
-                {.shader = &shader}); // Draw world background
+    rt.draw(txBackgroundChunk,
+            {.scale       = {hudScale, hudScale},
+             .textureRect = {{0.f, 0.f}, backgroundRectSize},
+             .color       = hueColor(hueMod, sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(128u)))},
+            {.shader = &shader}); // Draw world background
 
-    window.draw(txDrawings,
-                {.scale       = {hudScale, hudScale},
-                 .textureRect = {{0.f, 0.f}, backgroundRectSize},
-                 .color = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(225u)))},
-                {.shader = &shader}); // Draw drawings
+    rt.draw(txDrawings,
+            {.scale       = {hudScale, hudScale},
+             .textureRect = {{0.f, 0.f}, backgroundRectSize},
+             .color       = sf::Color::whiteMask(sf::base::min(shouldDrawUIAlpha, static_cast<sf::base::U8>(225u)))},
+            {.shader = &shader}); // Draw drawings
 
     if (shouldDrawUIAlpha > 200u)
     {
         batch.scale = {hudScale, hudScale};
-        window.draw(batch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rt.draw(batch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         batch.scale = {1.f, 1.f};
     }
 
     //
     // Switch back to HUD view and draw overlay elements
-    window.setView(hudView);
-    window.draw(minimapBorder, /* texture */ nullptr);    // Draw border frame
-    window.draw(minimapIndicator, /* texture */ nullptr); // Draw current view indicator
+    rt.setView(hudView);
+    rt.draw(minimapBorder, /* texture */ nullptr);    // Draw border frame
+    rt.draw(minimapIndicator, /* texture */ nullptr); // Draw current view indicator
 }
 
 
 ////////////////////////////////////////////////////////////
-void drawSplashScreen(sf::RenderWindow&        window,
+void drawSplashScreen(sf::RenderTarget&        rt,
                       const sf::Texture&       txLogo,
                       const TargetedCountdown& splashCountdown,
                       const sf::Vector2f       resolution,
@@ -332,12 +332,12 @@ void drawSplashScreen(sf::RenderWindow&        window,
 {
     const auto progress = easeInOutCubic(splashCountdown.getProgressBounced());
 
-    window.draw({.position    = resolution / 2.f / hudScale,
-                 .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
-                 .origin      = txLogo.getSize().toVector2f() / 2.f,
-                 .textureRect = txLogo.getRect(),
-                 .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
-                txLogo);
+    rt.draw({.position    = resolution / 2.f / hudScale,
+             .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
+             .origin      = txLogo.getSize().toVector2f() / 2.f,
+             .textureRect = txLogo.getRect(),
+             .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
+            txLogo);
 }
 
 } // namespace
@@ -386,9 +386,25 @@ struct Main
     float shaderTime = 0.f;
 
     ////////////////////////////////////////////////////////////
+    // Shader with post-processing effects
+    sf::Shader shaderPostProcess{[]
+    {
+        // TODO P2: (lib) nicer interface with designated inits
+        // TODO P2: (lib) add support for `#include` in shaders
+        auto result = sf::Shader::loadFromFile("resources/postprocess.frag", sf::Shader::Type::Fragment).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    sf::Shader::UniformLocation suPPVibrance   = shaderPostProcess.getUniformLocation("u_vibrance").value();
+    sf::Shader::UniformLocation suPPSaturation = shaderPostProcess.getUniformLocation("u_saturation").value();
+    sf::Shader::UniformLocation suPPLightness  = shaderPostProcess.getUniformLocation("u_lightness").value();
+    sf::Shader::UniformLocation suPPSharpness  = shaderPostProcess.getUniformLocation("u_sharpness").value();
+
+    ////////////////////////////////////////////////////////////
     // Context settings
-    const sf::ContextSettings contextSettings{
-        .antiAliasingLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel())};
+    const unsigned int        aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
+    const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel};
 
     ////////////////////////////////////////////////////////////
     // Render window
@@ -425,6 +441,7 @@ struct Main
     static inline constexpr const char* bgmPathWitch  = "resources/bgmwitch.mp3";
     static inline constexpr const char* bgmPathWizard = "resources/bgmwizard.mp3";
     static inline constexpr const char* bgmPathMouse  = "resources/bgmmouse.mp3";
+    static inline constexpr const char* bgmPathEngi   = "resources/bgmengi.mp3";
 
     const char* lastPlayedMusic = bgmPathNormal; // to avoid restarting the same song
 
@@ -452,6 +469,10 @@ struct Main
     // Background and ImGui render textures
     sf::base::Optional<sf::RenderTexture> rtBackground;
     sf::base::Optional<sf::RenderTexture> rtImGui;
+
+    ////////////////////////////////////////////////////////////
+    // Game render texture (before post-processing)
+    sf::base::Optional<sf::RenderTexture> rtGame;
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -2387,7 +2408,7 @@ Witchcat interaction: TODO P0)",
         bgmPathWitch,  // Voodoo
         bgmPathWizard, // Magic
         bgmPathMouse,  // Clicking
-        bgmPathNormal, // Automation
+        bgmPathEngi,   // Automation
         bgmPathNormal, // Repulsion
         bgmPathNormal, // Attraction
         bgmPathNormal, // Camouflage
@@ -5213,6 +5234,9 @@ Witchcat interaction: TODO P0)",
         if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
             data.entries.emplace_back(3, "Click N Chill");
 
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+            data.entries.emplace_back(4, "Use More Cat");
+
         if (data.selectedIndex == -1)
         {
             data.selectedIndex = [&]
@@ -5449,6 +5473,20 @@ Witchcat interaction: TODO P0)",
                 uiSetFontScale(uiNormalFontScale);
             }
             ImGui::EndDisabled();
+
+            ImGui::Separator();
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Vibrance", &profile.ppSVibrance, 0.f, 2.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Saturation", &profile.ppSSaturation, 0.f, 2.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Lightness", &profile.ppSLightness, 0.f, 2.f, "%.2f");
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Sharpness", &profile.ppSSharpness, 0.f, 1.f, "%.2f");
 
             ImGui::EndTabItem();
         }
@@ -9042,9 +9080,9 @@ Witchcat interaction: TODO P0)",
 
         shader.setUniform(suBubbleEffect, false);
 
-        window.draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        window.draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        window.draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -9125,18 +9163,18 @@ Witchcat interaction: TODO P0)",
         shader.setUniform(suSubTexOrigin, txrBubble.position);
         shader.setUniform(suSubTexSize, txrBubble.size);
 
-        window.draw(bubbleDrawableBatch, bubbleStates);
+        rtGame->draw(bubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
         shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
         shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
         shader.setUniform(suSubTexSize, txrBubbleStar.size);
 
-        window.draw(starBubbleDrawableBatch, bubbleStates);
+        rtGame->draw(starBubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleEffect, false);
 
-        window.draw(bombBubbleDrawableBatch, bubbleStates);
+        rtGame->draw(bombBubbleDrawableBatch, bubbleStates);
     }
 
     ////////////////////////////////////////////////////////////
@@ -10150,15 +10188,15 @@ Witchcat interaction: TODO P0)",
                                        sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                    255.f;
 
-        getWindow().draw(txArrow,
-                         {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
-                          .origin   = txArrow.getRect().getCenterRight(),
-                          .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+        rtGame->draw(txArrow,
+                     {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
+                      .origin   = txArrow.getRect().getCenterRight(),
+                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
 
-        getWindow().draw(txArrow,
-                         {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
-                          .origin = txArrow.getRect().getCenterRight(),
-                          .color  = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+        rtGame->draw(txArrow,
+                     {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
+                      .origin   = txArrow.getRect().getCenterRight(),
+                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
     }
 
     ////////////////////////////////////////////////////////////
@@ -10186,10 +10224,10 @@ Witchcat interaction: TODO P0)",
             imGuiContext.render(*rtImGui);
             rtImGui->display();
 
-            optWindow->draw(rtImGui->getTexture(),
-                            {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                             .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
-                            {.shader = &shader});
+            rtGame->draw(rtImGui->getTexture(),
+                         {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
+                          .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
+                         {.shader = &shader});
         }
     }
 
@@ -10231,13 +10269,12 @@ Witchcat interaction: TODO P0)",
 
                 const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
-                getWindow().draw(tx,
-                                 {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
-                                  .scale    = sf::Vector2f{0.25f, 0.25f} *
-                                           (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
-                                  .origin = tx.getRect().getCenterRight(),
-                                  .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
-                                 {.shader = &shader});
+                rtGame->draw(tx,
+                             {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
+                              .scale = sf::Vector2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
+                              .origin = tx.getRect().getCenterRight(),
+                              .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
+                             {.shader = &shader});
             }
         }
 
@@ -10265,14 +10302,14 @@ Witchcat interaction: TODO P0)",
 
         profile.cursorHue = wrapHue(profile.cursorHue);
 
-        window.draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
-                    {.position = sf::Mouse::getPosition(window).toVector2f(),
-                     .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
-                              ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
-                               dpiScalingFactor),
-                     .origin = {5.f, 5.f},
-                     .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
-                    {.shader = &shader});
+        rtGame->draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
+                     {.position = sf::Mouse::getPosition(window).toVector2f(),
+                      .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
+                               ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
+                                dpiScalingFactor),
+                      .origin = {5.f, 5.f},
+                      .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                     {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -10319,7 +10356,7 @@ Witchcat interaction: TODO P0)",
             cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
         }
 
-        window.draw(cursorComboText, {.shader = &shader});
+        rtGame->draw(cursorComboText, {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -10369,7 +10406,7 @@ Witchcat interaction: TODO P0)",
         tipBackgroundSprite.setBottomCenter(
             {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-        getWindow().draw(tipBackgroundSprite, txTipBg);
+        rtGame->draw(tipBackgroundSprite, txTipBg);
 
         sf::Sprite tipByteSprite{.position    = {},
                                  .scale       = sf::Vector2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
@@ -10379,7 +10416,7 @@ Witchcat interaction: TODO P0)",
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
         tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
-        getWindow().draw(tipByteSprite, txTipByte);
+        rtGame->draw(tipByteSprite, txTipByte);
 
         if (mustSpawnByteParticles)
         {
@@ -10445,7 +10482,7 @@ Witchcat interaction: TODO P0)",
         tipStringWiggle.advance(deltaTimeMs);
         tipStringWiggle.apply(tipText);
 
-        getWindow().draw(tipText);
+        rtGame->draw(tipText);
 
         tipStringWiggle.unapply(tipText);
     }
@@ -10453,7 +10490,15 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void recreateImGuiRenderTexture(const sf::Vector2u newResolution)
     {
-        rtImGui.emplace(sf::RenderTexture::create(newResolution, {.antiAliasingLevel = 4, .sRgbCapable = false}).value());
+        rtImGui.emplace(
+            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
+    }
+
+    ////////////////////////////////////////////////////////////
+    void recreateGameRenderTexture(const sf::Vector2u newResolution)
+    {
+        rtGame.emplace(
+            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = true}).value());
     }
 
     ////////////////////////////////////////////////////////////
@@ -10473,6 +10518,7 @@ Witchcat interaction: TODO P0)",
 
         rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
         rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
+        rtGame.reset();       // TODO P2: (lib) workaround to unregister framebuffers
 
         optWindow.emplace(
             sf::WindowSettings{.size            = newResolution,
@@ -10486,9 +10532,10 @@ Witchcat interaction: TODO P0)",
                                .contextSettings = contextSettings});
 
         rtBackground.emplace(
-            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = 4, .sRgbCapable = true}).value());
+            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = true}).value());
 
         recreateImGuiRenderTexture(newResolution);
+        recreateGameRenderTexture(newResolution);
 
         dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
 
@@ -10938,15 +10985,15 @@ Witchcat interaction: TODO P0)",
         // Result of linear regression and trial-and-error >:3
         const float fixedBgOffsetX = 1648.f * ratio - 3216.62f;
 
-        window.draw(txFixedBg,
-                    {
-                        .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
-                        .scale    = {ratio, ratio},
-                        .origin   = {sz.x / 2.f, sz.y / 1.5f},
-                        .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
-                        .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
-                    },
-                    {.shader = &shader});
+        rtGame->draw(txFixedBg,
+                     {
+                         .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
+                         .scale       = {ratio, ratio},
+                         .origin      = {sz.x / 2.f, sz.y / 1.5f},
+                         .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
+                         .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
+                     },
+                     {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -11040,8 +11087,8 @@ Witchcat interaction: TODO P0)",
         auto gameViewNoScroll   = gameView;
         gameViewNoScroll.center = getViewCenterWithoutScroll();
 
-        getWindow().setView(gameViewNoScroll);
-        getWindow().draw(rtBackground->getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
+        rtGame->setView(gameViewNoScroll);
+        rtGame->draw(rtBackground->getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
     }
 
     ////////////////////////////////////////////////////////////
@@ -11369,6 +11416,7 @@ Witchcat interaction: TODO P0)",
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
             {
                 recreateImGuiRenderTexture(e6->size);
+                recreateGameRenderTexture(e6->size);
             }
 #pragma GCC diagnostic pop
         }
@@ -11582,11 +11630,11 @@ Witchcat interaction: TODO P0)",
 
         //
         // Clear window
-        window.clear(outlineHueColor);
+        rtGame->clear(outlineHueColor);
 
         //
         // Underlying menu background
-        window.setView(nonScaledHUDView);
+        rtGame->setView(nonScaledHUDView);
         gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
 
         //
@@ -11595,7 +11643,7 @@ Witchcat interaction: TODO P0)",
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
-        window.setView(gameView);
+        rtGame->setView(gameView);
         bubbleDrawableBatch.clear();
         starBubbleDrawableBatch.clear();
         bombBubbleDrawableBatch.clear();
@@ -11692,8 +11740,8 @@ Witchcat interaction: TODO P0)",
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
-        window.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        window.draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Scroll arrow hint
@@ -11702,27 +11750,27 @@ Witchcat interaction: TODO P0)",
         //
         // AoE Dragging Reticle
         if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
-            window.draw(sf::RectangleShape{{.position         = dragRect->position,
-                                            .origin           = {0.f, 0.f},
-                                            .fillColor        = sf::Color::whiteMask(64u),
-                                            .outlineColor     = sf::Color::whiteMask(176u),
-                                            .outlineThickness = 4.f,
-                                            .size             = dragRect->size}},
-                        /* texture */ nullptr);
+            rtGame->draw(sf::RectangleShape{{.position         = dragRect->position,
+                                             .origin           = {0.f, 0.f},
+                                             .fillColor        = sf::Color::whiteMask(64u),
+                                             .outlineColor     = sf::Color::whiteMask(176u),
+                                             .outlineThickness = 4.f,
+                                             .size             = dragRect->size}},
+                         /* texture */ nullptr);
 
         //
         // Draw border around gameview
-        window.setView(nonScaledHUDView);
+        rtGame->setView(nonScaledHUDView);
 
         // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
-        window.draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
-                                        .fillColor        = sf::Color::Transparent,
-                                        .outlineColor     = outlineHueColor,
-                                        .outlineThickness = 4.f,
-                                        .size             = gameView.viewport.size.componentWiseMul(resolution)}},
-                    /* texture */ nullptr);
+        rtGame->draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
+                                         .fillColor        = sf::Color::Transparent,
+                                         .outlineColor     = outlineHueColor,
+                                         .outlineThickness = 4.f,
+                                         .size             = gameView.viewport.size.componentWiseMul(resolution)}},
+                     /* texture */ nullptr);
 
-        window.setView(scaledHUDView);
+        rtGame->setView(scaledHUDView);
 
         if (shouldDrawUI)
         {
@@ -11732,7 +11780,7 @@ Witchcat interaction: TODO P0)",
                 gameLoopDrawHUDParticles();
 
             gameLoopDrawEarnedCoinParticles();
-            window.draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            rtGame->draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
@@ -11747,7 +11795,7 @@ Witchcat interaction: TODO P0)",
         {
             moneyText.setFillColorAlpha(shouldDrawUIAlpha);
             moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            window.draw(moneyText);
+            rtGame->draw(moneyText);
         }
 
         //
@@ -11757,7 +11805,7 @@ Witchcat interaction: TODO P0)",
         {
             comboText.setFillColorAlpha(shouldDrawUIAlpha);
             comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            window.draw(comboText);
+            rtGame->draw(comboText);
         }
 
         //
@@ -11788,16 +11836,16 @@ Witchcat interaction: TODO P0)",
         {
             buffText.setFillColorAlpha(shouldDrawUIAlpha);
             buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            window.draw(buffText);
+            rtGame->draw(buffText);
         }
 
         //
         // Combo bar
         if (shouldDrawUI && !debugHideUI)
-            window.draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
-                                            .fillColor = sf::Color{255, 255, 255, 75},
-                                            .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
-                        /* texture */ nullptr);
+            rtGame->draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
+                                             .fillColor = sf::Color{255, 255, 255, 75},
+                                             .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
+                         /* texture */ nullptr);
 
         //
         // Minimap
@@ -11807,7 +11855,7 @@ Witchcat interaction: TODO P0)",
                         pt.getMapLimit(),
                         gameView,
                         scaledHUDView,
-                        window,
+                        *rtGame,
                         txBackgroundChunk,
                         txDrawings,
                         minimapDrawableBatch,
@@ -11823,7 +11871,7 @@ Witchcat interaction: TODO P0)",
 
         //
         // Purchase unlocked/available effects
-        window.setView(nonScaledHUDView);
+        rtGame->setView(nonScaledHUDView);
 
         if (shouldDrawUI)
             gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
@@ -11833,20 +11881,20 @@ Witchcat interaction: TODO P0)",
         {
             hudTopDrawableBatch.clear();
             gameLoopDrawHUDTopParticles();
-            window.draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            rtGame->draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
         // High visibility cursor
-        window.setView(nonScaledHUDView);
+        rtGame->setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
 
         //
         // Splash screen
-        window.setView(scaledHUDView);
+        rtGame->setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
-            drawSplashScreen(window, txLogo, splashCountdown, resolution, profile.hudScale);
+            drawSplashScreen(*rtGame, txLogo, splashCountdown, resolution, profile.hudScale);
 
         //
         // Tips
@@ -11869,6 +11917,15 @@ Witchcat interaction: TODO P0)",
 
         //
         // Display window
+        rtGame->display();
+
+        shaderPostProcess.setUniform(suPPVibrance, profile.ppSVibrance);
+        shaderPostProcess.setUniform(suPPSaturation, profile.ppSSaturation);
+        shaderPostProcess.setUniform(suPPLightness, profile.ppSLightness);
+        shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
+
+        window.setView({window.getSize().toVector2f() / 2.f, window.getSize().toVector2f()});
+        window.draw(rtGame->getTexture(), {.shader = &shaderPostProcess});
         window.display();
 
         //
