@@ -590,7 +590,12 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
 
                          FIELD(unlockedAchievements),
 
-                         FIELD(uiUnlocks));
+                         FIELD(uiUnlocks),
+
+                         FIELD(ppSVibrance),
+                         FIELD(ppSSaturation),
+                         FIELD(ppSLightness),
+                         FIELD(ppSSharpness));
 }
 
 ////////////////////////////////////////////////////////////
