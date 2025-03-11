@@ -689,29 +689,33 @@ bool RenderTarget::setActive(bool active)
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
+    const auto loadedRenderTargetId = renderTargetId.load();
+
     // Deactivation
     if (!active)
     {
-        SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
+        SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
         renderTargetId.store(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
         return true;
     }
 
-    // First ever activation
-    if (renderTargetId.load() == RenderTargetImpl::invalidId)
+    // First ever activation or different RT activated on same context
+    if (loadedRenderTargetId != m_impl->id)
     {
         renderTargetId.store(m_impl->id);
 
-        m_impl->cache.glStatesSet = false;
-        m_impl->cache.enable      = false;
+        if (loadedRenderTargetId == RenderTargetImpl::invalidId)
+            m_impl->cache.glStatesSet = false; // First-time activation
+
+        m_impl->cache.enable = false;
         return true;
     }
 
     // Activation on a different context
-    SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
-    SFML_BASE_ASSERT(renderTargetId.load() != m_impl->id);
+    SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+    SFML_BASE_ASSERT(loadedRenderTargetId != m_impl->id);
     renderTargetId.store(m_impl->id);
 
     m_impl->cache.enable = false;
@@ -908,7 +912,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
-    const bool shaderChanged    = m_impl->cache.lastProgramId != usedNativeHandle;
+    const bool shaderChanged    = !m_impl->cache.enable || m_impl->cache.lastProgramId != usedNativeHandle;
 
     if (shaderChanged)
     {
