@@ -36,7 +36,7 @@ struct [[nodiscard]] Profile
     bool showCursorComboText = true;
     bool useBubbleShader     = true;
 
-    int  cursorTrailMode     = 0; // 0=combo, 1=always, 2=off
+    int   cursorTrailMode  = 0; // 0=combo, 1=always, 2=off
     float cursorTrailScale = 1.f;
 
     float bsIridescenceStrength = 0.7f;
@@ -65,6 +65,7 @@ struct [[nodiscard]] Profile
     bool showCoinParticles = true;
     bool showDpsMeter      = true;
 
+    bool enableNotifications      = true;
     bool showFullManaNotification = true;
 
     bool unlockedAchievements[nAchievements] = {};

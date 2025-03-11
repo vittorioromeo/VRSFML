@@ -4994,20 +4994,23 @@ Witchcat interaction: TODO P0)",
                     ImGui::Separator();
                 }
 
-                uiButtonHueMod = 120.f;
-                uiPushButtonColors();
-
-                uiSetFontScale(uiNormalFontScale);
-                if (ImGui::Button("Reset stats and achievements"))
+                if (debugMode)
                 {
-                    withAllStats([](Stats& stats) { stats = {}; });
+                    uiButtonHueMod = 120.f;
+                    uiPushButtonColors();
 
-                    for (bool& b : profile.unlockedAchievements)
-                        b = false;
+                    uiSetFontScale(uiNormalFontScale);
+                    if (ImGui::Button("Reset stats and achievements"))
+                    {
+                        withAllStats([](Stats& stats) { stats = {}; });
+
+                        for (bool& b : profile.unlockedAchievements)
+                            b = false;
+                    }
+
+                    uiPopButtonColors();
+                    uiButtonHueMod = 0.f;
                 }
-
-                uiPopButtonColors();
-                uiButtonHueMod = 0.f;
 
                 ImGui::EndChild();
 
@@ -5339,7 +5342,11 @@ Witchcat interaction: TODO P0)",
             makeUIScaleButton("XS", 0.5f);
 
             uiCheckbox("Enable tips", &profile.tipsEnabled);
+            uiCheckbox("Enable notifications", &profile.enableNotifications);
+
+            ImGui::BeginDisabled(!profile.enableNotifications);
             uiCheckbox("Enable full mana notification", &profile.showFullManaNotification);
+            ImGui::EndDisabled();
 
             uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
 
@@ -8346,6 +8353,9 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void pushNotification(const char* title, const char* format, const auto&... args)
     {
+        if (!profile.enableNotifications)
+            return;
+
         char fmtBuffer[1024]{};
 
 #pragma GCC diagnostic push
@@ -9043,7 +9053,7 @@ Witchcat interaction: TODO P0)",
         if (profile.cursorTrailMode == 2 /* disabled */)
             return;
 
-        if (combo <= 0 && profile.cursorTrailMode == 0 /* combo mode */)
+        if (combo <= 1 && profile.cursorTrailMode == 0 /* combo mode */)
             return;
 
         const sf::Vector2f mousePosDiff    = lastMousePos - mousePos;
@@ -9062,11 +9072,11 @@ Witchcat interaction: TODO P0)",
         for (float i = 0.f; i < chunks; ++i)
             spawnParticle(ParticleData{.position      = mousePos + trailStep * i,
                                        .velocity      = {0.f, 0.f},
-                                       .scale         = 0.075f * profile.cursorTrailScale,
+                                       .scale         = 0.135f * profile.cursorTrailScale,
                                        .scaleDecay    = 0.0002f,
                                        .accelerationY = 0.f,
-                                       .opacity       = 0.125f,
-                                       .opacityDecay  = 0.00075f,
+                                       .opacity       = 0.1f,
+                                       .opacityDecay  = 0.0005f,
                                        .rotation      = 0.f,
                                        .torque        = 0.f},
                           trailHue,
@@ -10154,17 +10164,18 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
     {
-        ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
-                                   [&]
-        {
-            ImGui::PushFont(fontImGuiMouldyCheese);
-            uiSetFontScale(uiToolTipFontScale);
-        },
-                                   [&]
-        {
-            uiSetFontScale(uiNormalFontScale);
-            ImGui::PopFont();
-        });
+        if (profile.enableNotifications)
+            ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
+                                       [&]
+            {
+                ImGui::PushFont(fontImGuiMouldyCheese);
+                uiSetFontScale(uiToolTipFontScale);
+            },
+                                       [&]
+            {
+                uiSetFontScale(uiNormalFontScale);
+                ImGui::PopFont();
+            });
 
         if (rtImGui.hasValue())
         {
@@ -11246,6 +11257,9 @@ Witchcat interaction: TODO P0)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     {
+        if (tipTCByte.hasValue())
+            return;
+
         if (notificationQueue.empty())
             return;
 
@@ -11994,6 +12008,7 @@ int main(int argc, const char** argv)
 // TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
+// TODO P1: tooltips should say how much things are improved (e.g. cooldown and range)
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
