@@ -281,7 +281,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Doll Admirer", "Collect 10 voodoo dolls."},
     {"Doll Lover", "Collect 100 voodoo dolls."},
     {"Doll Connossieur", "Collect 1,000 voodoo dolls."},
-    {"Doll Freak", "Collect 10,000 voodoo dolls."}, // TODO P0: reached here with imgs and steam
+    {"Doll Freak", "Collect 10,000 voodoo dolls."},
 
     {"Just a Bit Longer", "Improve Witchcat buff duration once."},
     {"Starting to Matter", "Improve Witchcat buff duration 3 times."},
@@ -331,21 +331,21 @@ inline constexpr AchievementData achievementData[] = {
 
     {"Mewmorable Magic", "Remember Wizardcat's first spell."},
     {"Double Dose of Dazzle", "Remember Wizardcat's second spell."},
-    {"Triple Treat of Transcendence", "Remember Wizardcat's third spell."},
-    {"Quartet of Quirky Conjuring", "Remember Wizardcat's fourth spell."},
+    {"Triple Treat of Wizardry", "Remember Wizardcat's third spell."},
+    {"Quadruple Quirky Conjuring", "Remember Wizardcat's fourth spell."},
 
-    {"TODONAME", "Improve \"Starpaw Conversion\" once."},
-    {"TODONAME", "Improve \"Starpaw Conversion\" 4 times."},
-    {"TODONAME", "Improve \"Starpaw Conversion\" 8 times."},
+    {"Starpaw Efficiency", "Improve \"Starpaw Conversion\" once."},
+    {"Starpaw Excellence", "Improve \"Starpaw Conversion\" 4 times."},
+    {"Starpaw Perfection", "Improve \"Starpaw Conversion\" 8 times."},
 
-    {"TODONAME", "Improve \"Mewltiplier Aura\" once."},
-    {"TODONAME", "Improve \"Mewltiplier Aura\" 5 times."},
-    {"TODONAME", "Improve \"Mewltiplier Aura\" 10 times."},
-    {"TODONAME", "Improve \"Mewltiplier Aura\" 15 times."},
+    {"Additive Aura", "Improve \"Mewltiplier Aura\" once."},
+    {"Multiplicative Aura", "Improve \"Mewltiplier Aura\" 5 times."},
+    {"Exponential Aura", "Improve \"Mewltiplier Aura\" 10 times."},
+    {"Tetrational Aura", "Improve \"Mewltiplier Aura\" 15 times."},
 
-    {"TODONAME", "Improve \"Dark Union\" once."},
-    {"TODONAME", "Improve \"Dark Union\" 4 times."},
-    {"TODONAME", "Improve \"Dark Union\" 8 times."},
+    {"Ebony Bond", "Improve \"Dark Union\" once."},
+    {"Onyx Bond", "Improve \"Dark Union\" 4 times."},
+    {"Obsidian Bond", "Improve \"Dark Union\" 8 times."}, // TODO P0: reached here with imgs and steam
 
     // TODO P0: fourth spell
 
@@ -450,11 +450,11 @@ inline constexpr AchievementData achievementData[] = {
     {"Hexa-Hued Horizon", "Improve Engicat range 6 times."},
     {"Nonagon Navigator", "Improve Engicat range 9 times."},
 
-    {"TODONAME", "Improve Engicat buff multiplier once."},
+    {"Automate This!", "Improve Engicat buff multiplier once."},
     {"TODONAME", "Improve Engicat buff multiplier twice."},
     {"TODONAME", "Improve Engicat buff multiplier 6 times."},
     {"TODONAME", "Improve Engicat buff multiplier 10 times."},
-    {"TODONAME", "Improve Engicat buff multiplier 14 times."},
+    {"There Is No Spoon", "Improve Engicat buff multiplier 14 times."},
 
     {"TODONAME", "Improve Repulsocat range once."},
     {"TODONAME", "Improve Repulsocat range 3 times."},
@@ -471,12 +471,12 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Improve Repulsocat conversion chance 12 times."},
     {"TODONAME", "Improve Repulsocat conversion chance 16 times."},
 
-    {"TODONAME", "Improve Attractocat range once."},
-    {"TODONAME", "Improve Attractocat range 3 times."},
-    {"TODONAME", "Improve Attractocat range 6 times."},
-    {"TODONAME", "Improve Attractocat range 9 times."},
+    {"Alnico", "Improve Attractocat range once."},
+    {"Samarium Cobalt", "Improve Attractocat range 3 times."},
+    {"Ferrite", "Improve Attractocat range 6 times."},
+    {"Neodymium", "Improve Attractocat range 9 times."},
 
-    {"TODONAME", "Purchase the \"Attraction Filter\" permanent upgrade."},
+    {"Selective Magnet", "Purchase the \"Attraction Filter\" permanent upgrade."},
 
     {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
     {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
