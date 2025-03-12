@@ -244,7 +244,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Auto-Mew-tation", "Complete the 4th shrine (\"Shrine of Automation\")."},
     {"Repulsolution", "Complete the 5th shrine (\"Shrine of Repulsion\")."},
     {"Attract-a-Paw", "Complete the 6th shrine (\"Shrine of Attraction\")."},
-    {"TODONAME", "Complete the 7th shrine (\"Shrine of Camouflage\")."},
+    {"You Can't See Me-ow", "Complete the 7th shrine (\"Shrine of Camouflage\")."},
     {"TODONAME", "Complete the 8th shrine (\"Shrine of Victory\")."},
 
     {"Unsealed. Moisturized. Happy.", "Unseal the Witchcat."},
@@ -253,7 +253,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Shrine Lid Unscrewed", "Unseal the Engicat."},
     {"There's No Ceiling", "Unseal the Repulsocat."},
     {"Electronic Lock", "Unseal the Attractocat."},
-    {"TODONAME", "Unseal the Copycat."},
+    {"I've Always Been Outside", "Unseal the Copycat."},
     // TODO P0: other cat (or duck)
 
     {"No Pops Allowed", "Perform a voodoo ritual on a cat."},
@@ -311,6 +311,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Double Mojo", "Have two Witchcat ritual buffs active at once."},
     {"Triple Mojo", "Have three Witchcat ritual buffs active at once."},
     {"Quadra Mojo", "Have four Witchcat ritual buffs active at once."},
+    {"Penta Mojo", "Have five Witchcat ritual buffs active at once."},
 
     {"Broomstick Boost", "Improve Witchcat cooldown once."},
     {"Triple Hocus Haste", "Improve Witchcat cooldown 3 times."},
@@ -346,6 +347,8 @@ inline constexpr AchievementData achievementData[] = {
     {"TODONAME", "Improve \"Dark Union\" once."},
     {"TODONAME", "Improve \"Dark Union\" 4 times."},
     {"TODONAME", "Improve \"Dark Union\" 8 times."},
+
+    // TODO P0: fourth spell
 
     {"Starpaw Spark", "Cast \"Starpaw Conversion\" once."},
     {"Deca-Starpaw Dynamo", "Cast \"Starpaw Conversion\" 10 times."},
@@ -487,7 +490,7 @@ enum : sf::base::SizeT
     nAchievements = sf::base::getArraySize(achievementData)
 };
 
-// TODO P1:
+// TODO P0:
 // - add achievements for every special cat
 // - fill in missing names
 // - link to Steam
