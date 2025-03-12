@@ -3633,19 +3633,19 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
             if (!pt.comboPurchased)
             {
-                result = "buy combo to earn money faster";
+                result = "- buy combo to earn money faster";
                 return result;
             }
 
             if (pt.psvComboStartTime.nPurchases == 0)
             {
-                result = "buy longer combo to unlock cats";
+                result = "- buy longer combo to unlock cats";
                 return result;
             }
 
             if (nCatNormal == 0)
             {
-                result = "buy a cat";
+                result = "- buy a cat";
                 return result;
             }
 
@@ -3667,31 +3667,31 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 // clang-format on
 
                 if (count < needed)
-                    result += "\n  - buy " + std::to_string(needed - count) + " more " + name + "(s)";
+                    result += "\n    - buy " + std::to_string(needed - count) + " more " + name + "(s)";
             };
 
             if (!pt.mapPurchased)
             {
-                startList("to extend playing area:");
-                result += "\n  - buy map scrolling";
+                startList("- to extend playing area:");
+                result += "\n    - buy map scrolling";
             }
 
             if (!catUnicornUnlocked)
             {
-                startList("to unlock unicats:");
+                startList("- to unlock unicats:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n  - buy more bubbles";
+                    result += "\n    - buy more bubbles";
 
                 needNCats(nCatNormal, 3);
             }
 
             if (!catUpgradesUnlocked && catUnicornUnlocked)
             {
-                startList("to unlock cat upgrades:");
+                startList("- to unlock cat upgrades:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n  - buy more bubbles";
+                    result += "\n    - buy more bubbles";
 
                 needNCats(nCatNormal, 2);
                 needNCats(nCatUni, 1);
@@ -3700,26 +3700,26 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             // TODO P2: change dynamically
             if (catUnicornUnlocked && !pt.isBubbleValueUnlocked())
             {
-                startList("to unlock prestige:");
+                startList("- to unlock prestige:");
 
                 if (pt.psvBubbleCount.nPurchases == 0)
-                    result += "\n  - buy more bubbles";
+                    result += "\n    - buy more bubbles";
 
                 if (pt.nShrinesCompleted < 1)
-                    result += "\n  - complete at least one shrine";
+                    result += "\n    - complete at least one shrine";
 
                 needNCats(nCatUni, 3);
             }
 
             if (catUnicornUnlocked && pt.isBubbleValueUnlocked() && !catDevilUnlocked)
             {
-                startList("to unlock devilcats:");
+                startList("- to unlock devilcats:");
 
                 if (pt.psvBubbleValue.nPurchases == 0)
-                    result += "\n  - prestige at least once";
+                    result += "\n    - prestige at least once";
 
                 if (pt.nShrinesCompleted < 1)
-                    result += "\n  - complete at least one shrine";
+                    result += "\n    - complete at least one shrine";
 
                 if (pt.psvBubbleValue.nPurchases > 0u)
                 {
@@ -3730,17 +3730,17 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
             if (catUnicornUnlocked && catDevilUnlocked && !catUnicornUpgradesUnlocked)
             {
-                startList("to unlock unicat upgrades:");
+                startList("- to unlock unicat upgrades:");
                 needNCats(nCatUni, 2);
                 needNCats(nCatDevil, 1);
             }
 
             if (catUnicornUnlocked && catDevilUnlocked && !astroCatUnlocked)
             {
-                startList("to unlock astrocats:");
+                startList("- to unlock astrocats:");
 
                 if (pt.nShrinesCompleted < 2)
-                    result += "\n  - complete at least two shrines";
+                    result += "\n    - complete at least two shrines";
 
                 needNCats(nCatNormal, 10);
                 needNCats(nCatUni, 5);
@@ -3749,14 +3749,14 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
             if (catUnicornUnlocked && catDevilUnlocked && astroCatUnlocked && !catDevilUpgradesUnlocked)
             {
-                startList("to unlock devilcat upgrades:");
+                startList("- to unlock devilcat upgrades:");
                 needNCats(nCatDevil, 2);
                 needNCats(nCatAstro, 1);
             }
 
             if (catUnicornUnlocked && catDevilUnlocked && astroCatUnlocked && !astroCatUpgradesUnlocked)
             {
-                startList("to unlock astrocat upgrades:");
+                startList("- to unlock astrocat upgrades:");
                 needNCats(nCatDevil, 9);
                 needNCats(nCatAstro, 5);
             }
@@ -9530,7 +9530,6 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         const auto attachmentHue = hueColor(catHueByType[asIdx(cat.type)] + cat.hue, alpha);
 
-        //
         // Devilcat: draw tail behind
         if (cat.type == CatType::Devil)
         {
@@ -12044,7 +12043,7 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#if 0
+#if 1
     std::vector<std::string> apinames;
     std::vector<std::string> displaynames;
     std::vector<std::string> descriptions;
@@ -12075,13 +12074,13 @@ int main(int argc, const char** argv)
     for (const auto& name : descriptions)
         std::cout << "`" << name << "`, \n";
     std::cout << "];\n\n";
-#endif
-
+#else
     hg::Steam::SteamManager steamMgr;
     steamMgr.requestStatsAndAchievements();
     steamMgr.runCallbacks();
 
     Main{steamMgr}.run();
+#endif
 }
 
 // TODO P0: achievements for speedrunning milestones
