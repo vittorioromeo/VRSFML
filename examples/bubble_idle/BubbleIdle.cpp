@@ -1835,7 +1835,7 @@ Bubbles being pushed away by Repulsocat are worth x2 more.
 
 Using prestige points, the fan can be upgraded to filter specific bubble types and/or convert a percentage of bubbles to star bubbles.
 
-Witchcat interaction: TODO P0)",
+Witchcat interaction: after being hexed, will grant a x2 bubble count buff and increase wind speed.)",
                 R"(
 ~~ Attractocat ~~
 (unique cat)
@@ -1853,8 +1853,6 @@ Witchcat interaction: after being hexed, all bombs or hell portals will attract 
 
 Mimics an existing unique cat, gaining their abilities and effects. (Note: the mimicked cat can be changed via the toolbar near the bottom of the screen.)
 
-Special interactions:
-
 Mimicking Witchcat:
 - Two separate rituals will be performed.
 
@@ -1869,7 +1867,7 @@ Mimicking Mousecat:
 Mimicking Engicat:
 - The global clicking buff multiplier is doubled.
 
-Witchcat interaction: TODO P0)",
+Witchcat interaction: after being hexed, will grant the same buff as the mimicked cat.)",
             };
 
             static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
@@ -6186,7 +6184,13 @@ Witchcat interaction: TODO P0)",
 
         // Compute total target bubble count
         const auto targetBubbleCountPerScreen = static_cast<SizeT>(pt.psvBubbleCount.currentValue() / nMaxScreens);
-        const auto targetBubbleCount          = targetBubbleCountPerScreen * nPurchasedScreens;
+
+        auto targetBubbleCount = targetBubbleCountPerScreen * nPurchasedScreens;
+
+        const bool repulsoBuffActive = pt.buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f;
+
+        if (repulsoBuffActive)
+            targetBubbleCount *= 2u;
 
         // Helper functions
         const auto playReversePopAt = [this](const sf::Vector2f position)
@@ -6213,7 +6217,11 @@ Witchcat interaction: TODO P0)",
 
                 for (SizeT i = 0; i < times; ++i)
                 {
-                    const auto bPos = pt.bubbles.emplace_back(makeRandomBubble(pt, rng, pt.getMapLimit(), boundaries.y)).position;
+                    auto& bubble = pt.bubbles.emplace_back(makeRandomBubble(pt, rng, pt.getMapLimit(), boundaries.y));
+                    const auto bPos = bubble.position;
+
+                    if (repulsoBuffActive)
+                        bubble.velocity += {0.18f, 0.18f};
 
                     spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
                     playReversePopAt(bPos);
@@ -6221,8 +6229,16 @@ Witchcat interaction: TODO P0)",
             }
             else if (pt.bubbles.size() > targetBubbleCount)
             {
-                // Should only be triggered in testing via cheats
-                pt.bubbles.resize(targetBubbleCount);
+                const SizeT times = (pt.bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
+
+                for (SizeT i = 0; i < times; ++i)
+                {
+                    const auto bPos = pt.bubbles.back().position;
+                    pt.bubbles.pop_back();
+
+                    spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
+                    playReversePopAt(bPos);
+                }
             }
 
             return;
@@ -6376,9 +6392,12 @@ Witchcat interaction: TODO P0)",
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                 bubble.hueMod += deltaTimeMs * 0.125f;
 
-            const float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
+            float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
 
-            if (pt.perm.windPurchased)
+            if (pt.buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
+                windVelocity += 0.00015f;
+
+            if (windVelocity > 0.f)
             {
                 bubble.velocity.x += (windVelocity * 0.5f) * deltaTimeMs;
                 bubble.velocity.y += windVelocity * deltaTimeMs;
@@ -6959,7 +6978,7 @@ Witchcat interaction: TODO P0)",
                     Doll{.position      = pickDollPosition(),
                          .wobbleRadians = rng.getF(0.f, sf::base::tau),
                          .buffPower     = buffPower,
-                         .catType       = selected->type,
+                         .catType       = selected->type == CatType::Copy ? pt.copycatCopiedCatType : selected->type,
                          .tcActivation  = {.startingValue = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
                          .tcDeath       = {}});
 
@@ -8260,17 +8279,6 @@ Witchcat interaction: TODO P0)",
 
                 if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
                 {
-                    /*
-                        case CatType::Repulso:
-                            // TODO P0: ??? something with wind? or stop bubbles from falling? blows special bubbles
-                       from below?
-                       case CatType::Attracto:
-                            // TODO P0: ??? clicking a bubble attracts nearby bubbles? increases bubble count?
-                            // All bombs/portals suck in bubbles?
-                        case CatType::Copy:
-                            // TODO P0: ??
-                    */
-
                     if (copy)
                         collectCopyDoll(d);
                     else
@@ -8870,6 +8878,7 @@ Witchcat interaction: TODO P0)",
         unlockIf(nActiveBuffs >= 2);
         unlockIf(nActiveBuffs >= 3);
         unlockIf(nActiveBuffs >= 4);
+        unlockIf(nActiveBuffs >= 5);
 
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 1);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 3);
@@ -9139,6 +9148,76 @@ Witchcat interaction: TODO P0)",
                                        .torque        = 0.f},
                           trailHue,
                           ParticleType::Trail);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawMinimapIcons()
+    {
+        minimapDrawableBatch.clear();
+
+        const sf::FloatRect* mmCatTxrs[]{
+            &txrMMNormal,
+            &txrMMUni,
+            &txrMMDevil,
+            &txrMMAstro,
+            &txrMMWitch,
+            &txrMMWizard,
+            &txrMMMouse,
+            &txrMMEngi,
+            &txrMMRepulso,
+            &txrMMAttracto,
+            &txrMMCopy,
+        };
+
+        static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
+
+        for (const Shrine& shrine : pt.shrines)
+        {
+            const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
+
+            minimapDrawableBatch.add(
+                sf::Sprite{.position    = shrine.position,
+                           .scale       = {0.7f, 0.7f},
+                           .origin      = txrMMShrine.size / 2.f,
+                           .rotation    = sf::radians(0.f),
+                           .textureRect = txrMMShrine,
+                           .color       = hueColor(shrine.getHue(), shrineAlpha)});
+        }
+
+        for (const Cat& cat : pt.cats)
+        {
+            const auto& catMMTxr = *mmCatTxrs[asIdx(cat.type)];
+
+            minimapDrawableBatch.add(
+                sf::Sprite{.position    = cat.position,
+                           .scale       = {1.f, 1.f},
+                           .origin      = catMMTxr.size / 2.f,
+                           .rotation    = sf::radians(0.f),
+                           .textureRect = catMMTxr,
+                           .color       = hueColor(cat.hue, 255u)});
+        }
+
+        for (const Doll& doll : pt.dolls)
+        {
+            minimapDrawableBatch.add(
+                sf::Sprite{.position    = doll.position,
+                           .scale       = {0.5f, 0.5f},
+                           .origin      = txrDollNormal.size / 2.f,
+                           .rotation    = sf::radians(0.f),
+                           .textureRect = txrDollNormal,
+                           .color       = hueColor(doll.hue, 255u)});
+        }
+
+        for (const Doll& doll : pt.copyDolls)
+        {
+            minimapDrawableBatch.add(
+                sf::Sprite{.position    = doll.position,
+                           .scale       = {0.5f, 0.5f},
+                           .origin      = txrDollNormal.size / 2.f,
+                           .rotation    = sf::radians(0.f),
+                           .textureRect = txrDollNormal,
+                           .color       = hueColor(doll.hue + 180.f, 255u)});
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -9986,7 +10065,7 @@ Witchcat interaction: TODO P0)",
             &txrDollEngi,     // Engi
             &txrDollRepulso,  // Repulso
             &txrDollAttracto, // Attracto
-            &txrDollAttracto, // Copy (TODO P0: change, or just copy whatever is copied?)
+            &txrDollNormal,   // Copy (missing, hexing a copycat hexes the mimicked cat)
         };
 
         static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
@@ -11180,7 +11259,7 @@ Witchcat interaction: TODO P0)",
                                                                         : "Explosive Downpour (Bomb Spawn Chance)";
 
         const char* buffNames[] = {
-            "Midas Paws (x5 Cat Reward)",          // Normal
+            "Midas Paws (x5 Cat Reward)",          // Normal (TODO P1: spawn star particles on paws?)
             "Shooting Stars (Star Spawn Chance) ", // Uni
             devilBuffName,                         // Devil
             "Endless Flight (Looping Astrocats)",  // Astro
@@ -11189,9 +11268,9 @@ Witchcat interaction: TODO P0)",
             "Mana Overload (x3.5 Mana Regen)",             // Wizard
             "Click Fever (x10 Click Reward)",              // Mouse
             "Global Maintenance (x2 Faster Cooldown)",     // Engi
-            "Repulso Buff TODO P0",                        // Repulso
+            "Bubble Hurricane (x2 Bubble Count + Wind)",   // Repulso
             "Demonic Attraction (Magnetic Bombs/Portals)", // Attracto
-            "N/A",                                         // Copy TODO P0:implement: buff whatever is mimicked
+            "N/A",                                         // Copy
         };
 
         static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
@@ -11678,74 +11757,8 @@ Witchcat interaction: TODO P0)",
         gameLoopDrawCursorTrail(mousePos);
 
         //
-        // Draw minimap stuff (TODO P0: organize)
-        {
-            minimapDrawableBatch.clear();
-
-            const sf::FloatRect* mmCatTxrs[]{
-                &txrMMNormal,
-                &txrMMUni,
-                &txrMMDevil,
-                &txrMMAstro,
-                &txrMMWitch,
-                &txrMMWizard,
-                &txrMMMouse,
-                &txrMMEngi,
-                &txrMMRepulso,
-                &txrMMAttracto,
-                &txrMMCopy,
-            };
-
-            static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
-
-            for (const Shrine& shrine : pt.shrines)
-            {
-                const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
-
-                minimapDrawableBatch.add(
-                    sf::Sprite{.position    = shrine.position,
-                               .scale       = {0.7f, 0.7f},
-                               .origin      = txrMMShrine.size / 2.f,
-                               .rotation    = sf::radians(0.f),
-                               .textureRect = txrMMShrine,
-                               .color       = hueColor(shrine.getHue(), shrineAlpha)});
-            }
-
-            for (const Cat& cat : pt.cats)
-            {
-                const auto& catMMTxr = *mmCatTxrs[asIdx(cat.type)];
-
-                minimapDrawableBatch.add(
-                    sf::Sprite{.position    = cat.position,
-                               .scale       = {1.f, 1.f},
-                               .origin      = catMMTxr.size / 2.f,
-                               .rotation    = sf::radians(0.f),
-                               .textureRect = catMMTxr,
-                               .color       = hueColor(cat.hue, 255u)});
-            }
-
-            for (const Doll& doll : pt.dolls)
-            {
-                minimapDrawableBatch.add(
-                    sf::Sprite{.position    = doll.position,
-                               .scale       = {0.5f, 0.5f},
-                               .origin      = txrDollNormal.size / 2.f,
-                               .rotation    = sf::radians(0.f),
-                               .textureRect = txrDollNormal,
-                               .color       = hueColor(doll.hue, 255u)});
-            }
-
-            for (const Doll& doll : pt.copyDolls)
-            {
-                minimapDrawableBatch.add(
-                    sf::Sprite{.position    = doll.position,
-                               .scale       = {0.5f, 0.5f},
-                               .origin      = txrDollNormal.size / 2.f,
-                               .rotation    = sf::radians(0.f),
-                               .textureRect = txrDollNormal,
-                               .color       = hueColor(doll.hue + 180.f, 255u)});
-            }
-        }
+        // Draw minimap stuff
+        gameLoopDrawMinimapIcons();
 
         //
         // Draw cats, shrines, dolls, particles, and text particles
@@ -12074,6 +12087,7 @@ int main(int argc, const char** argv)
 // TODO P0: achievements for speedrunning milestones
 // TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P1: copycat bg drawings
+// TODO P1: review all tooltips
 // TODO P1: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
