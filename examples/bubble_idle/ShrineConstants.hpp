@@ -84,8 +84,8 @@ The magnet is so powerful that its effects are felt even near the shrine.)",
         R"(
 ~~ Shrine Of Camouflage ~~
 
-If you squint, you can see the elusive Copycat hiding inside, who can transform into any other unique cat at will, mimicking their effects. The Copycat is so good at camouflage that they lacks their own identity (and color).
-w
+If you squint, you can see the elusive Copycat hiding inside, who can transform into any other unique cat at will, mimicking their effects. The Copycat is so good at camouflage that they lack their own identity (and color).
+
 // TODO P0: shrine effects)",
         R"(
 ~~ Shrine Of Victory ~~
