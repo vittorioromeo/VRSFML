@@ -244,7 +244,7 @@ bool SteamManager::SteamManagerImpl::storeStats()
 
 bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
 {
-    if (idx > 99)
+    if (idx > 224)
         return false; // TODO P0: add more achievements on Steamworks
 
     if (!m_initialized)
