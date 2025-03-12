@@ -134,7 +134,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Prestigious", "Prestige once."},
     {"Groundcat Day", "Prestige 2 times."},
     {"Catangle", "Prestige 3 times."},
-    {"Edge of Tomeowrrow", "Prestige 5 times."}, // TODO P0: STEAM <- stopped here
+    {"Edge of Tomeowrrow", "Prestige 5 times."},
     {"The Cat Who Leapt Through Time", "Prestige 10 times."},
     {"Primeower", "Prestige 15 times."},
     {"Pawdestination", "Prestige 20 times."},
@@ -227,7 +227,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Ingeni-cat Instigator", "Have an Astrocat inspire the Engicat."},
     {"Purrfect Pushback", "Have an Astrocat inspire the Repulsocat."},
     {"Attracting Ad", "Have an Astrocat inspire the Attractocat."},
-    {"TODONAME", "Have an Astrocat inspire the Copycat."},
+    {"Good Artist Inspiration", "Have an Astrocat inspire the Copycat."},
 
     {"Paws of Awakening", "Activate the 1st shrine."},
     {"Twin Paws, Double Power", "Activate the 2nd shrine."},
@@ -245,7 +245,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Repulsolution", "Complete the 5th shrine (\"Shrine of Repulsion\")."},
     {"Attract-a-Paw", "Complete the 6th shrine (\"Shrine of Attraction\")."},
     {"You Can't See Me-ow", "Complete the 7th shrine (\"Shrine of Camouflage\")."},
-    {"TODONAME", "Complete the 8th shrine (\"Shrine of Victory\")."},
+    {"You're Finally Free", "Complete the 8th shrine (\"Shrine of Victory\")."},
 
     {"Unsealed. Moisturized. Happy.", "Unseal the Witchcat."},
     {"I Don't Recall Being in There", "Unseal the Wizardcat."},
@@ -254,7 +254,6 @@ inline constexpr AchievementData achievementData[] = {
     {"There's No Ceiling", "Unseal the Repulsocat."},
     {"Electronic Lock", "Unseal the Attractocat."},
     {"I've Always Been Outside", "Unseal the Copycat."},
-    // TODO P0: other cat (or duck)
 
     {"No Pops Allowed", "Perform a voodoo ritual on a cat."},
     {"I Hate Rainbows", "Perform a voodoo ritual on a Unicat."},
@@ -278,35 +277,35 @@ inline constexpr AchievementData achievementData[] = {
     {"Ferromagnetic Bones", "Perform 10 voodoo rituals on an Attractocat."},
     {"Fake Bones", "Perform 10 voodoo rituals on a Copycat."},
 
-    {"TODONAME", "Collect a voodoo doll."},
-    {"TODONAME", "Collect 10 voodoo dolls."},
-    {"TODONAME", "Collect 100 voodoo dolls."},
-    {"TODONAME", "Collect 1,000 voodoo dolls."},
-    {"TODONAME", "Collect 10,000 voodoo dolls."},
+    {"Doll Fan", "Collect a voodoo doll."},
+    {"Doll Admirer", "Collect 10 voodoo dolls."},
+    {"Doll Lover", "Collect 100 voodoo dolls."},
+    {"Doll Connossieur", "Collect 1,000 voodoo dolls."},
+    {"Doll Freak", "Collect 10,000 voodoo dolls."}, // TODO P0: reached here with imgs and steam
 
-    {"TODONAME", "Improve Witchcat buff duration once."},
-    {"TODONAME", "Improve Witchcat buff duration 3 times."},
-    {"TODONAME", "Improve Witchcat buff duration 6 times."},
-    {"TODONAME", "Improve Witchcat buff duration 9 times."},
-    {"TODONAME", "Improve Witchcat buff duration 12 times."},
+    {"Just a Bit Longer", "Improve Witchcat buff duration once."},
+    {"Starting to Matter", "Improve Witchcat buff duration 3 times."},
+    {"I Want It to Last", "Improve Witchcat buff duration 6 times."},
+    {"Neverending Ritual", "Improve Witchcat buff duration 9 times."},
+    {"You'll Be a Spirit Forever", "Improve Witchcat buff duration 12 times."},
 
     {"Spiritual Clowder", "Purchase the \"Group Ritual\" permanent upgrade."},
     {"Cult Classic", "Purchase the \"Worldwide Cult\" permanent upgrade."},
-    {"Doll Inflation", "Purchase the \"Material Shortage\" permanent upgrade."},
+    {"Textile Inflation", "Purchase the \"Material Shortage\" permanent upgrade."},
     {"Boomdoo", "Purchase the \"Flammable Dolls\" permanent upgrade."},
     {"Space Junk Cleanup", "Purchase the \"Orbital Dolls\" permanent upgrade."},
 
-    {"TODONAME", "Improve Unicat ritual buff percentage once."},
-    {"TODONAME", "Improve Unicat ritual buff percentage 6 times."},
-    {"TODONAME", "Improve Unicat ritual buff percentage 12 times."},
-    {"TODONAME", "Improve Unicat ritual buff percentage 18 times."},
-    {"TODONAME", "Improve Unicat ritual buff percentage 24 times."},
+    {"Cloudy Night", "Improve Unicat ritual buff percentage once."},
+    {"I Can See a Few Stars", "Improve Unicat ritual buff percentage 6 times."},
+    {"Starry Sky", "Improve Unicat ritual buff percentage 12 times."},
+    {"Blanket of Stars", "Improve Unicat ritual buff percentage 18 times."},
+    {"A Sky Full of Stars", "Improve Unicat ritual buff percentage 24 times."},
 
-    {"TODONAME", "Improve Devilcat ritual buff percentage once."},
-    {"TODONAME", "Improve Devilcat ritual buff percentage 6 times."},
-    {"TODONAME", "Improve Devilcat ritual buff percentage 12 times."},
-    {"TODONAME", "Improve Devilcat ritual buff percentage 18 times."},
-    {"TODONAME", "Improve Devilcat ritual buff percentage 24 times."},
+    {"Seek Shelter", "Improve Devilcat ritual buff percentage once."},
+    {"Duck And Cover", "Improve Devilcat ritual buff percentage 6 times."},
+    {"Nowhere To Hide", "Improve Devilcat ritual buff percentage 12 times."},
+    {"Embrace the Explosions", "Improve Devilcat ritual buff percentage 18 times."},
+    {"It's Raining Bombs!", "Improve Devilcat ritual buff percentage 24 times."},
 
     {"Double Mojo", "Have two Witchcat ritual buffs active at once."},
     {"Triple Mojo", "Have three Witchcat ritual buffs active at once."},
@@ -396,7 +395,7 @@ inline constexpr AchievementData achievementData[] = {
 
     {"Everyone But You", "Purchase the \"Selective Starpaw\" permanent upgrade."},
     {"I Can Transcend As Well...", "Purchase the \"Starpaw Nova\" permanent upgrade."},
-    {"It Takes Longer To Say It", "Purchase the \"Meeeeeewltiplier\" permanent upgrade."},
+    {"Takes Longer To Say It", "Purchase the \"Meeeeeewltiplier\" permanent upgrade."},
 
     // TODO P0: other wizardcat prestiges for other spells
 
