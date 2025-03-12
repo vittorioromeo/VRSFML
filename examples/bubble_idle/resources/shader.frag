@@ -41,6 +41,7 @@ vec3 hsv2rgb(vec3 c)
 {
     const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     const vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
@@ -118,11 +119,6 @@ void main()
                          finalColor + iridescence * u_iridescenceStrength, // Bubble color with iridescence
                          clamp(bubbleVisibility, 0.0, 1.0)                 // Alpha falloff
         );
-
-        // Add subtle surface noise
-        const vec2  screenUV = gl_FragCoord.xy / u_resolution;
-        const float noise    = fract(sin(dot(screenUV, vec2(12.9898, 78.233)) * 43758.5453));
-        finalColor += noise * 0.01 * edgeFactor;
     }
 
     // Apply hue shift
