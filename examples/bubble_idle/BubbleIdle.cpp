@@ -600,7 +600,6 @@ struct Main
     sf::FloatRect txrUniCat{addImgResourceToAtlas("unicat3.png")};
     sf::FloatRect txrUniCat2{addImgResourceToAtlas("unicat2.png")};
     sf::FloatRect txrUniCatWings{addImgResourceToAtlas("unicatwings.png")};
-    sf::FloatRect txrDevilCat{addImgResourceToAtlas("devilcat.png")};
     sf::FloatRect txrDevilCat2{addImgResourceToAtlas("devilcat2.png")};
     sf::FloatRect txrDevilCat3{addImgResourceToAtlas("devilcat3.png")};
     sf::FloatRect txrDevilCat3Arm{addImgResourceToAtlas("devilcat3arm.png")};
@@ -615,7 +614,6 @@ struct Main
     sf::FloatRect txrBrainFront{addImgResourceToAtlas("brainfront.png")};
     sf::FloatRect txrUniCatTail{addImgResourceToAtlas("unicattail.png")};
     sf::FloatRect txrUniCat2Tail{addImgResourceToAtlas("unicat2tail.png")};
-    sf::FloatRect txrDevilCatTail{addImgResourceToAtlas("devilcattail.png")};
     sf::FloatRect txrDevilCatTail2{addImgResourceToAtlas("devilcattail2.png")};
     sf::FloatRect txrAstroCatTail{addImgResourceToAtlas("astrocattail.png")};
     sf::FloatRect txrAstroCatFlag{addImgResourceToAtlas("astrocatflag.png")};
@@ -12043,7 +12041,7 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#if 1
+#if 0
     std::vector<std::string> apinames;
     std::vector<std::string> displaynames;
     std::vector<std::string> descriptions;
