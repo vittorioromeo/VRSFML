@@ -183,6 +183,7 @@ struct Playthrough
         bool unsealedByType[nCatTypes]               = {};
 
         bool wizardCatDoubleMewltiplierDuration = false;
+        bool wizardCatDoubleStasisFieldDuration = false;
 
         bool unicatTranscendencePurchased    = false;
         bool unicatTranscendenceAOEPurchased = false;
