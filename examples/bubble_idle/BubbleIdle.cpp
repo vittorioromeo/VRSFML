@@ -865,6 +865,11 @@ struct Main
     Countdown copycatMaskAnim;
 
     ////////////////////////////////////////////////////////////
+    // Frametime-independent astro/portal proc
+    Countdown frameProcCd;
+    bool      frameProcThisFrame{false};
+
+    ////////////////////////////////////////////////////////////
     // HUD money text
     sf::Text        moneyText{fontSuperBakery,
                               {.position         = {15.f, 70.f},
@@ -1360,6 +1365,12 @@ struct Main
     void statMaintenance()
     {
         withAllStats([&](Stats& stats) { stats.nMaintenances += 1u; });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void statDisguise()
+    {
+        withAllStats([&](Stats& stats) { stats.nDisguises += 1u; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -2521,6 +2532,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                     const bool isSelected = pt.copycatCopiedCatType == static_cast<CatType>(i);
                     if (ImGui::Selectable(CatConstants::typeNamesLong[i], isSelected))
                     {
+                        statDisguise();
                         pt.copycatCopiedCatType = static_cast<CatType>(i);
 
                         copyCat.cooldown.value = pt.getComputedCooldownByCatType(pt.copycatCopiedCatType);
@@ -4255,6 +4267,12 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
+
+            ImGui::Separator();
+
+            std::sprintf(uiTooltipBuffer, "The duration of Stasis Field is extended from 6s to 12s.");
+            uiLabelBuffer[0] = '\0';
+            (void)makePurchasablePPButtonOneTime("Pop Stuck In Time", 256u, pt.perm.wizardCatDoubleStasisFieldDuration);
         }
 
         if (checkUiUnlock(60u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
@@ -4738,10 +4756,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
             uiSetUnlockLabelY(33u);
             std::sprintf(uiTooltipBuffer,
-                         "Creates a value multiplier aura around the Wizardcat that affects all cats and "
-                         "bubbles. "
-                         "Lasts 6 seconds.\n\nCasting this spell multiple times will accumulate the aura "
-                         "duration.");
+                         "Creates a value multiplier aura around the Wizardcat that affects all cats and bubbles. "
+                         "Lasts %d seconds.\n\nCasting this spell multiple times will accumulate the aura duration.",
+                         pt.perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
             bool done = false;
             if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura", done, ManaType{20u}, pt.mana, "%s mana##%u"))
@@ -4813,7 +4830,13 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             ImGui::Separator();
 
             uiSetUnlockLabelY(35u);
-            std::sprintf(uiTooltipBuffer, "TODO");
+            std::sprintf(uiTooltipBuffer,
+                         "The Wizardcat controls time itself, creating a stasis field for %d seconds. All bubbles "
+                         "caught in the field become frozen in time, unable to move or be destroyed. However, they can "
+                         "still be popped, as many times as you want!\n\nCasting this spell multiple times will "
+                         "accumulate the field duration.\n\nNote: This spell has no effect if there are no bubbles "
+                         "nearby. Bombs are also affected by the stasis field.",
+                         pt.perm.wizardCatDoubleStasisFieldDuration ? 12 : 6);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.stasisFieldTimer / 1000.f));
 
             bool done = false;
@@ -4821,7 +4844,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             {
                 wizardcatSpin.value = sf::base::tau;
 
-                pt.stasisFieldTimer += 10'000.f;
+                pt.stasisFieldTimer += pt.perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
 
                 doWizardSpellStasisField(*wizardCat);
 
@@ -5858,6 +5881,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             ImGui::Checkbox("witchCatBuffFlammableDolls", &pt.perm.witchCatBuffFlammableDolls);
             ImGui::Checkbox("witchCatBuffOrbitalDolls", &pt.perm.witchCatBuffOrbitalDolls);
             ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &pt.perm.wizardCatDoubleMewltiplierDuration);
+            ImGui::Checkbox("wizardCatDoubleStasisFieldDuration", &pt.perm.wizardCatDoubleStasisFieldDuration);
             ImGui::Checkbox("unicatTranscendencePurchased", &pt.perm.unicatTranscendencePurchased);
             ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt.perm.unicatTranscendenceAOEPurchased);
             ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
@@ -6036,7 +6060,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isBubbleInStasisField(const Bubble& bubble) const
     {
-        if (pt.stasisFieldTimer <= 0.f || bubble.type == BubbleType::Bomb)
+        if (pt.stasisFieldTimer <= 0.f)
             return false;
 
         const auto rangeSquared = pt.getComputedSquaredRangeByCatType(CatType::Wizard);
@@ -7614,33 +7638,34 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                     particleTimer = 0.f;
                 }
 
-                forEachBubbleInRadius({cx, cy},
-                                      range,
-                                      [&](Bubble& bubble)
-                {
-                    const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
-                                                                /* multiplier */ 20.f,
-                                                                /* comboMult  */ 1.f,
-                                                                /* popperCat  */ &cat);
+                if (frameProcThisFrame)
+                    forEachBubbleInRadius({cx, cy},
+                                          range,
+                                          [&](Bubble& bubble)
+                    {
+                        const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
+                                                                    /* multiplier */ 20.f,
+                                                                    /* comboMult  */ 1.f,
+                                                                    /* popperCat  */ &cat);
 
-                    statFlightRevenue(reward);
+                        statFlightRevenue(reward);
 
-                    popWithRewardAndReplaceBubble({
-                        .reward          = reward,
-                        .bubble          = bubble,
-                        .xCombo          = 1,
-                        .popSoundOverlap = rng.getF(0.f, 1.f) > 0.75f,
-                        .popperCat       = &cat,
-                        .multiPop        = false,
+                        popWithRewardAndReplaceBubble({
+                            .reward          = reward,
+                            .bubble          = bubble,
+                            .xCombo          = 1,
+                            .popSoundOverlap = rng.getF(0.f, 1.f) > 0.75f,
+                            .popperCat       = &cat,
+                            .multiPop        = false,
+                        });
+
+                        cat.textStatusShakeEffect.bump(rng, 1.5f);
+
+                        if (bubble.type == BubbleType::Bomb)
+                            pt.achAstrocatPopBomb = true;
+
+                        return ControlFlow::Continue;
                     });
-
-                    cat.textStatusShakeEffect.bump(rng, 1.5f);
-
-                    if (bubble.type == BubbleType::Bomb)
-                        pt.achAstrocatPopBomb = true;
-
-                    return ControlFlow::Continue;
-                });
 
                 if (!cat.isCloseToStartX() && velocityX > -5.f)
                     velocityX -= 0.00025f * deltaTimeMs;
@@ -9040,6 +9065,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         unlockIf(pt.perm.starpawConversionIgnoreBombs);
         unlockIf(pt.perm.starpawNova);
         unlockIf(pt.perm.wizardCatDoubleMewltiplierDuration);
+        unlockIf(pt.perm.wizardCatDoubleStasisFieldDuration);
 
         unlockIf(pt.mouseCatCombo >= 25);
         unlockIf(pt.mouseCatCombo >= 50);
@@ -9119,6 +9145,11 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 9);
 
         unlockIf(pt.perm.attractoCatFilterPurchased);
+
+        unlockIf(profile.statsLifetime.nDisguises >= 1);
+        unlockIf(profile.statsLifetime.nDisguises >= 10);
+        unlockIf(profile.statsLifetime.nDisguises >= 100);
+        unlockIf(profile.statsLifetime.nDisguises >= 1000);
 
         unlockIf(buyReminder >= 5); // Secret
         unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
@@ -10946,6 +10977,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleHellPortal()
     {
+        if (!frameProcThisFrame)
+            return;
+
         const float hellPortalRadius        = pt.getComputedRangeByCatType(CatType::Devil) * 1.25f;
         const float hellPortalRadiusSquared = hellPortalRadius * hellPortalRadius;
 
@@ -11702,6 +11736,10 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         sweepAndPrune.populate(pt.bubbles);
 
         //
+        // Update frameproc
+        frameProcThisFrame = (frameProcCd.updateAndLoop(deltaTimeMs, 20.f) == CountdownStatusLoop::Looping);
+
+        //
         // Update bubbles
         gameLoopUpdateBubbles(deltaTimeMs);
 
@@ -12128,7 +12166,7 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#if 0
+#if 1
     std::vector<std::string> apinames;
     std::vector<std::string> displaynames;
     std::vector<std::string> descriptions;
@@ -12168,18 +12206,17 @@ int main(int argc, const char** argv)
 #endif
 }
 
-// TODO P0: stasis field: fix hellportals and astrocats per-frame behavior, tweak values, tooltip, achievemnets, upgrades, etc
 // TODO P0: DUCK! and letter
 
-// TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
-// TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
 // TODO P1: tooltips should say how much things get improved (e.g. cooldown and range)
 
+// TODO P2: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
+// TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
