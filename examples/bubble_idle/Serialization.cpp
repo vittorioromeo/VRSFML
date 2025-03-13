@@ -708,6 +708,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
         FIELD(absorbingWisdom),
         FIELD(wisdom),
         FIELD(mewltiplierAuraTimer),
+        FIELD(stasisFieldTimer),
 
         FIELD(mouseCatCombo),
         FIELD(mouseCatComboCountdown),

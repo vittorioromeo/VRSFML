@@ -140,6 +140,7 @@ struct Playthrough
     bool      absorbingWisdom      = false;
     MoneyType wisdom               = 0u;
     float     mewltiplierAuraTimer = 0.f;
+    float     stasisFieldTimer     = 0.f;
 
     //
     // Mousecat
@@ -304,6 +305,7 @@ struct Playthrough
         absorbingWisdom      = false;
         wisdom               = 0u;
         mewltiplierAuraTimer = 0.f;
+        stasisFieldTimer     = 0.f;
 
         mouseCatCombo                = 0.f;
         mouseCatComboCountdown.value = 0.f;
