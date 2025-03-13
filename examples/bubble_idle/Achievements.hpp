@@ -345,29 +345,27 @@ inline constexpr AchievementData achievementData[] = {
 
     {"Ebony Bond", "Improve \"Dark Union\" once."},
     {"Onyx Bond", "Improve \"Dark Union\" 4 times."},
-    {"Obsidian Bond", "Improve \"Dark Union\" 8 times."}, // TODO P0: reached here with imgs and steam
+    {"Obsidian Bond", "Improve \"Dark Union\" 8 times."},
 
-    // TODO P0: fourth spell
+    {"Wololo", "Cast \"Starpaw Conversion\" once."},
+    {"Repent, Bubbles!", "Cast \"Starpaw Conversion\" 10 times."},
+    {"Follow The Holy Star", "Cast \"Starpaw Conversion\" 100 times."},
+    {"The One True Bubble", "Cast \"Starpaw Conversion\" 1,000 times."},
 
-    {"Starpaw Spark", "Cast \"Starpaw Conversion\" once."},
-    {"Deca-Starpaw Dynamo", "Cast \"Starpaw Conversion\" 10 times."},
-    {"Centipaw Catastrophe", "Cast \"Starpaw Conversion\" 100 times."},
-    {"Kilo Starpaw Chaos", "Cast \"Starpaw Conversion\" 1,000 times."},
+    {"Limitless Potential", "Cast \"Mewltiplier Aura\" once."},
+    {"Become a Powerhouse", "Cast \"Mewltiplier Aura\" 10 times."},
+    {"Workhorse? Workcat.", "Cast \"Mewltiplier Aura\" 100 times."},
+    {"MVP (Most Valuable Purr)", "Cast \"Mewltiplier Aura\" 1,000 times."},
 
-    {"Mewltiplier Moment", "Cast \"Mewltiplier Aura\" once."},
-    {"Deca-Mewltiplier Dynamo", "Cast \"Mewltiplier Aura\" 10 times."},
-    {"Centimewltiplier Catastrophe", "Cast \"Mewltiplier Aura\" 100 times."},
-    {"Kilo Mewltiplier Chaos", "Cast \"Mewltiplier Aura\" 1,000 times."},
+    {"Frenemies", "Cast \"Dark Union\" once."},
+    {"Ruinous Romance", "Cast \"Dark Union\" 10 times."},
+    {"Ideological Convergence", "Cast \"Dark Union\" 100 times."},
+    {"Syncretic Wisdom", "Cast \"Dark Union\" 1,000 times."},
 
-    {"TODONAME", "Cast \"Dark Union\" once."},
-    {"TODONAME", "Cast \"Dark Union\" 10 times."},
-    {"TODONAME", "Cast \"Dark Union\" 100 times."},
-    {"TODONAME", "Cast \"Dark Union\" 1,000 times."},
-
-    {"TODONAME", "Cast \"TODOSPELL #3\" once."},
-    {"TODONAME", "Cast \"TODOSPELL #3\" 10 times."},
-    {"TODONAME", "Cast \"TODOSPELL #3\" 100 times."},
-    {"TODONAME", "Cast \"TODOSPELL #3\" 1,000 times."},
+    {"Wait A Moment", "Cast \"Stasis Field\" once."},
+    {"Clockstopper", "Cast \"Stasis Field\" 10 times."},
+    {"FBC Director", "Cast \"Stasis Field\" 100 times."},
+    {"Super Hot", "Cast \"Stasis Field\" 1,000 times."},
 
     {"Pawsitively Wise", "Improve Wizardcat cooldown once."},
     {"Triple-Wise Tabbies", "Improve Wizardcat cooldown 3 times."},
@@ -380,24 +378,23 @@ inline constexpr AchievementData achievementData[] = {
     {"Planetary Wisdom", "Improve Wizardcat range 6 times."},
     {"Universal Wisdom", "Improve Wizardcat range 9 times."},
 
-    {"TODONAME", "Improve Wizardcat's mana cooldown once"},
-    {"TODONAME", "Improve Wizardcat's mana cooldown 4 times"},
-    {"TODONAME", "Improve Wizardcat's mana cooldown 8 times"},
-    {"TODONAME", "Improve Wizardcat's mana cooldown 12 times"},
-    {"TODONAME", "Improve Wizardcat's mana cooldown 16 times"},
+    {"Mana Potion", "Improve Wizardcat's mana cooldown once"},
+    {"Lost Chapter", "Improve Wizardcat's mana cooldown 4 times"},
+    {"Innervate", "Improve Wizardcat's mana cooldown 8 times"},
+    {"Chalice of Harmony", "Improve Wizardcat's mana cooldown 12 times"},
+    {"Clarity", "Improve Wizardcat's mana cooldown 16 times"},
 
-    {"TODONAME", "Improve Wizardcat's mana limit once"},
-    {"TODONAME", "Improve Wizardcat's mana limit 4 times"},
-    {"TODONAME", "Improve Wizardcat's mana limit 8 times"},
-    {"TODONAME", "Improve Wizardcat's mana limit 12 times"},
-    {"TODONAME", "Improve Wizardcat's mana limit 16 times"},
-    {"TODONAME", "Improve Wizardcat's mana limit 20 times"},
+    {"Manaflow Band", "Improve Wizardcat's mana limit once"},
+    {"Sapphire Crystal", "Improve Wizardcat's mana limit 4 times"},
+    {"Tome of Intelligence", "Improve Wizardcat's mana limit 8 times"},
+    {"Force Staff", "Improve Wizardcat's mana limit 12 times"},
+    {"Tear of the Goddess", "Improve Wizardcat's mana limit 16 times"},
+    {"Rod of Ages", "Improve Wizardcat's mana limit 20 times"},
 
     {"Everyone But You", "Purchase the \"Selective Starpaw\" permanent upgrade."},
     {"I Can Transcend As Well...", "Purchase the \"Starpaw Nova\" permanent upgrade."},
     {"Takes Longer To Say It", "Purchase the \"Meeeeeewltiplier\" permanent upgrade."},
-
-    // TODO P0: other wizardcat prestiges for other spells
+    {"There's No Time Left", "Purchase the \"Pop Stuck In Time\" permanent upgrade."},
 
     {"Modest Autoclicker", "Reach combo x25 with Mousecat."},
     {"Midway Autoclicker", "Reach combo x50 with Mousecat."},
@@ -451,25 +448,25 @@ inline constexpr AchievementData achievementData[] = {
     {"Nonagon Navigator", "Improve Engicat range 9 times."},
 
     {"Automate This!", "Improve Engicat buff multiplier once."},
-    {"TODONAME", "Improve Engicat buff multiplier twice."},
-    {"TODONAME", "Improve Engicat buff multiplier 6 times."},
-    {"TODONAME", "Improve Engicat buff multiplier 10 times."},
+    {"Macro Button", "Improve Engicat buff multiplier twice."},
+    {"Hopper & Furnace", "Improve Engicat buff multiplier 6 times."},
+    {"Contruction Bots", "Improve Engicat buff multiplier 10 times."},
     {"There Is No Spoon", "Improve Engicat buff multiplier 14 times."},
 
-    {"TODONAME", "Improve Repulsocat range once."},
-    {"TODONAME", "Improve Repulsocat range 3 times."},
-    {"TODONAME", "Improve Repulsocat range 6 times."},
-    {"TODONAME", "Improve Repulsocat range 9 times."},
+    {"Breeze", "Improve Repulsocat range once."},
+    {"Gale", "Improve Repulsocat range 3 times."},
+    {"Storm", "Improve Repulsocat range 6 times."},
+    {"Hurricane", "Improve Repulsocat range 9 times."},
 
-    {"TODONAME", "Purchase the \"Repulsion Filter\" permanent upgrade."},
-    {"TODONAME", "Purchase the \"Conversion Field\" permanent upgrade."},
-    {"TODONAME", "Purchase the \"Nova Conversion\" permanent upgrade."},
+    {"AI-Powered Fan", "Purchase the \"Repulsion Filter\" permanent upgrade."},
+    {"Winds of Magic", "Purchase the \"Conversion Field\" permanent upgrade."},
+    {"Star Tornado", "Purchase the \"Nova Conversion\" permanent upgrade."},
 
-    {"TODONAME", "Improve Repulsocat conversion chance once."},
-    {"TODONAME", "Improve Repulsocat conversion chance 4 times."},
-    {"TODONAME", "Improve Repulsocat conversion chance 8 times."},
-    {"TODONAME", "Improve Repulsocat conversion chance 12 times."},
-    {"TODONAME", "Improve Repulsocat conversion chance 16 times."},
+    {"Floating Glitter", "Improve Repulsocat conversion chance once."},
+    {"Starry Zephyr", "Improve Repulsocat conversion chance 4 times."},
+    {"Arcane Current", "Improve Repulsocat conversion chance 8 times."},
+    {"Stellar Gust", "Improve Repulsocat conversion chance 12 times."},
+    {"Starstorm", "Improve Repulsocat conversion chance 16 times."},
 
     {"Alnico", "Improve Attractocat range once."},
     {"Samarium Cobalt", "Improve Attractocat range 3 times."},
@@ -477,6 +474,11 @@ inline constexpr AchievementData achievementData[] = {
     {"Neodymium", "Improve Attractocat range 9 times."},
 
     {"Selective Magnet", "Purchase the \"Attraction Filter\" permanent upgrade."},
+
+    {"Gentlemen?", "Change Copycat disguise once."},
+    {"Meow. James Meow.", "Change Copycat disguise 10 times."},
+    {"Yeah, Baby!", "Change Copycat disguise 100 times."},
+    {"Tactical Espionage Action", "Change Copycat disguise 1'000 times."},
 
     {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
     {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
@@ -489,11 +491,8 @@ enum : sf::base::SizeT
     nAchievements = sf::base::getArraySize(achievementData)
 };
 
-// TODO P0: add achievements for every special cat
-// TODO P0: fill in missing names
-// TODO P0: link to Steam
-// TODO P0: come up with secret achivements
-// TODO P0: speedrun/milestone achievements
+// TODO P2: come up with more secret achivements
+// TODO P1: speedrun/milestone achievements
 // ---- prestige 1 mid 5min, good 4min, insane 3.45min
 // ---- prestige 2 mid 25min, good 22min, insane 18min
 // ---- prestige 3? maybe test with auto combos

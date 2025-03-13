@@ -35,6 +35,8 @@ struct [[nodiscard]] Stats
     sf::base::U64 nMaintenances                   = 0u;
     sf::base::U64 highestSimultaneousMaintenances = 0u;
 
+    sf::base::U64 nDisguises = 0u;
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] sf::base::U64 getTotalNBubblesPopped() const noexcept
     {
