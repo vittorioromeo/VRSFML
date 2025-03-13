@@ -489,12 +489,11 @@ enum : sf::base::SizeT
     nAchievements = sf::base::getArraySize(achievementData)
 };
 
-// TODO P0:
-// - add achievements for every special cat
-// - fill in missing names
-// - link to Steam
-// - come up with secret achivements
-// - speedrun/milestone achievements
+// TODO P0: add achievements for every special cat
+// TODO P0: fill in missing names
+// TODO P0: link to Steam
+// TODO P0: come up with secret achivements
+// TODO P0: speedrun/milestone achievements
 // ---- prestige 1 mid 5min, good 4min, insane 3.45min
 // ---- prestige 2 mid 25min, good 22min, insane 18min
 // ---- prestige 3? maybe test with auto combos

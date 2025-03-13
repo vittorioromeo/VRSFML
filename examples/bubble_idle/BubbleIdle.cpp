@@ -514,6 +514,7 @@ struct Main
     sf::Texture txBgFactory{sf::Texture::loadFromFile("resources/bgfactory.png", bgSettings).value()};
     sf::Texture txBgWindTunnel{sf::Texture::loadFromFile("resources/bgwindtunnel.png", bgSettings).value()};
     sf::Texture txBgMagnetosphere{sf::Texture::loadFromFile("resources/bgmagnetosphere.png", bgSettings).value()};
+    sf::Texture txBgAuditorium{sf::Texture::loadFromFile("resources/bgauditorium.png", bgSettings).value()};
     sf::Texture txDrawings{sf::Texture::loadFromFile("resources/drawings.png", {.smooth = true}).value()};
     sf::Texture txTipBg{sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()};
     sf::Texture txTipByte{sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()};
@@ -586,8 +587,8 @@ struct Main
             180.f,  // Automation
             121.f,  // Repulsion
             -45.f,  // Attraction
-            0.f,    // Camouflage
-            0.f,    // Victory
+            -155.f, // Camouflage
+            -80.f,  // Victory
         });
 
     ////////////////////////////////////////////////////////////
@@ -4575,8 +4576,6 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
 
-        pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
-
         ++wizardCat.hits;
         wizardCat.cooldown.value = maxCooldown * 2.f;
     }
@@ -4611,6 +4610,20 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         ++wizardCat.hits;
         wizardCat.cooldown.value = maxCooldown * 4.f;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void doWizardSpellStasisField(Cat& wizardCat)
+    {
+        const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
+
+        sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
+        playSound(sounds.cast0);
+
+        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+
+        ++wizardCat.hits;
+        wizardCat.cooldown.value = maxCooldown * 2.f;
     }
 
     ////////////////////////////////////////////////////////////
@@ -4735,6 +4748,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             {
                 wizardcatSpin.value = sf::base::tau;
 
+                pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
+
                 doWizardSpellMewltiplierAura(*wizardCat);
 
                 if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
@@ -4792,27 +4807,28 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         }
 
         //
-        // SPELL 3 (TODO P0: buff next spell cast, or something similar)
+        // SPELL 3
         if (checkUiUnlock(35u, pt.psvSpellCount.nPurchases >= 4))
         {
             ImGui::Separator();
 
             uiSetUnlockLabelY(35u);
             std::sprintf(uiTooltipBuffer, "TODO");
-            std::sprintf(uiLabelBuffer, "TODO");
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.stasisFieldTimer / 1000.f));
 
             bool done = false;
-            if (makePurchasableButtonOneTimeByCurrency("TODO", done, ManaType{30u}, pt.mana, "%s mana##%u"))
+            if (makePurchasableButtonOneTimeByCurrency("Stasis Field", done, ManaType{40u}, pt.mana, "%s mana##%u"))
             {
-                sounds.cast0.setPosition({wizardCat->position.x, wizardCat->position.y});
-                playSound(sounds.cast0);
+                wizardcatSpin.value = sf::base::tau;
 
-                // TODO P0: effect
+                pt.stasisFieldTimer += 10'000.f;
+
+                doWizardSpellStasisField(*wizardCat);
+
+                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+                    doWizardSpellStasisField(*copyCat);
 
                 done = false;
-                ++wizardCat->hits;
-                wizardCat->cooldown.value = maxCooldown * 2.f;
-
                 statSpellCast(3u);
             }
         }
@@ -5295,6 +5311,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
             data.entries.emplace_back(6, "Magnetosphere");
+
+        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+            data.entries.emplace_back(7, "Auditorium");
 
         if (data.selectedIndex == -1)
         {
@@ -5851,6 +5870,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             ImGui::Checkbox("shrineCompleted Engi", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
             ImGui::Checkbox("shrineCompleted Attracto", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
             ImGui::Checkbox("shrineCompleted Repulso", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
+            ImGui::Checkbox("shrineCompleted Copy", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
 
             uiSetFontScale(uiNormalFontScale);
             ImGui::PopFont();
@@ -6014,6 +6034,25 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
     };
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isBubbleInStasisField(const Bubble& bubble) const
+    {
+        if (pt.stasisFieldTimer <= 0.f || bubble.type == BubbleType::Bomb)
+            return false;
+
+        const auto rangeSquared = pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+
+        if (cachedWizardCat != nullptr)
+            if ((bubble.position - cachedWizardCat->position).lengthSquared() <= rangeSquared)
+                return true;
+
+        if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+            if ((bubble.position - cachedCopyCat->position).lengthSquared() <= rangeSquared)
+                return true;
+
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////
     void popWithRewardAndReplaceBubble(const BubblePopData& data)
     {
         const auto& [reward, bubble, xCombo, popSoundOverlap, popperCat, multiPop] = data;
@@ -6110,8 +6149,11 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             moneyTextShakeEffect.bump(rng, 1.f + static_cast<float>(combo) * 0.1f);
         }
 
-        bubble = makeRandomBubble(pt, rng, pt.getMapLimit(), 0.f);
-        bubble.position.y -= bubble.radius;
+        if (!isBubbleInStasisField(bubble))
+        {
+            bubble = makeRandomBubble(pt, rng, pt.getMapLimit(), 0.f);
+            bubble.position.y -= bubble.radius;
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -6400,6 +6442,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 bubble.velocity.x += (windVelocity * 0.5f) * deltaTimeMs;
                 bubble.velocity.y += windVelocity * deltaTimeMs;
             }
+
+            if (isBubbleInStasisField(bubble))
+                bubble.velocity = {0.f, 0.f};
 
             bubble.position += bubble.velocity * deltaTimeMs;
 
@@ -7976,8 +8021,14 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                     const auto strength = (shrine.getRange() - diff.length()) * 0.0000025f * deltaTimeMs;
                     bubble.velocity += diff.normalized() * strength * getWindAttractionMult();
                 }
-
-                // TODO P0: complete shrines
+                else if (shrine.type == ShrineType::Camouflage)
+                {
+                    // TODO P0: complete shrines
+                }
+                else if (shrine.type == ShrineType::Victory)
+                {
+                    // TODO P0: complete shrines
+                }
 
                 return ControlFlow::Continue;
             });
@@ -8388,7 +8439,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         }
 
         //
-        // Arcane aura spell
+        // Mewltiplier Aura spell
         if (pt.mewltiplierAuraTimer > 0.f)
         {
             pt.mewltiplierAuraTimer -= deltaTimeMs;
@@ -8408,6 +8459,35 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(230.f,
+                                                   1,
+                                                   rng.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                                   ParticleType::Star,
+                                                   0.15f,
+                                                   0.05f);
+        }
+
+
+        //
+        // Stasis Field spell
+        if (pt.stasisFieldTimer > 0.f)
+        {
+            pt.stasisFieldTimer -= deltaTimeMs;
+            pt.stasisFieldTimer = sf::base::max(pt.stasisFieldTimer, 0.f);
+
+            const float wizardRange = pt.getComputedRangeByCatType(CatType::Wizard);
+
+            if (cachedWizardCat != nullptr)
+                for (SizeT i = 0u; i < 8u; ++i)
+                    spawnParticlesWithHueNoGravity(50.f,
+                                                   1,
+                                                   rng.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                                   ParticleType::Star,
+                                                   0.15f,
+                                                   0.05f);
+
+            if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+                for (SizeT i = 0u; i < 8u; ++i)
+                    spawnParticlesWithHueNoGravity(50.f,
                                                    1,
                                                    rng.getPointInCircle(cachedCopyCat->position, wizardRange),
                                                    ParticleType::Star,
@@ -11130,7 +11210,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txBgFactory,       // Automation
             &txBgWindTunnel,    // Repulsion
             &txBgMagnetosphere, // Attraction
-            &txClouds,          // Camouflage
+            &txBgAuditorium,    // Camouflage
             &txClouds,          // Victory
         };
 
@@ -11301,6 +11381,13 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                               "Mewltiplier Aura (x%.1f Any Reward): %.2fs\n",
                               static_cast<double>(pt.psvMewltiplierMult.currentValue()),
                               static_cast<double>(pt.mewltiplierAuraTimer / 1000.f)));
+
+        if (pt.stasisFieldTimer > 0.f)
+            writeIdx += static_cast<SizeT>(
+                std::snprintf(buffStrBuffer + writeIdx,
+                              sizeof(buffStrBuffer) - writeIdx,
+                              "Stasis Field (Bubbles Stuck In Time): %.2fs\n",
+                              static_cast<double>(pt.stasisFieldTimer / 1000.f)));
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
@@ -12081,19 +12168,18 @@ int main(int argc, const char** argv)
 #endif
 }
 
-// TODO P0: achievements for speedrunning milestones
+// TODO P0: stasis field: fix hellportals and astrocats per-frame behavior, tweak values, tooltip, achievemnets, upgrades, etc
+// TODO P0: DUCK! and letter
+
 // TODO P1: idea for PP: when astrocat touches hellcat portal its buffed
-// TODO P1: copycat bg drawings
 // TODO P1: review all tooltips
-// TODO P1: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
-// TODO P1: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
-// TODO P1: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P1: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
-// TODO P1: tooltips should say how much things are improved (e.g. cooldown and range)
+// TODO P1: tooltips should say how much things get improved (e.g. cooldown and range)
+
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
@@ -12101,3 +12187,8 @@ int main(int argc, const char** argv)
 // TODO P2: find better word for "prestige"
 // TODO P2: maybe 64PP prestige buff for multipop that allows "misses"
 // TODO P2: reduce size of game textures and try to reduce atlas size
+// TODO P2: some sort of beacon cat that is only effective when near n-m cats but no less nor more
+// TODO P2: improve copycat bg drawings
+// TODO P2: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
+// TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
+// TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
