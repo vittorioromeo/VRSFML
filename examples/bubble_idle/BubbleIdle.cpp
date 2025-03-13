@@ -12207,6 +12207,7 @@ int main(int argc, const char** argv)
 }
 
 // TODO P0: DUCK! and letter
+// TODO P0: improve copycat bg
 
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
