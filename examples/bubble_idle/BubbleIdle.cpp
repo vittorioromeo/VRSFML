@@ -12192,3 +12192,4 @@ int main(int argc, const char** argv)
 // TODO P2: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
+// TODO P2: built-in speedrun splits system
