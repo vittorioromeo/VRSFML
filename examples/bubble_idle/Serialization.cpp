@@ -474,7 +474,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Stat
                          FIELD(nWitchcatDollsCollected),
 
                          FIELD(nMaintenances),
-                         FIELD(highestSimultaneousMaintenances));
+                         FIELD(highestSimultaneousMaintenances),
+
+                         FIELD(nDisguises));
 }
 
 
@@ -647,6 +649,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                          FIELD(unsealedByType),
 
                          FIELD(wizardCatDoubleMewltiplierDuration),
+                         FIELD(wizardCatDoubleStasisFieldDuration),
 
                          FIELD(unicatTranscendencePurchased),
                          FIELD(unicatTranscendenceAOEPurchased),

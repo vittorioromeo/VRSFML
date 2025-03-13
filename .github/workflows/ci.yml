@@ -105,6 +105,9 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
+    - name: Set up environment variable to disable TLS verification
+      run: echo "CMAKE_TLS_VERIFY=0" >> $GITHUB_ENV
+
     - name: Set Visual Studio Architecture
       if: contains(matrix.platform.name, 'Windows VS') && !contains(matrix.platform.name, 'MSBuild')
       uses: ilammy/msvc-dev-cmd@v1
@@ -186,7 +189,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: "C:\\Program Files\\mingw64"
-        key: winlibs-x86_64-posix-seh-gcc-12.2.0-llvm-16.0.0-mingw-w64msvcrt-10.0.0-r5
+        key: winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-19.1.7-mingw-w64msvcrt-12.0.0-r3
 
     - name: Install MinGW
       if: matrix.platform.name == 'Windows MinGW' && steps.mingw-cache.outputs.cache-hit != 'true'
@@ -204,7 +207,7 @@ jobs:
         ccache --version
 
     - name: Configure CMake
-      run: cmake --preset vrdev_ci -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
+      run: cmake --preset vrdev_ci -DCMAKE_TLS_VERIFY=0 -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
 
     - name: Build
       run: cmake --build build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install
@@ -329,7 +332,7 @@ jobs:
         echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
     - name: Configure
-      run: cmake --preset vrdev_ci -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
+      run: cmake --preset vrdev_ci -DCMAKE_TLS_VERIFY=0 -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
 
     - name: Analyze Code
       run: cmake --build build --target tidy
