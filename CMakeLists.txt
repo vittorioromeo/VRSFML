@@ -47,7 +47,7 @@ endif()
 add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
 
 # include CPM to manage external dependencies
-include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+include(cmake/CPM.cmake)
 
 # add an option to enable stack traces on assertions
 sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
