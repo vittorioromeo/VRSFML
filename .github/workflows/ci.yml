@@ -204,7 +204,7 @@ jobs:
         ccache --version
 
     - name: Configure CMake
-      run: cmake --preset vrdev_gcc -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
+      run: cmake --preset vrdev_ci -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
 
     - name: Build
       run: cmake --build build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install
@@ -329,7 +329,7 @@ jobs:
         echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
     - name: Configure
-      run: cmake --preset vrdev_gcc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
+      run: cmake --preset vrdev_ci -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
 
     - name: Analyze Code
       run: cmake --build build --target tidy
@@ -361,7 +361,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install xorg-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev xvfb fluxbox && sudo apt-get remove -y libasound2
 
     - name: Configure
-      run: cmake --preset vrdev_gcc -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSFML_BUILD_EXAMPLES=OFF -DSFML_ENABLE_SANITIZERS=ON ${{matrix.platform.flags}}
+      run: cmake --preset vrdev_ci -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSFML_BUILD_EXAMPLES=OFF -DSFML_ENABLE_SANITIZERS=ON ${{matrix.platform.flags}}
 
     - name: Build
       run: cmake --build build
