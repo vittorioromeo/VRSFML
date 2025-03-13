@@ -12166,7 +12166,7 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#if 1
+#if 0
     std::vector<std::string> apinames;
     std::vector<std::string> displaynames;
     std::vector<std::string> descriptions;
