@@ -122,7 +122,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/NSImage+raw.h
         ${SRCROOT}/macOS/NSImage+raw.mm
         ${SRCROOT}/macOS/Scaling.h
-        ${SRCROOT}/macOS/SensorImpl.cpp
         ${SRCROOT}/macOS/SensorImpl.hpp
         ${SRCROOT}/macOS/SFApplication.h
         ${SRCROOT}/macOS/SFApplication.m
