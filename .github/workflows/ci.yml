@@ -28,8 +28,6 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows VS2019 x86,             os: windows-2019, flags: -DSFML_USE_MESA3D=ON -GNinja }
-        - { name: Windows VS2019 x64,             os: windows-2019, flags: -DSFML_USE_MESA3D=ON -GNinja }
         - { name: Windows VS2022 x86,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
         - { name: Windows VS2022 x64,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
         - { name: Windows VS2022 arm64,           os: windows-2022, flags: -DSFML_USE_MESA3D=OFF -GNinja -DSFML_BUILD_TEST_SUITE=OFF }
@@ -193,7 +191,7 @@ jobs:
     - name: Install MinGW
       if: matrix.platform.name == 'Windows MinGW' && steps.mingw-cache.outputs.cache-hit != 'true'
       run: |
-        curl -Lo mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/12.2.0-16.0.0-10.0.0-msvcrt-r5/winlibs-x86_64-posix-seh-gcc-12.2.0-llvm-16.0.0-mingw-w64msvcrt-10.0.0-r5.zip
+        curl -Lo mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.7-12.0.0-msvcrt-r3/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-19.1.7-mingw-w64msvcrt-12.0.0-r3.zip
         unzip -qq -d "C:\Program Files" mingw64.zip
 
     - name: Add OpenCppCoverage and MinGW to PATH and remove MinGW-supplied CCache
@@ -206,7 +204,7 @@ jobs:
         ccache --version
 
     - name: Configure CMake
-      run: cmake --preset build_base_debug -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
+      run: cmake --preset vrdev_gcc -DCMAKE_VERBOSE_MAKEFILE=ON ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
 
     - name: Build
       run: cmake --build build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install
@@ -331,7 +329,7 @@ jobs:
         echo "$(brew --prefix llvm@18)/bin" >> $GITHUB_PATH
 
     - name: Configure
-      run: cmake --preset build_base_debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
+      run: cmake --preset vrdev_gcc -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_UNITY_BUILD=ON ${{matrix.platform.flags}}
 
     - name: Analyze Code
       run: cmake --build build --target tidy
@@ -363,7 +361,7 @@ jobs:
       run: sudo apt-get update && sudo apt-get install xorg-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev libdrm-dev libgbm-dev xvfb fluxbox && sudo apt-get remove -y libasound2
 
     - name: Configure
-      run: cmake --preset build_base_debug -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSFML_BUILD_EXAMPLES=OFF -DSFML_ENABLE_SANITIZERS=ON ${{matrix.platform.flags}}
+      run: cmake --preset vrdev_gcc -GNinja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DSFML_BUILD_EXAMPLES=OFF -DSFML_ENABLE_SANITIZERS=ON ${{matrix.platform.flags}}
 
     - name: Build
       run: cmake --build build
