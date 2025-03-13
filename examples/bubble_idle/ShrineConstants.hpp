@@ -30,10 +30,10 @@ inline constexpr EXACT_ARRAY(
         -139.f, // Magic
         130.f,  // Clicking
         -15.f,  // Automation
-        180.f,  // Repulsion
-        -80.f,  // Attraction
+        -70.f,  // Repulsion
+        150.f,  // Attraction
         0.f,    // Camouflage
-        0.f,    // Victory
+        60.f,    // Victory
     });
 
 ////////////////////////////////////////////////////////////
