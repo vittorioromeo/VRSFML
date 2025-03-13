@@ -7277,7 +7277,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
-        // TODO P0: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
+        // TODO P1: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
 
         cat.cooldown.value = maxCooldown;
     }
