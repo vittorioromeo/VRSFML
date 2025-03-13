@@ -25,14 +25,14 @@
 
 namespace
 {
-bool gotWmShowWindow = false;
+bool gotWmShowWindow1 = false;
 
 LRESULT WINAPI wndProc(HWND handle, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
         case WM_SHOWWINDOW:
-            gotWmShowWindow = true;
+            gotWmShowWindow1 = true;
             SFML_BASE_ASSERT(wParam == TRUE); // Window is being shown
             SFML_BASE_ASSERT(lParam == 0);    // Message comes from a ShowWindow call
             break;
@@ -88,7 +88,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
                                                         exStyle,
                                                         withMenu);
     REQUIRE(handle);
-    REQUIRE(!gotWmShowWindow);
+    REQUIRE(!gotWmShowWindow1);
     REQUIRE(IsWindow(handle));
 
     RECT windowRect{};
@@ -167,11 +167,11 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     }
 
     INFO("Final checks with exStyle: " << exStyle << ", withMenu: " << withMenu);
-    CHECK(gotWmShowWindow);
+    CHECK(gotWmShowWindow1);
     CHECK(IsWindow(handle));
     CHECK(DestroyWindow(handle));
     CHECK(UnregisterClassW(classInfo.lpszClassName, classInfo.hInstance));
-    gotWmShowWindow = false;
+    gotWmShowWindow1 = false;
     CHECK(!IsWindow(handle));
 }
 } // anonymous namespace

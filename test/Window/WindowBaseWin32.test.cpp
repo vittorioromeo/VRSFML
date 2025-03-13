@@ -23,7 +23,7 @@
 
 namespace
 {
-bool gotWmShowWindow = false;
+bool gotWmShowWindow0 = false;
 
 class NativeWindow
 {
@@ -55,7 +55,7 @@ public:
     {
         DestroyWindow(m_handle);
         UnregisterClassW(m_classInfo.lpszClassName, m_classInfo.hInstance);
-        gotWmShowWindow = false;
+        gotWmShowWindow0 = false;
     }
 
     [[nodiscard]] HWND getHandle() const
@@ -69,7 +69,7 @@ private:
         switch (message)
         {
             case WM_SHOWWINDOW:
-                gotWmShowWindow = true;
+                gotWmShowWindow0 = true;
                 SFML_BASE_ASSERT(wParam == TRUE); // If wParam is TRUE, the window is being shown
                 SFML_BASE_ASSERT(lParam == 0); // If lParam is zero, the message was sent because of a call to the ShowWindow function
                 break;
@@ -105,7 +105,7 @@ TEST_CASE("[Window] sf::WindowBase (Win32)")
     CHECK(windowBase->getSize() == sf::Vector2(rect.right - rect.left, rect.bottom - rect.top).toVector2u());
     CHECK(windowBase->getNativeHandle() == handle);
 
-    CHECK(gotWmShowWindow);
+    CHECK(gotWmShowWindow0);
     CHECK(IsWindow(handle));
 
     windowBase.reset();
