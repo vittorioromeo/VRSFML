@@ -28,3 +28,5 @@ old/x.x
 *.bak0
 *.bak1
 *.bak2
+
+prepare_build.sh
