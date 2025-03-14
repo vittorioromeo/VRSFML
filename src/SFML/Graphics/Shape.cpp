@@ -14,6 +14,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
@@ -148,7 +149,7 @@ FloatRect Shape::getGlobalBounds() const
 ////////////////////////////////////////////////////////////
 void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 {
-    updateFromFunc([&points](const base::SizeT i) __attribute__((always_inline, flatten)) { return points[i]; }, pointCount);
+    updateFromFunc([&points](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return points[i]; }, pointCount);
 }
 
 

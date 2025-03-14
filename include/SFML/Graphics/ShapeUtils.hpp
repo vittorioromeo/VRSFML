@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -15,6 +14,7 @@
 #include "SFML/Base/Builtins/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -224,7 +224,7 @@ inline constexpr void updateOutlineImpl(const float                      outline
     // - `i` is the logical index (used to compute the output position)
     // - `p0`, `p1`, `p2` are the three consecutive positions used to compute the normals
     const auto updateSegment = [&](const base::SizeT i, const Vector2f p0, const Vector2f p1, const Vector2f p2)
-                                   __attribute__((always_inline, flatten))
+                                   SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         Vector2f n1 = computeSegmentNormal(p0, p1);
         Vector2f n2 = computeSegmentNormal(p1, p2);
