@@ -17,7 +17,7 @@ inline constexpr EXACT_ARRAY(
         "Shrine Of Repulsion",
         "Shrine Of Attraction",
         "Shrine Of Camouflage",
-        "Shrine Of Victory", // TODO P0: implement rubber duck?
+        "Shrine Of Victory",
     });
 
 ////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ inline constexpr EXACT_ARRAY(
         -70.f,  // Repulsion
         150.f,  // Attraction
         0.f,    // Camouflage
-        60.f,    // Victory
+        60.f,   // Victory
     });
 
 ////////////////////////////////////////////////////////////
@@ -84,13 +84,13 @@ The magnet is so powerful that its effects are felt even near the shrine.)",
         R"(
 ~~ Shrine Of Camouflage ~~
 
-If you squint, you can see the elusive Copycat hiding inside, who can transform into any other unique cat at will, mimicking their effects. The Copycat is so good at camouflage that they lack their own identity (and color).
-
-// TODO P0: shrine effects)",
+If you squint, you can see the elusive Copycat hiding inside, who can transform into any other unique cat at will, mimicking their effects. The Copycat is so good at camouflage that they lack their own identity (and color).)",
         R"(
 ~~ Shrine Of Victory ~~
 
-Effects: TODO P1: complete
+It's almost over.
 
-Rewards: TODO P1: complete)",
+There is definitely something inside, but you cannot tell what is it from here.
+
+Only one way to know.)",
     });
