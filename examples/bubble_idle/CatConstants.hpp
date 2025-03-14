@@ -28,6 +28,7 @@ inline constexpr EXACT_ARRAY(
         {182u, 110u, 135u}, // Repulso
         {132u, 132u, 132u}, // Attracto
         {35u, 35u, 35u},    // Copy
+        {32u, 196u, 32u},   // Duck
     });
 
 
@@ -49,6 +50,7 @@ inline constexpr EXACT_ARRAY(
         "N/A",     // Repulso
         "N/A",     // Attracto
         "N/A",     // Copy
+        "N/A",     // Duck
     });
 
 ////////////////////////////////////////////////////////////
@@ -69,6 +71,7 @@ inline constexpr EXACT_ARRAY(
         5.f,      // Repulso
         5.f,      // Attracto
         5.f,      // Copy
+        5.f,      // Duck
     });
 
 ////////////////////////////////////////////////////////////
@@ -89,6 +92,7 @@ inline constexpr EXACT_ARRAY(
         192.f, // Repulso
         192.f, // Attracto
         192.f, // Copy
+        192.f, // Duck
     });
 
 ////////////////////////////////////////////////////////////
@@ -109,6 +113,7 @@ inline constexpr EXACT_ARRAY(
         {0.f, 0.f}, // Repulso
         {0.f, 0.f}, // Attracto
         {0.f, 0.f}, // Copy
+        {0.f, 0.f}, // Duck
     });
 
 ////////////////////////////////////////////////////////////
@@ -129,6 +134,7 @@ inline constexpr EXACT_ARRAY(
         "Repulso",
         "Attracto",
         "Copy",
+        "Duck",
     });
 
 ////////////////////////////////////////////////////////////
@@ -149,6 +155,7 @@ inline constexpr EXACT_ARRAY(
         "Repulsocat",
         "Attractocat",
         "Copycat",
+        "Duck",
     });
 
 } // namespace CatConstants
