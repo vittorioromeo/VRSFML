@@ -97,3 +97,5 @@ struct [[nodiscard]] Vertex
 /// \see `sf::VertexBuffer`
 ///
 ////////////////////////////////////////////////////////////
+
+// TODO P0: investigate what it would take to make `sf::Vertex` customizable!

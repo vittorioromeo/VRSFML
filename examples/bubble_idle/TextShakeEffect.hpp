@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RNG.hpp"
+#include "RNGFast.hpp"
 
 #include "SFML/Graphics/Text.hpp"
 
@@ -14,7 +14,7 @@ struct [[nodiscard]] TextShakeEffect
     float angle = 0.f;
 
     ////////////////////////////////////////////////////////////
-    void bump(RNG& rng, const float strength)
+    void bump(RNGFast& rng, const float strength)
     {
         grow  = strength;
         angle = rng.getF(-grow * 0.2f, grow * 0.2f);

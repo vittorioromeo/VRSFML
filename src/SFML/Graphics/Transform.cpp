@@ -14,7 +14,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Transform& Transform::rotate(Angle angle)
+Transform& Transform::rotate(const Angle angle)
 {
     const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
 
@@ -28,7 +28,7 @@ Transform& Transform::rotate(Angle angle)
 
 
 ////////////////////////////////////////////////////////////
-Transform& Transform::rotate(Angle angle, Vector2f center)
+Transform& Transform::rotate(const Angle angle, const Vector2f center)
 {
     const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
 

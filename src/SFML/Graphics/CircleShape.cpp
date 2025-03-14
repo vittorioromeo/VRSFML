@@ -10,6 +10,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 
 
 namespace sf
@@ -80,7 +81,7 @@ void CircleShape::updateCircleGeometry()
 {
     const float angleStep = sf::base::tau / static_cast<float>(m_pointCount);
 
-    updateFromFunc([&](const base::SizeT i) __attribute__((always_inline, flatten))
+    updateFromFunc([&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return computeCirclePointFromAngleStep(i, angleStep, m_radius); },
                    m_pointCount);
 }
