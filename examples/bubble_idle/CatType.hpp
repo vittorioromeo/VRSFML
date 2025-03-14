@@ -20,6 +20,7 @@ enum class [[nodiscard]] CatType : sf::base::U8
     Repulso  = 8u,
     Attracto = 9u,
     Copy     = 10u,
+    Duck     = 11u,
 
     Count
 };
