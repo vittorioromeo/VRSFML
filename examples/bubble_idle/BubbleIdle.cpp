@@ -1,3 +1,5 @@
+// #define BUBBLEBYTE_NO_AUDIO 1
+
 #include "Achievements.hpp"
 #include "Aliases.hpp"
 #include "Bubble.hpp"
@@ -373,10 +375,15 @@ void drawSplashScreen(sf::RenderTarget&        rt,
 ////////////////////////////////////////////////////////////
 struct Main
 {
+////////////////////////////////////////////////////////////
+// Audio context and playback device
+#ifndef BUBBLEBYTE_NO_AUDIO
+    sf::AudioContext   audioContext{sf::AudioContext::create().value()};
+    sf::PlaybackDevice playbackDevice{sf::PlaybackDevice::createDefault(audioContext).value()};
+#endif
+
     ////////////////////////////////////////////////////////////
-    // Resource contexts
-    sf::AudioContext    audioContext{sf::AudioContext::create().value()};
-    sf::PlaybackDevice  playbackDevice{sf::PlaybackDevice::createDefault(audioContext).value()};
+    // Graphics context
     sf::GraphicsContext graphicsContext{sf::GraphicsContext::create().value()};
 
     ////////////////////////////////////////////////////////////
@@ -1447,7 +1454,12 @@ struct Main
     ////////////////////////////////////////////////////////////
     void playSound(const Sounds::LoadedSound& ls, const sf::base::SizeT maxOverlap = 255u)
     {
+#ifndef BUBBLEBYTE_NO_AUDIO
         sounds.playPooled(playbackDevice, ls, maxOverlap);
+#else
+        (void)ls;
+        (void)maxOverlap;
+#endif
     }
 
     ////////////////////////////////////////////////////////////
@@ -2479,6 +2491,7 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void switchToBGM(const sf::base::SizeT index, const bool force)
     {
+#ifndef BUBBLEBYTE_NO_AUDIO
         if (!force && lastPlayedMusic == bgmPaths[index])
             return;
 
@@ -2495,6 +2508,10 @@ It's a duck.)",
         optNextMusic->setAttenuation(0.f);
         optNextMusic->setSpatializationEnabled(false);
         optNextMusic->play(playbackDevice);
+#else
+        (void)index;
+        (void)force;
+#endif
     }
 
     ////////////////////////////////////////////////////////////
@@ -2564,8 +2581,8 @@ It's a duck.)",
                         playSound(sounds.smokebomb);
 
                         for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
-                            spawnParticle(ParticleData{.position      = copyCat.position,
-                                                       .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
+                            spawnParticle(ParticleData{.position = copyCat.position,
+                                                       .velocity = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
                                                        .scale         = rngFast.getF(0.75f, 1.f),
                                                        .scaleDecay    = -0.0005f,
                                                        .accelerationY = -0.00017f,
@@ -4640,9 +4657,17 @@ It's a duck.)",
             sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
             playSound(sounds.cast0);
 
-            spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
+            spawnParticlesNoGravity(256,
+                                    wizardCat.position,
+                                    ParticleType::Star,
+                                    rngFast.getF(0.25f, 1.25f),
+                                    rngFast.getF(0.5f, 3.f));
 
-            spawnParticlesNoGravity(256, witchCat->position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
+            spawnParticlesNoGravity(256,
+                                    witchCat->position,
+                                    ParticleType::Star,
+                                    rngFast.getF(0.25f, 1.25f),
+                                    rngFast.getF(0.5f, 3.f));
 
             witchCat->cooldown.value -= witchCat->cooldown.value * (pt.psvDarkUnionPercentage.currentValue() / 100.f);
         }
@@ -7596,10 +7621,10 @@ It's a duck.)",
 
             if (cat.inspiredCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.5f)
             {
-                spawnParticle({.position   = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
-                               .velocity   = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale      = rngFast.getF(0.08f, 0.27f) * 0.2f,
-                               .scaleDecay = 0.f,
+                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
+                               .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale    = rngFast.getF(0.08f, 0.27f) * 0.2f,
+                               .scaleDecay    = 0.f,
                                .accelerationY = -0.002f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
@@ -7685,10 +7710,10 @@ It's a duck.)",
                     spawnParticles(1, drawPosition + sf::Vector2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
 
                     if (rngFast.getI(0, 10) > 5)
-                        spawnParticle(ParticleData{.position      = drawPosition + sf::Vector2f{56.f, 45.f},
-                                                   .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
-                                                   .scale         = rngFast.getF(0.75f, 1.f) * 0.45f,
-                                                   .scaleDecay    = -0.00025f,
+                        spawnParticle(ParticleData{.position   = drawPosition + sf::Vector2f{56.f, 45.f},
+                                                   .velocity   = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
+                                                   .scale      = rngFast.getF(0.75f, 1.f) * 0.45f,
+                                                   .scaleDecay = -0.00025f,
                                                    .accelerationY = -0.00017f,
                                                    .opacity       = 0.7f,
                                                    .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
@@ -7772,8 +7797,8 @@ It's a duck.)",
                 if (isWizardBusy() && rngFast.getF(0.f, 1.f) > 0.5f)
                 {
                     spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
-                                   .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                   .scale    = rngFast.getF(0.08f, 0.27f) * 0.2f,
+                                   .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.2f,
                                    .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
@@ -8420,10 +8445,10 @@ It's a duck.)",
             if (!d.tcDeath.hasValue())
             {
                 if (rngFast.getF(0.f, 1.f) > 0.8f)
-                    spawnParticle({.position      = d.getDrawPosition() + sf::Vector2f{rngFast.getF(-32.f, +32.f), 32.f},
-                                   .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
-                                   .scaleDecay    = 0.f,
+                    spawnParticle({.position   = d.getDrawPosition() + sf::Vector2f{rngFast.getF(-32.f, +32.f), 32.f},
+                                   .velocity   = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale      = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                                   .scaleDecay = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
@@ -10556,7 +10581,8 @@ It's a duck.)",
             {
                 const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
 
-                const auto pos = sf::Vector2f{uiGetWindowPos().x + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
+                const auto pos = sf::Vector2f{uiGetWindowPos().x + x,
+                                              y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
                 for (sf::base::SizeT i = 0u; i < 2u; ++i)
                     spawnHUDTopParticle({.position      = pos,
@@ -11183,6 +11209,7 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vector2f mousePos)
     {
+#ifndef BUBBLEBYTE_NO_AUDIO
         const float volumeMult = profile.playAudioInBackground || getWindow().hasFocus() ? 1.f : 0.f;
 
         listener.position = {sf::base::clamp(mousePos.x, 0.f, pt.getMapLimit()),
@@ -11238,6 +11265,10 @@ It's a duck.)",
             processMusic(optCurrentMusic);
             processMusic(optNextMusic);
         }
+#else
+        (void)deltaTimeMs;
+        (void)mousePos;
+#endif
     }
 
     ////////////////////////////////////////////////////////////
@@ -11935,7 +11966,7 @@ It's a duck.)",
         //
         // Compute views
         const auto screenShake = rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
-                                              {screenShakeAmount, screenShakeAmount});
+                                                  {screenShakeAmount, screenShakeAmount});
 
         nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
         scaledHUDView    = makeScaledHUDView(resolution, profile.hudScale);
