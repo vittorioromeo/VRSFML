@@ -28,8 +28,9 @@ class SoA;
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(bugprone-macro-parentheses)
-#define SOA_AS_BASE(I)  static_cast<SoABase<I, SFML_BASE_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
-#define SOA_ALL_BASES() static_cast<SoABase<Is, Ts>&>(*this)
+#define SOA_AS_BASE(I)       static_cast<SoABase<I, SFML_BASE_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
+#define SOA_AS_CONST_BASE(I) static_cast<const SoABase<I, SFML_BASE_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this)
+#define SOA_ALL_BASES()      static_cast<SoABase<Is, Ts>&>(*this)
 
 ////////////////////////////////////////////////////////////
 template <sf::base::SizeT... Is, typename... Ts>
@@ -37,7 +38,25 @@ class SoA<sf::base::IndexSequence<Is...>, Ts...> : private SoABase<Is, Ts>...
 {
 public:
     ////////////////////////////////////////////////////////////
-    void pushBack(auto&&... values)
+    [[gnu::always_inline]] void clear()
+    {
+        (SOA_ALL_BASES().data.clear(), ...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void reserve(sf::base::SizeT capacity)
+    {
+        (SOA_ALL_BASES().data.reserve(capacity), ...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void resize(sf::base::SizeT size)
+    {
+        (SOA_ALL_BASES().data.resize(size), ...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void pushBack(auto&&... values)
     {
         (SOA_ALL_BASES().data.pushBack(SFML_BASE_FORWARD(values)), ...);
     }
@@ -45,7 +64,35 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] sf::base::SizeT getSize() const
     {
-        return SOA_AS_BASE(0).data.size();
+        return SOA_AS_CONST_BASE(0).data.size();
+    }
+
+    ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT... Js>
+    [[gnu::always_inline]] void withNth(sf::base::SizeT i, auto&& f)
+    {
+        f(SOA_AS_BASE(Js).data[i]...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void withAllNth(sf::base::SizeT i, auto&& f)
+    {
+        f(SOA_ALL_BASES().data[i]...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT... Js>
+    [[gnu::always_inline]] void withSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    {
+        for (sf::base::SizeT i = start; i < end; ++i)
+            f(SOA_AS_BASE(Js).data[i]...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void withAllSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    {
+        for (sf::base::SizeT i = start; i < end; ++i)
+            f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
@@ -54,6 +101,13 @@ public:
     {
         for (sf::base::SizeT i = 0u; i < getSize(); ++i)
             f(SOA_AS_BASE(Js).data[i]...);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void withAll(auto&& f)
+    {
+        for (sf::base::SizeT i = 0u; i < getSize(); ++i)
+            f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
@@ -115,6 +169,7 @@ public:
 
 ////////////////////////////////////////////////////////////
 #undef SOA_ALL_BASES
+#undef SOA_AS_CONST_BASE
 #undef SOA_AS_BASE
 
 ////////////////////////////////////////////////////////////

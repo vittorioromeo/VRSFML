@@ -12,6 +12,7 @@
 #endif
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 
 
 namespace sf::priv
@@ -25,7 +26,7 @@ namespace sf::priv
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
 
     #define glCheck(...)                                                            \
-        [](auto&& f) __attribute__((always_inline, flatten))                        \
+        [](auto&& f) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN                         \
         {                                                                           \
             SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
                                                                                     \
@@ -35,13 +36,13 @@ namespace sf::priv
                 /* no-op */;                                                        \
                                                                                     \
             return sfPrivGlCheckResult;                                             \
-        }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        }([&]() SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return __VA_ARGS__; })
 
 // The variants below are expected to fail, but we don't want to pollute the state of
 // `glGetError` so we have to call it anyway
 
     #define glCheckIgnoreWithFunc(errorFunc, ...)                  \
-        [&](auto&& f) __attribute__((always_inline, flatten))      \
+        [&](auto&& f) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN       \
         {                                                          \
             SFML_BASE_ASSERT(errorFunc() == 0u /* GL_NO_ERROR */); \
                                                                    \
@@ -51,7 +52,7 @@ namespace sf::priv
                 /* no-op */;                                       \
                                                                    \
             return sfPrivGlCheckResult;                            \
-        }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        }([&]() SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return __VA_ARGS__; })
 
 #else
 
