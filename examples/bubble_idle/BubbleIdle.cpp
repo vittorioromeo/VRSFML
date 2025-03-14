@@ -12352,8 +12352,6 @@ int main(int argc, const char** argv)
 #endif
 }
 
-// TODO P0: DUCK! and letter
-
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
@@ -12376,3 +12374,4 @@ int main(int argc, const char** argv)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
+// TODO P2: autoscroll when dragging cats near border
