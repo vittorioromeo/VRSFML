@@ -16,7 +16,7 @@ inline constexpr PSVData mapExtension //
     {.nMaxPurchases = 7u, .cost = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f}, .value = {}};
 
 inline constexpr PSVData shrineActivation //
-    {.nMaxPurchases = 9u,
+    {.nMaxPurchases = 8u,
      .cost          = {.initial = 15000.f, .linear = -56'500.f, .exponential = 7.5f, .flat = -13'500.f},
      .value         = {}};
 
@@ -159,6 +159,15 @@ inline constexpr PSVData catCopyCooldownMult //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catCopyRangeDiv //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catDuck //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catDuckCooldownMult //
+    {.nMaxPurchases = 0u, .cost = {}, .value = {}};
+
+inline constexpr PSVData catDuckRangeDiv //
     {.nMaxPurchases = 0u, .cost = {}, .value = {}};
 
 inline constexpr PSVData catAstro //
