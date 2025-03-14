@@ -523,6 +523,8 @@ struct Main
     sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
     sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
     sf::Texture txPurchasable{sf::Texture::loadFromFile("resources/purchasable.png", {.smooth = true}).value()};
+    sf::Texture txLetter{sf::Texture::loadFromFile("resources/letter.png", {.smooth = true}).value()};
+    sf::Texture txLetterText{sf::Texture::loadFromFile("resources/lettertext.png", {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
     // UI texture atlas
@@ -656,6 +658,8 @@ struct Main
     sf::FloatRect txrRepulsoCatPaw{addImgResourceToAtlas("repulsocatpaw.png")};
     sf::FloatRect txrAttractoCat{addImgResourceToAtlas("attractocat.png")};
     sf::FloatRect txrCopyCat{addImgResourceToAtlas("copycat.png")};
+    sf::FloatRect txrDuckCat{addImgResourceToAtlas("duck.png")};
+    sf::FloatRect txrDuckFlag{addImgResourceToAtlas("duckflag.png")};
     sf::FloatRect txrAttractoCatPaw{addImgResourceToAtlas("attractocatpaw.png")};
     sf::FloatRect txrCopyCatPaw{addImgResourceToAtlas("copycatpaw.png")};
     sf::FloatRect txrDollNormal{addImgResourceToAtlas("dollnormal.png")};
@@ -707,6 +711,7 @@ struct Main
     sf::FloatRect txrMMRepulso{addImgResourceToAtlas("mmcatrepulso.png")};
     sf::FloatRect txrMMAttracto{addImgResourceToAtlas("mmcatattracto.png")};
     sf::FloatRect txrMMCopy{addImgResourceToAtlas("mmcatcopy.png")};
+    sf::FloatRect txrMMDuck{addImgResourceToAtlas("mmduck.png")};
     sf::FloatRect txrMMShrine{addImgResourceToAtlas("mmshrine.png")};
 
     ////////////////////////////////////////////////////////////
@@ -1146,6 +1151,12 @@ struct Main
     Cat* cachedRepulsoCat{nullptr};
     Cat* cachedAttractoCat{nullptr};
     Cat* cachedCopyCat{nullptr};
+
+    ////////////////////////////////////////////////////////////
+    // Victory state
+    OptionalTargetedCountdown victoryTC;
+    Countdown                 cdLetterAppear;
+    Countdown                 cdLetterText;
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -1878,6 +1889,10 @@ Mimicking Engicat:
 - The global clicking buff multiplier is doubled.
 
 Witchcat interaction: after being hexed, will grant the same buff as the mimicked cat.)",
+                R"(
+~~ Duck ~~
+
+It's a duck.)",
             };
 
             static_assert(sf::base::getArraySize(catTooltipsByType) == nCatTypes);
@@ -2305,6 +2320,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         if (done)
             std::sprintf(uiBuffer, "DONE##%u", uiWidgetId++);
+        else if (cost == 0u)
+            std::sprintf(uiBuffer, "FREE##%u", uiWidgetId++);
         else
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
@@ -2520,6 +2537,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             {
                 for (SizeT i = asIdx(CatType::Normal); i < nCatTypes; ++i)
                 {
+                    if (static_cast<CatType>(i) == CatType::Duck)
+                        continue;
+
                     if (!isUniqueCatType(static_cast<CatType>(i)))
                         continue;
 
@@ -3449,8 +3469,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
         if (checkUiUnlock(5u, catUpgradesUnlocked))
         {
             uiSetUnlockLabelY(5u);
-            makeCooldownButton("  cooldown", CatType::Normal);
-            makeRangeButton("  range", CatType::Normal);
+            makeCooldownButton("  cooldown##Normal", CatType::Normal);
+            makeRangeButton("  range##Normal", CatType::Normal);
         }
 
         // UNICAT
@@ -3476,10 +3496,10 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             if (checkUiUnlock(7u, catUnicornUpgradesUnlocked))
             {
                 uiSetUnlockLabelY(7u);
-                makeCooldownButton("  cooldown", CatType::Uni);
+                makeCooldownButton("  cooldown##Uni", CatType::Uni);
 
                 if (pt.perm.unicatTranscendencePurchased)
-                    makeRangeButton("  range", CatType::Uni);
+                    makeRangeButton("  range##Uni", CatType::Uni);
             }
         }
 
@@ -3518,10 +3538,10 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             if (checkUiUnlock(10u, catDevilUpgradesUnlocked))
             {
                 uiSetUnlockLabelY(10u);
-                makeCooldownButton("  cooldown", CatType::Devil);
+                makeCooldownButton("  cooldown##Devil", CatType::Devil);
 
                 if (pt.perm.devilcatHellsingedPurchased)
-                    makeRangeButton("  range", CatType::Devil);
+                    makeRangeButton("  range##Devil", CatType::Devil);
             }
         }
 
@@ -3553,8 +3573,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             if (checkUiUnlock(12u, astroCatUpgradesUnlocked))
             {
                 uiSetUnlockLabelY(12u);
-                makeCooldownButton("  cooldown", CatType::Astro);
-                makeRangeButton("  range", CatType::Astro);
+                makeCooldownButton("  cooldown##Astro", CatType::Astro);
+                makeRangeButton("  range##Astro", CatType::Astro);
             }
         }
 
@@ -3601,8 +3621,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 ImGui::Separator();
 
                 uiSetUnlockLabelY(16u);
-                makeCooldownButton("  mousecat cooldown", CatType::Mouse);
-                makeRangeButton("  mousecat range", CatType::Mouse);
+                makeCooldownButton("  mousecat cooldown##Mouse", CatType::Mouse);
+                makeRangeButton("  mousecat range##Mouse", CatType::Mouse);
             }
 
             if (checkUiUnlock(17u, catEngi != nullptr))
@@ -3624,8 +3644,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 ImGui::Separator();
 
                 uiSetUnlockLabelY(18u);
-                // makeCooldownButton("  repulsocat cooldown", CatType::Repulso);
-                makeRangeButton("  repulsocat range", CatType::Repulso);
+                // makeCooldownButton("  repulsocat cooldown##Repulso", CatType::Repulso);
+                makeRangeButton("  repulsocat range##Repulso", CatType::Repulso);
             }
 
             if (checkUiUnlock(19u, catAttracto != nullptr))
@@ -3633,8 +3653,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 ImGui::Separator();
 
                 uiSetUnlockLabelY(19u);
-                // makeCooldownButton("  attractocat cooldown", CatType::Attracto);
-                makeRangeButton("  attractocat range", CatType::Attracto);
+                // makeCooldownButton("  attractocat cooldown##Attracto", CatType::Attracto);
+                makeRangeButton("  attractocat range##Attracto", CatType::Attracto);
             }
         }
 
@@ -3965,44 +3985,48 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         uiButtonHueMod = 190.f;
 
-        if (checkUiUnlock(48u, pt.psvBubbleValue.nPurchases >= 3u))
+        if (checkUiUnlock(47u, pt.psvBubbleValue.nPurchases >= 3u))
         {
             imgsep2(txrPrestigeSeparator4, "faster beginning");
 
-            uiSetUnlockLabelY(48u);
+            uiSetUnlockLabelY(47u);
             std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt.perm.starterPackPurchased);
         }
 
-        imgsep2(txrPrestigeSeparator2, "clicking tools");
-
-        std::sprintf(uiTooltipBuffer,
-                     "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
-                     "multiplier still only increases once per successful click.)\n\n(Note: this effect can be toggled "
-                     "at will.)");
-        uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("Multipop click", 1u, pt.perm.multiPopPurchased))
-            doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
-                  /* maxPrestigeLevel */ UINT_MAX);
-
-        if (checkUiUnlock(49u, pt.perm.multiPopPurchased))
+        if (checkUiUnlock(48u, pt.psvBubbleValue.nPurchases >= 1u))
         {
-            uiSetUnlockLabelY(49u);
-            std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
-            std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
-            makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
+            imgsep2(txrPrestigeSeparator2, "clicking tools");
 
-            uiSetFontScale(uiSubBulletFontScale);
-            uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
-            if (cachedMouseCat != nullptr)
+            std::sprintf(uiTooltipBuffer,
+                         "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
+                         "multiplier still only increases once per successful click.)\n\n(Note: this effect can be "
+                         "toggled "
+                         "at will.)");
+            uiLabelBuffer[0] = '\0';
+            if (makePurchasablePPButtonOneTime("Multipop click", 0u, pt.perm.multiPopPurchased))
+                doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
+                      /* maxPrestigeLevel */ UINT_MAX);
+
+            if (checkUiUnlock(49u, pt.perm.multiPopPurchased && pt.psvBubbleValue.nPurchases >= 2u))
             {
-                ImGui::SameLine();
-                uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
+                uiSetUnlockLabelY(49u);
+                std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
+                std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
+                makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
+
+                uiSetFontScale(uiSubBulletFontScale);
+                uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
+                if (cachedMouseCat != nullptr)
+                {
+                    ImGui::SameLine();
+                    uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
+                }
+                uiSetFontScale(uiNormalFontScale);
+                ImGui::NextColumn();
+                ImGui::NextColumn();
             }
-            uiSetFontScale(uiNormalFontScale);
-            ImGui::NextColumn();
-            ImGui::NextColumn();
         }
 
         imgsep2(txrPrestigeSeparator3, "wind effects");
@@ -5737,6 +5761,15 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
             ImGui::SameLine();
 
+            if (ImGui::Button("Do Letter"))
+            {
+                victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
+                victoryTC->restart();
+                delayedActions.emplace_back(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
+            }
+
+            ImGui::SameLine();
+
             if (ImGui::Button("Tip"))
                 doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
 
@@ -5895,6 +5928,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             ImGui::Checkbox("shrineCompleted Attracto", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
             ImGui::Checkbox("shrineCompleted Repulso", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
             ImGui::Checkbox("shrineCompleted Copy", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
+            ImGui::Checkbox("shrineCompleted Duck", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
 
             uiSetFontScale(uiNormalFontScale);
             ImGui::PopFont();
@@ -6967,6 +7001,9 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
         for (Cat& otherCat : pt.cats)
         {
+            if (otherCat.type == CatType::Duck)
+                continue;
+
             if (otherCat.type == CatType::Witch)
                 continue;
 
@@ -7303,6 +7340,13 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
     }
 
     ////////////////////////////////////////////////////////////
+    void gameLoopUpdateCatActionDuck(const float deltaTimeMs, Cat& cat)
+    {
+        (void)deltaTimeMs;
+        (void)cat;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] float getWindRepulsionMult() const
     {
         constexpr float mults[4] = {1.f, 5.f, 10.f, 15.f};
@@ -7529,6 +7573,22 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
 
                 continue;
             }
+
+            if (pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f && cat.pawOpacity >= 75.f)
+            {
+                spawnParticle({.position      = cat.pawPosition + rng.getVec2f({-12.f, -12.f}, {12.f, 12.f}),
+                               .velocity      = rng.getVec2f({-0.015f, -0.015f}, {0.015f, 0.015f}),
+                               .scale         = rng.getF(0.08f, 0.27f) * 0.1f,
+                               .scaleDecay    = 0.f,
+                               .accelerationY = 0.f,
+                               .opacity       = 1.f,
+                               .opacityDecay  = rng.getF(0.00025f, 0.0015f) * 1.5f,
+                               .rotation      = rng.getF(0.f, sf::base::tau),
+                               .torque        = rng.getF(-0.002f, 0.002f)},
+                              /* hue */ 0.f,
+                              ParticleType::Star);
+            }
+
 
             const auto [cx, cy] = getCatRangeCenter(cat);
 
@@ -7795,6 +7855,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 &Main::gameLoopUpdateCatActionRepulso,
                 &Main::gameLoopUpdateCatActionAttracto,
                 &Main::gameLoopUpdateCatActionCopy,
+                &Main::gameLoopUpdateCatActionDuck,
             };
 
             static_assert(sf::base::getArraySize(fnPtrs) == nCatTypes);
@@ -7929,7 +7990,14 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 {
                     draggedCats.clear();
                     draggedCats.push_back(hoveredCat);
-                    playSound(sounds.grab);
+
+                    if (hoveredCat->type == CatType::Duck)
+                    {
+                        sounds.quack.setPosition({hoveredCat->position.x, hoveredCat->position.y});
+                        playSound(sounds.quack);
+                    }
+                    else
+                        playSound(sounds.grab);
                 }
             }
         }
@@ -8048,11 +8116,11 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 }
                 else if (shrine.type == ShrineType::Camouflage)
                 {
-                    // TODO P0: complete shrines
+                    // TODO P1: any effect?
                 }
                 else if (shrine.type == ShrineType::Victory)
                 {
-                    // TODO P0: complete shrines
+                    // TODO P1: any effect?
                 }
 
                 return ControlFlow::Continue;
@@ -8163,11 +8231,23 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                             if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
                                 doTip(
                                     "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining their "
-                                    "powers!.");
+                                    "powers!");
                         }
                         else if (shrine.type == ShrineType::Victory)
                         {
-                            // TODO P0: implement
+                            doShrineReward(CatType::Duck);
+
+                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)])
+                                doTip(
+                                    "It's... a duck. I am as confused\nas you are! But hey,\nyou won! "
+                                    "Congratulations!");
+
+                            playSound(sounds.quack);
+
+                            victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
+                            victoryTC->restart();
+                            delayedActions.emplace_back(Countdown{.value = 7000.f},
+                                                        [this] { playSound(sounds.letterchime); });
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
@@ -8254,6 +8334,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 1.f, // Repulso
                 1.f, // Attracto
                 1.f, // Copy
+                1.f, // Duck
             };
 
             static_assert(sf::base::getArraySize(buffDurationMult) == nCatTypes);
@@ -9276,6 +9357,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txrMMRepulso,
             &txrMMAttracto,
             &txrMMCopy,
+            &txrMMDuck,
         };
 
         static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
@@ -9408,6 +9490,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txrRepulsoCat,  // Repulso
             &txrAttractoCat, // Attracto
             &txrCopyCat,     // Copy
+            &txrDuckCat,     // Duck
         };
 
         static_assert(sf::base::getArraySize(catTxrsByType) == nCatTypes);
@@ -9426,6 +9509,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txrRepulsoCatPaw,  // Repulso
             &txrAttractoCatPaw, // Attracto
             &txrCopyCatPaw,     // Copy
+            &txrWhiteDot,       // Duck
         };
 
         static_assert(sf::base::getArraySize(catPawTxrsByType) == nCatTypes);
@@ -9444,6 +9528,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txrRepulsoCatTail,  // Repulso
             &txrAttractoCatTail, // Attracto
             &txrCopyCatTail,     // Copy
+            &txrWhiteDot,        // Duck
         };
 
         static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
@@ -9462,6 +9547,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             {4.f, -29.f},  // Repulso
             {0.f, 0.f},    // Attracto
             {0.f, 0.f},    // Copy
+            {0.f, 0.f},    // Duck
         };
 
         static_assert(sf::base::getArraySize(catTailOffsetsByType) == nCatTypes);
@@ -9480,6 +9566,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             -40.f,  // Repulso
             0.f,    // Attracto
             0.f,    // Copy
+            0.f,    // Duck
         };
 
         static_assert(sf::base::getArraySize(catHueByType) == nCatTypes);
@@ -9719,259 +9806,274 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                        .textureRect = catTxr,
                        .color       = catColor});
 
-        //
-        // Draw graudation hat
-        if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased)
+        if (cat.type == CatType::Duck)
         {
             cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
-                           .scale       = catScale,
-                           .origin      = txrSmartCatHat.size / 2.f,
-                           .rotation    = sf::radians(catRotation),
-                           .textureRect = txrSmartCatHat,
-                           .color       = catColor});
-        }
-
-        //
-        // Ear flapping animation
-        if (cat.flapCountdown.isDone() && cat.flapAnimCountdown.isDone())
-        {
-            if (rng.getI(0, 100) > 92) // Double-flap chance
-                cat.flapCountdown.value = 75.f;
-            else
-                cat.flapCountdown.value = rng.getF(4500.f, 12'500.f);
-        }
-
-        if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-            cat.flapAnimCountdown.value = 75.f * nEarRects;
-
-        (void)cat.flapAnimCountdown.updateAndStop(deltaTimeMs);
-
-        if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-131.f, -365.f}),
-                           .scale    = catScale,
-                           .origin   = txrCatEars0.size / 2.f,
-                           .rotation = sf::radians(catRotation),
-                           .textureRect = *earRects[static_cast<unsigned int>(cat.flapAnimCountdown.value / 75.f) % nEarRects],
-                           .color = attachmentHue});
-        }
-
-        //
-        // Yawning animation
-        const auto yawnRectIdx = static_cast<unsigned int>(cat.yawnAnimCountdown.value / 75.f) % nYawnRects;
-
-        if (cat.type != CatType::Devil && cat.type != CatType::Wizard && cat.type != CatType::Mouse &&
-            cat.type != CatType::Engi)
-        {
-            if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
-                cat.yawnCountdown.value = rng.getF(7500.f, 20'000.f);
-
-            if (cat.blinkAnimCountdown.isDone() &&
-                cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                cat.yawnAnimCountdown.value = 75.f * nYawnRects;
-
-            (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
-
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-221.f, 25.f}),
-                           .scale       = catScale,
-                           .origin      = txrCatYawn0.size / 2.f,
-                           .rotation    = sf::radians(catRotation),
-                           .textureRect = *catYawnRects[yawnRectIdx],
-                           .color       = attachmentHue});
-        }
-        else
-        {
-            cat.yawnCountdown.value = cat.yawnAnimCountdown.value = 0.f;
-        }
-
-        //
-        // Draw attachments
-        if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased) // Smart cat diploma
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
-                           .scale       = catScale,
-                           .origin      = {23.f, 150.f},
-                           .rotation    = tailWiggleRotation,
-                           .textureRect = txrSmartCatDiploma,
-                           .color       = catColor});
-        }
-        else if (cat.type == CatType::Astro && pt.perm.astroCatInspirePurchased) // Astro cat flag
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
+                sf::Sprite{.position    = anchorOffset(sf::Vector2f{335.f, -65.f} + pushDown),
                            .scale       = catScale,
                            .origin      = {98.f, 330.f},
                            .rotation    = tailWiggleRotation,
-                           .textureRect = txrAstroCatFlag,
+                           .textureRect = txrDuckFlag,
                            .color       = catColor});
         }
-        else if (cat.type == CatType::Engi ||
-                 (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
+        else
         {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
-                           .scale       = catScale,
-                           .origin      = {36.f, 167.f},
-                           .rotation    = tailWiggleRotation,
-                           .textureRect = txrEngiCatWrench,
-                           .color       = catColor});
-        }
-        else if (cat.type == CatType::Attracto ||
-                 (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
-                           .scale       = catScale,
-                           .origin      = {142.f, 254.f},
-                           .rotation    = tailWiggleRotation,
-                           .textureRect = txrAttractoCatMagnet,
-                           .color       = catColor});
-        }
-
-
-        //
-        // Draw cat tail
-        if (cat.type != CatType::Devil)
-        {
-            const auto originOffset = cat.type == CatType::Uni ? sf::Vector2f{250.f, 0.f} : sf::Vector2f{0.f, 0.f};
-            const auto offset       = cat.type == CatType::Uni ? sf::Vector2f{-130.f, 405.f} : sf::Vector2f{0.f, 0.f};
-
-            cpuDrawableBatch.add(
-                sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{475.f, 240.f} + offset + originOffset),
-                           .scale    = catScale,
-                           .origin   = originOffset + sf::Vector2f{320.f, 32.f},
-                           .rotation = tailWiggleRotation,
-                           .textureRect = catTailTxr,
-                           .color       = catColor});
-        }
-
-        //
-        // Mousecat: mouse
-        if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
-                           .scale       = catScale,
-                           .origin      = {53.f, 77.f},
-                           .rotation    = tailWiggleRotationInvertedDragged,
-                           .textureRect = txrMouseCatMouse,
-                           .color       = catColor});
-        }
-
-        //
-        // Eye blining animation
-        const auto& eyelidArray = //
-            (cat.type == CatType::Mouse || cat.type == CatType::Attracto || cat.type == CatType::Copy) ? grayEyeLidRects
-            : (cat.type == CatType::Engi || (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased))
-                ? darkEyeLidRects
-            : (cat.type == CatType::Astro || cat.type == CatType::Uni)
-                ? whiteEyeLidRects
-                : eyeLidRects;
-
-        if (cat.blinkCountdown.isDone() && cat.blinkAnimCountdown.isDone())
-        {
-            if (rng.getI(0, 100) > 90) // Double animation chance
-                cat.blinkCountdown.value = 75.f;
-            else
-                cat.blinkCountdown.value = rng.getF(1000.f, 4000.f);
-        }
-
-        if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-            cat.blinkAnimCountdown.value = 75.f * nEyeLidRects;
-
-        (void)cat.blinkAnimCountdown.updateAndStop(deltaTimeMs);
-
-        if (!cat.yawnAnimCountdown.isDone())
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
-                           .scale       = catScale,
-                           .origin      = txrCatEyeLid0.size / 2.f,
-                           .rotation    = sf::radians(catRotation),
-                           .textureRect = *eyelidArray[static_cast<unsigned int>(
-                               remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
-                           .color       = attachmentHue});
-        }
-        else if (!cat.blinkAnimCountdown.isDone())
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
-                           .scale    = catScale,
-                           .origin   = txrCatEyeLid0.size / 2.f,
-                           .rotation = sf::radians(catRotation),
-                           .textureRect = *eyelidArray[static_cast<unsigned int>(cat.blinkAnimCountdown.value / 75.f) % nEyeLidRects],
-                           .color = attachmentHue});
-        }
-
-        if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
-        {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
-                           .scale       = catScale,
-                           .origin      = txrBrainFront.size / 2.f,
-                           .rotation    = sf::radians(catRotation),
-                           .textureRect = txrBrainFront,
-                           .color       = catColor});
-        }
-
-
-        if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
-            cpuDrawableBatch.add(
-                sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
-                           .scale       = catScale,
-                           .origin      = catPawTxr.size / 2.f,
-                           .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
-                           .textureRect = catPawTxr,
-                           .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
-
-        //
-        // Copycat: mask
-        if (cat.type == CatType::Copy)
-        {
-            if (copycatMaskAnim.isDone() &&
-                copycatMaskAnimCd.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
-                copycatMaskAnim.value = 3000.f;
-
-            if (copycatMaskAnimCd.isDone() && copycatMaskAnim.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
-                copycatMaskAnimCd.value = 4000.f;
-
-            const float foo = easeInOutBack(copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
-
-            const auto* txrMaskToUse = [&]() -> const sf::FloatRect*
+            //
+            // Draw graudation hat
+            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased)
             {
-                if (pt.copycatCopiedCatType == CatType::Witch)
-                    return &txrCCMaskWitch;
-
-                if (pt.copycatCopiedCatType == CatType::Wizard)
-                    return &txrCCMaskWizard;
-
-                if (pt.copycatCopiedCatType == CatType::Mouse)
-                    return &txrCCMaskMouse;
-
-                if (pt.copycatCopiedCatType == CatType::Engi)
-                    return &txrCCMaskEngi;
-
-                if (pt.copycatCopiedCatType == CatType::Repulso)
-                    return &txrCCMaskRepulso;
-
-                if (pt.copycatCopiedCatType == CatType::Attracto)
-                    return &txrCCMaskAttracto;
-
-                return nullptr;
-            }();
-
-            if (txrMaskToUse != nullptr)
                 cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
-                               .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
-                               .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                               .rotation    = sf::radians(catRotation + foo),
-                               .textureRect = *txrMaskToUse,
+                    sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
+                               .scale       = catScale,
+                               .origin      = txrSmartCatHat.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = txrSmartCatHat,
                                .color       = catColor});
+            }
+
+            //
+            // Ear flapping animation
+            if (cat.flapCountdown.isDone() && cat.flapAnimCountdown.isDone())
+            {
+                if (rng.getI(0, 100) > 92) // Double-flap chance
+                    cat.flapCountdown.value = 75.f;
+                else
+                    cat.flapCountdown.value = rng.getF(4500.f, 12'500.f);
+            }
+
+            if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                cat.flapAnimCountdown.value = 75.f * nEarRects;
+
+            (void)cat.flapAnimCountdown.updateAndStop(deltaTimeMs);
+
+            if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-131.f, -365.f}),
+                               .scale    = catScale,
+                               .origin   = txrCatEars0.size / 2.f,
+                               .rotation = sf::radians(catRotation),
+                               .textureRect = *earRects[static_cast<unsigned int>(cat.flapAnimCountdown.value / 75.f) % nEarRects],
+                               .color = attachmentHue});
+            }
+
+            //
+            // Yawning animation
+            const auto yawnRectIdx = static_cast<unsigned int>(cat.yawnAnimCountdown.value / 75.f) % nYawnRects;
+
+            if (cat.type != CatType::Devil && cat.type != CatType::Wizard && cat.type != CatType::Mouse &&
+                cat.type != CatType::Engi)
+            {
+                if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
+                    cat.yawnCountdown.value = rng.getF(7500.f, 20'000.f);
+
+                if (cat.blinkAnimCountdown.isDone() &&
+                    cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                    cat.yawnAnimCountdown.value = 75.f * nYawnRects;
+
+                (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
+
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-221.f, 25.f}),
+                               .scale       = catScale,
+                               .origin      = txrCatYawn0.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = *catYawnRects[yawnRectIdx],
+                               .color       = attachmentHue});
+            }
+            else
+            {
+                cat.yawnCountdown.value = cat.yawnAnimCountdown.value = 0.f;
+            }
+
+            //
+            // Draw attachments
+            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased) // Smart cat diploma
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {23.f, 150.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrSmartCatDiploma,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Astro && pt.perm.astroCatInspirePurchased) // Astro cat flag
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {98.f, 330.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrAstroCatFlag,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Engi ||
+                     (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {36.f, 167.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrEngiCatWrench,
+                               .color       = catColor});
+            }
+            else if (cat.type == CatType::Attracto ||
+                     (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
+                               .scale       = catScale,
+                               .origin      = {142.f, 254.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = txrAttractoCatMagnet,
+                               .color       = catColor});
+            }
+
+
+            //
+            // Draw cat tail
+            if (cat.type != CatType::Devil)
+            {
+                const auto originOffset = cat.type == CatType::Uni ? sf::Vector2f{250.f, 0.f} : sf::Vector2f{0.f, 0.f};
+                const auto offset = cat.type == CatType::Uni ? sf::Vector2f{-130.f, 405.f} : sf::Vector2f{0.f, 0.f};
+
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{475.f, 240.f} + offset + originOffset),
+                               .scale       = catScale,
+                               .origin      = originOffset + sf::Vector2f{320.f, 32.f},
+                               .rotation    = tailWiggleRotation,
+                               .textureRect = catTailTxr,
+                               .color       = catColor});
+            }
+
+            //
+            // Mousecat: mouse
+            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
+                               .scale       = catScale,
+                               .origin      = {53.f, 77.f},
+                               .rotation    = tailWiggleRotationInvertedDragged,
+                               .textureRect = txrMouseCatMouse,
+                               .color       = catColor});
+            }
+
+            //
+            // Eye blining animation
+            const auto& eyelidArray = //
+                (cat.type == CatType::Mouse || cat.type == CatType::Attracto || cat.type == CatType::Copy) ? grayEyeLidRects
+                : (cat.type == CatType::Engi || (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased))
+                    ? darkEyeLidRects
+                : (cat.type == CatType::Astro || cat.type == CatType::Uni)
+                    ? whiteEyeLidRects
+                    : eyeLidRects;
+
+            if (cat.blinkCountdown.isDone() && cat.blinkAnimCountdown.isDone())
+            {
+                if (rng.getI(0, 100) > 90) // Double animation chance
+                    cat.blinkCountdown.value = 75.f;
+                else
+                    cat.blinkCountdown.value = rng.getF(1000.f, 4000.f);
+            }
+
+            if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                cat.blinkAnimCountdown.value = 75.f * nEyeLidRects;
+
+            (void)cat.blinkAnimCountdown.updateAndStop(deltaTimeMs);
+
+            if (!cat.yawnAnimCountdown.isDone())
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
+                               .scale       = catScale,
+                               .origin      = txrCatEyeLid0.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = *eyelidArray[static_cast<unsigned int>(
+                                   remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
+                               .color       = attachmentHue});
+            }
+            else if (!cat.blinkAnimCountdown.isDone())
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
+                               .scale    = catScale,
+                               .origin   = txrCatEyeLid0.size / 2.f,
+                               .rotation = sf::radians(catRotation),
+                               .textureRect = *eyelidArray[static_cast<unsigned int>(cat.blinkAnimCountdown.value / 75.f) % nEyeLidRects],
+                               .color = attachmentHue});
+            }
+
+            if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
+            {
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+                               .scale       = catScale,
+                               .origin      = txrBrainFront.size / 2.f,
+                               .rotation    = sf::radians(catRotation),
+                               .textureRect = txrBrainFront,
+                               .color       = catColor});
+            }
+
+
+            if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
+                cpuDrawableBatch.add(
+                    sf::Sprite{.position = cat.pawPosition +
+                                           (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
+                               .scale       = catScale,
+                               .origin      = catPawTxr.size / 2.f,
+                               .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
+                               .textureRect = catPawTxr,
+                               .color       = catColor.withAlpha(static_cast<U8>(cat.pawOpacity))});
+
+            //
+            // Copycat: mask
+            if (cat.type == CatType::Copy)
+            {
+                if (copycatMaskAnim.isDone() &&
+                    copycatMaskAnimCd.updateAndStop(deltaTimeMs) == CountdownStatusStop::AlreadyFinished)
+                    copycatMaskAnim.value = 3000.f;
+
+                if (copycatMaskAnimCd.isDone() &&
+                    copycatMaskAnim.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                    copycatMaskAnimCd.value = 4000.f;
+
+                const float foo = easeInOutBack(copycatMaskAnim.getProgressBounced(3000.f)) * 0.5f;
+
+                const auto* txrMaskToUse = [&]() -> const sf::FloatRect*
+                {
+                    if (pt.copycatCopiedCatType == CatType::Witch)
+                        return &txrCCMaskWitch;
+
+                    if (pt.copycatCopiedCatType == CatType::Wizard)
+                        return &txrCCMaskWizard;
+
+                    if (pt.copycatCopiedCatType == CatType::Mouse)
+                        return &txrCCMaskMouse;
+
+                    if (pt.copycatCopiedCatType == CatType::Engi)
+                        return &txrCCMaskEngi;
+
+                    if (pt.copycatCopiedCatType == CatType::Repulso)
+                        return &txrCCMaskRepulso;
+
+                    if (pt.copycatCopiedCatType == CatType::Attracto)
+                        return &txrCCMaskAttracto;
+
+                    return nullptr;
+                }();
+
+                if (txrMaskToUse != nullptr)
+                    cpuDrawableBatch.add(
+                        sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
+                                   .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                                   .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
+                                   .rotation    = sf::radians(catRotation + foo),
+                                   .textureRect = *txrMaskToUse,
+                                   .color       = catColor});
+            }
         }
 
         if (profile.showCatText)
@@ -9997,8 +10099,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             catTextDrawableBatch.add(textNameBuffer);
 
             // Status text
-            if (cat.type != CatType::Repulso && cat.type != CatType::Attracto && !isCopyCatWithType(CatType::Repulso) &&
-                !isCopyCatWithType(CatType::Attracto))
+            if (cat.type != CatType::Repulso && cat.type != CatType::Attracto && cat.type != CatType::Duck &&
+                !isCopyCatWithType(CatType::Repulso) && !isCopyCatWithType(CatType::Attracto))
             {
                 const char* actionName = CatConstants::actionNames[asIdx(
                     cat.type == CatType::Copy ? pt.copycatCopiedCatType : cat.type)];
@@ -10046,7 +10148,8 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                 }
             }
 
-            const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso || cat.type == CatType::Attracto;
+            const bool hideCooldownBar = inPrestigeTransition || cat.type == CatType::Repulso ||
+                                         cat.type == CatType::Attracto || cat.type == CatType::Duck;
 
             if (!hideCooldownBar)
                 catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
@@ -10174,6 +10277,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             &txrDollRepulso,  // Repulso
             &txrDollAttracto, // Attracto
             &txrDollNormal,   // Copy (missing, hexing a copycat hexes the mimicked cat)
+            &txrDollNormal,   // Duck (missing, cannot be hexed)
         };
 
         static_assert(sf::base::getArraySize(dollTxrs) == nCatTypes);
@@ -11370,7 +11474,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
                                                                         : "Explosive Downpour (Bomb Spawn Chance)";
 
         const char* buffNames[] = {
-            "Midas Paws (x5 Cat Reward)",          // Normal (TODO P1: spawn star particles on paws?)
+            "Midas Paws (x5 Cat Reward)",          // Normal
             "Shooting Stars (Star Spawn Chance) ", // Uni
             devilBuffName,                         // Devil
             "Endless Flight (Looping Astrocats)",  // Astro
@@ -11382,6 +11486,7 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             "Bubble Hurricane (x2 Bubble Count + Wind)",   // Repulso
             "Demonic Attraction (Magnetic Bombs/Portals)", // Attracto
             "N/A",                                         // Copy
+            "N/A",                                         // Duck
         };
 
         static_assert(sf::base::getArraySize(buffNames) == nCatTypes);
@@ -12049,6 +12154,47 @@ Witchcat interaction: after being hexed, will grant the same buff as the mimicke
             drawSplashScreen(*rtGame, txLogo, splashCountdown, resolution, profile.hudScale);
 
         //
+        // Letter
+        if (victoryTC.hasValue())
+        {
+            if (victoryTC->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            {
+                cdLetterAppear.value = 4000.f;
+                delayedActions.emplace_back(Countdown{.value = 4000.f}, [this] { playSound(sounds.paper); });
+            }
+
+            if (victoryTC->isDone())
+            {
+                if (cdLetterAppear.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+                    cdLetterText.value = 10'000.f;
+
+                const float progress = cdLetterAppear.getProgressBounced(4000.f);
+
+                rtGame->draw({.position = resolution / 2.f / profile.hudScale,
+                              .scale    = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
+                                       profile.hudScale * 2.f,
+                              .origin      = txLetter.getSize().toVector2f() / 2.f,
+                              .textureRect = txLetter.getRect(),
+                              .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                             txLetter);
+            }
+
+            (void)cdLetterText.updateAndStop(deltaTimeMs);
+
+            const float textProgress = cdLetterText.value > 9000.f ? remap(cdLetterText.value, 9000.f, 10'000.f, 1.f, 0.f)
+                                       : cdLetterText.value < 1000.f ? cdLetterText.value / 1000.f
+                                                                     : 1.f;
+
+            rtGame->draw({.position = resolution / 2.f / profile.hudScale,
+                          .scale    = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
+                                   profile.hudScale * 1.45f,
+                          .origin      = txLetterText.getSize().toVector2f() / 2.f,
+                          .textureRect = txLetterText.getRect(),
+                          .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                         txLetterText);
+        }
+
+        //
         // Tips
         gameLoopTips(deltaTimeMs);
 
@@ -12207,7 +12353,6 @@ int main(int argc, const char** argv)
 }
 
 // TODO P0: DUCK! and letter
-// TODO P0: improve copycat bg
 
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs

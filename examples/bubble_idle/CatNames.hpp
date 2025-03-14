@@ -166,6 +166,12 @@ inline constexpr const char* copyCatNames[] = {
 
 
 ////////////////////////////////////////////////////////////
+inline constexpr const char* duckCatNames[] = {
+    "Victoria",
+};
+
+
+////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
     sf::base::Span<const char* const>,
     catNamesPerType,
@@ -183,6 +189,7 @@ inline constexpr EXACT_ARRAY(
         {repulsoCatNames, sf::base::getArraySize(repulsoCatNames)},   // Repulso
         {attractoCatNames, sf::base::getArraySize(attractoCatNames)}, // Attracto
         {copyCatNames, sf::base::getArraySize(copyCatNames)},         // Copy
+        {duckCatNames, sf::base::getArraySize(duckCatNames)},         // Duck
     });
 
 ////////////////////////////////////////////////////////////

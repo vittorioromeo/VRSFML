@@ -92,6 +92,9 @@ struct Sounds
     LoadedSound purchasable{"purchasable.ogg"};
     LoadedSound shimmer{"shimmer.ogg"};
     LoadedSound smokebomb{"smokebomb.ogg"};
+    LoadedSound quack{"quack.ogg"};
+    LoadedSound paper{"paper.ogg"};
+    LoadedSound letterchime{"letterchime.ogg"};
 
     ////////////////////////////////////////////////////////////
     std::vector<sf::Sound> soundsBeingPlayed;
@@ -141,6 +144,7 @@ struct Sounds
         setupWorldSound(portaloff);
         setupWorldSound(failcast, /* attenuationMult */ 0.1f);
         setupWorldSound(smokebomb);
+        setupWorldSound(quack);
 
         setupUISound(click);
         setupUISound(byteMeow);
@@ -160,6 +164,8 @@ struct Sounds
         setupUISound(unlock);
         setupUISound(purchasable);
         setupUISound(shimmer);
+        setupUISound(paper);
+        setupUISound(letterchime);
 
         scratch.setVolume(35.f);
         buy.setVolume(75.f);
