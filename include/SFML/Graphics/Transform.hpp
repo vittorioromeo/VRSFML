@@ -19,10 +19,6 @@
 namespace sf
 {
 class Angle;
-class RenderTarget;
-struct Transform;
-struct Sprite;
-struct Vertex;
 } // namespace sf
 
 
