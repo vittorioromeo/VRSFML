@@ -1,11 +1,12 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
 /// \ingroup graphics
-/// \brief Types of primitives that a range of `sf::Vertex` can render
+/// \brief Types of primitives that a range of vertices can render
 ///
 /// Points and lines have no area, therefore their thickness
 /// will always be 1 pixel, regardless the current transform
