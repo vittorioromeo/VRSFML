@@ -8,13 +8,13 @@
 #define BUBBLEBYTE_STRINGIFY(...) BUBBLEBYTE_STRINGIFY_IMPL(__VA_ARGS__)
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MAJOR 0
+#define BUBBLEBYTE_VERSION_MAJOR 1
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_MINOR 0
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 17
+#define BUBBLEBYTE_VERSION_PATCH 0
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
