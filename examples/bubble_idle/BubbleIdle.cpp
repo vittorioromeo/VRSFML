@@ -23,6 +23,7 @@
 #include "Profile.hpp"
 #include "PurchasableScalingValue.hpp"
 #include "RNG.hpp"
+#include "RNGFast.hpp"
 #include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Shrine.hpp"
@@ -91,6 +92,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -927,7 +929,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Random number generation
-    RNG rng{/* seed */ std::random_device{}()};
+    RNG     rng{/* seed */ std::random_device{}()};
+    RNGFast rngFast; // very fast, low-quality, but good enough for VFXs
 
     ////////////////////////////////////////////////////////////
     // Cat names
@@ -1199,14 +1202,14 @@ struct Main
         return particles.emplace_back(
             ParticleData{
                 .position      = position,
-                .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
-                .scale         = rng.getF(0.08f, 0.27f) * scaleMult,
+                .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
+                .scale         = rngFast.getF(0.08f, 0.27f) * scaleMult,
                 .scaleDecay    = 0.f,
                 .accelerationY = 0.002f,
                 .opacity       = opacity,
-                .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                .rotation      = rng.getF(0.f, sf::base::tau),
-                .torque        = rng.getF(-0.002f, 0.002f),
+                .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                .rotation      = rngFast.getF(0.f, sf::base::tau),
+                .torque        = rngFast.getF(-0.002f, 0.002f),
             },
             0.f,
             particleType);
@@ -1494,8 +1497,7 @@ struct Main
     {
         return pickRandomBubbleInRadiusMatching(center,
                                                 radius,
-                                                [](const Bubble&) __attribute__((always_inline, flatten))
-        { return true; });
+                                                [](const Bubble&) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return true; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -2122,14 +2124,14 @@ It's a duck.)",
 
             for (SizeT i = 0u; i < 24u; ++i)
                 spawnHUDTopParticle({.position      = getHUDMousePos(),
-                                     .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}),
-                                     .scale         = rng.getF(0.08f, 0.27f) * 0.7f,
+                                     .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}),
+                                     .scale         = rngFast.getF(0.08f, 0.27f) * 0.7f,
                                      .scaleDecay    = 0.f,
                                      .accelerationY = 0.002f,
                                      .opacity       = 1.f,
-                                     .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                                     .rotation      = rng.getF(0.f, sf::base::tau),
-                                     .torque        = rng.getF(-0.002f, 0.002f)},
+                                     .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                                     .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                     .torque        = rngFast.getF(-0.002f, 0.002f)},
                                     /* hue */ wrapHue(165.f + uiButtonHueMod + currentBackgroundHue.asDegrees()),
                                     ParticleType::Star);
         }
@@ -2139,14 +2141,14 @@ It's a duck.)",
 
             for (SizeT i = 0u; i < 6u; ++i)
                 spawnHUDTopParticle({.position      = getHUDMousePos(),
-                                     .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.5f,
-                                     .scale         = rng.getF(0.08f, 0.27f),
+                                     .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.5f,
+                                     .scale         = rngFast.getF(0.08f, 0.27f),
                                      .scaleDecay    = 0.f,
                                      .accelerationY = 0.002f * 0.75f,
                                      .opacity       = 1.f,
-                                     .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                                     .rotation      = rng.getF(0.f, sf::base::tau),
-                                     .torque        = rng.getF(-0.002f, 0.002f)},
+                                     .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                                     .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                     .torque        = rngFast.getF(-0.002f, 0.002f)},
                                     /* hue */ 0.f,
                                     ParticleType::Bubble);
         }
@@ -2563,14 +2565,14 @@ It's a duck.)",
 
                         for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
                             spawnParticle(ParticleData{.position      = copyCat.position,
-                                                       .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
-                                                       .scale         = rng.getF(0.75f, 1.f),
+                                                       .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
+                                                       .scale         = rngFast.getF(0.75f, 1.f),
                                                        .scaleDecay    = -0.0005f,
                                                        .accelerationY = -0.00017f,
                                                        .opacity       = 1.f,
-                                                       .opacityDecay  = rng.getF(0.00065f, 0.00075f),
-                                                       .rotation      = rng.getF(0.f, sf::base::tau),
-                                                       .torque        = rng.getF(-0.002f, 0.002f)},
+                                                       .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
+                                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                                       .torque        = rngFast.getF(-0.002f, 0.002f)},
                                           0.f,
                                           ParticleType::Smoke);
 
@@ -4583,7 +4585,7 @@ It's a duck.)",
         sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
         playSound(sounds.cast0);
 
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
         forEachBubbleInRadius(wizardCat.position,
                               range,
@@ -4616,7 +4618,7 @@ It's a duck.)",
         sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
         playSound(sounds.cast0);
 
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
         ++wizardCat.hits;
         wizardCat.cooldown.value = maxCooldown * 2.f;
@@ -4638,9 +4640,9 @@ It's a duck.)",
             sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
             playSound(sounds.cast0);
 
-            spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+            spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
-            spawnParticlesNoGravity(256, witchCat->position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+            spawnParticlesNoGravity(256, witchCat->position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
             witchCat->cooldown.value -= witchCat->cooldown.value * (pt.psvDarkUnionPercentage.currentValue() / 100.f);
         }
@@ -4662,7 +4664,7 @@ It's a duck.)",
         sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
         playSound(sounds.cast0);
 
-        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rng.getF(0.25f, 1.25f), rng.getF(0.5f, 3.f));
+        spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
 
         ++wizardCat.hits;
         wizardCat.cooldown.value = maxCooldown * 2.f;
@@ -5947,30 +5949,30 @@ It's a duck.)",
     {
         return textParticles.emplace_back(TextParticle{
             {.position      = {position.x, position.y - 10.f},
-             .velocity      = rng.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
+             .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
              .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
              .scaleDecay    = 0.f,
              .accelerationY = 0.0039f,
              .opacity       = 1.f,
              .opacityDecay  = 0.0015f,
              .rotation      = 0.f,
-             .torque        = rng.getF(-0.002f, 0.002f)}});
+             .torque        = rngFast.getF(-0.002f, 0.002f)}});
     }
 
     ////////////////////////////////////////////////////////////
     void shrineCollectReward(Shrine& shrine, const MoneyType reward, const Bubble& bubble)
     {
         shrine.collectedReward += reward;
-        shrine.textStatusShakeEffect.bump(rng, 1.5f);
+        shrine.textStatusShakeEffect.bump(rngFast, 1.5f);
 
         spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
                               6,
                               shrine.getDrawPosition(),
                               ParticleType::Fire,
-                              rng.getF(0.25f, 0.6f),
+                              rngFast.getF(0.25f, 0.6f),
                               0.75f);
 
-        spawnParticlesWithHue(shrine.getHue(), 6, shrine.getDrawPosition(), ParticleType::Shrine, rng.getF(0.6f, 1.f), 0.5f);
+        spawnParticlesWithHue(shrine.getHue(), 6, shrine.getDrawPosition(), ParticleType::Shrine, rngFast.getF(0.6f, 1.f), 0.5f);
 
         const auto diff = bubble.position - shrine.position;
 
@@ -5997,27 +5999,27 @@ It's a duck.)",
 
         for (sf::base::SizeT iP = 0u; iP < 16u; ++iP)
             spawnParticle(ParticleData{.position      = bubble.position,
-                                       .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.55f,
-                                       .scale         = rng.getF(0.08f, 0.27f) * 3.75f,
+                                       .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.55f,
+                                       .scale         = rngFast.getF(0.08f, 0.27f) * 3.75f,
                                        .scaleDecay    = -0.0005f,
                                        .accelerationY = 0.00015f,
                                        .opacity       = 0.75f,
-                                       .opacityDecay  = rng.getF(0.001f, 0.002f),
-                                       .rotation      = rng.getF(0.f, sf::base::tau),
-                                       .torque        = rng.getF(-0.001f, 0.001f)},
+                                       .opacityDecay  = rngFast.getF(0.001f, 0.002f),
+                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                       .torque        = rngFast.getF(-0.001f, 0.001f)},
                           0.f,
                           ParticleType::Explosion);
 
         for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
             spawnParticle(ParticleData{.position      = bubble.position,
-                                       .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(-0.15f, 0.05f)},
-                                       .scale         = rng.getF(0.65f, 1.f) * 1.25f,
+                                       .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(-0.15f, 0.05f)},
+                                       .scale         = rngFast.getF(0.65f, 1.f) * 1.25f,
                                        .scaleDecay    = -0.0005f,
                                        .accelerationY = -0.00017f,
-                                       .opacity       = rng.getF(0.5f, 0.75f),
-                                       .opacityDecay  = rng.getF(0.00035f, 0.00055f),
-                                       .rotation      = rng.getF(0.f, sf::base::tau),
-                                       .torque        = rng.getF(-0.002f, 0.002f)},
+                                       .opacity       = rngFast.getF(0.5f, 0.75f),
+                                       .opacityDecay  = rngFast.getF(0.00035f, 0.00055f),
+                                       .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                       .torque        = rngFast.getF(-0.002f, 0.002f)},
                           0.f,
                           ParticleType::Smoke);
 
@@ -6156,14 +6158,14 @@ It's a duck.)",
         {
             if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
-                    {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rng.getF(-12.f, 12.f)},
+                    {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rngFast.getF(-12.f, 12.f)},
                      .velocity      = {-0.25f, 0.f},
                      .scale         = 0.25f,
                      .scaleDecay    = 0.f,
                      .accelerationY = 0.f,
                      .opacity       = 0.f,
                      .opacityDecay  = -0.003f,
-                     .rotation      = rng.getF(0.f, sf::base::tau),
+                     .rotation      = rngFast.getF(0.f, sf::base::tau),
                      .torque        = 0.f});
 
 
@@ -6198,13 +6200,13 @@ It's a duck.)",
         if (popperCat != nullptr)
         {
             popperCat->moneyEarned += reward;
-            popperCat->textMoneyShakeEffect.bump(rng, 1.25f);
+            popperCat->textMoneyShakeEffect.bump(rngFast, 1.25f);
         }
 
         if (!collectedByShrine)
         {
             addMoney(reward);
-            moneyTextShakeEffect.bump(rng, 1.f + static_cast<float>(combo) * 0.1f);
+            moneyTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.1f);
         }
 
         if (!isBubbleInStasisField(bubble))
@@ -6378,7 +6380,7 @@ It's a duck.)",
                                .opacity       = 1.f,
                                .opacityDecay  = 0.0002f,
                                .rotation      = 0.f,
-                               .torque        = rng.getF(-0.0002f, 0.0002f)},
+                               .torque        = rngFast.getF(-0.0002f, 0.0002f)},
                               /* hue */ 0.f,
                               ParticleType::CatSoul);
 
@@ -6638,7 +6640,7 @@ It's a duck.)",
             if (pt.comboPurchased)
             {
                 addCombo(combo, comboCountdown);
-                comboTextShakeEffect.bump(rng, 1.f + static_cast<float>(combo) * 0.2f);
+                comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.2f);
             }
             else
             {
@@ -6729,7 +6731,7 @@ It's a duck.)",
                 .multiPop        = false,
             });
 
-            cat.textStatusShakeEffect.bump(rng, 1.5f);
+            cat.textStatusShakeEffect.bump(rngFast, 1.5f);
             ++cat.hits;
 
             cat.cooldown.value = maxCooldown;
@@ -6837,7 +6839,7 @@ It's a duck.)",
             playSound(sounds.shine);
         }
 
-        cat.textStatusShakeEffect.bump(rng, 1.5f);
+        cat.textStatusShakeEffect.bump(rngFast, 1.5f);
         cat.cooldown.value = maxCooldown;
     }
 
@@ -6886,7 +6888,7 @@ It's a duck.)",
             playSound(sounds.portalon);
         }
 
-        cat.textStatusShakeEffect.bump(rng, 1.5f);
+        cat.textStatusShakeEffect.bump(rngFast, 1.5f);
         ++cat.hits;
 
         cat.cooldown.value = maxCooldown;
@@ -6973,7 +6975,7 @@ It's a duck.)",
                        .opacity       = 1.f,
                        .opacityDecay  = 0.0002f,
                        .rotation      = 0.f,
-                       .torque        = rng.getF(-0.0002f, 0.0002f)},
+                       .torque        = rngFast.getF(-0.0002f, 0.0002f)},
                       /* hue */ 0.f,
                       ParticleType::CatSoul);
     }
@@ -7092,7 +7094,7 @@ It's a duck.)",
             const bool copy = &dollsToUse == &pt.copyDolls;
             spawnParticlesWithHue(copy ? 180.f : 0.f, 128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
 
-            cat.textStatusShakeEffect.bump(rng, 1.5f);
+            cat.textStatusShakeEffect.bump(rngFast, 1.5f);
             cat.hits += 1u;
 
             if (!pt.dollTipShown)
@@ -7236,7 +7238,7 @@ It's a duck.)",
                 return ControlFlow::Continue;
             });
 
-        cat.textStatusShakeEffect.bump(rng, 1.5f);
+        cat.textStatusShakeEffect.bump(rngFast, 1.5f);
         ++cat.hits;
 
         cat.cooldown.value = maxCooldown;
@@ -7271,7 +7273,7 @@ It's a duck.)",
 
         if (nCatsHit > 0)
         {
-            cat.textStatusShakeEffect.bump(rng, 1.5f);
+            cat.textStatusShakeEffect.bump(rngFast, 1.5f);
             cat.hits += static_cast<sf::base::U32>(nCatsHit);
 
             statMaintenance();
@@ -7300,7 +7302,7 @@ It's a duck.)",
                 b->hueMod = rng.getF(0.f, 360.f);
                 spawnParticles(2, b->position, ParticleType::Star, 0.5f, 0.35f);
 
-                cat.textStatusShakeEffect.bump(rng, 1.5f);
+                cat.textStatusShakeEffect.bump(rngFast, 1.5f);
                 ++cat.hits;
             }
         }
@@ -7512,18 +7514,18 @@ It's a duck.)",
                         if (diff2.lengthSquared() > rangeSquared)
                             continue;
 
-                        if (rng.getF(0.f, 1.f) < intensity)
+                        if (rngFast.getF(0.f, 1.f) < intensity)
                             spawnParticle({.position = otherCat.getDrawPosition() +
-                                                       sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
-                                           .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                           .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                                                       sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                                           .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                           .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                            .scaleDecay    = 0.f,
                                            .accelerationY = -0.0017f,
                                            .opacity       = 1.f,
-                                           .opacityDecay  = rng.getF(0.00035f, 0.0025f),
-                                           .rotation      = rng.getF(0.f, sf::base::tau),
-                                           .torque        = rng.getF(-0.002f, 0.002f)},
-                                          /* hue */ wrapHue(rng.getF(-50.f, 50.f) + hueMod),
+                                           .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
+                                           .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                           .torque        = rngFast.getF(-0.002f, 0.002f)},
+                                          /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + hueMod),
                                           ParticleType::Hex);
                     }
                 }
@@ -7541,16 +7543,16 @@ It's a duck.)",
 
             if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt.dolls.empty())))
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
-                               .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                               .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                .scaleDecay    = 0.f,
                                .accelerationY = -0.0017f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00035f, 0.0025f),
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
-                              /* hue */ wrapHue(rng.getF(-50.f, 50.f)),
+                               .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
+                              /* hue */ wrapHue(rngFast.getF(-50.f, 50.f)),
                               ParticleType::Hex);
 
                 continue;
@@ -7559,16 +7561,16 @@ It's a duck.)",
             if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch &&
                                                   (anyCatCopyHexed() || !pt.copyDolls.empty())))
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 9.f},
-                               .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                               .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                .scaleDecay    = 0.f,
                                .accelerationY = -0.0017f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00035f, 0.0025f),
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
-                              /* hue */ wrapHue(rng.getF(-50.f, 50.f) + 180.f),
+                               .opacityDecay  = rngFast.getF(0.00035f, 0.0025f),
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
+                              /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + 180.f),
                               ParticleType::Hex);
 
                 continue;
@@ -7576,15 +7578,15 @@ It's a duck.)",
 
             if (pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f && cat.pawOpacity >= 75.f)
             {
-                spawnParticle({.position      = cat.pawPosition + rng.getVec2f({-12.f, -12.f}, {12.f, 12.f}),
-                               .velocity      = rng.getVec2f({-0.015f, -0.015f}, {0.015f, 0.015f}),
-                               .scale         = rng.getF(0.08f, 0.27f) * 0.1f,
+                spawnParticle({.position      = cat.pawPosition + rngFast.getVec2f({-12.f, -12.f}, {12.f, 12.f}),
+                               .velocity      = rngFast.getVec2f({-0.015f, -0.015f}, {0.015f, 0.015f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.1f,
                                .scaleDecay    = 0.f,
                                .accelerationY = 0.f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00025f, 0.0015f) * 1.5f,
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
+                               .opacityDecay  = rngFast.getF(0.00025f, 0.0015f) * 1.5f,
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Star);
             }
@@ -7592,33 +7594,33 @@ It's a duck.)",
 
             const auto [cx, cy] = getCatRangeCenter(cat);
 
-            if (cat.inspiredCountdown.value > 0.f && rng.getF(0.f, 1.f) > 0.5f)
+            if (cat.inspiredCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.5f)
             {
-                spawnParticle({.position   = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
-                               .velocity   = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale      = rng.getF(0.08f, 0.27f) * 0.2f,
+                spawnParticle({.position   = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
+                               .velocity   = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale      = rngFast.getF(0.08f, 0.27f) * 0.2f,
                                .scaleDecay = 0.f,
                                .accelerationY = -0.002f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
+                               .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Star);
             }
 
             const float globalBoost = pt.buffCountdownsPerType[asIdx(CatType::Engi)].value;
-            if ((globalBoost > 0.f || cat.boostCountdown.value > 0.f) && rng.getF(0.f, 1.f) > 0.75f)
+            if ((globalBoost > 0.f || cat.boostCountdown.value > 0.f) && rngFast.getF(0.f, 1.f) > 0.75f)
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 25.f},
-                               .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
-                               .scale         = rng.getF(0.08f, 0.27f) * 0.15f,
+                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                               .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.15f,
                                .scaleDecay    = 0.f,
                                .accelerationY = -0.0015f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00055f, 0.0045f),
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
+                               .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 180.f,
                               ParticleType::Cog);
             }
@@ -7628,42 +7630,42 @@ It's a duck.)",
 
             if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
             {
-                if (rng.getF(0.f, 1.f) > 0.75f)
+                if (rngFast.getF(0.f, 1.f) > 0.75f)
                 {
-                    spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius + 15.f, +catRadius - 5.f),
+                    spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius + 15.f, +catRadius - 5.f),
                                                                            catRadius - 20.f},
-                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
-                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
-                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f),
-                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                   .opacityDecay  = rngFast.getF(0.00055f, 0.0045f),
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   /* hue */ 0.f,
                                   ParticleType::Fire2);
 
                     spawnParticle({.position      = drawPosition + sf::Vector2f{-52.f * 0.2f, -85.f * 0.2f},
-                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
-                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
-                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
-                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                   .opacityDecay  = rngFast.getF(0.00055f, 0.0045f) * 2.f,
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   /* hue */ 0.f,
                                   ParticleType::Fire2);
 
                     spawnParticle({.position      = drawPosition + sf::Vector2f{-140.f * 0.2f, -90.f * 0.2f},
-                                   .velocity      = rng.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
-                                   .scale         = rng.getF(0.08f, 0.27f) * 0.55f,
+                                   .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
                                    .accelerationY = -0.0015f,
                                    .opacity       = 1.f,
-                                   .opacityDecay  = rng.getF(0.00055f, 0.0045f) * 2.f,
-                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                   .opacityDecay  = rngFast.getF(0.00055f, 0.0045f) * 2.f,
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   /* hue */ 0.f,
                                   ParticleType::Fire2);
                 }
@@ -7682,16 +7684,16 @@ It's a duck.)",
 
                     spawnParticles(1, drawPosition + sf::Vector2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
 
-                    if (rng.getI(0, 10) > 5)
+                    if (rngFast.getI(0, 10) > 5)
                         spawnParticle(ParticleData{.position      = drawPosition + sf::Vector2f{56.f, 45.f},
-                                                   .velocity      = {rng.getF(-0.15f, 0.15f), rng.getF(0.f, 0.1f)},
-                                                   .scale         = rng.getF(0.75f, 1.f) * 0.45f,
+                                                   .velocity      = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
+                                                   .scale         = rngFast.getF(0.75f, 1.f) * 0.45f,
                                                    .scaleDecay    = -0.00025f,
                                                    .accelerationY = -0.00017f,
                                                    .opacity       = 0.7f,
-                                                   .opacityDecay  = rng.getF(0.00065f, 0.00075f),
-                                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                                   .opacityDecay  = rngFast.getF(0.00065f, 0.00075f),
+                                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
                                       0.f,
                                       ParticleType::Smoke);
 
@@ -7714,12 +7716,12 @@ It's a duck.)",
                             .reward          = reward,
                             .bubble          = bubble,
                             .xCombo          = 1,
-                            .popSoundOverlap = rng.getF(0.f, 1.f) > 0.75f,
+                            .popSoundOverlap = rngFast.getF(0.f, 1.f) > 0.75f,
                             .popperCat       = &cat,
                             .multiPop        = false,
                         });
 
-                        cat.textStatusShakeEffect.bump(rng, 1.5f);
+                        cat.textStatusShakeEffect.bump(rngFast, 1.5f);
 
                         if (bubble.type == BubbleType::Bomb)
                             pt.achAstrocatPopBomb = true;
@@ -7767,17 +7769,17 @@ It's a duck.)",
                     cat.hue = 0.f;
                 }
 
-                if (isWizardBusy() && rng.getF(0.f, 1.f) > 0.5f)
+                if (isWizardBusy() && rngFast.getF(0.f, 1.f) > 0.5f)
                 {
-                    spawnParticle({.position = drawPosition + sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius},
-                                   .velocity = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                   .scale    = rng.getF(0.08f, 0.27f) * 0.2f,
+                    spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
+                                   .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale    = rngFast.getF(0.08f, 0.27f) * 0.2f,
                                    .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
-                                   .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                   .torque        = rng.getF(-0.002f, 0.002f)},
+                                   .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
                                   /* hue */ 225.f,
                                   ParticleType::Star);
                 }
@@ -7793,15 +7795,15 @@ It's a duck.)",
                     if ((otherCat.position - cat.position).lengthSquared() > rangeSquared)
                         continue;
 
-                    if (rng.getF(0.f, 1.f) > 0.95f)
+                    if (rngFast.getF(0.f, 1.f) > 0.95f)
                         spawnParticle({.position = otherCat.getDrawPosition() +
-                                                   sf::Vector2f{rng.getF(-catRadius, +catRadius), catRadius - 25.f},
-                                       .velocity      = rng.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
-                                       .scale         = rng.getF(0.08f, 0.27f) * 0.4f,
+                                                   sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                                       .velocity      = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
+                                       .scale         = rngFast.getF(0.08f, 0.27f) * 0.4f,
                                        .scaleDecay    = 0.f,
                                        .accelerationY = -0.00015f,
                                        .opacity       = 1.f,
-                                       .opacityDecay  = rng.getF(0.0003f, 0.002f),
+                                       .opacityDecay  = rngFast.getF(0.0003f, 0.002f),
                                        .rotation      = -0.6f,
                                        .torque        = 0.f},
                                       /* hue */ 0.f,
@@ -8046,16 +8048,16 @@ It's a duck.)",
                 {
                     spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
                                           static_cast<SizeT>(1 + 12 * (1.f - shrine.tcActivation->getProgress())),
-                                          shrine.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                          shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                           ParticleType::Fire,
-                                          rng.getF(0.25f, 1.f),
+                                          rngFast.getF(0.25f, 1.f),
                                           0.75f);
 
                     spawnParticlesWithHue(shrine.getHue(),
                                           static_cast<SizeT>(4 + 36 * (1.f - shrine.tcActivation->getProgress())),
-                                          shrine.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                          shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                           ParticleType::Shrine,
-                                          rng.getF(0.35f, 1.2f),
+                                          rngFast.getF(0.35f, 1.2f),
                                           0.5f);
                 }
                 else if (cdStatus == CountdownStatusStop::JustFinished)
@@ -8090,7 +8092,7 @@ It's a duck.)",
                 {
                     if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                     {
-                        if (rng.getF(0.f, 1.f) > 0.85f)
+                        if (rngFast.getF(0.f, 1.f) > 0.85f)
                             spawnParticlesWithHue(230.f, 1, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
                         bubble.rotation += deltaTimeMs * 0.025f;
@@ -8270,14 +8272,14 @@ It's a duck.)",
                     {
                         spawnParticlesWithHue(wrapHue(shrine.getHue() + 40.f),
                                               static_cast<SizeT>(1 + 12 * shrine.getDeathProgress()),
-                                              shrine.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                              shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                               ParticleType::Fire,
                                               sf::base::max(0.25f, 1.f - shrine.getDeathProgress()),
                                               0.75f);
 
                         spawnParticlesWithHue(shrine.getHue(),
                                               static_cast<SizeT>(4 + 36 * shrine.getDeathProgress()),
-                                              shrine.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                              shrine.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                               ParticleType::Shrine,
                                               sf::base::max(0.35f, 1.2f - shrine.getDeathProgress()),
                                               0.5f);
@@ -8299,7 +8301,7 @@ It's a duck.)",
         statDollCollected();
 
         for (SizeT i = 0u; i < 8u; ++i)
-            spawnParticlesWithHue(wrapHue(rng.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
+            spawnParticlesWithHue(wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   8,
                                   d.getDrawPosition(),
                                   ParticleType::Hex,
@@ -8362,7 +8364,7 @@ It's a duck.)",
                            .opacity       = 1.f,
                            .opacityDecay  = 0.0015f,
                            .rotation      = 0.f,
-                           .torque        = rng.getF(-0.0002f, 0.0002f)},
+                           .torque        = rngFast.getF(-0.0002f, 0.0002f)},
                           /* hue */ 0.f,
                           ParticleType::CatSoul);
 
@@ -8417,17 +8419,17 @@ It's a duck.)",
 
             if (!d.tcDeath.hasValue())
             {
-                if (rng.getF(0.f, 1.f) > 0.8f)
-                    spawnParticle({.position      = d.getDrawPosition() + sf::Vector2f{rng.getF(-32.f, +32.f), 32.f},
-                                   .velocity      = rng.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                   .scale         = rng.getF(0.08f, 0.27f) * 0.5f,
+                if (rngFast.getF(0.f, 1.f) > 0.8f)
+                    spawnParticle({.position      = d.getDrawPosition() + sf::Vector2f{rngFast.getF(-32.f, +32.f), 32.f},
+                                   .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                    .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
-                                   .opacityDecay  = rng.getF(0.00025f, 0.0015f),
-                                   .rotation      = rng.getF(0.f, sf::base::tau),
-                                   .torque        = rng.getF(-0.002f, 0.002f)},
-                                  /* hue */ wrapHue(rng.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
+                                   .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
+                                   .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                   .torque        = rngFast.getF(-0.002f, 0.002f)},
+                                  /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   ParticleType::Hex);
 
                 const bool click = (mBtnDown(sf::Mouse::Button::Left) || sf::Touch::isDown(0u));
@@ -8446,7 +8448,7 @@ It's a duck.)",
 
                 spawnParticlesWithHue(wrapHue(d.hue + (copy ? 180.f : 0.f)),
                                       static_cast<SizeT>(1 + 12 * d.getDeathProgress()),
-                                      d.getDrawPosition() + rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
+                                      d.getDrawPosition() + rngFast.getVec2f({-1.f, -1.f}, {1.f, 1.f}) * 32.f,
                                       ParticleType::Hex,
                                       sf::base::max(0.25f, 1.f - d.getDeathProgress()),
                                       0.75f);
@@ -8489,16 +8491,16 @@ It's a duck.)",
 
             for (sf::base::SizeT iP = 0u; iP < 2u; ++iP)
                 spawnParticle({.position = hp.getDrawPosition() +
-                                           rng.getRandomDirection() *
-                                               rng.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
-                               .velocity      = rng.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
-                               .scale         = rng.getF(0.08f, 0.27f) * 0.85f,
+                                           rngFast.getRandomDirection() *
+                                               rngFast.getF(hellPortalRadius * 0.95f, hellPortalRadius * 1.15f),
+                               .velocity      = rngFast.getVec2f({-0.025f, -0.025f}, {0.025f, 0.025f}),
+                               .scale         = rngFast.getF(0.08f, 0.27f) * 0.85f,
                                .scaleDecay    = -0.00025f,
                                .accelerationY = 0.f,
                                .opacity       = 1.f,
-                               .opacityDecay  = rng.getF(0.00155f, 0.0145f),
-                               .rotation      = rng.getF(0.f, sf::base::tau),
-                               .torque        = rng.getF(-0.002f, 0.002f)},
+                               .opacityDecay  = rngFast.getF(0.00155f, 0.0145f),
+                               .rotation      = rngFast.getF(0.f, sf::base::tau),
+                               .torque        = rngFast.getF(-0.002f, 0.002f)},
                               /* hue */ 0.f,
                               ParticleType::Fire2);
         }
@@ -8557,7 +8559,7 @@ It's a duck.)",
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(230.f,
                                                    1,
-                                                   rng.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                                   rngFast.getPointInCircle(cachedWizardCat->position, wizardRange),
                                                    ParticleType::Star,
                                                    0.15f,
                                                    0.05f);
@@ -8566,7 +8568,7 @@ It's a duck.)",
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(230.f,
                                                    1,
-                                                   rng.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                                   rngFast.getPointInCircle(cachedCopyCat->position, wizardRange),
                                                    ParticleType::Star,
                                                    0.15f,
                                                    0.05f);
@@ -8586,7 +8588,7 @@ It's a duck.)",
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(50.f,
                                                    1,
-                                                   rng.getPointInCircle(cachedWizardCat->position, wizardRange),
+                                                   rngFast.getPointInCircle(cachedWizardCat->position, wizardRange),
                                                    ParticleType::Star,
                                                    0.15f,
                                                    0.05f);
@@ -8595,7 +8597,7 @@ It's a duck.)",
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(50.f,
                                                    1,
-                                                   rng.getPointInCircle(cachedCopyCat->position, wizardRange),
+                                                   rngFast.getPointInCircle(cachedCopyCat->position, wizardRange),
                                                    ParticleType::Star,
                                                    0.15f,
                                                    0.05f);
@@ -9835,10 +9837,10 @@ It's a duck.)",
             // Ear flapping animation
             if (cat.flapCountdown.isDone() && cat.flapAnimCountdown.isDone())
             {
-                if (rng.getI(0, 100) > 92) // Double-flap chance
+                if (rngFast.getI(0, 100) > 92) // Double-flap chance
                     cat.flapCountdown.value = 75.f;
                 else
-                    cat.flapCountdown.value = rng.getF(4500.f, 12'500.f);
+                    cat.flapCountdown.value = rngFast.getF(4500.f, 12'500.f);
             }
 
             if (cat.flapCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -9865,7 +9867,7 @@ It's a duck.)",
                 cat.type != CatType::Engi)
             {
                 if (cat.yawnCountdown.isDone() && cat.yawnAnimCountdown.isDone())
-                    cat.yawnCountdown.value = rng.getF(7500.f, 20'000.f);
+                    cat.yawnCountdown.value = rngFast.getF(7500.f, 20'000.f);
 
                 if (cat.blinkAnimCountdown.isDone() &&
                     cat.yawnCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -9973,10 +9975,10 @@ It's a duck.)",
 
             if (cat.blinkCountdown.isDone() && cat.blinkAnimCountdown.isDone())
             {
-                if (rng.getI(0, 100) > 90) // Double animation chance
+                if (rngFast.getI(0, 100) > 90) // Double animation chance
                     cat.blinkCountdown.value = 75.f;
                 else
-                    cat.blinkCountdown.value = rng.getF(1000.f, 4000.f);
+                    cat.blinkCountdown.value = rngFast.getF(1000.f, 4000.f);
             }
 
             if (cat.blinkCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
@@ -10554,18 +10556,18 @@ It's a duck.)",
             {
                 const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
 
-                const auto pos = sf::Vector2f{uiGetWindowPos().x + x, y + (14.f + rng.getF(-14.f, 14.f)) * profile.uiScale};
+                const auto pos = sf::Vector2f{uiGetWindowPos().x + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
                 for (sf::base::SizeT i = 0u; i < 2u; ++i)
                     spawnHUDTopParticle({.position      = pos,
-                                         .velocity      = rng.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
-                                         .scale         = rng.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
+                                         .velocity      = rngFast.getVec2f({-0.04f, -0.04f}, {0.04f, 0.04f}),
+                                         .scale         = rngFast.getF(0.08f, 0.27f) * 0.25f * profile.uiScale,
                                          .scaleDecay    = 0.f,
                                          .accelerationY = 0.f,
                                          .opacity       = 1.f,
-                                         .opacityDecay  = rng.getF(0.00065f, 0.0055f),
-                                         .rotation      = rng.getF(0.f, sf::base::tau),
-                                         .torque        = rng.getF(-0.002f, 0.002f)},
+                                         .opacityDecay  = rngFast.getF(0.00065f, 0.0055f),
+                                         .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                         .torque        = rngFast.getF(-0.002f, 0.002f)},
                                         /* hue */ wrapHue(165.f + hue + currentBackgroundHue.asDegrees()),
                                         ParticleType::Star);
             }
@@ -10661,7 +10663,7 @@ It's a duck.)",
 
         if (comboFailCountdown.value > 0.f)
         {
-            cursorComboText.position += rng.getVec2f({-5.f, -5.f}, {5.f, 5.f});
+            cursorComboText.position += rngFast.getVec2f({-5.f, -5.f}, {5.f, 5.f});
             cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
         }
 
@@ -10731,14 +10733,14 @@ It's a duck.)",
         {
             for (SizeT i = 0u; i < 32u; ++i)
                 spawnHUDTopParticle({.position      = tipByteSprite.position,
-                                     .velocity      = rng.getVec2f({-0.75f, -0.75f}, {0.75f, 0.1f}) * 1.5f,
-                                     .scale         = rng.getF(0.18f, 0.32f) * 1.55f,
+                                     .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.1f}) * 1.5f,
+                                     .scale         = rngFast.getF(0.18f, 0.32f) * 1.55f,
                                      .scaleDecay    = 0.f,
                                      .accelerationY = 0.0015f,
                                      .opacity       = 1.f,
-                                     .opacityDecay  = rng.getF(0.00025f, 0.0015f) * 0.5f,
-                                     .rotation      = rng.getF(0.f, sf::base::tau),
-                                     .torque        = rng.getF(-0.002f, 0.002f)},
+                                     .opacityDecay  = rngFast.getF(0.00025f, 0.0015f) * 0.5f,
+                                     .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                     .torque        = rngFast.getF(-0.002f, 0.002f)},
                                     /* hue */ 0.f,
                                     ParticleType::Star);
         }
@@ -10948,7 +10950,7 @@ It's a duck.)",
 
                 if (spawnEarnedCoinParticle(fromWorldToHud(mousePos)))
                 {
-                    earnedCoinParticles.back().startPosition += rng.getVec2f({-25.f, -25.f}, {25.f, 25.f});
+                    earnedCoinParticles.back().startPosition += rngFast.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
                     sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
                                                   getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
@@ -10970,13 +10972,13 @@ It's a duck.)",
 
                 spawnParticle(ParticleData{.position      = mousePos,
                                            .velocity      = {0.f, 0.f},
-                                           .scale         = rng.getF(0.08f, 0.27f) * 1.f,
+                                           .scale         = rngFast.getF(0.08f, 0.27f) * 1.f,
                                            .scaleDecay    = 0.f,
                                            .accelerationY = -0.002f,
                                            .opacity       = 1.f,
-                                           .opacityDecay  = rng.getF(0.00025f, 0.002f),
-                                           .rotation      = rng.getF(0.f, sf::base::tau),
-                                           .torque        = rng.getF(-0.002f, 0.002f)},
+                                           .opacityDecay  = rngFast.getF(0.00025f, 0.002f),
+                                           .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                           .torque        = rngFast.getF(-0.002f, 0.002f)},
                               0.f,
                               ParticleType::Star);
             }
@@ -10986,7 +10988,7 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsBubbleBubble(const float deltaTimeMs)
     {
-        auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) __attribute__((always_inline))
+        auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) SFML_BASE_LAMBDA_ALWAYS_INLINE
         {
             // TODO P2: technically this is a data race
             handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]);
@@ -11106,13 +11108,13 @@ It's a duck.)",
                     .reward          = reward,
                     .bubble          = bubble,
                     .xCombo          = 1,
-                    .popSoundOverlap = rng.getF(0.f, 1.f) > 0.75f,
+                    .popSoundOverlap = rngFast.getF(0.f, 1.f) > 0.75f,
                     .popperCat       = linkedCat,
                     .multiPop        = false,
                 });
 
                 if (linkedCat != nullptr)
-                    linkedCat->textStatusShakeEffect.bump(rng, 1.5f);
+                    linkedCat->textStatusShakeEffect.bump(rngFast, 1.5f);
 
                 return ControlFlow::Continue;
             });
@@ -11429,14 +11431,14 @@ It's a duck.)",
             playSound(sounds.coin, /* maxOverlap */ 64);
 
             spawnSpentCoinParticle(
-                {.position      = moneyText.getCenterRight().addY(rng.getF(-12.f, 12.f)),
+                {.position      = moneyText.getCenterRight().addY(rngFast.getF(-12.f, 12.f)),
                  .velocity      = sf::Vector2f{3.f, 0.f},
                  .scale         = 0.35f,
                  .scaleDecay    = 0.f,
                  .accelerationY = 0.f,
                  .opacity       = 0.f,
                  .opacityDecay  = -0.015f,
-                 .rotation      = rng.getF(0.f, sf::base::tau),
+                 .rotation      = rngFast.getF(0.f, sf::base::tau),
                  .torque        = 0.f});
         }
 
@@ -11932,7 +11934,7 @@ It's a duck.)",
 
         //
         // Compute views
-        const auto screenShake = rng.getVec2f({-screenShakeAmount, -screenShakeAmount},
+        const auto screenShake = rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
                                               {screenShakeAmount, screenShakeAmount});
 
         nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};

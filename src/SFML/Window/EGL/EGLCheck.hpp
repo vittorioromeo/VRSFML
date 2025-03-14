@@ -12,6 +12,7 @@
 #endif
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 
 
 namespace sf::priv
@@ -24,7 +25,7 @@ namespace sf::priv
     // In debug mode, perform a test on every EGL call
     // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
     #define eglCheck(...)                                                        \
-        [](auto&& f) __attribute__((always_inline, flatten))                     \
+        [](auto&& f) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN                      \
         {                                                                        \
             SFML_BASE_ASSERT(::eglGetError() == EGL_SUCCESS);                    \
                                                                                  \
@@ -34,7 +35,7 @@ namespace sf::priv
                 /* no-op */;                                                     \
                                                                                  \
             return sfPrivEglCheckResult;                                         \
-        }([&]() __attribute__((always_inline, flatten)) { return __VA_ARGS__; })
+        }([&]() SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return __VA_ARGS__; })
 
 #else
 

@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Remainder.hpp"
@@ -55,7 +56,7 @@ constexpr Color Color::fromHSLA(HSL hsl, const base::U8 alpha)
     const float maxChroma = lightness < 0.5f ? lightness * (1 + saturation) : lightness + saturation - lightness * saturation;
     const float minChroma = 2 * lightness - maxChroma;
 
-    const auto hueToRGB = [&](float normalizedHue) __attribute__((always_inline, flatten)) -> float
+    const auto hueToRGB = [&](float normalizedHue) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> float
     {
         if (normalizedHue < 0.f)
             normalizedHue += 1.f;
@@ -199,7 +200,7 @@ constexpr Color Color::withAlpha(const base::U8 alpha) const
 ////////////////////////////////////////////////////////////
 constexpr Color operator+(const Color lhs, const Color rhs)
 {
-    const auto clampedAdd = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
+    const auto clampedAdd = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const int intResult = int{l} + int{r};
         return static_cast<base::U8>(intResult < 255 ? intResult : 255);
@@ -212,7 +213,7 @@ constexpr Color operator+(const Color lhs, const Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator-(const Color lhs, const Color rhs)
 {
-    const auto clampedSub = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
+    const auto clampedSub = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const int intResult = int{l} - int{r};
         return static_cast<base::U8>(intResult > 0 ? intResult : 0);
@@ -225,7 +226,7 @@ constexpr Color operator-(const Color lhs, const Color rhs)
 ////////////////////////////////////////////////////////////
 constexpr Color operator*(const Color lhs, const Color rhs)
 {
-    const auto scaledMul = [](base::U8 l, base::U8 r) __attribute__((always_inline, flatten)) -> base::U8
+    const auto scaledMul = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const auto uint16Result = static_cast<base::U16>(base::U16{l} * base::U16{r});
         return static_cast<base::U8>(uint16Result / 255u);
