@@ -23,6 +23,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -318,7 +319,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 
     drawShapeFromPoints(sdCircle.pointCount,
                         sdCircle,
-                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius); });
 }
 
@@ -331,7 +332,7 @@ void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 
     drawShapeFromPoints(sdEllipse.pointCount,
                         sdEllipse,
-                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius); });
 }
 
@@ -342,7 +343,7 @@ void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
     drawShapeFromPoints(4u,
                         sdRectangle,
-                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return computeRectanglePoint(i, sdRectangle.size); });
 }
 
@@ -353,7 +354,7 @@ void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRounded
 {
     drawShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
                         sdRoundedRectangle,
-                        [&](const base::SizeT i) __attribute__((always_inline, flatten))
+                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         return computeRoundedRectanglePoint(i,
                                             sdRoundedRectangle.size,

@@ -16,41 +16,55 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief Non-allocating `std::function` alternatifve with fixed storage size
+/// \brief Non-allocating `std::function` alternative with fixed storage size
 ///
 ////////////////////////////////////////////////////////////
 template <typename TSignature, SizeT TStorageSize>
 class FixedFunction;
 
 ////////////////////////////////////////////////////////////
-/// \brief Non-allocating `std::function` alternatifve with fixed storage size
+/// \brief Non-allocating `std::function` alternative with fixed storage size
 ///
 ////////////////////////////////////////////////////////////
 template <typename TReturn, typename... Ts, SizeT TStorageSize>
 class FixedFunction<TReturn(Ts...), TStorageSize>
 {
 private:
-    enum Operation : unsigned char
+    ////////////////////////////////////////////////////////////
+    enum class Operation : unsigned char
     {
         Destroy       = 0u,
         MoveConstruct = 1u,
         CopyConstruct = 2u,
     };
 
+    ////////////////////////////////////////////////////////////
     using RetType = TReturn;
 
+    ////////////////////////////////////////////////////////////
     using FnPtrType  = RetType (*)(Ts...);
     using MethodType = RetType (*)(char*, FnPtrType, Ts...);
-    using AllocType  = void (*)(char*, void* objectPtr, Operation operation);
+    using AllocType  = void (*)(char*, void* objectPtr, const Operation operation);
 
+    ////////////////////////////////////////////////////////////
     union
     {
         alignas(MaxAlignT) char objStorage[TStorageSize];
         FnPtrType functionPtr;
     };
 
+    ////////////////////////////////////////////////////////////
     MethodType m_methodPtr;
     AllocType  m_allocPtr;
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void destroyIfNeeded() noexcept
+    {
+        if (m_allocPtr == nullptr)
+            return;
+
+        m_allocPtr(objStorage, nullptr, Operation::Destroy);
+    }
 
 public:
     ////////////////////////////////////////////////////////////
@@ -76,7 +90,7 @@ public:
         { return reinterpret_cast<UnrefType*>(s)->operator()(xs...); };
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
-        m_allocPtr = [](char* s, void* o, Operation operation)
+        m_allocPtr = [](char* s, void* o, const Operation operation)
         {
             if (operation == Operation::Destroy)
             {
@@ -121,14 +135,17 @@ public:
         }
 
         m_allocPtr = rhs.m_allocPtr;
-
-        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
     }
 
     ////////////////////////////////////////////////////////////
     FixedFunction& operator=(const FixedFunction& rhs)
     {
+        if (this == &rhs)
+            return *this;
+
+        destroyIfNeeded();
+
         m_methodPtr = rhs.m_methodPtr;
 
         if (rhs.m_allocPtr == nullptr)
@@ -138,8 +155,6 @@ public:
         }
 
         m_allocPtr = rhs.m_allocPtr;
-
-        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
 
         return *this;
@@ -157,14 +172,20 @@ public:
         }
 
         m_allocPtr = rhs.m_allocPtr;
-
-        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
+
+        rhs.m_methodPtr = nullptr;
+        rhs.m_allocPtr  = nullptr;
     }
 
     ////////////////////////////////////////////////////////////
     FixedFunction& operator=(FixedFunction&& rhs) noexcept
     {
+        if (this == &rhs)
+            return *this;
+
+        destroyIfNeeded();
+
         m_methodPtr = rhs.m_methodPtr;
 
         if (rhs.m_allocPtr == nullptr)
@@ -174,23 +195,23 @@ public:
         }
 
         m_allocPtr = rhs.m_allocPtr;
-
-        SFML_BASE_ASSERT(m_allocPtr != nullptr);
         m_allocPtr(objStorage, rhs.objStorage, Operation::MoveConstruct);
+
+        rhs.m_methodPtr = nullptr;
+        rhs.m_allocPtr  = nullptr;
 
         return *this;
     }
 
     ////////////////////////////////////////////////////////////
-    ~FixedFunction() noexcept
+    [[gnu::always_inline, gnu::flatten]] ~FixedFunction() noexcept
     {
-        if (m_allocPtr)
-            m_allocPtr(objStorage, nullptr, Operation::Destroy);
+        destroyIfNeeded();
     }
 
     ////////////////////////////////////////////////////////////
     template <typename... TArgs>
-    RetType operator()(TArgs&&... args)
+    [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args)
     {
         SFML_BASE_ASSERT(m_methodPtr != nullptr);
         return m_methodPtr(objStorage, functionPtr, SFML_BASE_FORWARD(args)...);
@@ -198,14 +219,14 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... TArgs>
-    RetType operator()(TArgs&&... args) const
+    [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args) const
     {
         SFML_BASE_ASSERT(m_methodPtr != nullptr);
         return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_BASE_FORWARD(args)...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit operator bool() const
+    [[nodiscard, gnu::always_inline, gnu::flatten]] explicit operator bool() const
     {
         return m_methodPtr != nullptr;
     }
@@ -217,6 +238,6 @@ public:
 /// \class sf::base::FixedFunction
 /// \ingroup system
 ///
-/// Non-allocating `std::function` alternatifve with fixed storage size
+/// Non-allocating `std::function` alternative with fixed storage size
 ///
 ////////////////////////////////////////////////////////////
