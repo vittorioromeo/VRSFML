@@ -4121,7 +4121,7 @@ It's a duck.)",
                          "nova bubbles, worth x50.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("transcendence", 96u, pt.perm.unicatTranscendencePurchased))
+            if (makePurchasablePPButtonOneTime("transcendence", 128u, pt.perm.unicatTranscendencePurchased))
                 doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
 
             if (checkUiUnlock(54u, pt.perm.unicatTranscendencePurchased))
@@ -4132,7 +4132,7 @@ It's a duck.)",
                              "upgrades.");
                 uiLabelBuffer[0] = '\0';
 
-                if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
+                if (makePurchasablePPButtonOneTime("nova expanse", 144u, pt.perm.unicatTranscendenceAOEPurchased))
                     doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
             }
         }
@@ -4149,7 +4149,7 @@ It's a duck.)",
                          "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("hellsinged", 176u, pt.perm.devilcatHellsingedPurchased))
+            if (makePurchasablePPButtonOneTime("hellsinged", 192u, pt.perm.devilcatHellsingedPurchased))
                 doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
         }
 
