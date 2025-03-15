@@ -14,7 +14,7 @@
 #define BUBBLEBYTE_VERSION_MINOR 0
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 2
+#define BUBBLEBYTE_VERSION_PATCH 3
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -31,3 +31,8 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
+
+// TODO P0: changelog
+// - fix the game crashing on Proton/Wine (but still needs attention)
+// - range unicat upgrades are now only unlocked after buying aoe trascendence
+// - made unicat transcendence more affordable
