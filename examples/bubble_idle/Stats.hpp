@@ -37,6 +37,8 @@ struct [[nodiscard]] Stats
 
     sf::base::U64 nDisguises = 0u;
 
+    sf::base::U64 highestDPS = 0u;
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::pure]] sf::base::U64 getTotalNBubblesPopped() const noexcept
     {
