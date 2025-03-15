@@ -597,7 +597,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(ppSVibrance),
                          FIELD(ppSSaturation),
                          FIELD(ppSLightness),
-                         FIELD(ppSSharpness));
+                         FIELD(ppSSharpness),
+
+                         FIELD(showBubbles));
 }
 
 ////////////////////////////////////////////////////////////
