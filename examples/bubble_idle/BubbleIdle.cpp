@@ -12419,6 +12419,7 @@ int main(int argc, const char** argv)
 // TODO P1: put mana requirement in remember tooltip
 
 // TODO P1: track highest $/s stat
+// TODO P1: option to swap LMB/RMB
 
 // FEEDBACK:
 // - "prestige happens a bit too early in the game"
