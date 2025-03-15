@@ -11,10 +11,10 @@
 #define BUBBLEBYTE_VERSION_MAJOR 1
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MINOR 0
+#define BUBBLEBYTE_VERSION_MINOR 1
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 3
+#define BUBBLEBYTE_VERSION_PATCH 0
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -43,3 +43,4 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - automatically scroll screen when dragging cats near the edge, also tip about shift drag
 // - prevent clicks done on top of UI from being registered as clicks on the game screen
 // - prevent cat from being dragged when clicking offscreen
+// - added settings to reset game and profile for speedrunning in new "data" tab
