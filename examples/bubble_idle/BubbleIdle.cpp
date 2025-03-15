@@ -5424,6 +5424,44 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
+    void forceResetGame()
+    {
+        rng.reseed(std::random_device{}());
+        shuffledCatNamesPerType = makeShuffledCatNames(rng);
+
+        pt      = Playthrough{};
+        pt.seed = rng.getSeed();
+
+        wasPrestigeAvailableLastFrame = false;
+        buyReminder                   = 0u;
+
+        resetAllDraggedCats();
+
+        particles.clear();
+        spentCoinParticles.clear();
+        hudTopParticles.clear();
+        textParticles.clear();
+        earnedCoinParticles.clear();
+
+        shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+
+        profile.selectedBackground = 0;
+        profile.selectedBGM        = 0;
+
+        updateSelectedBackgroundSelectorIndex();
+        updateSelectedBGMSelectorIndex();
+
+        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void forceResetProfile()
+    {
+        profile = Profile{};
+        forceResetGame();
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBarSettings()
     {
         bool sgActive = false;
@@ -5721,9 +5759,55 @@ It's a duck.)",
         }
 
         uiSetFontScale(0.75f);
-        if (isDebugModeEnabled() && ImGui::BeginTabItem(" Debug "))
+        if (ImGui::BeginTabItem(" Data "))
         {
             selectedTab(4);
+
+            uiSetFontScale(uiNormalFontScale);
+
+            ImGui::Text("!!! Danger Zone !!!");
+
+            uiSetFontScale(0.75f);
+            ImGui::Text("Be careful with these dangerous settings!\nYour progress might be lost forever!");
+            uiSetFontScale(uiNormalFontScale);
+
+            static bool dangerZone = false;
+            uiCheckbox("Enable Danger Zone (!)", &dangerZone);
+
+            ImGui::Spacing();
+            ImGui::Spacing();
+
+            ImGui::BeginDisabled(!dangerZone);
+
+            uiButtonHueMod = 120.f;
+            uiPushButtonColors();
+
+            if (ImGui::Button("Reset game##dangerzoneresetgame"))
+            {
+                dangerZone = false;
+                forceResetGame();
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button("Reset profile##dangerzoneresetprofile"))
+            {
+                dangerZone = false;
+                forceResetProfile();
+            }
+
+            uiPopButtonColors();
+            uiButtonHueMod = 0.f;
+
+            ImGui::EndDisabled();
+
+            ImGui::EndTabItem();
+        }
+
+        uiSetFontScale(0.75f);
+        if (isDebugModeEnabled() && ImGui::BeginTabItem(" Debug "))
+        {
+            selectedTab(5);
 
             if (ImGui::Button("Slide"))
             {
@@ -5749,32 +5833,12 @@ It's a duck.)",
             uiPushButtonColors();
 
             if (ImGui::Button("Reset game"))
-            {
-                rng.reseed(std::random_device{}());
-                shuffledCatNamesPerType = makeShuffledCatNames(rng);
+                forceResetGame();
 
-                pt      = Playthrough{};
-                pt.seed = rng.getSeed();
+            ImGui::SameLine();
 
-                wasPrestigeAvailableLastFrame = false;
-                buyReminder                   = 0u;
-
-                particles.clear();
-                spentCoinParticles.clear();
-                hudTopParticles.clear();
-                textParticles.clear();
-                earnedCoinParticles.clear();
-
-                shopSelectOnce = ImGuiTabItemFlags_SetSelected;
-
-                profile.selectedBackground = 0;
-                profile.selectedBGM        = 0;
-
-                updateSelectedBackgroundSelectorIndex();
-                updateSelectedBGMSelectorIndex();
-
-                switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
-            }
+            if (ImGui::Button("Reset profile"))
+                forceResetProfile();
 
             uiPopButtonColors();
             uiButtonHueMod = 0.f;
