@@ -157,9 +157,21 @@ void initRawMouse(HWND handle)
     if (RegisterTouchWindow(handle, TWF_WANTPALM) != TRUE)
         sf::priv::err() << "Failed to initialize touch input";
 
-    ULONG contactVisualization = TOUCH_FEEDBACK_NONE; // 0
-    if (SetWindowFeedbackSetting(handle, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(ULONG), &contactVisualization) != TRUE)
-        sf::priv::err() << "Failed to disable touch gestures";
+    using SetWindowFeedbackSettingType = BOOL(WINAPI*)(HWND, FEEDBACK_TYPE, DWORD, UINT, PVOID);
+
+    if (HMODULE hUser32 = GetModuleHandleW(L"user32.dll"))
+    {
+        if (auto pSetWindowFeedbackSetting = reinterpret_cast<SetWindowFeedbackSettingType>(
+                reinterpret_cast<void*>(GetProcAddress(hUser32, "SetWindowFeedbackSetting"))))
+        {
+            ULONG contactVisualization = TOUCH_FEEDBACK_NONE;
+            if (pSetWindowFeedbackSetting(handle, FEEDBACK_TOUCH_CONTACTVISUALIZATION, 0, sizeof(ULONG), &contactVisualization) !=
+                TRUE)
+            {
+                sf::priv::err() << "Failed to disable touch gestures";
+            }
+        }
+    }
 }
 
 // TODO P0:

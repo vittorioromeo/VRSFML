@@ -1135,8 +1135,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Debug stuff
-    bool debugHideUI      = false;
-    bool debugHideBubbles = false;
+    bool debugHideUI = false;
 
     ////////////////////////////////////////////////////////////
     // Portal storm buff countdown
@@ -3517,7 +3516,7 @@ It's a duck.)",
                 uiSetUnlockLabelY(7u);
                 makeCooldownButton("  cooldown##Uni", CatType::Uni);
 
-                if (pt.perm.unicatTranscendencePurchased)
+                if (pt.perm.unicatTranscendencePurchased && pt.perm.unicatTranscendenceAOEPurchased)
                     makeRangeButton("  range##Uni", CatType::Uni);
             }
         }
@@ -4018,6 +4017,7 @@ It's a duck.)",
         {
             imgsep2(txrPrestigeSeparator2, "clicking tools");
 
+            uiSetUnlockLabelY(48u);
             std::sprintf(uiTooltipBuffer,
                          "Manually popping a bubble now also pops nearby bubbles automatically!\n\n(Note: combo "
                          "multiplier still only increases once per successful click.)\n\n(Note: this effect can be "
@@ -4028,12 +4028,16 @@ It's a duck.)",
                 doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
                       /* maxPrestigeLevel */ UINT_MAX);
 
-            if (checkUiUnlock(49u, pt.perm.multiPopPurchased && pt.psvBubbleValue.nPurchases >= 2u))
+            if (checkUiUnlock(49u, pt.perm.multiPopPurchased))
             {
                 uiSetUnlockLabelY(49u);
-                std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
-                std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
-                makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
+
+                if (pt.psvBubbleValue.nPurchases >= 2u)
+                {
+                    std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
+                    std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
+                    makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
+                }
 
                 uiSetFontScale(uiSubBulletFontScale);
                 uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
@@ -4140,7 +4144,7 @@ It's a duck.)",
                          "nova bubbles, worth x50.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("transcendence", 128u, pt.perm.unicatTranscendencePurchased))
+            if (makePurchasablePPButtonOneTime("transcendence", 96u, pt.perm.unicatTranscendencePurchased))
                 doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
 
             if (checkUiUnlock(54u, pt.perm.unicatTranscendencePurchased))
@@ -4151,7 +4155,7 @@ It's a duck.)",
                              "upgrades.");
                 uiLabelBuffer[0] = '\0';
 
-                if (makePurchasablePPButtonOneTime("nova expanse", 144u, pt.perm.unicatTranscendenceAOEPurchased))
+                if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
                     doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
             }
         }
@@ -5546,6 +5550,7 @@ It's a duck.)",
             ImGui::EndDisabled();
 
             uiCheckbox("Show text particles", &profile.showTextParticles);
+            uiCheckbox("Show bubbles", &profile.showBubbles);
 
             ImGui::Separator();
 
@@ -5803,8 +5808,6 @@ It's a duck.)",
             ImGui::Separator();
 
             ImGui::Checkbox("hide ui", &debugHideUI);
-            ImGui::SameLine();
-            ImGui::Checkbox("hide bubbles", &debugHideBubbles);
 
             ImGui::Separator();
 
@@ -12004,7 +12007,7 @@ It's a duck.)",
         starBubbleDrawableBatch.clear();
         bombBubbleDrawableBatch.clear();
 
-        if (!debugHideBubbles)
+        if (profile.showBubbles)
             gameLoopDrawBubbles();
 
         if (profile.useBubbleShader)
@@ -12390,7 +12393,7 @@ int main(int argc, const char** argv)
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
-// TODO P1: tooltips should say how much things get improved (e.g. cooldown and range)
+// TODO P1: tooltips should say how much things get improved (e.g. cooldown and range, also PP stuff like mana)
 
 // TODO P2: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
@@ -12408,3 +12411,9 @@ int main(int argc, const char** argv)
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
 // TODO P2: autoscroll when dragging cats near border
+
+// TODO P1: click on minimap to change view
+// TODO P1: test steam deck with proton on linux vm
+// TODO P1: clicks on top of imgui windows should not go through
+// TODO P1: draw shrine text on top of cat text
+// TODO P1: put mana requirement in remember tooltip
