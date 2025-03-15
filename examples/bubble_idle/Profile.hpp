@@ -76,4 +76,6 @@ struct [[nodiscard]] Profile
     float ppSSaturation = 1.0f;
     float ppSLightness  = 1.0f;
     float ppSSharpness  = 0.10f;
+
+    bool showBubbles = true;
 };
