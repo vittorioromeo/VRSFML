@@ -151,7 +151,7 @@ target_include_directories(sfml-audio SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extl
 
 # needed because PCH is defined in the System module
 if(SFML_ENABLE_PCH)
-    target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/miniaudio")
+    target_include_directories(sfml-system SYSTEM PUBLIC "$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/extlibs/headers/miniaudio>")
 endif()
 
 # minimp3 sources
