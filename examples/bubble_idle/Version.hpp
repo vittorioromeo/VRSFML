@@ -36,3 +36,10 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - fix the game crashing on Proton/Wine (but still needs attention)
 // - range unicat upgrades are now only unlocked after buying aoe trascendence
 // - made unicat transcendence more affordable
+// - highest $/s is now displayed in the stats screen
+// - shrine text is now always draw in front of cat text
+// - added spell mana requirement to "Remember Spell" tooltip in "magic" tab
+// - added option to invert mouse buttons in "interface" tab under "settings"
+// - automatically scroll screen when dragging cats near the edge, also tip about shift drag
+// - prevent clicks done on top of UI from being registered as clicks on the game screen
+// - prevent cat from being dragged when clicking offscreen
