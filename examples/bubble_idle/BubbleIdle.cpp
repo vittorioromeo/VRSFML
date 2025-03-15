@@ -12417,3 +12417,9 @@ int main(int argc, const char** argv)
 // TODO P1: clicks on top of imgui windows should not go through
 // TODO P1: draw shrine text on top of cat text
 // TODO P1: put mana requirement in remember tooltip
+
+// TODO P1: track highest $/s stat
+
+// FEEDBACK:
+// - "prestige happens a bit too early in the game"
+// - "it feels like the game was optimized for widescreen and not standard 16:9 as the ui for the shop and such sitting on top of the play screen looks a bit wonky"
