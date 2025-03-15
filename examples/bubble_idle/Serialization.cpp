@@ -476,7 +476,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Stat
                          FIELD(nMaintenances),
                          FIELD(highestSimultaneousMaintenances),
 
-                         FIELD(nDisguises));
+                         FIELD(nDisguises),
+
+                         FIELD(highestDPS));
 }
 
 
@@ -599,7 +601,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(ppSLightness),
                          FIELD(ppSSharpness),
 
-                         FIELD(showBubbles));
+                         FIELD(showBubbles),
+                         FIELD(invertMouseButtons));
 }
 
 ////////////////////////////////////////////////////////////

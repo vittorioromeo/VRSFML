@@ -1016,6 +1016,7 @@ struct Main
         float top;
         float bottom;
 
+        ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(
             const sf::Vector2f point) const noexcept
         {
@@ -1413,6 +1414,12 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    void statHighestDPS(const sf::base::U64 value)
+    {
+        withAllStats([&](Stats& stats) { stats.highestDPS = sf::base::max(stats.highestDPS, value); });
+    }
+
+    ////////////////////////////////////////////////////////////
     sf::RenderWindow& getWindow()
     {
         SFML_BASE_ASSERT(optWindow.hasValue());
@@ -1433,8 +1440,11 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mBtnDown(const sf::Mouse::Button button) const
+    [[nodiscard]] bool mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) const
     {
+        if (ImGui::GetIO().WantCaptureMouse && !penetrateUI)
+            return false;
+
         return getWindow().hasFocus() && sf::Mouse::isButtonPressed(button);
     }
 
@@ -4733,7 +4743,10 @@ It's a duck.)",
         uiBeginColumns();
         uiButtonHueMod = 45.f;
 
-        std::sprintf(uiTooltipBuffer, "The Wizardcat taps into memories of past lives, remembering a powerful spell.");
+        std::sprintf(uiTooltipBuffer,
+                     "The Wizardcat taps into memories of past lives, remembering a powerful spell.\n\nMana costs:\n- "
+                     "1st spell: 5 mana\n- 2nd spell: 20 mana\n- 3rd spell: 30 mana\n- 4th spell: 40 mana\n\nNote: You "
+                     "won't be able to cast a spell if the cost exceeds your maximum mana!");
         std::sprintf(uiLabelBuffer, "%zu/%zu", pt.psvSpellCount.nPurchases, pt.psvSpellCount.data->nMaxPurchases);
         (void)makePSVButtonExByCurrency("Remember spell",
                                         pt.psvSpellCount,
@@ -4957,7 +4970,9 @@ It's a duck.)",
             ImGui::Text("Clicked: %s", toStringWithSeparators(bubblesHandPopped));
             ImGui::Text("By cats: %s", toStringWithSeparators(bubblesPopped - bubblesHandPopped));
             ImGui::Unindent();
-
+            ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Text("Highest $/s: %s", toStringWithSeparators(stats.highestDPS));
             ImGui::NextColumn();
 
             ImGui::Text("Revenue: $%s", toStringWithSeparators(bubblesPoppedRevenue));
@@ -5525,6 +5540,10 @@ It's a duck.)",
 
             uiCheckbox("Accumulating combo effect", &profile.accumulatingCombo);
             uiCheckbox("Show cursor combo text", &profile.showCursorComboText);
+
+            ImGui::Separator();
+
+            uiCheckbox("Invert mouse buttons", &profile.invertMouseButtons);
 
             ImGui::EndTabItem();
         }
@@ -6287,10 +6306,22 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Mouse::Button getLMB() const
+    {
+        return profile.invertMouseButtons ? sf::Mouse::Button::Right : sf::Mouse::Button::Left;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Mouse::Button getRMB() const
+    {
+        return profile.invertMouseButtons ? sf::Mouse::Button::Left : sf::Mouse::Button::Right;
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopUpdateScrolling(const float deltaTimeMs, const std::vector<sf::Vector2f>& downFingers)
     {
         // Reset map scrolling
-        if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(sf::Mouse::Button::Right)))
+        if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(getRMB(), /* penetrateUI */ true)))
             dragPosition.reset();
 
         //
@@ -7933,7 +7964,27 @@ It's a duck.)",
             return;
         }
 
-        const bool aoeSelecting = keyDown(sf::Keyboard::Key::LShift) && mBtnDown(sf::Mouse::Button::Left);
+        // Automatically scroll when dragging cats near the edge of the screen
+        if (!draggedCats.empty())
+        {
+            constexpr float offset = 64.f;
+
+            if (mousePos.x < particleCullingBoundaries.left - offset)
+                scroll -= 8.f;
+            else if (mousePos.x < particleCullingBoundaries.left)
+                scroll -= 4.f;
+            else if (mousePos.x < particleCullingBoundaries.left + offset)
+                scroll -= 2.f;
+
+            if (mousePos.x > particleCullingBoundaries.right + offset)
+                scroll += 8.f;
+            else if (mousePos.x > particleCullingBoundaries.right)
+                scroll += 4.f;
+            else if (mousePos.x > particleCullingBoundaries.right - offset)
+                scroll += 2.f;
+        }
+
+        const bool aoeSelecting = keyDown(sf::Keyboard::Key::LShift) && mBtnDown(getLMB(), /* penetrateUI */ true);
 
         if (aoeSelecting)
         {
@@ -7961,7 +8012,7 @@ It's a duck.)",
         }
         else
         {
-            if (!mBtnDown(sf::Mouse::Button::Left) && countFingersDown != 1)
+            if (!mBtnDown(getLMB(), /* penetrateUI */ true) && countFingersDown != 1)
             {
                 if (!draggedCats.empty())
                     playSound(sounds.drop);
@@ -7992,6 +8043,11 @@ It's a duck.)",
                     draggedCats[i]->position = pivotCat.position + relativeCatPositions[i];
                 }
 
+                return;
+            }
+            else if (ImGui::GetIO().WantCaptureMouse || !particleCullingBoundaries.isInside(mousePos))
+            {
+                resetAllDraggedCats();
                 return;
             }
 
@@ -8460,7 +8516,7 @@ It's a duck.)",
                                   /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   ParticleType::Hex);
 
-                const bool click = (mBtnDown(sf::Mouse::Button::Left) || sf::Touch::isDown(0u));
+                const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) || sf::Touch::isDown(0u));
 
                 if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
                 {
@@ -9640,7 +9696,7 @@ It's a duck.)",
         const bool hovered = (mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared();
 
         const bool shouldDisplayRangeCircle = !beingDragged && !cat.isAstroAndInFlight() && hovered &&
-                                              !mBtnDown(sf::Mouse::Button::Left);
+                                              !mBtnDown(getLMB(), /* penetrateUI */ true);
 
         const U8 rangeInnerAlpha = shouldDisplayRangeCircle ? 75u : 0u;
 
@@ -10207,7 +10263,7 @@ It's a duck.)",
             U8 rangeInnerAlpha = 0u;
 
             if (hoveredShrine == nullptr && (mousePos - shrine.position).lengthSquared() <= shrine.getRadiusSquared() &&
-                !mBtnDown(sf::Mouse::Button::Left))
+                !mBtnDown(getLMB(), /* penetrateUI */ true))
             {
                 hoveredShrine   = &shrine;
                 rangeInnerAlpha = 75u;
@@ -10261,7 +10317,7 @@ It's a duck.)",
             textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * invDeathProgress;
             textNameBuffer.setFillColor(sf::Color::White);
             textNameBuffer.setOutlineColor(textOutlineColor);
-            cpuDrawableBatch.add(textNameBuffer);
+            catTextDrawableBatch.add(textNameBuffer);
 
             if (shrine.isActive())
             {
@@ -10325,7 +10381,7 @@ It's a duck.)",
                 auto dollAlpha = static_cast<U8>(remap(progress, 0.f, 1.f, 128.f, 255.f));
 
                 if ((mousePos - doll.position).lengthSquared() <= doll.getRadiusSquared() &&
-                    !mBtnDown(sf::Mouse::Button::Left))
+                    !mBtnDown(getLMB(), /* penetrateUI */ true))
                     dollAlpha = 128.f;
 
                 cpuDrawableBatch.add(
@@ -10642,7 +10698,7 @@ It's a duck.)",
 
         profile.cursorHue = wrapHue(profile.cursorHue);
 
-        rtGame->draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(sf::Mouse::Button::Right) ? txCursorGrab : txCursor,
+        rtGame->draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(getRMB()) ? txCursorGrab : txCursor,
                      {.position = sf::Mouse::getPosition(window).toVector2f(),
                       .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
                                ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
@@ -11653,6 +11709,8 @@ It's a duck.)",
 
             samplerMoneyPerSecond.record(static_cast<float>(moneyGainedLastSecond));
             moneyGainedLastSecond = 0u;
+
+            statHighestDPS(static_cast<sf::base::U64>(samplerMoneyPerSecond.getAverage()));
         }
     }
 
@@ -11745,10 +11803,10 @@ It's a duck.)",
             }
             else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
             {
-                if (e3->button == sf::Mouse::Button::Left)
+                if (e3->button == getLMB())
                     clickPosition.emplace(e3->position.toVector2f());
 
-                if (e3->button == sf::Mouse::Button::Right && !dragPosition.hasValue())
+                if (e3->button == getRMB() && !dragPosition.hasValue())
                 {
                     clickPosition.reset();
 
@@ -11758,7 +11816,7 @@ It's a duck.)",
             }
             else if (const auto* e4 = event->getIf<sf::Event::MouseButtonReleased>())
             {
-                if (e4->button == sf::Mouse::Button::Right)
+                if (e4->button == getRMB())
                     dragPosition.reset();
             }
             else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
@@ -11775,6 +11833,9 @@ It's a duck.)",
             }
 #pragma GCC diagnostic pop
         }
+
+        if (ImGui::GetIO().WantCaptureMouse)
+            clickPosition.reset();
 
         const auto deltaTime   = deltaClock.restart();
         const auto deltaTimeMs = sf::base::min(24.f, static_cast<float>(deltaTime.asMicroseconds()) / 1000.f);
@@ -11865,7 +11926,8 @@ It's a duck.)",
         const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVector2i()
                                                                           : sf::Mouse::getPosition(window);
 
-        const auto mousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
+        const auto mousePos    = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
+        const auto hudMousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
 
         //
         // Game startup, prestige transitions, etc...
@@ -12410,17 +12472,11 @@ int main(int argc, const char** argv)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
-// TODO P2: autoscroll when dragging cats near border
 
 // TODO P1: click on minimap to change view
 // TODO P1: test steam deck with proton on linux vm
-// TODO P1: clicks on top of imgui windows should not go through
-// TODO P1: draw shrine text on top of cat text
-// TODO P1: put mana requirement in remember tooltip
-
-// TODO P1: track highest $/s stat
-// TODO P1: option to swap LMB/RMB
 
 // FEEDBACK:
 // - "prestige happens a bit too early in the game"
-// - "it feels like the game was optimized for widescreen and not standard 16:9 as the ui for the shop and such sitting on top of the play screen looks a bit wonky"
+// - "it feels like the game was optimized for widescreen and not standard 16:9 as the ui for the shop and such sitting
+// on top of the play screen looks a bit wonky"
