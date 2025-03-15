@@ -57,7 +57,7 @@
     #endif // SFML_BUILD_TEST_SUITE
 
     #ifdef SFML_BUILD_AUDIO
-        #include <miniaudio.h>
+    // #include <miniaudio.h> // TODO P2: restore, needs CMake to be fixed
     #endif
 
     #ifdef SFML_BUILD_WINDOW
