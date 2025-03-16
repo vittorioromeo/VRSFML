@@ -602,7 +602,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(ppSSharpness),
 
                          FIELD(showBubbles),
-                         FIELD(invertMouseButtons));
+                         FIELD(invertMouseButtons),
+                         FIELD(showDollParticleBorder));
 }
 
 ////////////////////////////////////////////////////////////
