@@ -1061,6 +1061,7 @@ struct [[nodiscard]] SpriteTextureData
 
 } // namespace
 
+
 ////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {

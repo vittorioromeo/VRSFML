@@ -11,7 +11,7 @@
 #define BUBBLEBYTE_VERSION_MAJOR 1
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MINOR 1
+#define BUBBLEBYTE_VERSION_MINOR 2
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_PATCH 0
@@ -33,14 +33,11 @@ struct [[nodiscard]] Version
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
 
 // TODO P0: changelog
-// - fix the game crashing on Proton/Wine (but still needs attention)
-// - range unicat upgrades are now only unlocked after buying aoe trascendence
-// - made unicat transcendence more affordable
-// - highest $/s is now displayed in the stats screen
-// - shrine text is now always draw in front of cat text
-// - added spell mana requirement to "Remember Spell" tooltip in "magic" tab
-// - added option to invert mouse buttons in "interface" tab under "settings"
-// - automatically scroll screen when dragging cats near the edge, also tip about shift drag
-// - prevent clicks done on top of UI from being registered as clicks on the game screen
-// - prevent cat from being dragged when clicking offscreen
-// - added settings to reset game and profile for speedrunning in new "data" tab
+// - clicking can now be done with Z or X keyboard keys
+// - increased camera scrolling speed when dragging cats near edge
+// - higher cost of repulsocat and attractocat range upgrades
+// - higher cost of attractocat shrine
+// - dolls do not spawn under the menu UI anymore if it overlaps the playing area
+// - dolls do not spawn exactly on top of cats and shrines anymore
+// - border around the screen when dolls are active
+// - photo of local speedrun tournament winner added to the credits
