@@ -31,13 +31,3 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
-
-// TODO P0: changelog
-// - clicking can now be done with Z or X keyboard keys
-// - increased camera scrolling speed when dragging cats near edge
-// - higher cost of repulsocat and attractocat range upgrades
-// - higher cost of attractocat shrine
-// - dolls do not spawn under the menu UI anymore if it overlaps the playing area
-// - dolls do not spawn exactly on top of cats and shrines anymore
-// - border around the screen when dolls are active
-// - photo of local speedrun tournament winner added to the credits
