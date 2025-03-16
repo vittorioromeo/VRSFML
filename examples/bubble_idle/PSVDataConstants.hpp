@@ -136,7 +136,7 @@ inline constexpr PSVData catRepulsoCooldownMult //
 
 inline constexpr PSVData catRepulsoRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 225000.f, .exponential = 1.85f},
+     .cost          = {.initial = 10'000'000.f, .exponential = 1.85f},
      .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
 
 inline constexpr PSVData catAttracto //
@@ -149,7 +149,7 @@ inline constexpr PSVData catAttractoCooldownMult //
 
 inline constexpr PSVData catAttractoRangeDiv //
     {.nMaxPurchases = 9u,
-     .cost          = {.initial = 275000.f, .exponential = 1.85f},
+     .cost          = {.initial = 50'000'000.f, .exponential = 1.85f},
      .value         = {.initial = 0.7f, .multiplicative = -0.025f, .exponential = 0.95f, .flat = 0.3f}};
 
 inline constexpr PSVData catCopy //

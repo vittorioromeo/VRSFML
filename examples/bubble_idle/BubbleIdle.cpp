@@ -924,6 +924,7 @@ struct Main
     std::vector<Particle>     particles;          // World space
     std::vector<TextParticle> textParticles;      // World space
     std::vector<Particle>     spentCoinParticles; // HUD space
+    std::vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
     std::vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
 
     struct EarnedCoinParticle
@@ -994,7 +995,8 @@ struct Main
     sf::CPUDrawableBatch minimapDrawableBatch;
     sf::CPUDrawableBatch catTextDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch; // drawn on top of ImGui
+    sf::CPUDrawableBatch hudTopDrawableBatch;    // drawn on top of ImGui
+    sf::CPUDrawableBatch hudBottomDrawableBatch; // drawn below ImGui
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
@@ -1239,6 +1241,15 @@ struct Main
             return;
 
         hudTopParticles.emplace_back(particleData, hueToByte(hue), particleType);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void spawnHUDBottomParticle(const ParticleData& particleData, const float hue, const ParticleType particleType)
+    {
+        if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
+            return;
+
+        hudBottomParticles.emplace_back(particleData, hueToByte(hue), particleType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -5440,6 +5451,7 @@ It's a duck.)",
         particles.clear();
         spentCoinParticles.clear();
         hudTopParticles.clear();
+        hudBottomParticles.clear();
         textParticles.clear();
         earnedCoinParticles.clear();
 
@@ -5608,6 +5620,8 @@ It's a duck.)",
 
             uiCheckbox("Show text particles", &profile.showTextParticles);
             uiCheckbox("Show bubbles", &profile.showBubbles);
+
+            uiCheckbox("Show doll particle border", &profile.showDollParticleBorder);
 
             ImGui::Separator();
 
@@ -7184,10 +7198,28 @@ It's a duck.)",
                 return true;
             };
 
+            const auto isOnTopOfAnyCat = [&](const sf::Vector2f& position) -> bool
+            {
+                for (const Cat& c : pt.cats)
+                    if ((c.position - position).lengthSquared() < c.getRadiusSquared())
+                        return true;
+
+                return false;
+            };
+
+            const auto isOnTopOfAnyShrine = [&](const sf::Vector2f& position) -> bool
+            {
+                for (const Shrine& s : pt.shrines)
+                    if ((s.position - position).lengthSquared() < s.getRadiusSquared())
+                        return true;
+
+                return false;
+            };
+
             const auto rndDollPosition = [&]
             {
                 constexpr float offset = 64.f;
-                return rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset});
+                return rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset - uiWindowWidth, boundaries.y - offset});
             };
 
             const auto pickDollPosition = [&]
@@ -7195,7 +7227,9 @@ It's a duck.)",
                 constexpr unsigned int maxRetries = 16u;
 
                 for (unsigned int retryCount = 0; retryCount < maxRetries; ++retryCount)
-                    if (const auto candidate = rndDollPosition(); isPositionFarFromOtherDolls(candidate))
+                    if (const auto candidate = rndDollPosition();
+                        isPositionFarFromOtherDolls(candidate) && !isOnTopOfAnyCat(candidate) &&
+                        !isOnTopOfAnyShrine(candidate))
                         return candidate;
 
                 return rndDollPosition();
@@ -8031,20 +8065,20 @@ It's a duck.)",
         // Automatically scroll when dragging cats near the edge of the screen
         if (!draggedCats.empty())
         {
-            constexpr float offset = 64.f;
+            constexpr float offset = 48.f;
 
-            if (mousePos.x < particleCullingBoundaries.left - offset)
+            if (mousePos.x < particleCullingBoundaries.left + offset * 1.f)
                 scroll -= 8.f;
-            else if (mousePos.x < particleCullingBoundaries.left)
+            else if (mousePos.x < particleCullingBoundaries.left + offset * 2.f)
                 scroll -= 4.f;
-            else if (mousePos.x < particleCullingBoundaries.left + offset)
+            else if (mousePos.x < particleCullingBoundaries.left + offset * 3.f)
                 scroll -= 2.f;
 
-            if (mousePos.x > particleCullingBoundaries.right + offset)
+            if (mousePos.x > particleCullingBoundaries.right - offset * 1.f)
                 scroll += 8.f;
-            else if (mousePos.x > particleCullingBoundaries.right)
+            else if (mousePos.x > particleCullingBoundaries.right - offset * 2.f)
                 scroll += 4.f;
-            else if (mousePos.x > particleCullingBoundaries.right - offset)
+            else if (mousePos.x > particleCullingBoundaries.right - offset * 3.f)
                 scroll += 2.f;
         }
 
@@ -10511,16 +10545,19 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
-    void applyParticleToSprite(sf::Sprite& tempSprite, const Particle& particle) const
+    [[nodiscard, gnu::always_inline]] inline sf::Sprite particleToSprite(const Particle& particle) const
     {
-        const auto opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+        const auto  opacityAsAlpha = static_cast<sf::base::U8>(particle.opacity * 255.f);
+        const auto& textureRect    = particleRects[asIdx(particle.type)];
 
-        tempSprite.position    = particle.position;
-        tempSprite.scale       = {particle.scale, particle.scale};
-        tempSprite.rotation    = sf::radians(particle.rotation);
-        tempSprite.color       = hueByteColor(particle.hueByte, opacityAsAlpha);
-        tempSprite.textureRect = particleRects[asIdx(particle.type)];
-        tempSprite.origin      = tempSprite.textureRect.size / 2.f;
+        return {
+            .position    = particle.position,
+            .scale       = {particle.scale, particle.scale},
+            .origin      = textureRect.size / 2.f,
+            .rotation    = sf::radians(particle.rotation),
+            .textureRect = textureRect,
+            .color       = hueByteColor(particle.hueByte, opacityAsAlpha),
+        };
     }
 
     ////////////////////////////////////////////////////////////
@@ -10529,15 +10566,12 @@ It's a duck.)",
         if (!profile.showParticles)
             return;
 
-        sf::Sprite tempSprite;
-
         for (const auto& particle : particles)
         {
             if (!particleCullingBoundaries.isInside(particle.position))
                 continue;
 
-            applyParticleToSprite(tempSprite, particle);
-            cpuDrawableBatch.add(tempSprite);
+            cpuDrawableBatch.add(particleToSprite(particle));
         }
     }
 
@@ -10547,13 +10581,8 @@ It's a duck.)",
         if (!profile.showParticles)
             return;
 
-        sf::Sprite tempSprite;
-
         for (const auto& particle : spentCoinParticles)
-        {
-            applyParticleToSprite(tempSprite, particle);
-            hudDrawableBatch.add(tempSprite);
-        }
+            hudDrawableBatch.add(particleToSprite(particle));
     }
 
     ////////////////////////////////////////////////////////////
@@ -10597,13 +10626,18 @@ It's a duck.)",
         if (!profile.showParticles)
             return;
 
-        sf::Sprite tempSprite;
-
         for (const auto& particle : hudTopParticles)
-        {
-            applyParticleToSprite(tempSprite, particle);
-            hudTopDrawableBatch.add(tempSprite);
-        }
+            hudTopDrawableBatch.add(particleToSprite(particle));
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawHUDBottomParticles()
+    {
+        if (!profile.showParticles)
+            return;
+
+        for (const auto& particle : hudBottomParticles)
+            hudBottomDrawableBatch.add(particleToSprite(particle));
     }
 
     ////////////////////////////////////////////////////////////
@@ -10817,6 +10851,66 @@ It's a duck.)",
         }
 
         rtGame->draw(cursorComboText, {.shader = &shader});
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Helper function to convert a view's normalized viewport to pixel bounds relative to a target size (e.g. window size)
+    [[nodiscard]] sf::FloatRect getViewportPixelBounds(const sf::View& view, const sf::Vector2f targetSize) const
+    {
+        return {{view.viewport.position.x * targetSize.x, view.viewport.position.y * targetSize.y},
+                {view.viewport.size.x * targetSize.x, view.viewport.size.y * targetSize.y}};
+    }
+
+    ////////////////////////////////////////////////////////////
+    // Returns a random position along the edges of the provided bounds.
+    [[nodiscard]] sf::Vector2f getEdgeSpawnPosition(const sf::FloatRect& bounds, const float thickness)
+    {
+        // Randomly select one of the four edges: 0=top, 1=bottom, 2=left, 3=right.
+        const int edge = rngFast.getI<int>(0, 3);
+
+        // Top edge
+        if (edge == 0)
+            return {bounds.position.x + rngFast.getF(0.f, bounds.size.x), bounds.position.y + rngFast.getF(0.f, thickness)};
+
+        // Bottom edge
+        if (edge == 1)
+            return {bounds.position.x + rngFast.getF(0.f, bounds.size.x),
+                    bounds.position.y + bounds.size.y - rngFast.getF(0.f, thickness)};
+
+        // Left edge
+        if (edge == 2)
+            return {bounds.position.x + rngFast.getF(0.f, thickness), bounds.position.y + rngFast.getF(0.f, bounds.size.y)};
+
+        SFML_BASE_ASSERT(edge == 3);
+
+        // Right edge
+        return {bounds.position.x + bounds.size.x - rngFast.getF(0.f, thickness),
+                bounds.position.y + rngFast.getF(0.f, bounds.size.y)};
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawDollParticleBorder(const float hueMod)
+    {
+        if (!profile.showDollParticleBorder)
+            return;
+
+        for (int i = 0; i < 10; ++i)
+        {
+            const sf::FloatRect gameViewBounds = getViewportPixelBounds(gameView, getResolution());
+            const sf::Vector2f  spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
+
+            spawnHUDBottomParticle({.position      = spawnPos,
+                                    .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                    .scale         = rngFast.getF(0.12f, 0.52f) * 0.65f,
+                                    .scaleDecay    = 0.f,
+                                    .accelerationY = 0.f,
+                                    .opacity       = 1.f,
+                                    .opacityDecay  = rngFast.getF(0.0015f, 0.0025f) * 0.65f,
+                                    .rotation      = rngFast.getF(0.f, sf::base::tau),
+                                    .torque        = rngFast.getF(-0.002f, 0.002f)},
+                                   /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + hueMod),
+                                   ParticleType::Hex);
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -11314,6 +11408,7 @@ It's a duck.)",
         updateParticleLike(particles);
         updateParticleLike(spentCoinParticles);
         updateParticleLike(hudTopParticles);
+        updateParticleLike(hudBottomParticles);
         updateParticleLike(textParticles);
 
         sf::base::vectorEraseIf(spentCoinParticles,
@@ -11894,6 +11989,14 @@ It's a duck.)",
             {
                 recreateImGuiRenderTexture(e6->size);
                 recreateGameRenderTexture(e6->size);
+
+                hudTopParticles.clear();
+                hudBottomParticles.clear();
+            }
+            else if (const auto* e7 = event->getIf<sf::Event::KeyPressed>())
+            {
+                if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X)
+                    clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
             }
 #pragma GCC diagnostic pop
         }
@@ -12181,6 +12284,14 @@ It's a duck.)",
         // Draw border around gameview
         rtGame->setView(nonScaledHUDView);
 
+        // Bottom-level hud particles
+        if (shouldDrawUI)
+        {
+            hudBottomDrawableBatch.clear();
+            gameLoopDrawHUDBottomParticles();
+            rtGame->draw(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        }
+
         // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
         rtGame->draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
                                          .fillColor        = sf::Color::Transparent,
@@ -12357,6 +12468,14 @@ It's a duck.)",
         }
 
         //
+        // Doll on screen particle border
+        if (!pt.dolls.empty())
+            gameLoopDrawDollParticleBorder(0.f);
+
+        if (!pt.copyDolls.empty())
+            gameLoopDrawDollParticleBorder(180.f);
+
+        //
         // Tips
         gameLoopTips(deltaTimeMs);
 
@@ -12520,6 +12639,8 @@ int main(int argc, const char** argv)
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
 // TODO P1: tooltips should say how much things get improved (e.g. cooldown and range, also PP stuff like mana)
+// TODO P1: click on minimap to change view
+// TODO P1: test steam deck with proton on linux vm
 
 // TODO P2: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
@@ -12536,9 +12657,6 @@ int main(int argc, const char** argv)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
-
-// TODO P1: click on minimap to change view
-// TODO P1: test steam deck with proton on linux vm
 
 // FEEDBACK:
 // - "prestige happens a bit too early in the game"
