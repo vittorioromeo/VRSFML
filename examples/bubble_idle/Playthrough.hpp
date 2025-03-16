@@ -370,7 +370,7 @@ struct Playthrough
                                   150'000,        // Clicking
                                   2'500'000,      // Automation
                                   25'000'000,     // Repulsion
-                                  500'000'000,    // Attraction
+                                  750'000'000,    // Attraction
                                   2'500'000'000,  // Camouflage
                                   10'000'000'000, // Victory
                               });
