@@ -139,7 +139,7 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Sprite& sprite)
+void DrawableBatchImpl<TStorage>::add(const Sprite& sprite) // TODO P1: batched versions for (Sprite* b, Sprite* e)
 {
     appendSpriteIndicesAndVertices(sprite,
                                    m_storage.getNumVertices(),

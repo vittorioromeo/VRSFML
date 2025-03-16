@@ -77,6 +77,7 @@ struct [[nodiscard]] Profile
     float ppSLightness  = 1.0f;
     float ppSSharpness  = 0.10f;
 
-    bool showBubbles        = true;
-    bool invertMouseButtons = false;
+    bool showBubbles            = true;
+    bool invertMouseButtons     = false;
+    bool showDollParticleBorder = true;
 };
