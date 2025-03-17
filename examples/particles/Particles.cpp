@@ -137,9 +137,8 @@ int main()
                                float, // opacity
                                float, // opacityGrowth
 
-                               float, // rotation
-                               float  // torque
-                               >;
+                               float,  // rotation
+                               float>; // torque
 
     ParticleSoA particlesSoA;
 
@@ -159,15 +158,16 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType           = BatchType::Disabled;
-    bool        multithreadedUpdate = false;
-    bool        multithreadedDraw   = false;
-    bool        useSoA              = false;
-    bool        destroyParticles    = false;
-    std::size_t nWorkers            = nMaxWorkers;
-    int         numEntities         = 500;
-    std::size_t drawnVertices       = 0u;
-    bool        drawStep            = true;
+    auto        batchType            = BatchType::CPUStorage;
+    bool        multithreadedUpdate  = false;
+    bool        multithreadedDraw    = false;
+    bool        useSoA               = false;
+    bool        unifiedSoAProcessing = false;
+    bool        destroyParticles     = true;
+    bool        destroyBySwapping    = true;
+    std::size_t nWorkers             = nMaxWorkers;
+    int         numEntities          = 50'000;
+    bool        drawStep             = true;
 
     //
     //
@@ -231,7 +231,7 @@ int main()
         pushFn(rng.getVec2f({0.f, 0.f}, windowSize),       // position
                rng.getVec2f({-0.5f, -0.5f}, {0.5f, 0.5f}), // velocity
                rng.getVec2f({-0.1f, -0.1f}, {0.1f, 0.1f}), // acceleration
-               rng.getF(0.75f, 1.f),                       // scale
+               rng.getF(0.001f, 0.015f),                   // scale
                rng.getF(-0.002f, 0.002f),                  // scaleGrowth
                rng.getF(0.75f, 1.f),                       // opacity
                rng.getF(-0.0015f, -0.0005f),               // opacityGrowth
@@ -244,7 +244,7 @@ int main()
     {
         if (n < particlesAoS.size())
         {
-            particlesAoS.erase(particlesAoS.begin() + static_cast<std::ptrdiff_t>(n), particlesAoS.end());
+            particlesAoS.resize(n);
             return;
         }
 
@@ -311,13 +311,43 @@ int main()
             // TODO P0: bottleneck
             if (destroyParticles)
             {
+                const auto destroyPredicate = [](const float opacity) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                { return opacity <= 0.f; };
+
                 if (useSoA)
-                    particlesSoA.eraseIfByShifting<5 /* opacity */>(
-                        [](const float opacity) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return opacity <= 0.f; });
+                {
+                    if (destroyBySwapping)
+                        particlesSoA.eraseIfBySwapping<5 /* opacity */>(destroyPredicate);
+                    else
+                        particlesSoA.eraseIfByShifting<5 /* opacity */>(destroyPredicate);
+                }
                 else
-                    sf::base::vectorEraseIf(particlesAoS,
-                                            [](const ParticleAoS& p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                    { return p.opacity <= 0.f; });
+                {
+                    if (destroyBySwapping)
+                    {
+                        std::size_t n = particlesAoS.size();
+                        std::size_t i = 0;
+
+                        while (i < n)
+                        {
+                            if (particlesAoS[i].opacity > 0.f)
+                            {
+                                ++i;
+                                continue;
+                            }
+
+                            particlesAoS[i] = particlesAoS[--n];
+                        }
+
+                        particlesAoS.resize(n);
+                    }
+                    else
+                    {
+                        sf::base::vectorEraseIf(particlesAoS,
+                                                [](const ParticleAoS& p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        { return p.opacity <= 0.f; });
+                    }
+                }
             }
 
             populateParticles(static_cast<std::size_t>(numEntities));
@@ -347,20 +377,27 @@ int main()
             {
                 if (useSoA)
                 {
-                    particlesSoA.with<1, 2>([](sf::Vector2f& velocity, const sf::Vector2f& acc)
-                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
+                    if (unifiedSoAProcessing)
+                    {
+                        particlesSoA.withAll(updateParticle);
+                    }
+                    else
+                    {
+                        particlesSoA.with<1, 2>([](sf::Vector2f& velocity, const sf::Vector2f& acc)
+                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
 
-                    particlesSoA.with<0, 1>([](sf::Vector2f& position, sf::Vector2f& velocity)
-                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { position += velocity; });
+                        particlesSoA.with<0, 1>([](sf::Vector2f& position, sf::Vector2f& velocity)
+                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { position += velocity; });
 
-                    particlesSoA.with<3, 4>([](float& scale, const float scaleGrowth) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                    { scale += scaleGrowth; });
+                        particlesSoA.with<3, 4>([](float& scale, const float scaleGrowth)
+                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { scale += scaleGrowth; });
 
-                    particlesSoA.with<5, 6>([](float& opacity, const float opacityGrowth)
-                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { opacity += opacityGrowth; });
+                        particlesSoA.with<5, 6>([](float& opacity, const float opacityGrowth)
+                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { opacity += opacityGrowth; });
 
-                    particlesSoA.with<7, 8>([](float& rotation, const float torque) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                    { rotation += torque; });
+                        particlesSoA.with<7, 8>([](float& rotation, const float torque)
+                                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { rotation += torque; });
+                    }
                 }
                 else
                 {
@@ -380,38 +417,52 @@ int main()
             {
                 if (useSoA)
                 {
-                    doInBatches(static_cast<std::size_t>(numEntities),
-                                [&](const std::size_t /* iBatch */, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
-                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                    if (unifiedSoAProcessing)
                     {
-                        particlesSoA.withSubRange<1, 2>(batchStartIdx,
-                                                        batchEndIdx,
-                                                        [](sf::Vector2f& velocity, const sf::Vector2f& acc)
-                                                            SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
+                        doInBatches(static_cast<std::size_t>(numEntities),
+                                    [&](const std::size_t /* iBatch */,
+                                        const std::size_t batchStartIdx,
+                                        const std::size_t batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        { particlesSoA.withAllSubRange(batchStartIdx, batchEndIdx, updateParticle); });
+                    }
+                    else
+                    {
+                        doInBatches(static_cast<std::size_t>(numEntities),
+                                    [&](const std::size_t /* iBatch */,
+                                        const std::size_t batchStartIdx,
+                                        const std::size_t batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        {
+                            particlesSoA.withSubRange<1, 2>(batchStartIdx,
+                                                            batchEndIdx,
+                                                            [](sf::Vector2f& velocity, const sf::Vector2f& acc)
+                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                            { velocity += acc; });
 
-                        particlesSoA.withSubRange<0, 1>(batchStartIdx,
-                                                        batchEndIdx,
-                                                        [](sf::Vector2f& position, sf::Vector2f& velocity)
-                                                            SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                        { position += velocity; });
+                            particlesSoA.withSubRange<0, 1>(batchStartIdx,
+                                                            batchEndIdx,
+                                                            [](sf::Vector2f& position, sf::Vector2f& velocity)
+                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                            { position += velocity; });
 
-                        particlesSoA.withSubRange<3, 4>(batchStartIdx,
-                                                        batchEndIdx,
-                                                        [](float& scale, const float scaleGrowth)
-                                                            SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                        { scale += scaleGrowth; });
+                            particlesSoA.withSubRange<3, 4>(batchStartIdx,
+                                                            batchEndIdx,
+                                                            [](float& scale, const float scaleGrowth)
+                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                            { scale += scaleGrowth; });
 
-                        particlesSoA.withSubRange<5, 6>(batchStartIdx,
-                                                        batchEndIdx,
-                                                        [](float& opacity, const float opacityGrowth)
-                                                            SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                        { opacity += opacityGrowth; });
+                            particlesSoA.withSubRange<5, 6>(batchStartIdx,
+                                                            batchEndIdx,
+                                                            [](float& opacity, const float opacityGrowth)
+                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                            { opacity += opacityGrowth; });
 
-                        particlesSoA.withSubRange<7, 8>(batchStartIdx,
-                                                        batchEndIdx,
-                                                        [](float& rotation, const float torque) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-                        { rotation += torque; });
-                    });
+                            particlesSoA.withSubRange<7, 8>(batchStartIdx,
+                                                            batchEndIdx,
+                                                            [](float& rotation, const float torque)
+                                                                SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                            { rotation += torque; });
+                        });
+                    }
                 }
                 else
                 {
@@ -448,8 +499,8 @@ int main()
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize({340.f, 390.f});
+            ImGui::Begin("Vittorio's SFML fork: particles example", nullptr, ImGuiWindowFlags_NoResize);
+            ImGui::SetWindowSize({340.f, 480.f});
 
             const auto clearSamples = [&]
             {
@@ -481,7 +532,9 @@ int main()
             if (ImGui::Checkbox("Use SoA", &useSoA))
                 populateParticles(static_cast<std::size_t>(numEntities));
 
+            ImGui::Checkbox("Unified SoA processing", &unifiedSoAProcessing);
             ImGui::Checkbox("Destroy/recreate particles", &destroyParticles);
+            ImGui::Checkbox("Destroy via swapping", &destroyBySwapping);
             ImGui::Checkbox("Draw step", &drawStep);
 
             const std::size_t step = 1u;
@@ -514,9 +567,6 @@ int main()
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
             plotGraph("Display", " ms", samplesDisplayMs, 300.f);
 
-            ImGui::Spacing();
-            ImGui::Text("Drawn vertices: %zu", drawnVertices);
-
             ImGui::End();
         }
         // ---
@@ -530,40 +580,35 @@ int main()
         {
             window.clear();
 
-            const auto drawParticleImpl =
-                [&](const sf::Vector2f position,
-                    const float        scale,
-                    const float        rotation,
-                    std::size_t&       drawnVertexCounter,
-                    auto&&             drawFn)
-            {
-                const sf::FloatRect& textureRect = spriteTextureRects[0];
+            const sf::FloatRect& textureRect = spriteTextureRects[0];
+            const auto           origin      = textureRect.size / 2.f;
 
+            const auto drawParticleImpl =
+                [&](const sf::Vector2f position, const float scale, const float rotation, auto&& drawFn)
+            {
                 drawFn(
                     sf::Sprite{
                         .position    = position,
                         .scale       = {scale, scale},
-                        .origin      = textureRect.size / 2.f,
+                        .origin      = origin,
                         .rotation    = sf::radians(rotation),
                         .textureRect = textureRect,
                     },
                     textureAtlas.getTexture());
-
-                drawnVertexCounter += 4u;
             };
 
-            const auto drawNthParticle = [&](const std::size_t& i, std::size_t& drawnVertexCounter, auto&& drawFn)
+            const auto drawNthParticle = [&](const std::size_t& i, auto&& drawFn)
             {
                 if (useSoA)
                 {
                     particlesSoA.withNth<0, 3, 7>(i,
                                                   [&](const auto& position, const auto& scale, const auto& rotation)
-                    { drawParticleImpl(position, scale, rotation, drawnVertexCounter, drawFn); });
+                    { drawParticleImpl(position, scale, rotation, drawFn); });
                 }
                 else
                 {
                     const ParticleAoS& p = particlesAoS[i];
-                    drawParticleImpl(p.position, p.scale, p.rotation, drawnVertexCounter, drawFn);
+                    drawParticleImpl(p.position, p.scale, p.rotation, drawFn);
                 }
             };
 
@@ -572,25 +617,13 @@ int main()
                 for (auto& batch : batchesArray)
                     batch.clear();
 
-                // Initialize per-worker drawn vertex counts
-                std::vector<std::size_t> totalChunkDrawnVertices(nMaxWorkers);
-
                 doInBatches(static_cast<std::size_t>(numEntities),
                             [&](const std::size_t iBatch, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
                 {
-                    std::size_t chunkDrawnVertices = 0u; // avoid false sharing
-
                     for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
                         drawNthParticle(i,
-                                        chunkDrawnVertices,
                                         [&](const auto& drawable, const auto&...) { batchesArray[iBatch].add(drawable); });
-
-                    totalChunkDrawnVertices[iBatch] += chunkDrawnVertices;
                 });
-
-                drawnVertices = 0u;
-                for (const auto v : totalChunkDrawnVertices)
-                    drawnVertices += v;
 
                 for (auto& batch : batchesArray)
                     window.draw(batch, {.texture = &textureAtlas.getTexture()});
@@ -601,11 +634,8 @@ int main()
                 cpuDrawableBatches[0].clear();
                 gpuDrawableBatches[0].clear();
 
-                drawnVertices = 0u;
-
                 for (std::size_t i = 0u; i < static_cast<std::size_t>(numEntities); ++i)
                     drawNthParticle(i,
-                                    drawnVertices,
                                     [&](const auto& drawable, const auto&... args)
                     {
                         if (batchType == BatchType::Disabled)
