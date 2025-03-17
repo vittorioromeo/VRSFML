@@ -26,6 +26,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -145,8 +146,8 @@ int main()
     //
     //
     // Get hardware constants
-    const std::size_t nMaxWorkers   = std::thread::hardware_concurrency();
-    constexpr auto    cacheLineSize = static_cast<std::size_t>(std::hardware_destructive_interference_size);
+    const sf::base::U64 nMaxWorkers   = std::thread::hardware_concurrency();
+    constexpr auto      cacheLineSize = static_cast<std::size_t>(std::hardware_destructive_interference_size);
 
     //
     //
@@ -158,16 +159,16 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType            = BatchType::CPUStorage;
-    bool        multithreadedUpdate  = false;
-    bool        multithreadedDraw    = false;
-    bool        useSoA               = false;
-    bool        unifiedSoAProcessing = false;
-    bool        destroyParticles     = true;
-    bool        destroyBySwapping    = true;
-    std::size_t nWorkers             = nMaxWorkers;
-    int         numEntities          = 50'000;
-    bool        drawStep             = true;
+    auto          batchType            = BatchType::CPUStorage;
+    bool          multithreadedUpdate  = false;
+    bool          multithreadedDraw    = false;
+    bool          useSoA               = false;
+    bool          unifiedSoAProcessing = false;
+    bool          destroyParticles     = true;
+    bool          destroyBySwapping    = true;
+    sf::base::U64 nWorkers             = nMaxWorkers;
+    int           numEntities          = 50'000;
+    bool          drawStep             = true;
 
     //
     //
@@ -537,9 +538,9 @@ int main()
             ImGui::Checkbox("Destroy via swapping", &destroyBySwapping);
             ImGui::Checkbox("Draw step", &drawStep);
 
-            const std::size_t step = 1u;
+            const sf::base::U64 step = 1u;
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
-            nWorkers = sf::base::clamp(nWorkers, std::size_t{2u}, nMaxWorkers);
+            nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
 
             ImGui::NewLine();
 

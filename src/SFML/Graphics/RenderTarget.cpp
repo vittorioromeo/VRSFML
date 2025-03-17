@@ -892,8 +892,6 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
         else
             glCheck(glDisable(GL_FRAMEBUFFER_SRGB));
     }
-#else
-    SFML_BASE_ASSERT(!persistent && "Persistent OpenGL buffers are not available in OpenGL ES");
 #endif
 
     // First set the persistent OpenGL states if it's the very first call
