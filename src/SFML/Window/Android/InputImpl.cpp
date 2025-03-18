@@ -201,6 +201,7 @@ bool isTouchDown(unsigned int finger)
 }
 
 
+// TODO P2: code repetition
 ////////////////////////////////////////////////////////////
 Vector2i getTouchPosition(unsigned int finger)
 {
