@@ -10,15 +10,21 @@
 #endif
 
 #ifndef _WIN32_WINDOWS
-    #define _WIN32_WINDOWS 0x06'02 // NOLINT(bugprone-reserved-identifier)
+// clang-format off
+    #define _WIN32_WINDOWS 0x0602 // NOLINT(bugprone-reserved-identifier)
+// clang-format on
 #endif
 
 #ifndef _WIN32_WINNT
-    #define _WIN32_WINNT 0x06'02
+// clang-format off
+    #define _WIN32_WINNT 0x0602
+// clang-format on
 #endif
 
 #ifndef WINVER
-    #define WINVER 0x06'02
+// clang-format off
+    #define WINVER 0x0602
+// clang-format on
 #endif
 
 #ifndef UNICODE

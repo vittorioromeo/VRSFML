@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
@@ -457,7 +458,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(long double angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_deg(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -468,7 +469,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_deg(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_deg(unsigned long long int angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -479,7 +480,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_rad(long double angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_rad(long double angle);
 
 ////////////////////////////////////////////////////////////
 /// \relates sf::Angle
@@ -490,7 +491,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle operator""_rad(unsigned long long int angle);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_rad(unsigned long long int angle);
 
 } // namespace Literals
 } // namespace sf
