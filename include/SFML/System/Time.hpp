@@ -62,6 +62,16 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I64 asMicroseconds() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Overload of `operator==` to compare two time values
+    ///
+    /// \param rhs Right operand (a time)
+    ///
+    /// \return `true` if both time values are equal
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Time& rhs) const = default;
+
+    ////////////////////////////////////////////////////////////
     // Static member data
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(readability-identifier-naming)
@@ -112,30 +122,6 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(base::I64 amount);
-
-////////////////////////////////////////////////////////////
-/// \relates Time
-/// \brief Overload of `operator==` to compare two time values
-///
-/// \param lhs  Left operand (a time)
-/// \param rhs Right operand (a time)
-///
-/// \return `true` if both time values are equal
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(Time lhs, Time rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates Time
-/// \brief Overload of `operator!=` to compare two time values
-///
-/// \param lhs  Left operand (a time)
-/// \param rhs Right operand (a time)
-///
-/// \return `true` if both time values are different
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(Time lhs, Time rhs);
 
 ////////////////////////////////////////////////////////////
 /// \relates Time

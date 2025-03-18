@@ -378,3 +378,9 @@ batch.clear();
 // ... add sprites, shapes, texts, etc to batch ...
 window.draw(batch, {.texture = &atlas.getTexture()});
 ```
+
+
+
+## Joystick Query API
+
+TODO P0:
