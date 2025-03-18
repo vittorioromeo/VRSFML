@@ -192,6 +192,9 @@ struct Playthrough
         bool unicatTranscendenceAOEPurchased = false;
 
         bool devilcatHellsingedPurchased = false;
+
+        bool unicatTranscendenceEnabled = true;
+        bool devilcatHellsingedEnabled  = true;
     };
 
     Permanent perm = {};

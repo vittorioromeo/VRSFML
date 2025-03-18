@@ -660,7 +660,10 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                          FIELD(unicatTranscendencePurchased),
                          FIELD(unicatTranscendenceAOEPurchased),
 
-                         FIELD(devilcatHellsingedPurchased));
+                         FIELD(devilcatHellsingedPurchased),
+
+                         FIELD(unicatTranscendenceEnabled),
+                         FIELD(devilcatHellsingedEnabled));
 }
 
 ////////////////////////////////////////////////////////////
