@@ -31,17 +31,3 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
-
-
-// TODO P0:
-// CHANGELOG:
-// - Removed unused hidden achievements
-// - Fixed Pawdestination achievement not registering correctly
-// - Transcendent Unicats and Hellsinged Devilcats can now be toggled at will after purchasing
-// - Added prestige points sink, 1 trillion to 100PPs
-// - Fixed some Witchcat achievements having a missing name
-// - A secret achievement related to bubbles is now obtainable even after prestiging
-//     - If you are at the max level prestige already and want to obtain the achievement, added a button "Reset current
-//     prestige" under "Data"
-// - Fixed session statistics not being correctly reset after a prestige
-// - Fixed astrocat pop achievement
