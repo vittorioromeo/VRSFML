@@ -2,7 +2,9 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-#if __cplusplus >= 202'302L
+// clang-format off
+#if __cplusplus >= 202302L
+// clang-format on
 
     ////////////////////////////////////////////////////////////
     #define SFML_BASE_ASSUME(...) [[assume(__VA_ARGS__)]]
