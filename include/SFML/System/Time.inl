@@ -61,20 +61,6 @@ constexpr Time microseconds(base::I64 amount)
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator==(Time lhs, Time rhs)
-{
-    return lhs.asMicroseconds() == rhs.asMicroseconds();
-}
-
-
-////////////////////////////////////////////////////////////
-constexpr bool operator!=(Time lhs, Time rhs)
-{
-    return lhs.asMicroseconds() != rhs.asMicroseconds();
-}
-
-
-////////////////////////////////////////////////////////////
 constexpr bool operator<(Time lhs, Time rhs)
 {
     return lhs.asMicroseconds() < rhs.asMicroseconds();
