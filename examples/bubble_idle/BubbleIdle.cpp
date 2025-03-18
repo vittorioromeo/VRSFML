@@ -1721,6 +1721,18 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool isUnicatTranscendenceActive() const
+    {
+        return pt.perm.unicatTranscendencePurchased && pt.perm.unicatTranscendenceEnabled;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool isDevilcatHellsingedActive() const
+    {
+        return pt.perm.devilcatHellsingedPurchased && pt.perm.devilcatHellsingedEnabled;
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiMakeShrineOrCatTooltip(const sf::Vector2f mousePos)
     {
         const auto* hoveredShrine = [&]() -> const Shrine*
@@ -1792,7 +1804,7 @@ Imbued with the power of stars and rainbows, transforms bubbles into star bubble
 Must have eaten something they weren't supposed to, because they keep changing color.
 )";
 
-            if (pt.perm.unicatTranscendencePurchased)
+            if (isUnicatTranscendenceActive())
                 catUniTooltip = R"(
 ~~ Transcended Unicat ~~
 
@@ -1808,7 +1820,7 @@ Hired diplomat of the NB (NOBUBBLES) political party. Convinces bubbles to turn 
 
 Bubbles caught in explosions are worth x10 more.)";
 
-            if (pt.perm.devilcatHellsingedPurchased)
+            if (isDevilcatHellsingedActive())
                 catDevilTooltip = R"(
 ~~ Hellsinged Devilcat ~~
 
@@ -2920,7 +2932,7 @@ It's a duck.)",
         const float  grabRounding;
         const float  logSliderDeadzone;
         const float  tabRounding;
-        const float  tabMinWidthForCloseButton;
+        const float  tabCloseButtonMinWidthUnselected;
         const float  tabBarOverlineSize;
         const ImVec2 separatorTextPadding;
         const ImVec2 displayWindowPadding;
@@ -2929,31 +2941,31 @@ It's a duck.)",
 
         void applyWithScale(ImGuiStyle& style, const float scale) const
         {
-            style.WindowPadding             = windowPadding * scale;
-            style.WindowRounding            = windowRounding * scale;
-            style.WindowMinSize             = windowMinSize * scale;
-            style.ChildRounding             = childRounding * scale;
-            style.PopupRounding             = popupRounding * scale;
-            style.FramePadding              = framePadding * scale;
-            style.FrameRounding             = frameRounding * scale;
-            style.ItemSpacing               = itemSpacing * scale;
-            style.ItemInnerSpacing          = itemInnerSpacing * scale;
-            style.CellPadding               = cellPadding * scale;
-            style.TouchExtraPadding         = touchExtraPadding * scale;
-            style.IndentSpacing             = indentSpacing * scale;
-            style.ColumnsMinSpacing         = columnsMinSpacing * scale;
-            style.ScrollbarSize             = scrollbarSize * scale * 0.5f;
-            style.ScrollbarRounding         = scrollbarRounding * scale;
-            style.GrabMinSize               = grabMinSize * scale;
-            style.GrabRounding              = grabRounding * scale;
-            style.LogSliderDeadzone         = logSliderDeadzone * scale;
-            style.TabRounding               = tabRounding * scale;
-            style.TabMinWidthForCloseButton = tabMinWidthForCloseButton * scale;
-            style.TabBarOverlineSize        = tabBarOverlineSize * scale;
-            style.SeparatorTextPadding      = separatorTextPadding * scale;
-            style.DisplayWindowPadding      = displayWindowPadding * scale;
-            style.DisplaySafeAreaPadding    = displaySafeAreaPadding * scale;
-            style.MouseCursorScale          = mouseCursorScale * scale;
+            style.WindowPadding                    = windowPadding * scale;
+            style.WindowRounding                   = windowRounding * scale;
+            style.WindowMinSize                    = windowMinSize * scale;
+            style.ChildRounding                    = childRounding * scale;
+            style.PopupRounding                    = popupRounding * scale;
+            style.FramePadding                     = framePadding * scale;
+            style.FrameRounding                    = frameRounding * scale;
+            style.ItemSpacing                      = itemSpacing * scale;
+            style.ItemInnerSpacing                 = itemInnerSpacing * scale;
+            style.CellPadding                      = cellPadding * scale;
+            style.TouchExtraPadding                = touchExtraPadding * scale;
+            style.IndentSpacing                    = indentSpacing * scale;
+            style.ColumnsMinSpacing                = columnsMinSpacing * scale;
+            style.ScrollbarSize                    = scrollbarSize * scale * 0.5f;
+            style.ScrollbarRounding                = scrollbarRounding * scale;
+            style.GrabMinSize                      = grabMinSize * scale;
+            style.GrabRounding                     = grabRounding * scale;
+            style.LogSliderDeadzone                = logSliderDeadzone * scale;
+            style.TabRounding                      = tabRounding * scale;
+            style.TabCloseButtonMinWidthUnselected = tabCloseButtonMinWidthUnselected * scale;
+            style.TabBarOverlineSize               = tabBarOverlineSize * scale;
+            style.SeparatorTextPadding             = separatorTextPadding * scale;
+            style.DisplayWindowPadding             = displayWindowPadding * scale;
+            style.DisplaySafeAreaPadding           = displaySafeAreaPadding * scale;
+            style.MouseCursorScale                 = mouseCursorScale * scale;
         }
     };
 
@@ -2969,31 +2981,31 @@ It's a duck.)",
         static const auto initialStyleScales = [&]() -> ImGuiStyleScales
         {
             return {
-                .windowPadding             = style.WindowPadding,
-                .windowRounding            = style.WindowRounding,
-                .windowMinSize             = style.WindowMinSize,
-                .childRounding             = style.ChildRounding,
-                .popupRounding             = style.PopupRounding,
-                .framePadding              = style.FramePadding,
-                .frameRounding             = style.FrameRounding,
-                .itemSpacing               = style.ItemSpacing,
-                .itemInnerSpacing          = style.ItemInnerSpacing,
-                .cellPadding               = style.CellPadding,
-                .touchExtraPadding         = style.TouchExtraPadding,
-                .indentSpacing             = style.IndentSpacing,
-                .columnsMinSpacing         = style.ColumnsMinSpacing,
-                .scrollbarSize             = style.ScrollbarSize,
-                .scrollbarRounding         = style.ScrollbarRounding,
-                .grabMinSize               = style.GrabMinSize,
-                .grabRounding              = style.GrabRounding,
-                .logSliderDeadzone         = style.LogSliderDeadzone,
-                .tabRounding               = style.TabRounding,
-                .tabMinWidthForCloseButton = style.TabMinWidthForCloseButton,
-                .tabBarOverlineSize        = style.TabBarOverlineSize,
-                .separatorTextPadding      = style.SeparatorTextPadding,
-                .displayWindowPadding      = style.DisplayWindowPadding,
-                .displaySafeAreaPadding    = style.DisplaySafeAreaPadding,
-                .mouseCursorScale          = style.MouseCursorScale,
+                .windowPadding                    = style.WindowPadding,
+                .windowRounding                   = style.WindowRounding,
+                .windowMinSize                    = style.WindowMinSize,
+                .childRounding                    = style.ChildRounding,
+                .popupRounding                    = style.PopupRounding,
+                .framePadding                     = style.FramePadding,
+                .frameRounding                    = style.FrameRounding,
+                .itemSpacing                      = style.ItemSpacing,
+                .itemInnerSpacing                 = style.ItemInnerSpacing,
+                .cellPadding                      = style.CellPadding,
+                .touchExtraPadding                = style.TouchExtraPadding,
+                .indentSpacing                    = style.IndentSpacing,
+                .columnsMinSpacing                = style.ColumnsMinSpacing,
+                .scrollbarSize                    = style.ScrollbarSize,
+                .scrollbarRounding                = style.ScrollbarRounding,
+                .grabMinSize                      = style.GrabMinSize,
+                .grabRounding                     = style.GrabRounding,
+                .logSliderDeadzone                = style.LogSliderDeadzone,
+                .tabRounding                      = style.TabRounding,
+                .tabCloseButtonMinWidthUnselected = style.TabCloseButtonMinWidthUnselected,
+                .tabBarOverlineSize               = style.TabBarOverlineSize,
+                .separatorTextPadding             = style.SeparatorTextPadding,
+                .displayWindowPadding             = style.DisplayWindowPadding,
+                .displaySafeAreaPadding           = style.DisplaySafeAreaPadding,
+                .mouseCursorScale                 = style.MouseCursorScale,
             };
         }();
 
@@ -3566,7 +3578,7 @@ It's a duck.)",
                         /* maxPrestigeLevel */ 1);
             }
 
-            if (checkUiUnlock(9u, nCatDevil >= 1) && !pt.perm.devilcatHellsingedPurchased)
+            if (checkUiUnlock(9u, nCatDevil >= 1) && !isDevilcatHellsingedActive())
             {
                 uiSetUnlockLabelY(9u);
                 std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
@@ -3870,6 +3882,26 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
+    void beginPrestigeTransition(const PrestigePointsType ppReward)
+    {
+        playSound(sounds.prestige);
+
+        inPrestigeTransition = true;
+        scroll               = 0.f;
+
+        resetAllDraggedCats();
+        pt.onPrestige(ppReward);
+
+        profile.selectedBackground = 0;
+        profile.selectedBGM        = 0;
+
+        updateSelectedBackgroundSelectorIndex();
+        updateSelectedBGMSelectorIndex();
+
+        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBarPrestige()
     {
         ImGui::Spacing();
@@ -3960,19 +3992,7 @@ It's a duck.)",
         ImGui::BeginDisabled(prestigeTimes == 0u);
         if (makePSVButtonEx("Prestige", pt.psvBubbleValue, prestigeTimes, maxCost))
         {
-            playSound(sounds.prestige);
-            inPrestigeTransition = true;
-            scroll               = 0.f;
-            resetAllDraggedCats();
-            pt.onPrestige(ppReward);
-
-            profile.selectedBackground = 0;
-            profile.selectedBGM        = 0;
-
-            updateSelectedBackgroundSelectorIndex();
-            updateSelectedBGMSelectorIndex();
-
-            switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ true);
+            beginPrestigeTransition(ppReward);
         }
         ImGui::EndDisabled();
 
@@ -3992,6 +4012,22 @@ It's a duck.)",
                 currentMult,
                 currentMult + prestigeTimes,
                 ppReward);
+        }
+        else if (pt.psvBubbleValue.nPurchases == 19u)
+        {
+            ImGui::Text("  max prestige level reached!");
+
+            uiSetFontScale(uiSubBulletFontScale);
+            uiBeginColumns();
+
+            std::sprintf(uiTooltipBuffer, "Spend money to immediately get prestige points.");
+            uiLabelBuffer[0] = '\0';
+
+            bool done = false;
+            if (makePurchasableButtonOneTime("  Buy 100 PPs", 1'000'000'000'000u, done))
+                pt.prestigePoints += 100u;
+
+            ImGui::Columns(1);
         }
         else
         {
@@ -4178,6 +4214,13 @@ It's a duck.)",
 
                 if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
                     doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
+
+                if (pt.perm.unicatTranscendencePurchased)
+                {
+                    ImGui::Columns(1);
+                    uiCheckbox("enable transcendent unicats", &pt.perm.unicatTranscendenceEnabled);
+                    uiBeginColumns();
+                }
             }
         }
 
@@ -4195,6 +4238,13 @@ It's a duck.)",
 
             if (makePurchasablePPButtonOneTime("hellsinged", 192u, pt.perm.devilcatHellsingedPurchased))
                 doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
+
+            if (pt.perm.devilcatHellsingedPurchased)
+            {
+                ImGui::Columns(1);
+                uiCheckbox("enable hellsinged devilcats", &pt.perm.devilcatHellsingedEnabled);
+                uiBeginColumns();
+            }
         }
 
         if (checkUiUnlock(56u, pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3))
@@ -5796,6 +5846,15 @@ It's a duck.)",
             uiButtonHueMod = 120.f;
             uiPushButtonColors();
 
+            if (ImGui::Button("Reset *current* prestige##dangerzoneforceprestige"))
+            {
+                dangerZone = false;
+                beginPrestigeTransition(0u);
+            }
+
+            ImGui::Spacing();
+            ImGui::Spacing();
+
             if (ImGui::Button("Reset game##dangerzoneresetgame"))
             {
                 dangerZone = false;
@@ -6045,6 +6104,8 @@ It's a duck.)",
             ImGui::Checkbox("unicatTranscendencePurchased", &pt.perm.unicatTranscendencePurchased);
             ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt.perm.unicatTranscendenceAOEPurchased);
             ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
+            ImGui::Checkbox("unicatTranscendenceEnabled", &pt.perm.unicatTranscendenceEnabled);
+            ImGui::Checkbox("devilcatHellsingedEnabled", &pt.perm.devilcatHellsingedEnabled);
 
             ImGui::Separator();
 
@@ -6595,6 +6656,8 @@ It's a duck.)",
         // End prestige transition
         if (gameElementsRemoved && pt.bubbles.empty())
         {
+            pt.statsSession = Stats{};
+
             inPrestigeTransition = false;
             pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
 
@@ -6663,7 +6726,7 @@ It's a duck.)",
                     bubble.velocity.x = 0.04f;
 
                 const bool uniBuffEnabled       = pt.buffCountdownsPerType[asIdx(CatType::Uni)].value > 0.f;
-                const bool devilBombBuffEnabled = !pt.perm.devilcatHellsingedPurchased &&
+                const bool devilBombBuffEnabled = !isDevilcatHellsingedActive() &&
                                                   pt.buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f;
 
                 const bool willBeStar = uniBuffEnabled &&
@@ -6671,7 +6734,7 @@ It's a duck.)",
                 const bool willBeBomb = devilBombBuffEnabled &&
                                         rng.getF(0.f, 100.f) <= pt.psvPPDevilRitualBuffPercentage.currentValue();
 
-                const auto starType = pt.perm.unicatTranscendencePurchased ? BubbleType::Nova : BubbleType::Star;
+                const auto starType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
 
                 if (!willBeStar && !willBeBomb)
                     turnBubbleNormal(bubble);
@@ -6912,7 +6975,7 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto starBubbleType = pt.perm.unicatTranscendencePurchased ? BubbleType::Nova : BubbleType::Star;
+        const auto starBubbleType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
         const auto nStarParticles = pt.perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
 
         const auto transformBubble = [&](Bubble& bToTransform)
@@ -6986,7 +7049,7 @@ It's a duck.)",
         const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
         const auto range       = pt.getComputedRangeByCatType(cat.type);
 
-        if (!pt.perm.devilcatHellsingedPurchased)
+        if (!isDevilcatHellsingedActive())
         {
             Bubble* b = pickRandomBubbleInRadius(getCatRangeCenter(cat), range);
             if (b == nullptr)
@@ -7783,9 +7846,9 @@ It's a duck.)",
             }
 
             if (cat.type == CatType::Uni)
-                cat.hue += deltaTimeMs * (pt.perm.unicatTranscendencePurchased ? 0.25f : 0.1f);
+                cat.hue += deltaTimeMs * (isUnicatTranscendenceActive() ? 0.25f : 0.1f);
 
-            if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
+            if (cat.type == CatType::Devil && isDevilcatHellsingedActive())
             {
                 if (rngFast.getF(0.f, 1.f) > 0.75f)
                 {
@@ -7869,6 +7932,9 @@ It's a duck.)",
 
                         statFlightRevenue(reward);
 
+                        if (bubble.type == BubbleType::Bomb)
+                            pt.achAstrocatPopBomb = true;
+
                         popWithRewardAndReplaceBubble({
                             .reward          = reward,
                             .bubble          = bubble,
@@ -7879,9 +7945,6 @@ It's a duck.)",
                         });
 
                         cat.textStatusShakeEffect.bump(rngFast, 1.5f);
-
-                        if (bubble.type == BubbleType::Bomb)
-                            pt.achAstrocatPopBomb = true;
 
                         return ControlFlow::Continue;
                     });
@@ -9060,7 +9123,7 @@ It's a duck.)",
         unlockIf(pt.psvBubbleValue.nPurchases >= 5);
         unlockIf(pt.psvBubbleValue.nPurchases >= 10);
         unlockIf(pt.psvBubbleValue.nPurchases >= 15);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 20);
+        unlockIf(pt.psvBubbleValue.nPurchases >= 19);
 
         unlockIf(pt.perm.starterPackPurchased);
 
@@ -9653,12 +9716,12 @@ It's a duck.)",
     void gameLoopDrawCats(const sf::Vector2f mousePos, const float deltaTimeMs)
     {
         ////////////////////////////////////////////////////////////
-        const sf::FloatRect* const uniCatTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2 : &txrUniCat;
-        const sf::FloatRect* const uniCatTailTxr = pt.perm.unicatTranscendencePurchased ? &txrUniCat2Tail : &txrUniCatTail;
+        const sf::FloatRect* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
+        const sf::FloatRect* const uniCatTailTxr = isUnicatTranscendenceActive() ? &txrUniCat2Tail : &txrUniCatTail;
 
-        const sf::FloatRect* const devilCatTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCat2 : &txrDevilCat3;
-        const sf::FloatRect* const devilCatPawTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCatPaw2 : &txrDevilCat3Arm;
-        const sf::FloatRect* const devilCatTailTxr = pt.perm.devilcatHellsingedPurchased ? &txrDevilCatTail2 : &txrDevilCat3Tail;
+        const sf::FloatRect* const devilCatTxr    = isDevilcatHellsingedActive() ? &txrDevilCat2 : &txrDevilCat3;
+        const sf::FloatRect* const devilCatPawTxr = isDevilcatHellsingedActive() ? &txrDevilCatPaw2 : &txrDevilCat3Arm;
+        const sf::FloatRect* const devilCatTailTxr = isDevilcatHellsingedActive() ? &txrDevilCatTail2 : &txrDevilCat3Tail;
 
         ////////////////////////////////////////////////////////////
         const sf::FloatRect* const catTxrsByType[] = {
@@ -9960,7 +10023,7 @@ It's a duck.)",
                            .scale       = catScale * 1.55f,
                            .origin      = txrDevilCat3Book.size / 2.f,
                            .rotation    = sf::radians(catRotation),
-                           .textureRect = pt.perm.devilcatHellsingedPurchased ? txrDevilCat2Book : txrDevilCat3Book,
+                           .textureRect = isDevilcatHellsingedActive() ? txrDevilCat2Book : txrDevilCat3Book,
                            .color = hueColor(sf::base::remainder(cat.hue * 2.f - 15.f + static_cast<float>(cat.nameIdx) * 25.f,
                                                                  60.f) -
                                                  30.f,
@@ -10149,7 +10212,7 @@ It's a duck.)",
             // Eye blining animation
             const auto& eyelidArray = //
                 (cat.type == CatType::Mouse || cat.type == CatType::Attracto || cat.type == CatType::Copy) ? grayEyeLidRects
-                : (cat.type == CatType::Engi || (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased))
+                : (cat.type == CatType::Engi || (cat.type == CatType::Devil && isDevilcatHellsingedActive()))
                     ? darkEyeLidRects
                 : (cat.type == CatType::Astro || cat.type == CatType::Uni)
                     ? whiteEyeLidRects
@@ -10289,7 +10352,7 @@ It's a duck.)",
                 const char* actionName = CatConstants::actionNames[asIdx(
                     cat.type == CatType::Copy ? pt.copycatCopiedCatType : cat.type)];
 
-                if (cat.type == CatType::Devil && pt.perm.devilcatHellsingedPurchased)
+                if (cat.type == CatType::Devil && isDevilcatHellsingedActive())
                     actionName = "Portals";
 
                 // TODO P2: move to member data
@@ -11721,8 +11784,8 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateBuffText()
     {
-        const char* devilBuffName = pt.perm.devilcatHellsingedPurchased ? "Portal Storm (Scales With Bomb Spawn Chance)"
-                                                                        : "Explosive Downpour (Bomb Spawn Chance)";
+        const char* devilBuffName = (isDevilcatHellsingedActive()) ? "Portal Storm (Scales With Bomb Spawn Chance)"
+                                                                   : "Explosive Downpour (Bomb Spawn Chance)";
 
         const char* buffNames[] = {
             "Midas Paws (x5 Cat Reward)",          // Normal
@@ -11818,33 +11881,36 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopReminderBuyCombo()
     {
-        if (pt.psvBubbleValue.nPurchases > 0u || pt.comboPurchased)
+        if (pt.comboPurchased)
             return;
 
-        if (pt.money >= 25u && buyReminder == 0)
+        const auto mult = pt.psvBubbleValue.nPurchases + 1u;
+
+        if (pt.money >= (25u * mult) && buyReminder == 0)
         {
             buyReminder = 1;
-            doTip("Remember to buy the combo upgrade!");
+            doTip("Remember to buy the combo upgrade!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= 50u && buyReminder == 1)
+        else if (pt.money >= (50u * mult) && buyReminder == 1)
         {
             buyReminder = 2;
-            doTip("You should really buy the upgrade now!");
+            doTip("You should really buy the upgrade now!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= 100u && buyReminder == 2)
+        else if (pt.money >= (100u * mult) && buyReminder == 2)
         {
             buyReminder = 3;
-            doTip("What are you trying to prove...?");
+            doTip("What are you trying to prove...?", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= 200u && buyReminder == 3)
+        else if (pt.money >= (200u * mult) && buyReminder == 3)
         {
             buyReminder = 4;
-            doTip("There is no achievement for doing this!");
+            doTip("There is no achievement for doing this!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= 300u && buyReminder == 4)
+        else if (pt.money >= (300u * mult) && buyReminder == 4)
         {
             buyReminder = 5;
-            doTip("Fine, have it your way!\nHere's your dumb achievement!\nAnd now buy the upgrade!");
+            doTip("Fine, have it your way!\nHere's your dumb achievement!\nAnd now buy the upgrade!",
+                  /* maxPrestigeLevel */ UINT_MAX);
         }
     }
 
@@ -12093,8 +12159,7 @@ It's a duck.)",
         const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVector2i()
                                                                           : sf::Mouse::getPosition(window);
 
-        const auto mousePos    = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
-        const auto hudMousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
+        const auto mousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
 
         //
         // Game startup, prestige transitions, etc...
@@ -12340,7 +12405,7 @@ It's a duck.)",
 
         //
         // Portal storm buff
-        if (pt.perm.devilcatHellsingedPurchased && pt.buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
+        if (isDevilcatHellsingedActive() && pt.buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
         {
             if (portalStormTimer.updateAndLoop(deltaTimeMs, 10.f) == CountdownStatusLoop::Looping &&
                 rng.getF(0.f, 100.f) <= pt.psvPPDevilRitualBuffPercentage.currentValue())
