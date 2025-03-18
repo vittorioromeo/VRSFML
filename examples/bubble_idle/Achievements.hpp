@@ -137,7 +137,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Edge of Tomeowrrow", "Prestige 5 times."},
     {"The Cat Who Leapt Through Time", "Prestige 10 times."},
     {"Primeower", "Prestige 15 times."},
-    {"Pawdestination", "Prestige 20 times."},
+    {"Pawdestination", "Prestige for the final time."},
 
     {"Locked'n'Loaded", "Purchase the \"Starter Pack\" permanent upgrade."},
 
