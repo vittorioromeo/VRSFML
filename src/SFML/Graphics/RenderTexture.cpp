@@ -11,9 +11,10 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/Glad.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 
@@ -377,7 +378,14 @@ RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(Vector2u size, const ContextSettings& contextSettings)
+base::Optional<RenderTexture> RenderTexture::create(const Vector2u size)
+{
+    return create(size, {});
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<RenderTexture> RenderTexture::create(const Vector2u size, const ContextSettings& contextSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 

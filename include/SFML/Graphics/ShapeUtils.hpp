@@ -16,7 +16,7 @@
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -305,10 +305,10 @@ inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* poin
     {
         const auto currentPoint = points[i];
 
-        minPoint.x = base::min(minPoint.x, currentPoint.x);
-        maxPoint.x = base::max(maxPoint.x, currentPoint.x);
-        minPoint.y = base::min(minPoint.y, currentPoint.y);
-        maxPoint.y = base::max(maxPoint.y, currentPoint.y);
+        minPoint.x = SFML_BASE_MIN(minPoint.x, currentPoint.x);
+        maxPoint.x = SFML_BASE_MAX(maxPoint.x, currentPoint.x);
+        minPoint.y = SFML_BASE_MIN(minPoint.y, currentPoint.y);
+        maxPoint.y = SFML_BASE_MAX(maxPoint.y, currentPoint.y);
     }
 
     return (maxPoint + minPoint) / 2.f;

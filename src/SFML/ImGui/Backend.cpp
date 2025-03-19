@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/ImGui/Backend.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>

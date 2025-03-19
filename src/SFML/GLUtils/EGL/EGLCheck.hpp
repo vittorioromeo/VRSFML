@@ -8,7 +8,7 @@
 #include "SFML/Config.hpp"
 
 #ifdef SFML_DEBUG
-    #include "SFML/Window/Priv/Regularize.hpp" // used
+    #include "SFML/Base/RegularizeVoid.hpp" // used
 #endif
 
 #include "SFML/Base/Assert.hpp"
@@ -29,7 +29,7 @@ namespace sf::priv
         {                                                                        \
             SFML_BASE_ASSERT(::eglGetError() == EGL_SUCCESS);                    \
                                                                                  \
-            auto sfPrivEglCheckResult = ::sf::priv::regularize(f);               \
+            auto sfPrivEglCheckResult = ::sf::regularizeVoid(f);                 \
                                                                                  \
             while (!::sf::priv::eglCheckError(__FILE__, __LINE__, #__VA_ARGS__)) \
                 /* no-op */;                                                     \

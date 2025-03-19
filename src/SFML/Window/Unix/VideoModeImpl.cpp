@@ -11,7 +11,6 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
-
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 

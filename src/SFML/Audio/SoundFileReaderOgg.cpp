@@ -11,7 +11,6 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
-
 #include <vorbis/vorbisfile.h>
 
 #include <cstdio>

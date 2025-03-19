@@ -32,6 +32,7 @@ struct TypeWrapper
     using type = T;
 };
 
+
 ////////////////////////////////////////////////////////////
 template <SizeT N,
           typename T0 = void,
@@ -63,6 +64,7 @@ template <SizeT N,
 }
 
 } // namespace sf::base::priv
+
 
 namespace sf::base
 {

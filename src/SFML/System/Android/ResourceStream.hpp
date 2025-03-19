@@ -10,7 +10,6 @@
 #include "SFML/System/InputStream.hpp"
 
 #include "SFML/Base/UniquePtr.hpp"
-
 #include <android/asset_manager.h>
 
 
