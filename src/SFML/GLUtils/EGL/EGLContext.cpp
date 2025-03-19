@@ -4,10 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/SFML/Window/EGL/ext.hpp"
-#include "SFMLSFML/Window/EGL/Utils.hpp"
-
-#include "SFML/Window/EGL/Mode.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
+#include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/GLUtils/EGL/EGLCheck.hpp"
