@@ -12,7 +12,8 @@
 #endif
 
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/GlContext.hpp"
+
+#include "SFML/GLUtils/GlContext.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 

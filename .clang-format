@@ -110,8 +110,10 @@ IncludeCategories:
   - Priority: 8
     Regex: '^\"SFML\/Window'
   - Priority: 9
-    Regex: '^\"SFML\/System'
+    Regex: '^\"SFML\/GLUtils'
   - Priority: 10
+    Regex: '^\"SFML\/System'
+  - Priority: 11
     Regex: '^\"SFML\/Base'
   - Priority: 1
     Regex: '^\"(.+)\"$'

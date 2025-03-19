@@ -11,32 +11,12 @@
 
 namespace sf::base::priv
 {
-template <typename>
-struct IsArrayHelper
-{
-    enum
-    {
-        value = false
-    };
-};
-
-template <typename T, auto Size>
-struct IsArrayHelper<T[Size]>
-{
-    enum
-    {
-        value = true
-    };
-};
-
-template <typename T>
-struct IsArrayHelper<T[]>
-{
-    enum
-    {
-        value = true
-    };
-};
+////////////////////////////////////////////////////////////
+// clang-format off
+template <typename>              struct IsArrayHelper          { enum { value = false }; };
+template <typename T, auto Size> struct IsArrayHelper<T[Size]> { enum { value = true }; };
+template <typename T>            struct IsArrayHelper<T[]>     { enum { value = true }; };
+// clang-format on
 
     ////////////////////////////////////////////////////////////
     #define SFML_BASE_IS_ARRAY(...) ::sf::base::priv::IsArrayHelper<__VA_ARGS__>::value

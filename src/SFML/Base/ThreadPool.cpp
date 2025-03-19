@@ -6,7 +6,6 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
-
 #include <blockingconcurrentqueue.h>
 #include <concurrentqueue.h>
 

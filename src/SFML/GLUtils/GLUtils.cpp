@@ -6,9 +6,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 

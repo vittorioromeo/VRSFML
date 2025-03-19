@@ -36,9 +36,6 @@ if(FIND_SFML_OS_LINUX)
 endif()
 
 if(NOT FIND_SFML_OS_ANDROID AND NOT FIND_SFML_OS_IOS)
-    if(NOT OpenGL_GL_PREFERENCE)
-        set(OpenGL_GL_PREFERENCE "LEGACY")
-    endif()
     find_dependency(OpenGL COMPONENTS OpenGL)
 endif()
 
