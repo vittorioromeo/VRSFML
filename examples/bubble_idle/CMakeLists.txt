@@ -13,7 +13,9 @@ sfml_add_example(bubble_idle GUI_APP
                  SOURCES ${SRC}
                  DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
 
-target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
+if (WIN32)
+    target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
+endif()
 
 target_include_directories(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
 
