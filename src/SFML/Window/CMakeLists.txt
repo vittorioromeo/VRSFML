@@ -234,9 +234,6 @@ elseif(SFML_OS_EMSCRIPTEN)
 endif()
 
 # define the sfml-window target
-message(INFO "SRC: ${SRC}")
-message(FATAL_ERROR "PLATFORM_SRC: ${PLATFORM_SRC}")
-
 sfml_add_library(Window
                  SOURCES ${SRC} ${PLATFORM_SRC}
                  DEPENDENCIES "Dependencies.cmake.in")
