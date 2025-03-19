@@ -14,9 +14,14 @@
 
 #include "SFML/Base/Assert.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
+#pragma GCC diagnostic pop
 
 #include <fstream>
 
