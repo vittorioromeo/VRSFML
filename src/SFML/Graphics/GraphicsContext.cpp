@@ -57,7 +57,7 @@ GraphicsContextImpl& ensureInstalled()
 ////////////////////////////////////////////////////////////
 struct GraphicsContext::Impl
 {
-    explicit Impl(WindowContext&& windowContext) : windowContext(SFML_BASE_MOVE(windowContext))
+    explicit Impl(WindowContext&& theWindowContext) : windowContext(SFML_BASE_MOVE(theWindowContext))
     {
     }
 
