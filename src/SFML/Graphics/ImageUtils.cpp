@@ -16,11 +16,13 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
+#pragma GCC diagnostic ignored "-Warray-bounds"
 
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
 
+#pragma GCC diagnostic pop
 #pragma GCC diagnostic pop
 
 #include <fstream>
