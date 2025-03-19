@@ -1,11 +1,16 @@
 # all source files
-set(SRC BubbleIdle.cpp Serialization.cpp Steam.cpp)
+if (NOT SFML_OS_EMSCRIPTEN)
+    set(SRC BubbleIdle.cpp Serialization.cpp Steam.cpp)
 
-# set the correct steam library
-if (SFML_OS_WINDOWS)
-    set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/steam_api64.lib")
+    # set the correct steam library
+    if (SFML_OS_WINDOWS)
+        set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/steam_api64.lib")
+    else()
+        set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
+    endif()
 else()
-    set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
+    set(SRC BubbleIdle.cpp Serialization.cpp)
+    set(STEAM_LIB "")
 endif()
 
 # define the bubble_idle target
