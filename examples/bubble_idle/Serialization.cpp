@@ -12,7 +12,13 @@
 #include "Shrine.hpp"
 #include "Timer.hpp"
 #include "Version.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-conversion"
+
 #include "json.hpp"
+
+#pragma GCC diagnostic pop
 
 #include "SFML/System/Vector2.hpp"
 
