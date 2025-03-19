@@ -158,7 +158,7 @@ namespace sf
     const float        cornerRadius,
     const unsigned int cornerPointCount) noexcept
 {
-    const auto totalNumPoints = cornerPointCount * 4u;
+    [[maybe_unused]] const auto totalNumPoints = cornerPointCount * 4u;
 
     SFML_BASE_ASSERT(index < totalNumPoints);
     SFML_BASE_ASSUME(index < totalNumPoints);
