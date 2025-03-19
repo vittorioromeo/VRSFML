@@ -15,6 +15,8 @@ namespace sf::base::priv
 template <typename, typename>
 inline constexpr bool isSameImpl = false;
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 inline constexpr bool isSameImpl<T, T> = true;
 

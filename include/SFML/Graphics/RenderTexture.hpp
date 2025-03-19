@@ -10,8 +10,6 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
-
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Optional.hpp"
@@ -24,6 +22,7 @@
 namespace sf
 {
 class Texture;
+struct ContextSettings;
 } // namespace sf
 
 
@@ -83,7 +82,8 @@ public:
     /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system

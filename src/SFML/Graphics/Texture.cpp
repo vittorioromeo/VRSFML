@@ -7,13 +7,14 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureSaver.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/Window.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/Glad.hpp"
+#include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"

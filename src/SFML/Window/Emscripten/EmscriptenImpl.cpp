@@ -7,8 +7,6 @@
 #include "SFML/Window/Emscripten/JoystickImpl.hpp"
 #include "SFML/Window/Emscripten/WindowImplEmscripten.hpp"
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"
@@ -16,6 +14,9 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/VideoModeImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/String.hpp"
@@ -808,6 +809,7 @@ WindowImplEmscripten::WindowImplEmscripten(const WindowSettings& windowSettings)
 ////////////////////////////////////////////////////////////
 WindowImplEmscripten::~WindowImplEmscripten()
 {
+    // TODO P1: remove this dependency
     glCheck(glClearColor(0.f, 0.f, 0.f, 1.f));
     glCheck(glClear(GL_COLOR_BUFFER_BIT));
 

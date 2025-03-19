@@ -15,7 +15,6 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/MinMax.hpp"
-
 #include <vorbis/vorbisenc.h>
 
 #include <algorithm> // std::is_permutation

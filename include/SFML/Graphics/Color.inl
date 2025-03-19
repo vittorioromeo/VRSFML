@@ -8,7 +8,7 @@
 
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Remainder.hpp"
 
 
@@ -94,8 +94,8 @@ constexpr Color::HSL Color::toHSL() const
     const float gNorm = static_cast<float>(g) / 255.f;
     const float bNorm = static_cast<float>(b) / 255.f;
 
-    const float max    = base::max(base::max(rNorm, gNorm), bNorm);
-    const float min    = base::min(base::min(rNorm, gNorm), bNorm);
+    const float max    = SFML_BASE_MAX(SFML_BASE_MAX(rNorm, gNorm), bNorm);
+    const float min    = SFML_BASE_MIN(SFML_BASE_MIN(rNorm, gNorm), bNorm);
     const float chroma = max - min;
 
     float hue = 0.f;
@@ -163,7 +163,7 @@ template <typename TVec4>
 constexpr Color Color::fromVec4(const TVec4& vec)
 {
     const auto convert = []<typename T>(const T value)
-    { return static_cast<sf::base::U8>(SFML_PRIV_CLAMP_BY_VALUE(value * T{255}, T{0}, T{255})); };
+    { return static_cast<base::U8>(SFML_PRIV_CLAMP_BY_VALUE(value * T{255}, T{0}, T{255})); };
 
     return {convert(vec.x), convert(vec.y), convert(vec.z), convert(vec.w)};
 }

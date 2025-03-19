@@ -12,7 +12,7 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/WindowImplWin32.hpp
 
-        ${SRCROOT}/Win32/Win32ImplUnity.cpp
+            ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
         # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
         # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
@@ -215,6 +215,7 @@ if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         target_link_libraries(sfml-window PRIVATE X11::X11 X11::Xrandr X11::Xcursor X11::Xi)
     endif()
 endif()
+
 target_link_libraries(sfml-window PUBLIC SFML::System)
 
 # glad sources
@@ -228,13 +229,6 @@ endif()
 
 # Vulkan headers
 target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/vulkan")
-
-# CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL for backward compatibility
-# (unless the OpenGL_GL_PREFERENCE was explicitly set)
-# See CMP0072 for more details (cmake --help-policy CMP0072)
-if(NOT OpenGL_GL_PREFERENCE)
-    set(OpenGL_GL_PREFERENCE "LEGACY")
-endif()
 
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")

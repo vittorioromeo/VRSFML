@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Transform.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 
 
 namespace sf
@@ -57,10 +57,10 @@ constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
     const auto p3 = transformPoint(rectangle.position + rectangle.size);
 
     // Compute the bounding rectangle of the transformed points
-    const float minX = base::min(base::min(p0.x, p1.x), base::min(p2.x, p3.x));
-    const float maxX = base::max(base::max(p0.x, p1.x), base::max(p2.x, p3.x));
-    const float minY = base::min(base::min(p0.y, p1.y), base::min(p2.y, p3.y));
-    const float maxY = base::max(base::max(p0.y, p1.y), base::max(p2.y, p3.y));
+    const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));
+    const float maxX = SFML_BASE_MAX(SFML_BASE_MAX(p0.x, p1.x), SFML_BASE_MAX(p2.x, p3.x));
+    const float minY = SFML_BASE_MIN(SFML_BASE_MIN(p0.y, p1.y), SFML_BASE_MIN(p2.y, p3.y));
+    const float maxY = SFML_BASE_MAX(SFML_BASE_MAX(p0.y, p1.y), SFML_BASE_MAX(p2.y, p3.y));
 
     return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
 }

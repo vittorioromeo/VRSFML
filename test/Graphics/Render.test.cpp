@@ -6,6 +6,7 @@
 #include "SFML/Graphics/StencilMode.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include <Doctest.hpp>
