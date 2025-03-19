@@ -15,7 +15,7 @@ uniform float u_sharpness;  // 0.0 means no sharpening, 1.0 means full effect
 ////////////////////////////////////////////////////////////
 vec3 adjustSaturation(vec3 color, float sat)
 {
-    const float gray = dot(color, vec3(0.299, 0.587, 0.114));
+    float gray = dot(color, vec3(0.299, 0.587, 0.114));
 
     // Adjust u_saturation by mixing the original color with its grayscale equivalent.
     return mix(vec3(gray), color, sat);
@@ -24,8 +24,8 @@ vec3 adjustSaturation(vec3 color, float sat)
 ////////////////////////////////////////////////////////////
 vec3 adjustVibrance(vec3 color, float vib)
 {
-    const float average = (color.r + color.g + color.b) / 3.0;
-    const vec3  boosted = color + (color - average) * vib;
+    float average = (color.r + color.g + color.b) / 3.0;
+    vec3  boosted = color + (color - average) * vib;
 
     return clamp(boosted, 0.0, 1.0);
 }
@@ -52,7 +52,7 @@ vec3 getAdjustedColor(vec2 coord)
 void main()
 {
     // Compute the adjusted color for the center pixel.
-    const vec3 center = getAdjustedColor(sf_v_texCoord);
+    vec3 center = getAdjustedColor(sf_v_texCoord);
 
     // Initialize sharpened color as the adjusted center.
     vec3 result = center;
@@ -61,7 +61,7 @@ void main()
     if (u_sharpness > 0.0)
     {
         // Determine texel size.
-        const vec2 tex_offset = 1.0 / vec2(textureSize(sf_u_texture, 0));
+        vec2 tex_offset = 1.0 / vec2(textureSize(sf_u_texture, 0));
 
         // Compute a simple blurred version using a 3x3 kernel with weights approximating a Gaussian.
         vec3 blur = getAdjustedColor(sf_v_texCoord) * 4.0;

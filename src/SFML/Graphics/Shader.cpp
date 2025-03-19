@@ -303,6 +303,31 @@ precision mediump float;
     return {buffer.data(), buffer.size()};
 }
 
+
+////////////////////////////////////////////////////////////
+void printLinesWithNumbers(auto& os, sf::base::StringView text)
+{
+    sf::base::SizeT lineStart  = 0u;
+    sf::base::SizeT lineNumber = 1u;
+
+    while (lineStart < text.size())
+    {
+        // Find the position of the next newline character.
+        sf::base::SizeT newlinePos = text.find('\n', lineStart);
+        if (newlinePos == sf::base::StringView::nPos)
+        {
+            // Print the remaining text as the final line.
+            os << lineNumber << " | " << text.substrByPosLen(lineStart) << "\n";
+            break;
+        }
+
+        // Print the current line with its line number and pipe separator.
+        os << lineNumber << " | " << text.substrByPosLen(lineStart, newlinePos - lineStart) << "\n";
+        lineStart = newlinePos + 1; // Move past the newline.
+        ++lineNumber;
+    }
+}
+
 } // namespace
 
 
@@ -970,8 +995,9 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
             glCheck(glGetShaderInfoLog(shader, sizeof(log), nullptr, log));
 
             priv::err() << "Failed to compile " << typeStr << " shader:" << '\n'
-                        << static_cast<const char*>(log) << "\n\nSource code:\n"
-                        << adjustedShaderCode;
+                        << static_cast<const char*>(log) << "\n\nSource code:\n";
+
+            printLinesWithNumbers(priv::err(/* multiLine */ true), adjustedShaderCode);
 
             glCheck(glDeleteShader(shader));
             glCheck(glDeleteProgram(shaderProgram));
