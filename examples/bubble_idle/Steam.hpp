@@ -48,6 +48,8 @@ public:
     [[nodiscard]] bool getStat(int* out, std::string_view name);
 
     bool updateHardcodedAchievements();
+
+    bool isOnSteamDeck();
 };
 
 } // namespace hg::Steam
