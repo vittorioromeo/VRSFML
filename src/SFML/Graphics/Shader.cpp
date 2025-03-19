@@ -6,13 +6,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/InputStream.hpp"
@@ -986,7 +987,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     };
 
     if (vertexShaderCode.data() == nullptr)
-        vertexShaderCode = GraphicsContext::getBuiltInShaderVertexSrc();
+        vertexShaderCode = DefaultShader::srcVertex;
 
     if (!makeShader(GL_VERTEX_SHADER, "vertex", vertexShaderCode))
         return base::nullOpt;
@@ -1000,7 +1001,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
     }
 
     if (fragmentShaderCode.data() == nullptr)
-        fragmentShaderCode = GraphicsContext::getBuiltInShaderFragmentSrc();
+        fragmentShaderCode = DefaultShader::srcFragment;
 
     // Create the fragment shader
     if (!makeShader(GL_FRAGMENT_SHADER, "fragment", fragmentShaderCode))

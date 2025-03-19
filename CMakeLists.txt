@@ -95,11 +95,16 @@ if(SFML_ENABLE_PCH)
 endif()
 
 # add options to select which modules to build
+sfml_set_option(SFML_BUILD_GLUTILS ON BOOL "ON to build SFML's GLUtils module.")
 sfml_set_option(SFML_BUILD_WINDOW ON BOOL "ON to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS ON BOOL "ON to build SFML's Graphics module.")
 sfml_set_option(SFML_BUILD_IMGUI ON BOOL "ON to build SFML's ImGui module.")
 sfml_set_option(SFML_BUILD_AUDIO ON BOOL "ON to build SFML's Audio module.")
 sfml_set_option(SFML_BUILD_NETWORK ON BOOL "ON to build SFML's Network module.")
+
+if(SFML_BUILD_GLUTILS)
+    add_definitions(-DSFML_BUILD_GLUTILS)
+endif()
 
 if(SFML_BUILD_WINDOW)
     add_definitions(-DSFML_BUILD_WINDOW)
@@ -394,6 +399,14 @@ else()
                        ${PROJECT_SOURCE_DIR}/include/SFML/System
                        $<TARGET_FILE_DIR:SFML>/Headers
                        VERBATIM)
+
+    # add glutils module headers if enabled
+    if(SFML_BUILD_GLUTILS)
+        add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
+                           ${PROJECT_SOURCE_DIR}/include/SFML/GLUtils
+                           $<TARGET_FILE_DIR:SFML>/Headers
+                           VERBATIM)
+    endif()
 
     # add window module headers if enabled
     if(SFML_BUILD_WINDOW)

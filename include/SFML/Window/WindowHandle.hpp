@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+
 // Windows' HWND is a type alias for struct HWND__*
 #if defined(SFML_SYSTEM_WINDOWS)
 struct HWND__; // NOLINT(bugprone-reserved-identifier)

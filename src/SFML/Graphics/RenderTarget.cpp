@@ -8,8 +8,6 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/GLSyncGuard.hpp"
-#include "SFML/Graphics/GLVAOGroup.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -24,8 +22,10 @@
 #include "SFML/Graphics/VertexBuffer.hpp"
 #include "SFML/Graphics/View.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLSyncGuard.hpp"
+#include "SFML/GLUtils/GLVAOGroup.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect.hpp"
@@ -571,7 +571,7 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
     if (vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(batch.m_storage.getVAOGroup(), states);
+    setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
 
     {
         GLSyncGuard syncGuard;
@@ -592,7 +592,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
     if (indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(batch.m_storage.getVAOGroup(), states);
+    setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
 
     {
         GLSyncGuard syncGuard;

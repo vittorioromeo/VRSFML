@@ -9,6 +9,9 @@
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/GLUtils/EGL/EGLContext.hpp"
+
+#include "SFML/System/Android/Activity.hpp"
 #include "SFML/System/Err.hpp"
 
 #include <android/looper.h>

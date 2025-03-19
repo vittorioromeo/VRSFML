@@ -8,7 +8,7 @@
 #include "SFML/Config.hpp"
 
 #ifdef SFML_DEBUG
-    #include "SFML/Window/Priv/Regularize.hpp" // used
+    #include "SFML/Base/RegularizeVoid.hpp" // used
 #endif
 
 #include "SFML/Base/Assert.hpp"
@@ -30,7 +30,7 @@ namespace sf::priv
         {                                                                           \
             SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
                                                                                     \
-            auto sfPrivGlCheckResult = ::sf::priv::regularize(f);                   \
+            auto sfPrivGlCheckResult = ::sf::regularizeVoid(f);                     \
                                                                                     \
             while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
                 /* no-op */;                                                        \
@@ -46,7 +46,7 @@ namespace sf::priv
         {                                                          \
             SFML_BASE_ASSERT(errorFunc() == 0u /* GL_NO_ERROR */); \
                                                                    \
-            auto sfPrivGlCheckResult = ::sf::priv::regularize(f);  \
+            auto sfPrivGlCheckResult = ::sf::regularizeVoid(f);    \
                                                                    \
             while (errorFunc() != 0u /* GL_NO_ERROR */)            \
                 /* no-op */;                                       \

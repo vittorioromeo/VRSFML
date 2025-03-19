@@ -86,7 +86,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f center{500.f, 500.f};   //!< Center of the view, in scene coordinates
+    Vector2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
     Vector2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)

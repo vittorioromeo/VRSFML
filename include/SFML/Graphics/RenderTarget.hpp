@@ -46,12 +46,6 @@ struct View;
 } // namespace sf
 
 
-namespace sf::priv
-{
-struct PersistentGPUStorage;
-} // namespace sf::priv
-
-
 namespace sf
 {
 ////////////////////////////////////////////////////////////
