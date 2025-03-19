@@ -81,7 +81,7 @@ void shutdownSteamworks()
 
 class SteamManager::SteamManagerImpl
 {
-private:
+public:
     bool m_initialized;
     bool m_gotStats;
 
@@ -484,6 +484,11 @@ bool SteamManager::updateHardcodedAchievements()
 
 bool SteamManager::isOnSteamDeck()
 {
+    if (!impl().m_initialized || !impl().m_gotStats)
+    {
+        return false;
+    }
+
     return SteamUtils()->IsSteamRunningOnSteamDeck();
 }
 
