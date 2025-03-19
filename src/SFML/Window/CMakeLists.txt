@@ -3,6 +3,39 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
+set(SDL_STATIC ON)
+set(SDL_SHARED OFF)
+set(SDL_TEST_LIBRARY OFF)
+set(SDL_TESTS OFF)
+
+CPMAddPackage(
+    NAME sdl
+    GITHUB_REPOSITORY libsdl-org/SDL
+    GIT_TAG 8b924df48b17eef05834cb14129e52afb1075f46
+    SYSTEM TRUE
+)
+
+get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+target_compile_options(SDL_uclibc PRIVATE "-w")
+set_target_properties(SDL_uclibc PROPERTIES UNITY_BUILD OFF)
+
+if (TARGET SDL3-static)
+    get_property(sdl3_include_dirs TARGET SDL3-static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set_property(TARGET SDL3-static PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+    target_compile_options(SDL3-static PRIVATE "-w")
+    set_target_properties(SDL3-static PROPERTIES UNITY_BUILD OFF)
+endif()
+
+if (TARGET SDL3-dynamic)
+    get_property(sdl3_include_dirs TARGET SDL3-dynamic PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set_property(TARGET SDL3-dynamic PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+    target_compile_options(SDL3-dynamic PRIVATE "-w")
+    set_target_properties(SDL3-dynamic PROPERTIES UNITY_BUILD OFF)
+endif()
+
+
+
 # add platform specific sources
 if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
@@ -216,7 +249,10 @@ if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     endif()
 endif()
 
-target_link_libraries(sfml-window PUBLIC SFML::System)
+
+# SDL3
+target_link_libraries(sfml-window PUBLIC SFML::System PRIVATE $<BUILD_INTERFACE:SDL3::SDL3> SFML::GLUtils)
+
 
 # glad sources
 target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
