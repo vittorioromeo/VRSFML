@@ -482,5 +482,9 @@ bool SteamManager::updateHardcodedAchievements()
     return impl().updateHardcodedAchievements();
 }
 
+bool SteamManager::isOnSteamDeck()
+{
+    return SteamUtils()->IsSteamRunningOnSteamDeck();
+}
 
 } // namespace hg::Steam
