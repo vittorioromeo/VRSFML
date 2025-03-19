@@ -3,7 +3,7 @@
 #include <Doctest.hpp>
 
 
-TEST_CASE("[Base] Base/Algorithm.hpp")
+TEST_CASE("[Base] Base/MinMax.hpp")
 {
     SECTION("Min/Max")
     {

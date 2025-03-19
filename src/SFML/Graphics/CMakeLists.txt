@@ -78,7 +78,7 @@ else()
     sfml_add_graphics_dependencies()
 endif()
 
-target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype)
+target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype SFML::GLUtils)
 
 # add preprocessor symbols
 target_compile_definitions(sfml-graphics PRIVATE "STBI_FAILURE_USERMSG")

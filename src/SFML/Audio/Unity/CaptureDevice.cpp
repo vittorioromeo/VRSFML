@@ -17,7 +17,6 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
 #include <miniaudio.h>
 
 

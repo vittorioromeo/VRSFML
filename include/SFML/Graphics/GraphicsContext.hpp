@@ -7,8 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Window/WindowContext.hpp"
-
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
@@ -27,6 +26,7 @@ namespace sf
 class RenderTarget;
 class Shader;
 class Texture;
+class WindowContext;
 } // namespace sf
 
 
@@ -36,7 +36,7 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext : public WindowContext
+class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -91,16 +91,54 @@ public:
     [[nodiscard]] static bool isInstalled();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in vertex shader source code
+    /// \brief Get the currently active context's ID
+    ///
+    /// The context ID is used to identify contexts when
+    /// managing unshareable OpenGL resources.
+    ///
+    /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* getBuiltInShaderVertexSrc();
+    [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in fragment shader source code
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* getBuiltInShaderFragmentSrc();
+    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool hasActiveThreadLocalOrSharedGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    using UnsharedDeleteFn = void (*)(unsigned int);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
+    ///
+    /// This is used for internal purposes in order to properly
+    /// clean up OpenGL resources that cannot be shared between
+    /// contexts.
+    ///
+    /// \param object Object to be destroyed when its containing context is destroyed
+    ///
+    ////////////////////////////////////////////////////////////
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unregister an OpenGL object from its containing context
+    ///
+    /// \param object Object to be unregister
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+
 
 private:
     friend Shader;
@@ -117,6 +155,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getInstalledBuiltInWhiteDotTexture();
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace sf

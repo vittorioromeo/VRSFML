@@ -10,7 +10,6 @@
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
-
 #include <X11/keysym.h>
 
 #include <mutex>

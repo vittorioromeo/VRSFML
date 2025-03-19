@@ -14,7 +14,6 @@
 
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/EnumArray.hpp"
-
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>

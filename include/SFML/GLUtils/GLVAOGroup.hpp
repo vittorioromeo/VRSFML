@@ -5,8 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/GLBufferObject.hpp"
-#include "SFML/Graphics/GLVertexArrayObject.hpp"
+#include "SFML/GLUtils/GLBufferObject.hpp"
+#include "SFML/GLUtils/GLVertexArrayObject.hpp"
 
 
 namespace sf

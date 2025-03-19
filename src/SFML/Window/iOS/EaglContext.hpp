@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/GlContext.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/iOS/ObjCType.hpp"
+
+#include "SFML/GLUtils/GlContext.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Vector2.hpp"

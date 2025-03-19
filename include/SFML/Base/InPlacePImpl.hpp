@@ -10,6 +10,7 @@
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////

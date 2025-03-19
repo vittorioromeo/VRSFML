@@ -6,6 +6,8 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>

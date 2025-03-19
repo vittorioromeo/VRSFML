@@ -9,6 +9,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsEnum.hpp"
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -18,20 +19,9 @@ namespace sf::base
 template <typename Enum, typename Value, SizeT Count>
 struct EnumArray
 {
+    ////////////////////////////////////////////////////////////
     static_assert(SFML_BASE_IS_ENUM(Enum));
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Returns a reference to the element associated to specified \a key
-    ///
-    /// No bounds checking is performed in release builds.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Value& operator[](Enum key)
-    {
-        const auto index = static_cast<SizeT>(key);
-        SFML_BASE_ASSERT(index < Count && "Index is out of bounds");
-        return data[index];
-    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a reference to the element associated to specified \a key
@@ -39,19 +29,39 @@ struct EnumArray
     /// No bounds checking is performed in release builds.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr const Value& operator[](Enum key) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Value& operator[](const Enum key)
     {
         const auto index = static_cast<SizeT>(key);
-        SFML_BASE_ASSERT(index < Count && "Index is out of bounds");
+
+        SFML_BASE_ASSERT(index < Count);
         return data[index];
     }
 
-    [[gnu::always_inline]] constexpr void fill(Value key)
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns a reference to the element associated to specified \a key
+    ///
+    /// No bounds checking is performed in release builds.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const Value& operator[](const Enum key) const
+    {
+        const auto index = static_cast<SizeT>(key);
+
+        SFML_BASE_ASSERT(index < Count);
+        return data[index];
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] constexpr void fill(const Value key)
     {
         for (Value& value : data)
             value = key;
     }
 
+
+    ////////////////////////////////////////////////////////////
     Value data[Count];
 };
 

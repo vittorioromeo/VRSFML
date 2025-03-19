@@ -4,13 +4,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/GlContext.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/GLUtils/GlContext.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"

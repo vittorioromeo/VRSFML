@@ -10,7 +10,6 @@
 
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Optional.hpp"
-
 #include <android/looper.h>
 
 #if defined(__clang__) || defined(__GNUC__)
