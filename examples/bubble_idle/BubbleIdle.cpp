@@ -1147,6 +1147,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Steam manager
     hg::Steam::SteamManager& steamMgr;
+    bool                     onSteamDeck{false};
 
     ////////////////////////////////////////////////////////////
     // Background hue changing based on shrine
@@ -2939,7 +2940,7 @@ It's a duck.)",
         const ImVec2 displaySafeAreaPadding;
         const float  mouseCursorScale;
 
-        void applyWithScale(ImGuiStyle& style, const float scale) const
+        void applyWithScale(ImGuiStyle& style, const float scale, const bool steamDeck) const
         {
             style.WindowPadding                    = windowPadding * scale;
             style.WindowRounding                   = windowRounding * scale;
@@ -2954,7 +2955,7 @@ It's a duck.)",
             style.TouchExtraPadding                = touchExtraPadding * scale;
             style.IndentSpacing                    = indentSpacing * scale;
             style.ColumnsMinSpacing                = columnsMinSpacing * scale;
-            style.ScrollbarSize                    = scrollbarSize * scale * 0.5f;
+            style.ScrollbarSize                    = scrollbarSize * scale * (steamDeck ? 2.f : 0.5f);
             style.ScrollbarRounding                = scrollbarRounding * scale;
             style.GrabMinSize                      = grabMinSize * scale;
             style.GrabRounding                     = grabRounding * scale;
@@ -3018,7 +3019,7 @@ It's a duck.)",
         style.Colors[ImGuiCol_Border]   = colorBlueOutline.toVec4<ImVec4>();
 
         const float newScalingFactor = profile.uiScale;
-        initialStyleScales.applyWithScale(style, newScalingFactor);
+        initialStyleScales.applyWithScale(style, newScalingFactor, onSteamDeck);
 
         ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
 
@@ -12588,7 +12589,7 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
-    Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr)
+    Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr), onSteamDeck(steamMgr.isOnSteamDeck())
     {
         //
         // Profile
@@ -12596,6 +12597,15 @@ It's a duck.)",
         {
             loadProfileFromFile(profile);
             std::cout << "Loaded profile from file on startup\n";
+        }
+
+        if (onSteamDeck)
+        {
+            // borderless windowed
+            profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
+            profile.windowed = true;
+
+            profile.uiScale = 1.25f;
         }
 
         //
