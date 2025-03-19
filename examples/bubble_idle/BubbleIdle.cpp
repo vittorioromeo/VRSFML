@@ -33,7 +33,6 @@
 #include "ShrineType.hpp"
 #include "Sounds.hpp"
 #include "Stats.hpp"
-#include "Steam.hpp"
 #include "SweepAndPrune.hpp"
 #include "TextEffectWiggle.hpp"
 #include "TextParticle.hpp"
@@ -123,6 +122,16 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+
+
+////////////////////////////////////////////////////////////
+#ifndef SFML_SYSTEM_EMSCRIPTEN
+    #define BUBBLEBYTE_USE_STEAMWORKS 1
+#endif
+
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
+    #include "Steam.hpp"
+#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -1144,10 +1153,13 @@ struct Main
     // Portal storm buff countdown
     Countdown portalStormTimer;
 
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
     ////////////////////////////////////////////////////////////
     // Steam manager
     hg::Steam::SteamManager& steamMgr;
-    bool                     onSteamDeck{false};
+#endif
+
+    bool onSteamDeck{false};
 
     ////////////////////////////////////////////////////////////
     // Background hue changing based on shrine
@@ -8984,8 +8996,10 @@ It's a duck.)",
         {
             const auto achievementId = nextId++;
 
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
             if (steamMgr.isInitialized() && condition)
                 steamMgr.unlockAchievement(achievementId);
+#endif
 
             if (profile.unlockedAchievements[achievementId] || !condition)
                 return;
@@ -11981,7 +11995,9 @@ It's a duck.)",
                                            : static_cast<sf::base::U8>(
                                                  remap(easeInOutSine(splashCountdown.getProgress()), 0.75f, 1.f, 0.f, 255.f));
 
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
         steamMgr.runCallbacks();
+#endif
 
         if (!gameLoopRecreateWindowIfNeeded())
             return false;
@@ -12588,8 +12604,12 @@ It's a duck.)",
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
     }
 
-    ////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
     Main(hg::Steam::SteamManager& xSteamMgr) : steamMgr(xSteamMgr), onSteamDeck(steamMgr.isOnSteamDeck())
+#else
+    Main() : onSteamDeck(false)
+#endif
     {
         //
         // Profile
@@ -12668,43 +12688,14 @@ int main(int argc, const char** argv)
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
-#if 0
-    std::vector<std::string> apinames;
-    std::vector<std::string> displaynames;
-    std::vector<std::string> descriptions;
-
-    int idx = 0;
-    for (const auto& [name, description, secret] : achievementData)
-    {
-        apinames.emplace_back("ACH_" + std::to_string(idx));
-        displaynames.emplace_back(name);
-        descriptions.emplace_back(description);
-
-        std::cout << "ACH_" << idx << "\t" << name << "\t" << description << "\n";
-
-        ++idx;
-    }
-
-    std::cout << "const apinames = [\n";
-    for (const auto& name : apinames)
-        std::cout << "`" << name << "`, \n";
-    std::cout << "];\n\n";
-
-    std::cout << "const displaynames = [\n";
-    for (const auto& name : displaynames)
-        std::cout << "`" << name << "`, \n";
-    std::cout << "];\n\n";
-
-    std::cout << "const descriptions = [\n";
-    for (const auto& name : descriptions)
-        std::cout << "`" << name << "`, \n";
-    std::cout << "];\n\n";
-#else
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
     hg::Steam::SteamManager steamMgr;
     steamMgr.requestStatsAndAchievements();
     steamMgr.runCallbacks();
 
     Main{steamMgr}.run();
+#else
+    Main{}.run();
 #endif
 }
 
