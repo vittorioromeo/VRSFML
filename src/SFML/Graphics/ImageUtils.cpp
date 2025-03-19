@@ -23,7 +23,6 @@
 #include <stb_image_write.h>
 
 #pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
 
 #include <fstream>
 
