@@ -11,9 +11,12 @@
 
 namespace sf::base
 {
+////////////////////////////////////////////////////////////
 template <typename T>
 struct MakeUnsignedImpl;
 
+
+////////////////////////////////////////////////////////////
 // clang-format off
 template <> struct MakeUnsignedImpl<char8_t>            { using type = char8_t; };
 template <> struct MakeUnsignedImpl<char16_t>           { using type = char16_t; };
@@ -29,7 +32,6 @@ template <> struct MakeUnsignedImpl<  signed long>      { using type = unsigned 
 template <> struct MakeUnsignedImpl<unsigned long>      { using type = unsigned long; };
 template <> struct MakeUnsignedImpl<  signed long long> { using type = unsigned long long; };
 template <> struct MakeUnsignedImpl<unsigned long long> { using type = unsigned long long; };
-
 // clang-format on
 
 } // namespace sf::base

@@ -72,8 +72,8 @@ public:
         // We extract 24 random bits, which is enough to fill the 23-bit mantissa of a float,
         // and normalize by dividing by (2^24 - 1).
 
-        const sf::base::U32 randomBits = next() >> (64 - 24);                                   // Extract 24 bits.
-        const float         normalized = static_cast<float>(randomBits) / float((1 << 24) - 1); // Normalize to [0, 1].
+        const auto  randomBits = static_cast<sf::base::U32>(next() >> (64u - 24u));     // Extract 24 bits.
+        const float normalized = static_cast<float>(randomBits) / float((1 << 24) - 1); // Normalize to [0, 1].
 
         return min + normalized * (max - min);
     }

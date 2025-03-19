@@ -32,7 +32,7 @@ public:
         auto textVertices = text.getVerticesMut();
 
         m_oldVertexPositions.clear();
-        m_oldVertexPositions.reserve(textVertices.size());
+        m_oldVertexPositions.reserve(textVertices.size);
 
         for (const sf::Vertex& v : textVertices)
             m_oldVertexPositions.pushBack(v.position);
@@ -45,11 +45,11 @@ public:
 
         for (sf::base::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data()[i * 4u + j].position.y += func(t, i);
+                textVertices.data[i * 4u + j].position.y += func(t, i);
 
-        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size() / 4u; ++i)
+        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data()[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
+                textVertices.data[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
     }
 
     ////////////////////////////////////////////////////////////

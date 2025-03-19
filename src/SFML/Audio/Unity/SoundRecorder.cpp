@@ -10,7 +10,6 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
-
 #include <miniaudio.h>
 
 

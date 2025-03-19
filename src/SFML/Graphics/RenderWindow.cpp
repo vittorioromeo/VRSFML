@@ -10,9 +10,10 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/WindowBase.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Macros.hpp"
 

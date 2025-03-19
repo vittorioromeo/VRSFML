@@ -7,14 +7,15 @@
 #include "SFML/Config.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/GlContext.hpp"
-#include "SFML/Window/GlContextTypeImpl.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/GlContext.hpp"
+#include "SFML/GLUtils/GlContextTypeImpl.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 

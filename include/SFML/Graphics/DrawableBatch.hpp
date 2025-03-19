@@ -21,16 +21,9 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-template <typename TBufferObject>
-class GLPersistentBuffer;
-
-struct GLVAOGroup;
-
 class RenderTarget;
 class Shape;
 class Text;
-struct GLElementBufferObject;
-struct GLVertexBufferObject;
 struct Sprite;
 struct Transform;
 
@@ -163,7 +156,7 @@ struct PersistentGPUStorage
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const GLVAOGroup& getVAOGroup() const;
+    [[nodiscard]] const void* getVAOGroup() const;
 
     ////////////////////////////////////////////////////////////
     // Member data

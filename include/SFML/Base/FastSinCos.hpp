@@ -21,8 +21,10 @@ enum : U32
     sinCount = sinMask + 1u // 65536
 };
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastSinIdx(const float radians) noexcept
@@ -30,11 +32,13 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
     return static_cast<U32>(radians * radToIndex);
 }
 
+
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastCosIdx(const float radians) noexcept
 {
     return fastSinIdx(radians) + 16'384u;
 }
+
 
 ////////////////////////////////////////////////////////////
 inline constexpr struct SinTable
@@ -47,6 +51,7 @@ inline constexpr struct SinTable
 
     ////////////////////////////////////////////////////////////
     static_assert(sizeof(data) == (sinCount) * sizeof(float));
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr SinTable() noexcept
@@ -89,6 +94,7 @@ namespace sf::base
     return priv::sinTable.data[priv::fastSinIdx(radians) & priv::sinMask];
 }
 
+
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
 ///
@@ -100,6 +106,7 @@ namespace sf::base
 
     return priv::sinTable.data[priv::fastCosIdx(radians) & priv::sinMask];
 }
+
 
 ////////////////////////////////////////////////////////////
 /// \brief TODO P1: docs
