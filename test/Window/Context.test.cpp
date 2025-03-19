@@ -9,7 +9,6 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -18,18 +17,17 @@
 #include <string>
 
 #if defined(SFML_SYSTEM_WINDOWS)
-#define GLAPI __stdcall
+    #define GLAPI __stdcall
 #else
-#define GLAPI
+    #define GLAPI
 #endif
+
 
 namespace sf::priv
 {
 class GlContext
 {
 public:
-    virtual ~GlContext() = default;
-
     [[nodiscard]] const ContextSettings& getSettings() const;
     [[nodiscard]] unsigned int           getId() const;
 
@@ -42,7 +40,7 @@ private:
 
 struct TestContext
 {
-    sf::base::UniquePtr<sf::priv::GlContext> glContext;
+    decltype(sf::WindowContext::createGlContext()) glContext;
 
     TestContext() : glContext(sf::WindowContext::createGlContext())
     {
@@ -243,9 +241,9 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
         const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(TestContext::getFunction("glGetString"));
         REQUIRE(glGetStringFunc);
 
-        constexpr unsigned int glVendor   = 0x1F00;
-        constexpr unsigned int glRenderer = 0x1F01;
-        constexpr unsigned int glVersion  = 0x1F02;
+        constexpr unsigned int glVendor   = 0x1F'00;
+        constexpr unsigned int glRenderer = 0x1F'01;
+        constexpr unsigned int glVersion  = 0x1F'02;
 
         const char* vendor   = glGetStringFunc(glVendor);
         const char* renderer = glGetStringFunc(glRenderer);
