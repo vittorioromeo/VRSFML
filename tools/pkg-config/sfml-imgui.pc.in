@@ -1,0 +1,14 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/@SFML_RELATIVE_INSTALL_LIBDIR@
+includedir=${prefix}/include
+
+Name: SFML-imgui
+Description: The Simple and Fast Multimedia Library, imgui module.
+URL: http://www.sfml-dev.org
+Version: @PROJECT_VERSION@
+Requires: sfml-graphics
+Libs: -L${libdir} -lsfml-imgui
+# gl may not be in pkg-config
+Libs.private: @OPENGL_gl_LIBRARY@ @OPENGL_glu_LIBRARY@
+Cflags: -I${includedir}
