@@ -23,7 +23,6 @@
 #include "SFML/System/Utf.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
-
 #include <X11/Xlibint.h>
 #undef min // Defined by `Xlibint.h`, conflicts with standard headers
 #undef max // Defined by `Xlibint.h`, conflicts with standard headers
@@ -32,7 +31,6 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
-
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/extensions/XInput2.h>
@@ -51,7 +49,7 @@
 #include <vector>
 
 #ifdef SFML_OPENGL_ES
-    #include "SFML/Window/EGL/EGLContext.hpp"
+    #include "SFML/GLUtils/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 #else
     #include "SFML/Window/Unix/GlxContext.hpp"

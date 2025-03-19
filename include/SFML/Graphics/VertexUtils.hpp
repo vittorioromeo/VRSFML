@@ -9,6 +9,7 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -39,10 +40,10 @@ namespace sf
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
-        left   = base::min(left, v->position.x);
-        right  = base::max(right, v->position.x);
-        top    = base::min(top, v->position.y);
-        bottom = base::max(bottom, v->position.y);
+        left   = SFML_BASE_MIN(left, v->position.x);
+        right  = SFML_BASE_MAX(right, v->position.x);
+        top    = SFML_BASE_MIN(top, v->position.y);
+        bottom = SFML_BASE_MAX(bottom, v->position.y);
     }
 
     return {{left, top}, {right - left, bottom - top}};

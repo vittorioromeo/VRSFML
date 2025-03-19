@@ -7,9 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/VertexBuffer.hpp"
-
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
@@ -31,6 +28,7 @@ class WindowImpl;
 namespace sf
 {
 class GraphicsContext;
+class RenderTarget;
 class RenderTexture;
 class Shader;
 class Texture;

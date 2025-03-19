@@ -10,7 +10,6 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-
 #include <X11/Xlib.h>
 #include <X11/extensions/Xrandr.h>
 

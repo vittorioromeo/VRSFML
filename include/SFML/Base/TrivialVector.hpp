@@ -13,6 +13,7 @@
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -20,6 +21,7 @@ template <typename TItem>
 class [[nodiscard]] TrivialVector
 {
 private:
+    ////////////////////////////////////////////////////////////
     union [[nodiscard]] ItemUnion
     {
         TItem item;
@@ -29,6 +31,8 @@ private:
         }
     };
 
+
+    ////////////////////////////////////////////////////////////
     static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem));
     static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem));
 
@@ -38,9 +42,12 @@ private:
     static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(ItemUnion));
     static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(ItemUnion));
 
+
+    ////////////////////////////////////////////////////////////
     ItemUnion* m_data{nullptr};
     TItem*     m_endSize{nullptr};
     TItem*     m_endCapacity{nullptr};
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl(base::SizeT targetCapacity)
@@ -68,11 +75,13 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TrivialVector() = default;
 
+
     ////////////////////////////////////////////////////////////
     ~TrivialVector()
     {
         delete[] m_data;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit TrivialVector(base::SizeT initialSize) :
@@ -84,6 +93,7 @@ public:
             SFML_BASE_PLACEMENT_NEW(p) TItem();
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit TrivialVector(const TItem* src, base::SizeT srcCount) :
     m_data{new ItemUnion[srcCount]},
@@ -94,6 +104,7 @@ public:
             SFML_BASE_PLACEMENT_NEW(p) TItem(*src++);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] TrivialVector(const TrivialVector& rhs) :
     m_data{rhs.m_data == nullptr ? nullptr : new ItemUnion[rhs.size()]},
@@ -102,6 +113,7 @@ public:
     {
         SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * rhs.size());
     }
+
 
     ////////////////////////////////////////////////////////////
     TrivialVector& operator=(const TrivialVector& rhs)
@@ -117,6 +129,7 @@ public:
         return *this;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] TrivialVector(TrivialVector&& rhs) noexcept :
     m_data{rhs.m_data},
@@ -125,6 +138,7 @@ public:
     {
         rhs.m_data = nullptr;
     }
+
 
     ////////////////////////////////////////////////////////////
     TrivialVector& operator=(TrivialVector&& rhs) noexcept
@@ -143,6 +157,7 @@ public:
         return *this;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT n)
     {
@@ -154,6 +169,7 @@ public:
         for (auto* p = data() + oldSize; p < m_endSize; ++p)
             SFML_BASE_PLACEMENT_NEW(p) TItem();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const SizeT n, const TItem& item)
@@ -167,11 +183,13 @@ public:
             SFML_BASE_PLACEMENT_NEW(p) TItem(item);
     }
 
+
     ////////////////////////////////////////////////////////////
     void shrinkToFit()
     {
         reserveImpl(size());
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem*& reserveMore(const SizeT n)
@@ -184,6 +202,7 @@ public:
         return m_endSize;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem*& reserve(const SizeT targetCapacity)
     {
@@ -192,6 +211,7 @@ public:
 
         return m_endSize;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void assignRange(const TItem* b, const TItem* e) noexcept
@@ -208,6 +228,7 @@ public:
         unsafeSetSize(count);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* ptr, SizeT count) noexcept
     {
@@ -220,6 +241,7 @@ public:
         m_endSize += count;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void emplaceRange(const TItem* ptr, SizeT count) noexcept
     {
@@ -227,11 +249,13 @@ public:
         unsafeEmplaceRange(ptr, count);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const TrivialVector& rhs) noexcept
     {
         unsafeEmplaceRange(rhs.data(), rhs.size());
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear() noexcept
@@ -239,11 +263,13 @@ public:
         m_endSize = data();
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT size() const noexcept
     {
         return static_cast<SizeT>(m_endSize - data());
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] SizeT capacity() const noexcept
@@ -251,11 +277,13 @@ public:
         return static_cast<SizeT>(m_endCapacity - data());
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept
     {
         return data() == m_endSize;
     }
+
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
@@ -268,6 +296,7 @@ public:
         SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...);
     }
 
+
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
     [[gnu::always_inline, gnu::flatten]] void emplaceBack(Ts&&... xs)
@@ -276,6 +305,7 @@ public:
         unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
     }
 
+
     ////////////////////////////////////////////////////////////
     template <typename T>
     [[gnu::always_inline, gnu::flatten]] void pushBack(T&& x)
@@ -283,6 +313,7 @@ public:
         reserveMore(1);
         unsafeEmplaceBack(static_cast<T&&>(x));
     }
+
 
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
@@ -295,6 +326,7 @@ public:
         (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)), ...);
     }
 
+
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
     [[gnu::always_inline, gnu::flatten]] void pushBackMultiple(TItems&&... items)
@@ -303,17 +335,20 @@ public:
         unsafePushBackMultiple(static_cast<TItems&&>(items)...);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* data() noexcept
     {
         return SFML_BASE_LAUNDER_CAST(TItem*, m_data);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* data() const noexcept
     {
         return SFML_BASE_LAUNDER_CAST(const TItem*, m_data);
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept
@@ -324,6 +359,7 @@ public:
         return *(data() + i);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
     {
@@ -333,11 +369,13 @@ public:
         return *(data() + i);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* begin() noexcept
     {
         return data();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* begin() const noexcept
@@ -345,11 +383,13 @@ public:
         return data();
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* end() noexcept
     {
         return m_endSize;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* end() const noexcept
@@ -357,11 +397,13 @@ public:
         return m_endSize;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cbegin() const noexcept
     {
         return data();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept
@@ -369,11 +411,13 @@ public:
         return m_endSize;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
     {
         return this->operator[](0u);
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
@@ -381,17 +425,20 @@ public:
         return this->operator[](0u);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
     {
         return this->operator[](size() - 1u);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
     {
         return this->operator[](size() - 1u);
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(base::SizeT newSize) noexcept

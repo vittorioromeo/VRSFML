@@ -12,7 +12,6 @@
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
 #include <miniaudio.h>
 
 

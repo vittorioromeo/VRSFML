@@ -12,10 +12,8 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/ShaderSaver.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureSaver.hpp"
 
 #include "SFML/Window/Clipboard.hpp"
 #include "SFML/Window/Cursor.hpp"
@@ -23,6 +21,9 @@
 #include "SFML/Window/Joystick.hpp"
 #include "SFML/Window/Touch.hpp"
 #include "SFML/Window/Window.hpp"
+
+#include "SFML/GLUtils/ShaderSaver.hpp"
+#include "SFML/GLUtils/TextureSaver.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/String.hpp"

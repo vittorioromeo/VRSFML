@@ -44,8 +44,6 @@
 #elif defined(SFML_SYSTEM_ANDROID)
 
     #include <GLES3/gl3.h>
-
-    // We're not using OpenGL ES 2+ yet, but we can use the sRGB extension
     #include <GLES3/gl3ext.h>
     #include <GLES3/gl3platform.h>
 

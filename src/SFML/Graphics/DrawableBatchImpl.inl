@@ -8,8 +8,6 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
-#include "SFML/Graphics/GLPersistentBuffer.hpp"
-#include "SFML/Graphics/GLVAOGroup.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
@@ -24,61 +22,12 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
 namespace sf::priv
 {
-////////////////////////////////////////////////////////////
-struct PersistentGPUStorage::Impl
-{
-    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the batch (persistent storage)
-
-    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< GPU persistent buffer for vertices
-    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< GPU persistent buffer for indices
-
-    Impl() :
-    persistentVaoGroup(),
-    vboPersistentBuffer(persistentVaoGroup.vbo),
-    eboPersistentBuffer(persistentVaoGroup.ebo)
-    {
-        persistentVaoGroup.bind();
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage::PersistentGPUStorage() = default;
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage::~PersistentGPUStorage() = default;
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage::PersistentGPUStorage(PersistentGPUStorage&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage& PersistentGPUStorage::operator=(PersistentGPUStorage&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-Vertex* PersistentGPUStorage::reserveMoreVertices(const base::SizeT count)
-{
-    impl->vboPersistentBuffer.reserve(sizeof(Vertex) * (nVertices + count));
-    return static_cast<Vertex*>(impl->vboPersistentBuffer.data()) + nVertices;
-}
-
-
-////////////////////////////////////////////////////////////
-IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
-{
-    impl->eboPersistentBuffer.reserve(sizeof(IndexType) * (nIndices + count));
-    return static_cast<IndexType*>(impl->eboPersistentBuffer.data()) + nIndices;
-}
-
-
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::reserveTriangles(const base::SizeT triangleCount)
@@ -106,13 +55,6 @@ void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const
 
     appendTransformedVertices(transform, data, size, m_storage.reserveMoreVertices(size));
     m_storage.commitMoreVertices(size);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] const GLVAOGroup& PersistentGPUStorage::getVAOGroup() const
-{
-    return impl->persistentVaoGroup;
 }
 
 
@@ -239,11 +181,11 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
 
         v.position = transform.transformPoint(pointFn(i));
 
-        fillBoundsPosition.x = base::min(fillBoundsPosition.x, v.position.x);
-        fillBoundsPosition.y = base::min(fillBoundsPosition.y, v.position.y);
+        fillBoundsPosition.x = SFML_BASE_MIN(fillBoundsPosition.x, v.position.x);
+        fillBoundsPosition.y = SFML_BASE_MIN(fillBoundsPosition.y, v.position.y);
 
-        fillBoundsMaxX = base::max(fillBoundsMaxX, v.position.x);
-        fillBoundsMaxY = base::max(fillBoundsMaxY, v.position.y);
+        fillBoundsMaxX = SFML_BASE_MAX(fillBoundsMaxX, v.position.x);
+        fillBoundsMaxY = SFML_BASE_MAX(fillBoundsMaxY, v.position.y);
     }
 
     const sf::Vector2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
@@ -370,12 +312,5 @@ void DrawableBatchImpl<TStorage>::clear()
 {
     m_storage.clear();
 }
-
-
-////////////////////////////////////////////////////////////
-// Explicit instantiation definitions
-////////////////////////////////////////////////////////////
-template class DrawableBatchImpl<CPUStorage>;
-template class DrawableBatchImpl<PersistentGPUStorage>;
 
 } // namespace sf::priv

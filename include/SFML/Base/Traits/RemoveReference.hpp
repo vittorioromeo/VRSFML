@@ -16,7 +16,6 @@ namespace sf::base::priv
 template <typename T> struct RemoveReferenceImpl      { using type = T; };
 template <typename T> struct RemoveReferenceImpl<T&>  { using type = T; };
 template <typename T> struct RemoveReferenceImpl<T&&> { using type = T; };
-
 // clang-format on
 
 } // namespace sf::base::priv

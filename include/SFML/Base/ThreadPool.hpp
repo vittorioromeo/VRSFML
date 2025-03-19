@@ -9,6 +9,7 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
