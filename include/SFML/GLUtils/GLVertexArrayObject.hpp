@@ -5,10 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/GLUniqueResource.hpp"
-
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUniqueResource.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 
 namespace sf::priv

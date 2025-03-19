@@ -7,10 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
-#include "SFML/Graphics/GLBufferObject.hpp"
-
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLBufferObject.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"

@@ -12,7 +12,6 @@
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Macros.hpp"
-
 #include <miniaudio.h>
 
 

@@ -4,25 +4,24 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/TextureSaver.hpp"
-
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/GLUtils.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLUtils.hpp"
+#include "SFML/GLUtils/Glad.hpp"
+#include "SFML/GLUtils/ShaderSaver.hpp"
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-TextureSaver::TextureSaver() : m_textureBinding(static_cast<int>(priv::getGLInteger(GL_TEXTURE_BINDING_2D)))
+ShaderSaver::ShaderSaver() : m_shaderBinding(static_cast<int>(priv::getGLInteger(GL_CURRENT_PROGRAM)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-TextureSaver::~TextureSaver()
+ShaderSaver::~ShaderSaver()
 {
-    glCheck(glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(m_textureBinding)));
+    glCheck(glUseProgram(static_cast<GLuint>(m_shaderBinding)));
 }
 
 } // namespace sf::priv

@@ -10,6 +10,7 @@
 #include "SFML/Base/Traits/IsSame.hpp"
 #include "SFML/Base/TrivialAbi.hpp"
 
+
 namespace sf::base
 {
 // clang-format off
@@ -29,6 +30,7 @@ struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 };
 // clang-format on
 
+
 ////////////////////////////////////////////////////////////
 template <typename T, typename TDeleter = UniquePtrDefaultDeleter>
 class SFML_BASE_TRIVIAL_ABI UniquePtr : private TDeleter
@@ -45,15 +47,18 @@ public:
     {
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
     {
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr) noexcept : m_ptr{ptr}
     {
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
@@ -62,15 +67,18 @@ public:
     {
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr ~UniquePtr() noexcept
     {
         static_cast<TDeleter*>(this)->operator()(m_ptr);
     }
 
+
     ////////////////////////////////////////////////////////////
     UniquePtr(const UniquePtr&)            = delete;
     UniquePtr& operator=(const UniquePtr&) = delete;
+
 
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
@@ -80,6 +88,7 @@ public:
     {
         rhs.m_ptr = nullptr;
     }
+
 
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
@@ -94,11 +103,13 @@ public:
         return *this;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* get() const noexcept
     {
         return m_ptr;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T& operator*() const noexcept
@@ -107,6 +118,7 @@ public:
         return *m_ptr;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T* operator->() const noexcept
     {
@@ -114,11 +126,13 @@ public:
         return m_ptr;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(decltype(nullptr)) const noexcept
@@ -126,11 +140,13 @@ public:
         return m_ptr == nullptr;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(decltype(nullptr)) const noexcept
     {
         return m_ptr != nullptr;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void reset(T* const ptr = nullptr) noexcept
@@ -139,6 +155,7 @@ public:
         m_ptr = ptr;
     }
 };
+
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
