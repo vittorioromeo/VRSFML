@@ -56,16 +56,7 @@ if(SFML_OS_WINDOWS)
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
         # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
-    if(SFML_OPENGL_ES)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/EGL/EGLCheck.cpp
-            ${SRCROOT}/EGL/EGLCheck.hpp
-            ${SRCROOT}/EGL/EGLContext.cpp
-            ${SRCROOT}/EGL/EGLContext.hpp
-            ${SRCROOT}/EGL/EGLGlad.cpp
-            ${SRCROOT}/EGL/EGLGlad.hpp
-        )
-    else()
+    if(NOT SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
             ${SRCROOT}/Win32/WglContext.cpp
             ${SRCROOT}/Win32/WglContext.hpp
@@ -75,8 +66,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
-            ${SRCROOT}/EGL/EGLCheck.cpp
-            ${SRCROOT}/EGL/EGLCheck.hpp
             ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/VideoModeImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
@@ -105,16 +94,7 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/WindowImplX11.cpp
             ${SRCROOT}/Unix/WindowImplX11.hpp
         )
-        if(SFML_OPENGL_ES)
-            list(APPEND PLATFORM_SRC
-                ${SRCROOT}/EGL/EGLCheck.cpp
-                ${SRCROOT}/EGL/EGLCheck.hpp
-                ${SRCROOT}/EGL/EGLContext.cpp
-                ${SRCROOT}/EGL/EGLContext.hpp
-                ${SRCROOT}/EGL/EGLGlad.cpp
-                ${SRCROOT}/EGL/EGLGlad.hpp
-            )
-        else()
+        if(NOT SFML_OPENGL_ES)
              list(APPEND PLATFORM_SRC
                 ${SRCROOT}/Unix/GlxContext.cpp
                 ${SRCROOT}/Unix/GlxContext.hpp
@@ -216,17 +196,9 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/VideoModeImpl.cpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
-        ${SRCROOT}/EGL/EGLCheck.cpp
-        ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EGLContext.cpp
-        ${SRCROOT}/EGL/EGLContext.hpp
     )
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EGLCheck.cpp
-        ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EGLContext.cpp
-        ${SRCROOT}/EGL/EGLContext.hpp
         ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
         ${SRCROOT}/Emscripten/JoystickImpl.hpp
         ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
