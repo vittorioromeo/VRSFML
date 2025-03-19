@@ -14,7 +14,7 @@
 #define BUBBLEBYTE_VERSION_MINOR 3
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 1
+#define BUBBLEBYTE_VERSION_PATCH 2
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -31,3 +31,7 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
+
+
+// TODO P0: CHANGELOG
+// - Minor Steam Deck compatibility improvements
