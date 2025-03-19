@@ -12658,17 +12658,13 @@ It's a duck.)",
     }
 };
 
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
 ////////////////////////////////////////////////////////////
 int main(int argc, const char** argv)
 {
-    for (auto x : sf::VideoModeUtils::getFullscreenModes())
-    {
-        std::cout << x.size.x << "x" << x.size.y << " " << x.bitsPerPixel << "bpp\n";
-    }
-
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
