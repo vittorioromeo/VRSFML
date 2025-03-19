@@ -6,8 +6,14 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+
 #include <blockingconcurrentqueue.h>
 #include <concurrentqueue.h>
+
+#pragma GCC diagnostic pop
 
 #include <atomic>
 #include <chrono>
