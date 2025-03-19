@@ -3,6 +3,8 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
+find_package(Threads REQUIRED)
+
 set(SDL_STATIC ON)
 set(SDL_SHARED OFF)
 set(SDL_TEST_LIBRARY OFF)
@@ -19,12 +21,14 @@ get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRE
 set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
 target_compile_options(SDL_uclibc PRIVATE "-w")
 set_target_properties(SDL_uclibc PROPERTIES UNITY_BUILD OFF)
+target_link_libraries(SDL_uclibc PRIVATE Threads::Threads)
 
 if (TARGET SDL3-static)
     get_property(sdl3_include_dirs TARGET SDL3-static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
     set_property(TARGET SDL3-static PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
     target_compile_options(SDL3-static PRIVATE "-w")
     set_target_properties(SDL3-static PROPERTIES UNITY_BUILD OFF)
+    target_link_libraries(SDL3-static PRIVATE Threads::Threads)
 endif()
 
 if (TARGET SDL3-dynamic)
@@ -32,6 +36,7 @@ if (TARGET SDL3-dynamic)
     set_property(TARGET SDL3-dynamic PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
     target_compile_options(SDL3-dynamic PRIVATE "-w")
     set_target_properties(SDL3-dynamic PROPERTIES UNITY_BUILD OFF)
+    target_link_libraries(SDL3-dynamic PRIVATE Threads::Threads)
 endif()
 
 
