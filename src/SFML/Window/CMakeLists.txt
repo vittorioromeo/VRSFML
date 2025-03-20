@@ -57,7 +57,6 @@ if(SFML_OS_WINDOWS)
         # ${SRCROOT}/Win32/Unity/InputImpl.cpp
         # ${SRCROOT}/Win32/Unity/JoystickImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
-        # ${SRCROOT}/Win32/Unity/VideoModeImpl.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
         # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
@@ -72,7 +71,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
             ${SRCROOT}/DRM/InputImpl.cpp
-            ${SRCROOT}/DRM/VideoModeImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
             ${SRCROOT}/DRM/DRMContext.hpp
             ${SRCROOT}/DRM/WindowImplDRM.cpp
@@ -94,7 +92,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/Display.cpp
             ${SRCROOT}/Unix/Display.hpp
             ${SRCROOT}/Unix/Utils.hpp
-            ${SRCROOT}/Unix/VideoModeImpl.cpp
             ${SRCROOT}/Unix/VulkanImplX11.cpp
             ${SRCROOT}/Unix/WindowImplX11.cpp
             ${SRCROOT}/Unix/WindowImplX11.hpp

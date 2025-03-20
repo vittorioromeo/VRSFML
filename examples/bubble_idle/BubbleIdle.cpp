@@ -12685,6 +12685,16 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 int main(int argc, const char** argv)
 {
+    auto desktopMode = sf::VideoModeUtils::getDesktopMode();
+    std::cout << "Desktop mode: " << desktopMode.size.x << "x" << desktopMode.size.y << " @ "
+              << desktopMode.bitsPerPixel << "bpp\n";
+
+    for (auto fullscreenMode : sf::VideoModeUtils::getFullscreenModes())
+    {
+        std::cout << "Fullscreen mode: " << fullscreenMode.size.x << "x" << fullscreenMode.size.y << " @ "
+                  << fullscreenMode.bitsPerPixel << "bpp\n";
+    }
+
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
