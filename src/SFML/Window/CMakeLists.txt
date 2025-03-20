@@ -160,7 +160,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/SFWindowController.mm
         ${SRCROOT}/macOS/SFViewController.h
         ${SRCROOT}/macOS/SFViewController.mm
-        ${SRCROOT}/macOS/VideoModeImpl.cpp
         ${SRCROOT}/macOS/WindowImplCocoa.hpp
         ${SRCROOT}/macOS/WindowImplCocoa.mm
         ${SRCROOT}/macOS/WindowImplDelegateProtocol.h
@@ -177,7 +176,6 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/InputImpl.mm
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
-        ${SRCROOT}/iOS/VideoModeImpl.mm
         ${SRCROOT}/iOS/WindowImplUIKit.hpp
         ${SRCROOT}/iOS/WindowImplUIKit.mm
         ${SRCROOT}/iOS/ObjCType.hpp
@@ -195,7 +193,6 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/InputImpl.cpp
         ${SRCROOT}/Android/SensorImpl.cpp
         ${SRCROOT}/Android/SensorImpl.hpp
-        ${SRCROOT}/Android/VideoModeImpl.cpp
         ${SRCROOT}/Android/WindowImplAndroid.cpp
         ${SRCROOT}/Android/WindowImplAndroid.hpp
     )
