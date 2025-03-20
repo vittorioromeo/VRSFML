@@ -3060,7 +3060,8 @@ It's a duck.)",
             ImGui::EndTabBar();
         }
 
-        uiMakeShrineOrCatTooltip(mousePos);
+        if (!ImGui::GetIO().WantCaptureMouse && particleCullingBoundaries.isInside(mousePos))
+            uiMakeShrineOrCatTooltip(mousePos);
 
         ImGui::End();
 
@@ -3404,9 +3405,17 @@ It's a duck.)",
         {
             const char* mouseNote = catMouse == nullptr ? "" : "\n\n(Note: this also applies to the Mousecat!)";
 
+            const float currentComboStartTime = pt.psvComboStartTime.currentValue();
+            const float nextComboStartTime    = pt.psvComboStartTime.nextValue();
+
             uiSetUnlockLabelY(0u);
-            std::sprintf(uiTooltipBuffer, "Increase combo duration. We are in it for the long haul!%s", mouseNote);
-            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvComboStartTime.currentValue()));
+            std::sprintf(uiTooltipBuffer,
+                         "Increase combo duration from %.2fs to %.2fs. We are in it for the long haul!%s",
+                         static_cast<double>(currentComboStartTime),
+                         static_cast<double>(nextComboStartTime),
+                         mouseNote);
+
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentComboStartTime));
             makePSVButton("  Longer combo", pt.psvComboStartTime);
         }
 
@@ -3497,10 +3506,18 @@ It's a duck.)",
         {
             auto& psv = pt.psvCooldownMultsPerCatType[asIdx(catType)];
 
+            const float currentCooldown = CatConstants::baseCooldowns[asIdx(catType)] * psv.currentValue();
+            const float nextCooldown    = CatConstants::baseCooldowns[asIdx(catType)] * psv.nextValue();
+
             std::sprintf(uiTooltipBuffer,
-                         "Decrease cooldown.%s\n\n(Note: can be reverted by right-clicking, but no refunds!)",
+                         "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, but no "
+                         "refunds!)",
+                         static_cast<double>(currentCooldown / 1000.f),
+                         static_cast<double>(nextCooldown / 1000.f),
                          additionalInfo);
+
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedCooldownByCatType(catType) / 1000.f));
+
             makePSVButton(label, psv);
 
             if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
@@ -3515,8 +3532,14 @@ It's a duck.)",
         {
             auto& psv = pt.psvRangeDivsPerCatType[asIdx(catType)];
 
+            const float currentRange = CatConstants::baseRanges[asIdx(catType)] / psv.currentValue();
+            const float nextRange    = CatConstants::baseRanges[asIdx(catType)] / psv.nextValue();
+
             std::sprintf(uiTooltipBuffer,
-                         "Increase range.%s\n\n(Note: can be reverted by right-clicking, but no refunds!)",
+                         "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but no "
+                         "refunds!)",
+                         static_cast<double>(currentRange),
+                         static_cast<double>(nextRange),
                          additionalInfo);
             std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedRangeByCatType(catType)));
             makePSVButton(label, psv);
@@ -3593,9 +3616,15 @@ It's a duck.)",
 
             if (checkUiUnlock(9u, nCatDevil >= 1) && !isDevilcatHellsingedActive())
             {
+                const float currentExplosionRadius = pt.psvExplosionRadiusMult.currentValue();
+                const float nextExplosionRadius    = pt.psvExplosionRadiusMult.nextValue();
+
                 uiSetUnlockLabelY(9u);
-                std::sprintf(uiTooltipBuffer, "Increase bomb explosion radius.");
-                std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvExplosionRadiusMult.currentValue()));
+                std::sprintf(uiTooltipBuffer,
+                             "Increase bomb explosion radius from x%.2f to x%.2f.",
+                             static_cast<double>(currentExplosionRadius),
+                             static_cast<double>(nextExplosionRadius));
+                std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentExplosionRadius));
                 makePSVButton("  Explosion radius", pt.psvExplosionRadiusMult);
             }
 
@@ -4104,8 +4133,14 @@ It's a duck.)",
 
                 if (pt.psvBubbleValue.nPurchases >= 2u)
                 {
-                    std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect.");
-                    std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedMultiPopRange()));
+                    const float currentRange = pt.psvPPMultiPopRange.currentValue();
+                    const float nextRange    = pt.psvPPMultiPopRange.nextValue();
+
+                    std::sprintf(uiTooltipBuffer,
+                                 "Increase the range of the multipop effect from %.2fpx to %.2fpx.",
+                                 static_cast<double>(currentRange),
+                                 static_cast<double>(nextRange));
+                    std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(currentRange));
                     makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
                 }
 
@@ -4278,9 +4313,15 @@ It's a duck.)",
 
             if (checkUiUnlock(57u, pt.perm.astroCatInspirePurchased))
             {
+                const float currentDuration = pt.getComputedInspirationDuration();
+                const float nextDuration    = pt.getComputedNextInspirationDuration();
+
                 uiSetUnlockLabelY(57u);
-                std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect.");
-                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedInspirationDuration() / 1000.f));
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the duration of the inspiration effect from %.2fs to %.2fs.",
+                             static_cast<double>(currentDuration / 1000.f),
+                             static_cast<double>(nextDuration / 1000.f));
+                std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration / 1000.f));
 
                 makePrestigePurchasablePPButtonPSV("inspire duration", pt.psvPPInspireDurationMult);
             }
@@ -4314,15 +4355,20 @@ It's a duck.)",
             makeUnsealButton(4u, "Witchcat", CatType::Witch);
             ImGui::Separator();
 
-            std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs.");
-            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.psvPPWitchCatBuffDuration.currentValue()));
+            const float currentDuration = pt.psvPPWitchCatBuffDuration.currentValue();
+            const float nextDuration    = pt.psvPPWitchCatBuffDuration.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the base duration of Witchcat buffs from %.2fs to %.2fs.",
+                         static_cast<double>(currentDuration),
+                         static_cast<double>(nextDuration));
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration));
             makePrestigePurchasablePPButtonPSV("Buff duration", pt.psvPPWitchCatBuffDuration);
 
             ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
-                         "The duration of Witchcat buffs scales with the number of cats that were in range while "
-                         "the ritual was performed.");
+                         "The duration of Witchcat buffs scales with the number of cats in range of the ritual.");
             uiLabelBuffer[0] = '\0';
             (void)makePurchasablePPButtonOneTime("Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
 
@@ -4348,13 +4394,25 @@ It's a duck.)",
 
             ImGui::Separator();
 
+            const float currentUniPercentage = pt.psvPPUniRitualBuffPercentage.currentValue();
+            const float nextUniPercentage    = pt.psvPPUniRitualBuffPercentage.nextValue();
+
             std::sprintf(uiTooltipBuffer,
-                         "Increase the star bubble spawn chance during the Unicat vododoo ritual buff.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPUniRitualBuffPercentage.currentValue()));
+                         "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% to "
+                         "%.2f%%.",
+                         static_cast<double>(currentUniPercentage),
+                         static_cast<double>(nextUniPercentage));
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentUniPercentage));
             makePrestigePurchasablePPButtonPSV("Star Spawn %", pt.psvPPUniRitualBuffPercentage);
 
-            std::sprintf(uiTooltipBuffer, "Increase the bomb spawn chance during the Devil vododoo ritual buff.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPDevilRitualBuffPercentage.currentValue()));
+            const float currentDevilPercentage = pt.psvPPDevilRitualBuffPercentage.currentValue();
+            const float nextDevilPercentage    = pt.psvPPDevilRitualBuffPercentage.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to %.2f%%.",
+                         static_cast<double>(currentDevilPercentage),
+                         static_cast<double>(nextDevilPercentage));
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
             makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
         }
 
@@ -4370,12 +4428,21 @@ It's a duck.)",
 
             // TODO P1: autocast
 
-            std::sprintf(uiTooltipBuffer, "Increase the speed of mana generation.");
-            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedManaCooldown() / 1000.f));
+            const float currentManaCooldown = pt.getComputedManaCooldown();
+            const float nextManaCooldown    = pt.getComputedManaCooldownNext();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Decrease mana generation cooldown from %.2fs to %.2fs.",
+                         static_cast<double>(currentManaCooldown / 1000.f),
+                         static_cast<double>(nextManaCooldown / 1000.f));
+            std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentManaCooldown / 1000.f));
             makePrestigePurchasablePPButtonPSV("Mana cooldown", pt.psvPPManaCooldownMult);
 
-            std::sprintf(uiTooltipBuffer, "Increase the maximum mana.");
-            std::sprintf(uiLabelBuffer, "%llu mana", pt.getComputedMaxMana());
+            const ManaType currentMaxMana = pt.getComputedMaxMana();
+            const ManaType nextMaxMana    = pt.getComputedMaxManaNext();
+
+            std::sprintf(uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
+            std::sprintf(uiLabelBuffer, "%llu mana", currentMaxMana);
             makePrestigePurchasablePPButtonPSV("Mana limit", pt.psvPPManaMaxMult);
 
             ImGui::Separator();
@@ -4416,8 +4483,14 @@ It's a duck.)",
             makeUnsealButton(8u, "Mousecat", CatType::Mouse);
             ImGui::Separator();
 
-            std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier.");
-            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPMouseCatGlobalBonusMult.currentValue()));
+            const float currentReward = pt.psvPPMouseCatGlobalBonusMult.currentValue();
+            const float nextReward    = pt.psvPPMouseCatGlobalBonusMult.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the global click reward value multiplier from x%.2f to x%.2f.",
+                         static_cast<double>(currentReward),
+                         static_cast<double>(nextReward));
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
             makePrestigePurchasablePPButtonPSV("Global click mult", pt.psvPPMouseCatGlobalBonusMult);
         }
 
@@ -4431,8 +4504,14 @@ It's a duck.)",
             makeUnsealButton(16u, "Engicat", CatType::Engi);
             ImGui::Separator();
 
-            std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier.");
-            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvPPEngiCatGlobalBonusMult.currentValue()));
+            const float currentReward = pt.psvPPEngiCatGlobalBonusMult.currentValue();
+            const float nextReward    = pt.psvPPEngiCatGlobalBonusMult.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the global cat reward value multiplierfrom x%.2f to x%.2f.",
+                         static_cast<double>(currentReward),
+                         static_cast<double>(nextReward));
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
             makePrestigePurchasablePPButtonPSV("Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
         }
 
@@ -4488,8 +4567,14 @@ It's a duck.)",
                 ImGui::NextColumn();
                 ImGui::NextColumn();
 
-                std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance.");
-                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvPPRepulsoCatConverterChance.currentValue()));
+                const float currentChance = pt.psvPPRepulsoCatConverterChance.currentValue();
+                const float nextChance    = pt.psvPPRepulsoCatConverterChance.nextValue();
+
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the repelled bubble conversion chance from %.2f%% to %.2f%%.",
+                             static_cast<double>(currentChance),
+                             static_cast<double>(nextChance));
+                std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentChance));
                 makePrestigePurchasablePPButtonPSV("Conversion chance", pt.psvPPRepulsoCatConverterChance);
 
                 std::sprintf(uiTooltipBuffer, "Bubbles are converted into nova bubbles instead of star bubbles.");
@@ -4500,7 +4585,7 @@ It's a duck.)",
 
         if (checkUiUnlock(65u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
         {
-            imgsep2(txrPrestigeSeparator14, "attactocat");
+            imgsep2(txrPrestigeSeparator14, "attractocat");
 
             uiBeginColumns();
 
@@ -4798,8 +4883,6 @@ It's a duck.)",
 
         Cat* copyCat = cachedCopyCat;
 
-        const auto maxCooldown = pt.getComputedCooldownByCatType(CatType::Wizard);
-
         ImGui::Spacing();
         ImGui::Spacing();
 
@@ -4880,8 +4963,14 @@ It's a duck.)",
                 statSpellCast(0u);
             }
 
-            std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvStarpawPercentage.currentValue()));
+            const float currentPercentage = pt.psvStarpawPercentage.currentValue();
+            const float nextPercentage    = pt.psvStarpawPercentage.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the percentage of bubbles converted into star bubbles from %.2f%% to %.2f%%.",
+                         static_cast<double>(currentPercentage),
+                         static_cast<double>(nextPercentage));
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
             (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
                                             pt.psvStarpawPercentage,
                                             1u,
@@ -4918,8 +5007,14 @@ It's a duck.)",
                 statSpellCast(1u);
             }
 
-            std::sprintf(uiTooltipBuffer, "Increase the multiplier applied while the aura is active.");
-            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(pt.psvMewltiplierMult.currentValue()));
+            const float currentMultiplier = pt.psvMewltiplierMult.currentValue();
+            const float nextMultiplier    = pt.psvMewltiplierMult.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the multiplier applied while the aura is active from x%.2f to x%.2f.",
+                         static_cast<double>(currentMultiplier),
+                         static_cast<double>(nextMultiplier));
+            std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentMultiplier));
             (void)makePSVButtonExByCurrency("  higher multiplier",
                                             pt.psvMewltiplierMult,
                                             1u,
@@ -4955,8 +5050,14 @@ It's a duck.)",
                 statSpellCast(2u);
             }
 
-            std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.psvDarkUnionPercentage.currentValue()));
+            const float currentPercentage = pt.psvDarkUnionPercentage.currentValue();
+            const float nextPercentage    = pt.psvDarkUnionPercentage.nextValue();
+
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the cooldown reduction percentage from %.2f%% to %.2f%%.",
+                         static_cast<double>(currentPercentage),
+                         static_cast<double>(nextPercentage));
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
             (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
                                             pt.psvDarkUnionPercentage,
                                             1u,
@@ -6876,7 +6977,7 @@ It's a duck.)",
 
             if (pt.multiPopEnabled)
                 forEachBubbleInRadius(clickPos,
-                                      pt.getComputedMultiPopRange(),
+                                      pt.psvPPMultiPopRange.currentValue(),
                                       [&](Bubble& otherBubble)
                 {
                     if (&otherBubble == &bubble)
@@ -7453,7 +7554,7 @@ It's a duck.)",
 
         if (pt.multiPopMouseCatEnabled)
             forEachBubbleInRadius(savedBubblePos,
-                                  pt.getComputedMultiPopRange(),
+                                  pt.psvPPMultiPopRange.currentValue(),
                                   [&](Bubble& otherBubble)
             {
                 if (&otherBubble == &bubble)
@@ -8219,7 +8320,8 @@ It's a duck.)",
 
                 return;
             }
-            else if (ImGui::GetIO().WantCaptureMouse || !particleCullingBoundaries.isInside(mousePos))
+
+            if (ImGui::GetIO().WantCaptureMouse || !particleCullingBoundaries.isInside(mousePos))
             {
                 resetAllDraggedCats();
                 return;
@@ -12685,6 +12787,7 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 int main(int argc, const char** argv)
 {
+    /*
     auto desktopMode = sf::VideoModeUtils::getDesktopMode();
     std::cout << "Desktop mode: " << desktopMode.size.x << "x" << desktopMode.size.y << " @ "
               << desktopMode.bitsPerPixel << "bpp\n";
@@ -12694,6 +12797,7 @@ int main(int argc, const char** argv)
         std::cout << "Fullscreen mode: " << fullscreenMode.size.x << "x" << fullscreenMode.size.y << " @ "
                   << fullscreenMode.bitsPerPixel << "bpp\n";
     }
+    */
 
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
@@ -12714,11 +12818,9 @@ int main(int argc, const char** argv)
 // TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
-// TODO P1: tooltips should say how much things get improved (e.g. cooldown and range, also PP stuff like mana)
 // TODO P1: click on minimap to change view
-// TODO P1: test steam deck with proton on linux vm
+// TODO P1: more steam deck improvements
 
-// TODO P2: prestige should scale indefinitely...? maybe when we reach max bubble value just purchase prestige points
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
 // TODO P2: encrypt save files
@@ -12728,7 +12830,6 @@ int main(int argc, const char** argv)
 // TODO P2: maybe 64PP prestige buff for multipop that allows "misses"
 // TODO P2: reduce size of game textures and try to reduce atlas size
 // TODO P2: some sort of beacon cat that is only effective when near n-m cats but no less nor more
-// TODO P2: improve copycat bg drawings
 // TODO P2: decorations for unique cats (e.g. wizard cape, witch?, engi tesla coil,  ?)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
