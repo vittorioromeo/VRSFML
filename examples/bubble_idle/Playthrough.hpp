@@ -419,9 +419,21 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline float getComputedNextInspirationDuration() const
+    {
+        return 1500.f * psvPPInspireDurationMult.nextValue();
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedManaCooldown() const
     {
         return 10'000.f * psvPPManaCooldownMult.currentValue();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] inline float getComputedManaCooldownNext() const
+    {
+        return 10'000.f * psvPPManaCooldownMult.nextValue();
     }
 
     ////////////////////////////////////////////////////////////
@@ -431,9 +443,9 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getComputedMultiPopRange() const
+    [[nodiscard, gnu::always_inline]] inline ManaType getComputedMaxManaNext() const
     {
-        return psvPPMultiPopRange.currentValue();
+        return static_cast<ManaType>(20.f * psvPPManaMaxMult.nextValue());
     }
 
     ////////////////////////////////////////////////////////////
