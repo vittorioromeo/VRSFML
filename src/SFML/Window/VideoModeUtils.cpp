@@ -11,7 +11,7 @@
 #include "SFML/Base/Algorithm.hpp"
 
 #include <algorithm> // std::sort
-#include <vector>    // std::sort
+#include <vector>
 
 
 namespace
