@@ -24,6 +24,7 @@ endif()
 
 target_include_directories(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
 
-if (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
-    target_compile_options(bubble_idle PRIVATE "-Wl,-subsystem,windows")
+if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    target_compile_options(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+    target_link_libraries(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
 endif()
