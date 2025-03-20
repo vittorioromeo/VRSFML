@@ -12,7 +12,6 @@
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/VideoModeImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -1216,21 +1215,6 @@ JoystickState JoystickImpl::update()
     }
 
     return state;
-}
-
-
-////////////////////////////////////////////////////////////
-std::vector<VideoMode> VideoModeImpl::getFullscreenModes()
-{
-    return {getDesktopMode()};
-}
-
-
-////////////////////////////////////////////////////////////
-VideoMode VideoModeImpl::getDesktopMode()
-{
-    return VideoMode{{static_cast<unsigned int>(emscripten_run_script_int("screen.width")),
-                      static_cast<unsigned int>(emscripten_run_script_int("screen.height"))}};
 }
 
 } // namespace sf::priv
