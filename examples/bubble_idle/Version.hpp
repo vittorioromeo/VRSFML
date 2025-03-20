@@ -37,3 +37,4 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - Minor Steam Deck compatibility improvements
 // - Added preview of upgrade to all tooltips
 // - Prevent tooltip corruption while hovering cat and button at the same time
+// - Prevent console from opening when running game
