@@ -37,6 +37,12 @@ struct [[nodiscard]] PurchasableScalingValue
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr float nextValue() const
+    {
+        return valueAt(nPurchases + 1u);
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline constexpr float cumulativeCostBetween(
         const sf::base::SizeT nStart /* inclusive */,
         const sf::base::SizeT nEnd /* exclusive */) const
