@@ -17,7 +17,7 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
+#include "SFML/System/IO.hpp"
 #include <mutex>
 #include <vector>
 
@@ -57,12 +57,12 @@ public:
             // Listen to the given port for incoming connections
             if (m_listener.listen(port) != sf::Socket::Status::Done)
                 return;
-            std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
+            sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
 
             // Wait for a connection
             if (m_listener.accept(m_client) != sf::Socket::Status::Done)
                 return;
-            std::cout << "Client connected: " << m_client.getRemoteAddress().value() << std::endl;
+            sf::cOut() << "Client connected: " << m_client.getRemoteAddress().value() << sf::endL;
 
             // Start playback
             play(playbackDevice);
@@ -153,13 +153,13 @@ private:
             else if (id == serverEndOfStream)
             {
                 // End of stream reached: we stop receiving audio data
-                std::cout << "Audio data has been 100% received!" << std::endl;
+                sf::cOut() << "Audio data has been 100% received!" << sf::endL;
                 m_hasFinished = true;
             }
             else
             {
                 // Something's wrong...
-                std::cout << "Invalid packet received..." << std::endl;
+                sf::cOut() << "Invalid packet received..." << sf::endL;
                 m_hasFinished = true;
             }
         }
@@ -196,11 +196,11 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
         sf::sleep(sf::milliseconds(100));
     }
 
-    std::cin.ignore(10'000, '\n');
+    sf::cIn().ignore(10'000, '\n');
 
     // Wait until the user presses 'enter' key
-    std::cout << "Press enter to replay the sound..." << std::endl;
-    std::cin.ignore(10'000, '\n');
+    sf::cOut() << "Press enter to replay the sound..." << sf::endL;
+    sf::cIn().ignore(10'000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play(playbackDevice);

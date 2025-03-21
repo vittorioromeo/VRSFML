@@ -13,7 +13,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include <iostream>
+#include "SFML/System/IO.hpp"
 
 
 namespace
@@ -28,7 +28,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
     const auto buffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
 
     // Display sound information
-    std::cout << "killdeer.wav:" << '\n'
+    sf::cOut() << "killdeer.wav:" << '\n'
               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
               << " " << buffer.getSampleRate() << " samples / sec" << '\n'
               << " " << buffer.getChannelCount() << " channels" << '\n';
@@ -44,10 +44,10 @@ void playSound(sf::PlaybackDevice& playbackDevice)
         sf::sleep(sf::milliseconds(100));
 
         // Display the playing position
-        std::cout << "\rPlaying... " << sound.getPlayingOffset().asSeconds() << " sec        " << std::flush;
+        sf::cOut() << "\rPlaying... " << sound.getPlayingOffset().asSeconds() << " sec        " << sf::flush;
     }
 
-    std::cout << '\n' << std::endl;
+    sf::cOut() << '\n' << sf::endL;
 }
 
 
@@ -61,7 +61,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
     auto music = sf::Music::openFromFile("resources" / filename).value();
 
     // Display music information
-    std::cout << filename << ":" << '\n'
+    sf::cOut() << filename << ":" << '\n'
               << " " << music.getDuration().asSeconds() << " seconds" << '\n'
               << " " << music.getSampleRate() << " samples / sec" << '\n'
               << " " << music.getChannelCount() << " channels" << '\n';
@@ -76,10 +76,10 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
         sf::sleep(sf::milliseconds(100));
 
         // Display the playing position
-        std::cout << "\rPlaying... " << music.getPlayingOffset().asSeconds() << " sec        " << std::flush;
+        sf::cOut() << "\rPlaying... " << music.getPlayingOffset().asSeconds() << " sec        " << sf::flush;
     }
 
-    std::cout << '\n' << std::endl;
+    sf::cOut() << '\n' << sf::endL;
 }
 } // namespace
 
@@ -107,6 +107,6 @@ int main()
     playMusic(playbackDevice, "ding.mp3");
 
     // Wait until the user presses 'enter' key
-    std::cout << "Press enter to exit..." << std::endl;
-    std::cin.ignore(10'000, '\n');
+    sf::cOut() << "Press enter to exit..." << sf::endL;
+    sf::cIn().ignore(10'000, '\n');
 }

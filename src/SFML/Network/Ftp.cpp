@@ -8,6 +8,7 @@
 #include "SFML/Network/IpAddress.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
@@ -498,7 +499,7 @@ Ftp::Response Ftp::getResponse()
                         lastCode = code;
 
                     // Extract the line
-                    std::getline(in, message);
+                    sf::getLine(in, message);
 
                     // Remove the ending '\r' (all lines are terminated by "\r\n")
                     message.erase(message.length() - 1);
@@ -512,7 +513,7 @@ Ftp::Response Ftp::getResponse()
                     {
                         // Extract the line
                         std::string line;
-                        std::getline(in, line);
+                        sf::getLine(in, line);
 
                         // Remove the ending '\r' (all lines are terminated by "\r\n")
                         line.erase(line.length() - 1);
@@ -542,7 +543,7 @@ Ftp::Response Ftp::getResponse()
 
                     // Extract the line
                     std::string line;
-                    std::getline(in, line);
+                    sf::getLine(in, line);
 
                     if (!line.empty())
                     {
@@ -565,7 +566,7 @@ Ftp::Response Ftp::getResponse()
 
                 // Extract the line
                 std::string line;
-                std::getline(in, line);
+                sf::getLine(in, line);
 
                 if (!line.empty())
                 {
