@@ -10,11 +10,11 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 #include "SFML/Audio/SoundSource.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include <iostream>
 #include <vector>
 
 
@@ -67,8 +67,8 @@ int main()
         sf::sleep(sf::milliseconds(100));
 
         // Display a message to show we're not frozen
-        std::cout << "\rPlaying... " << messageIcons[messageIconIndex++ % 4] << std::flush;
+        sf::cOut() << "\rPlaying... " << messageIcons[messageIconIndex++ % 4] << sf::flush;
     }
 
-    std::cout << '\n' << std::endl;
+    sf::cOut() << '\n' << sf::endL;
 }

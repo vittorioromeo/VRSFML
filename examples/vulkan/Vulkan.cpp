@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/IO.hpp"
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -23,7 +24,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <limits>
 #include <string_view>
 #include <vector>
@@ -178,7 +178,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const char* pMessage,
     void*)
 {
-    std::cerr << pMessage << std::endl;
+    sf::cErr() << pMessage << sf::endL;
 
     return VK_FALSE;
 }
