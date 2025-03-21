@@ -484,10 +484,8 @@ bool SteamManager::updateHardcodedAchievements()
 
 bool SteamManager::isOnSteamDeck()
 {
-    if (!impl().m_initialized || !impl().m_gotStats)
-    {
+    if (!impl().m_initialized)
         return false;
-    }
 
     return SteamUtils()->IsSteamRunningOnSteamDeck();
 }
