@@ -8,7 +8,7 @@
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 
-#include <iostream>
+#include "SFML/System/IO.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,8 +22,8 @@ int main()
 
     // Client or server ?
     char who = 0;
-    std::cout << "Do you want to be a server ('s') or a client ('c')? ";
-    std::cin >> who;
+    sf::cOut() << "Do you want to be a server ('s') or a client ('c')? ";
+    sf::cIn() >> who;
 
     if (who == 's')
     {
@@ -45,6 +45,6 @@ int main()
     }
 
     // Wait until the user presses 'enter' key
-    std::cout << "Press enter to exit..." << std::endl;
-    std::cin.ignore(10'000, '\n');
+    sf::cOut() << "Press enter to exit..." << sf::endL;
+    sf::cIn().ignore(10'000, '\n');
 }

@@ -15,11 +15,11 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -191,12 +191,12 @@ int main()
                 updateValues(joystickMoved->joystickId);
             else if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
             {
-                std::cout << "Connected joystick: " << joystickConnected->joystickId << '\n';
+                sf::cOut() << "Connected joystick: " << joystickConnected->joystickId << '\n';
                 updateValues(joystickConnected->joystickId);
             }
             else if (const auto* joystickDisconnected = event->getIf<sf::Event::JoystickDisconnected>())
             {
-                std::cout << "Disconnected joystick: " << joystickDisconnected->joystickId << '\n';
+                sf::cOut() << "Disconnected joystick: " << joystickDisconnected->joystickId << '\n';
 
                 // Reset displayed joystick values to empty
                 for (auto& [label, joystickObject] : texts)
