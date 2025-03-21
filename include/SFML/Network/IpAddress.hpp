@@ -20,6 +20,8 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class IOStreamInput;
+class IOStreamOutput;
 class IpAddressUtils;
 } // namespace sf
 
@@ -202,7 +204,8 @@ private:
 /// \return Reference to the input stream
 ///
 ////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& address);
+SFML_NETWORK_API std::istream&  operator>>(std::istream& stream, base::Optional<IpAddress>& address);
+SFML_NETWORK_API IOStreamInput& operator>>(IOStreamInput& stream, base::Optional<IpAddress>& address);
 
 ////////////////////////////////////////////////////////////
 /// \brief Overload of `operator<<` to print an IP address to an output stream
@@ -213,7 +216,8 @@ SFML_NETWORK_API std::istream& operator>>(std::istream& stream, base::Optional<I
 /// \return Reference to the output stream
 ///
 ////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::ostream& operator<<(std::ostream& stream, IpAddress address);
+SFML_NETWORK_API std::ostream&   operator<<(std::ostream& stream, IpAddress address);
+SFML_NETWORK_API IOStreamOutput& operator<<(IOStreamOutput& stream, IpAddress address);
 
 } // namespace sf
 

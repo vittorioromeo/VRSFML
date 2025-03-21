@@ -9,7 +9,7 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
+#include "SFML/System/IO.hpp"
 
 #include <cstddef>
 
@@ -26,7 +26,7 @@ void runUdpServer(unsigned short port)
     // Listen to messages on the specified port
     if (socket.bind(port) != sf::Socket::Status::Done)
         return;
-    std::cout << "Server is listening to port " << port << ", waiting for a message... " << std::endl;
+    sf::cOut() << "Server is listening to port " << port << ", waiting for a message... " << sf::endL;
 
     // Wait for a message
     char                              in[128];
@@ -35,13 +35,13 @@ void runUdpServer(unsigned short port)
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from client " << sender.value() << ": \"" << in << '"' << std::endl;
+    sf::cOut() << "Message received from client " << sender.value() << ": \"" << in << '"' << sf::endL;
 
     // Send an answer to the client
     const char out[] = "Hi, I'm the server";
     if (socket.send(out, sizeof(out), sender.value(), senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the client: \"" << out << '"' << std::endl;
+    sf::cOut() << "Message sent to the client: \"" << out << '"' << sf::endL;
 }
 
 
@@ -55,8 +55,8 @@ void runUdpClient(unsigned short port)
     sf::base::Optional<sf::IpAddress> server;
     do
     {
-        std::cout << "Type the address or name of the server to connect to: ";
-        std::cin >> server;
+        sf::cOut() << "Type the address or name of the server to connect to: ";
+        sf::cIn() >> server;
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
@@ -66,7 +66,7 @@ void runUdpClient(unsigned short port)
     const char out[] = "Hi, I'm a client";
     if (socket.send(out, sizeof(out), server.value(), port) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message sent to the server: \"" << out << '"' << std::endl;
+    sf::cOut() << "Message sent to the server: \"" << out << '"' << sf::endL;
 
     // Receive an answer from anyone (but most likely from the server)
     char                              in[128];
@@ -75,5 +75,5 @@ void runUdpClient(unsigned short port)
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    std::cout << "Message received from " << sender.value() << ": \"" << in << '"' << std::endl;
+    sf::cOut() << "Message received from " << sender.value() << ": \"" << in << '"' << sf::endL;
 }
