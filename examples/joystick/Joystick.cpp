@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
@@ -189,9 +190,14 @@ int main()
             else if (const auto* joystickMoved = event->getIf<sf::Event::JoystickMoved>())
                 updateValues(joystickMoved->joystickId);
             else if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
+            {
+                std::cout << "Connected joystick: " << joystickConnected->joystickId << '\n';
                 updateValues(joystickConnected->joystickId);
+            }
             else if (event->is<sf::Event::JoystickDisconnected>())
             {
+                std::cout << "Disconnected joystick: " << joystickConnected->joystickId << '\n';
+
                 // Reset displayed joystick values to empty
                 for (auto& [label, joystickObject] : texts)
                     joystickObject.value.setString("N/A");
