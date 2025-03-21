@@ -28,6 +28,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
@@ -35,8 +36,8 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <limits>
+#include <string>
 #include <vector>
 
 #include <cmath>
@@ -136,7 +137,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -206,7 +207,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -304,7 +305,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -376,7 +377,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         play(playbackDevice);
     }
@@ -454,7 +455,7 @@ private:
         Sawtooth
     };
 
-    static constexpr unsigned int sampleRate{44100};
+    static constexpr unsigned int sampleRate{44'100};
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
@@ -526,7 +527,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         play(playbackDevice);
     }
@@ -560,7 +561,7 @@ private:
         // It doesn't make sense to seek in a tone generator
     }
 
-    static constexpr unsigned int sampleRate{44100};
+    static constexpr unsigned int sampleRate{44'100};
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
@@ -612,7 +613,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -707,40 +708,40 @@ protected:
                                                                                float*        outputFrames,
                                                                                unsigned int& outputFrameCount,
                                                                                unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have as many state objects as the audio engine has channels
+            if (state.size() < frameChannelCount)
+                state.resize(frameChannelCount - state.size());
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have as many state objects as the audio engine has channels
-                if (state.size() < frameChannelCount)
-                    state.resize(frameChannelCount - state.size());
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        auto& channelState = state[channel];
+                    auto& channelState = state[channel];
 
-                        const auto xn = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        const auto yn = coefficients.a0 * xn + coefficients.a1 * channelState.xnz1 +
-                                        coefficients.a2 * channelState.xnz2 - coefficients.b1 * channelState.ynz1 -
-                                        coefficients.b2 * channelState.ynz2;
+                    const auto xn = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    const auto yn = coefficients.a0 * xn + coefficients.a1 * channelState.xnz1 +
+                                    coefficients.a2 * channelState.xnz2 - coefficients.b1 * channelState.ynz1 -
+                                    coefficients.b2 * channelState.ynz2;
 
-                        channelState.xnz2 = channelState.xnz1;
-                        channelState.xnz1 = xn;
-                        channelState.ynz2 = channelState.ynz1;
-                        channelState.ynz1 = yn;
+                    channelState.xnz2 = channelState.xnz1;
+                    channelState.xnz1 = xn;
+                    channelState.ynz2 = channelState.ynz1;
+                    channelState.ynz1 = yn;
 
-                        outputFrames[channel] = enabled ? yn : xn;
-                    }
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    outputFrames[channel] = enabled ? yn : xn;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 };
 
@@ -821,33 +822,33 @@ struct Echo : Processing
                           float*        outputFrames,
                           unsigned int& outputFrameCount,
                           unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have enough space to store the delayed frames for all of the audio engine's channels
+            if (buffer.size() < delayInFrames * frameChannelCount)
+                buffer.resize(delayInFrames * frameChannelCount - buffer.size(), 0.f);
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have enough space to store the delayed frames for all of the audio engine's channels
-                if (buffer.size() < delayInFrames * frameChannelCount)
-                    buffer.resize(delayInFrames * frameChannelCount - buffer.size(), 0.f);
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        const auto bufferIndex = (cursor * frameChannelCount) + channel;
-                        buffer[bufferIndex]    = (buffer[bufferIndex] * decay) + (input * dry);
-                        outputFrames[channel]  = enabled ? buffer[bufferIndex] * wet : input;
-                    }
-
-                    cursor = (cursor + 1) % delayInFrames;
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    const auto bufferIndex = (cursor * frameChannelCount) + channel;
+                    buffer[bufferIndex]    = (buffer[bufferIndex] * decay) + (input * dry);
+                    outputFrames[channel]  = enabled ? buffer[bufferIndex] * wet : input;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                cursor = (cursor + 1) % delayInFrames;
+
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 };
 
@@ -876,29 +877,29 @@ public:
                                    float*        outputFrames,
                                    unsigned int& outputFrameCount,
                                    unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have as many filter objects as the audio engine has channels
+            while (filters.size() < frameChannelCount)
+                filters.emplace_back(sampleRate, sustain);
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have as many filter objects as the audio engine has channels
-                while (filters.size() < frameChannelCount)
-                    filters.emplace_back(sampleRate, sustain);
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        outputFrames[channel] = enabled ? filters[channel](input) : input;
-                    }
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    outputFrames[channel] = enabled ? filters[channel](input) : input;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 
 private:
@@ -1023,7 +1024,7 @@ int main()
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
     if (!musicPath.exists())
     {
-        std::cerr << "Music file '" << musicPath << "' not found, aborting" << std::endl;
+        sf::cErr() << "Music file '" << musicPath << "' not found, aborting" << sf::endL;
         return EXIT_FAILURE;
     }
 

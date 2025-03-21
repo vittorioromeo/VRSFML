@@ -38,7 +38,6 @@
 #include <imgui.h>
 
 #include <array>
-#include <iostream>
 #include <random>
 #include <sstream>
 #include <string>
@@ -53,7 +52,7 @@
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto             graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -94,11 +93,11 @@ int main()
     // auto finalImage = baseRenderTexture.getTexture().copyToImage();
     // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
 
-#define CHECK(...)                                 \
-    if (!(__VA_ARGS__))                            \
-    {                                              \
-        std::cout << "fail " #__VA_ARGS__ << '\n'; \
-    }
+    #define CHECK(...)                                 \
+        if (!(__VA_ARGS__))                            \
+        {                                              \
+            sf::cOut() << "fail " #__VA_ARGS__ << '\n'; \
+        }
 
     sf::Sprite rtSprite{.textureRect = baseRenderTexture.getTexture().getRect()};
     sf::Sprite rtAASprite{.textureRect = baseRenderTextureAA.getTexture().getRect()};
@@ -154,7 +153,7 @@ int main()
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto             graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -361,7 +360,7 @@ int main()
 
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    std::cout << sf::Texture::getMaximumSize() << '\n';
+    sf::cOut() << sf::Texture::getMaximumSize() << '\n';
     return 0;
 
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
@@ -446,15 +445,15 @@ int main()
 
 #elif defined(BARABARAR)
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/Text.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
+    #include "SFML/System/Path.hpp"
+    #include "SFML/System/String.hpp"
 
-#include <sstream>
+    #include <sstream>
 
 int main()
 {
@@ -524,15 +523,15 @@ int main()
 
 #else
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/Text.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
+    #include "SFML/System/Path.hpp"
+    #include "SFML/System/String.hpp"
 
-#include <cstdlib>
+    #include <cstdlib>
 
 int main()
 {
