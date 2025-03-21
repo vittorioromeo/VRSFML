@@ -10,6 +10,7 @@
 #include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -34,7 +35,7 @@ using FieldTable = std::map<std::string, std::string>; // Use an ordered map for
 void parseFields(std::istream& in, FieldTable& fields)
 {
     std::string line;
-    while (std::getline(in, line) && (line.size() > 2))
+    while (sf::getLine(in, line) && (line.size() > 2))
     {
         const std::string::size_type pos = line.find(": ");
         if (pos != std::string::npos)

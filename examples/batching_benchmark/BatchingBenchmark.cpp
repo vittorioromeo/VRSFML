@@ -13,6 +13,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -20,7 +21,6 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
 #include <random>
 #include <vector>
 
@@ -143,10 +143,10 @@ int main()
 //
 // Set up benchmark
 #ifndef SFML_OPENGL_ES
-    std::cout << "OpenGL ES not detected, using persistent GPU batching\n";
+    sf::cOut() << "OpenGL ES not detected, using persistent GPU batching\n";
     sf::PersistentGPUDrawableBatch drawableBatch;
 #else
-    std::cout << "OpenGL ES detected, using CPU storage-backed batching\n";
+    sf::cOut() << "OpenGL ES detected, using CPU storage-backed batching\n";
     sf::CPUDrawableBatch drawableBatch;
 #endif
     populateEntities(static_cast<std::size_t>(numEntities));
@@ -192,5 +192,5 @@ int main()
 
     const auto finalTime = clock.getElapsedTime() - startTime;
 
-    std::cout << "FINAL TIME: " << finalTime.asMilliseconds() << " ms\n";
+    sf::cOut() << "FINAL TIME: " << finalTime.asMilliseconds() << " ms\n";
 }
