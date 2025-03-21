@@ -4,13 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Emscripten/JoystickImpl.hpp"
 #include "SFML/Window/Emscripten/WindowImplEmscripten.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/Joystick.hpp"
-#include "SFML/Window/JoystickIdentification.hpp"
-#include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -43,7 +39,6 @@ constinit sf::priv::WindowImplEmscripten* window = nullptr;
 constinit bool windowHasFocus    = false;
 constinit bool fullscreenPending = false;
 
-constinit bool joysticksConnected[sf::Joystick::MaxCount]{};
 constinit bool keyStatus[sf::Keyboard::KeyCount]{};
 constinit bool mouseStatus[sf::Mouse::ButtonCount]{};
 
@@ -248,62 +243,6 @@ bool emscriptenTryImpl(EMSCRIPTEN_RESULT rc, const char* code, const int line)
     // clang-format on
 
     return sf::Keyboard::Key::Unknown;
-}
-
-[[nodiscard]] sf::base::Optional<EmscriptenGamepadEvent> getGamepadEvent(int index)
-{
-    sf::base::Optional<EmscriptenGamepadEvent> result;
-
-    if (!EMSCRIPTEN_TRY(emscripten_sample_gamepad_data()))
-    {
-        for (bool& flag : joysticksConnected)
-            flag = false;
-
-        return result; // Empty optional
-    }
-
-    result.emplace();
-
-    // Not using `EMSCRIPTEN_TRY` here as we only expect success for connected joysticks, and "no data" otherwise.
-    if (emscripten_get_gamepad_status(index, result.asPtr()) == EMSCRIPTEN_RESULT_SUCCESS)
-        return result;
-
-    result.reset();
-    return result; // Empty optional
-}
-
-[[nodiscard]] sf::base::Optional<EmscriptenGamepadEvent> getGamepadEvent(unsigned int index)
-{
-    return getGamepadEvent(static_cast<int>(index));
-}
-
-[[nodiscard]] bool updatePluggedList()
-{
-    SFML_BASE_ASSERT(window != nullptr);
-
-    const auto bailout = []
-    {
-        for (bool& flag : joysticksConnected)
-            flag = false;
-
-        return false;
-    };
-
-    if (!EMSCRIPTEN_TRY(emscripten_sample_gamepad_data()))
-        return bailout();
-
-    const int numJoysticks = emscripten_get_num_gamepads();
-
-    if (numJoysticks == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
-        return bailout();
-
-    for (unsigned int i = 0u; (i < sf::Joystick::MaxCount) && (i < static_cast<unsigned int>(numJoysticks)); ++i)
-    {
-        const auto ge         = getGamepadEvent(i);
-        joysticksConnected[i] = ge.hasValue() ? ge->connected : false;
-    }
-
-    return true;
 }
 
 [[nodiscard]] EM_BOOL canvasSizeChangedCallback(int /* eventType */, const void* /* reserved */, void* /* userData */)
@@ -684,47 +623,6 @@ void requestFullscreen()
     return EM_FALSE;
 }
 
-[[nodiscard]] EM_BOOL gamepadCallback(int eventType, const EmscriptenGamepadEvent* /* e */, void* /* userData */)
-{
-    if (!window)
-        return EM_FALSE;
-
-    switch (eventType)
-    {
-        case EMSCRIPTEN_EVENT_GAMEPADCONNECTED:
-        {
-            bool previousConnected[sf::Joystick::MaxCount];
-            SFML_BASE_MEMCPY(previousConnected, joysticksConnected, sizeof(previousConnected));
-
-            if (!updatePluggedList())
-                sf::priv::err() << "Failed to update plugged list during gamepad connected event";
-
-            for (unsigned int i = 0u; i < sf::Joystick::MaxCount; ++i)
-                if (!previousConnected[i] && joysticksConnected[i])
-                    window->pushHtmlEvent(sf::Event::JoystickConnected{.joystickId = i});
-
-            return EM_TRUE;
-        }
-
-        case EMSCRIPTEN_EVENT_GAMEPADDISCONNECTED:
-        {
-            bool previousConnected[sf::Joystick::MaxCount];
-            SFML_BASE_MEMCPY(previousConnected, joysticksConnected, sizeof(previousConnected));
-
-            if (!updatePluggedList())
-                sf::priv::err() << "Failed to update plugged list during gamepad disconnected event";
-
-            for (unsigned int i = 0u; i < sf::Joystick::MaxCount; ++i)
-                if (previousConnected[i] && !joysticksConnected[i])
-                    window->pushHtmlEvent(sf::Event::JoystickDisconnected{.joystickId = i});
-
-            return EM_TRUE;
-        }
-    }
-
-    return EM_FALSE;
-}
-
 void setCallbacks()
 {
     static bool callbacksSet = false;
@@ -1050,171 +948,5 @@ Vector2i InputImpl::getTouchPosition(unsigned int finger, const WindowBase& /* r
     return getTouchPosition(finger);
 }
 
-
-////////////////////////////////////////////////////////////
-struct JoystickImpl::Impl
-{
-    int                    index{-1};      ///< Index of the joystick
-    JoystickIdentification identification; ///< Joystick identification
-};
-
-
-////////////////////////////////////////////////////////////
-JoystickImpl::JoystickImpl() = default;
-
-
-////////////////////////////////////////////////////////////
-JoystickImpl::~JoystickImpl() = default;
-
-
-////////////////////////////////////////////////////////////
-void JoystickImpl::initialize()
-{
-    static bool callbacksSet = false;
-
-    if (callbacksSet)
-        return;
-
-    EMSCRIPTEN_TRY(emscripten_set_gamepadconnected_callback(nullptr, /* useCapture */ true, gamepadCallback));
-    EMSCRIPTEN_TRY(emscripten_set_gamepaddisconnected_callback(nullptr, /* useCapture */ true, gamepadCallback));
-
-    callbacksSet = true;
-}
-
-
-////////////////////////////////////////////////////////////
-void JoystickImpl::cleanup()
-{
-}
-
-
-////////////////////////////////////////////////////////////
-bool JoystickImpl::isConnected(unsigned int index)
-{
-    return joysticksConnected[index];
-}
-
-
-////////////////////////////////////////////////////////////
-bool JoystickImpl::open(unsigned int index)
-{
-    if (!isConnected(index))
-        return false;
-
-    if (!EMSCRIPTEN_TRY(emscripten_sample_gamepad_data()))
-        return false;
-
-    const int numJoysticks = emscripten_get_num_gamepads();
-
-    if (numJoysticks == EMSCRIPTEN_RESULT_NOT_SUPPORTED)
-        return false;
-
-    if (static_cast<int>(index) >= numJoysticks)
-        return false;
-
-    const auto ge = getGamepadEvent(index);
-    if (!ge.hasValue() || !ge->connected)
-    {
-        joysticksConnected[index] = false;
-        return false;
-    }
-
-    m_impl->index = static_cast<int>(index);
-
-    m_impl->identification.name      = StringUtfUtils::fromUtf8(ge->id, ge->id + 64);
-    m_impl->identification.vendorId  = 0u;
-    m_impl->identification.productId = 0u;
-
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////
-void JoystickImpl::close()
-{
-    m_impl->index = 0;
-}
-
-
-////////////////////////////////////////////////////////////
-JoystickCapabilities JoystickImpl::getCapabilities() const
-{
-    JoystickCapabilities capabilities;
-
-    const auto ge = getGamepadEvent(m_impl->index);
-    if (!ge.hasValue())
-    {
-        joysticksConnected[m_impl->index] = false;
-        return capabilities;
-    }
-
-    // Get the number of buttons
-    capabilities.buttonCount = static_cast<unsigned int>(ge->numButtons);
-
-    if (capabilities.buttonCount > Joystick::ButtonCount)
-        capabilities.buttonCount = Joystick::ButtonCount;
-
-    // Only support the "standard" mapping for now
-    if (std::strcmp(ge->mapping, "standard") == 0)
-    {
-        capabilities.axes[Joystick::Axis::X]    = true;
-        capabilities.axes[Joystick::Axis::Y]    = true;
-        capabilities.axes[Joystick::Axis::Z]    = false;
-        capabilities.axes[Joystick::Axis::R]    = true;
-        capabilities.axes[Joystick::Axis::U]    = true;
-        capabilities.axes[Joystick::Axis::V]    = false;
-        capabilities.axes[Joystick::Axis::PovX] = false;
-        capabilities.axes[Joystick::Axis::PovY] = false;
-    }
-    else
-    {
-        capabilities.axes[Joystick::Axis::X]    = false;
-        capabilities.axes[Joystick::Axis::Y]    = false;
-        capabilities.axes[Joystick::Axis::Z]    = false;
-        capabilities.axes[Joystick::Axis::R]    = false;
-        capabilities.axes[Joystick::Axis::U]    = false;
-        capabilities.axes[Joystick::Axis::V]    = false;
-        capabilities.axes[Joystick::Axis::PovX] = false;
-        capabilities.axes[Joystick::Axis::PovY] = false;
-    }
-
-    return capabilities;
-}
-
-
-////////////////////////////////////////////////////////////
-const JoystickIdentification& JoystickImpl::getIdentification() const
-{
-    return m_impl->identification;
-}
-
-
-////////////////////////////////////////////////////////////
-JoystickState JoystickImpl::update()
-{
-    JoystickState state;
-
-    const auto ge = getGamepadEvent(m_impl->index);
-    if (!ge.hasValue())
-    {
-        state.connected = joysticksConnected[m_impl->index] = false;
-        return state;
-    }
-
-    state.connected = true;
-
-    for (int i = 0; (i < ge->numButtons) && (i < static_cast<int>(Joystick::ButtonCount)); ++i)
-        state.buttons[i] = ge->digitalButton[i];
-
-    if (std::strcmp(ge->mapping, "standard") == 0)
-    {
-        state.axes[Joystick::Axis::X] = static_cast<float>(ge->axis[0] * 100.0);
-        state.axes[Joystick::Axis::Y] = static_cast<float>(ge->axis[1] * 100.0);
-        state.axes[Joystick::Axis::R] = static_cast<float>(ge->axis[2] * 100.0);
-        state.axes[Joystick::Axis::U] = static_cast<float>(ge->axis[3] * 100.0);
-    }
-
-    return state;
-}
 
 } // namespace sf::priv

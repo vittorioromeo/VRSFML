@@ -46,7 +46,6 @@ if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
         ${SRCROOT}/Win32/ClipboardImpl.hpp
         ${SRCROOT}/Win32/CursorImpl.hpp
-        ${SRCROOT}/Win32/JoystickImpl.hpp
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/WindowImplWin32.hpp
 
@@ -55,7 +54,6 @@ if(SFML_OS_WINDOWS)
         # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
         # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
         # ${SRCROOT}/Win32/Unity/InputImpl.cpp
-        # ${SRCROOT}/Win32/Unity/JoystickImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
         # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
@@ -105,18 +103,12 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     endif()
     if(SFML_OS_LINUX)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/Unix/JoystickImpl.cpp
-            ${SRCROOT}/Unix/JoystickImpl.hpp
         )
     elseif(SFML_OS_FREEBSD)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/FreeBSD/JoystickImpl.cpp
-            ${SRCROOT}/FreeBSD/JoystickImpl.hpp
         )
     elseif(SFML_OS_NETBSD)
         list(APPEND PLATFORM_SRC
-            ${SRCROOT}/NetBSD/JoystickImpl.cpp
-            ${SRCROOT}/NetBSD/JoystickImpl.hpp
         )
     endif()
 elseif(SFML_OS_MACOS)
@@ -133,7 +125,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/HIDInputManager.mm
         ${SRCROOT}/macOS/HIDJoystickManager.hpp
         ${SRCROOT}/macOS/HIDJoystickManager.cpp
-        ${SRCROOT}/macOS/JoystickImpl.hpp
         ${SRCROOT}/macOS/NSImage+raw.h
         ${SRCROOT}/macOS/NSImage+raw.mm
         ${SRCROOT}/macOS/Scaling.h
@@ -199,7 +190,6 @@ elseif(SFML_OS_ANDROID)
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
         ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
-        ${SRCROOT}/Emscripten/JoystickImpl.hpp
         ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
     )
 endif()
