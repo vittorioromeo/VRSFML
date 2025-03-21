@@ -12,15 +12,16 @@
 #include "steam/steamencryptedappticket.h"
 //
 
+#include "SFML/System/IO.hpp"
+
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
-#include <iostream>
-#include <string>
 #include <string_view>
 #include <unordered_set>
 
+#include <cstdio>
 #include <cstring>
 
 
@@ -37,7 +38,7 @@ namespace
 
     if (!SteamAPI_ISteamUser_BLoggedOn(steamUser))
     {
-        std::cout << "[Steam]: Attempted to retrieve Steam ID when not logged in\n";
+        sf::cOut() << "[Steam]: Attempted to retrieve Steam ID when not logged in\n";
 
         return sf::base::nullOpt;
     }
@@ -47,24 +48,24 @@ namespace
 
 [[nodiscard]] bool initializeSteamworks()
 {
-    std::cout << "[Steam]: Initializing Steam API\n";
+    sf::cOut() << "[Steam]: Initializing Steam API\n";
 
     SteamErrMsg errMsg;
     if (SteamAPI_InitEx(&errMsg) != k_ESteamAPIInitResult_OK)
     {
-        std::cout << "[Steam]: Failed to initialize Steam API: " << errMsg << '\n';
+        sf::cOut() << "[Steam]: Failed to initialize Steam API: " << errMsg << '\n';
         return false;
     }
 
-    std::cout << "[Steam]: Steam API successfully initialized\n";
+    sf::cOut() << "[Steam]: Steam API successfully initialized\n";
 
     if (const sf::base::Optional<CSteamID> userSteamId = getUserSteamId(); userSteamId.hasValue())
     {
-        std::cout << "[Steam]: User Steam ID: '" << userSteamId->ConvertToUint64() << "'\n";
+        sf::cOut() << "[Steam]: User Steam ID: '" << userSteamId->ConvertToUint64() << "'\n";
     }
     else
     {
-        std::cout << "[Steam]: Could not retrieve user Steam ID\n";
+        sf::cOut() << "[Steam]: Could not retrieve user Steam ID\n";
     }
 
     return true;
@@ -72,9 +73,9 @@ namespace
 
 void shutdownSteamworks()
 {
-    std::cout << "[Steam]: Shutting down Steam API\n";
+    sf::cOut() << "[Steam]: Shutting down Steam API\n";
     SteamAPI_Shutdown();
-    std::cout << "[Steam]: Shut down Steam API\n";
+    sf::cOut() << "[Steam]: Shut down Steam API\n";
 }
 
 } // namespace
@@ -137,7 +138,7 @@ void SteamManager::SteamManagerImpl::onUserStatsReceived(UserStatsReceived_t* da
 {
     (void)data;
 
-    std::cout << "[Steam]: Received user stats (rc: " << data->m_eResult << ")\n";
+    sf::cOut() << "[Steam]: Received user stats (rc: " << data->m_eResult << ")\n";
 
     m_gotStats = true;
 }
@@ -146,14 +147,14 @@ void SteamManager::SteamManagerImpl::onUserStatsStored(UserStatsStored_t* data)
 {
     (void)data;
 
-    std::cout << "[Steam]: Stored user stats\n";
+    sf::cOut() << "[Steam]: Stored user stats\n";
 }
 
 void SteamManager::SteamManagerImpl::onUserAchievementStored(UserAchievementStored_t* data)
 {
     (void)data;
 
-    std::cout << "[Steam]: Stored user achievement\n";
+    sf::cOut() << "[Steam]: Stored user achievement\n";
 }
 
 SteamManager::SteamManagerImpl::SteamManagerImpl() : m_initialized{initializeSteamworks()}, m_gotStats{false}
@@ -181,7 +182,7 @@ bool SteamManager::SteamManagerImpl::requestStatsAndAchievements()
 {
     if (!m_initialized)
     {
-        std::cout << "[Steam]: Attempted to request stats when uninitialized\n";
+        sf::cOut() << "[Steam]: Attempted to request stats when uninitialized\n";
         return false;
     }
 
@@ -194,17 +195,17 @@ bool SteamManager::SteamManagerImpl::requestStatsAndAchievements()
         if (!cachedUserSteamId.hasValue())
             return false;
 
-        std::cout << "[Steam]: Cached User Steam ID: '" << cachedUserSteamId->ConvertToUint64() << "'\n";
+        sf::cOut() << "[Steam]: Cached User Steam ID: '" << cachedUserSteamId->ConvertToUint64() << "'\n";
     }
 
     if (!SteamUserStats()->RequestUserStats(cachedUserSteamId.value()))
     {
-        std::cout << "[Steam]: Failed to get stats and achievements\n";
+        sf::cOut() << "[Steam]: Failed to get stats and achievements\n";
         m_gotStats = false;
         return false;
     }
 
-    std::cout << "[Steam]: Successfully requested stats and achievements\n";
+    sf::cOut() << "[Steam]: Successfully requested stats and achievements\n";
     return true;
 }
 
@@ -223,19 +224,19 @@ bool SteamManager::SteamManagerImpl::storeStats()
 {
     if (!m_initialized)
     {
-        std::cout << "[Steam]: Attempted to store stats when uninitialized\n";
+        sf::cOut() << "[Steam]: Attempted to store stats when uninitialized\n";
         return false;
     }
 
     if (!m_gotStats)
     {
-        std::cout << "[Steam]: Attempted to store stat without stats\n";
+        sf::cOut() << "[Steam]: Attempted to store stat without stats\n";
         return false;
     }
 
     if (!SteamUserStats()->StoreStats())
     {
-        std::cout << "[Steam]: Failed to store stats\n";
+        sf::cOut() << "[Steam]: Failed to store stats\n";
         return false;
     }
 
@@ -246,13 +247,13 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
 {
     if (!m_initialized)
     {
-        std::cout << "[Steam]: Attempted to unlock achievement when uninitialized\n";
+        sf::cOut() << "[Steam]: Attempted to unlock achievement when uninitialized\n";
         return false;
     }
 
     if (!m_gotStats)
     {
-        std::cout << "[Steam]: Attempted to unlock achievement without stats\n";
+        sf::cOut() << "[Steam]: Attempted to unlock achievement without stats\n";
         return false;
     }
 
@@ -266,7 +267,7 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
 
     if (!SteamUserStats()->SetAchievement(buf))
     {
-        std::cout << "[Steam]: Failed to unlock achievement " << buf << '\n';
+        sf::cOut() << "[Steam]: Failed to unlock achievement " << buf << '\n';
         return false;
     }
 
@@ -298,7 +299,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int 
     if (!SteamUserStats()->SetStat(name.data(), asFloat) && // Try with float.
         !SteamUserStats()->SetStat(name.data(), data))      // Try with integer.
     {
-        std::cout << "[Steam]: Error setting stat '" << name << "' to '" << asFloat << "'\n";
+        sf::cOut() << "[Steam]: Error setting stat '" << name << "' to '" << asFloat << "'\n";
 
         return false;
     }
@@ -315,7 +316,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int 
 
     if (!SteamUserStats()->GetAchievement(name.data(), out))
     {
-        std::cout << "[Steam]: Error getting achievement " << name << '\n';
+        sf::cOut() << "[Steam]: Error getting achievement " << name << '\n';
         return false;
     }
 
@@ -343,7 +344,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int 
         return true;
     }
 
-    std::cout << "[Steam]: Error getting stat " << name.data() << '\n';
+    sf::cOut() << "[Steam]: Error getting stat " << name.data() << '\n';
     return false;
 }
 

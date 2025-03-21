@@ -10,6 +10,7 @@
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -153,7 +154,25 @@ std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& addres
 
 
 ////////////////////////////////////////////////////////////
+IOStreamInput& operator>>(IOStreamInput& stream, base::Optional<IpAddress>& address)
+{
+    std::string str;
+    stream >> str;
+    address = IpAddressUtils::resolve(str);
+
+    return stream;
+}
+
+
+////////////////////////////////////////////////////////////
 std::ostream& operator<<(std::ostream& stream, IpAddress address)
+{
+    return stream << IpAddressUtils::toString(address);
+}
+
+
+////////////////////////////////////////////////////////////
+IOStreamOutput& operator<<(IOStreamOutput& stream, IpAddress address)
 {
     return stream << IpAddressUtils::toString(address);
 }

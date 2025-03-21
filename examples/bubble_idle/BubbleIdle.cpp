@@ -81,6 +81,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/RectUtils.hpp"
@@ -111,7 +112,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <random>
 #include <string>
 #include <thread>
@@ -849,7 +849,7 @@ struct Main
     // Profile (stores settings)
     Profile profile;
     MEMBER_SCOPE_GUARD(Main, {
-        std::cout << "Saving profile to file on exit\n";
+        sf::cOut() << "Saving profile to file on exit\n";
         saveProfileToFile(self.profile);
     });
 
@@ -857,7 +857,7 @@ struct Main
     // Playthrough (game state)
     Playthrough pt;
     MEMBER_SCOPE_GUARD(Main, {
-        std::cout << "Saving playthrough to file on exit\n";
+        sf::cOut() << "Saving playthrough to file on exit\n";
         savePlaythroughToFile(self.pt);
     });
 
@@ -11280,7 +11280,7 @@ It's a duck.)",
 
             if (!imGuiContext.init(*optWindow))
             {
-                std::cout << "Error: ImGui context initialization failed\n";
+                sf::cOut() << "Error: ImGui context initialization failed\n";
                 return false;
             }
 
@@ -11690,7 +11690,7 @@ It's a duck.)",
         {
             autosaveUsAccumulator = 0;
 
-            std::cout << "Autosaving...\n";
+            sf::cOut() << "Autosaving...\n";
             savePlaythroughToFile(pt);
         }
     }
@@ -12718,7 +12718,7 @@ It's a duck.)",
         if (sf::Path{"userdata/profile.json"}.exists())
         {
             loadProfileFromFile(profile);
-            std::cout << "Loaded profile from file on startup\n";
+            sf::cOut() << "Loaded profile from file on startup\n";
         }
 
         if (onSteamDeck)
@@ -12735,7 +12735,7 @@ It's a duck.)",
         if (sf::Path{"userdata/playthrough.json"}.exists())
         {
             loadPlaythroughFromFileAndReseed();
-            std::cout << "Loaded playthrough from file on startup\n";
+            sf::cOut() << "Loaded playthrough from file on startup\n";
         }
         else
         {
@@ -12789,12 +12789,12 @@ int main(int argc, const char** argv)
 {
     /*
     auto desktopMode = sf::VideoModeUtils::getDesktopMode();
-    std::cout << "Desktop mode: " << desktopMode.size.x << "x" << desktopMode.size.y << " @ "
+    sf::cOut() << "Desktop mode: " << desktopMode.size.x << "x" << desktopMode.size.y << " @ "
               << desktopMode.bitsPerPixel << "bpp\n";
 
     for (auto fullscreenMode : sf::VideoModeUtils::getFullscreenModes())
     {
-        std::cout << "Fullscreen mode: " << fullscreenMode.size.x << "x" << fullscreenMode.size.y << " @ "
+        sf::cOut() << "Fullscreen mode: " << fullscreenMode.size.x << "x" << fullscreenMode.size.y << " @ "
                   << fullscreenMode.bitsPerPixel << "bpp\n";
     }
     */
