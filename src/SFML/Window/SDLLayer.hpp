@@ -139,9 +139,9 @@ public:
     ////////////////////////////////////////////////////////////
     explicit SDLLayer()
     {
-        if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD))
+        if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
         {
-            err() << "Failed to initialize SDL: " << SDL_GetError();
+            err() << "`SDL_Init` failed: " << SDL_GetError();
             sf::base::abort();
         }
     }
@@ -150,7 +150,7 @@ public:
     ////////////////////////////////////////////////////////////
     ~SDLLayer()
     {
-        SDL_Quit();
+        SDL_QuitSubSystem(SDL_INIT_VIDEO);
     }
 
 
@@ -162,7 +162,7 @@ public:
 
         if (displays == nullptr)
         {
-            err() << "SDL_GetDisplays failed: " << SDL_GetError();
+            err() << "`SDL_GetDisplays` failed: " << SDL_GetError();
             return nullptr;
         }
 
@@ -178,7 +178,7 @@ public:
 
         if (modes == nullptr)
         {
-            err() << "SDL_GetFullscreenDisplayModes failed for display " << displayId << ": " << SDL_GetError();
+            err() << "`SDL_GetFullscreenDisplayModes` failed for display " << displayId << ": " << SDL_GetError();
             return nullptr;
         }
 
@@ -193,20 +193,23 @@ public:
 
         if (result == nullptr)
         {
-            err() << "SDL_GetPixelFormatDetails failed for format " << static_cast<int>(format) << ": " << SDL_GetError();
+            err() << "`SDL_GetPixelFormatDetails` failed for format " << static_cast<int>(format) << ": "
+                  << SDL_GetError();
             return nullptr;
         }
 
         return result;
     }
 
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] const SDL_DisplayMode* getDesktopDisplayMode(const SDL_DisplayID displayId)
     {
         const auto* result = SDL_GetDesktopDisplayMode(displayId);
 
         if (result == nullptr)
         {
-            err() << "SDL_GetDesktopDisplayMode failed for display " << displayId << ": " << SDL_GetError();
+            err() << "`SDL_GetDesktopDisplayMode` failed for display " << displayId << ": " << SDL_GetError();
             return nullptr;
         }
 

@@ -194,9 +194,9 @@ int main()
                 std::cout << "Connected joystick: " << joystickConnected->joystickId << '\n';
                 updateValues(joystickConnected->joystickId);
             }
-            else if (event->is<sf::Event::JoystickDisconnected>())
+            else if (const auto* joystickDisconnected = event->getIf<sf::Event::JoystickDisconnected>())
             {
-                std::cout << "Disconnected joystick: " << joystickConnected->joystickId << '\n';
+                std::cout << "Disconnected joystick: " << joystickDisconnected->joystickId << '\n';
 
                 // Reset displayed joystick values to empty
                 for (auto& [label, joystickObject] : texts)

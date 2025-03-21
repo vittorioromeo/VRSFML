@@ -8,8 +8,9 @@
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/Joystick.hpp"
-#include "SFML/Window/JoystickImpl.hpp"
+#include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/VideoMode.hpp"
@@ -49,6 +50,7 @@ struct WindowImpl::Impl
 {
     std::queue<Event> events;                                           //!< Queue of available events
     JoystickState     joystickStates[Joystick::MaxCount]{};             //!< Previous state of the joysticks
+    bool              joystickConnected[Joystick::MaxCount]{};          //!< Previous connection state of the joysticks
     base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
     base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
@@ -125,7 +127,8 @@ WindowImpl::WindowImpl()
 
     for (unsigned int i = 0; i < Joystick::MaxCount; ++i)
     {
-        m_impl->joystickStates[i] = joystickManager.getState(i);
+        m_impl->joystickStates[i]    = joystickManager.getState(i);
+        m_impl->joystickConnected[i] = joystickManager.isConnected(i);
         m_impl->previousAxes[i].fill(0.f);
     }
 
@@ -252,9 +255,12 @@ void WindowImpl::processJoystickEvents()
         const JoystickState previousState = m_impl->joystickStates[i];
         m_impl->joystickStates[i]         = joystickManager.getState(i);
 
-        // Connection state
-        const bool connected = m_impl->joystickStates[i].connected;
-        if (previousState.connected ^ connected)
+        // Copy the previous connection state of the joystick and get the new one
+        const bool previousConnected = m_impl->joystickConnected[i];
+        m_impl->joystickConnected[i] = joystickManager.isConnected(i);
+
+        const bool connected = m_impl->joystickConnected[i];
+        if (previousConnected != connected)
         {
             if (connected)
                 pushEvent(Event::JoystickConnected{i});
@@ -293,7 +299,7 @@ void WindowImpl::processJoystickEvents()
             const bool prevPressed = previousState.buttons[j];
             const bool currPressed = m_impl->joystickStates[i].buttons[j];
 
-            if (prevPressed ^ currPressed)
+            if (prevPressed != currPressed)
             {
                 if (currPressed)
                     pushEvent(Event::JoystickButtonPressed{i, j});
