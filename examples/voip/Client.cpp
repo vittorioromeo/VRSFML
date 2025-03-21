@@ -15,7 +15,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
+#include "SFML/System/IO.hpp"
 
 #include <cstddef>
 #include <cstdint>
@@ -55,7 +55,7 @@ public:
     ~NetworkRecorder() override
     {
         if (!stop())
-            std::cerr << "Failed to stop network recorder on destruction" << std::endl;
+            sf::cErr() << "Failed to stop network recorder on destruction" << sf::endL;
     }
 
 private:
@@ -67,7 +67,7 @@ private:
     {
         if (m_socket.connect(m_host, m_port) == sf::Socket::Status::Done)
         {
-            std::cout << "Connected to server " << m_host << std::endl;
+            sf::cOut() << "Connected to server " << m_host << sf::endL;
             return true;
         }
 
@@ -101,7 +101,7 @@ private:
 
         if (m_socket.send(packet) != sf::Socket::Status::Done)
         {
-            std::cerr << "Failed to send end-of-stream packet" << std::endl;
+            sf::cErr() << "Failed to send end-of-stream packet" << sf::endL;
             return false;
         }
 
@@ -132,28 +132,28 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     sf::base::Optional<sf::IpAddress> server;
     do
     {
-        std::cout << "Type address or name of the server to connect to: ";
-        std::cin >> server;
+        sf::cOut() << "Type address or name of the server to connect to: ";
+        sf::cIn() >> server;
     } while (!server.hasValue());
 
     // Create an instance of our custom recorder
     NetworkRecorder recorder(server.value(), port);
 
     // Wait for user input...
-    std::cin.ignore(10'000, '\n');
-    std::cout << "Press enter to start recording audio";
-    std::cin.ignore(10'000, '\n');
+    sf::cIn().ignore(10'000, '\n');
+    sf::cOut() << "Press enter to start recording audio";
+    sf::cIn().ignore(10'000, '\n');
 
     // Start capturing audio data
     if (!recorder.start(captureDevice, 44100))
     {
-        std::cerr << "Failed to start recorder" << std::endl;
+        sf::cErr() << "Failed to start recorder" << sf::endL;
         return;
     }
 
-    std::cout << "Recording... press enter to stop";
-    std::cin.ignore(10'000, '\n');
+    sf::cOut() << "Recording... press enter to stop";
+    sf::cIn().ignore(10'000, '\n');
 
     if (!recorder.stop())
-        std::cerr << "Failed to stop network recorder" << std::endl;
+        sf::cErr() << "Failed to stop network recorder" << sf::endL;
 }

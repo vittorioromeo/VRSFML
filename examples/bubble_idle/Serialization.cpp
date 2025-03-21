@@ -20,16 +20,16 @@
 
 #pragma GCC diagnostic pop
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Traits/IsArray.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 
 #include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <string>
 
 // NOLINTBEGIN(readability-identifier-naming, misc-use-internal-linkage)
@@ -805,7 +805,7 @@ try
 
 } catch (const std::exception& ex)
 {
-    std::cout << "Failed to backup '" << filename << "' (" << ex.what() << ")\n";
+    sf::cOut() << "Failed to backup '" << filename << "' (" << ex.what() << ")\n";
 }
 
 } // namespace
@@ -816,10 +816,11 @@ try
 {
     std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
-    std::ofstream(filename) << nlohmann::json(profile).dump();
+
+    sf::writeToFile(filename, nlohmann::json(profile).dump());
 } catch (const std::exception& ex)
 {
-    std::cout << "Failed to save profile to file '" << filename << "' (" << ex.what() << ")\n";
+    sf::cOut() << "Failed to save profile to file '" << filename << "' (" << ex.what() << ")\n";
 }
 
 
@@ -827,10 +828,13 @@ try
 void loadProfileFromFile(Profile& profile, const char* filename)
 try
 {
-    nlohmann::json::parse(std::ifstream{filename}).get_to(profile);
+    std::string contents;
+    sf::readFromFile(filename, contents);
+
+    nlohmann::json::parse(contents).get_to(profile);
 } catch (const std::exception& ex)
 {
-    std::cout << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
+    sf::cOut() << "Failed to load profile from file '" << filename << "' (" << ex.what() << ")\n";
 }
 
 
@@ -840,10 +844,11 @@ try
 {
     std::filesystem::create_directories("userdata");
     doRotatingBackup(filename);
-    std::ofstream(filename) << nlohmann::json(playthrough).dump();
+
+    sf::writeToFile(filename, nlohmann::json(playthrough).dump());
 } catch (const std::exception& ex)
 {
-    std::cout << "Failed to save playthrough to file '" << filename << "' (" << ex.what() << ")\n";
+    sf::cOut() << "Failed to save playthrough to file '" << filename << "' (" << ex.what() << ")\n";
 }
 
 
@@ -851,10 +856,13 @@ try
 void loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
 try
 {
-    nlohmann::json::parse(std::ifstream{filename}).get_to(playthrough);
+    std::string contents;
+    sf::readFromFile(filename, contents);
+
+    nlohmann::json::parse(contents).get_to(playthrough);
 } catch (const std::exception& ex)
 {
-    std::cout << "Failed to load playthrough from file '" << filename << "' (" << ex.what() << ")\n";
+    sf::cOut() << "Failed to load playthrough from file '" << filename << "' (" << ex.what() << ")\n";
 }
 
 // NOLINTEND(readability-identifier-naming, misc-use-internal-linkage)

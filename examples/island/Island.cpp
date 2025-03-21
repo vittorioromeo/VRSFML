@@ -16,6 +16,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/String.hpp"
@@ -28,7 +29,6 @@
 
 #include <algorithm>
 #include <array>
-#include <iostream>
 #include <mutex>
 #include <queue>
 #include <sstream>
@@ -512,7 +512,7 @@ int main()
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        std::cerr << "Failed to create vertex buffer" << std::endl;
+        sf::cErr() << "Failed to create vertex buffer" << sf::endL;
         return EXIT_FAILURE;
     }
 
@@ -595,7 +595,7 @@ int main()
                 {
                     if (!terrain.update(terrainStagingBuffer.data()))
                     {
-                        std::cerr << "Failed to update vertex buffer" << std::endl;
+                        sf::cErr() << "Failed to update vertex buffer" << sf::endL;
                         return EXIT_SUCCESS;
                     }
 
