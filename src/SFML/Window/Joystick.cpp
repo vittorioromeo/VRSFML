@@ -5,24 +5,14 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
+#include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"
-#include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard]] bool isConnectedImpl(const sf::priv::JoystickManager& joystickManager, unsigned int joystickId)
-{
-    return joystickManager.getState(joystickId).connected;
-}
-
-} // namespace
 
 
 namespace sf
@@ -115,7 +105,7 @@ float Joystick::Query::getAxisPosition(Axis axis) const
 ////////////////////////////////////////////////////////////
 bool Joystick::Query::isConnected() const
 {
-    return isConnectedImpl(m_joystickManager, m_joystickId);
+    return m_joystickManager.isConnected(m_joystickId);
 }
 
 
@@ -124,7 +114,7 @@ base::Optional<Joystick::Query> Joystick::query(unsigned int joystickId)
 {
     const auto& joystickManager = WindowContext::getJoystickManager();
 
-    if (!isConnectedImpl(joystickManager, joystickId))
+    if (!joystickManager.isConnected(joystickId))
         return base::nullOpt;
 
     return base::makeOptionalFromFunc([&] { return Query{joystickManager, joystickId}; });
