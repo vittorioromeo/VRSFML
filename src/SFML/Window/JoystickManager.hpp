@@ -83,6 +83,17 @@ public:
     [[nodiscard]] const JoystickIdentification& getIdentification(unsigned int joystickId) const;
 
     ////////////////////////////////////////////////////////////
+    ///
+    /// \brief Check if a joystick is connected
+    ///
+    /// \param joystickId Index of the joystick
+    ///
+    /// \return `true` if the joystick is connected, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isConnected(unsigned int joystickId) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Update the state of all the joysticks
     ///
     ////////////////////////////////////////////////////////////
