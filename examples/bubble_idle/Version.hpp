@@ -14,7 +14,7 @@
 #define BUBBLEBYTE_VERSION_MINOR 4
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 0
+#define BUBBLEBYTE_VERSION_PATCH 1
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -31,10 +31,3 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
-
-
-// TODO P0: CHANGELOG
-// - Minor Steam Deck compatibility improvements
-// - Added preview of upgrade to all tooltips
-// - Prevent tooltip corruption while hovering cat and button at the same time
-// - Prevent console from opening when running game
