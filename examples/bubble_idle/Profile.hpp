@@ -80,4 +80,6 @@ struct [[nodiscard]] Profile
     bool showBubbles            = true;
     bool invertMouseButtons     = false;
     bool showDollParticleBorder = true;
+
+    float catDragPressDuration = 110.f;
 };
