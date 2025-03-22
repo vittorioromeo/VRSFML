@@ -609,7 +609,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
 
                          FIELD(showBubbles),
                          FIELD(invertMouseButtons),
-                         FIELD(showDollParticleBorder));
+                         FIELD(showDollParticleBorder),
+
+                         FIELD(catDragPressDuration));
 }
 
 ////////////////////////////////////////////////////////////
@@ -669,7 +671,10 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                          FIELD(devilcatHellsingedPurchased),
 
                          FIELD(unicatTranscendenceEnabled),
-                         FIELD(devilcatHellsingedEnabled));
+                         FIELD(devilcatHellsingedEnabled),
+
+                         FIELD(autocastPurchased),
+                         FIELD(autocastIndex));
 }
 
 ////////////////////////////////////////////////////////////
@@ -853,16 +858,62 @@ try
 
 
 ////////////////////////////////////////////////////////////
-void loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
+sf::base::StringView backwardsCompatibilityLoadChecks(const Version& parsedVersion, Playthrough& playthrough)
+{
+    if (parsedVersion == currentVersion)
+        return "";
+
+    sf::cOut() << "Loaded playthrough version " << parsedVersion.major << "." << parsedVersion.minor << "."
+               << parsedVersion.patch << " does not match current version " << currentVersion.major << "."
+               << currentVersion.minor << "." << currentVersion.patch << '\n';
+
+    // Prestige point scaling buff compensation
+    if (parsedVersion.major == 1 && parsedVersion.minor <= 4)
+    {
+        const auto loadedPrestigeLevel = static_cast<PrestigePointsType>(playthrough.psvBubbleValue.currentValue());
+
+        if (loadedPrestigeLevel > 0u)
+        {
+            sf::cOut() << "Adding missing prestige points...\n";
+
+            const auto oldAccumulatedPPs = Playthrough::calculatePrestigePointReward(0u,
+                                                                                     loadedPrestigeLevel,
+                                                                                     /* levelBias */ 0u);
+            const auto newAccumulatedPPs = Playthrough::calculatePrestigePointReward(0u,
+                                                                                     loadedPrestigeLevel,
+                                                                                     /* levelBias */ 1u);
+
+            sf::cOut() << "Old accumulated pps: " << oldAccumulatedPPs << '\n'
+                       << "New accumulated pps: " << newAccumulatedPPs << '\n'
+                       << "Adding " << newAccumulatedPPs - oldAccumulatedPPs << " prestige points\n";
+
+            playthrough.prestigePoints += newAccumulatedPPs - oldAccumulatedPPs;
+
+            return "Awarded compensation prestige points!";
+        }
+    }
+
+    return "";
+}
+
+
+////////////////////////////////////////////////////////////
+sf::base::StringView loadPlaythroughFromFile(Playthrough& playthrough, const char* filename)
 try
 {
     std::string contents;
     sf::readFromFile(filename, contents);
 
-    nlohmann::json::parse(contents).get_to(playthrough);
+    const auto parsed = nlohmann::json::parse(contents);
+    parsed.get_to(playthrough);
+
+    const Version parsedVersion{.major = parsed[0][0], .minor = parsed[0][1], .patch = parsed[0][2]};
+    return backwardsCompatibilityLoadChecks(parsedVersion, playthrough);
+
 } catch (const std::exception& ex)
 {
     sf::cOut() << "Failed to load playthrough from file '" << filename << "' (" << ex.what() << ")\n";
+    return "";
 }
 
 // NOLINTEND(readability-identifier-naming, misc-use-internal-linkage)

@@ -195,6 +195,9 @@ struct Playthrough
 
         bool unicatTranscendenceEnabled = true;
         bool devilcatHellsingedEnabled  = true;
+
+        bool            autocastPurchased = false;
+        sf::base::SizeT autocastIndex     = 0u;
     };
 
     Permanent perm = {};
@@ -266,17 +269,26 @@ struct Playthrough
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] PrestigePointsType calculatePrestigePointReward(const PrestigePointsType prestigeCount) const
+    [[nodiscard]] static PrestigePointsType calculatePrestigePointReward(const PrestigePointsType currentPrestigeLevel,
+                                                                         const PrestigePointsType prestigeCount,
+                                                                         const PrestigePointsType levelBias)
     {
-        const auto currentPrestigeLevel = static_cast<PrestigePointsType>(psvBubbleValue.currentValue());
-        const auto targetPrestigeLevel  = currentPrestigeLevel + prestigeCount;
+        const auto targetPrestigeLevel = currentPrestigeLevel + prestigeCount;
 
         PrestigePointsType pointsToAdd = 0u;
 
         for (auto i = currentPrestigeLevel; i < targetPrestigeLevel; ++i)
-            pointsToAdd += static_cast<PrestigePointsType>(sf::base::pow(2.f, static_cast<float>(i)));
+            pointsToAdd += static_cast<PrestigePointsType>(sf::base::pow(2.f, static_cast<float>(i + levelBias)));
 
         return pointsToAdd;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] PrestigePointsType calculatePrestigePointReward(const PrestigePointsType prestigeCount) const
+    {
+        return calculatePrestigePointReward(static_cast<PrestigePointsType>(psvBubbleValue.currentValue()),
+                                            prestigeCount,
+                                            /* levelBias */ 1u); // used to be `0u` prior to version 1.5.x
     }
 
     ////////////////////////////////////////////////////////////
