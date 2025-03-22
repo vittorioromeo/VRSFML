@@ -592,6 +592,7 @@ struct Main
     sf::FloatRect txrMagicSeparator0{addImgResourceToUIAtlas("magicseparator0.png")};
     sf::FloatRect txrMagicSeparator1{addImgResourceToUIAtlas("magicseparator1.png")};
     sf::FloatRect txrMagicSeparator2{addImgResourceToUIAtlas("magicseparator2.png")};
+    sf::FloatRect txrMagicSeparator3{addImgResourceToUIAtlas("magicseparator3.png")};
 
     ////////////////////////////////////////////////////////////
     // Background hues
@@ -4426,8 +4427,6 @@ It's a duck.)",
             makeUnsealButton(8u, "Wizardcat", CatType::Wizard);
             ImGui::Separator();
 
-            // TODO P1: autocast
-
             const float currentManaCooldown = pt.getComputedManaCooldown();
             const float nextManaCooldown    = pt.getComputedManaCooldownNext();
 
@@ -4448,10 +4447,18 @@ It's a duck.)",
             ImGui::Separator();
 
             std::sprintf(uiTooltipBuffer,
+                         "Allow the Wizardcat to automatically cast spells when enough mana is available. Can be "
+                         "enabled and configured from the \"Magic\" tab.");
+            uiLabelBuffer[0] = '\0';
+            (void)makePurchasablePPButtonOneTime("Autocast", 4u, pt.perm.autocastPurchased);
+
+            ImGui::Separator();
+
+            std::sprintf(uiTooltipBuffer,
                          "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                          "into star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("Selective starpaw", 8u, pt.perm.starpawConversionIgnoreBombs);
+            (void)makePurchasablePPButtonOneTime("Selective starpaw", 4u, pt.perm.starpawConversionIgnoreBombs);
 
             if (pt.perm.unicatTranscendencePurchased && pt.perm.starpawConversionIgnoreBombs)
             {
@@ -4869,6 +4876,64 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
+    static inline constexpr ManaType spellManaCostByIndex[4] = {5u, 20u, 30u, 40u};
+
+    ////////////////////////////////////////////////////////////
+    void castSpellByIndex(const sf::base::SizeT index, Cat* wizardCat, Cat* copyCat)
+    {
+        SFML_BASE_ASSERT(index < 4u);
+
+        const bool copyCatMustCast = copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard;
+
+        wizardcatSpin.value = sf::base::tau;
+        statSpellCast(index);
+
+        if (index == 0u) // Starpaw Conversion
+        {
+            doWizardSpellStarpawConversion(*wizardCat);
+
+            if (copyCatMustCast)
+                doWizardSpellStarpawConversion(*copyCat);
+
+            return;
+        }
+
+        if (index == 1u) // Mewltiplier Aura
+        {
+            pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
+
+            doWizardSpellMewltiplierAura(*wizardCat);
+
+            if (copyCatMustCast)
+                doWizardSpellMewltiplierAura(*copyCat);
+
+            return;
+        }
+
+        if (index == 2u) // Dark Union
+        {
+            doWizardSpellDarkUnion(*wizardCat);
+
+            if (copyCatMustCast)
+                doWizardSpellDarkUnion(*copyCat);
+
+            return;
+        }
+
+        if (index == 3u) // Stasis Field
+        {
+            pt.stasisFieldTimer += pt.perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
+
+            doWizardSpellStasisField(*wizardCat);
+
+            if (copyCatMustCast)
+                doWizardSpellStasisField(*copyCat);
+
+            return;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
     void uiTabBarMagic()
     {
         uiSetFontScale(uiNormalFontScale);
@@ -4950,17 +5015,14 @@ It's a duck.)",
             uiLabelBuffer[0] = '\0';
             bool done        = false;
 
-            if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion", done, ManaType{5u}, pt.mana, "%s mana##%u"))
+            if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
+                                                       done,
+                                                       spellManaCostByIndex[0],
+                                                       pt.mana,
+                                                       "%s mana##%u"))
             {
-                wizardcatSpin.value = sf::base::tau;
-
-                doWizardSpellStarpawConversion(*wizardCat);
-
-                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                    doWizardSpellStarpawConversion(*copyCat);
-
+                castSpellByIndex(0u, wizardCat, copyCat);
                 done = false;
-                statSpellCast(0u);
             }
 
             const float currentPercentage = pt.psvStarpawPercentage.currentValue();
@@ -4992,19 +5054,14 @@ It's a duck.)",
                          pt.perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
             bool done = false;
-            if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura", done, ManaType{20u}, pt.mana, "%s mana##%u"))
+            if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
+                                                       done,
+                                                       spellManaCostByIndex[1],
+                                                       pt.mana,
+                                                       "%s mana##%u"))
             {
-                wizardcatSpin.value = sf::base::tau;
-
-                pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
-
-                doWizardSpellMewltiplierAura(*wizardCat);
-
-                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                    doWizardSpellMewltiplierAura(*copyCat);
-
+                castSpellByIndex(1u, wizardCat, copyCat);
                 done = false;
-                statSpellCast(1u);
             }
 
             const float currentMultiplier = pt.psvMewltiplierMult.currentValue();
@@ -5037,17 +5094,14 @@ It's a duck.)",
             uiLabelBuffer[0] = '\0';
 
             bool done = false;
-            if (makePurchasableButtonOneTimeByCurrency("Dark Union", done, ManaType{30u}, pt.mana, "%s mana##%u"))
+            if (makePurchasableButtonOneTimeByCurrency("Dark Union",
+                                                       done,
+                                                       spellManaCostByIndex[2],
+                                                       pt.mana,
+                                                       "%s mana##%u"))
             {
-                wizardcatSpin.value = sf::base::tau;
-
-                doWizardSpellDarkUnion(*wizardCat);
-
-                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                    doWizardSpellDarkUnion(*copyCat);
-
+                castSpellByIndex(2u, wizardCat, copyCat);
                 done = false;
-                statSpellCast(2u);
             }
 
             const float currentPercentage = pt.psvDarkUnionPercentage.currentValue();
@@ -5083,25 +5137,56 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.stasisFieldTimer / 1000.f));
 
             bool done = false;
-            if (makePurchasableButtonOneTimeByCurrency("Stasis Field", done, ManaType{40u}, pt.mana, "%s mana##%u"))
+            if (makePurchasableButtonOneTimeByCurrency("Stasis Field",
+                                                       done,
+                                                       spellManaCostByIndex[3],
+                                                       pt.mana,
+                                                       "%s mana##%u"))
             {
-                wizardcatSpin.value = sf::base::tau;
-
-                pt.stasisFieldTimer += pt.perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
-
-                doWizardSpellStasisField(*wizardCat);
-
-                if (copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
-                    doWizardSpellStasisField(*copyCat);
-
+                castSpellByIndex(3u, wizardCat, copyCat);
                 done = false;
-                statSpellCast(3u);
             }
         }
 
         uiButtonHueMod = 0.f;
         ImGui::Columns(1);
         ImGui::EndDisabled();
+
+        if (pt.psvSpellCount.nPurchases > 0 && pt.perm.autocastPurchased)
+        {
+            imgsep(txrMagicSeparator3, "autocast");
+
+            ImGui::Columns(1);
+            uiButtonHueMod = 45.f;
+
+            constexpr const char* entries[]{
+                "None",
+                "Starpaw Conversion",
+                "Mewltiplier Aura",
+                "Dark Union",
+                "Stasis Field",
+            };
+
+            if (ImGui::BeginCombo("Spell##autocastspell", entries[pt.perm.autocastIndex]))
+            {
+                for (SizeT i = 0u; i < pt.psvSpellCount.nPurchases + 1; ++i)
+                {
+                    const bool isSelected = pt.perm.autocastIndex == i;
+                    if (ImGui::Selectable(entries[i], isSelected))
+                    {
+                        pt.perm.autocastIndex = i;
+                        playSound(sounds.uitab);
+                    }
+
+                    if (isSelected)
+                        ImGui::SetItemDefaultFocus();
+                }
+
+                ImGui::EndCombo();
+            }
+
+            uiButtonHueMod = 0.f;
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -5759,6 +5844,11 @@ It's a duck.)",
 
             uiCheckbox("Invert mouse buttons", &profile.invertMouseButtons);
 
+            ImGui::Separator();
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Cat drag timer", &profile.catDragPressDuration, 50.f, 500.f, "%.2fms");
+
             ImGui::EndTabItem();
         }
 
@@ -6220,6 +6310,7 @@ It's a duck.)",
             ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
             ImGui::Checkbox("unicatTranscendenceEnabled", &pt.perm.unicatTranscendenceEnabled);
             ImGui::Checkbox("devilcatHellsingedEnabled", &pt.perm.devilcatHellsingedEnabled);
+            ImGui::Checkbox("autocastPurchased", &pt.perm.autocastPurchased);
 
             ImGui::Separator();
 
@@ -8327,12 +8418,10 @@ It's a duck.)",
                 return;
             }
 
-            constexpr float catDragPressDurationMax = 100.f;
-
             Cat* hoveredCat = nullptr;
 
             // Only check for hover targets during initial press phase
-            if (catDragPressDuration <= catDragPressDurationMax)
+            if (catDragPressDuration <= profile.catDragPressDuration)
                 for (Cat& cat : pt.cats)
                 {
                     if (!isCatDraggable(cat))
@@ -8348,7 +8437,7 @@ It's a duck.)",
             {
                 catDragPressDuration += deltaTimeMs;
 
-                if (catDragPressDuration >= catDragPressDurationMax)
+                if (catDragPressDuration >= profile.catDragPressDuration)
                 {
                     draggedCats.clear();
                     draggedCats.push_back(hoveredCat);
@@ -8961,6 +9050,30 @@ It's a duck.)",
                                                    ParticleType::Star,
                                                    0.15f,
                                                    0.05f);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateAutocast()
+    {
+        if (cachedWizardCat == nullptr || !pt.perm.autocastPurchased || pt.perm.autocastIndex == 0u || isWizardBusy())
+            return;
+
+        const auto spellIndex = pt.perm.autocastIndex - 1u;
+
+        if (pt.mana >= spellManaCostByIndex[spellIndex])
+        {
+            pt.mana -= spellManaCostByIndex[spellIndex];
+            castSpellByIndex(spellIndex, cachedWizardCat, cachedCopyCat);
+
+            constexpr const char* spellNames[4] = {
+                "Starpaw Conversion",
+                "Mewltiplier Aura",
+                "Dark Union",
+                "Stasis Field",
+            };
+
+            pushNotification("Autocast", "Spell \"%s\" casted!", spellNames[spellIndex]);
         }
     }
 
@@ -12331,6 +12444,7 @@ It's a duck.)",
         gameLoopUpdateHellPortals(deltaTimeMs);
         gameLoopUpdateWitchBuffs(deltaTimeMs);
         gameLoopUpdateMana(deltaTimeMs);
+        gameLoopUpdateAutocast();
 
         //
         // Delayed actions
@@ -12701,7 +12815,11 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void loadPlaythroughFromFileAndReseed()
     {
-        loadPlaythroughFromFile(pt);
+        const sf::base::StringView loadMessage = loadPlaythroughFromFile(pt);
+
+        if (!loadMessage.empty())
+            pushNotification("Playthrough version updated", "%s", loadMessage.data());
+
         rng.reseed(pt.seed);
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
     }
@@ -12815,11 +12933,11 @@ int main(int argc, const char** argv)
 
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
-// TODO P1: maybe make "autocast spell selector" a PP upgrade for around 128PPs
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
 // TODO P1: click on minimap to change view
 // TODO P1: more steam deck improvements
+// TODO P1: drag click PP upgrade, stacks with multipop
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
