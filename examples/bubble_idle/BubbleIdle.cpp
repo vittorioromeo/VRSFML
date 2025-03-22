@@ -6188,7 +6188,7 @@ It's a duck.)",
             ImGui::SameLine();
 
             if (ImGui::Button("Custom load"))
-                loadPlaythroughFromFile(pt, filenameBuf);
+                (void)loadPlaythroughFromFile(pt, filenameBuf);
 
             ImGui::Separator();
 
