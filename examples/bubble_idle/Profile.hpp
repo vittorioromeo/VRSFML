@@ -82,4 +82,6 @@ struct [[nodiscard]] Profile
     bool showDollParticleBorder = true;
 
     float catDragPressDuration = 110.f;
+
+    bool playWitchRitualSounds = true;
 };
