@@ -882,6 +882,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Wizardcat spin
     Countdown wizardcatSpin;
+    float     wizardcatAbsorptionRotation{0.f};
 
     ////////////////////////////////////////////////////////////
     // Copycat state
@@ -1408,9 +1409,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void statMaintenance()
+    void statMaintenance(const SizeT nCatsHit)
     {
-        withAllStats([&](Stats& stats) { stats.nMaintenances += 1u; });
+        withAllStats([&](Stats& stats) { stats.nMaintenances += nCatsHit; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -4956,7 +4957,7 @@ It's a duck.)",
 
         ImGui::Text("Wisdom points: %llu WP", pt.wisdom);
 
-        uiCheckbox("Absorb wisdom", &pt.absorbingWisdom);
+        uiCheckbox("Absorb wisdom from star bubbles", &pt.absorbingWisdom);
         std::sprintf(uiTooltipBuffer,
                      "The Wizardcat concentrates, absorbing wisdom points from nearby star bubbles. While the "
                      "Wizardcat is concentrating, it cannot cast spells nor be moved around.");
@@ -4999,6 +5000,30 @@ It's a duck.)",
 
         if (pt.psvSpellCount.nPurchases == 0)
             ImGui::Text("No spells revealed yet...");
+
+        ImGui::Columns(1);
+        uiSetFontScale(0.8f);
+
+        if (pt.absorbingWisdom)
+            uiCenteredText("Cannot cast spells while absorbing wisdom...");
+        else if (wizardCat->isHexedOrCopyHexed())
+            uiCenteredText("Cannot cast spells while hexed...");
+        else if (wizardCat->cooldown.value > 0.f)
+            uiCenteredText("Cannot cast spells while on cooldown...");
+        else if (isCatBeingDragged(*wizardCat))
+            uiCenteredText("Cannot cast spells while being dragged...");
+        else
+        {
+            const bool anySpellCastable = pt.mana >= spellManaCostByIndex[0] && pt.psvSpellCount.nPurchases >= 1;
+
+            if (anySpellCastable)
+                uiCenteredText("Ready to cast a spell!");
+            else
+                uiCenteredText("Not enough mana to cast any spell...");
+        }
+
+        ImGui::Separator();
+        uiSetFontScale(uiNormalFontScale);
 
         ImGui::BeginDisabled(isWizardBusy());
         uiBeginColumns();
@@ -5757,6 +5782,7 @@ It's a duck.)",
 
             uiCheckbox("Play audio in background", &profile.playAudioInBackground);
             uiCheckbox("Enable combo scratch sound", &profile.playComboEndSound);
+            uiCheckbox("Enable ritual sounds", &profile.playWitchRitualSounds);
 
             ImGui::EndTabItem();
         }
@@ -7701,7 +7727,7 @@ It's a duck.)",
             cat.textStatusShakeEffect.bump(rngFast, 1.5f);
             cat.hits += static_cast<sf::base::U32>(nCatsHit);
 
-            statMaintenance();
+            statMaintenance(nCatsHit);
             statHighestSimultaneousMaintenances(nCatsHit);
         }
 
@@ -7908,7 +7934,9 @@ It's a duck.)",
                     if (sounds.countPlayingPooled(soundRitualEnd) == 0u)
                     {
                         soundRitualEnd.setPosition({cat.position.x, cat.position.y});
-                        playSound(soundRitualEnd);
+
+                        if (profile.playWitchRitualSounds)
+                            playSound(soundRitualEnd);
                     }
                 }
 
@@ -7917,7 +7945,9 @@ It's a duck.)",
                     if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(soundRitual) == 0u)
                     {
                         soundRitual.setPosition({cat.position.x, cat.position.y});
-                        playSound(soundRitual);
+
+                        if (profile.playWitchRitualSounds)
+                            playSound(soundRitual);
                     }
 
                     const float intensity = remap(cat.cooldown.value, 0.f, 10'000.f, 1.f, 0.f);
@@ -8188,10 +8218,16 @@ It's a duck.)",
                     absorbSin += deltaTimeMs * 0.002f;
 
                     cat.hue = wrapHue(sf::base::sin(sf::base::remainder(absorbSin, sf::base::tau)) * 25.f);
+
+                    if (wizardcatAbsorptionRotation < 0.15f)
+                        wizardcatAbsorptionRotation += deltaTimeMs * 0.0005f;
                 }
                 else
                 {
                     cat.hue = 0.f;
+
+                    if (wizardcatAbsorptionRotation > 0.f)
+                        wizardcatAbsorptionRotation -= deltaTimeMs * 0.0005f;
                 }
 
                 if (isWizardBusy() && rngFast.getF(0.f, 1.f) > 0.5f)
@@ -9705,9 +9741,9 @@ It's a duck.)",
         unlockIf(pt.perm.attractoCatFilterPurchased);
 
         unlockIf(profile.statsLifetime.nDisguises >= 1);
-        unlockIf(profile.statsLifetime.nDisguises >= 10);
+        unlockIf(profile.statsLifetime.nDisguises >= 5);
+        unlockIf(profile.statsLifetime.nDisguises >= 25);
         unlockIf(profile.statsLifetime.nDisguises >= 100);
-        unlockIf(profile.statsLifetime.nDisguises >= 1000);
 
         unlockIf(buyReminder >= 5); // Secret
         unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
@@ -10151,7 +10187,7 @@ It's a duck.)",
         }
 
         if (cat.type == CatType::Wizard)
-            catRotation += wizardcatSpin.value;
+            catRotation += wizardcatSpin.value + wizardcatAbsorptionRotation;
 
         const auto range = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
@@ -12944,7 +12980,6 @@ int main(int argc, const char** argv)
 // TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
 // TODO P2: configurable pop sound play chance
-// TODO P2: find better word for "prestige"
 // TODO P2: maybe 64PP prestige buff for multipop that allows "misses"
 // TODO P2: reduce size of game textures and try to reduce atlas size
 // TODO P2: some sort of beacon cat that is only effective when near n-m cats but no less nor more

@@ -611,7 +611,8 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(invertMouseButtons),
                          FIELD(showDollParticleBorder),
 
-                         FIELD(catDragPressDuration));
+                         FIELD(catDragPressDuration),
+                         FIELD(playWitchRitualSounds));
 }
 
 ////////////////////////////////////////////////////////////
