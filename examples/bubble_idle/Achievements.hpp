@@ -476,9 +476,9 @@ inline constexpr AchievementData achievementData[] = {
     {"Selective Magnet", "Purchase the \"Attraction Filter\" permanent upgrade."},
 
     {"Gentlemen?", "Change Copycat disguise once."},
-    {"Meow. James Meow.", "Change Copycat disguise 10 times."},
-    {"Yeah, Baby!", "Change Copycat disguise 100 times."},
-    {"Tactical Espionage Action", "Change Copycat disguise 1'000 times."},
+    {"Meow. James Meow.", "Change Copycat disguise 5 times."},
+    {"Yeah, Baby!", "Change Copycat disguise 25 times."},
+    {"Tactical Espionage Action", "Change Copycat disguise 100 times."},
 
     {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
     {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
