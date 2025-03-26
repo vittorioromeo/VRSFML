@@ -96,6 +96,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -268,7 +269,8 @@ void drawMinimap(
     const sf::Vector2f      resolution,
     const float             hudScale,
     const float             hueMod,
-    const sf::base::U8      shouldDrawUIAlpha)
+    const sf::base::U8      shouldDrawUIAlpha,
+    sf::FloatRect&          minimapRect)
 {
     //
     // Screen position of minimap's top-left corner
@@ -286,6 +288,9 @@ void drawMinimap(
          .outlineColor     = sf::Color::whiteMask(shouldDrawUIAlpha),
          .outlineThickness = 2.f,
          .size             = sf::Vector2f{mapLimit / minimapScale, minimapSize.y}}};
+
+    minimapRect.position = minimapPos;
+    minimapRect.size     = minimapBorder.getSize();
 
     //
     // Blue rectangle showing current visible area
@@ -1008,6 +1013,7 @@ struct Main
     sf::CPUDrawableBatch hudDrawableBatch;
     sf::CPUDrawableBatch hudTopDrawableBatch;    // drawn on top of ImGui
     sf::CPUDrawableBatch hudBottomDrawableBatch; // drawn below ImGui
+    sf::CPUDrawableBatch cpuTopDrawableBatch;    // drawn on top of ImGui
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
@@ -1050,6 +1056,7 @@ struct Main
     float                            catDragPressDuration{0.f};
     sf::base::Optional<sf::Vector2f> catDragOrigin;
     std::vector<Cat*>                draggedCats;
+    Cat*                             catToPlace{nullptr};
 
     ////////////////////////////////////////////////////////////
     // Touch state
@@ -1063,6 +1070,7 @@ struct Main
     // Tip state
     OptionalTargetedCountdown tipTCByte;
     OptionalTargetedCountdown tipTCBackground;
+    OptionalTargetedCountdown tipTCBytePreEnd;
     OptionalTargetedCountdown tipTCByteEnd;
     OptionalTargetedCountdown tipTCBackgroundEnd;
     Countdown                 tipCountdownChar;
@@ -1100,6 +1108,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Cached views
     sf::View gameView;
+    sf::View scaledTopGameView;
     sf::View gameBackgroundView;
     sf::View nonScaledHUDView;
     sf::View scaledHUDView;
@@ -1184,6 +1193,20 @@ struct Main
     OptionalTargetedCountdown victoryTC;
     Countdown                 cdLetterAppear;
     Countdown                 cdLetterText;
+
+    ////////////////////////////////////////////////////////////
+    // Keyboard helpers
+    bool keyPressedThisFrame[sf::Keyboard::KeyCount]{};
+    bool keyPressedLastFrame[sf::Keyboard::KeyCount]{};
+
+    ////////////////////////////////////////////////////////////
+    // Mouse helpers
+    bool mBtnsPressedThisFrame[sf::Mouse::ButtonCount]{};
+    bool mBtnsPressedLastFrame[sf::Mouse::ButtonCount]{};
+
+    ////////////////////////////////////////////////////////////
+    // Minimap navigation
+    sf::FloatRect minimapRect;
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -1466,6 +1489,20 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool keyRisingEdge(const sf::Keyboard::Key key) const
+    {
+        return !keyPressedLastFrame[static_cast<sf::base::SizeT>(key)] &&
+               keyPressedThisFrame[static_cast<sf::base::SizeT>(key)];
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool mBtnRisingEdge(const sf::Mouse::Button btn) const
+    {
+        return !mBtnsPressedLastFrame[static_cast<sf::base::SizeT>(btn)] &&
+               mBtnsPressedThisFrame[static_cast<sf::base::SizeT>(btn)];
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool mBtnDown(const sf::Mouse::Button button, const bool penetrateUI) const
     {
         if (ImGui::GetIO().WantCaptureMouse && !penetrateUI)
@@ -1575,6 +1612,8 @@ struct Main
 
         spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
 
+        catToPlace = nullptr;
+
         return pt.cats.emplace_back(Cat{
             .position    = pos,
             .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
@@ -1586,10 +1625,24 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCatCentered(const CatType catType, const float hue)
+    Cat& spawnCatCentered(const CatType catType, const float hue, const bool placeInHand = true)
     {
         const auto pos = getWindow().mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
-        return spawnCat(pos, catType, hue);
+
+        Cat& newCat = spawnCat(pos, catType, hue);
+
+        if (placeInHand)
+        {
+            catToPlace = &newCat;
+
+            draggedCats.clear();
+            draggedCats.push_back(&newCat);
+
+            newCat.position    = lastMousePos;
+            newCat.pawPosition = lastMousePos;
+        }
+
+        return newCat;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1604,6 +1657,7 @@ struct Main
     {
         tipTCByte.reset();
         tipTCBackground.reset();
+        tipTCBytePreEnd.reset();
         tipTCByteEnd.reset();
         tipTCBackgroundEnd.reset();
         tipCountdownChar.value = 0.f;
@@ -2150,6 +2204,31 @@ It's a duck.)",
                 .size     = originalSize,
                 .viewport = {(windowSize - scaledSize).componentWiseDiv(windowSize * 2.f),
                              scaledSize.componentWiseDiv(windowSize)}};
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
+    {
+        const float        scale      = getAspectRatioScalingFactor(originalSize, windowSize);
+        const sf::Vector2f scaledSize = originalSize * scale;
+
+        // Compute the full window width in world coordinates.
+        float newWidth = windowSize.x / scale;
+
+        sf::View view;
+        // Use the new width while keeping the original height.
+        view.size = {newWidth, originalSize.y};
+
+        // Align the left edge with that of the normal game view.
+        // The left edge is given by (baseCenter.x - originalSize.x / 2).
+        sf::Vector2f baseCenter = getViewCenter();
+        float        left       = baseCenter.x - originalSize.x / 2.f;
+        view.center             = {left + newWidth / 2.f, baseCenter.y};
+
+        // Use the same vertical letterboxing as the regular game view.
+        view.viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}};
+
+        return view;
     }
 
     ////////////////////////////////////////////////////////////
@@ -2791,12 +2870,19 @@ It's a duck.)",
         if (ImGui::BeginPopup(popupLabel))
         {
             uiCheckbox("Enable tips", &profile.tipsEnabled);
+            uiCheckbox("Enable notifications", &profile.enableNotifications);
+
+            ImGui::Separator();
+
             uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
 
             ImGui::Separator();
 
             uiCheckbox("Show cat range", &profile.showCatRange);
             uiCheckbox("Show cat text", &profile.showCatText);
+
+            ImGui::Separator();
+
             uiCheckbox("Show particles", &profile.showParticles);
 
             ImGui::BeginDisabled(!profile.showParticles);
@@ -2804,6 +2890,10 @@ It's a duck.)",
             ImGui::EndDisabled();
 
             uiCheckbox("Show text particles", &profile.showTextParticles);
+
+            ImGui::Separator();
+
+            uiCheckbox("Enable screen shake", &profile.enableScreenShake);
 
             ImGui::Separator();
 
@@ -3120,6 +3210,12 @@ It's a duck.)",
     {
         const float childHeight = uiGetMaxWindowHeight() - (60.f * profile.uiScale);
 
+        const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key)
+        {
+            return !ImGui::GetIO().WantCaptureKeyboard && keyRisingEdge(key)
+                       ? ImGuiTabItemFlags_SetSelected
+                       : ImGuiTabItemFlags_{};
+        };
 
         const auto selectedTab = [&](int idx)
         {
@@ -3129,14 +3225,18 @@ It's a duck.)",
             lastUiSelectedTabIdx = idx;
         };
 
-        if (ImGui::BeginTabItem("X"))
+        if (ImGui::BeginTabItem("X",
+                                nullptr,
+                                keyboardSelectedTab(sf::Keyboard::Key::Slash) | keyboardSelectedTab(sf::Keyboard::Key::Grave) |
+                                    keyboardSelectedTab(sf::Keyboard::Key::Apostrophe) |
+                                    keyboardSelectedTab(sf::Keyboard::Key::Backslash)))
         {
             selectedTab(0);
 
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Shop", nullptr, shopSelectOnce))
+        if (ImGui::BeginTabItem("Shop", nullptr, shopSelectOnce | keyboardSelectedTab(sf::Keyboard::Key::Num1)))
         {
             selectedTab(1);
 
@@ -3152,7 +3252,18 @@ It's a duck.)",
             ImGui::EndTabItem();
         }
 
-        if (cachedWizardCat != nullptr && ImGui::BeginTabItem("Magic"))
+        sf::base::SizeT nextTabKeyIndex = 0u;
+
+        constexpr sf::Keyboard::Key tabKeys[] = {
+            sf::Keyboard::Key::Num2,
+            sf::Keyboard::Key::Num3,
+            sf::Keyboard::Key::Num4,
+            sf::Keyboard::Key::Num5,
+            sf::Keyboard::Key::Num6,
+        };
+
+        if (cachedWizardCat != nullptr &&
+            ImGui::BeginTabItem("Magic", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
         {
             selectedTab(2);
 
@@ -3184,7 +3295,7 @@ It's a duck.)",
                 ImGui::PushStyleColor(ImGuiCol_TabSelected, IM_COL32(136, 65, 105, 255));
             }
 
-            if (ImGui::BeginTabItem("Prestige"))
+            if (ImGui::BeginTabItem("Prestige", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
             {
                 selectedTab(3);
 
@@ -3203,7 +3314,7 @@ It's a duck.)",
                 ImGui::PopStyleColor(3);
         }
 
-        if (ImGui::BeginTabItem("Stats"))
+        if (ImGui::BeginTabItem("Stats", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
         {
             selectedTab(4);
 
@@ -3218,7 +3329,7 @@ It's a duck.)",
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Options"))
+        if (ImGui::BeginTabItem("Options", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
         {
             selectedTab(5);
 
@@ -3400,7 +3511,7 @@ It's a duck.)",
         if (makePurchasableButtonOneTime("Combo", 20u, pt.comboPurchased))
         {
             combo = 0;
-            doTip("Pop bubbles quickly keep to\nyour combo up and make more money!");
+            doTip("Pop bubbles quickly to keep\nyour combo up and make more money!");
         }
 
         if (checkUiUnlock(0u, pt.comboPurchased))
@@ -3427,15 +3538,18 @@ It's a duck.)",
 
             uiSetUnlockLabelY(1u);
             std::sprintf(uiTooltipBuffer,
-                         "Extend the map and enable scrolling (right click or drag with two fingers).\n\nExtending "
-                         "the "
-                         "map will increase the total number of bubbles you can work with, and will also reveal "
-                         "magical shrines that grant unique cats upon completion.");
+                         "Extend the map and enable scrolling.\n\nExtending the map will increase the total number of "
+                         "bubbles you can work with, and will also reveal magical shrines that grant unique cats upon "
+                         "completion.\n\nYou can scroll the map with the scroll wheel, holding right click, by "
+                         "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the map "
+                         "by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
             uiLabelBuffer[0] = '\0';
             if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt.mapPurchased))
             {
                 scroll = 0.f;
-                doTip("You can scroll the map with right click\nor by dragging with two fingers!");
+                doTip(
+                    "Explore the map by using the mouse wheel,\ndragging via right click, or with your "
+                    "keyboard.\nYou can also click on the minimap!");
 
                 if (pt.psvBubbleValue.nPurchases == 0u)
                     scrollArrowCountdown.value = 2000.f;
@@ -3501,6 +3615,11 @@ It's a duck.)",
 
                 if (nCatNormal == 0)
                     doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
+
+                if (nCatNormal == 2)
+                    doTip(
+                        "Multiple cats can be dragged at once by\nholding shift while clicking the mouse.\nRelease "
+                        "either button to drop them!");
             }
         }
 
@@ -4664,6 +4783,7 @@ It's a duck.)",
         catDragPressDuration = 0.f;
         catDragOrigin.reset();
         draggedCats.clear();
+        catToPlace = nullptr;
     }
 
     ////////////////////////////////////////////////////////////
@@ -5004,22 +5124,25 @@ It's a duck.)",
         ImGui::Columns(1);
         uiSetFontScale(0.8f);
 
-        if (pt.absorbingWisdom)
-            uiCenteredText("Cannot cast spells while absorbing wisdom...");
-        else if (wizardCat->isHexedOrCopyHexed())
-            uiCenteredText("Cannot cast spells while hexed...");
-        else if (wizardCat->cooldown.value > 0.f)
-            uiCenteredText("Cannot cast spells while on cooldown...");
-        else if (isCatBeingDragged(*wizardCat))
-            uiCenteredText("Cannot cast spells while being dragged...");
-        else
+        if (pt.psvSpellCount.nPurchases > 0)
         {
-            const bool anySpellCastable = pt.mana >= spellManaCostByIndex[0] && pt.psvSpellCount.nPurchases >= 1;
-
-            if (anySpellCastable)
-                uiCenteredText("Ready to cast a spell!");
+            if (pt.absorbingWisdom)
+                uiCenteredText("Cannot cast spells while absorbing wisdom...");
+            else if (wizardCat->isHexedOrCopyHexed())
+                uiCenteredText("Cannot cast spells while hexed...");
+            else if (wizardCat->cooldown.value > 0.f)
+                uiCenteredText("Cannot cast spells while on cooldown...");
+            else if (isCatBeingDragged(*wizardCat))
+                uiCenteredText("Cannot cast spells while being dragged...");
             else
-                uiCenteredText("Not enough mana to cast any spell...");
+            {
+                const bool anySpellCastable = pt.mana >= spellManaCostByIndex[0] && pt.psvSpellCount.nPurchases >= 1;
+
+                if (anySpellCastable)
+                    uiCenteredText("Ready to cast a spell!");
+                else
+                    uiCenteredText("Not enough mana to cast any spell...");
+            }
         }
 
         ImGui::Separator();
@@ -5711,6 +5834,9 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void forceResetGame()
     {
+        sounds.stopPlayingAll(sounds.ritual);
+        sounds.stopPlayingAll(sounds.copyritual);
+
         rng.reseed(std::random_device{}());
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
@@ -5800,6 +5926,8 @@ It's a duck.)",
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("HUD Scale", &profile.hudScale, 0.5f, 2.f, "%.2f");
 
+            ImGui::Separator();
+
             ImGui::AlignTextToFramePadding();
             ImGui::Text("UI Scale");
 
@@ -5820,12 +5948,19 @@ It's a duck.)",
             makeUIScaleButton("S", 0.75f);
             makeUIScaleButton("XS", 0.5f);
 
+            ImGui::Separator();
+
             uiCheckbox("Enable tips", &profile.tipsEnabled);
+
+            ImGui::Separator();
+
             uiCheckbox("Enable notifications", &profile.enableNotifications);
 
             ImGui::BeginDisabled(!profile.enableNotifications);
             uiCheckbox("Enable full mana notification", &profile.showFullManaNotification);
             ImGui::EndDisabled();
+
+            ImGui::Separator();
 
             uiCheckbox("Enable $/s meter", &profile.showDpsMeter);
 
@@ -5890,8 +6025,17 @@ It's a duck.)",
 
             uiCheckbox("Always show drawings", &profile.alwaysShowDrawings);
 
+            ImGui::Separator();
+
             uiCheckbox("Show cat range", &profile.showCatRange);
             uiCheckbox("Show cat text", &profile.showCatText);
+            uiCheckbox("Enable cat bobbing", &profile.enableCatBobbing);
+
+            ImGui::SetNextItemWidth(210.f * profile.uiScale);
+            ImGui::SliderFloat("Cat range thickness", &profile.catRangeOutlineThickness, 1.f, 4.f, "%.2fpx");
+
+            ImGui::Separator();
+
             uiCheckbox("Show particles", &profile.showParticles);
 
             ImGui::BeginDisabled(!profile.showParticles);
@@ -5899,7 +6043,16 @@ It's a duck.)",
             ImGui::EndDisabled();
 
             uiCheckbox("Show text particles", &profile.showTextParticles);
+
+            ImGui::Separator();
+
+            uiCheckbox("Enable screen shake", &profile.enableScreenShake);
+
+            ImGui::Separator();
+
             uiCheckbox("Show bubbles", &profile.showBubbles);
+
+            ImGui::Separator();
 
             uiCheckbox("Show doll particle border", &profile.showDollParticleBorder);
 
@@ -7398,7 +7551,7 @@ It's a duck.)",
 
         cat.wobbleRadians = 0.f;
 
-        spawnParticle({.position      = cat.getDrawPosition().addY(29.f),
+        spawnParticle({.position      = cat.getDrawPosition(profile.enableCatBobbing).addY(29.f),
                        .velocity      = {0.f, 0.f},
                        .scale         = 0.2f,
                        .scaleDecay    = 0.f,
@@ -7578,7 +7731,7 @@ It's a duck.)",
         const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range        = getComputedRangeByCatTypeOrCopyCat(cat.type);
         const auto [cx, cy]     = getCatRangeCenter(cat);
-        const auto drawPosition = cat.getDrawPosition();
+        const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
         Bubble* starBubble = nullptr;
 
@@ -7714,7 +7867,7 @@ It's a duck.)",
 
             ++nCatsHit;
 
-            spawnParticles(8, otherCat.getDrawPosition(), ParticleType::Cog, 0.25f, 0.5f);
+            spawnParticles(8, otherCat.getDrawPosition(profile.enableCatBobbing), ParticleType::Cog, 0.25f, 0.5f);
 
             sounds.maintenance.setPosition({otherCat.position.x, otherCat.position.y});
             playSound(sounds.maintenance, /* maxOverlap */ 1u);
@@ -7883,7 +8036,8 @@ It's a duck.)",
                 }
             }
 
-            const bool allowOOBCat = cat.astroState.hasValue() || (draggedCats.size() > 1u && isCatBeingDragged(cat));
+            const bool allowOOBCat = &cat == catToPlace || cat.astroState.hasValue() ||
+                                     (draggedCats.size() > 1u && isCatBeingDragged(cat));
 
             if (!allowOOBCat)
                 cat.position = cat.position.componentWiseClamp({catRadius, catRadius},
@@ -7893,7 +8047,7 @@ It's a duck.)",
             const auto range        = pt.getComputedRangeByCatType(cat.type);
             const auto rangeSquared = range * range;
 
-            const auto drawPosition = cat.getDrawPosition();
+            const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
             auto diff = cat.pawPosition - drawPosition - sf::Vector2f{-25.f, 25.f};
             cat.pawPosition -= diff * 0.01f * deltaTimeMs;
@@ -7970,7 +8124,7 @@ It's a duck.)",
                             continue;
 
                         if (rngFast.getF(0.f, 1.f) < intensity)
-                            spawnParticle({.position = otherCat.getDrawPosition() +
+                            spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
                                                        sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                            .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                            .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
@@ -8257,7 +8411,7 @@ It's a duck.)",
                         continue;
 
                     if (rngFast.getF(0.f, 1.f) > 0.95f)
-                        spawnParticle({.position = otherCat.getDrawPosition() +
+                        spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
                                                    sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
                                        .velocity      = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
                                        .scale         = rngFast.getF(0.08f, 0.27f) * 0.4f,
@@ -8336,12 +8490,6 @@ It's a duck.)",
         if (cat.isHexedOrCopyHexed())
             return false;
 
-        if (cat.type == CatType::Wizard && isWizardBusy())
-            return false;
-
-        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Wizard && isWizardBusy())
-            return false;
-
         if (cat.type == CatType::Witch && anyCatHexed())
             return false;
 
@@ -8367,7 +8515,7 @@ It's a duck.)",
         }
 
         // Automatically scroll when dragging cats near the edge of the screen
-        if (!draggedCats.empty())
+        if (!draggedCats.empty() && catToPlace == nullptr)
         {
             constexpr float offset = 48.f;
 
@@ -8414,7 +8562,23 @@ It's a duck.)",
         }
         else
         {
-            if (!mBtnDown(getLMB(), /* penetrateUI */ true) && countFingersDown != 1)
+            const bool shouldDropCats = [&]
+            {
+                if (catToPlace != nullptr)
+                    return bubbleCullingBoundaries.isInside(catToPlace->position) && mBtnRisingEdge(getLMB());
+
+                const bool noMouseButtonNorFinger = !mBtnDown(getLMB(), /* penetrateUI */ true) && countFingersDown != 1;
+
+                if (draggedCats.size() <= 1u)
+                    return noMouseButtonNorFinger;
+
+                if (draggedCats.size() > 1u)
+                    return noMouseButtonNorFinger && !keyDown(sf::Keyboard::Key::LShift);
+
+                return false;
+            }();
+
+            if (shouldDropCats)
             {
                 if (!draggedCats.empty())
                     playSound(sounds.drop);
@@ -8841,8 +9005,9 @@ It's a duck.)",
             const auto* hexedCat = copy ? getCopyHexedCat() : getHexedCat();
             SFML_BASE_ASSERT(hexedCat != nullptr);
 
-            spawnParticle({.position      = d.getDrawPosition(),
-                           .velocity      = (hexedCat->getDrawPosition() - d.getDrawPosition()).normalized() * 1.f,
+            spawnParticle({.position = d.getDrawPosition(),
+                           .velocity = (hexedCat->getDrawPosition(profile.enableCatBobbing) - d.getDrawPosition()).normalized() *
+                                       1.f,
                            .scale         = 0.2f,
                            .scaleDecay    = 0.f,
                            .accelerationY = 0.f,
@@ -10106,9 +10271,12 @@ It's a duck.)",
                          const sf::Vector2f (&catTailOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
+        auto& batchToUse = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
+        // TODO P0: do the same for the text
+
         const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
 
-        if (!bubbleCullingBoundaries.isInside(cat.position))
+        if (catToPlace != &cat && !bubbleCullingBoundaries.isInside(cat.position))
             return;
 
         const auto isCopyCatWithType = [&](const CatType copiedType)
@@ -10206,13 +10374,13 @@ It's a duck.)",
         const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
         if (profile.showCatRange && !inPrestigeTransition)
-            cpuDrawableBatch.add(sf::CircleShapeData{
+            batchToUse.add(sf::CircleShapeData{
                 .position           = getCatRangeCenter(cat),
                 .origin             = {range, range},
                 .outlineTextureRect = txrWhiteDot,
                 .fillColor          = (circleOutlineColor.withAlpha(rangeInnerAlpha)),
                 .outlineColor       = circleOutlineColor,
-                .outlineThickness   = 1.f,
+                .outlineThickness   = profile.catRangeOutlineThickness,
                 .radius             = range,
                 .pointCount         = static_cast<unsigned int>(range / 3.f),
             });
@@ -10220,7 +10388,7 @@ It's a duck.)",
         const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
         const auto  catScale     = sf::Vector2f{0.2f, 0.2f} * catScaleMult;
 
-        const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition();
+        const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
 
         const auto anchorOffset = [&](const sf::Vector2f offset)
         { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
@@ -10242,7 +10410,7 @@ It's a duck.)",
         // Devilcat: draw tail behind
         if (cat.type == CatType::Devil)
         {
-            cpuDrawableBatch.add(
+            batchToUse.add(
                 sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{905.f, 10.f} + pushDown * 2.f),
                            .scale       = catScale * 1.25f,
                            .origin      = {320.f, 32.f},
@@ -10255,13 +10423,12 @@ It's a duck.)",
         // Draw brain jar in the background
         if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
         {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
-                           .scale       = catScale,
-                           .origin      = txrBrainBack.size / 2.f,
-                           .rotation    = sf::radians(catRotation),
-                           .textureRect = txrBrainBack,
-                           .color       = catColor});
+            batchToUse.add(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+                                      .scale       = catScale,
+                                      .origin      = txrBrainBack.size / 2.f,
+                                      .rotation    = sf::radians(catRotation),
+                                      .textureRect = txrBrainBack,
+                                      .color       = catColor});
         }
 
         //
@@ -10271,20 +10438,19 @@ It's a duck.)",
             const auto wingRotation = sf::radians(catRotation + (beingDragged ? -0.2f : 0.f) +
                                                   std::cos(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * 0.75f);
 
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset({250.f, -175.f}),
-                           .scale       = catScale * 1.25f,
-                           .origin      = txrUniCatWings.size / 2.f - sf::Vector2f{35.f, 10.f},
-                           .rotation    = wingRotation,
-                           .textureRect = txrUniCatWings,
-                           .color       = hueColor(cat.hue + 180.f, 180u)});
+            batchToUse.add(sf::Sprite{.position    = anchorOffset({250.f, -175.f}),
+                                      .scale       = catScale * 1.25f,
+                                      .origin      = txrUniCatWings.size / 2.f - sf::Vector2f{35.f, 10.f},
+                                      .rotation    = wingRotation,
+                                      .textureRect = txrUniCatWings,
+                                      .color       = hueColor(cat.hue + 180.f, 180u)});
         }
 
         //
         // Devilcat: draw book
         if (cat.type == CatType::Devil)
         {
-            cpuDrawableBatch.add(
+            batchToUse.add(
                 sf::Sprite{.position    = catAnchor + sf::Vector2f{10.f, 20.f},
                            .scale       = catScale * 1.55f,
                            .origin      = txrDevilCat3Book.size / 2.f,
@@ -10300,7 +10466,7 @@ It's a duck.)",
         // Devilcat: draw paw behind book
         if (cat.type == CatType::Devil)
         {
-            cpuDrawableBatch.add(
+            batchToUse.add(
                 sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vector2f{-6.f, 6.f} : sf::Vector2f{4.f, 2.f}),
                            .scale       = catScale * 1.25f,
                            .origin      = catPawTxr.size / 2.f,
@@ -10311,23 +10477,21 @@ It's a duck.)",
 
         //
         // Draw cat main shape
-        cpuDrawableBatch.add(
-            sf::Sprite{.position    = catAnchor,
-                       .scale       = catScale,
-                       .origin      = catTxr.size / 2.f,
-                       .rotation    = sf::radians(catRotation),
-                       .textureRect = catTxr,
-                       .color       = catColor});
+        batchToUse.add(sf::Sprite{.position    = catAnchor,
+                                  .scale       = catScale,
+                                  .origin      = catTxr.size / 2.f,
+                                  .rotation    = sf::radians(catRotation),
+                                  .textureRect = catTxr,
+                                  .color       = catColor});
 
         if (cat.type == CatType::Duck)
         {
-            cpuDrawableBatch.add(
-                sf::Sprite{.position    = anchorOffset(sf::Vector2f{335.f, -65.f} + pushDown),
-                           .scale       = catScale,
-                           .origin      = {98.f, 330.f},
-                           .rotation    = tailWiggleRotation,
-                           .textureRect = txrDuckFlag,
-                           .color       = catColor});
+            batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{335.f, -65.f} + pushDown),
+                                      .scale       = catScale,
+                                      .origin      = {98.f, 330.f},
+                                      .rotation    = tailWiggleRotation,
+                                      .textureRect = txrDuckFlag,
+                                      .color       = catColor});
         }
         else
         {
@@ -10335,13 +10499,12 @@ It's a duck.)",
             // Draw graudation hat
             if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased)
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
-                               .scale       = catScale,
-                               .origin      = txrSmartCatHat.size / 2.f,
-                               .rotation    = sf::radians(catRotation),
-                               .textureRect = txrSmartCatHat,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
+                                          .scale       = catScale,
+                                          .origin      = txrSmartCatHat.size / 2.f,
+                                          .rotation    = sf::radians(catRotation),
+                                          .textureRect = txrSmartCatHat,
+                                          .color       = catColor});
             }
 
             //
@@ -10361,7 +10524,7 @@ It's a duck.)",
 
             if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
             {
-                cpuDrawableBatch.add(
+                batchToUse.add(
                     sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-131.f, -365.f}),
                                .scale    = catScale,
                                .origin   = txrCatEars0.size / 2.f,
@@ -10386,13 +10549,12 @@ It's a duck.)",
 
                 (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
 
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-221.f, 25.f}),
-                               .scale       = catScale,
-                               .origin      = txrCatYawn0.size / 2.f,
-                               .rotation    = sf::radians(catRotation),
-                               .textureRect = *catYawnRects[yawnRectIdx],
-                               .color       = attachmentHue});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-221.f, 25.f}),
+                                          .scale       = catScale,
+                                          .origin      = txrCatYawn0.size / 2.f,
+                                          .rotation    = sf::radians(catRotation),
+                                          .textureRect = *catYawnRects[yawnRectIdx],
+                                          .color       = attachmentHue});
             }
             else
             {
@@ -10403,45 +10565,41 @@ It's a duck.)",
             // Draw attachments
             if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased) // Smart cat diploma
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
-                               .scale       = catScale,
-                               .origin      = {23.f, 150.f},
-                               .rotation    = tailWiggleRotation,
-                               .textureRect = txrSmartCatDiploma,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
+                                          .scale       = catScale,
+                                          .origin      = {23.f, 150.f},
+                                          .rotation    = tailWiggleRotation,
+                                          .textureRect = txrSmartCatDiploma,
+                                          .color       = catColor});
             }
             else if (cat.type == CatType::Astro && pt.perm.astroCatInspirePurchased) // Astro cat flag
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
-                               .scale       = catScale,
-                               .origin      = {98.f, 330.f},
-                               .rotation    = tailWiggleRotation,
-                               .textureRect = txrAstroCatFlag,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
+                                          .scale       = catScale,
+                                          .origin      = {98.f, 330.f},
+                                          .rotation    = tailWiggleRotation,
+                                          .textureRect = txrAstroCatFlag,
+                                          .color       = catColor});
             }
             else if (cat.type == CatType::Engi ||
                      (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
-                               .scale       = catScale,
-                               .origin      = {36.f, 167.f},
-                               .rotation    = tailWiggleRotation,
-                               .textureRect = txrEngiCatWrench,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
+                                          .scale       = catScale,
+                                          .origin      = {36.f, 167.f},
+                                          .rotation    = tailWiggleRotation,
+                                          .textureRect = txrEngiCatWrench,
+                                          .color       = catColor});
             }
             else if (cat.type == CatType::Attracto ||
                      (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
-                               .scale       = catScale,
-                               .origin      = {142.f, 254.f},
-                               .rotation    = tailWiggleRotation,
-                               .textureRect = txrAttractoCatMagnet,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
+                                          .scale       = catScale,
+                                          .origin      = {142.f, 254.f},
+                                          .rotation    = tailWiggleRotation,
+                                          .textureRect = txrAttractoCatMagnet,
+                                          .color       = catColor});
             }
 
 
@@ -10452,7 +10610,7 @@ It's a duck.)",
                 const auto originOffset = cat.type == CatType::Uni ? sf::Vector2f{250.f, 0.f} : sf::Vector2f{0.f, 0.f};
                 const auto offset = cat.type == CatType::Uni ? sf::Vector2f{-130.f, 405.f} : sf::Vector2f{0.f, 0.f};
 
-                cpuDrawableBatch.add(
+                batchToUse.add(
                     sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{475.f, 240.f} + offset + originOffset),
                                .scale       = catScale,
                                .origin      = originOffset + sf::Vector2f{320.f, 32.f},
@@ -10465,13 +10623,12 @@ It's a duck.)",
             // Mousecat: mouse
             if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
-                               .scale       = catScale,
-                               .origin      = {53.f, 77.f},
-                               .rotation    = tailWiggleRotationInvertedDragged,
-                               .textureRect = txrMouseCatMouse,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
+                                          .scale       = catScale,
+                                          .origin      = {53.f, 77.f},
+                                          .rotation    = tailWiggleRotationInvertedDragged,
+                                          .textureRect = txrMouseCatMouse,
+                                          .color       = catColor});
             }
 
             //
@@ -10499,18 +10656,17 @@ It's a duck.)",
 
             if (!cat.yawnAnimCountdown.isDone())
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
-                               .scale       = catScale,
-                               .origin      = txrCatEyeLid0.size / 2.f,
-                               .rotation    = sf::radians(catRotation),
-                               .textureRect = *eyelidArray[static_cast<unsigned int>(
-                                   remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
-                               .color       = attachmentHue});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
+                                          .scale       = catScale,
+                                          .origin      = txrCatEyeLid0.size / 2.f,
+                                          .rotation    = sf::radians(catRotation),
+                                          .textureRect = *eyelidArray[static_cast<unsigned int>(
+                                              remap(static_cast<float>(yawnRectIdx), 0.f, 13.f, 0.f, 7.f))],
+                                          .color       = attachmentHue});
             }
             else if (!cat.blinkAnimCountdown.isDone())
             {
-                cpuDrawableBatch.add(
+                batchToUse.add(
                     sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
                                .scale    = catScale,
                                .origin   = txrCatEyeLid0.size / 2.f,
@@ -10521,18 +10677,17 @@ It's a duck.)",
 
             if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
             {
-                cpuDrawableBatch.add(
-                    sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
-                               .scale       = catScale,
-                               .origin      = txrBrainFront.size / 2.f,
-                               .rotation    = sf::radians(catRotation),
-                               .textureRect = txrBrainFront,
-                               .color       = catColor});
+                batchToUse.add(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
+                                          .scale       = catScale,
+                                          .origin      = txrBrainFront.size / 2.f,
+                                          .rotation    = sf::radians(catRotation),
+                                          .textureRect = txrBrainFront,
+                                          .color       = catColor});
             }
 
 
             if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
-                cpuDrawableBatch.add(
+                batchToUse.add(
                     sf::Sprite{.position = cat.pawPosition +
                                            (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
                                .scale       = catScale,
@@ -10579,13 +10734,12 @@ It's a duck.)",
                 }();
 
                 if (txrMaskToUse != nullptr)
-                    cpuDrawableBatch.add(
-                        sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
-                                   .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
-                                   .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
-                                   .rotation    = sf::radians(catRotation + foo),
-                                   .textureRect = *txrMaskToUse,
-                                   .color       = catColor});
+                    batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
+                                              .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
+                                              .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
+                                              .rotation    = sf::radians(catRotation + foo),
+                                              .textureRect = *txrMaskToUse,
+                                              .color       = catColor});
             }
         }
 
@@ -11346,9 +11500,16 @@ It's a duck.)",
 
             if (tipCharIdx == tipString.size())
             {
-                tipTCByteEnd.emplace(TargetedCountdown{.startingValue = 750.f});
-                tipTCByteEnd->restart();
+                tipTCBytePreEnd.emplace(
+                    TargetedCountdown{.startingValue = 250.f + static_cast<float>(tipString.size()) * 20.f});
+                tipTCBytePreEnd->restart();
             }
+        }
+
+        if (tipTCBytePreEnd.hasValue() && tipTCBytePreEnd->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+        {
+            tipTCByteEnd.emplace(TargetedCountdown{.startingValue = 750.f});
+            tipTCByteEnd->restart();
         }
 
         sf::Text tipText{fontSuperBakery,
@@ -11582,32 +11743,27 @@ It's a duck.)",
                 if (isCatBeingDragged(iCat) || isCatBeingDragged(jCat))
                     continue;
 
-                const auto checkAstro = [this](auto& catA, auto& catB)
+                const auto applyAstroInspireAndIgnore = [this](Cat& catA, Cat& catB)
                 {
-                    if (catA.isAstroAndInFlight() && catB.type == CatType::Astro && !catB.astroState.hasValue())
-                        return true;
+                    if (!catA.isAstroAndInFlight())
+                        return false;
 
-                    if (catA.isAstroAndInFlight() && catB.type != CatType::Astro)
+                    if (pt.perm.astroCatInspirePurchased && catB.type != CatType::Astro &&
+                        detectCollision(catA.position, catB.position, catA.getRadius(), catB.getRadius()))
                     {
-                        if (pt.perm.astroCatInspirePurchased &&
-                            detectCollision(catA.position, catB.position, catA.getRadius(), catB.getRadius()))
-                        {
-                            catB.inspiredCountdown.value = pt.getComputedInspirationDuration();
+                        catB.inspiredCountdown.value = pt.getComputedInspirationDuration();
 
-                            pt.achAstrocatInspireByType[asIdx(catB.type)] = true;
-                        }
-
-                        return true;
+                        pt.achAstrocatInspireByType[asIdx(catB.type)] = true;
                     }
 
-                    return false;
+                    return true;
                 };
 
-                if (checkAstro(iCat, jCat))
+                if (applyAstroInspireAndIgnore(iCat, jCat))
                     continue;
 
                 // NOLINTNEXTLINE(readability-suspicious-call-argument)
-                if (checkAstro(jCat, iCat))
+                if (applyAstroInspireAndIgnore(jCat, iCat))
                     continue;
 
                 handleCatCollision(deltaTimeMs, pt.cats[i], pt.cats[j]);
@@ -11620,6 +11776,9 @@ It's a duck.)",
         for (Cat& cat : pt.cats)
         {
             if (cat.isAstroAndInFlight())
+                continue;
+
+            if (isCatBeingDragged(cat))
                 continue;
 
             for (Shrine& shrine : pt.shrines)
@@ -12332,6 +12491,13 @@ It's a duck.)",
                 if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X)
                     clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
             }
+            else if (const auto* e8 = event->getIf<sf::Event::MouseWheelScrolled>())
+            {
+                const float scrollMult = keyDown(sf::Keyboard::Key::LShift) ? 200.f : 100.f;
+
+                if (!ImGui::GetIO().WantCaptureMouse)
+                    scroll += e8->delta * scrollMult;
+            }
 #pragma GCC diagnostic pop
         }
 
@@ -12345,6 +12511,22 @@ It's a duck.)",
         gameLoopCheats();
 
         //
+        // Keyboard helpers
+        for (sf::base::SizeT iKey = 0u; iKey < sf::Keyboard::KeyCount; ++iKey)
+        {
+            keyPressedLastFrame[iKey] = keyPressedThisFrame[iKey];
+            keyPressedThisFrame[iKey] = keyDown(static_cast<sf::Keyboard::Key>(iKey));
+        }
+
+        //
+        // Mouse helpers
+        for (sf::base::SizeT iBtn = 0u; iBtn < sf::Mouse::ButtonCount; ++iBtn)
+        {
+            mBtnsPressedLastFrame[iBtn] = mBtnsPressedThisFrame[iBtn];
+            mBtnsPressedThisFrame[iBtn] = mBtnDown(static_cast<sf::Mouse::Button>(iBtn), /* penetrateUI */ true);
+        }
+
+        //
         // Number of fingers
         std::vector<sf::Vector2f> downFingers;
         for (const auto maybeFinger : fingerPositions)
@@ -12355,15 +12537,42 @@ It's a duck.)",
         // Map scrolling via keyboard and touch
         if (pt.mapPurchased)
         {
-            if (keyDown(sf::Keyboard::Key::Left))
+            // Jump to beginning/end of map
+            if (keyRisingEdge(sf::Keyboard::Key::Home))
+                scroll = 0.f;
+            else if (keyRisingEdge(sf::Keyboard::Key::End))
+                scroll = static_cast<float>(pt.getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
+
+            const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
+                sf::base::lround(scroll / (gameScreenSize.x * 0.5f)));
+
+            // Jump to previous/next screen
+            if (keyRisingEdge(sf::Keyboard::Key::PageDown) || mBtnRisingEdge(sf::Mouse::Button::Extra2))
             {
-                dragPosition.reset();
-                scroll -= 2.f * deltaTimeMs;
+                const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, pt.getMapLimitIncreases());
+                scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
             }
-            else if (keyDown(sf::Keyboard::Key::Right))
+            else if ((keyRisingEdge(sf::Keyboard::Key::PageUp) || mBtnRisingEdge(sf::Mouse::Button::Extra1)) &&
+                     currentScrollScreenIndex > 0u)
+            {
+                const auto nextScrollScreenIndex = sf::base::max(static_cast<sf::base::SizeT>(0u),
+                                                                 currentScrollScreenIndex - 1u);
+
+                scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
+            }
+
+            const float scrollMult = keyDown(sf::Keyboard::Key::LShift) ? 4.f : 2.f;
+
+            // Left/right scrolling with keyboard
+            if (keyDown(sf::Keyboard::Key::Left) || keyDown(sf::Keyboard::Key::A))
             {
                 dragPosition.reset();
-                scroll += 2.f * deltaTimeMs;
+                scroll -= scrollMult * deltaTimeMs;
+            }
+            else if (keyDown(sf::Keyboard::Key::Right) || keyDown(sf::Keyboard::Key::D))
+            {
+                dragPosition.reset();
+                scroll += scrollMult * deltaTimeMs;
             }
             else if (downFingers.size() == 2)
             {
@@ -12531,8 +12740,9 @@ It's a duck.)",
 
         //
         // Compute views
-        const auto screenShake = rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
-                                                  {screenShakeAmount, screenShakeAmount});
+        const auto screenShake = profile.enableScreenShake ? rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
+                                                                              {screenShakeAmount, screenShakeAmount})
+                                                           : sf::Vector2f{0.f, 0.f};
 
         nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
         scaledHUDView    = makeScaledHUDView(resolution, profile.hudScale);
@@ -12540,6 +12750,9 @@ It's a duck.)",
         gameView                     = createScaledGameView(gameScreenSize, resolution);
         gameView.viewport.position.x = 0.f;
         gameView.center              = getViewCenter() + screenShake;
+
+        scaledTopGameView                     = createScaledTopGameView(gameScreenSize, resolution);
+        scaledTopGameView.viewport.position.x = 0.f;
 
         {
             const float        scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
@@ -12589,6 +12802,7 @@ It's a duck.)",
         //
         // Draw cats, shrines, dolls, particles, and text particles
         cpuDrawableBatch.clear();
+        cpuTopDrawableBatch.clear();
         catTextDrawableBatch.clear();
         gameLoopDrawHellPortals();
         gameLoopDrawCats(mousePos, deltaTimeMs);
@@ -12714,6 +12928,7 @@ It's a duck.)",
         //
         // Minimap
         if (!debugHideUI && pt.mapPurchased)
+        {
             drawMinimap(shader,
                         profile.minimapScale,
                         pt.getMapLimit(),
@@ -12727,11 +12942,26 @@ It's a duck.)",
                         resolution,
                         profile.hudScale,
                         currentBackgroundHue.asDegrees(),
-                        shouldDrawUIAlpha);
+                        shouldDrawUIAlpha,
+                        minimapRect);
+
+            // Jump to minimap position on click
+            const auto p = getWindow().mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
+            if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
+            {
+                const auto minimapPos = p - minimapRect.position;
+                scroll = minimapPos.x * 0.5f * pt.getMapLimit() / minimapRect.size.x - gameScreenSize.x * 0.25f;
+            }
+        }
 
         //
         // UI and Toasts
         gameLoopDrawImGui(shouldDrawUIAlpha);
+
+        //
+        // Draw cats on top of UI
+        rtGame->setView(scaledTopGameView);
+        rtGame->draw(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Purchase unlocked/available effects
@@ -12971,9 +13201,9 @@ int main(int argc, const char** argv)
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
-// TODO P1: click on minimap to change view
 // TODO P1: more steam deck improvements
 // TODO P1: drag click PP upgrade, stacks with multipop
+// TODO P1: Ability to hide maxed out upgrades would help reduce visual clutter in the Shop and Prestige menu in the late game.
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
