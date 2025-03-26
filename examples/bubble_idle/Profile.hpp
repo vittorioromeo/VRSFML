@@ -60,7 +60,7 @@ struct [[nodiscard]] Profile
     bool multicolorCursor     = false;
 
     float cursorHue   = 0.f;
-    float cursorScale = 0.4f;
+    float cursorScale = 0.45f;
 
     bool showCoinParticles = true;
     bool showDpsMeter      = true;
@@ -88,4 +88,6 @@ struct [[nodiscard]] Profile
     bool enableCatBobbing      = true;
 
     float catRangeOutlineThickness = 1.f;
+
+    bool showCursorComboBar = true;
 };
