@@ -249,6 +249,10 @@ struct Playthrough
     bool spendPPTipShown        = false;
     bool shrinesSpawned         = false;
 
+    //
+    // New flags (v1.6.0)
+    bool laserPopEnabled = false; // TODO P0: decide what to do
+
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()
     {
@@ -342,6 +346,8 @@ struct Playthrough
             buffCountdown = {};
 
         shrinesSpawned = false;
+
+        laserPopEnabled = false;
     }
 
     ////////////////////////////////////////////////////////////
