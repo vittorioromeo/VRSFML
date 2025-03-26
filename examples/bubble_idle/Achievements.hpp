@@ -492,6 +492,7 @@ enum : sf::base::SizeT
 };
 
 // TODO P2: come up with more secret achivements
+// ---- have shrine of voodoo affect astrocat
 // TODO P1: speedrun/milestone achievements
 // ---- prestige 1 mid 5min, good 4min, insane 3.45min
 // ---- prestige 2 mid 25min, good 22min, insane 18min
