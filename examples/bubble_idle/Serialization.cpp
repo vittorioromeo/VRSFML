@@ -615,7 +615,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(playWitchRitualSounds),
                          FIELD(enableScreenShake),
                          FIELD(enableCatBobbing),
-                         FIELD(catRangeOutlineThickness));
+                         FIELD(catRangeOutlineThickness),
+
+                         FIELD(showCursorComboBar));
 }
 
 ////////////////////////////////////////////////////////////
@@ -775,7 +777,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
         FIELD(shrineActivateTipShown),
         FIELD(dollTipShown),
         FIELD(spendPPTipShown),
-        FIELD(shrinesSpawned));
+        FIELD(shrinesSpawned),
+
+        FIELD(laserPopEnabled));
 }
 
 ////////////////////////////////////////////////////////////
