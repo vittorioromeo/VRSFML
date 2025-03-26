@@ -612,7 +612,10 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(showDollParticleBorder),
 
                          FIELD(catDragPressDuration),
-                         FIELD(playWitchRitualSounds));
+                         FIELD(playWitchRitualSounds),
+                         FIELD(enableScreenShake),
+                         FIELD(enableCatBobbing),
+                         FIELD(catRangeOutlineThickness));
 }
 
 ////////////////////////////////////////////////////////////
