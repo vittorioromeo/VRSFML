@@ -84,4 +84,8 @@ struct [[nodiscard]] Profile
     float catDragPressDuration = 110.f;
 
     bool playWitchRitualSounds = true;
+    bool enableScreenShake     = true;
+    bool enableCatBobbing      = true;
+
+    float catRangeOutlineThickness = 1.f;
 };
