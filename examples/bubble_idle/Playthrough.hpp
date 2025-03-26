@@ -329,9 +329,8 @@ struct Playthrough
         mouseCatCombo                = 0.f;
         mouseCatComboCountdown.value = 0.f;
 
-        multiPopEnabled         = false;
-        multiPopMouseCatEnabled = false;
-        windStrength            = 0;
+        multiPopEnabled = false;
+        windStrength    = 0;
 
         // bubbles, cats, dolls, copydolls, hell portals, and shrines are cleaned in the game loop (prestige transition)
 
