@@ -223,8 +223,9 @@ bool handleCatShrineCollision(const float deltaTimeMs, Cat& cat, Shrine& shrine)
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr auto playerComboDecay   = 0.95f;
-inline constexpr auto mouseCatComboDecay = 0.995f; // higher decay for mousecat (higher reward)
+inline constexpr auto playerComboDecay      = 0.95f;
+inline constexpr auto playerComboDecayLaser = 0.995f;
+inline constexpr auto mouseCatComboDecay    = 0.995f; // higher decay for mousecat (higher reward)
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline constexpr float getComboValueMult(const int n, const float decay)
@@ -542,6 +543,8 @@ struct Main
     sf::Texture txTipBg{sf::Texture::loadFromFile("resources/tipbg.png", {.smooth = true}).value()};
     sf::Texture txTipByte{sf::Texture::loadFromFile("resources/tipbyte.png", {.smooth = true}).value()};
     sf::Texture txCursor{sf::Texture::loadFromFile("resources/cursor.png", {.smooth = true}).value()};
+    sf::Texture txCursorMultipop{sf::Texture::loadFromFile("resources/cursormultipop.png", {.smooth = true}).value()};
+    sf::Texture txCursorLaser{sf::Texture::loadFromFile("resources/cursorlaser.png", {.smooth = true}).value()};
     sf::Texture txCursorGrab{sf::Texture::loadFromFile("resources/cursorgrab.png", {.smooth = true}).value()};
     sf::Texture txArrow{sf::Texture::loadFromFile("resources/arrow.png", {.smooth = true}).value()};
     sf::Texture txUnlock{sf::Texture::loadFromFile("resources/unlock.png", {.smooth = true}).value()};
@@ -973,6 +976,7 @@ struct Main
     // Combo state
     int       combo{0u};
     Countdown comboCountdown;
+    int       laserCursorCombo{0};
 
     ////////////////////////////////////////////////////////////
     // Accumulating combo effect and cursor combo text
@@ -1011,9 +1015,10 @@ struct Main
     sf::CPUDrawableBatch minimapDrawableBatch;
     sf::CPUDrawableBatch catTextDrawableBatch;
     sf::CPUDrawableBatch hudDrawableBatch;
-    sf::CPUDrawableBatch hudTopDrawableBatch;    // drawn on top of ImGui
-    sf::CPUDrawableBatch hudBottomDrawableBatch; // drawn below ImGui
-    sf::CPUDrawableBatch cpuTopDrawableBatch;    // drawn on top of ImGui
+    sf::CPUDrawableBatch hudTopDrawableBatch;     // drawn on top of ImGui
+    sf::CPUDrawableBatch hudBottomDrawableBatch;  // drawn below ImGui
+    sf::CPUDrawableBatch cpuTopDrawableBatch;     // drawn on top of ImGui
+    sf::CPUDrawableBatch catTextTopDrawableBatch; // drawn on top of ImGui
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
@@ -3314,7 +3319,7 @@ It's a duck.)",
                 ImGui::PopStyleColor(3);
         }
 
-        if (ImGui::BeginTabItem("Stats", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
+        if (ImGui::BeginTabItem("Info", nullptr, keyboardSelectedTab(tabKeys[nextTabKeyIndex++])))
         {
             selectedTab(4);
 
@@ -3604,10 +3609,8 @@ It's a duck.)",
             uiSetUnlockLabelY(4u);
             std::sprintf(uiTooltipBuffer,
                          "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
-                         "behavior "
-                         "can be permanently upgraded with prestige points.\n\nCats can be dragged around to "
-                         "position "
-                         "them strategically.\n\nNo, you can't get rid of a cat once purchased, you monster.");
+                         "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around to "
+                         "position them strategically.\n\nNo, you can't get rid of a cat once purchased, you monster.");
             std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
             if (makePSVButton("Cat", pt.psvPerCatType[asIdx(CatType::Normal)]))
             {
@@ -5408,9 +5411,146 @@ It's a duck.)",
             };
 
             uiSetFontScale(0.75f);
-            if (ImGui::BeginTabItem(" Statistics "))
+            if (ImGui::BeginTabItem(" Tips "))
             {
                 selectedTab(0);
+
+                ImGui::BeginChild("TipsScroll", ImVec2(ImGui::GetContentRegionAvail().x, uiGetMaxWindowHeight() - 125.f));
+
+                const auto addTip = [&](const char* title, const char* description)
+                {
+                    uiSetFontScale(uiNormalFontScale * 2.0f);
+                    uiCenteredText(title);
+
+                    ImGui::PushFont(fontImGuiMouldyCheese);
+                    uiSetFontScale(uiNormalFontScale);
+                    ImGui::TextWrapped("%s", description);
+                    ImGui::PopFont();
+
+                    ImGui::Separator();
+                };
+
+                addTip("Getting Started",
+                       "Click on bubbles to pop them and earn money.\n\nPurchase upgrades and cats to increase your "
+                       "income and automate your bubble popping journey.");
+
+                if (pt.comboPurchased)
+                    addTip("Combos",
+                           "Popping bubbles in quick succession will increase your combo multiplier, boosting your "
+                           "revenue. Keep the combo going for maximum profit!\n\nPopping high-value bubbles such as "
+                           "star bubbles while your combo multiplier is high will yield even more revenue.");
+
+                if (pt.getCatCountByType(CatType::Normal) > 0)
+                {
+                    addTip("Regular Cats",
+                           "Regular cats will automatically pop bubbles for you, even while you are away or the game "
+                           "is in the background.\n\nThey are the bread and butter of any cat formation!");
+
+                    addTip("Cat Dragging",
+                           "You can drag cats around the screen to reposition them.\n\nMoving individual cats can be "
+                           "done by clicking and dragging them.\n\nMultiple cats can be moved at once by holding down "
+                           "left shift and dragging a selection box around them. After that, either release left shift "
+                           "or the mouse button and drag them to their intended position. This is a great way to move "
+                           "an entire formation of cats at once.");
+                }
+
+                if (pt.getCatCountByType(CatType::Uni) > 0)
+                    addTip("Unicats",
+                           "Unicats will convert normal bubbles into star bubbles, which are worth x15 the value of "
+                           "normal bubbles.\n\nPopping star bubbles manually while your combo multiplier is high "
+                           "(towards the end of a combo) is a great way of making money early.\n\nAlternatively, you "
+                           "can place regular cats under unicats to have them pop the star bubbles for you.");
+
+                if (pt.mapPurchased)
+                {
+                    addTip("Map Exploration",
+                           "Expand the map to discover shrines containing powerful unique cats and to have more "
+                           "real estate for your cat army.\n\nYou can scroll the map with the scroll wheel, holding "
+                           "right click, by dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can "
+                           "jump around the map by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
+
+                    addTip("Shrines",
+                           "Shrines contain powerful cats with unique powers and synergies.\n\nIn order to unseal the "
+                           "cats, the shrine must first be activated by purchasing \"Activate next shrine\" in the "
+                           "shop.\n\nAfterwards, the shrine must be completed by popping bubbles in its range until "
+                           "the required amount of revenue is collected.");
+                }
+
+                if (pt.psvBubbleValue.nPurchases > 0 ||
+                    (pt.getCatCountByType(CatType::Uni) >= 3 && pt.nShrinesCompleted > 0))
+                    addTip("Prestige",
+                           "Prestige to reset your current progress, permanently increasing the value of bubbles and "
+                           "unlocking powerful permanent upgrades that persist between prestiges.\n\nDo not be afraid "
+                           "of prestiging, as its benefits will allow you to return to your current state very quickly "
+                           "and progress much further than it was possible before!");
+
+                if (pt.getCatCountByType(CatType::Devil) > 0)
+                    addTip("Devilcats",
+                           "Devilcats will convert normal bubbles into bombs, which explode when popped. Bubbles "
+                           "caught in the explosion are worth x10 their original value. This means that every star "
+                           "bubble caught in the explosion will be worth x150 the value of a normal "
+                           "bubble.\n\nPosition regular cats beneath Devilcats to automatically pop bombs, and Unicats "
+                           "nearby to maximize the chance of having star bubbles caught in the explosion.");
+
+                if (pt.getCatCountByType(CatType::Astro) > 0)
+                    addTip("Astrocats",
+                           "Astrocats will periodically fly across the map, looping around when they reach the edge of "
+                           "the screen.\n\nAny bubble they touch while flying will be popped with a x20 "
+                           "multiplier.\n\nUpgrading the total bubble count and expanding the map will indirectly "
+                           "increase the effectiveness of Astrocats.");
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+                    addTip("Witchcat",
+                           "The Witchcat periodically perform voodoo rituals.\n\nDuring a ritual, a random cat in "
+                           "range of the Witchcat will be hexed and will become inactive until the ritual ends.\n\nAt "
+                           "the same time, voodoo dolls will appear throughout the map -- collect all of them to end "
+                           "the ritual and gain a powerful timed buff depending on the type of cat that was hexed.");
+
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+                    addTip("Wizardcat",
+                           "The Wizardcat casts powerful spells using mana that regenerates over time.\n\nIn order to "
+                           "learn new spells, the Wizardcat must concentrate and absorb wisdom from star bubbles, "
+                           "earning \"wisdom points\".\n\nCasting spells or changing the Wizardcat's state can be done "
+                           "in the \"Magic\" menu. ");
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+                    addTip("Mousecat",
+                           "The Mousecat pops nearby bubbles keeping up its own personal combo.\n\nCombo/click "
+                           "upgrades you purchased also apply to the Mousecat.\n\nRegular cats in range of the "
+                           "Mousecat will gain the same combo multiplier as the Mousecat.\n\nFurthermore, the Mousecat "
+                           "provides a global click revenue value buff.");
+
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+                    addTip("Engicat",
+                           "The Engicat periodically increases the speed of nearby cats, effectively decreasing their "
+                           "cooldown.\n\nFurthermore, the Mousecat provides a global cat revenue value buff.");
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+                    addTip("Repulsocat",
+                           "The Repulsocat blows nearby bubbles away.\n\nRecently blown bubbles are worth x2 their "
+                           "value.");
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+                    addTip("Attractocat",
+                           "The Attractocat attracts nearby bubbles.\n\nBubbles in range of the Attractocat are worth "
+                           "x2 their value.");
+
+                if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+                    addTip("Copycat",
+                           "The Copycat can mimic the abilities, effects, and properties of any other unique "
+                           "cat.\n\nThe mimicked cat can be chosen through the disguise menu near the bottom of the "
+                           "screen.");
+
+                ImGui::EndChild();
+                ImGui::EndTabItem();
+            }
+
+            uiSetFontScale(0.75f);
+            if (ImGui::BeginTabItem(" Statistics "))
+            {
+                selectedTab(1);
 
                 uiSetFontScale(0.75f);
 
@@ -5450,7 +5590,7 @@ It's a duck.)",
             uiSetFontScale(0.75f);
             if (ImGui::BeginTabItem(" Milestones "))
             {
-                selectedTab(1);
+                selectedTab(2);
 
                 uiSetFontScale(0.75f);
 
@@ -5519,7 +5659,7 @@ It's a duck.)",
             uiSetFontScale(0.75f);
             if (ImGui::BeginTabItem(" Achievements "))
             {
-                selectedTab(2);
+                selectedTab(3);
 
                 const sf::base::SizeT nAchievementsUnlocked = sf::base::count(profile.unlockedAchievements,
                                                                               profile.unlockedAchievements + nAchievements);
@@ -6000,6 +6140,7 @@ It's a duck.)",
 
             uiCheckbox("Accumulating combo effect", &profile.accumulatingCombo);
             uiCheckbox("Show cursor combo text", &profile.showCursorComboText);
+            uiCheckbox("Show cursor combo bar", &profile.showCursorComboBar);
 
             ImGui::Separator();
 
@@ -6339,10 +6480,17 @@ It's a duck.)",
                 delayedActions.emplace_back(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
             }
 
+            if (ImGui::Button("Do Tip"))
+                doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
+
             ImGui::SameLine();
 
-            if (ImGui::Button("Tip"))
-                doTip("Hello, I am a tip!\nHello world... How are you doing today?\nTest test test");
+            if (ImGui::Button("Do Prestige"))
+            {
+                ++pt.psvBubbleValue.nPurchases;
+                const auto ppReward = pt.calculatePrestigePointReward(1u);
+                beginPrestigeTransition(ppReward);
+            }
 
             ImGui::Separator();
 
@@ -7223,18 +7371,37 @@ It's a duck.)",
 
             if (pt.comboPurchased)
             {
-                addCombo(combo, comboCountdown);
-                comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.2f);
+                if (!pt.laserPopEnabled)
+                {
+                    addCombo(combo, comboCountdown);
+                    comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.2f);
+                }
+                else
+                {
+                    ++laserCursorCombo;
+
+                    if (combo == 0 || laserCursorCombo >= 10)
+                    {
+                        addCombo(combo, comboCountdown);
+                        comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(combo) * 0.002f);
+
+                        comboCountdown.value = sf::base::min(comboCountdown.value,
+                                                             pt.psvComboStartTime.currentValue() * 100.f);
+
+                        combo = sf::base::min(combo, 998);
+                    }
+                }
             }
             else
             {
                 combo = 1;
             }
 
-            const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
-                                                        /* multiplier */ 1.f,
-                                                        /* comboMult  */ getComboValueMult(combo, playerComboDecay),
-                                                        /* popperCat  */ nullptr);
+            const MoneyType
+                reward = computeFinalReward(/* bubble     */ bubble,
+                                            /* multiplier */ 1.f,
+                                            /* comboMult  */ getComboValueMult(combo, pt.laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
+                                            /* popperCat  */ nullptr);
 
             popWithRewardAndReplaceBubble({
                 .reward          = reward,
@@ -7245,7 +7412,7 @@ It's a duck.)",
                 .multiPop        = false,
             });
 
-            if (pt.multiPopEnabled)
+            if (pt.multiPopEnabled && !pt.laserPopEnabled)
                 forEachBubbleInRadius(clickPos,
                                       pt.psvPPMultiPopRange.currentValue(),
                                       [&](Bubble& otherBubble)
@@ -10004,10 +10171,12 @@ It's a duck.)",
 
         const sf::Vector2f trailStep = mousePosDiff.normalized() * chunkLen;
 
+        const float trailScaleMult = pt.laserPopEnabled ? 1.5f : 1.f;
+
         for (float i = 0.f; i < chunks; ++i)
             spawnParticle(ParticleData{.position      = mousePos + trailStep * i,
                                        .velocity      = {0.f, 0.f},
-                                       .scale         = 0.135f * profile.cursorTrailScale,
+                                       .scale         = 0.135f * profile.cursorTrailScale * trailScaleMult,
                                        .scaleDecay    = 0.0002f,
                                        .accelerationY = 0.f,
                                        .opacity       = 0.1f,
@@ -10271,8 +10440,8 @@ It's a duck.)",
                          const sf::Vector2f (&catTailOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
-        auto& batchToUse = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
-        // TODO P0: do the same for the text
+        auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
+        auto& textBatchToUse = catToPlace == &cat ? catTextTopDrawableBatch : catTextDrawableBatch;
 
         const sf::FloatRect& catTxr = *catTxrsByType[asIdx(cat.type)];
 
@@ -10763,7 +10932,7 @@ It's a duck.)",
             textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
             textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * catScaleMult;
             textNameBuffer.setOutlineColor(textOutlineColor);
-            catTextDrawableBatch.add(textNameBuffer);
+            textBatchToUse.add(textNameBuffer);
 
             // Status text
             if (cat.type != CatType::Repulso && cat.type != CatType::Attracto && cat.type != CatType::Duck &&
@@ -10797,7 +10966,7 @@ It's a duck.)",
                 textStatusBuffer.setOutlineColor(textOutlineColor);
                 cat.textStatusShakeEffect.applyToText(textStatusBuffer);
                 textStatusBuffer.scale *= 0.5f * catScaleMult;
-                catTextDrawableBatch.add(textStatusBuffer);
+                textBatchToUse.add(textStatusBuffer);
 
                 // Money text
                 if (cat.moneyEarned != 0u)
@@ -10811,7 +10980,7 @@ It's a duck.)",
                     textMoneyBuffer.setOutlineColor(textOutlineColor);
                     cat.textMoneyShakeEffect.applyToText(textMoneyBuffer);
                     textMoneyBuffer.scale *= 0.5f * catScaleMult;
-                    catTextDrawableBatch.add(textMoneyBuffer);
+                    textBatchToUse.add(textMoneyBuffer);
                 }
             }
 
@@ -10819,7 +10988,7 @@ It's a duck.)",
                                          cat.type == CatType::Attracto || cat.type == CatType::Duck;
 
             if (!hideCooldownBar)
-                catTextDrawableBatch.add(sf::RoundedRectangleShapeData{
+                textBatchToUse.add(sf::RoundedRectangleShapeData{
                     .position = (cat.moneyEarned != 0u ? textMoneyBuffer : textStatusBuffer).getBottomCenter().addY(2.f),
                     .scale              = {catScaleMult, catScaleMult},
                     .origin             = {32.f, 0.f},
@@ -10925,6 +11094,23 @@ It's a duck.)",
             textStatusBuffer.scale *= invDeathProgress;
             textStatusBuffer.scale *= 0.5f;
             cpuDrawableBatch.add(textStatusBuffer);
+
+            if (pt.psvBubbleValue.nPurchases == 0u)
+            {
+                if (shrine.isActive())
+                    textMoneyBuffer.setString("Pop bubbles in shrine range to complete it");
+                else
+                    textMoneyBuffer.setString("Buy \"Activate Next Shrine\" in the shop");
+
+                textMoneyBuffer.position = shrine.position.addY(84.f);
+                textMoneyBuffer.origin   = textMoneyBuffer.getLocalBounds().size / 2.f;
+                textMoneyBuffer.setFillColor(sf::Color::White);
+                textMoneyBuffer.setOutlineColor(textOutlineColor);
+                shrine.textStatusShakeEffect.applyToText(textMoneyBuffer);
+                textMoneyBuffer.scale *= invDeathProgress;
+                textMoneyBuffer.scale *= 0.5f;
+                cpuDrawableBatch.add(textMoneyBuffer);
+            }
         };
     }
 
@@ -11259,6 +11445,12 @@ It's a duck.)",
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool shouldDrawGrabbingCursor() const
+    {
+        return !draggedCats.empty() || sf::Mouse::isButtonPressed(getRMB());
+    }
+
+    ////////////////////////////////////////////////////////////
     void gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
     {
         auto& window = *optWindow;
@@ -11279,7 +11471,10 @@ It's a duck.)",
 
         profile.cursorHue = wrapHue(profile.cursorHue);
 
-        rtGame->draw(!draggedCats.empty() || sf::Mouse::isButtonPressed(getRMB()) ? txCursorGrab : txCursor,
+        rtGame->draw(shouldDrawGrabbingCursor() ? txCursorGrab
+                     : pt.laserPopEnabled       ? txCursorLaser
+                     : pt.multiPopEnabled       ? txCursorMultipop
+                                                : txCursor,
                      {.position = sf::Mouse::getPosition(window).toVector2f(),
                       .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
                                ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
@@ -11292,12 +11487,13 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursorComboText(const float deltaTimeMs, const float cursorGrow)
     {
-        if (!pt.comboPurchased || !profile.showCursorComboText)
+        if (!pt.comboPurchased || !profile.showCursorComboText || shouldDrawGrabbingCursor())
             return;
 
-        auto& window = *optWindow;
-
         static float alpha = 0.f;
+
+        auto&       window    = *optWindow;
+        const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
         if (combo >= 1)
             alpha = 255.f;
@@ -11306,8 +11502,7 @@ It's a duck.)",
 
         const auto alphaU8 = static_cast<U8>(sf::base::clamp(alpha, 0.f, 255.f));
 
-        cursorComboText.position = sf::Mouse::getPosition(window).toVector2f() +
-                                   sf::Vector2f{30.f, 48.f} * profile.cursorScale * dpiScalingFactor;
+        cursorComboText.position = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{30.f, 48.f} * scaleMult;
 
         cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
         cursorComboText.setOutlineColor(
@@ -11321,7 +11516,7 @@ It's a duck.)",
         cursorComboText.scale *= (static_cast<float>(combo) * 0.65f) * cursorGrow * 0.3f;
         cursorComboText.scale += {0.85f, 0.85f};
         cursorComboText.scale += sf::Vector2f{1.f, 1.f} * comboFailCountdown.value / 325.f;
-        cursorComboText.scale *= profile.cursorScale * dpiScalingFactor;
+        cursorComboText.scale *= scaleMult;
 
         const auto minScale = sf::Vector2f{0.25f, 0.25f} + sf::Vector2f{0.25f, 0.25f} * comboFailCountdown.value / 125.f;
 
@@ -11334,6 +11529,52 @@ It's a duck.)",
         }
 
         rtGame->draw(cursorComboText, {.shader = &shader});
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopDrawCursorComboBar()
+    {
+        if (!pt.comboPurchased || !profile.showCursorComboBar || comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
+            return;
+
+        auto&       window    = *optWindow;
+        const float scaleMult = profile.cursorScale * dpiScalingFactor;
+
+        const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{52.f, 14.f} * scaleMult;
+
+        rtGame->draw(sf::RectangleShape{{
+                         .position           = cursorComboBarPosition,
+                         .outlineTextureRect = txrWhiteDot,
+                         .fillColor          = sf::Color::blackMask(80u),
+                         .outlineColor       = cursorComboText.getOutlineColor(),
+                         .outlineThickness   = 1.f,
+                         .size = {64.f * scaleMult * pt.psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
+                     }},
+                     /* texture */ nullptr);
+
+        rtGame->draw(sf::RectangleShape{{
+                         .position           = cursorComboBarPosition,
+                         .outlineTextureRect = txrWhiteDot,
+                         .fillColor          = sf::Color::blackMask(164u),
+                         .outlineColor       = cursorComboText.getOutlineColor(),
+                         .outlineThickness   = 1.f,
+                         .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
+                     }},
+                     /* texture */ nullptr);
+
+        // TODO P2: (lib) make this possible
+        /*
+        rtGame->draw(sf::RoundedRectangleShapeData{
+            .position           = cursorComboBarPosition,
+            .outlineTextureRect = txrWhiteDot,
+            .fillColor          = sf::Color::blackMask(164u),
+            .outlineColor       = cursorComboText.getOutlineColor(),
+            .outlineThickness   = 1.f,
+            .size               = {100.f * comboCountdown.value / 700.f, 20.f},
+            .cornerRadius       = 1.f,
+            .cornerPointCount   = 8u,
+        });
+        */
     }
 
     ////////////////////////////////////////////////////////////
@@ -11640,7 +11881,7 @@ It's a duck.)",
 
 
         // Player combo failure due to missed click
-        if (!anyBubblePoppedByClicking && clickPosition.hasValue())
+        if (!anyBubblePoppedByClicking && clickPosition.hasValue() && !pt.laserPopEnabled)
         {
             if (combo > 1)
             {
@@ -12310,28 +12551,29 @@ It's a duck.)",
             return;
 
         const auto mult = pt.psvBubbleValue.nPurchases + 1u;
+        const auto bias = pt.perm.starterPackPurchased ? 1000u : 0u;
 
-        if (pt.money >= (25u * mult) && buyReminder == 0)
+        if (pt.money >= ((25u * mult) + bias) && buyReminder == 0)
         {
             buyReminder = 1;
             doTip("Remember to buy the combo upgrade!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= (50u * mult) && buyReminder == 1)
+        else if (pt.money >= ((50u * mult) + bias) && buyReminder == 1)
         {
             buyReminder = 2;
             doTip("You should really buy the upgrade now!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= (100u * mult) && buyReminder == 2)
+        else if (pt.money >= ((100u * mult) + bias) && buyReminder == 2)
         {
             buyReminder = 3;
             doTip("What are you trying to prove...?", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= (200u * mult) && buyReminder == 3)
+        else if (pt.money >= ((200u * mult) + bias) && buyReminder == 3)
         {
             buyReminder = 4;
             doTip("There is no achievement for doing this!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= (300u * mult) && buyReminder == 4)
+        else if (pt.money >= ((300u * mult) + bias) && buyReminder == 4)
         {
             buyReminder = 5;
             doTip("Fine, have it your way!\nHere's your dumb achievement!\nAnd now buy the upgrade!",
@@ -12452,6 +12694,10 @@ It's a duck.)",
             else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
             {
                 fingerPositions[e2->finger].emplace(e2->position.toVector2f());
+
+                if (pt.laserPopEnabled)
+                    if (!clickPosition.hasValue())
+                        clickPosition.emplace(e2->position.toVector2f());
             }
             else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
             {
@@ -12488,7 +12734,8 @@ It's a duck.)",
             }
             else if (const auto* e7 = event->getIf<sf::Event::KeyPressed>())
             {
-                if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X)
+                if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X ||
+                    e7->code == sf::Keyboard::Key::Y)
                     clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
             }
             else if (const auto* e8 = event->getIf<sf::Event::MouseWheelScrolled>())
@@ -12525,6 +12772,16 @@ It's a duck.)",
             mBtnsPressedLastFrame[iBtn] = mBtnsPressedThisFrame[iBtn];
             mBtnsPressedThisFrame[iBtn] = mBtnDown(static_cast<sf::Mouse::Button>(iBtn), /* penetrateUI */ true);
         }
+
+        //
+        // TODO PO laser cursor
+        if (pt.laserPopEnabled)
+            if (keyDown(sf::Keyboard::Key::Z) || keyDown(sf::Keyboard::Key::X) || keyDown(sf::Keyboard::Key::Y) ||
+                mBtnDown(getLMB(), /* penetrateUI */ false))
+            {
+                if (!clickPosition.hasValue())
+                    clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
+            }
 
         //
         // Number of fingers
@@ -12804,6 +13061,25 @@ It's a duck.)",
         cpuDrawableBatch.clear();
         cpuTopDrawableBatch.clear();
         catTextDrawableBatch.clear();
+        catTextTopDrawableBatch.clear();
+
+        // Draw multipop range
+        if (pt.multiPopEnabled)
+        {
+            const auto range = pt.psvPPMultiPopRange.currentValue() * 0.9f;
+
+            cpuDrawableBatch.add(sf::CircleShapeData{
+                .position           = mousePos,
+                .origin             = {range, range},
+                .outlineTextureRect = txrWhiteDot,
+                .fillColor          = sf::Color::Transparent,
+                .outlineColor       = (outlineHueColor.withAlpha(105u).withLightness(0.75f)),
+                .outlineThickness   = 1.5f,
+                .radius             = range,
+                .pointCount         = static_cast<unsigned int>(range / 2.f),
+            });
+        }
+
         gameLoopDrawHellPortals();
         gameLoopDrawCats(mousePos, deltaTimeMs);
         gameLoopDrawShrines(mousePos);
@@ -12962,6 +13238,7 @@ It's a duck.)",
         // Draw cats on top of UI
         rtGame->setView(scaledTopGameView);
         rtGame->draw(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame->draw(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Purchase unlocked/available effects
@@ -12983,6 +13260,7 @@ It's a duck.)",
         rtGame->setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
+        gameLoopDrawCursorComboBar();
 
         //
         // Splash screen
