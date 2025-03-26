@@ -59,3 +59,14 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - Added option to increase cat range outline thickness in "Graphics"
 // - Added option to tweak the thickness of the cat range circle indicator
 // - Fixed multiple cats colliding with shrines while being dragged and ruining formations
+// - Minor sprite art cleanup/improvements
+// - Added "Y" as a click key (good for QWERTZ users)
+// - Renamed "Stats" to "Info" and added new "Tips" tab containing the most useful tips
+// - Mention bigger upcoming changes
+// - Added a toggleable combo bar under the cursor
+// - Avoid drawing cursor combo text and combo bar while dragging cats
+// - Added text under inactive shrines to remind players how to activate them, only visible on 1st prestige
+// - Added a subtle circle range indicator for when multipop is active
+// - Added a plus sign to the cursor when multipop is active
+// - Slightly increased default cursor scale
+// - Fixed a secret achievement incorrectly unlocking when prestiging
