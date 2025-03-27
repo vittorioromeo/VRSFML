@@ -516,9 +516,17 @@ void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStat
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Shape& shape, const Texture* texture, const RenderStates& states)
+void RenderTarget::draw(const Shape& shape, RenderStates states)
 {
-    shape.drawOnto(*this, texture, states);
+    states.transform *= shape.getTransform();
+
+    const auto [fillData, fillSize]       = shape.getFillVertices();
+    const auto [outlineData, outlineSize] = shape.getOutlineVertices();
+
+    drawVertices(fillData, fillSize, PrimitiveType::TriangleFan, states);
+
+    if (shape.getOutlineThickness() != 0.f)
+        drawVertices(outlineData, outlineSize, PrimitiveType::TriangleStrip, states);
 }
 
 

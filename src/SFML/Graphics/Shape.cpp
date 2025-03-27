@@ -154,24 +154,6 @@ void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
 
 
 ////////////////////////////////////////////////////////////
-void Shape::drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const
-{
-    states.transform *= getTransform();
-    states.texture = texture;
-
-    // Render the inside
-    renderTarget.drawVertices(m_vertices.data(), m_verticesEndIndex, PrimitiveType::TriangleFan, states);
-
-    // Render the outline
-    if (m_outlineThickness != 0.f)
-        renderTarget.drawVertices(m_vertices.data() + m_verticesEndIndex,
-                                  m_vertices.size() - m_verticesEndIndex,
-                                  PrimitiveType::TriangleStrip,
-                                  states);
-}
-
-
-////////////////////////////////////////////////////////////
 void Shape::updateFillColors()
 {
     const auto* end = m_vertices.data() + m_verticesEndIndex;
