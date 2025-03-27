@@ -354,11 +354,11 @@ public:
     ///
     /// A texture associated with a shape can be passed while drawing.
     ///
-    /// \param shape   Shape to draw
-    /// \param texture Texture associated with the shape
+    /// \param shape  Shape to draw
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, const Texture* texture, const RenderStates& states = RenderStates::Default);
+    void draw(const Shape& shape, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
