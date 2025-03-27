@@ -676,6 +676,50 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& states)
+{
+    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
+
+    batch.clear();
+    batch.add(sdCircle);
+    draw(batch, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)
+{
+    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
+
+    batch.clear();
+    batch.add(sdEllipse);
+    draw(batch, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)
+{
+    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
+
+    batch.clear();
+    batch.add(sdRectangle);
+    draw(batch, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states)
+{
+    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
+
+    batch.clear();
+    batch.add(sdRoundedRectangle);
+    draw(batch, states);
+}
+
+
+////////////////////////////////////////////////////////////
 bool RenderTarget::isSrgb() const
 {
     // By default sRGB encoding is not enabled for an arbitrary RenderTarget
