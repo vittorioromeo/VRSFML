@@ -322,7 +322,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states = RenderStates::Default);
+    void draw(const Texture& texture, RenderStates states = RenderStates::Default); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -339,20 +339,11 @@ public:
     ///
     /// The texture associated with a sprite must be passed while drawing.
     ///
-    /// \param sprite  Sprite to draw
-    /// \param texture Texture associated with the sprite
-    /// \param states   Render states to use for drawing
+    /// \param sprite Sprite to draw
+    /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Sprite& sprite, const Texture& texture, RenderStates states = RenderStates::Default);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted overload of `draw` for sprites without a texture
-    ///
-    /// The texture associated with a sprite must be passed while drawing.
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const Sprite&) = delete;
+    void draw(const Sprite& sprite, const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a shape object to the render target

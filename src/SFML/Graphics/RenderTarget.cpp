@@ -299,6 +299,7 @@ struct RenderTarget::Impl
     StatesCache              cache{};  //!< Render states cache
     RenderTargetImpl::IdType id{};     //!< Unique number that identifies the render target
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
+    CPUDrawableBatch         cpuDrawableBatch; //!< TODO P0: docs, reuse, autobatch
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
@@ -505,9 +506,9 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
+void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
-    states.texture = &texture;
+    SFML_BASE_ASSERT(states.texture != nullptr);
 
     Vertex buffer[4];
     appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
