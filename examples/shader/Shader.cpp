@@ -229,7 +229,7 @@ public:
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, m_entityTexture);
+            m_surface.draw(entity, {.texture = &m_entityTexture});
         }
 
         m_surface.display();

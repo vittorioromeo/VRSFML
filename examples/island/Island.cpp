@@ -496,7 +496,6 @@ int main()
                          .outlineColor     = sf::Color::Black,
                          .outlineThickness = 2.f});
 
-    sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
@@ -521,9 +520,6 @@ int main()
 
     // Generate the initial terrain
     generateTerrain(threadPool, terrainStagingBuffer.data());
-
-    // Set up the render states
-    terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
     statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
@@ -603,7 +599,7 @@ int main()
                 }
 
                 terrainShader.setUniform(ulLightFactor, lightFactor);
-                window.draw(terrain, terrainStates);
+                window.draw(terrain, {.shader = &terrainShader});
             }
         }
 

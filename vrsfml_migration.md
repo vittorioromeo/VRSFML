@@ -229,10 +229,10 @@ window.draw(ball);
 const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
 const sf::Sprite sfmlLogo({.position = {170.f, 50.f}});
 // ...
-window.draw(sfmlLogo, /* texture */ &sfmlLogoTexture);
-window.draw(leftPaddle, /* texture */ nullptr);
-window.draw(rightPaddle, /* texture */ nullptr);
-window.draw(ball, /* texture */ nullptr);
+window.draw(sfmlLogo, {.texture = &sfmlLogoTexture});
+window.draw(leftPaddle);
+window.draw(rightPaddle);
+window.draw(ball);
 ```
 
 Note that textures can be drawn directly in VRSFML, without the need of using a sprite:
