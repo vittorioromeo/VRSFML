@@ -595,7 +595,7 @@ int main()
                         .rotation    = sf::radians(rotation),
                         .textureRect = textureRect,
                     },
-                    textureAtlas.getTexture());
+                    sf::RenderStates{.texture = &textureAtlas.getTexture()});
             };
 
             const auto drawNthParticle = [&](const std::size_t& i, auto&& drawFn)
