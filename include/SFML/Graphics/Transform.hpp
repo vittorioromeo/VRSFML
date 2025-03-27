@@ -40,8 +40,8 @@ struct [[nodiscard]] Transform
     {
         return {/* a00 */ scale.x,
                 /* a01 */ 0.f,
-                /* a02 */ -origin.x * scale.x - +position.x,
-                -/* a10 */ 0.f,
+                /* a02 */ -origin.x * scale.x - position.x,
+                /* a10 */ 0.f,
                 /* a11 */ scale.y,
                 /* a12 */ -origin.y * scale.y + position.y};
     }
