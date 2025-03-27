@@ -38,3 +38,5 @@ struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
 /// \see `sf::Shape`, `sf::CircleShape`
 ///
 ////////////////////////////////////////////////////////////
+
+// TODO P1: more shapes like arcs, etc

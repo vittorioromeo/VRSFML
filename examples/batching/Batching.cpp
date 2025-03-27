@@ -443,7 +443,7 @@ int main()
             {
                 if (drawSprites)
                 {
-                    drawFn(entity.sprite, textureAtlas.getTexture());
+                    drawFn(entity.sprite, sf::RenderStates{.texture = &textureAtlas.getTexture()});
                     drawnVertexCounter += 4u;
                 }
 
@@ -455,7 +455,7 @@ int main()
 
                 if (drawShapes)
                 {
-                    drawFn(entity.circleShape, &textureAtlas.getTexture());
+                    drawFn(entity.circleShape, sf::RenderStates{.texture = &textureAtlas.getTexture()});
 
                     drawnVertexCounter += entity.circleShape.getFillVertices().size +
                                           entity.circleShape.getOutlineVertices().size;
