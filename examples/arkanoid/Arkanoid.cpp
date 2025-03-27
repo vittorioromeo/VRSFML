@@ -215,11 +215,11 @@ public:
 
     void drawOnto(sf::RenderTarget& renderTarget)
     {
-        renderTarget.draw(m_ball, /* texture */ nullptr);
-        renderTarget.draw(m_player, /* texture */ nullptr);
+        renderTarget.draw(m_ball);
+        renderTarget.draw(m_player);
 
         for (const sf::RectangleShape& brick : m_bricks)
-            renderTarget.draw(brick, /* texture */ nullptr);
+            renderTarget.draw(brick);
     }
 };
 

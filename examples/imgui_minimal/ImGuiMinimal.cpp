@@ -84,7 +84,7 @@ int main()
         ImGui::End();
 
         window.clear();
-        window.draw(shape, nullptr /* texture */);
+        window.draw(shape);
         imGuiContext.render(window);
         window.display();
     }
