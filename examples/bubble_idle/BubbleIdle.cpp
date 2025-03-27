@@ -13495,8 +13495,4 @@ int main(int argc, const char** argv)
 // TODO P2: upgrade for ~512PPs "brain takes over" that turns cats into brains with 50x mult with corrupted zalgo names
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
-
-// FEEDBACK:
-// - "prestige happens a bit too early in the game"
-// - "it feels like the game was optimized for widescreen and not standard 16:9 as the ui for the shop and such sitting
-// on top of the play screen looks a bit wonky"
+// TODO P2: challenge runs, separate saves, separate speedrun save
