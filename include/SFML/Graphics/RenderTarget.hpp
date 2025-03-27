@@ -33,10 +33,15 @@ class Shader;
 class Shape;
 class Texture;
 class VertexBuffer;
+
 struct BlendMode;
+struct CircleShapeData;
+struct EllipseShapeData;
 struct GLElementBufferObject;
 struct GLVAOGroup;
 struct GLVertexBufferObject;
+struct RectangleShapeData;
+struct RoundedRectangleShapeData;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
@@ -475,6 +480,30 @@ public:
               base::SizeT         firstVertex,
               base::SizeT         vertexCount,
               const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const CircleShapeData& sdCircle, const RenderStates& states = RenderStates::Default); // TODO P0:
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = RenderStates::Default); // TODO P0:
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = RenderStates::Default); // TODO P0:
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = RenderStates::Default); // TODO P0:
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
