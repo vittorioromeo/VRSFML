@@ -93,9 +93,9 @@ int main()
     // auto finalImage = baseRenderTexture.getTexture().copyToImage();
     // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
 
-    #define CHECK(...)                                 \
-        if (!(__VA_ARGS__))                            \
-        {                                              \
+    #define CHECK(...)                                  \
+        if (!(__VA_ARGS__))                             \
+        {                                               \
             sf::cOut() << "fail " #__VA_ARGS__ << '\n'; \
         }
 
@@ -119,14 +119,14 @@ int main()
             rt.display();
 
             rts.position = {xBias, 0};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
 
             rt.clear();
             rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
             rt.display();
 
             rts.position = {xBias + 128, 0};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
 
             rt.clear();
             rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
@@ -134,7 +134,7 @@ int main()
             rt.display();
 
             rts.position = {xBias, 128};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
         };
 
         doit(baseRenderTexture, rtSprite, 0);
@@ -249,8 +249,8 @@ int main()
 
         window.clear();
 
-        window.draw(rs0, /* texture */ nullptr);
-        window.draw(cs0, /* texture */ nullptr);
+        window.draw(rs0);
+        window.draw(cs0);
 
         cs0.rotation += sf::radians(0.0005f);
         cs0.setCenter(rs0.getBottomLeft());
@@ -341,7 +341,7 @@ int main()
             window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
         }
 
-        // window.draw(circle0, /* texture */ nullptr);
+        // window.draw(circle0);
 
         window.display();
     }
@@ -425,14 +425,10 @@ int main()
 
 
         renderTextures[0].display();
-        baseRenderTexture.draw(vertexArrays[0],
-                               sf::PrimitiveType::Triangles,
-                               sf::RenderStates{&renderTextures[0].getTexture()});
+        baseRenderTexture.draw(vertexArrays[0], sf::PrimitiveType::Triangles, {.texture = &renderTextures[0].getTexture()});
 
         renderTextures[1].display();
-        baseRenderTexture.draw(vertexArrays[1],
-                               sf::PrimitiveType::Triangles,
-                               sf::RenderStates{&renderTextures[1].getTexture()});
+        baseRenderTexture.draw(vertexArrays[1], sf::PrimitiveType::Triangles, {.texture = &renderTextures[1].getTexture()});
 
         baseRenderTexture.display();
 

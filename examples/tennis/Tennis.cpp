@@ -6,7 +6,6 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -39,7 +38,7 @@
 #include <cstdlib>
 
 #ifdef SFML_SYSTEM_IOS
-#include "SFML/Main.hpp"
+    #include "SFML/Main.hpp"
 #endif
 
 namespace
