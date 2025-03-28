@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-suspicious-include)
 #include "SFML/Window/Win32/Unity/ClipboardImpl.cpp"
-#include "SFML/Window/Win32/Unity/CursorImpl.cpp"
 #include "SFML/Window/Win32/Unity/InputImpl.cpp"
 #include "SFML/Window/Win32/Unity/Utils.cpp"
 #include "SFML/Window/Win32/Unity/VulkanImplWin32.cpp"
