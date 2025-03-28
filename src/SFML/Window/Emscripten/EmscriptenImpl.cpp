@@ -28,14 +28,18 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(const Keyboard::Key key)
 {
-    return isKeyPressed(delocalize(key));
+    (void)getSDLLayerSingleton();
+    return InputImpl::isKeyPressed(InputImpl::delocalize(key));
 }
 
 
 ////////////////////////////////////////////////////////////
 bool InputImpl::isKeyPressed(const Keyboard::Scancode code)
 {
-    return SDL_GetKeyboardState(nullptr)[mapSFMLScancodeToSDL(code)];
+    const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+    SFML_BASE_ASSERT(keyboardState != nullptr);
+
+    return keyboardState[mapSFMLScancodeToSDL(code)];
 }
 
 
@@ -54,10 +58,9 @@ Keyboard::Scancode InputImpl::delocalize(const Keyboard::Key key)
 
 
 ////////////////////////////////////////////////////////////
-String InputImpl::getDescription(Keyboard::Scancode /* code */)
+String InputImpl::getDescription(const Keyboard::Scancode code)
 {
-    // Not applicable
-    return {};
+    return SDL_GetScancodeName(mapSFMLScancodeToSDL(code));
 }
 
 
