@@ -60,7 +60,7 @@ Keyboard::Scancode InputImpl::delocalize(const Keyboard::Key key)
 ////////////////////////////////////////////////////////////
 String InputImpl::getDescription(const Keyboard::Scancode code)
 {
-    return SDL_GetScancodeName(mapSFMLScancodeToSDL(code));
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(InputImpl::localize(code)));
 }
 
 
