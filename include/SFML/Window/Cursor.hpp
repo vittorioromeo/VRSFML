@@ -190,13 +190,17 @@ private:
     /// \return a reference to the OS-specific implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::CursorImpl& getImpl() const;
+    [[nodiscard]] void* getImpl() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
+#if 0 // TODO P0:
     base::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
+#else
+    base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
+#endif
 };
 
 } // namespace sf
