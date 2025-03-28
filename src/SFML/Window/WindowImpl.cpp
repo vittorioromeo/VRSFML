@@ -16,6 +16,7 @@
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -33,6 +34,7 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_mouse.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_video.h>
 
 #include <queue>
@@ -484,7 +486,7 @@ namespace WindowImplImpl
 #if defined(SFML_SYSTEM_WINDOWS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, handle);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X11_WINDOW_NUMBER, static_cast<Sint64>(handle));
 #elif defined(SFML_SYSTEM_MACOS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_COCOA_WINDOW_POINTER, handle);
 #elif defined(SFML_SYSTEM_IOS)
