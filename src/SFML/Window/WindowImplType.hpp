@@ -25,8 +25,14 @@
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
 
-    #include "SFML/Window/Win32/WindowImplWin32.hpp"
+// TODO P0:
+    #if 0
+        #include "SFML/Window/Win32/WindowImplWin32.hpp"
 SFML_PRIV_DEFINE_WINDOWIMPLTYPE(WindowImplWin32)
+    #else
+        #include "SFML/Window/WindowImplSDL.hpp"
+SFML_PRIV_DEFINE_WINDOWIMPLTYPE(WindowImplSDL)
+    #endif
     #include "SFML/Window/VulkanImpl.hpp"
 
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
