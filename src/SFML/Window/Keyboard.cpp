@@ -4,8 +4,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/String.hpp"
 
@@ -13,44 +13,55 @@
 namespace sf::Keyboard
 {
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Key key)
+bool isKeyPressed(const Key key)
 {
-    return priv::InputImpl::isKeyPressed(key);
+    // TODO P0:
+    // dispatch to OS-specific SFML impls
+
+    (void)priv::getSDLLayerSingleton(); // TODO P0: remove
+    return isKeyPressed(delocalize(key));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Scancode code)
+bool isKeyPressed(const Scancode code)
 {
-    return priv::InputImpl::isKeyPressed(code);
+    // TODO P0:
+    // dispatch to OS-specific SFML impls
+
+    const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+    SFML_BASE_ASSERT(keyboardState != nullptr);
+
+    return keyboardState[priv::mapSFMLScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
-Key localize(Scancode code)
+Key localize(const Scancode code)
 {
-    return priv::InputImpl::localize(code);
+    return priv::localizeViaSDL(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Scancode delocalize(Key key)
+Scancode delocalize(const Key key)
 {
-    return priv::InputImpl::delocalize(key);
+    return priv::delocalizeViaSDL(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-String getDescription(Scancode code)
+String getDescription(const Scancode code)
 {
-    return priv::InputImpl::getDescription(code);
+    return SDL_GetKeyName(priv::mapSFMLKeycodeToSDL(localize(code)));
 }
 
 
 ////////////////////////////////////////////////////////////
-void setVirtualKeyboardVisible(bool visible)
+void setVirtualKeyboardVisible(const bool visible)
 {
-    priv::InputImpl::setVirtualKeyboardVisible(visible);
+    // TODO P0:
+    // not always applicable, dispatch to OS-specific SFML impls
 }
 
 } // namespace sf::Keyboard
