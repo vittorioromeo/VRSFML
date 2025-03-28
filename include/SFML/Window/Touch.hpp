@@ -9,6 +9,10 @@
 
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Span.hpp"
+#include "SFML/Base/StringView.hpp"
+
 
 namespace sf
 {
@@ -20,6 +24,34 @@ class WindowBase;
 ////////////////////////////////////////////////////////////
 namespace Touch
 {
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+enum class DeviceType
+{
+    Direct,           //!< Touch screen with window-relative coordinates
+    IndirectAbsolute, //!< Trackpad with absolute device coordinates
+    IndirectRelative  //!< Trackpad with screen cursor-relative coordinates
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+struct Device
+{
+    base::U64        id;   //!< Id of the touch device
+    DeviceType       type; //!< Type of the touch device
+    base::StringView name; //!< Name of the touch device
+};
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard]] base::Span<Device> getDevices();
+
 ////////////////////////////////////////////////////////////
 /// \brief Check if a touch event is currently down
 ///
@@ -56,6 +88,9 @@ namespace Touch
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
+
+// TODO P0:
+const char* testsdl();
 
 } // namespace Touch
 } // namespace sf
