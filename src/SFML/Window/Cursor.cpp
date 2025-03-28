@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Cursor.hpp"
-#include "SFML/Window/CursorImpl.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/Err.hpp"
