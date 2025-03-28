@@ -28,114 +28,268 @@ namespace Keyboard
 ////////////////////////////////////////////////////////////
 enum class Key
 {
-    Unknown = -1, //!< Unhandled key
-    A       = 0,  //!< The A key
-    B,            //!< The B key
-    C,            //!< The C key
-    D,            //!< The D key
-    E,            //!< The E key
-    F,            //!< The F key
-    G,            //!< The G key
-    H,            //!< The H key
-    I,            //!< The I key
-    J,            //!< The J key
-    K,            //!< The K key
-    L,            //!< The L key
-    M,            //!< The M key
-    N,            //!< The N key
-    O,            //!< The O key
-    P,            //!< The P key
-    Q,            //!< The Q key
-    R,            //!< The R key
-    S,            //!< The S key
-    T,            //!< The T key
-    U,            //!< The U key
-    V,            //!< The V key
-    W,            //!< The W key
-    X,            //!< The X key
-    Y,            //!< The Y key
-    Z,            //!< The Z key
-    Num0,         //!< The 0 key
-    Num1,         //!< The 1 key
-    Num2,         //!< The 2 key
-    Num3,         //!< The 3 key
-    Num4,         //!< The 4 key
-    Num5,         //!< The 5 key
-    Num6,         //!< The 6 key
-    Num7,         //!< The 7 key
-    Num8,         //!< The 8 key
-    Num9,         //!< The 9 key
-    Escape,       //!< The Escape key
-    LControl,     //!< The left Control key
-    LShift,       //!< The left Shift key
-    LAlt,         //!< The left Alt key
-    LSystem,      //!< The left OS specific key: window (Windows and Linux), apple (macOS), ...
-    RControl,     //!< The right Control key
-    RShift,       //!< The right Shift key
-    RAlt,         //!< The right Alt key
-    RSystem,      //!< The right OS specific key: window (Windows and Linux), apple (macOS), ...
-    Menu,         //!< The Menu key
-    LBracket,     //!< The [ key
-    RBracket,     //!< The ] key
-    Semicolon,    //!< The ; key
-    Comma,        //!< The , key
-    Period,       //!< The . key
-    Apostrophe,   //!< The ' key
-    Slash,        //!< The / key
-    Backslash,    //!< The \ key
-    Grave,        //!< The ` key
-    Equal,        //!< The = key
-    Hyphen,       //!< The - key (hyphen)
-    Space,        //!< The Space key
-    Enter,        //!< The Enter/Return keys
-    Backspace,    //!< The Backspace key
-    Tab,          //!< The Tabulation key
-    PageUp,       //!< The Page up key
-    PageDown,     //!< The Page down key
-    End,          //!< The End key
-    Home,         //!< The Home key
-    Insert,       //!< The Insert key
-    Delete,       //!< The Delete key
-    Add,          //!< The + key
-    Subtract,     //!< The - key (minus, usually from numpad)
-    Multiply,     //!< The * key
-    Divide,       //!< The / key
-    Left,         //!< Left arrow
-    Right,        //!< Right arrow
-    Up,           //!< Up arrow
-    Down,         //!< Down arrow
-    Numpad0,      //!< The numpad 0 key
-    Numpad1,      //!< The numpad 1 key
-    Numpad2,      //!< The numpad 2 key
-    Numpad3,      //!< The numpad 3 key
-    Numpad4,      //!< The numpad 4 key
-    Numpad5,      //!< The numpad 5 key
-    Numpad6,      //!< The numpad 6 key
-    Numpad7,      //!< The numpad 7 key
-    Numpad8,      //!< The numpad 8 key
-    Numpad9,      //!< The numpad 9 key
-    F1,           //!< The F1 key
-    F2,           //!< The F2 key
-    F3,           //!< The F3 key
-    F4,           //!< The F4 key
-    F5,           //!< The F5 key
-    F6,           //!< The F6 key
-    F7,           //!< The F7 key
-    F8,           //!< The F8 key
-    F9,           //!< The F9 key
-    F10,          //!< The F10 key
-    F11,          //!< The F11 key
-    F12,          //!< The F12 key
-    F13,          //!< The F13 key
-    F14,          //!< The F14 key
-    F15,          //!< The F15 key
-    Pause,        //!< The Pause key
+    Unknown,
+    Enter,
+    Escape,
+    Backspace,
+    Tab,
+    Space,
+    Exclaim,
+    DoubleApostrophe,
+    Hash,
+    Dollar,
+    Percent,
+    Ampersand,
+    Apostrophe,
+    LParenthesis,
+    RParenthesis,
+    Asterisk,
+    Plus,
+    Comma,
+    Hyphen,
+    Period,
+    Slash,
+    Num0,
+    Num1,
+    Num2,
+    Num3,
+    Num4,
+    Num5,
+    Num6,
+    Num7,
+    Num8,
+    Num9,
+    Colon,
+    Semicolon,
+    Less,
+    Equal,
+    Greater,
+    Question,
+    At,
+    LBracket,
+    Backslash,
+    RBracket,
+    Caret,
+    Underscore,
+    Grave,
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    H,
+    I,
+    J,
+    K,
+    L,
+    M,
+    N,
+    O,
+    P,
+    Q,
+    R,
+    S,
+    T,
+    U,
+    V,
+    W,
+    X,
+    Y,
+    Z,
+    LBrace,
+    Pipe,
+    RBrace,
+    Tilde,
+    Delete,
+    PlusMinus,
+    CapsLock,
+    F1,
+    F2,
+    F3,
+    F4,
+    F5,
+    F6,
+    F7,
+    F8,
+    F9,
+    F10,
+    F11,
+    F12,
+    PrintScreen,
+    ScrollLock,
+    Pause,
+    Insert,
+    Home,
+    PageUp,
+    End,
+    PageDown,
+    Right,
+    Left,
+    Down,
+    Up,
+    NumLock,
+    Divide,
+    Multiply,
+    Subtract,
+    Add,
+    NumpadEnter,
+    Numpad1,
+    Numpad2,
+    Numpad3,
+    Numpad4,
+    Numpad5,
+    Numpad6,
+    Numpad7,
+    Numpad8,
+    Numpad9,
+    Numpad0,
+    NumpadPeriod,
+    Application,
+    Power,
+    NumpadEqual,
+    F13,
+    F14,
+    F15,
+    F16,
+    F17,
+    F18,
+    F19,
+    F20,
+    F21,
+    F22,
+    F23,
+    F24,
+    Execute,
+    Help,
+    Menu,
+    Select,
+    Stop,
+    Redo,
+    Undo,
+    Cut,
+    Copy,
+    Paste,
+    Find,
+    VolumeMute,
+    VolumeUp,
+    VolumeDown,
+    NumpadComma,
+    NumpadEqualAs400,
+    AltErase,
+    SysReq,
+    Cancel,
+    Clear,
+    Prior,
+    Enter2,
+    Separator,
+    Out,
+    Oper,
+    ClearAgain,
+    CrSel,
+    ExSel,
+    Numpad00,
+    Numpad000,
+    ThousandsSeparator,
+    DecimalSeparator,
+    CurrencyUnit,
+    CurrencySubUnit,
+    NumpadLParenthesis,
+    NumpadRParenthesis,
+    NumpadLBrace,
+    NumpadRBrace,
+    NumpadTab,
+    NumpadBackspace,
+    NumpadA,
+    NumpadB,
+    NumpadC,
+    NumpadD,
+    NumpadE,
+    NumpadF,
+    NumpadXor,
+    NumpadPower,
+    NumpadPercent,
+    NumpadLess,
+    NumpadGreater,
+    NumpadAmpersand,
+    NumpadDoubleAmpersand,
+    NumpadVerticalBar,
+    NumpadDoubleVerticalBar,
+    NumpadColon,
+    NumpadHash,
+    NumpadSpace,
+    NumpadAt,
+    NumpadExclamation,
+    NumpadMemStore,
+    NumpadMemRecall,
+    NumpadMemClear,
+    NumpadMemAdd,
+    NumpadMemSubtract,
+    NumpadMemMultiply,
+    NumpadMemDivide,
+    NumpadPlusMinus,
+    NumpadClear,
+    NumpadClearEntry,
+    NumpadBinary,
+    NumpadOctal,
+    NumpadDecimal,
+    NumpadHexadecimal,
+    LControl,
+    LShift,
+    LAlt,
+    LSystem,
+    RControl,
+    RShift,
+    RAlt,
+    RSystem,
+    ModeChange,
+    Sleep,
+    Wake,
+    ChannelIncrement,
+    ChannelDecrement,
+    MediaPlay,
+    MediaPause,
+    MediaRecord,
+    MediaFastForward,
+    MediaRewind,
+    MediaNextTrack,
+    MediaPreviousTrack,
+    MediaStop,
+    MediaEject,
+    MediaPlayPause,
+    LaunchMediaSelect,
+    AcNew,
+    AcOpen,
+    AcClose,
+    AcExit,
+    AcSave,
+    AcPrint,
+    AcProperties,
+    Search,
+    HomePage,
+    Back,
+    Forward,
+    AcStop,
+    Refresh,
+    Favorites,
+    SoftLeft,
+    SoftRight,
+    Call,
+    EndCall,
+    LTab,
+    Level5Shift,
+    MultiKeyCompose,
+    LMeta,
+    RMeta,
+    LHyper,
+    RHyper,
 };
 
 ////////////////////////////////////////////////////////////
 enum : unsigned int
 {
-    KeyCount = static_cast<unsigned int>(Key::Pause) + 1u //!< Total number of keyboard keys, ignoring `Key::Unknown`
+    KeyCount = static_cast<unsigned int>(Key::RHyper) + 1u //!< Total number of keyboard keys, ignoring `Key::Unknown`
 };
 
 ////////////////////////////////////////////////////////////
@@ -148,160 +302,272 @@ enum : unsigned int
 ////////////////////////////////////////////////////////////
 enum class Scan
 {
-    Unknown = -1, //!< Represents any scancode not present in this enum
-    A       = 0,  //!< Keyboard a and A key
-    B,            //!< Keyboard b and B key
-    C,            //!< Keyboard c and C key
-    D,            //!< Keyboard d and D key
-    E,            //!< Keyboard e and E key
-    F,            //!< Keyboard f and F key
-    G,            //!< Keyboard g and G key
-    H,            //!< Keyboard h and H key
-    I,            //!< Keyboard i and I key
-    J,            //!< Keyboard j and J key
-    K,            //!< Keyboard k and K key
-    L,            //!< Keyboard l and L key
-    M,            //!< Keyboard m and M key
-    N,            //!< Keyboard n and N key
-    O,            //!< Keyboard o and O key
-    P,            //!< Keyboard p and P key
-    Q,            //!< Keyboard q and Q key
-    R,            //!< Keyboard r and R key
-    S,            //!< Keyboard s and S key
-    T,            //!< Keyboard t and T key
-    U,            //!< Keyboard u and U key
-    V,            //!< Keyboard v and V key
-    W,            //!< Keyboard w and W key
-    X,            //!< Keyboard x and X key
-    Y,            //!< Keyboard y and Y key
-    Z,            //!< Keyboard z and Z key
-    Num1,         //!< Keyboard 1 and ! key
-    Num2,         //!< Keyboard 2 and @ key
-    Num3,         //!< Keyboard 3 and # key
-    Num4,         //!< Keyboard 4 and $ key
-    Num5,         //!< Keyboard 5 and % key
-    Num6,         //!< Keyboard 6 and ^ key
-    Num7,         //!< Keyboard 7 and & key
-    Num8,         //!< Keyboard 8 and * key
-    Num9,         //!< Keyboard 9 and ) key
-    Num0,         //!< Keyboard 0 and ) key
-    Enter,        //!< Keyboard Enter/Return key
-    Escape,       //!< Keyboard Escape key
-    Backspace,    //!< Keyboard Backspace key
-    Tab,          //!< Keyboard Tab key
-    Space,        //!< Keyboard Space key
-    Hyphen,       //!< Keyboard - and _ key
-    Equal,        //!< Keyboard = and +
-    LBracket,     //!< Keyboard [ and { key
-    RBracket,     //!< Keyboard ] and } key
-    // For US keyboards mapped to key 29 (Microsoft Keyboard Scan Code Specification)
-    // For Non-US keyboards mapped to key 42 (Microsoft Keyboard Scan Code Specification)
-    // Typical language mappings: Belg:£µ` FrCa:<>} Dan:*' Dutch:`´ Fren:µ* Ger:'# Ital:§ù LatAm:[}` Nor:*@ Span:ç} Swed:*' Swiss:$£} UK:~# Brazil:}]
-    Backslash,      //!< Keyboard \ and | key OR various keys for Non-US keyboards
-    Semicolon,      //!< Keyboard ; and : key
-    Apostrophe,     //!< Keyboard ' and " key
-    Grave,          //!< Keyboard ` and ~ key
-    Comma,          //!< Keyboard , and < key
-    Period,         //!< Keyboard . and > key
-    Slash,          //!< Keyboard / and ? key
-    F1,             //!< Keyboard F1 key
-    F2,             //!< Keyboard F2 key
-    F3,             //!< Keyboard F3 key
-    F4,             //!< Keyboard F4 key
-    F5,             //!< Keyboard F5 key
-    F6,             //!< Keyboard F6 key
-    F7,             //!< Keyboard F7 key
-    F8,             //!< Keyboard F8 key
-    F9,             //!< Keyboard F9 key
-    F10,            //!< Keyboard F10 key
-    F11,            //!< Keyboard F11 key
-    F12,            //!< Keyboard F12 key
-    F13,            //!< Keyboard F13 key
-    F14,            //!< Keyboard F14 key
-    F15,            //!< Keyboard F15 key
-    F16,            //!< Keyboard F16 key
-    F17,            //!< Keyboard F17 key
-    F18,            //!< Keyboard F18 key
-    F19,            //!< Keyboard F19 key
-    F20,            //!< Keyboard F20 key
-    F21,            //!< Keyboard F21 key
-    F22,            //!< Keyboard F22 key
-    F23,            //!< Keyboard F23 key
-    F24,            //!< Keyboard F24 key
-    CapsLock,       //!< Keyboard Caps %Lock key
-    PrintScreen,    //!< Keyboard Print Screen key
-    ScrollLock,     //!< Keyboard Scroll %Lock key
-    Pause,          //!< Keyboard Pause key
-    Insert,         //!< Keyboard Insert key
-    Home,           //!< Keyboard Home key
-    PageUp,         //!< Keyboard Page Up key
-    Delete,         //!< Keyboard Delete Forward key
-    End,            //!< Keyboard End key
-    PageDown,       //!< Keyboard Page Down key
-    Right,          //!< Keyboard Right Arrow key
-    Left,           //!< Keyboard Left Arrow key
-    Down,           //!< Keyboard Down Arrow key
-    Up,             //!< Keyboard Up Arrow key
-    NumLock,        //!< Keypad Num %Lock and Clear key
-    NumpadDivide,   //!< Keypad / key
-    NumpadMultiply, //!< Keypad * key
-    NumpadMinus,    //!< Keypad - key
-    NumpadPlus,     //!< Keypad + key
-    NumpadEqual,    //!< keypad = key
-    NumpadEnter,    //!< Keypad Enter/Return key
-    NumpadDecimal,  //!< Keypad . and Delete key
-    Numpad1,        //!< Keypad 1 and End key
-    Numpad2,        //!< Keypad 2 and Down Arrow key
-    Numpad3,        //!< Keypad 3 and Page Down key
-    Numpad4,        //!< Keypad 4 and Left Arrow key
-    Numpad5,        //!< Keypad 5 key
-    Numpad6,        //!< Keypad 6 and Right Arrow key
-    Numpad7,        //!< Keypad 7 and Home key
-    Numpad8,        //!< Keypad 8 and Up Arrow key
-    Numpad9,        //!< Keypad 9 and Page Up key
-    Numpad0,        //!< Keypad 0 and Insert key
-    // For US keyboards doesn't exist
-    // For Non-US keyboards mapped to key 45 (Microsoft Keyboard Scan Code Specification)
-    // Typical language mappings: Belg:<\> FrCa:«°» Dan:<\> Dutch:]|[ Fren:<> Ger:<|> Ital:<> LatAm:<> Nor:<> Span:<>
-    // Swed:<|> Swiss:<\> UK:\| Brazil: \|.
-    NonUsBackslash,     //!< Keyboard Non-US \ and | key
-    Application,        //!< Keyboard Application key
-    Execute,            //!< Keyboard Execute key
-    ModeChange,         //!< Keyboard Mode Change key
-    Help,               //!< Keyboard Help key
-    Menu,               //!< Keyboard Menu key
-    Select,             //!< Keyboard Select key
-    Redo,               //!< Keyboard Redo key
-    Undo,               //!< Keyboard Undo key
-    Cut,                //!< Keyboard Cut key
-    Copy,               //!< Keyboard Copy key
-    Paste,              //!< Keyboard Paste key
-    VolumeMute,         //!< Keyboard Volume Mute key
-    VolumeUp,           //!< Keyboard Volume Up key
-    VolumeDown,         //!< Keyboard Volume Down key
-    MediaPlayPause,     //!< Keyboard Media Play Pause key
-    MediaStop,          //!< Keyboard Media Stop key
-    MediaNextTrack,     //!< Keyboard Media Next Track key
-    MediaPreviousTrack, //!< Keyboard Media Previous Track key
-    LControl,           //!< Keyboard Left Control key
-    LShift,             //!< Keyboard Left Shift key
-    LAlt,               //!< Keyboard Left Alt key
-    LSystem,            //!< Keyboard Left System key
-    RControl,           //!< Keyboard Right Control key
-    RShift,             //!< Keyboard Right Shift key
-    RAlt,               //!< Keyboard Right Alt key
-    RSystem,            //!< Keyboard Right System key
-    Back,               //!< Keyboard Back key
-    Forward,            //!< Keyboard Forward key
-    Refresh,            //!< Keyboard Refresh key
-    Stop,               //!< Keyboard Stop key
-    Search,             //!< Keyboard Search key
-    Favorites,          //!< Keyboard Favorites key
-    HomePage,           //!< Keyboard Home Page key
-    LaunchApplication1, //!< Keyboard Launch Application 1 key
-    LaunchApplication2, //!< Keyboard Launch Application 2 key
-    LaunchMail,         //!< Keyboard Launch Mail key
-    LaunchMediaSelect,  //!< Keyboard Launch Media Select key
+    Unknown = 0,
+
+    A = 4,
+    B = 5,
+    C = 6,
+    D = 7,
+    E = 8,
+    F = 9,
+    G = 10,
+    H = 11,
+    I = 12,
+    J = 13,
+    K = 14,
+    L = 15,
+    M = 16,
+    N = 17,
+    O = 18,
+    P = 19,
+    Q = 20,
+    R = 21,
+    S = 22,
+    T = 23,
+    U = 24,
+    V = 25,
+    W = 26,
+    X = 27,
+    Y = 28,
+    Z = 29,
+
+    Num1 = 30,
+    Num2 = 31,
+    Num3 = 32,
+    Num4 = 33,
+    Num5 = 34,
+    Num6 = 35,
+    Num7 = 36,
+    Num8 = 37,
+    Num9 = 38,
+    Num0 = 39,
+
+    Enter     = 40,
+    Escape    = 41,
+    Backspace = 42,
+    Tab       = 43,
+    Space     = 44,
+
+    Hyphen     = 45,
+    Equal      = 46,
+    LBracket   = 47,
+    RBracket   = 48,
+    Backslash  = 49,
+    NonUsHash  = 50,
+    Semicolon  = 51,
+    Apostrophe = 52,
+    Grave      = 53,
+    Comma      = 54,
+    Period     = 55,
+    Slash      = 56,
+
+    CapsLock = 57,
+
+    F1  = 58,
+    F2  = 59,
+    F3  = 60,
+    F4  = 61,
+    F5  = 62,
+    F6  = 63,
+    F7  = 64,
+    F8  = 65,
+    F9  = 66,
+    F10 = 67,
+    F11 = 68,
+    F12 = 69,
+
+    PrintScreen = 70,
+    ScrollLock  = 71,
+    Pause       = 72,
+    Insert      = 73,
+    Home        = 74,
+    PageUp      = 75,
+    Delete      = 76,
+    End         = 77,
+    PageDown    = 78,
+    Right       = 79,
+    Left        = 80,
+    Down        = 81,
+    Up          = 82,
+
+    NumLock        = 83,
+    NumpadDivide   = 84,
+    NumpadMultiply = 85,
+    NumpadMinus    = 86,
+    NumpadPlus     = 87,
+    NumpadEnter    = 88,
+    Numpad1        = 89,
+    Numpad2        = 90,
+    Numpad3        = 91,
+    Numpad4        = 92,
+    Numpad5        = 93,
+    Numpad6        = 94,
+    Numpad7        = 95,
+    Numpad8        = 96,
+    Numpad9        = 97,
+    Numpad0        = 98,
+    NumpadPeriod   = 99,
+
+    NonUsBackslash   = 100,
+    Application      = 101,
+    Power            = 102,
+    NumpadEqual      = 103,
+    F13              = 104,
+    F14              = 105,
+    F15              = 106,
+    F16              = 107,
+    F17              = 108,
+    F18              = 109,
+    F19              = 110,
+    F20              = 111,
+    F21              = 112,
+    F22              = 113,
+    F23              = 114,
+    F24              = 115,
+    Execute          = 116,
+    Help             = 117,
+    Menu             = 118,
+    Select           = 119,
+    Stop             = 120,
+    Redo             = 121,
+    Undo             = 122,
+    Cut              = 123,
+    Copy             = 124,
+    Paste            = 125,
+    Find             = 126,
+    VolumeMute       = 127,
+    VolumeUp         = 128,
+    VolumeDown       = 129,
+    NumpadComma      = 133,
+    NumpadEqualas400 = 134,
+
+    International1 = 135,
+    International2 = 136,
+    International3 = 137,
+    International4 = 138,
+    International5 = 139,
+    International6 = 140,
+    International7 = 141,
+    International8 = 142,
+    International9 = 143,
+    Lang1          = 144,
+    Lang2          = 145,
+    Lang3          = 146,
+    Lang4          = 147,
+    Lang5          = 148,
+    Lang6          = 149,
+    Lang7          = 150,
+    Lang8          = 151,
+    Lang9          = 152,
+
+    AltErase   = 153,
+    SysReq     = 154,
+    Cancel     = 155,
+    Clear      = 156,
+    Prior      = 157,
+    Enter2     = 158,
+    Separator  = 159,
+    Out        = 160,
+    Oper       = 161,
+    ClearAgain = 162,
+    CrSel      = 163,
+    ExSel      = 164,
+
+    Numpad00                = 176,
+    Numpad000               = 177,
+    ThousandsSeparator      = 178,
+    DecimalsSeparator       = 179,
+    CurrencyUnit            = 180,
+    CurrencySubUnit         = 181,
+    NumpadLParenthesis      = 182,
+    NumpadRParenthesis      = 183,
+    NumpadLBrace            = 184,
+    NumpadRBrace            = 185,
+    NumpadTab               = 186,
+    NumpadBackspace         = 187,
+    NumpadA                 = 188,
+    NumpadB                 = 189,
+    NumpadC                 = 190,
+    NumpadD                 = 191,
+    NumpadE                 = 192,
+    NumpadF                 = 193,
+    NumpadXor               = 194,
+    NumpadPower             = 195,
+    NumpadPercent           = 196,
+    NumpadLess              = 197,
+    NumpadGreater           = 198,
+    NumpadAmpersand         = 199,
+    NumpadDoubleAmpersand   = 200,
+    NumpadVerticalBar       = 201,
+    NumpadDoubleVerticalBar = 202,
+    NumpadColon             = 203,
+    NumpadHash              = 204,
+    NumpadSpace             = 205,
+    NumpadAt                = 206,
+    NumpadExclamation       = 207,
+    NumpadMemStore          = 208,
+    NumpadMemRecall         = 209,
+    NumpadMemClear          = 210,
+    NumpadMemAdd            = 211,
+    NumpadMemSubtract       = 212,
+    NumpadMemMultiply       = 213,
+    NumpadMemDivide         = 214,
+    NumpadPlusMinus         = 215,
+    NumpadClear             = 216,
+    NumpadClearEntry        = 217,
+    NumpadBinary            = 218,
+    NumpadOctal             = 219,
+    NumpadDecimal           = 220,
+    NumpadHexadecimal       = 221,
+
+    LControl = 224,
+    LShift   = 225,
+    LAlt     = 226,
+    LSystem  = 227,
+    RControl = 228,
+    RShift   = 229,
+    RAlt     = 230,
+    RSystem  = 231,
+
+    ModeChange = 257,
+    Sleep      = 258,
+    Wake       = 259,
+
+    ChannelIncrement = 260,
+    ChannelDecrement = 261,
+
+    MediaPlay          = 262,
+    MediaPause         = 263,
+    MediaRecord        = 264,
+    MediaFastForward   = 265,
+    MediaRewind        = 266,
+    MediaNextTrack     = 267,
+    MediaPreviousTrack = 268,
+    MediaStop          = 269,
+    MediaEject         = 270,
+    MediaPlayPause     = 271,
+    LaunchMediaSelect  = 272,
+
+    AcNew        = 273,
+    AcOpen       = 274,
+    AcClose      = 275,
+    AcExit       = 276,
+    AcSave       = 277,
+    AcPrint      = 278,
+    AcProperties = 279,
+
+    Search    = 280,
+    HomePage  = 281,
+    Back      = 282,
+    Forward   = 283,
+    AcStop    = 284,
+    Refresh   = 285,
+    Favorites = 286,
+
+    SoftLeft  = 287,
+    SoftRight = 288,
+    Call      = 289,
+    EndCall   = 290,
 };
 
 using Scancode = Scan;
@@ -309,8 +575,7 @@ using Scancode = Scan;
 ////////////////////////////////////////////////////////////
 enum : unsigned int
 {
-    ScancodeCount = static_cast<unsigned int>(Scan::LaunchMediaSelect) +
-                    1u //!< Total number of scancodes, ignoring `Scan::Unknown`
+    ScancodeCount = static_cast<unsigned int>(Scan::EndCall) + 1u
 };
 
 ////////////////////////////////////////////////////////////
