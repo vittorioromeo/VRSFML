@@ -29,14 +29,11 @@ struct VulkanSurfaceData;
 
 namespace priv
 {
-class CursorImpl;
-class JoystickManager;
-
 ////////////////////////////////////////////////////////////
-/// \brief Abstract base class for OS-specific window implementation
+/// \brief Window implementation (used SDL3)
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] WindowImpl // TODO P1: Remove and rely on `.cpp` compilation? how to deal with state?
+class [[nodiscard]] WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -67,7 +64,7 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~WindowImpl();
+    ~WindowImpl();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -120,7 +117,7 @@ public:
     /// \return Handle of the window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual WindowHandle getNativeHandle() const = 0;
+    [[nodiscard]] WindowHandle getNativeHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
@@ -128,7 +125,7 @@ public:
     /// \return Position of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Vector2i getPosition() const = 0;
+    [[nodiscard]] Vector2i getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the minimum window rendering region size
@@ -152,7 +149,7 @@ public:
     /// \param position New position of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setPosition(Vector2i position) = 0;
+    void setPosition(Vector2i position);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the client size of the window
@@ -160,7 +157,7 @@ public:
     /// \return Size of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Vector2u getSize() const = 0;
+    [[nodiscard]] Vector2u getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the size of the rendering region of the window
@@ -168,7 +165,7 @@ public:
     /// \param size New size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setSize(Vector2u size) = 0;
+    void setSize(Vector2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
@@ -178,7 +175,7 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -188,7 +185,7 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -196,7 +193,7 @@ public:
     /// \param title New title
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setTitle(const String& title) = 0;
+    void setTitle(const String& title);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
@@ -205,7 +202,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setIcon(Vector2u size, const base::U8* pixels) = 0;
+    void setIcon(Vector2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -213,7 +210,7 @@ public:
     /// \param visible `true` to show, `false` to hide
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setVisible(bool visible) = 0;
+    void setVisible(bool visible);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the mouse cursor
@@ -221,7 +218,7 @@ public:
     /// \param visible `true` to show, `false` to hide
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMouseCursorVisible(bool visible) = 0;
+    void setMouseCursorVisible(bool visible);
 
     ////////////////////////////////////////////////////////////
     /// \brief Grab or release the mouse cursor and keeps it from leaving
@@ -229,7 +226,7 @@ public:
     /// \param grabbed `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMouseCursorGrabbed(bool grabbed) = 0;
+    void setMouseCursorGrabbed(bool grabbed);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the displayed cursor to a native system cursor
@@ -237,7 +234,7 @@ public:
     /// \param cursor Native system cursor type to display
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setMouseCursor(const CursorImpl& cursor) = 0;
+    void setMouseCursor(void* cursor);
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable automatic key-repeat
@@ -245,14 +242,14 @@ public:
     /// \param enabled `true` to enable, `false` to disable
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setKeyRepeatEnabled(bool enabled) = 0;
+    void setKeyRepeatEnabled(bool enabled);
 
     ////////////////////////////////////////////////////////////
     /// \brief Request the current window to be made the active
     ///        foreground window
     ///
     ////////////////////////////////////////////////////////////
-    virtual void requestFocus() = 0;
+    void requestFocus();
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether the window has the input focus
@@ -260,7 +257,7 @@ public:
     /// \return `true` if window has focus, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool hasFocus() const = 0;
+    [[nodiscard]] bool hasFocus() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Return a scaling factor for DPI-aware scaling
@@ -269,7 +266,7 @@ public:
     ///         DPI-aware, otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual float getDPIAwareScalingFactor() const = 0;
+    [[nodiscard]] float getDPIAwareScalingFactor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
@@ -283,13 +280,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const;
 
-protected:
-    ////////////////////////////////////////////////////////////
-    /// \brief Constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImpl();
-
+private:
     ////////////////////////////////////////////////////////////
     /// \brief Push a new event into the event queue
     ///
@@ -306,9 +297,17 @@ protected:
     /// \brief Process incoming events from the operating system
     ///
     ////////////////////////////////////////////////////////////
-    virtual void processEvents() = 0;
+    void processEvents();
 
-private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Construct the window from an SDL window pointer
+    ///
+    /// \param context   Creation context for error messages
+    /// \param sdlWindow SDL window handle
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow);
+
     ////////////////////////////////////////////////////////////
     /// \return First event of the queue if available, `base::nullOpt` otherwise
     ///
@@ -341,5 +340,4 @@ private:
 };
 
 } // namespace priv
-
 } // namespace sf

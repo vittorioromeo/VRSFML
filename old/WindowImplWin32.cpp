@@ -513,9 +513,9 @@ void WindowImplWin32::setMouseCursorGrabbed(bool grabbed)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplWin32::setMouseCursor(const CursorImpl& cursor)
+void WindowImplWin32::setMouseCursor(void* cursor)
 {
-    m_lastCursor = static_cast<HCURSOR>(cursor.m_cursor);
+    m_lastCursor = static_cast<HCURSOR>(cursor);
     SetCursor(m_cursorVisible ? m_lastCursor : nullptr);
 }
 
