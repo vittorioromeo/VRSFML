@@ -1,15 +1,15 @@
 #pragma once
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowSettings.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/WindowHandle.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Abort.hpp"
@@ -24,595 +24,292 @@
 #include <SDL3/SDL_video.h>
 
 
+#define SFML_PRIV_SFML_SDL_KEYCODE_MAPPING                                  \
+    X(SDLK_UNKNOWN, ::sf::Keyboard::Key::Unknown)                           \
+    X(SDLK_RETURN, ::sf::Keyboard::Key::Enter)                              \
+    X(SDLK_ESCAPE, ::sf::Keyboard::Key::Escape)                             \
+    X(SDLK_BACKSPACE, ::sf::Keyboard::Key::Backspace)                       \
+    X(SDLK_TAB, ::sf::Keyboard::Key::Tab)                                   \
+    X(SDLK_SPACE, ::sf::Keyboard::Key::Space)                               \
+    X(SDLK_EXCLAIM, ::sf::Keyboard::Key::Exclaim)                           \
+    X(SDLK_DBLAPOSTROPHE, ::sf::Keyboard::Key::DoubleApostrophe)            \
+    X(SDLK_HASH, ::sf::Keyboard::Key::Hash)                                 \
+    X(SDLK_DOLLAR, ::sf::Keyboard::Key::Dollar)                             \
+    X(SDLK_PERCENT, ::sf::Keyboard::Key::Percent)                           \
+    X(SDLK_AMPERSAND, ::sf::Keyboard::Key::Ampersand)                       \
+    X(SDLK_APOSTROPHE, ::sf::Keyboard::Key::Apostrophe)                     \
+    X(SDLK_LEFTPAREN, ::sf::Keyboard::Key::LParenthesis)                    \
+    X(SDLK_RIGHTPAREN, ::sf::Keyboard::Key::RParenthesis)                   \
+    X(SDLK_ASTERISK, ::sf::Keyboard::Key::Asterisk)                         \
+    X(SDLK_PLUS, ::sf::Keyboard::Key::Plus)                                 \
+    X(SDLK_COMMA, ::sf::Keyboard::Key::Comma)                               \
+    X(SDLK_MINUS, ::sf::Keyboard::Key::Hyphen)                              \
+    X(SDLK_PERIOD, ::sf::Keyboard::Key::Period)                             \
+    X(SDLK_SLASH, ::sf::Keyboard::Key::Slash)                               \
+    X(SDLK_0, ::sf::Keyboard::Key::Num0)                                    \
+    X(SDLK_1, ::sf::Keyboard::Key::Num1)                                    \
+    X(SDLK_2, ::sf::Keyboard::Key::Num2)                                    \
+    X(SDLK_3, ::sf::Keyboard::Key::Num3)                                    \
+    X(SDLK_4, ::sf::Keyboard::Key::Num4)                                    \
+    X(SDLK_5, ::sf::Keyboard::Key::Num5)                                    \
+    X(SDLK_6, ::sf::Keyboard::Key::Num6)                                    \
+    X(SDLK_7, ::sf::Keyboard::Key::Num7)                                    \
+    X(SDLK_8, ::sf::Keyboard::Key::Num8)                                    \
+    X(SDLK_9, ::sf::Keyboard::Key::Num9)                                    \
+    X(SDLK_COLON, ::sf::Keyboard::Key::Colon)                               \
+    X(SDLK_SEMICOLON, ::sf::Keyboard::Key::Semicolon)                       \
+    X(SDLK_LESS, ::sf::Keyboard::Key::Less)                                 \
+    X(SDLK_EQUALS, ::sf::Keyboard::Key::Equal)                              \
+    X(SDLK_GREATER, ::sf::Keyboard::Key::Greater)                           \
+    X(SDLK_QUESTION, ::sf::Keyboard::Key::Question)                         \
+    X(SDLK_AT, ::sf::Keyboard::Key::At)                                     \
+    X(SDLK_LEFTBRACKET, ::sf::Keyboard::Key::LBracket)                      \
+    X(SDLK_BACKSLASH, ::sf::Keyboard::Key::Backslash)                       \
+    X(SDLK_RIGHTBRACKET, ::sf::Keyboard::Key::RBracket)                     \
+    X(SDLK_CARET, ::sf::Keyboard::Key::Caret)                               \
+    X(SDLK_UNDERSCORE, ::sf::Keyboard::Key::Underscore)                     \
+    X(SDLK_GRAVE, ::sf::Keyboard::Key::Grave)                               \
+    X(SDLK_A, ::sf::Keyboard::Key::A)                                       \
+    X(SDLK_B, ::sf::Keyboard::Key::B)                                       \
+    X(SDLK_C, ::sf::Keyboard::Key::C)                                       \
+    X(SDLK_D, ::sf::Keyboard::Key::D)                                       \
+    X(SDLK_E, ::sf::Keyboard::Key::E)                                       \
+    X(SDLK_F, ::sf::Keyboard::Key::F)                                       \
+    X(SDLK_G, ::sf::Keyboard::Key::G)                                       \
+    X(SDLK_H, ::sf::Keyboard::Key::H)                                       \
+    X(SDLK_I, ::sf::Keyboard::Key::I)                                       \
+    X(SDLK_J, ::sf::Keyboard::Key::J)                                       \
+    X(SDLK_K, ::sf::Keyboard::Key::K)                                       \
+    X(SDLK_L, ::sf::Keyboard::Key::L)                                       \
+    X(SDLK_M, ::sf::Keyboard::Key::M)                                       \
+    X(SDLK_N, ::sf::Keyboard::Key::N)                                       \
+    X(SDLK_O, ::sf::Keyboard::Key::O)                                       \
+    X(SDLK_P, ::sf::Keyboard::Key::P)                                       \
+    X(SDLK_Q, ::sf::Keyboard::Key::Q)                                       \
+    X(SDLK_R, ::sf::Keyboard::Key::R)                                       \
+    X(SDLK_S, ::sf::Keyboard::Key::S)                                       \
+    X(SDLK_T, ::sf::Keyboard::Key::T)                                       \
+    X(SDLK_U, ::sf::Keyboard::Key::U)                                       \
+    X(SDLK_V, ::sf::Keyboard::Key::V)                                       \
+    X(SDLK_W, ::sf::Keyboard::Key::W)                                       \
+    X(SDLK_X, ::sf::Keyboard::Key::X)                                       \
+    X(SDLK_Y, ::sf::Keyboard::Key::Y)                                       \
+    X(SDLK_Z, ::sf::Keyboard::Key::Z)                                       \
+    X(SDLK_LEFTBRACE, ::sf::Keyboard::Key::LBrace)                          \
+    X(SDLK_PIPE, ::sf::Keyboard::Key::Pipe)                                 \
+    X(SDLK_RIGHTBRACE, ::sf::Keyboard::Key::RBrace)                         \
+    X(SDLK_TILDE, ::sf::Keyboard::Key::Tilde)                               \
+    X(SDLK_DELETE, ::sf::Keyboard::Key::Delete)                             \
+    X(SDLK_PLUSMINUS, ::sf::Keyboard::Key::PlusMinus)                       \
+    X(SDLK_CAPSLOCK, ::sf::Keyboard::Key::CapsLock)                         \
+    X(SDLK_F1, ::sf::Keyboard::Key::F1)                                     \
+    X(SDLK_F2, ::sf::Keyboard::Key::F2)                                     \
+    X(SDLK_F3, ::sf::Keyboard::Key::F3)                                     \
+    X(SDLK_F4, ::sf::Keyboard::Key::F4)                                     \
+    X(SDLK_F5, ::sf::Keyboard::Key::F5)                                     \
+    X(SDLK_F6, ::sf::Keyboard::Key::F6)                                     \
+    X(SDLK_F7, ::sf::Keyboard::Key::F7)                                     \
+    X(SDLK_F8, ::sf::Keyboard::Key::F8)                                     \
+    X(SDLK_F9, ::sf::Keyboard::Key::F9)                                     \
+    X(SDLK_F10, ::sf::Keyboard::Key::F10)                                   \
+    X(SDLK_F11, ::sf::Keyboard::Key::F11)                                   \
+    X(SDLK_F12, ::sf::Keyboard::Key::F12)                                   \
+    X(SDLK_PRINTSCREEN, ::sf::Keyboard::Key::PrintScreen)                   \
+    X(SDLK_SCROLLLOCK, ::sf::Keyboard::Key::ScrollLock)                     \
+    X(SDLK_PAUSE, ::sf::Keyboard::Key::Pause)                               \
+    X(SDLK_INSERT, ::sf::Keyboard::Key::Insert)                             \
+    X(SDLK_HOME, ::sf::Keyboard::Key::Home)                                 \
+    X(SDLK_PAGEUP, ::sf::Keyboard::Key::PageUp)                             \
+    X(SDLK_END, ::sf::Keyboard::Key::End)                                   \
+    X(SDLK_PAGEDOWN, ::sf::Keyboard::Key::PageDown)                         \
+    X(SDLK_RIGHT, ::sf::Keyboard::Key::Right)                               \
+    X(SDLK_LEFT, ::sf::Keyboard::Key::Left)                                 \
+    X(SDLK_DOWN, ::sf::Keyboard::Key::Down)                                 \
+    X(SDLK_UP, ::sf::Keyboard::Key::Up)                                     \
+    X(SDLK_NUMLOCKCLEAR, ::sf::Keyboard::Key::NumLock)                      \
+    X(SDLK_KP_DIVIDE, ::sf::Keyboard::Key::Divide)                          \
+    X(SDLK_KP_MULTIPLY, ::sf::Keyboard::Key::Multiply)                      \
+    X(SDLK_KP_MINUS, ::sf::Keyboard::Key::Subtract)                         \
+    X(SDLK_KP_PLUS, ::sf::Keyboard::Key::Add)                               \
+    X(SDLK_KP_ENTER, ::sf::Keyboard::Key::NumpadEnter)                      \
+    X(SDLK_KP_1, ::sf::Keyboard::Key::Numpad1)                              \
+    X(SDLK_KP_2, ::sf::Keyboard::Key::Numpad2)                              \
+    X(SDLK_KP_3, ::sf::Keyboard::Key::Numpad3)                              \
+    X(SDLK_KP_4, ::sf::Keyboard::Key::Numpad4)                              \
+    X(SDLK_KP_5, ::sf::Keyboard::Key::Numpad5)                              \
+    X(SDLK_KP_6, ::sf::Keyboard::Key::Numpad6)                              \
+    X(SDLK_KP_7, ::sf::Keyboard::Key::Numpad7)                              \
+    X(SDLK_KP_8, ::sf::Keyboard::Key::Numpad8)                              \
+    X(SDLK_KP_9, ::sf::Keyboard::Key::Numpad9)                              \
+    X(SDLK_KP_0, ::sf::Keyboard::Key::Numpad0)                              \
+    X(SDLK_KP_PERIOD, ::sf::Keyboard::Key::NumpadPeriod)                    \
+    X(SDLK_APPLICATION, ::sf::Keyboard::Key::Application)                   \
+    X(SDLK_POWER, ::sf::Keyboard::Key::Power)                               \
+    X(SDLK_KP_EQUALS, ::sf::Keyboard::Key::NumpadEqual)                     \
+    X(SDLK_F13, ::sf::Keyboard::Key::F13)                                   \
+    X(SDLK_F14, ::sf::Keyboard::Key::F14)                                   \
+    X(SDLK_F15, ::sf::Keyboard::Key::F15)                                   \
+    X(SDLK_F16, ::sf::Keyboard::Key::F16)                                   \
+    X(SDLK_F17, ::sf::Keyboard::Key::F17)                                   \
+    X(SDLK_F18, ::sf::Keyboard::Key::F18)                                   \
+    X(SDLK_F19, ::sf::Keyboard::Key::F19)                                   \
+    X(SDLK_F20, ::sf::Keyboard::Key::F20)                                   \
+    X(SDLK_F21, ::sf::Keyboard::Key::F21)                                   \
+    X(SDLK_F22, ::sf::Keyboard::Key::F22)                                   \
+    X(SDLK_F23, ::sf::Keyboard::Key::F23)                                   \
+    X(SDLK_F24, ::sf::Keyboard::Key::F24)                                   \
+    X(SDLK_EXECUTE, ::sf::Keyboard::Key::Execute)                           \
+    X(SDLK_HELP, ::sf::Keyboard::Key::Help)                                 \
+    X(SDLK_MENU, ::sf::Keyboard::Key::Menu)                                 \
+    X(SDLK_SELECT, ::sf::Keyboard::Key::Select)                             \
+    X(SDLK_STOP, ::sf::Keyboard::Key::Stop)                                 \
+    X(SDLK_AGAIN, ::sf::Keyboard::Key::Redo)                                \
+    X(SDLK_UNDO, ::sf::Keyboard::Key::Undo)                                 \
+    X(SDLK_CUT, ::sf::Keyboard::Key::Cut)                                   \
+    X(SDLK_COPY, ::sf::Keyboard::Key::Copy)                                 \
+    X(SDLK_PASTE, ::sf::Keyboard::Key::Paste)                               \
+    X(SDLK_FIND, ::sf::Keyboard::Key::Find)                                 \
+    X(SDLK_MUTE, ::sf::Keyboard::Key::VolumeMute)                           \
+    X(SDLK_VOLUMEUP, ::sf::Keyboard::Key::VolumeUp)                         \
+    X(SDLK_VOLUMEDOWN, ::sf::Keyboard::Key::VolumeDown)                     \
+    X(SDLK_KP_COMMA, ::sf::Keyboard::Key::NumpadComma)                      \
+    X(SDLK_KP_EQUALSAS400, ::sf::Keyboard::Key::NumpadEqualAs400)           \
+    X(SDLK_ALTERASE, ::sf::Keyboard::Key::AltErase)                         \
+    X(SDLK_SYSREQ, ::sf::Keyboard::Key::SysReq)                             \
+    X(SDLK_CANCEL, ::sf::Keyboard::Key::Cancel)                             \
+    X(SDLK_CLEAR, ::sf::Keyboard::Key::Clear)                               \
+    X(SDLK_PRIOR, ::sf::Keyboard::Key::Prior)                               \
+    X(SDLK_RETURN2, ::sf::Keyboard::Key::Enter2)                            \
+    X(SDLK_SEPARATOR, ::sf::Keyboard::Key::Separator)                       \
+    X(SDLK_OUT, ::sf::Keyboard::Key::Out)                                   \
+    X(SDLK_OPER, ::sf::Keyboard::Key::Oper)                                 \
+    X(SDLK_CLEARAGAIN, ::sf::Keyboard::Key::ClearAgain)                     \
+    X(SDLK_CRSEL, ::sf::Keyboard::Key::CrSel)                               \
+    X(SDLK_EXSEL, ::sf::Keyboard::Key::ExSel)                               \
+    X(SDLK_KP_00, ::sf::Keyboard::Key::Numpad00)                            \
+    X(SDLK_KP_000, ::sf::Keyboard::Key::Numpad000)                          \
+    X(SDLK_THOUSANDSSEPARATOR, ::sf::Keyboard::Key::ThousandsSeparator)     \
+    X(SDLK_DECIMALSEPARATOR, ::sf::Keyboard::Key::DecimalSeparator)         \
+    X(SDLK_CURRENCYUNIT, ::sf::Keyboard::Key::CurrencyUnit)                 \
+    X(SDLK_CURRENCYSUBUNIT, ::sf::Keyboard::Key::CurrencySubUnit)           \
+    X(SDLK_KP_LEFTPAREN, ::sf::Keyboard::Key::NumpadLParenthesis)           \
+    X(SDLK_KP_RIGHTPAREN, ::sf::Keyboard::Key::NumpadRParenthesis)          \
+    X(SDLK_KP_LEFTBRACE, ::sf::Keyboard::Key::NumpadLBrace)                 \
+    X(SDLK_KP_RIGHTBRACE, ::sf::Keyboard::Key::NumpadRBrace)                \
+    X(SDLK_KP_TAB, ::sf::Keyboard::Key::NumpadTab)                          \
+    X(SDLK_KP_BACKSPACE, ::sf::Keyboard::Key::NumpadBackspace)              \
+    X(SDLK_KP_A, ::sf::Keyboard::Key::NumpadA)                              \
+    X(SDLK_KP_B, ::sf::Keyboard::Key::NumpadB)                              \
+    X(SDLK_KP_C, ::sf::Keyboard::Key::NumpadC)                              \
+    X(SDLK_KP_D, ::sf::Keyboard::Key::NumpadD)                              \
+    X(SDLK_KP_E, ::sf::Keyboard::Key::NumpadE)                              \
+    X(SDLK_KP_F, ::sf::Keyboard::Key::NumpadF)                              \
+    X(SDLK_KP_XOR, ::sf::Keyboard::Key::NumpadXor)                          \
+    X(SDLK_KP_POWER, ::sf::Keyboard::Key::NumpadPower)                      \
+    X(SDLK_KP_PERCENT, ::sf::Keyboard::Key::NumpadPercent)                  \
+    X(SDLK_KP_LESS, ::sf::Keyboard::Key::NumpadLess)                        \
+    X(SDLK_KP_GREATER, ::sf::Keyboard::Key::NumpadGreater)                  \
+    X(SDLK_KP_AMPERSAND, ::sf::Keyboard::Key::NumpadAmpersand)              \
+    X(SDLK_KP_DBLAMPERSAND, ::sf::Keyboard::Key::NumpadDoubleAmpersand)     \
+    X(SDLK_KP_VERTICALBAR, ::sf::Keyboard::Key::NumpadVerticalBar)          \
+    X(SDLK_KP_DBLVERTICALBAR, ::sf::Keyboard::Key::NumpadDoubleVerticalBar) \
+    X(SDLK_KP_COLON, ::sf::Keyboard::Key::NumpadColon)                      \
+    X(SDLK_KP_HASH, ::sf::Keyboard::Key::NumpadHash)                        \
+    X(SDLK_KP_SPACE, ::sf::Keyboard::Key::NumpadSpace)                      \
+    X(SDLK_KP_AT, ::sf::Keyboard::Key::NumpadAt)                            \
+    X(SDLK_KP_EXCLAM, ::sf::Keyboard::Key::NumpadExclamation)               \
+    X(SDLK_KP_MEMSTORE, ::sf::Keyboard::Key::NumpadMemStore)                \
+    X(SDLK_KP_MEMRECALL, ::sf::Keyboard::Key::NumpadMemRecall)              \
+    X(SDLK_KP_MEMCLEAR, ::sf::Keyboard::Key::NumpadMemClear)                \
+    X(SDLK_KP_MEMADD, ::sf::Keyboard::Key::NumpadMemAdd)                    \
+    X(SDLK_KP_MEMSUBTRACT, ::sf::Keyboard::Key::NumpadMemSubtract)          \
+    X(SDLK_KP_MEMMULTIPLY, ::sf::Keyboard::Key::NumpadMemMultiply)          \
+    X(SDLK_KP_MEMDIVIDE, ::sf::Keyboard::Key::NumpadMemDivide)              \
+    X(SDLK_KP_PLUSMINUS, ::sf::Keyboard::Key::NumpadPlusMinus)              \
+    X(SDLK_KP_CLEAR, ::sf::Keyboard::Key::NumpadClear)                      \
+    X(SDLK_KP_CLEARENTRY, ::sf::Keyboard::Key::NumpadClearEntry)            \
+    X(SDLK_KP_BINARY, ::sf::Keyboard::Key::NumpadBinary)                    \
+    X(SDLK_KP_OCTAL, ::sf::Keyboard::Key::NumpadOctal)                      \
+    X(SDLK_KP_DECIMAL, ::sf::Keyboard::Key::NumpadDecimal)                  \
+    X(SDLK_KP_HEXADECIMAL, ::sf::Keyboard::Key::NumpadHexadecimal)          \
+    X(SDLK_LCTRL, ::sf::Keyboard::Key::LControl)                            \
+    X(SDLK_LSHIFT, ::sf::Keyboard::Key::LShift)                             \
+    X(SDLK_LALT, ::sf::Keyboard::Key::LAlt)                                 \
+    X(SDLK_LGUI, ::sf::Keyboard::Key::LSystem)                              \
+    X(SDLK_RCTRL, ::sf::Keyboard::Key::RControl)                            \
+    X(SDLK_RSHIFT, ::sf::Keyboard::Key::RShift)                             \
+    X(SDLK_RALT, ::sf::Keyboard::Key::RAlt)                                 \
+    X(SDLK_RGUI, ::sf::Keyboard::Key::RSystem)                              \
+    X(SDLK_MODE, ::sf::Keyboard::Key::ModeChange)                           \
+    X(SDLK_SLEEP, ::sf::Keyboard::Key::Sleep)                               \
+    X(SDLK_WAKE, ::sf::Keyboard::Key::Wake)                                 \
+    X(SDLK_CHANNEL_INCREMENT, ::sf::Keyboard::Key::ChannelIncrement)        \
+    X(SDLK_CHANNEL_DECREMENT, ::sf::Keyboard::Key::ChannelDecrement)        \
+    X(SDLK_MEDIA_PLAY, ::sf::Keyboard::Key::MediaPlay)                      \
+    X(SDLK_MEDIA_PAUSE, ::sf::Keyboard::Key::MediaPause)                    \
+    X(SDLK_MEDIA_RECORD, ::sf::Keyboard::Key::MediaRecord)                  \
+    X(SDLK_MEDIA_FAST_FORWARD, ::sf::Keyboard::Key::MediaFastForward)       \
+    X(SDLK_MEDIA_REWIND, ::sf::Keyboard::Key::MediaRewind)                  \
+    X(SDLK_MEDIA_NEXT_TRACK, ::sf::Keyboard::Key::MediaNextTrack)           \
+    X(SDLK_MEDIA_PREVIOUS_TRACK, ::sf::Keyboard::Key::MediaPreviousTrack)   \
+    X(SDLK_MEDIA_STOP, ::sf::Keyboard::Key::MediaStop)                      \
+    X(SDLK_MEDIA_EJECT, ::sf::Keyboard::Key::MediaEject)                    \
+    X(SDLK_MEDIA_PLAY_PAUSE, ::sf::Keyboard::Key::MediaPlayPause)           \
+    X(SDLK_MEDIA_SELECT, ::sf::Keyboard::Key::LaunchMediaSelect)            \
+    X(SDLK_AC_NEW, ::sf::Keyboard::Key::AcNew)                              \
+    X(SDLK_AC_OPEN, ::sf::Keyboard::Key::AcOpen)                            \
+    X(SDLK_AC_CLOSE, ::sf::Keyboard::Key::AcClose)                          \
+    X(SDLK_AC_EXIT, ::sf::Keyboard::Key::AcExit)                            \
+    X(SDLK_AC_SAVE, ::sf::Keyboard::Key::AcSave)                            \
+    X(SDLK_AC_PRINT, ::sf::Keyboard::Key::AcPrint)                          \
+    X(SDLK_AC_PROPERTIES, ::sf::Keyboard::Key::AcProperties)                \
+    X(SDLK_AC_SEARCH, ::sf::Keyboard::Key::Search)                          \
+    X(SDLK_AC_HOME, ::sf::Keyboard::Key::HomePage)                          \
+    X(SDLK_AC_BACK, ::sf::Keyboard::Key::Back)                              \
+    X(SDLK_AC_FORWARD, ::sf::Keyboard::Key::Forward)                        \
+    X(SDLK_AC_STOP, ::sf::Keyboard::Key::AcStop)                            \
+    X(SDLK_AC_REFRESH, ::sf::Keyboard::Key::Refresh)                        \
+    X(SDLK_AC_BOOKMARKS, ::sf::Keyboard::Key::Favorites)                    \
+    X(SDLK_SOFTLEFT, ::sf::Keyboard::Key::SoftLeft)                         \
+    X(SDLK_SOFTRIGHT, ::sf::Keyboard::Key::SoftRight)                       \
+    X(SDLK_CALL, ::sf::Keyboard::Key::Call)                                 \
+    X(SDLK_ENDCALL, ::sf::Keyboard::Key::EndCall)                           \
+    X(SDLK_LEFT_TAB, ::sf::Keyboard::Key::LTab)                             \
+    X(SDLK_LEVEL5_SHIFT, ::sf::Keyboard::Key::Level5Shift)                  \
+    X(SDLK_MULTI_KEY_COMPOSE, ::sf::Keyboard::Key::MultiKeyCompose)         \
+    X(SDLK_LMETA, ::sf::Keyboard::Key::LMeta)                               \
+    X(SDLK_RMETA, ::sf::Keyboard::Key::RMeta)                               \
+    X(SDLK_LHYPER, ::sf::Keyboard::Key::LHyper)                             \
+    X(SDLK_RHYPER, ::sf::Keyboard::Key::RHyper)
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] inline constexpr Keyboard::Scan mapSDLScancodeToSFML(const SDL_Scancode sdlCode) noexcept
 {
-    // clang-format off
-    switch (sdlCode)
-    {
-        // Letters (SDL: A=4, B=5, ... Z=29)
-        case SDL_SCANCODE_A: return Keyboard::Scan::A;
-        case SDL_SCANCODE_B: return Keyboard::Scan::B;
-        case SDL_SCANCODE_C: return Keyboard::Scan::C;
-        case SDL_SCANCODE_D: return Keyboard::Scan::D;
-        case SDL_SCANCODE_E: return Keyboard::Scan::E;
-        case SDL_SCANCODE_F: return Keyboard::Scan::F;
-        case SDL_SCANCODE_G: return Keyboard::Scan::G;
-        case SDL_SCANCODE_H: return Keyboard::Scan::H;
-        case SDL_SCANCODE_I: return Keyboard::Scan::I;
-        case SDL_SCANCODE_J: return Keyboard::Scan::J;
-        case SDL_SCANCODE_K: return Keyboard::Scan::K;
-        case SDL_SCANCODE_L: return Keyboard::Scan::L;
-        case SDL_SCANCODE_M: return Keyboard::Scan::M;
-        case SDL_SCANCODE_N: return Keyboard::Scan::N;
-        case SDL_SCANCODE_O: return Keyboard::Scan::O;
-        case SDL_SCANCODE_P: return Keyboard::Scan::P;
-        case SDL_SCANCODE_Q: return Keyboard::Scan::Q;
-        case SDL_SCANCODE_R: return Keyboard::Scan::R;
-        case SDL_SCANCODE_S: return Keyboard::Scan::S;
-        case SDL_SCANCODE_T: return Keyboard::Scan::T;
-        case SDL_SCANCODE_U: return Keyboard::Scan::U;
-        case SDL_SCANCODE_V: return Keyboard::Scan::V;
-        case SDL_SCANCODE_W: return Keyboard::Scan::W;
-        case SDL_SCANCODE_X: return Keyboard::Scan::X;
-        case SDL_SCANCODE_Y: return Keyboard::Scan::Y;
-        case SDL_SCANCODE_Z: return Keyboard::Scan::Z;
-
-        // Numbers
-        case SDL_SCANCODE_1: return Keyboard::Scan::Num1;
-        case SDL_SCANCODE_2: return Keyboard::Scan::Num2;
-        case SDL_SCANCODE_3: return Keyboard::Scan::Num3;
-        case SDL_SCANCODE_4: return Keyboard::Scan::Num4;
-        case SDL_SCANCODE_5: return Keyboard::Scan::Num5;
-        case SDL_SCANCODE_6: return Keyboard::Scan::Num6;
-        case SDL_SCANCODE_7: return Keyboard::Scan::Num7;
-        case SDL_SCANCODE_8: return Keyboard::Scan::Num8;
-        case SDL_SCANCODE_9: return Keyboard::Scan::Num9;
-        case SDL_SCANCODE_0: return Keyboard::Scan::Num0;
-
-        // Control and special keys
-        case SDL_SCANCODE_RETURN:       return Keyboard::Scan::Enter;
-        case SDL_SCANCODE_ESCAPE:       return Keyboard::Scan::Escape;
-        case SDL_SCANCODE_BACKSPACE:    return Keyboard::Scan::Backspace;
-        case SDL_SCANCODE_TAB:          return Keyboard::Scan::Tab;
-        case SDL_SCANCODE_SPACE:        return Keyboard::Scan::Space;
-        case SDL_SCANCODE_MINUS:        return Keyboard::Scan::Hyphen;
-        case SDL_SCANCODE_EQUALS:       return Keyboard::Scan::Equal;
-        case SDL_SCANCODE_LEFTBRACKET:  return Keyboard::Scan::LBracket;
-        case SDL_SCANCODE_RIGHTBRACKET: return Keyboard::Scan::RBracket;
-        case SDL_SCANCODE_BACKSLASH:    return Keyboard::Scan::Backslash;
-        case SDL_SCANCODE_SEMICOLON:    return Keyboard::Scan::Semicolon;
-        case SDL_SCANCODE_APOSTROPHE:   return Keyboard::Scan::Apostrophe;
-        case SDL_SCANCODE_GRAVE:        return Keyboard::Scan::Grave;
-        case SDL_SCANCODE_COMMA:        return Keyboard::Scan::Comma;
-        case SDL_SCANCODE_PERIOD:       return Keyboard::Scan::Period;
-        case SDL_SCANCODE_SLASH:        return Keyboard::Scan::Slash;
-
-        // Function keys
-        case SDL_SCANCODE_F1:  return Keyboard::Scan::F1;
-        case SDL_SCANCODE_F2:  return Keyboard::Scan::F2;
-        case SDL_SCANCODE_F3:  return Keyboard::Scan::F3;
-        case SDL_SCANCODE_F4:  return Keyboard::Scan::F4;
-        case SDL_SCANCODE_F5:  return Keyboard::Scan::F5;
-        case SDL_SCANCODE_F6:  return Keyboard::Scan::F6;
-        case SDL_SCANCODE_F7:  return Keyboard::Scan::F7;
-        case SDL_SCANCODE_F8:  return Keyboard::Scan::F8;
-        case SDL_SCANCODE_F9:  return Keyboard::Scan::F9;
-        case SDL_SCANCODE_F10: return Keyboard::Scan::F10;
-        case SDL_SCANCODE_F11: return Keyboard::Scan::F11;
-        case SDL_SCANCODE_F12: return Keyboard::Scan::F12;
-        case SDL_SCANCODE_F13: return Keyboard::Scan::F13;
-        case SDL_SCANCODE_F14: return Keyboard::Scan::F14;
-        case SDL_SCANCODE_F15: return Keyboard::Scan::F15;
-        case SDL_SCANCODE_F16: return Keyboard::Scan::F16;
-        case SDL_SCANCODE_F17: return Keyboard::Scan::F17;
-        case SDL_SCANCODE_F18: return Keyboard::Scan::F18;
-        case SDL_SCANCODE_F19: return Keyboard::Scan::F19;
-        case SDL_SCANCODE_F20: return Keyboard::Scan::F20;
-        case SDL_SCANCODE_F21: return Keyboard::Scan::F21;
-        case SDL_SCANCODE_F22: return Keyboard::Scan::F22;
-        case SDL_SCANCODE_F23: return Keyboard::Scan::F23;
-        case SDL_SCANCODE_F24: return Keyboard::Scan::F24;
-
-        // Lock and navigation keys
-        case SDL_SCANCODE_CAPSLOCK:     return Keyboard::Scan::CapsLock;
-        case SDL_SCANCODE_PRINTSCREEN:  return Keyboard::Scan::PrintScreen;
-        case SDL_SCANCODE_SCROLLLOCK:   return Keyboard::Scan::ScrollLock;
-        case SDL_SCANCODE_PAUSE:        return Keyboard::Scan::Pause;
-        case SDL_SCANCODE_INSERT:       return Keyboard::Scan::Insert;
-        case SDL_SCANCODE_HOME:         return Keyboard::Scan::Home;
-        case SDL_SCANCODE_PAGEUP:       return Keyboard::Scan::PageUp;
-        case SDL_SCANCODE_DELETE:       return Keyboard::Scan::Delete;
-        case SDL_SCANCODE_END:          return Keyboard::Scan::End;
-        case SDL_SCANCODE_PAGEDOWN:     return Keyboard::Scan::PageDown;
-        case SDL_SCANCODE_RIGHT:        return Keyboard::Scan::Right;
-        case SDL_SCANCODE_LEFT:         return Keyboard::Scan::Left;
-        case SDL_SCANCODE_DOWN:         return Keyboard::Scan::Down;
-        case SDL_SCANCODE_UP:           return Keyboard::Scan::Up;
-        case SDL_SCANCODE_NUMLOCKCLEAR: return Keyboard::Scan::NumLock;
-
-        // Keypad
-        case SDL_SCANCODE_KP_DIVIDE:   return Keyboard::Scan::NumpadDivide;
-        case SDL_SCANCODE_KP_MULTIPLY: return Keyboard::Scan::NumpadMultiply;
-        case SDL_SCANCODE_KP_MINUS:    return Keyboard::Scan::NumpadMinus;
-        case SDL_SCANCODE_KP_PLUS:     return Keyboard::Scan::NumpadPlus;
-        case SDL_SCANCODE_KP_ENTER:    return Keyboard::Scan::NumpadEnter;
-        case SDL_SCANCODE_KP_PERIOD:   return Keyboard::Scan::NumpadDecimal;
-        case SDL_SCANCODE_KP_1:        return Keyboard::Scan::Numpad1;
-        case SDL_SCANCODE_KP_2:        return Keyboard::Scan::Numpad2;
-        case SDL_SCANCODE_KP_3:        return Keyboard::Scan::Numpad3;
-        case SDL_SCANCODE_KP_4:        return Keyboard::Scan::Numpad4;
-        case SDL_SCANCODE_KP_5:        return Keyboard::Scan::Numpad5;
-        case SDL_SCANCODE_KP_6:        return Keyboard::Scan::Numpad6;
-        case SDL_SCANCODE_KP_7:        return Keyboard::Scan::Numpad7;
-        case SDL_SCANCODE_KP_8:        return Keyboard::Scan::Numpad8;
-        case SDL_SCANCODE_KP_9:        return Keyboard::Scan::Numpad9;
-        case SDL_SCANCODE_KP_0:        return Keyboard::Scan::Numpad0;
-
-        // Additional keys
-        case SDL_SCANCODE_NONUSBACKSLASH: return Keyboard::Scan::NonUsBackslash;
-        case SDL_SCANCODE_APPLICATION:    return Keyboard::Scan::Application;
-        case SDL_SCANCODE_HELP:           return Keyboard::Scan::Help;
-        case SDL_SCANCODE_MENU:           return Keyboard::Scan::Menu;
-        case SDL_SCANCODE_SELECT:         return Keyboard::Scan::Select;
-        case SDL_SCANCODE_AGAIN:          return Keyboard::Scan::Redo;
-        case SDL_SCANCODE_UNDO:           return Keyboard::Scan::Undo;
-        case SDL_SCANCODE_CUT:            return Keyboard::Scan::Cut;
-        case SDL_SCANCODE_COPY:           return Keyboard::Scan::Copy;
-        case SDL_SCANCODE_PASTE:          return Keyboard::Scan::Paste;
-        case SDL_SCANCODE_MUTE:           return Keyboard::Scan::VolumeMute;
-        case SDL_SCANCODE_VOLUMEUP:       return Keyboard::Scan::VolumeUp;
-        case SDL_SCANCODE_VOLUMEDOWN:     return Keyboard::Scan::VolumeDown;
-
-        // Media keys
-        case SDL_SCANCODE_MEDIA_PLAY:           return Keyboard::Scan::MediaPlayPause;
-        case SDL_SCANCODE_MEDIA_PAUSE:          return Keyboard::Scan::MediaPlayPause;
-        case SDL_SCANCODE_MEDIA_STOP:           return Keyboard::Scan::MediaStop;
-        case SDL_SCANCODE_MEDIA_NEXT_TRACK:     return Keyboard::Scan::MediaNextTrack;
-        case SDL_SCANCODE_MEDIA_PREVIOUS_TRACK: return Keyboard::Scan::MediaPreviousTrack;
-
-        case SDL_SCANCODE_LCTRL:  return Keyboard::Scan::LControl;
-        case SDL_SCANCODE_LSHIFT: return Keyboard::Scan::LShift;
-        case SDL_SCANCODE_LALT:   return Keyboard::Scan::LAlt;
-        case SDL_SCANCODE_LGUI:   return Keyboard::Scan::LSystem;
-        case SDL_SCANCODE_RCTRL:  return Keyboard::Scan::RControl;
-        case SDL_SCANCODE_RSHIFT: return Keyboard::Scan::RShift;
-        case SDL_SCANCODE_RALT:   return Keyboard::Scan::RAlt;
-        case SDL_SCANCODE_RGUI:   return Keyboard::Scan::RSystem;
-        case SDL_SCANCODE_MODE:   return Keyboard::Scan::ModeChange;
-
-        case SDL_SCANCODE_KP_EQUALS:    return Keyboard::Scan::NumpadEqual;
-        case SDL_SCANCODE_AC_BACK:      return Keyboard::Scan::Back;
-        case SDL_SCANCODE_AC_FORWARD:   return Keyboard::Scan::Forward;
-        case SDL_SCANCODE_AC_REFRESH:   return Keyboard::Scan::Refresh;
-        case SDL_SCANCODE_AC_STOP:      return Keyboard::Scan::Stop;
-        case SDL_SCANCODE_AC_SEARCH:    return Keyboard::Scan::Search;
-        case SDL_SCANCODE_AC_BOOKMARKS: return Keyboard::Scan::Favorites;
-        case SDL_SCANCODE_AC_HOME:      return Keyboard::Scan::HomePage;
-
-        case SDL_SCANCODE_EXECUTE: return Keyboard::Scan::Execute;
-
-        // TODO
-        case SDL_SCANCODE_SLEEP:
-        case SDL_SCANCODE_WAKE:
-        case SDL_SCANCODE_CHANNEL_INCREMENT:
-        case SDL_SCANCODE_CHANNEL_DECREMENT:
-        case SDL_SCANCODE_MEDIA_RECORD:
-        case SDL_SCANCODE_MEDIA_FAST_FORWARD:
-        case SDL_SCANCODE_MEDIA_REWIND:
-        case SDL_SCANCODE_MEDIA_EJECT:
-        case SDL_SCANCODE_MEDIA_PLAY_PAUSE:
-        case SDL_SCANCODE_MEDIA_SELECT:
-        case SDL_SCANCODE_AC_NEW:
-        case SDL_SCANCODE_AC_OPEN:
-        case SDL_SCANCODE_AC_CLOSE:
-        case SDL_SCANCODE_AC_EXIT:
-        case SDL_SCANCODE_AC_SAVE:
-        case SDL_SCANCODE_AC_PRINT:
-        case SDL_SCANCODE_AC_PROPERTIES:
-        case SDL_SCANCODE_SOFTLEFT:
-        case SDL_SCANCODE_SOFTRIGHT:
-        case SDL_SCANCODE_CALL:
-        case SDL_SCANCODE_ENDCALL:
-        case SDL_SCANCODE_RESERVED:
-        case SDL_SCANCODE_COUNT:
-        case SDL_SCANCODE_NONUSHASH:
-        case SDL_SCANCODE_POWER:
-        case SDL_SCANCODE_STOP:
-        case SDL_SCANCODE_FIND:
-        case SDL_SCANCODE_KP_COMMA:
-        case SDL_SCANCODE_KP_EQUALSAS400:
-        case SDL_SCANCODE_INTERNATIONAL1:
-        case SDL_SCANCODE_INTERNATIONAL2:
-        case SDL_SCANCODE_INTERNATIONAL3:
-        case SDL_SCANCODE_INTERNATIONAL4:
-        case SDL_SCANCODE_INTERNATIONAL5:
-        case SDL_SCANCODE_INTERNATIONAL6:
-        case SDL_SCANCODE_INTERNATIONAL7:
-        case SDL_SCANCODE_INTERNATIONAL8:
-        case SDL_SCANCODE_INTERNATIONAL9:
-        case SDL_SCANCODE_LANG1:
-        case SDL_SCANCODE_LANG2:
-        case SDL_SCANCODE_LANG3:
-        case SDL_SCANCODE_LANG4:
-        case SDL_SCANCODE_LANG5:
-        case SDL_SCANCODE_LANG6:
-        case SDL_SCANCODE_LANG7:
-        case SDL_SCANCODE_LANG8:
-        case SDL_SCANCODE_LANG9:
-        case SDL_SCANCODE_ALTERASE:
-        case SDL_SCANCODE_SYSREQ:
-        case SDL_SCANCODE_CANCEL:
-        case SDL_SCANCODE_CLEAR:
-        case SDL_SCANCODE_PRIOR:
-        case SDL_SCANCODE_RETURN2:
-        case SDL_SCANCODE_SEPARATOR:
-        case SDL_SCANCODE_OUT:
-        case SDL_SCANCODE_OPER:
-        case SDL_SCANCODE_CLEARAGAIN:
-        case SDL_SCANCODE_CRSEL:
-        case SDL_SCANCODE_EXSEL:
-        case SDL_SCANCODE_KP_00:
-        case SDL_SCANCODE_KP_000:
-        case SDL_SCANCODE_THOUSANDSSEPARATOR:
-        case SDL_SCANCODE_DECIMALSEPARATOR:
-        case SDL_SCANCODE_CURRENCYUNIT:
-        case SDL_SCANCODE_CURRENCYSUBUNIT:
-        case SDL_SCANCODE_KP_LEFTPAREN:
-        case SDL_SCANCODE_KP_RIGHTPAREN:
-        case SDL_SCANCODE_KP_LEFTBRACE:
-        case SDL_SCANCODE_KP_RIGHTBRACE:
-        case SDL_SCANCODE_KP_TAB:
-        case SDL_SCANCODE_KP_BACKSPACE:
-        case SDL_SCANCODE_KP_A:
-        case SDL_SCANCODE_KP_B:
-        case SDL_SCANCODE_KP_C:
-        case SDL_SCANCODE_KP_D:
-        case SDL_SCANCODE_KP_E:
-        case SDL_SCANCODE_KP_F:
-        case SDL_SCANCODE_KP_XOR:
-        case SDL_SCANCODE_KP_POWER:
-        case SDL_SCANCODE_KP_PERCENT:
-        case SDL_SCANCODE_KP_LESS:
-        case SDL_SCANCODE_KP_GREATER:
-        case SDL_SCANCODE_KP_AMPERSAND:
-        case SDL_SCANCODE_KP_DBLAMPERSAND:
-        case SDL_SCANCODE_KP_VERTICALBAR:
-        case SDL_SCANCODE_KP_DBLVERTICALBAR:
-        case SDL_SCANCODE_KP_COLON:
-        case SDL_SCANCODE_KP_HASH:
-        case SDL_SCANCODE_KP_SPACE:
-        case SDL_SCANCODE_KP_AT:
-        case SDL_SCANCODE_KP_EXCLAM:
-        case SDL_SCANCODE_KP_MEMSTORE:
-        case SDL_SCANCODE_KP_MEMRECALL:
-        case SDL_SCANCODE_KP_MEMCLEAR:
-        case SDL_SCANCODE_KP_MEMADD:
-        case SDL_SCANCODE_KP_MEMSUBTRACT:
-        case SDL_SCANCODE_KP_MEMMULTIPLY:
-        case SDL_SCANCODE_KP_MEMDIVIDE:
-        case SDL_SCANCODE_KP_PLUSMINUS:
-        case SDL_SCANCODE_KP_CLEAR:
-        case SDL_SCANCODE_KP_CLEARENTRY:
-        case SDL_SCANCODE_KP_BINARY:
-        case SDL_SCANCODE_KP_OCTAL:
-        case SDL_SCANCODE_KP_DECIMAL:
-        case SDL_SCANCODE_KP_HEXADECIMAL:
-        case SDL_SCANCODE_UNKNOWN:
-            return Keyboard::Scan::Unknown;
-    }
-    // clang-format on
-
-    return Keyboard::Scan::Unknown;
+    return static_cast<Keyboard::Scan>(sdlCode);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] inline constexpr SDL_Scancode mapSFMLScancodeToSDL(const Keyboard::Scan scanCode) noexcept
 {
-    // clang-format off
-    switch (scanCode)
-    {
-        // Letters (SDL: A=4, B=5, ... Z=29)
-        case Keyboard::Scan::A: return SDL_SCANCODE_A;
-        case Keyboard::Scan::B: return SDL_SCANCODE_B;
-        case Keyboard::Scan::C: return SDL_SCANCODE_C;
-        case Keyboard::Scan::D: return SDL_SCANCODE_D;
-        case Keyboard::Scan::E: return SDL_SCANCODE_E;
-        case Keyboard::Scan::F: return SDL_SCANCODE_F;
-        case Keyboard::Scan::G: return SDL_SCANCODE_G;
-        case Keyboard::Scan::H: return SDL_SCANCODE_H;
-        case Keyboard::Scan::I: return SDL_SCANCODE_I;
-        case Keyboard::Scan::J: return SDL_SCANCODE_J;
-        case Keyboard::Scan::K: return SDL_SCANCODE_K;
-        case Keyboard::Scan::L: return SDL_SCANCODE_L;
-        case Keyboard::Scan::M: return SDL_SCANCODE_M;
-        case Keyboard::Scan::N: return SDL_SCANCODE_N;
-        case Keyboard::Scan::O: return SDL_SCANCODE_O;
-        case Keyboard::Scan::P: return SDL_SCANCODE_P;
-        case Keyboard::Scan::Q: return SDL_SCANCODE_Q;
-        case Keyboard::Scan::R: return SDL_SCANCODE_R;
-        case Keyboard::Scan::S: return SDL_SCANCODE_S;
-        case Keyboard::Scan::T: return SDL_SCANCODE_T;
-        case Keyboard::Scan::U: return SDL_SCANCODE_U;
-        case Keyboard::Scan::V: return SDL_SCANCODE_V;
-        case Keyboard::Scan::W: return SDL_SCANCODE_W;
-        case Keyboard::Scan::X: return SDL_SCANCODE_X;
-        case Keyboard::Scan::Y: return SDL_SCANCODE_Y;
-        case Keyboard::Scan::Z: return SDL_SCANCODE_Z;
-
-        // Numbers
-        case Keyboard::Scan::Num1: return SDL_SCANCODE_1;
-        case Keyboard::Scan::Num2: return SDL_SCANCODE_2;
-        case Keyboard::Scan::Num3: return SDL_SCANCODE_3;
-        case Keyboard::Scan::Num4: return SDL_SCANCODE_4;
-        case Keyboard::Scan::Num5: return SDL_SCANCODE_5;
-        case Keyboard::Scan::Num6: return SDL_SCANCODE_6;
-        case Keyboard::Scan::Num7: return SDL_SCANCODE_7;
-        case Keyboard::Scan::Num8: return SDL_SCANCODE_8;
-        case Keyboard::Scan::Num9: return SDL_SCANCODE_9;
-        case Keyboard::Scan::Num0: return SDL_SCANCODE_0;
-
-        // Control and special keys
-        case Keyboard::Scan::Enter:      return SDL_SCANCODE_RETURN;
-        case Keyboard::Scan::Escape:     return SDL_SCANCODE_ESCAPE;
-        case Keyboard::Scan::Backspace:  return SDL_SCANCODE_BACKSPACE;
-        case Keyboard::Scan::Tab:        return SDL_SCANCODE_TAB;
-        case Keyboard::Scan::Space:      return SDL_SCANCODE_SPACE;
-        case Keyboard::Scan::Hyphen:     return SDL_SCANCODE_MINUS;
-        case Keyboard::Scan::Equal:      return SDL_SCANCODE_EQUALS;
-        case Keyboard::Scan::LBracket:   return SDL_SCANCODE_LEFTBRACKET;
-        case Keyboard::Scan::RBracket:   return SDL_SCANCODE_RIGHTBRACKET;
-        case Keyboard::Scan::Backslash:  return SDL_SCANCODE_BACKSLASH;
-        case Keyboard::Scan::Semicolon:  return SDL_SCANCODE_SEMICOLON;
-        case Keyboard::Scan::Apostrophe: return SDL_SCANCODE_APOSTROPHE;
-        case Keyboard::Scan::Grave:      return SDL_SCANCODE_GRAVE;
-        case Keyboard::Scan::Comma:      return SDL_SCANCODE_COMMA;
-        case Keyboard::Scan::Period:     return SDL_SCANCODE_PERIOD;
-        case Keyboard::Scan::Slash:      return SDL_SCANCODE_SLASH;
-
-        // Function keys
-        case Keyboard::Scan::F1:  return SDL_SCANCODE_F1;
-        case Keyboard::Scan::F2:  return SDL_SCANCODE_F2;
-        case Keyboard::Scan::F3:  return SDL_SCANCODE_F3;
-        case Keyboard::Scan::F4:  return SDL_SCANCODE_F4;
-        case Keyboard::Scan::F5:  return SDL_SCANCODE_F5;
-        case Keyboard::Scan::F6:  return SDL_SCANCODE_F6;
-        case Keyboard::Scan::F7:  return SDL_SCANCODE_F7;
-        case Keyboard::Scan::F8:  return SDL_SCANCODE_F8;
-        case Keyboard::Scan::F9:  return SDL_SCANCODE_F9;
-        case Keyboard::Scan::F10: return SDL_SCANCODE_F10;
-        case Keyboard::Scan::F11: return SDL_SCANCODE_F11;
-        case Keyboard::Scan::F12: return SDL_SCANCODE_F12;
-        case Keyboard::Scan::F13: return SDL_SCANCODE_F13;
-        case Keyboard::Scan::F14: return SDL_SCANCODE_F14;
-        case Keyboard::Scan::F15: return SDL_SCANCODE_F15;
-        case Keyboard::Scan::F16: return SDL_SCANCODE_F16;
-        case Keyboard::Scan::F17: return SDL_SCANCODE_F17;
-        case Keyboard::Scan::F18: return SDL_SCANCODE_F18;
-        case Keyboard::Scan::F19: return SDL_SCANCODE_F19;
-        case Keyboard::Scan::F20: return SDL_SCANCODE_F20;
-        case Keyboard::Scan::F21: return SDL_SCANCODE_F21;
-        case Keyboard::Scan::F22: return SDL_SCANCODE_F22;
-        case Keyboard::Scan::F23: return SDL_SCANCODE_F23;
-        case Keyboard::Scan::F24: return SDL_SCANCODE_F24;
-
-        // Lock and navigation keys
-        case Keyboard::Scan::CapsLock:     return SDL_SCANCODE_CAPSLOCK;
-        case Keyboard::Scan::PrintScreen:  return SDL_SCANCODE_PRINTSCREEN;
-        case Keyboard::Scan::ScrollLock:   return SDL_SCANCODE_SCROLLLOCK;
-        case Keyboard::Scan::Pause:        return SDL_SCANCODE_PAUSE;
-        case Keyboard::Scan::Insert:       return SDL_SCANCODE_INSERT;
-        case Keyboard::Scan::Home:         return SDL_SCANCODE_HOME;
-        case Keyboard::Scan::PageUp:       return SDL_SCANCODE_PAGEUP;
-        case Keyboard::Scan::Delete:       return SDL_SCANCODE_DELETE;
-        case Keyboard::Scan::End:          return SDL_SCANCODE_END;
-        case Keyboard::Scan::PageDown:     return SDL_SCANCODE_PAGEDOWN;
-        case Keyboard::Scan::Right:        return SDL_SCANCODE_RIGHT;
-        case Keyboard::Scan::Left:         return SDL_SCANCODE_LEFT;
-        case Keyboard::Scan::Down:         return SDL_SCANCODE_DOWN;
-        case Keyboard::Scan::Up:           return SDL_SCANCODE_UP;
-        case Keyboard::Scan::NumLock:      return SDL_SCANCODE_NUMLOCKCLEAR;
-
-        // Keypad
-        case Keyboard::Scan::NumpadDivide:   return SDL_SCANCODE_KP_DIVIDE;
-        case Keyboard::Scan::NumpadMultiply: return SDL_SCANCODE_KP_MULTIPLY;
-        case Keyboard::Scan::NumpadMinus:    return SDL_SCANCODE_KP_MINUS;
-        case Keyboard::Scan::NumpadPlus:     return SDL_SCANCODE_KP_PLUS;
-        case Keyboard::Scan::NumpadEnter:    return SDL_SCANCODE_KP_ENTER;
-        case Keyboard::Scan::NumpadDecimal:  return SDL_SCANCODE_KP_PERIOD;
-        case Keyboard::Scan::Numpad1:        return SDL_SCANCODE_KP_1;
-        case Keyboard::Scan::Numpad2:        return SDL_SCANCODE_KP_2;
-        case Keyboard::Scan::Numpad3:        return SDL_SCANCODE_KP_3;
-        case Keyboard::Scan::Numpad4:        return SDL_SCANCODE_KP_4;
-        case Keyboard::Scan::Numpad5:        return SDL_SCANCODE_KP_5;
-        case Keyboard::Scan::Numpad6:        return SDL_SCANCODE_KP_6;
-        case Keyboard::Scan::Numpad7:        return SDL_SCANCODE_KP_7;
-        case Keyboard::Scan::Numpad8:        return SDL_SCANCODE_KP_8;
-        case Keyboard::Scan::Numpad9:        return SDL_SCANCODE_KP_9;
-        case Keyboard::Scan::Numpad0:        return SDL_SCANCODE_KP_0;
-
-        // Additional keys
-        case Keyboard::Scan::NonUsBackslash: return SDL_SCANCODE_NONUSBACKSLASH;
-        case Keyboard::Scan::Application:    return SDL_SCANCODE_APPLICATION;
-        case Keyboard::Scan::Help:           return SDL_SCANCODE_HELP;
-        case Keyboard::Scan::Menu:           return SDL_SCANCODE_MENU;
-        case Keyboard::Scan::Select:         return SDL_SCANCODE_SELECT;
-        case Keyboard::Scan::Redo:           return SDL_SCANCODE_AGAIN;
-        case Keyboard::Scan::Undo:           return SDL_SCANCODE_UNDO;
-        case Keyboard::Scan::Cut:            return SDL_SCANCODE_CUT;
-        case Keyboard::Scan::Copy:           return SDL_SCANCODE_COPY;
-        case Keyboard::Scan::Paste:          return SDL_SCANCODE_PASTE;
-        case Keyboard::Scan::VolumeMute:     return SDL_SCANCODE_MUTE;
-        case Keyboard::Scan::VolumeUp:       return SDL_SCANCODE_VOLUMEUP;
-        case Keyboard::Scan::VolumeDown:     return SDL_SCANCODE_VOLUMEDOWN;
-
-        // Media keys
-        case Keyboard::Scan::MediaPlayPause:     return SDL_SCANCODE_MEDIA_PLAY;
-        case Keyboard::Scan::MediaStop:          return SDL_SCANCODE_MEDIA_STOP;
-        case Keyboard::Scan::MediaNextTrack:     return SDL_SCANCODE_MEDIA_NEXT_TRACK;
-        case Keyboard::Scan::MediaPreviousTrack: return SDL_SCANCODE_MEDIA_PREVIOUS_TRACK;
-
-        case Keyboard::Scan::LControl: return SDL_SCANCODE_LCTRL;
-        case Keyboard::Scan::LShift:   return SDL_SCANCODE_LSHIFT;
-        case Keyboard::Scan::LAlt:     return SDL_SCANCODE_LALT;
-        case Keyboard::Scan::LSystem:  return SDL_SCANCODE_LGUI;
-        case Keyboard::Scan::RControl: return SDL_SCANCODE_RCTRL;
-        case Keyboard::Scan::RShift:   return SDL_SCANCODE_RSHIFT;
-        case Keyboard::Scan::RAlt:     return SDL_SCANCODE_RALT;
-        case Keyboard::Scan::RSystem:  return SDL_SCANCODE_RGUI;
-
-        case Keyboard::Scan::NumpadEqual: return SDL_SCANCODE_KP_EQUALS;
-        case Keyboard::Scan::Back:        return SDL_SCANCODE_AC_BACK;
-        case Keyboard::Scan::Forward:     return SDL_SCANCODE_AC_FORWARD;
-        case Keyboard::Scan::Refresh:     return SDL_SCANCODE_AC_REFRESH;
-        case Keyboard::Scan::Stop:        return SDL_SCANCODE_AC_STOP;
-        case Keyboard::Scan::Search:      return SDL_SCANCODE_AC_SEARCH;
-        case Keyboard::Scan::Favorites:   return SDL_SCANCODE_AC_BOOKMARKS;
-        case Keyboard::Scan::HomePage:    return SDL_SCANCODE_AC_HOME;
-
-        case Keyboard::Scan::Execute:    return SDL_SCANCODE_EXECUTE;
-        case Keyboard::Scan::ModeChange: return SDL_SCANCODE_MODE;
-
-        case Keyboard::Scan::Unknown:
-        case Keyboard::Scan::LaunchApplication1:
-        case Keyboard::Scan::LaunchApplication2:
-        case Keyboard::Scan::LaunchMail:
-        case Keyboard::Scan::LaunchMediaSelect:
-            break;
-    }
-    // clang-format on
-
-    return SDL_SCANCODE_UNKNOWN;
+    return static_cast<SDL_Scancode>(scanCode);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] inline constexpr Keyboard::Key mapSDLKeycodeToSFML(const SDL_Keycode sdlKey) noexcept
 {
-    // clang-format off
     switch (sdlKey)
     {
-        // Letters (SDL keycodes for letters are their lowercase ASCII values)
-        case SDLK_A: return Keyboard::Key::A;
-        case SDLK_B: return Keyboard::Key::B;
-        case SDLK_C: return Keyboard::Key::C;
-        case SDLK_D: return Keyboard::Key::D;
-        case SDLK_E: return Keyboard::Key::E;
-        case SDLK_F: return Keyboard::Key::F;
-        case SDLK_G: return Keyboard::Key::G;
-        case SDLK_H: return Keyboard::Key::H;
-        case SDLK_I: return Keyboard::Key::I;
-        case SDLK_J: return Keyboard::Key::J;
-        case SDLK_K: return Keyboard::Key::K;
-        case SDLK_L: return Keyboard::Key::L;
-        case SDLK_M: return Keyboard::Key::M;
-        case SDLK_N: return Keyboard::Key::N;
-        case SDLK_O: return Keyboard::Key::O;
-        case SDLK_P: return Keyboard::Key::P;
-        case SDLK_Q: return Keyboard::Key::Q;
-        case SDLK_R: return Keyboard::Key::R;
-        case SDLK_S: return Keyboard::Key::S;
-        case SDLK_T: return Keyboard::Key::T;
-        case SDLK_U: return Keyboard::Key::U;
-        case SDLK_V: return Keyboard::Key::V;
-        case SDLK_W: return Keyboard::Key::W;
-        case SDLK_X: return Keyboard::Key::X;
-        case SDLK_Y: return Keyboard::Key::Y;
-        case SDLK_Z: return Keyboard::Key::Z;
-
-        // Numbers (top row)
-        case SDLK_0: return Keyboard::Key::Num0;
-        case SDLK_1: return Keyboard::Key::Num1;
-        case SDLK_2: return Keyboard::Key::Num2;
-        case SDLK_3: return Keyboard::Key::Num3;
-        case SDLK_4: return Keyboard::Key::Num4;
-        case SDLK_5: return Keyboard::Key::Num5;
-        case SDLK_6: return Keyboard::Key::Num6;
-        case SDLK_7: return Keyboard::Key::Num7;
-        case SDLK_8: return Keyboard::Key::Num8;
-        case SDLK_9: return Keyboard::Key::Num9;
-
-        // Control and punctuation keys
-        case SDLK_ESCAPE:       return Keyboard::Key::Escape;
-        case SDLK_LCTRL:        return Keyboard::Key::LControl;
-        case SDLK_LSHIFT:       return Keyboard::Key::LShift;
-        case SDLK_LALT:         return Keyboard::Key::LAlt;
-        case SDLK_LGUI:         return Keyboard::Key::LSystem;
-        case SDLK_RCTRL:        return Keyboard::Key::RControl;
-        case SDLK_RSHIFT:       return Keyboard::Key::RShift;
-        case SDLK_RALT:         return Keyboard::Key::RAlt;
-        case SDLK_RGUI:         return Keyboard::Key::RSystem;
-        case SDLK_MENU:         return Keyboard::Key::Menu;
-        case SDLK_LEFTBRACKET:  return Keyboard::Key::LBracket;
-        case SDLK_RIGHTBRACKET: return Keyboard::Key::RBracket;
-        case SDLK_SEMICOLON:    return Keyboard::Key::Semicolon;
-        case SDLK_COMMA:        return Keyboard::Key::Comma;
-        case SDLK_PERIOD:       return Keyboard::Key::Period;
-        case SDLK_APOSTROPHE:   return Keyboard::Key::Apostrophe;
-        case SDLK_SLASH:        return Keyboard::Key::Slash;
-        case SDLK_BACKSLASH:    return Keyboard::Key::Backslash;
-        case SDLK_GRAVE:        return Keyboard::Key::Grave;
-        case SDLK_EQUALS:       return Keyboard::Key::Equal;
-        case SDLK_MINUS:        return Keyboard::Key::Hyphen;
-        case SDLK_SPACE:        return Keyboard::Key::Space;
-        case SDLK_RETURN:       return Keyboard::Key::Enter;
-        case SDLK_BACKSPACE:    return Keyboard::Key::Backspace;
-        case SDLK_TAB:          return Keyboard::Key::Tab;
-
-        // Navigation keys
-        case SDLK_PAGEUP:   return Keyboard::Key::PageUp;
-        case SDLK_PAGEDOWN: return Keyboard::Key::PageDown;
-        case SDLK_END:      return Keyboard::Key::End;
-        case SDLK_HOME:     return Keyboard::Key::Home;
-        case SDLK_INSERT:   return Keyboard::Key::Insert;
-        case SDLK_DELETE:   return Keyboard::Key::Delete;
-        case SDLK_LEFT:     return Keyboard::Key::Left;
-        case SDLK_RIGHT:    return Keyboard::Key::Right;
-        case SDLK_UP:       return Keyboard::Key::Up;
-        case SDLK_DOWN:     return Keyboard::Key::Down;
-
-        // Keypad (numpad) keys
-        case SDLK_KP_1: return Keyboard::Key::Numpad1;
-        case SDLK_KP_2: return Keyboard::Key::Numpad2;
-        case SDLK_KP_3: return Keyboard::Key::Numpad3;
-        case SDLK_KP_4: return Keyboard::Key::Numpad4;
-        case SDLK_KP_5: return Keyboard::Key::Numpad5;
-        case SDLK_KP_6: return Keyboard::Key::Numpad6;
-        case SDLK_KP_7: return Keyboard::Key::Numpad7;
-        case SDLK_KP_8: return Keyboard::Key::Numpad8;
-        case SDLK_KP_9: return Keyboard::Key::Numpad9;
-        case SDLK_KP_0: return Keyboard::Key::Numpad0;
-
-        // Arithmetic keypad keys
-        case SDLK_KP_PLUS:     return Keyboard::Key::Add;
-        case SDLK_KP_MINUS:    return Keyboard::Key::Subtract;
-        case SDLK_KP_MULTIPLY: return Keyboard::Key::Multiply;
-        case SDLK_KP_DIVIDE:   return Keyboard::Key::Divide;
-
-        // Function keys
-        case SDLK_F1:  return Keyboard::Key::F1;
-        case SDLK_F2:  return Keyboard::Key::F2;
-        case SDLK_F3:  return Keyboard::Key::F3;
-        case SDLK_F4:  return Keyboard::Key::F4;
-        case SDLK_F5:  return Keyboard::Key::F5;
-        case SDLK_F6:  return Keyboard::Key::F6;
-        case SDLK_F7:  return Keyboard::Key::F7;
-        case SDLK_F8:  return Keyboard::Key::F8;
-        case SDLK_F9:  return Keyboard::Key::F9;
-        case SDLK_F10: return Keyboard::Key::F10;
-        case SDLK_F11: return Keyboard::Key::F11;
-        case SDLK_F12: return Keyboard::Key::F12;
-        case SDLK_F13: return Keyboard::Key::F13;
-        case SDLK_F14: return Keyboard::Key::F14;
-        case SDLK_F15: return Keyboard::Key::F15;
-
-        // Other keys
-        case SDLK_PAUSE: return Keyboard::Key::Pause;
+#define X(sdlKey, sfmlKey) \
+    case sdlKey:           \
+        return sfmlKey;
+        SFML_PRIV_SFML_SDL_KEYCODE_MAPPING
+#undef X
     }
-    // clang-format on
 
     return Keyboard::Key::Unknown;
 }
@@ -621,133 +318,21 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] inline constexpr SDL_Keycode mapSFMLKeycodeToSDL(const Keyboard::Key key) noexcept
 {
-    // clang-format off
     switch (key)
     {
-        // Letters (SDL keycodes for letters are their lowercase ASCII values)
-        case Keyboard::Key::A: return SDLK_A;
-        case Keyboard::Key::B: return SDLK_B;
-        case Keyboard::Key::C: return SDLK_C;
-        case Keyboard::Key::D: return SDLK_D;
-        case Keyboard::Key::E: return SDLK_E;
-        case Keyboard::Key::F: return SDLK_F;
-        case Keyboard::Key::G: return SDLK_G;
-        case Keyboard::Key::H: return SDLK_H;
-        case Keyboard::Key::I: return SDLK_I;
-        case Keyboard::Key::J: return SDLK_J;
-        case Keyboard::Key::K: return SDLK_K;
-        case Keyboard::Key::L: return SDLK_L;
-        case Keyboard::Key::M: return SDLK_M;
-        case Keyboard::Key::N: return SDLK_N;
-        case Keyboard::Key::O: return SDLK_O;
-        case Keyboard::Key::P: return SDLK_P;
-        case Keyboard::Key::Q: return SDLK_Q;
-        case Keyboard::Key::R: return SDLK_R;
-        case Keyboard::Key::S: return SDLK_S;
-        case Keyboard::Key::T: return SDLK_T;
-        case Keyboard::Key::U: return SDLK_U;
-        case Keyboard::Key::V: return SDLK_V;
-        case Keyboard::Key::W: return SDLK_W;
-        case Keyboard::Key::X: return SDLK_X;
-        case Keyboard::Key::Y: return SDLK_Y;
-        case Keyboard::Key::Z: return SDLK_Z;
-
-        // Numbers (top row)
-        case Keyboard::Key::Num0: return SDLK_0;
-        case Keyboard::Key::Num1: return SDLK_1;
-        case Keyboard::Key::Num2: return SDLK_2;
-        case Keyboard::Key::Num3: return SDLK_3;
-        case Keyboard::Key::Num4: return SDLK_4;
-        case Keyboard::Key::Num5: return SDLK_5;
-        case Keyboard::Key::Num6: return SDLK_6;
-        case Keyboard::Key::Num7: return SDLK_7;
-        case Keyboard::Key::Num8: return SDLK_8;
-        case Keyboard::Key::Num9: return SDLK_9;
-
-        // Control and punctuation keys
-        case Keyboard::Key::Escape:     return SDLK_ESCAPE;
-        case Keyboard::Key::LControl:   return SDLK_LCTRL;
-        case Keyboard::Key::LShift:     return SDLK_LSHIFT;
-        case Keyboard::Key::LAlt:       return SDLK_LALT;
-        case Keyboard::Key::LSystem:    return SDLK_LGUI;
-        case Keyboard::Key::RControl:   return SDLK_RCTRL;
-        case Keyboard::Key::RShift:     return SDLK_RSHIFT;
-        case Keyboard::Key::RAlt:       return SDLK_RALT;
-        case Keyboard::Key::RSystem:    return SDLK_RGUI;
-        case Keyboard::Key::Menu:       return SDLK_MENU;
-        case Keyboard::Key::LBracket:   return SDLK_LEFTBRACKET;
-        case Keyboard::Key::RBracket:   return SDLK_RIGHTBRACKET;
-        case Keyboard::Key::Semicolon:  return SDLK_SEMICOLON;
-        case Keyboard::Key::Comma:      return SDLK_COMMA;
-        case Keyboard::Key::Period:     return SDLK_PERIOD;
-        case Keyboard::Key::Apostrophe: return SDLK_APOSTROPHE;
-        case Keyboard::Key::Slash:      return SDLK_SLASH;
-        case Keyboard::Key::Backslash:  return SDLK_BACKSLASH;
-        case Keyboard::Key::Grave:      return SDLK_GRAVE;
-        case Keyboard::Key::Equal:      return SDLK_EQUALS;
-        case Keyboard::Key::Hyphen:     return SDLK_MINUS;
-        case Keyboard::Key::Space:      return SDLK_SPACE;
-        case Keyboard::Key::Enter:      return SDLK_RETURN;
-        case Keyboard::Key::Backspace:  return SDLK_BACKSPACE;
-        case Keyboard::Key::Tab:        return SDLK_TAB;
-
-        // Navigation keys
-        case Keyboard::Key::PageUp:   return SDLK_PAGEUP;
-        case Keyboard::Key::PageDown: return SDLK_PAGEDOWN;
-        case Keyboard::Key::End:      return SDLK_END;
-        case Keyboard::Key::Home:     return SDLK_HOME;
-        case Keyboard::Key::Insert:   return SDLK_INSERT;
-        case Keyboard::Key::Delete:   return SDLK_DELETE;
-        case Keyboard::Key::Left:     return SDLK_LEFT;
-        case Keyboard::Key::Right:    return SDLK_RIGHT;
-        case Keyboard::Key::Up:       return SDLK_UP;
-        case Keyboard::Key::Down:     return SDLK_DOWN;
-
-        // Keypad (numpad) keys
-        case Keyboard::Key::Numpad1: return SDLK_KP_1;
-        case Keyboard::Key::Numpad2: return SDLK_KP_2;
-        case Keyboard::Key::Numpad3: return SDLK_KP_3;
-        case Keyboard::Key::Numpad4: return SDLK_KP_4;
-        case Keyboard::Key::Numpad5: return SDLK_KP_5;
-        case Keyboard::Key::Numpad6: return SDLK_KP_6;
-        case Keyboard::Key::Numpad7: return SDLK_KP_7;
-        case Keyboard::Key::Numpad8: return SDLK_KP_8;
-        case Keyboard::Key::Numpad9: return SDLK_KP_9;
-        case Keyboard::Key::Numpad0: return SDLK_KP_0;
-
-        // Arithmetic keypad keys
-        case Keyboard::Key::Add:      return SDLK_KP_PLUS;
-        case Keyboard::Key::Subtract: return SDLK_KP_MINUS;
-        case Keyboard::Key::Multiply: return SDLK_KP_MULTIPLY;
-        case Keyboard::Key::Divide:   return SDLK_KP_DIVIDE;
-
-        // Function keys
-        case Keyboard::Key::F1:  return SDLK_F1;
-        case Keyboard::Key::F2:  return SDLK_F2;
-        case Keyboard::Key::F3:  return SDLK_F3;
-        case Keyboard::Key::F4:  return SDLK_F4;
-        case Keyboard::Key::F5:  return SDLK_F5;
-        case Keyboard::Key::F6:  return SDLK_F6;
-        case Keyboard::Key::F7:  return SDLK_F7;
-        case Keyboard::Key::F8:  return SDLK_F8;
-        case Keyboard::Key::F9:  return SDLK_F9;
-        case Keyboard::Key::F10: return SDLK_F10;
-        case Keyboard::Key::F11: return SDLK_F11;
-        case Keyboard::Key::F12: return SDLK_F12;
-        case Keyboard::Key::F13: return SDLK_F13;
-        case Keyboard::Key::F14: return SDLK_F14;
-        case Keyboard::Key::F15: return SDLK_F15;
-
-        // Other keys
-        case Keyboard::Key::Pause: return SDLK_PAUSE;
-
-        case Keyboard::Key::Unknown:
-            break;
+#define X(sdlKey, sfmlKey) \
+    case sfmlKey:          \
+        return sdlKey;
+        SFML_PRIV_SFML_SDL_KEYCODE_MAPPING
+#undef X
     }
-    // clang-format on
 
     return SDLK_UNKNOWN;
 }
+
+
+////////////////////////////////////////////////////////////
+#undef SFML_PRIV_SFML_SDL_KEYCODE_MAPPING
 
 
 ////////////////////////////////////////////////////////////
@@ -848,7 +433,7 @@ namespace sf::priv
     SDL_Keymod         mod{};
     const SDL_Scancode sdlScancode = SDL_GetScancodeFromKey(sdlKey, &mod);
 
-    return static_cast<Keyboard::Scancode>(sdlScancode);
+    return mapSDLScancodeToSFML(sdlScancode);
 }
 
 
