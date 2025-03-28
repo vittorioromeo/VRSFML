@@ -239,6 +239,9 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
     ///
+    /// This function returns the position of the top-left corner
+    /// of the window *not* including any decoration such as the titlebar.
+    ///
     /// \return Position of the window, in pixels
     ///
     /// \see `setPosition`

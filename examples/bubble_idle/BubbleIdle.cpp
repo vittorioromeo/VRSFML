@@ -105,7 +105,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 
-#include <iostream>// TODO P0:
+#include <iostream> // TODO P0:
 
 #include <cctype>
 
@@ -5078,7 +5078,7 @@ It's a duck.)",
         imgsep(txrMagicSeparator0, "wisdom", /* first */ true);
         ImGui::Columns(1);
 
-        ImGui::Text("Wisdom points: %llu WP", pt.wisdom);
+        ImGui::Text("Wisdom points: %s WP", toStringWithSeparators(pt.wisdom));
 
         uiCheckbox("Absorb wisdom from star bubbles", &pt.absorbingWisdom);
         std::sprintf(uiTooltipBuffer,
@@ -5151,7 +5151,6 @@ It's a duck.)",
         ImGui::Separator();
         uiSetFontScale(uiNormalFontScale);
 
-        ImGui::BeginDisabled(isWizardBusy());
         uiBeginColumns();
         uiButtonHueMod = 45.f;
 
@@ -5166,6 +5165,7 @@ It's a duck.)",
             uiLabelBuffer[0] = '\0';
             bool done        = false;
 
+            ImGui::BeginDisabled(isWizardBusy());
             if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
                                                        done,
                                                        spellManaCostByIndex[0],
@@ -5175,6 +5175,7 @@ It's a duck.)",
                 castSpellByIndex(0u, wizardCat, copyCat);
                 done = false;
             }
+            ImGui::EndDisabled();
 
             const float currentPercentage = pt.psvStarpawPercentage.currentValue();
             const float nextPercentage    = pt.psvStarpawPercentage.nextValue();
@@ -5205,6 +5206,8 @@ It's a duck.)",
                          pt.perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
             bool done = false;
+
+            ImGui::BeginDisabled(isWizardBusy());
             if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
                                                        done,
                                                        spellManaCostByIndex[1],
@@ -5214,6 +5217,7 @@ It's a duck.)",
                 castSpellByIndex(1u, wizardCat, copyCat);
                 done = false;
             }
+            ImGui::EndDisabled();
 
             const float currentMultiplier = pt.psvMewltiplierMult.currentValue();
             const float nextMultiplier    = pt.psvMewltiplierMult.nextValue();
@@ -5245,6 +5249,8 @@ It's a duck.)",
             uiLabelBuffer[0] = '\0';
 
             bool done = false;
+
+            ImGui::BeginDisabled(isWizardBusy());
             if (makePurchasableButtonOneTimeByCurrency("Dark Union",
                                                        done,
                                                        spellManaCostByIndex[2],
@@ -5254,6 +5260,7 @@ It's a duck.)",
                 castSpellByIndex(2u, wizardCat, copyCat);
                 done = false;
             }
+            ImGui::EndDisabled();
 
             const float currentPercentage = pt.psvDarkUnionPercentage.currentValue();
             const float nextPercentage    = pt.psvDarkUnionPercentage.nextValue();
@@ -5288,6 +5295,8 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.stasisFieldTimer / 1000.f));
 
             bool done = false;
+
+            ImGui::BeginDisabled(isWizardBusy());
             if (makePurchasableButtonOneTimeByCurrency("Stasis Field",
                                                        done,
                                                        spellManaCostByIndex[3],
@@ -5297,11 +5306,11 @@ It's a duck.)",
                 castSpellByIndex(3u, wizardCat, copyCat);
                 done = false;
             }
+            ImGui::EndDisabled();
         }
 
         uiButtonHueMod = 0.f;
         ImGui::Columns(1);
-        ImGui::EndDisabled();
 
         if (pt.psvSpellCount.nPurchases > 0 && pt.perm.autocastPurchased)
         {
@@ -8672,6 +8681,12 @@ It's a duck.)",
         return true;
     }
 
+    [[nodiscard]] bool isAOESelecting() const
+    {
+        return (keyDown(sf::Keyboard::Key::LShift) || keyDown(sf::Keyboard::Key::LControl)) &&
+               mBtnDown(getLMB(), /* penetrateUI */ true);
+    }
+
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vector2f mousePos)
     {
@@ -8682,7 +8697,7 @@ It's a duck.)",
         }
 
         // Automatically scroll when dragging cats near the edge of the screen
-        if (!draggedCats.empty() && catToPlace == nullptr)
+        if ((!draggedCats.empty() || isAOESelecting()) && catToPlace == nullptr)
         {
             constexpr float offset = 48.f;
 
@@ -8701,9 +8716,7 @@ It's a duck.)",
                 scroll += 2.f;
         }
 
-        const bool aoeSelecting = keyDown(sf::Keyboard::Key::LShift) && mBtnDown(getLMB(), /* penetrateUI */ true);
-
-        if (aoeSelecting)
+        if (isAOESelecting())
         {
             if (!catDragOrigin.hasValue())
                 catDragOrigin.emplace(mousePos);
@@ -8740,7 +8753,8 @@ It's a duck.)",
                     return noMouseButtonNorFinger;
 
                 if (draggedCats.size() > 1u)
-                    return noMouseButtonNorFinger && !keyDown(sf::Keyboard::Key::LShift);
+                    return noMouseButtonNorFinger && !keyDown(sf::Keyboard::Key::LShift) &&
+                           !keyDown(sf::Keyboard::Key::LControl);
 
                 return false;
             }();
@@ -13065,7 +13079,7 @@ It's a duck.)",
         catTextTopDrawableBatch.clear();
 
         // Draw multipop range
-        if (pt.multiPopEnabled)
+        if (pt.multiPopEnabled && draggedCats.empty())
         {
             const auto range = pt.psvPPMultiPopRange.currentValue() * 0.9f;
 
