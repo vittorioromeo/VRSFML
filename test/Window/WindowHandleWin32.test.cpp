@@ -92,7 +92,8 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     REQUIRE(IsWindow(handle));
 
     RECT windowRect{};
-    REQUIRE(GetWindowRect(handle, &windowRect));
+    REQUIRE(GetClientRect(handle, &windowRect));
+    ClientToScreen(handle, reinterpret_cast<LPPOINT>(&windowRect));
     const auto position = sf::Vector2(windowRect.left, windowRect.top).toVector2i();
 
     RECT clientRect{};

@@ -7,6 +7,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 
+
 namespace sf::EventUtils
 {
 ////////////////////////////////////////////////////////////

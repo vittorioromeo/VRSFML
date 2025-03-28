@@ -5,28 +5,29 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Event.hpp"
+#include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
-#include <android/input.h>
+#include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
+
+#include <SDL3/SDL_video.h>
 
 
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-namespace sf::priv
+namespace sf
 {
-struct ActivityStates;
-}
+class String;
+struct WindowSettings;
 
-
-namespace sf::priv
+namespace priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Android implementation of WindowImpl
+/// \brief Windows implementation of WindowImpl
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] WindowImplAndroid : public WindowImpl
+class [[nodiscard]] WindowImplSDL : public WindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -35,7 +36,7 @@ public:
     /// \param handle Platform-specific handle of the control
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplAndroid(WindowHandle handle);
+    [[nodiscard]] explicit WindowImplSDL(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the window implementation
@@ -43,13 +44,13 @@ public:
     /// \param windowSettings Window settings
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImplAndroid(const WindowSettings& windowSettings);
+    [[nodiscard]] explicit WindowImplSDL(const WindowSettings& windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~WindowImplAndroid() override;
+    ~WindowImplSDL() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
@@ -92,26 +93,6 @@ public:
     void setSize(Vector2u size) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the minimum window rendering region size
-    ///
-    /// Pass `base::nullOpt` to unset the minimum size
-    ///
-    /// \param minimumSize New minimum size, in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    void setMinimumSize(const base::Optional<Vector2u>& minimumSize) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the maximum window rendering region size
-    ///
-    /// Pass `base::nullOpt` to unset the maximum size
-    ///
-    /// \param maximumSize New maximum size, in pixels
-    ///
-    ////////////////////////////////////////////////////////////
-    void setMaximumSize(const base::Optional<Vector2u>& maximumSize) override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
     ///
     /// \param title New title
@@ -145,7 +126,7 @@ public:
     void setMouseCursorVisible(bool visible) override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Clips or releases the mouse cursor
+    /// \brief Grab or release the mouse cursor
     ///
     /// \param grabbed `true` to enable, `false` to disable
     ///
@@ -158,7 +139,7 @@ public:
     /// \param cursor Native system cursor type to display
     ///
     ////////////////////////////////////////////////////////////
-    void setMouseCursor(const CursorImpl& cursor) override;
+    void setMouseCursor(void* cursor) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable automatic key-repeat
@@ -192,9 +173,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getDPIAwareScalingFactor() const override;
 
-    static void               forwardEvent(const Event& event);
-    static WindowImplAndroid* singleInstance;
-
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Process incoming events from the operating system
@@ -204,46 +182,19 @@ protected:
 
 private:
     ////////////////////////////////////////////////////////////
-    /// \brief Process messages from the looper associated with the main thread
+    /// \brief Construct the window from an SDL window pointer
     ///
-    /// \param fd     File descriptor
-    /// \param events Bitmask of the poll events that were triggered
-    /// \param data   Data pointer supplied
-    ///
-    /// \return Whether it should continue (1) or unregister the callback (0)
+    /// \param context   Creation context for error messages
+    /// \param sdlWindow SDL window handle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static int processEvent(int fd, int events, void* data);
-
-    [[nodiscard]] static int processScrollEvent(AInputEvent* inputEvent, ActivityStates& states);
-    [[nodiscard]] static int processKeyEvent(AInputEvent* inputEvent, ActivityStates& states);
-    [[nodiscard]] static int processMotionEvent(AInputEvent* inputEvent, ActivityStates& states);
-    [[nodiscard]] static int processPointerEvent(bool isDown, AInputEvent* event, ActivityStates& states);
+    [[nodiscard]] explicit WindowImplSDL(const char* context, SDL_Window* sdlWindow);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert a Android key to SFML key code
-    ///
-    /// \param symbol Android key to convert
-    ///
-    /// \return Corresponding SFML key code
-    ///
+    // Member data
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static Keyboard::Key androidKeyToSF(base::I32 key);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get Unicode decoded from the input event
-    ///
-    /// \param Event Input event
-    ///
-    /// \return The Unicode value
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static char32_t getUnicode(AInputEvent* event);
-
-    Vector2u m_size;
-    bool     m_windowBeingCreated{};
-    bool     m_windowBeingDestroyed{};
-    bool     m_hasFocus{};
+    SDL_Window* m_sdlWindow; //!< SDL window handle
 };
 
-} // namespace sf::priv
+} // namespace priv
+} // namespace sf
