@@ -55,124 +55,94 @@ namespace
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-struct Cursor::Impl
-{
-    ////////////////////////////////////////////////////////////
-    SDL_Cursor* sdlCursor{nullptr};
-
-
-    ////////////////////////////////////////////////////////////
-    Impl()
-    {
-        (void)priv::getSDLLayerSingleton();
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    ~Impl()
-    {
-        if (sdlCursor != nullptr)
-            SDL_DestroyCursor(sdlCursor);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    Impl(Impl&& rhs) noexcept : sdlCursor(rhs.sdlCursor)
-    {
-        rhs.sdlCursor = nullptr;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    Impl& operator=(Impl&& rhs) noexcept
-    {
-        if (this == &rhs)
-            return *this;
-
-        if (sdlCursor != nullptr)
-            SDL_DestroyCursor(sdlCursor);
-
-        sdlCursor     = rhs.sdlCursor;
-        rhs.sdlCursor = nullptr;
-
-        return *this;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromPixels(const base::U8* pixels, const Vector2u size, const Vector2u hotspot)
-    {
-        if (pixels == nullptr || size.x == 0 || size.y == 0 || hotspot.x >= size.x || hotspot.y >= size.y)
-        {
-            priv::err() << "Failed to load cursor from pixels (invalid arguments)";
-            return false;
-        }
-
-        SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
-                                                     static_cast<int>(size.y),
-                                                     SDL_PIXELFORMAT_RGBA32,
-                                                     const_cast<Uint8*>(pixels), // SDL requires non-const, but data is read-only
-                                                     static_cast<int>(size.x * 4));
-
-        if (surface == nullptr)
-        {
-            priv::err() << "Failed to create surface from pixels: " << SDL_GetError();
-            return false;
-        }
-
-        SDL_Cursor* cursor = SDL_CreateColorCursor(surface, static_cast<int>(hotspot.x), static_cast<int>(hotspot.y));
-        SDL_DestroySurface(surface);
-
-        if (cursor == nullptr)
-        {
-            priv::err() << "Failed to create cursor from surface: " << SDL_GetError();
-            return false;
-        }
-
-        if (sdlCursor != nullptr)
-            SDL_DestroyCursor(sdlCursor);
-
-        sdlCursor = cursor;
-        return true;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool loadFromSystem(const Cursor::Type type)
-    {
-        SDL_Cursor* cursor = SDL_CreateSystemCursor(cursorTypeToSDLCursor(type));
-
-        if (cursor == nullptr)
-        {
-            priv::err() << "Failed to create system cursor: " << SDL_GetError();
-            return false;
-        }
-
-        if (sdlCursor != nullptr)
-            SDL_DestroyCursor(sdlCursor);
-
-        sdlCursor = cursor;
-        return true;
-    }
-};
-
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(base::PassKey<Cursor>&&)
+[[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vector2u size, const Vector2u hotspot)
 {
+    SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
+                                                 static_cast<int>(size.y),
+                                                 SDL_PIXELFORMAT_RGBA32,
+                                                 const_cast<Uint8*>(pixels), // SDL requires non-const, but data is read-only
+                                                 static_cast<int>(size.x * 4));
+
+    if (surface == nullptr)
+    {
+        priv::err() << "Failed to create surface from pixels: " << SDL_GetError();
+        return false;
+    }
+
+    SDL_Cursor* cursor = SDL_CreateColorCursor(surface, static_cast<int>(hotspot.x), static_cast<int>(hotspot.y));
+    SDL_DestroySurface(surface);
+
+    if (cursor == nullptr)
+    {
+        priv::err() << "Failed to create cursor from surface: " << SDL_GetError();
+        return false;
+    }
+
+    if (m_sdlCursor != nullptr)
+        SDL_DestroyCursor(m_sdlCursor);
+
+    m_sdlCursor = cursor;
+    return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-Cursor::~Cursor() = default;
+[[nodiscard]] bool Cursor::reloadFromSystem(const Cursor::Type type)
+{
+    SDL_Cursor* cursor = SDL_CreateSystemCursor(cursorTypeToSDLCursor(type));
+
+    if (cursor == nullptr)
+    {
+        priv::err() << "Failed to create system cursor: " << SDL_GetError();
+        return false;
+    }
+
+    if (m_sdlCursor != nullptr)
+        SDL_DestroyCursor(m_sdlCursor);
+
+    m_sdlCursor = cursor;
+    return true;
+}
 
 
 ////////////////////////////////////////////////////////////
-Cursor::Cursor(Cursor&&) noexcept = default;
+Cursor::Cursor(base::PassKey<Cursor>&&) : m_sdlCursor{nullptr}
+{
+    (void)priv::getSDLLayerSingleton(); // TODO P0:
+}
 
 
 ////////////////////////////////////////////////////////////
-Cursor& Cursor::operator=(Cursor&&) noexcept = default;
+Cursor::~Cursor()
+{
+    if (m_sdlCursor != nullptr)
+        SDL_DestroyCursor(m_sdlCursor);
+}
+
+
+////////////////////////////////////////////////////////////
+Cursor::Cursor(Cursor&& rhs) noexcept : m_sdlCursor{rhs.m_sdlCursor}
+{
+    rhs.m_sdlCursor = nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
+Cursor& Cursor::operator=(Cursor&& rhs) noexcept
+{
+    if (this == &rhs)
+        return *this;
+
+    if (m_sdlCursor != nullptr)
+        SDL_DestroyCursor(m_sdlCursor);
+
+    m_sdlCursor     = rhs.m_sdlCursor;
+    rhs.m_sdlCursor = nullptr;
+
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -184,17 +154,10 @@ base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vector2u s
         return cursor; // Empty optional
 
     cursor.emplace(base::PassKey<Cursor>{});
-    if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
+    if (!cursor->reloadFromPixels(pixels, size, hotspot))
     {
         priv::err() << "Failed to load cursor from pixels (invalid arguments)";
         return cursor; // Empty optional
-    }
-
-    cursor.emplace(base::PassKey<Cursor>{});
-    if (!cursor->m_impl->loadFromPixels(pixels, size, hotspot))
-    {
-        // Error message generated in called function.
-        cursor.reset();
     }
 
     // Error message generated in called function.
@@ -207,7 +170,7 @@ base::Optional<Cursor> Cursor::loadFromSystem(Type type)
 {
     auto cursor = base::makeOptional<Cursor>(base::PassKey<Cursor>{}); // Use a single local variable for NRVO
 
-    if (!cursor->m_impl->loadFromSystem(type))
+    if (!cursor->reloadFromSystem(type))
     {
         // Error message generated in called function.
         cursor.reset();
@@ -221,7 +184,7 @@ base::Optional<Cursor> Cursor::loadFromSystem(Type type)
 ////////////////////////////////////////////////////////////
 void* Cursor::getImpl() const
 {
-    return m_impl->sdlCursor;
+    return m_sdlCursor;
 }
 
 } // namespace sf
