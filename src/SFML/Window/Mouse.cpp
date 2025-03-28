@@ -7,6 +7,7 @@
 #include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Mouse.hpp"
 
+
 namespace sf::Mouse
 {
 ////////////////////////////////////////////////////////////
