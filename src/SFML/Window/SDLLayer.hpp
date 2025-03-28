@@ -11,6 +11,7 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
 
@@ -214,6 +215,70 @@ public:
         }
 
         return result;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDLAllocatedArray<SDL_TouchID> getTouchDevices()
+    {
+        int          idCount = 0;
+        SDL_TouchID* ids     = SDL_GetTouchDevices(&idCount);
+
+        if (ids == nullptr)
+        {
+            err() << "`getTouchDevices` failed: " << SDL_GetError();
+            return nullptr;
+        }
+
+        return SDLAllocatedArray<SDL_TouchID>{SDLUPtr<SDL_TouchID>(ids), static_cast<base::SizeT>(idCount)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDLAllocatedArray<SDL_Finger*> getTouchFingers(const SDL_TouchID touchDeviceId)
+    {
+        if (touchDeviceId == 0)
+        {
+            err() << "`getTouchFingers` failed: invalid touch device ID";
+            return nullptr;
+        }
+
+        int          fingerCount = 0;
+        SDL_Finger** fingers     = SDL_GetTouchFingers(touchDeviceId, &fingerCount);
+
+        if (fingers == nullptr)
+        {
+            err() << "`SDL_GetTouchFingers` failed for touch device " << touchDeviceId << ": " << SDL_GetError();
+            return nullptr;
+        }
+
+        return SDLAllocatedArray<SDL_Finger*>{SDLUPtr<SDL_Finger*>(fingers), static_cast<base::SizeT>(fingerCount)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDL_TouchDeviceType getTouchDeviceType(const SDL_TouchID touchDeviceId)
+    {
+        if (touchDeviceId == 0)
+        {
+            err() << "`SDL_GetTouchDeviceType` failed: invalid touch device ID";
+            return SDL_TOUCH_DEVICE_INVALID;
+        }
+
+        return SDL_GetTouchDeviceType(touchDeviceId);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* getTouchDeviceName(const SDL_TouchID touchDeviceId)
+    {
+        if (touchDeviceId == 0)
+        {
+            err() << "`SDL_GetTouchDeviceType` failed: invalid touch device ID";
+            return "INVALID TOUCH DEVICE";
+        }
+
+        return SDL_GetTouchDeviceName(touchDeviceId);
     }
 };
 
