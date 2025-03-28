@@ -65,12 +65,10 @@ endif()
 if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
         ${SRCROOT}/Win32/ClipboardImpl.hpp
-        ${SRCROOT}/Win32/CursorImpl.hpp
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
         # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
-        # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
         # ${SRCROOT}/Win32/Unity/InputImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
@@ -91,8 +89,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         )
     else()
         set(PLATFORM_SRC
-            ${SRCROOT}/Unix/CursorImpl.hpp
-            ${SRCROOT}/Unix/CursorImpl.cpp
             ${SRCROOT}/Unix/ClipboardImpl.hpp
             ${SRCROOT}/Unix/ClipboardImpl.cpp
             ${SRCROOT}/Unix/InputImpl.cpp
@@ -129,8 +125,6 @@ elseif(SFML_OS_MACOS)
     set(PLATFORM_SRC
         ${SRCROOT}/macOS/cg_sf_conversion.hpp
         ${SRCROOT}/macOS/cg_sf_conversion.mm
-        ${SRCROOT}/macOS/CursorImpl.hpp
-        ${SRCROOT}/macOS/CursorImpl.mm
         ${SRCROOT}/macOS/ClipboardImpl.hpp
         ${SRCROOT}/macOS/ClipboardImpl.mm
         ${SRCROOT}/macOS/InputImpl.mm
