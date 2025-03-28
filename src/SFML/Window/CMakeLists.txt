@@ -69,7 +69,6 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
         # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
-        # ${SRCROOT}/Win32/Unity/InputImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
     )
@@ -83,7 +82,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
         add_definitions(-DSFML_USE_DRM)
         set(PLATFORM_SRC
-            ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
             ${SRCROOT}/DRM/DRMContext.hpp
         )
@@ -91,9 +89,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         set(PLATFORM_SRC
             ${SRCROOT}/Unix/ClipboardImpl.hpp
             ${SRCROOT}/Unix/ClipboardImpl.cpp
-            ${SRCROOT}/Unix/InputImpl.cpp
-            ${SRCROOT}/Unix/KeyboardImpl.hpp
-            ${SRCROOT}/Unix/KeyboardImpl.cpp
             ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
             ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
             ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
@@ -127,11 +122,8 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/cg_sf_conversion.mm
         ${SRCROOT}/macOS/ClipboardImpl.hpp
         ${SRCROOT}/macOS/ClipboardImpl.mm
-        ${SRCROOT}/macOS/InputImpl.mm
         ${SRCROOT}/macOS/HIDInputManager.hpp
         ${SRCROOT}/macOS/HIDInputManager.mm
-        ${SRCROOT}/macOS/HIDJoystickManager.hpp
-        ${SRCROOT}/macOS/HIDJoystickManager.cpp
         ${SRCROOT}/macOS/NSImage+raw.h
         ${SRCROOT}/macOS/NSImage+raw.mm
         ${SRCROOT}/macOS/Scaling.h
@@ -169,7 +161,6 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/ClipboardImpl.hpp
         ${SRCROOT}/iOS/EaglContext.mm
         ${SRCROOT}/iOS/EaglContext.hpp
-        ${SRCROOT}/iOS/InputImpl.mm
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
         ${SRCROOT}/iOS/ObjCType.hpp
@@ -184,13 +175,8 @@ elseif(SFML_OS_IOS)
     )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
-        ${SRCROOT}/Android/InputImpl.cpp
         ${SRCROOT}/Android/SensorImpl.cpp
         ${SRCROOT}/Android/SensorImpl.hpp
-    )
-elseif(SFML_OS_EMSCRIPTEN)
-    set(PLATFORM_SRC
-        ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
     )
 endif()
 
