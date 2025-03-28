@@ -13486,6 +13486,7 @@ int main(int argc, const char** argv)
 #endif
 }
 
+// TODO P1: add UNDO button for PP point purchase
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: tooltips for options, reorganize them
