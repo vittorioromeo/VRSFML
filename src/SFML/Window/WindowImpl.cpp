@@ -1116,6 +1116,7 @@ WindowHandle WindowImpl::getNativeHandle() const
         SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr)
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
     // TODO P0: doesn't seem to be implemented in SDL
+    0
 #endif
     );
 }
