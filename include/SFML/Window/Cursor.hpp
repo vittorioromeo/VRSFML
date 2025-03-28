@@ -17,11 +17,6 @@
 
 namespace sf
 {
-namespace priv
-{
-class CursorImpl;
-} // namespace priv
-
 ////////////////////////////////////////////////////////////
 /// \brief Cursor defines the appearance of a system cursor
 ///
@@ -196,11 +191,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-#if 0 // TODO P0:
-    base::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
-#else
     base::InPlacePImpl<Impl, 32> m_impl; //!< Implementation details
-#endif
 };
 
 } // namespace sf
