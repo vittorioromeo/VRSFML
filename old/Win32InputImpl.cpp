@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/InputImpl.hpp"
-#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
@@ -15,9 +14,7 @@
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <SDL3/SDL_keyboard.h>
 
-#if 0
 namespace
 {
 sf::base::EnumArray<sf::Keyboard::Key, sf::Keyboard::Scancode, sf::Keyboard::KeyCount> keyToScancodeMapping; ///< Mapping from Key to Scancode
@@ -405,10 +402,10 @@ sf::base::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::Sca
         case sf::Keyboard::Scan::Favorites: return 0xE066;
         case sf::Keyboard::Scan::HomePage:  return 0xE030;
 
-        // case sf::Keyboard::Scan::LaunchApplication1: return 0xE06B;
-        // case sf::Keyboard::Scan::LaunchApplication2: return 0xE021;
-        // case sf::Keyboard::Scan::LaunchMail:         return 0xE06C;
-        // case sf::Keyboard::Scan::LaunchMediaSelect:  return 0xE06D;
+        case sf::Keyboard::Scan::LaunchApplication1: return 0xE06B;
+        case sf::Keyboard::Scan::LaunchApplication2: return 0xE021;
+        case sf::Keyboard::Scan::LaunchMail:         return 0xE06C;
+        case sf::Keyboard::Scan::LaunchMediaSelect:  return 0xE06D;
 
         // Unable to map to a scancode
         default: return 0x0;
@@ -458,10 +455,10 @@ sf::base::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::Sca
         case sf::Keyboard::Scan::Search:             return 101 | 0xE100;
         case sf::Keyboard::Scan::Favorites:          return 102 | 0xE100;
         case sf::Keyboard::Scan::HomePage:           return 48  | 0xE100;
-        // case sf::Keyboard::Scan::LaunchApplication1: return 107 | 0xE100;
-        // case sf::Keyboard::Scan::LaunchApplication2: return 33  | 0xE100;
-        // case sf::Keyboard::Scan::LaunchMail:         return 108 | 0xE100;
-        // case sf::Keyboard::Scan::LaunchMediaSelect:  return 109 | 0xE100;
+        case sf::Keyboard::Scan::LaunchApplication1: return 107 | 0xE100;
+        case sf::Keyboard::Scan::LaunchApplication2: return 33  | 0xE100;
+        case sf::Keyboard::Scan::LaunchMail:         return 108 | 0xE100;
+        case sf::Keyboard::Scan::LaunchMediaSelect:  return 109 | 0xE100;
 
         // Use non-extended mapping
         default: return sfScanToWinScan(code);
@@ -513,9 +510,9 @@ sf::base::EnumArray<sf::Keyboard::Scancode, sf::Keyboard::Key, sf::Keyboard::Sca
         case sf::Keyboard::Scan::VolumeUp:           return sf::base::makeOptional<sf::String>("Volume Increment");
         case sf::Keyboard::Scan::VolumeDown:         return sf::base::makeOptional<sf::String>("Volume Decrement");
         case sf::Keyboard::Scan::LaunchMediaSelect:  return sf::base::makeOptional<sf::String>("Consumer Control Configuration");
-        // case sf::Keyboard::Scan::LaunchMail:         return sf::base::makeOptional<sf::String>("Email Reader");
-        // case sf::Keyboard::Scan::LaunchApplication2: return sf::base::makeOptional<sf::String>("Calculator");
-        // case sf::Keyboard::Scan::LaunchApplication1: return sf::base::makeOptional<sf::String>("Local Machine Browser");
+        case sf::Keyboard::Scan::LaunchMail:         return sf::base::makeOptional<sf::String>("Email Reader");
+        case sf::Keyboard::Scan::LaunchApplication2: return sf::base::makeOptional<sf::String>("Calculator");
+        case sf::Keyboard::Scan::LaunchApplication1: return sf::base::makeOptional<sf::String>("Local Machine Browser");
         case sf::Keyboard::Scan::Search:             return sf::base::makeOptional<sf::String>("Search");
         case sf::Keyboard::Scan::HomePage:           return sf::base::makeOptional<sf::String>("Home");
         case sf::Keyboard::Scan::Back:               return sf::base::makeOptional<sf::String>("Back");
@@ -567,47 +564,75 @@ void ensureMappings()
 }
 
 } // namespace
-#endif
+
 
 namespace sf::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(const Keyboard::Key key)
+bool isKeyPressed(Keyboard::Key key)
 {
-    (void)getSDLLayerSingleton();
-    return InputImpl::isKeyPressed(InputImpl::delocalize(key));
+    const int virtualKey = sfKeyToVirtualKey(key);
+    return (GetAsyncKeyState(virtualKey) & 0x80'00) != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(const Keyboard::Scancode code)
+bool isKeyPressed(Keyboard::Scancode code)
 {
-    const bool* keyboardState = SDL_GetKeyboardState(nullptr);
-    SFML_BASE_ASSERT(keyboardState != nullptr);
-
-    return keyboardState[mapSFMLScancodeToSDL(code)];
+    const UINT virtualKey = sfScanToVirtualKey(code);
+    return (GetAsyncKeyState(static_cast<int>(virtualKey)) & KF_UP) != 0;
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key localize(const Keyboard::Scancode code)
+Keyboard::Key localize(Keyboard::Scancode code)
 {
-    return priv::localizeViaSDL(code);
+    if (!isValidScancode(code))
+        return Keyboard::Key::Unknown;
+
+    ensureMappings();
+
+    return scancodeToKeyMapping[code];
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode delocalize(const Keyboard::Key key)
+Keyboard::Scancode delocalize(Keyboard::Key key)
 {
-    return priv::delocalizeViaSDL(key);
+    if (!isValidKey(key))
+        return Keyboard::Scan::Unknown;
+
+    ensureMappings();
+
+    return keyToScancodeMapping[key];
 }
 
 
 ////////////////////////////////////////////////////////////
-String getDescription(const Keyboard::Scancode code)
+String getDescription(Keyboard::Scancode code)
 {
-    // return SDL_GetScancodeName(mapSFMLScancodeToSDL(code));
-    return SDL_GetKeyName(mapSFMLKeycodeToSDL(InputImpl::localize(code)));
+    // Try to translate the scan code to a consumer key
+    if (const base::Optional consumerKeyName = sfScanToConsumerKeyName(code))
+        return *consumerKeyName;
+
+    WORD      winCode = sfScanToWinScanExtended(code);
+    const int bufSize = 1024;
+    WCHAR     name[bufSize];
+
+    // Remap F13-F23 to values supported by GetKeyNameText
+    if ((winCode >= 0x64) && (winCode <= 0x6E))
+        winCode += 0x18;
+
+    // Remap F24 to value supported by GetKeyNameText
+    if (winCode == 0x76)
+        winCode = 0x87;
+
+    const int result = GetKeyNameTextW(winCode << 16, name, bufSize);
+    if (result > 0)
+    {
+        return name;
+    }
+    return "Unknown";
 }
 
 
