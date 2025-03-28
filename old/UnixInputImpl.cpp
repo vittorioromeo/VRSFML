@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/InputImpl.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Unix/Display.hpp"
 #include "SFML/Window/Unix/KeyboardImpl.hpp"
 #include "SFML/Window/WindowBase.hpp"
@@ -19,37 +20,41 @@
 namespace sf::priv::InputImpl
 {
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Keyboard::Key key)
+bool isKeyPressed(const Keyboard::Key key)
 {
-    return KeyboardImpl::isKeyPressed(key);
+    (void)getSDLLayerSingleton();
+    return InputImpl::isKeyPressed(InputImpl::delocalize(key));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Keyboard::Scancode code)
+bool isKeyPressed(const Keyboard::Scancode code)
 {
-    return KeyboardImpl::isKeyPressed(code);
+    const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+    SFML_BASE_ASSERT(keyboardState != nullptr);
+
+    return keyboardState[mapSFMLScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key localize(Keyboard::Scancode code)
+Keyboard::Key localize(const Keyboard::Scancode code)
 {
-    return KeyboardImpl::localize(code);
+    return priv::localizeViaSDL(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode delocalize(Keyboard::Key key)
+Keyboard::Scancode delocalize(const Keyboard::Key key)
 {
-    return KeyboardImpl::delocalize(key);
+    return priv::delocalizeViaSDL(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-String getDescription(Keyboard::Scancode code)
+String getDescription(const Keyboard::Scancode code)
 {
-    return KeyboardImpl::getDescription(code);
+    return SDL_GetKeyName(mapSFMLKeycodeToSDL(InputImpl::localize(code)));
 }
 
 
