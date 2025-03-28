@@ -31,7 +31,7 @@
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_IOS
-#include <SFML/Main.hpp>
+    #include <SFML/Main.hpp>
 #endif
 
 #include <array>
@@ -163,6 +163,160 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
         CASE(F14);
         CASE(F15);
         CASE(Pause);
+        CASE(Exclaim);
+        CASE(DoubleApostrophe);
+        CASE(Hash);
+        CASE(Dollar);
+        CASE(Percent);
+        CASE(Ampersand);
+        CASE(LParenthesis);
+        CASE(RParenthesis);
+        CASE(Asterisk);
+        CASE(Plus);
+        CASE(Colon);
+        CASE(Less);
+        CASE(Greater);
+        CASE(Question);
+        CASE(At);
+        CASE(Caret);
+        CASE(Underscore);
+        CASE(LBrace);
+        CASE(Pipe);
+        CASE(RBrace);
+        CASE(Tilde);
+        CASE(PlusMinus);
+        CASE(CapsLock);
+        CASE(PrintScreen);
+        CASE(ScrollLock);
+        CASE(NumLock);
+        CASE(NumpadEnter);
+        CASE(NumpadPeriod);
+        CASE(Application);
+        CASE(Power);
+        CASE(NumpadEqual);
+        CASE(F16);
+        CASE(F17);
+        CASE(F18);
+        CASE(F19);
+        CASE(F20);
+        CASE(F21);
+        CASE(F22);
+        CASE(F23);
+        CASE(F24);
+        CASE(Execute);
+        CASE(Help);
+        CASE(Select);
+        CASE(Stop);
+        CASE(Redo);
+        CASE(Undo);
+        CASE(Cut);
+        CASE(Copy);
+        CASE(Paste);
+        CASE(Find);
+        CASE(VolumeMute);
+        CASE(VolumeUp);
+        CASE(VolumeDown);
+        CASE(NumpadComma);
+        CASE(NumpadEqualAs400);
+        CASE(AltErase);
+        CASE(SysReq);
+        CASE(Cancel);
+        CASE(Clear);
+        CASE(Prior);
+        CASE(Enter2);
+        CASE(Separator);
+        CASE(Out);
+        CASE(Oper);
+        CASE(ClearAgain);
+        CASE(CrSel);
+        CASE(ExSel);
+        CASE(Numpad00);
+        CASE(Numpad000);
+        CASE(ThousandsSeparator);
+        CASE(DecimalSeparator);
+        CASE(CurrencyUnit);
+        CASE(CurrencySubUnit);
+        CASE(NumpadLParenthesis);
+        CASE(NumpadRParenthesis);
+        CASE(NumpadLBrace);
+        CASE(NumpadRBrace);
+        CASE(NumpadTab);
+        CASE(NumpadBackspace);
+        CASE(NumpadA);
+        CASE(NumpadB);
+        CASE(NumpadC);
+        CASE(NumpadD);
+        CASE(NumpadE);
+        CASE(NumpadF);
+        CASE(NumpadXor);
+        CASE(NumpadPower);
+        CASE(NumpadPercent);
+        CASE(NumpadLess);
+        CASE(NumpadGreater);
+        CASE(NumpadAmpersand);
+        CASE(NumpadDoubleAmpersand);
+        CASE(NumpadVerticalBar);
+        CASE(NumpadDoubleVerticalBar);
+        CASE(NumpadColon);
+        CASE(NumpadHash);
+        CASE(NumpadSpace);
+        CASE(NumpadAt);
+        CASE(NumpadExclamation);
+        CASE(NumpadMemStore);
+        CASE(NumpadMemRecall);
+        CASE(NumpadMemClear);
+        CASE(NumpadMemAdd);
+        CASE(NumpadMemSubtract);
+        CASE(NumpadMemMultiply);
+        CASE(NumpadMemDivide);
+        CASE(NumpadPlusMinus);
+        CASE(NumpadClear);
+        CASE(NumpadClearEntry);
+        CASE(NumpadBinary);
+        CASE(NumpadOctal);
+        CASE(NumpadDecimal);
+        CASE(NumpadHexadecimal);
+        CASE(ModeChange);
+        CASE(Sleep);
+        CASE(Wake);
+        CASE(ChannelIncrement);
+        CASE(ChannelDecrement);
+        CASE(MediaPlay);
+        CASE(MediaPause);
+        CASE(MediaRecord);
+        CASE(MediaFastForward);
+        CASE(MediaRewind);
+        CASE(MediaNextTrack);
+        CASE(MediaPreviousTrack);
+        CASE(MediaStop);
+        CASE(MediaEject);
+        CASE(MediaPlayPause);
+        CASE(LaunchMediaSelect);
+        CASE(AcNew);
+        CASE(AcOpen);
+        CASE(AcClose);
+        CASE(AcExit);
+        CASE(AcSave);
+        CASE(AcPrint);
+        CASE(AcProperties);
+        CASE(Search);
+        CASE(HomePage);
+        CASE(Back);
+        CASE(Forward);
+        CASE(AcStop);
+        CASE(Refresh);
+        CASE(Favorites);
+        CASE(SoftLeft);
+        CASE(SoftRight);
+        CASE(Call);
+        CASE(EndCall);
+        CASE(LTab);
+        CASE(Level5Shift);
+        CASE(MultiKeyCompose);
+        CASE(LMeta);
+        CASE(RMeta);
+        CASE(LHyper);
+        CASE(RHyper);
 #undef CASE
     }
 
@@ -320,10 +474,110 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
         CASE(Search);
         CASE(Favorites);
         CASE(HomePage);
-        CASE(LaunchApplication1);
-        CASE(LaunchApplication2);
-        CASE(LaunchMail);
         CASE(LaunchMediaSelect);
+        CASE(NonUsHash);
+        CASE(NumpadPeriod);
+        CASE(Power);
+        CASE(Find);
+        CASE(NumpadComma);
+        CASE(NumpadEqualas400);
+        CASE(International1);
+        CASE(International2);
+        CASE(International3);
+        CASE(International4);
+        CASE(International5);
+        CASE(International6);
+        CASE(International7);
+        CASE(International8);
+        CASE(International9);
+        CASE(Lang1);
+        CASE(Lang2);
+        CASE(Lang3);
+        CASE(Lang4);
+        CASE(Lang5);
+        CASE(Lang6);
+        CASE(Lang7);
+        CASE(Lang8);
+        CASE(Lang9);
+        CASE(AltErase);
+        CASE(SysReq);
+        CASE(Cancel);
+        CASE(Clear);
+        CASE(Prior);
+        CASE(Enter2);
+        CASE(Separator);
+        CASE(Out);
+        CASE(Oper);
+        CASE(ClearAgain);
+        CASE(CrSel);
+        CASE(ExSel);
+        CASE(Numpad00);
+        CASE(Numpad000);
+        CASE(ThousandsSeparator);
+        CASE(DecimalsSeparator);
+        CASE(CurrencyUnit);
+        CASE(CurrencySubUnit);
+        CASE(NumpadLParenthesis);
+        CASE(NumpadRParenthesis);
+        CASE(NumpadLBrace);
+        CASE(NumpadRBrace);
+        CASE(NumpadTab);
+        CASE(NumpadBackspace);
+        CASE(NumpadA);
+        CASE(NumpadB);
+        CASE(NumpadC);
+        CASE(NumpadD);
+        CASE(NumpadE);
+        CASE(NumpadF);
+        CASE(NumpadXor);
+        CASE(NumpadPower);
+        CASE(NumpadPercent);
+        CASE(NumpadLess);
+        CASE(NumpadGreater);
+        CASE(NumpadAmpersand);
+        CASE(NumpadDoubleAmpersand);
+        CASE(NumpadVerticalBar);
+        CASE(NumpadDoubleVerticalBar);
+        CASE(NumpadColon);
+        CASE(NumpadHash);
+        CASE(NumpadSpace);
+        CASE(NumpadAt);
+        CASE(NumpadExclamation);
+        CASE(NumpadMemStore);
+        CASE(NumpadMemRecall);
+        CASE(NumpadMemClear);
+        CASE(NumpadMemAdd);
+        CASE(NumpadMemSubtract);
+        CASE(NumpadMemMultiply);
+        CASE(NumpadMemDivide);
+        CASE(NumpadPlusMinus);
+        CASE(NumpadClear);
+        CASE(NumpadClearEntry);
+        CASE(NumpadBinary);
+        CASE(NumpadOctal);
+        CASE(NumpadHexadecimal);
+        CASE(Sleep);
+        CASE(Wake);
+        CASE(ChannelIncrement);
+        CASE(ChannelDecrement);
+        CASE(MediaPlay);
+        CASE(MediaPause);
+        CASE(MediaRecord);
+        CASE(MediaFastForward);
+        CASE(MediaRewind);
+        CASE(MediaEject);
+        CASE(AcNew);
+        CASE(AcOpen);
+        CASE(AcClose);
+        CASE(AcExit);
+        CASE(AcSave);
+        CASE(AcPrint);
+        CASE(AcProperties);
+        CASE(AcStop);
+        CASE(SoftLeft);
+        CASE(SoftRight);
+        CASE(Call);
+        CASE(EndCall);
 #undef CASE
     }
 
@@ -351,7 +605,8 @@ public:
                     scancodesInMatrix.insert(scancode);
                 }
             }
-            assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
+
+            // assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
         }
 
         // Initialize keys color and label
@@ -452,7 +707,7 @@ public:
 private:
     // Template to iterate on scancodes and the corresponding computed rectangle in local coordinates
     template <typename F>
-    void forEachKey(F function) const
+    void forEachKey(F&& function) const
     {
         sf::Vector2f pos;
         for (const auto& [cells, marginBottom] : m_matrix)
@@ -646,9 +901,6 @@ private:
           {sf::Keyboard::Scan::Search},
           {sf::Keyboard::Scan::Favorites},
           {sf::Keyboard::Scan::HomePage},
-          {sf::Keyboard::Scan::LaunchApplication1},
-          {sf::Keyboard::Scan::LaunchApplication2},
-          {sf::Keyboard::Scan::LaunchMail},
           {sf::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 

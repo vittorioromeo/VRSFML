@@ -14,6 +14,7 @@
 
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/EnumArray.hpp"
+
 #include <X11/XKBlib.h>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -417,8 +418,8 @@ std::unordered_map<std::string, sf::Keyboard::Scancode> getNameScancodeMap()
         {"CUT", sf::Keyboard::Scan::Cut},
         {"HELP", sf::Keyboard::Scan::Help},
 
-        {"I156", sf::Keyboard::Scan::LaunchApplication1},
-        {"I157", sf::Keyboard::Scan::LaunchApplication2},
+        // {"I156", sf::Keyboard::Scan::LaunchApplication1},
+        // {"I157", sf::Keyboard::Scan::LaunchApplication2},
         {"I164", sf::Keyboard::Scan::Favorites},
         {"I166", sf::Keyboard::Scan::Back},
         {"I167", sf::Keyboard::Scan::Forward},
@@ -428,7 +429,7 @@ std::unordered_map<std::string, sf::Keyboard::Scancode> getNameScancodeMap()
         {"I174", sf::Keyboard::Scan::MediaStop},
         {"I180", sf::Keyboard::Scan::HomePage},
         {"I181", sf::Keyboard::Scan::Refresh},
-        {"I223", sf::Keyboard::Scan::LaunchMail},
+        // {"I223", sf::Keyboard::Scan::LaunchMail},
         {"I234", sf::Keyboard::Scan::LaunchMediaSelect}
 
     };
@@ -750,8 +751,8 @@ String KeyboardImpl::getDescription(Keyboard::Scancode code)
         case Keyboard::Scan::RAlt:               return "Right Alt";
         case Keyboard::Scan::RSystem:            return "Right System";
 
-        case Keyboard::Scan::LaunchApplication1: return "Launch Application 1";
-        case Keyboard::Scan::LaunchApplication2: return "Launch Application 2";
+        // case Keyboard::Scan::LaunchApplication1: return "Launch Application 1";
+        // case Keyboard::Scan::LaunchApplication2: return "Launch Application 2";
         case Keyboard::Scan::Favorites:          return "Favorites";
         case Keyboard::Scan::Back:               return "Back";
         case Keyboard::Scan::Forward:            return "Forward";
@@ -761,7 +762,7 @@ String KeyboardImpl::getDescription(Keyboard::Scancode code)
         case Keyboard::Scan::MediaStop:          return "Media Stop";
         case Keyboard::Scan::HomePage:           return "Home Page";
         case Keyboard::Scan::Refresh:            return "Refresh";
-        case Keyboard::Scan::LaunchMail:         return "Launch Mail";
+        // case Keyboard::Scan::LaunchMail:         return "Launch Mail";
         case Keyboard::Scan::LaunchMediaSelect:  return "Launch Media Select";
 
         default:                                 return "Unknown Scancode";
