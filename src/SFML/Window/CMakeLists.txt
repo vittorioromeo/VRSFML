@@ -67,16 +67,13 @@ if(SFML_OS_WINDOWS)
         ${SRCROOT}/Win32/ClipboardImpl.hpp
         ${SRCROOT}/Win32/CursorImpl.hpp
         ${SRCROOT}/Win32/Utils.hpp
-        ${SRCROOT}/Win32/WindowImplWin32.hpp
-
-            ${SRCROOT}/Win32/Win32ImplUnity.cpp
+        ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
         # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
         # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
         # ${SRCROOT}/Win32/Unity/InputImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
-        # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
     if(NOT SFML_OPENGL_ES)
         list(APPEND PLATFORM_SRC
@@ -91,8 +88,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/DRM/InputImpl.cpp
             ${SRCROOT}/DRM/DRMContext.cpp
             ${SRCROOT}/DRM/DRMContext.hpp
-            ${SRCROOT}/DRM/WindowImplDRM.cpp
-            ${SRCROOT}/DRM/WindowImplDRM.hpp
         )
     else()
         set(PLATFORM_SRC
@@ -111,8 +106,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
             ${SRCROOT}/Unix/Display.hpp
             ${SRCROOT}/Unix/Utils.hpp
             ${SRCROOT}/Unix/VulkanImplX11.cpp
-            ${SRCROOT}/Unix/WindowImplX11.cpp
-            ${SRCROOT}/Unix/WindowImplX11.hpp
         )
         if(NOT SFML_OPENGL_ES)
              list(APPEND PLATFORM_SRC
@@ -171,8 +164,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/SFWindowController.mm
         ${SRCROOT}/macOS/SFViewController.h
         ${SRCROOT}/macOS/SFViewController.mm
-        ${SRCROOT}/macOS/WindowImplCocoa.hpp
-        ${SRCROOT}/macOS/WindowImplCocoa.mm
         ${SRCROOT}/macOS/WindowImplDelegateProtocol.h
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
@@ -187,8 +178,6 @@ elseif(SFML_OS_IOS)
         ${SRCROOT}/iOS/InputImpl.mm
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
-        ${SRCROOT}/iOS/WindowImplUIKit.hpp
-        ${SRCROOT}/iOS/WindowImplUIKit.mm
         ${SRCROOT}/iOS/ObjCType.hpp
         ${SRCROOT}/iOS/SFAppDelegate.hpp
         ${SRCROOT}/iOS/SFAppDelegate.mm
@@ -204,12 +193,9 @@ elseif(SFML_OS_ANDROID)
         ${SRCROOT}/Android/InputImpl.cpp
         ${SRCROOT}/Android/SensorImpl.cpp
         ${SRCROOT}/Android/SensorImpl.hpp
-        ${SRCROOT}/Android/WindowImplAndroid.cpp
-        ${SRCROOT}/Android/WindowImplAndroid.hpp
     )
 elseif(SFML_OS_EMSCRIPTEN)
     set(PLATFORM_SRC
-        ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
         ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
     )
 endif()
