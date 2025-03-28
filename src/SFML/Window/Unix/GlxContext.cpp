@@ -8,10 +8,10 @@
 #include "SFML/Window/Unix/Display.hpp"
 #include "SFML/Window/Unix/GlxContext.hpp"
 #include "SFML/Window/Unix/Utils.hpp"
-#include "SFML/Window/Unix/WindowImplX11.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
