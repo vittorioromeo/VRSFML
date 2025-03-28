@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Touch.hpp"
 
@@ -18,21 +17,24 @@ namespace sf::Touch
 ////////////////////////////////////////////////////////////
 bool isDown(unsigned int finger)
 {
-    return priv::InputImpl::isTouchDown(finger);
+    // TODO P0: implement
+    return false;
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i getPosition(unsigned int finger)
 {
-    return priv::InputImpl::getTouchPosition(finger);
+    // TODO P0: implement
+    return {};
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo)
 {
-    return priv::InputImpl::getTouchPosition(finger, relativeTo);
+    // TODO P0: implement
+    return {};
 }
 
 
