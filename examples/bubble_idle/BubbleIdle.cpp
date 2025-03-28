@@ -49,7 +49,7 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
@@ -104,6 +104,8 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+
+#include <iostream>// TODO P0:
 
 #include <cctype>
 
@@ -283,24 +285,23 @@ void drawMinimap(
 
     //
     // White border around minimap
-    const sf::RectangleShape minimapBorder{
-        {.position         = minimapPos,
-         .fillColor        = sf::Color::Transparent,
-         .outlineColor     = sf::Color::whiteMask(shouldDrawUIAlpha),
-         .outlineThickness = 2.f,
-         .size             = sf::Vector2f{mapLimit / minimapScale, minimapSize.y}}};
+    const sf::RectangleShapeData minimapBorder{.position         = minimapPos,
+                                               .fillColor        = sf::Color::Transparent,
+                                               .outlineColor     = sf::Color::whiteMask(shouldDrawUIAlpha),
+                                               .outlineThickness = 2.f,
+                                               .size             = {mapLimit / minimapScale, minimapSize.y}};
 
     minimapRect.position = minimapPos;
-    minimapRect.size     = minimapBorder.getSize();
+    minimapRect.size     = minimapBorder.size;
 
     //
     // Blue rectangle showing current visible area
-    const sf::RectangleShape minimapIndicator{
-        {.position         = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
-         .fillColor        = sf::Color::Transparent,
-         .outlineColor     = sf::Color::Blue.withHueMod(hueMod).withAlpha(shouldDrawUIAlpha),
-         .outlineThickness = 2.f,
-         .size             = sf::Vector2f{gameScreenSize / minimapScale}}};
+    const sf::RectangleShapeData
+        minimapIndicator{.position     = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
+                         .fillColor    = sf::Color::Transparent,
+                         .outlineColor = sf::Color::Blue.withHueMod(hueMod).withAlpha(shouldDrawUIAlpha),
+                         .outlineThickness = 2.f,
+                         .size             = {gameScreenSize / minimapScale}};
 
     //
     // Convert minimap dimensions to normalized `[0, 1]` range for scissor rectangle
@@ -330,8 +331,7 @@ void drawMinimap(
     //
     // Draw minimap contents
     rt.setView(minimapView); // Use minimap projection
-    rt.draw(sf::RectangleShape{{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale}},
-            /* texture */ nullptr);
+    rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale});
 
     // The background has a repeating texture, and it's one ninth of the whole map
     const sf::Vector2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
@@ -359,8 +359,8 @@ void drawMinimap(
     //
     // Switch back to HUD view and draw overlay elements
     rt.setView(hudView);
-    rt.draw(minimapBorder, /* texture */ nullptr);    // Draw border frame
-    rt.draw(minimapIndicator, /* texture */ nullptr); // Draw current view indicator
+    rt.draw(minimapBorder);    // Draw border frame
+    rt.draw(minimapIndicator); // Draw current view indicator
 }
 
 
@@ -373,12 +373,12 @@ void drawSplashScreen(sf::RenderTarget&        rt,
 {
     const auto progress = easeInOutCubic(splashCountdown.getProgressBounced());
 
-    rt.draw({.position    = resolution / 2.f / hudScale,
-             .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
-             .origin      = txLogo.getSize().toVector2f() / 2.f,
-             .textureRect = txLogo.getRect(),
-             .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
-            txLogo);
+    rt.draw(sf::Sprite{.position    = resolution / 2.f / hudScale,
+                       .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
+                       .origin      = txLogo.getSize().toVector2f() / 2.f,
+                       .textureRect = txLogo.getRect(),
+                       .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
+            {.texture = &txLogo});
 }
 
 } // namespace
@@ -9249,7 +9249,7 @@ It's a duck.)",
                                   /* hue */ wrapHue(rngFast.getF(-50.f, 50.f) + (copy ? 180.f : 0.f)),
                                   ParticleType::Hex);
 
-                const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) || sf::Touch::isDown(0u));
+                const bool click = (mBtnDown(getLMB(), /* penetrateUI */ false) || fingerPositions[0].hasValue());
 
                 if (click && (mousePos - d.position).lengthSquared() <= d.getRadiusSquared())
                 {
@@ -11542,39 +11542,23 @@ It's a duck.)",
 
         const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{52.f, 14.f} * scaleMult;
 
-        rtGame->draw(sf::RectangleShape{{
-                         .position           = cursorComboBarPosition,
-                         .outlineTextureRect = txrWhiteDot,
-                         .fillColor          = sf::Color::blackMask(80u),
-                         .outlineColor       = cursorComboText.getOutlineColor(),
-                         .outlineThickness   = 1.f,
-                         .size = {64.f * scaleMult * pt.psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
-                     }},
-                     /* texture */ nullptr);
+        rtGame->draw(sf::RectangleShapeData{
+            .position           = cursorComboBarPosition,
+            .outlineTextureRect = txrWhiteDot,
+            .fillColor          = sf::Color::blackMask(80u),
+            .outlineColor       = cursorComboText.getOutlineColor(),
+            .outlineThickness   = 1.f,
+            .size = {64.f * scaleMult * pt.psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
+        });
 
-        rtGame->draw(sf::RectangleShape{{
-                         .position           = cursorComboBarPosition,
-                         .outlineTextureRect = txrWhiteDot,
-                         .fillColor          = sf::Color::blackMask(164u),
-                         .outlineColor       = cursorComboText.getOutlineColor(),
-                         .outlineThickness   = 1.f,
-                         .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
-                     }},
-                     /* texture */ nullptr);
-
-        // TODO P2: (lib) make this possible
-        /*
-        rtGame->draw(sf::RoundedRectangleShapeData{
+        rtGame->draw(sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackMask(164u),
             .outlineColor       = cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
-            .size               = {100.f * comboCountdown.value / 700.f, 20.f},
-            .cornerRadius       = 1.f,
-            .cornerPointCount   = 8u,
+            .size               = {64.f * scaleMult * comboCountdown.value / 700.f, 24.f * scaleMult},
         });
-        */
     }
 
     ////////////////////////////////////////////////////////////
@@ -11684,7 +11668,7 @@ It's a duck.)",
         tipBackgroundSprite.setBottomCenter(
             {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-        rtGame->draw(tipBackgroundSprite, txTipBg);
+        rtGame->draw(tipBackgroundSprite, {.texture = &txTipBg});
 
         sf::Sprite tipByteSprite{.position    = {},
                                  .scale       = sf::Vector2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
@@ -11694,7 +11678,7 @@ It's a duck.)",
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
         tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
-        rtGame->draw(tipByteSprite, txTipByte);
+        rtGame->draw(tipByteSprite, {.texture = &txTipByte});
 
         if (mustSpawnByteParticles)
         {
@@ -12386,6 +12370,23 @@ It's a duck.)",
     void gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
     {
         moneyText.setString("$" + std::string(toStringWithSeparators(pt.money + spentMoney)));
+
+        // TODO P0:
+        {
+            const auto touchDevices = sf::Touch::getDevices();
+
+            std::ostringstream oss;
+
+            for (const auto& [id, type, name] : touchDevices)
+            {
+                oss << "Touch device: " << id << " " << static_cast<int>(type) << " " << name << '\n';
+            }
+
+            oss << sf::Touch::testsdl();
+
+            moneyText.setString(oss.str());
+        }
+
         moneyText.setOutlineColor(outlineHueColor);
         moneyText.scale  = {0.5f, 0.5f};
         moneyText.origin = moneyText.getLocalBounds().size / 2.f;
@@ -13096,13 +13097,12 @@ It's a duck.)",
         //
         // AoE Dragging Reticle
         if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
-            rtGame->draw(sf::RectangleShape{{.position         = dragRect->position,
-                                             .origin           = {0.f, 0.f},
-                                             .fillColor        = sf::Color::whiteMask(64u),
-                                             .outlineColor     = sf::Color::whiteMask(176u),
-                                             .outlineThickness = 4.f,
-                                             .size             = dragRect->size}},
-                         /* texture */ nullptr);
+            rtGame->draw(sf::RectangleShapeData{.position         = dragRect->position,
+                                                .origin           = {0.f, 0.f},
+                                                .fillColor        = sf::Color::whiteMask(64u),
+                                                .outlineColor     = sf::Color::whiteMask(176u),
+                                                .outlineThickness = 4.f,
+                                                .size             = dragRect->size});
 
         //
         // Draw border around gameview
@@ -13116,13 +13116,11 @@ It's a duck.)",
             rtGame->draw(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
-        // TODO P2: (lib) make it possible to draw a rectangle directly via batching without any of this stuff
-        rtGame->draw(sf::RectangleShape{{.position         = gameView.viewport.position.componentWiseMul(resolution),
-                                         .fillColor        = sf::Color::Transparent,
-                                         .outlineColor     = outlineHueColor,
-                                         .outlineThickness = 4.f,
-                                         .size             = gameView.viewport.size.componentWiseMul(resolution)}},
-                     /* texture */ nullptr);
+        rtGame->draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
+                                            .fillColor        = sf::Color::Transparent,
+                                            .outlineColor     = outlineHueColor,
+                                            .outlineThickness = 4.f,
+                                            .size             = gameView.viewport.size.componentWiseMul(resolution)});
 
         rtGame->setView(scaledHUDView);
 
@@ -13196,10 +13194,9 @@ It's a duck.)",
         //
         // Combo bar
         if (shouldDrawUI && !debugHideUI)
-            rtGame->draw(sf::RectangleShape{{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
-                                             .fillColor = sf::Color{255, 255, 255, 75},
-                                             .size      = {100.f * comboCountdown.value / 700.f, 20.f}}},
-                         /* texture */ nullptr);
+            rtGame->draw(sf::RectangleShapeData{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
+                                                .fillColor = sf::Color{255, 255, 255, 75},
+                                                .size      = {100.f * comboCountdown.value / 700.f, 20.f}});
 
         //
         // Minimap
@@ -13285,13 +13282,13 @@ It's a duck.)",
 
                 const float progress = cdLetterAppear.getProgressBounced(4000.f);
 
-                rtGame->draw({.position = resolution / 2.f / profile.hudScale,
-                              .scale    = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
-                                       profile.hudScale * 2.f,
-                              .origin      = txLetter.getSize().toVector2f() / 2.f,
-                              .textureRect = txLetter.getRect(),
-                              .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
-                             txLetter);
+                rtGame->draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
+                                        .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
+                                                 profile.hudScale * 2.f,
+                                        .origin      = txLetter.getSize().toVector2f() / 2.f,
+                                        .textureRect = txLetter.getRect(),
+                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                             {.texture = &txLetter});
             }
 
             (void)cdLetterText.updateAndStop(deltaTimeMs);
@@ -13300,13 +13297,13 @@ It's a duck.)",
                                        : cdLetterText.value < 1000.f ? cdLetterText.value / 1000.f
                                                                      : 1.f;
 
-            rtGame->draw({.position = resolution / 2.f / profile.hudScale,
-                          .scale    = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
-                                   profile.hudScale * 1.45f,
-                          .origin      = txLetterText.getSize().toVector2f() / 2.f,
-                          .textureRect = txLetterText.getRect(),
-                          .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
-                         txLetterText);
+            rtGame->draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
+                                    .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
+                                             profile.hudScale * 1.45f,
+                                    .origin      = txLetterText.getSize().toVector2f() / 2.f,
+                                    .textureRect = txLetterText.getRect(),
+                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                         {.texture = &txLetterText});
         }
 
         //
