@@ -4,27 +4,18 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/WindowSettings.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 
-#include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/Glad.hpp"
-
-#include "SFML/System/Err.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/StringUtfUtils.hpp"
 
-#include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/Optional.hpp"
+#include <SDL3/SDL_keyboard.h>
+#include <SDL3/SDL_mouse.h>
 
 #include <emscripten.h>
 #include <emscripten/html5.h>
-#include <unordered_map>
-#include <vector>
 
 // TODO P0: focus seems not to work on mobile or unless alt tabbing
 // - this is an an issue caused by the fact that imguiperwindowcontext's window doesn't have
@@ -35,33 +26,30 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Key key)
+bool InputImpl::isKeyPressed(const Keyboard::Key key)
 {
-    return false; // keyStatus[static_cast<base::SizeT>(key)];
+    return isKeyPressed(delocalize(key));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool InputImpl::isKeyPressed(Keyboard::Scancode /* code */)
+bool InputImpl::isKeyPressed(const Keyboard::Scancode code)
 {
-    // Not applicable
-    return {};
+    return SDL_GetKeyboardState(nullptr)[mapSFMLScancodeToSDL(code)];
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Key InputImpl::localize(Keyboard::Scancode /* code */)
+Keyboard::Key InputImpl::localize(const Keyboard::Scancode code)
 {
-    // Not applicable
-    return {};
+    return priv::localizeViaSDL(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Keyboard::Scancode InputImpl::delocalize(Keyboard::Key /* key */)
+Keyboard::Scancode InputImpl::delocalize(const Keyboard::Key key)
 {
-    // Not applicable
-    return {};
+    return priv::delocalizeViaSDL(key);
 }
 
 
@@ -83,30 +71,50 @@ void InputImpl::setVirtualKeyboardVisible(bool /* visible */)
 ////////////////////////////////////////////////////////////
 bool InputImpl::isMouseButtonPressed(Mouse::Button button)
 {
+    const auto globalMouseState = SDL_GetGlobalMouseState(nullptr, nullptr);
+
+    if (button == getButtonFromSDLButton(SDL_BUTTON_LEFT))
+        return (globalMouseState & SDL_BUTTON_LMASK) != 0;
+
+    if (button == getButtonFromSDLButton(SDL_BUTTON_MIDDLE))
+        return (globalMouseState & SDL_BUTTON_MMASK) != 0;
+
+    if (button == getButtonFromSDLButton(SDL_BUTTON_RIGHT))
+        return (globalMouseState & SDL_BUTTON_RMASK) != 0;
+
+    if (button == getButtonFromSDLButton(SDL_BUTTON_X1))
+        return (globalMouseState & SDL_BUTTON_X1MASK) != 0;
+
+    if (button == getButtonFromSDLButton(SDL_BUTTON_X2))
+        return (globalMouseState & SDL_BUTTON_X2MASK) != 0;
+
+    SFML_BASE_ASSERT(false);
     return false;
-    // return mouseStatus[static_cast<base::SizeT>(button)];
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i InputImpl::getMousePosition()
 {
-    return {};
-    // return mousePosition;
+    Vector2f result;
+    SDL_GetGlobalMouseState(&result.x, &result.y);
+    return result.toVector2i();
 }
 
 
 ////////////////////////////////////////////////////////////
 Vector2i InputImpl::getMousePosition(const WindowBase& /* relativeTo */)
 {
-    return getMousePosition();
+    Vector2f result;
+    SDL_GetMouseState(&result.x, &result.y);
+    return result.toVector2i();
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputImpl::setMousePosition(Vector2i /* position */)
+void InputImpl::setMousePosition(const Vector2i position)
 {
-    // Not applicable
+    SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y));
 }
 
 
@@ -120,6 +128,7 @@ void InputImpl::setMousePosition(Vector2i position, const WindowBase& /* relativ
 ////////////////////////////////////////////////////////////
 bool InputImpl::isTouchDown(unsigned int finger)
 {
+    // TODO P0:
     return false;
     // return touchStatus.find(finger) != touchStatus.end();
 }
@@ -128,6 +137,7 @@ bool InputImpl::isTouchDown(unsigned int finger)
 ////////////////////////////////////////////////////////////
 Vector2i InputImpl::getTouchPosition(unsigned int finger)
 {
+    // TODO P0:
     return {};
     // const auto iter = touchStatus.find(finger);
     // return iter == touchStatus.end() ? Vector2i{} : iter->second;
