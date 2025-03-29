@@ -19,6 +19,7 @@
 
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
@@ -339,6 +340,7 @@ namespace sf::priv
 [[nodiscard]] inline SDL_PropertiesID makeSDLWindowPropertiesFromHandle(const WindowHandle handle)
 {
     const SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_OPENGL_BOOLEAN, true);
 
 #if defined(SFML_SYSTEM_WINDOWS)
     SDL_SetPointerProperty(props, SDL_PROP_WINDOW_CREATE_WIN32_HWND_POINTER, handle);
