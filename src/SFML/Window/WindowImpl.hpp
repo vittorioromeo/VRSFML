@@ -16,17 +16,22 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+struct SDL_Window;
+
 namespace sf
 {
 class String;
 class Time;
 struct WindowSettings;
-struct SDL_Window;
 
 namespace Vulkan
 {
 struct VulkanSurfaceData;
 } // namespace Vulkan
+
 
 namespace priv
 {
