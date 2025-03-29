@@ -33,10 +33,18 @@ struct ContextSettings
         CoreAndDebug    = Core | Debug,
     };
 
-#ifdef SFML_DEBUG
-    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#ifdef SFML_OPENGL_ES
+    #ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::DefaultAndDebug;
+    #else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Default;
+    #endif
 #else
+    #ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+    #else
     static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+    #endif
 #endif
 
 #if defined(SFML_SYSTEM_EMSCRIPTEN)

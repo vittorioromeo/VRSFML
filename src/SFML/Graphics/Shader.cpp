@@ -271,7 +271,7 @@ struct StringEq
         // Emscripten/WebGL always requires `#version 300 es` and precision
         R"glsl(#version 300 es
 
-precision mediump float;
+precision highp float;
 
 )glsl"
 
@@ -280,7 +280,7 @@ precision mediump float;
         // Desktop/mobile GLES can use `#version 310 es` and precision
         R"glsl(#version 310 es
 
-precision mediump float;
+precision highp float;
 
 )glsl"
 
