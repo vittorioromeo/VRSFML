@@ -8,6 +8,7 @@
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
+#include "SFML/Window/SDLLayer.hpp" // TODO P0:
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
@@ -205,6 +206,8 @@ WindowContextImpl& ensureInstalled()
 ////////////////////////////////////////////////////////////
 base::Optional<WindowContext> WindowContext::create()
 {
+    priv::getSDLLayerSingleton(); // TODO P0:
+
     const auto fail = [](const char* what)
     {
         priv::err() << "Error creating `sf::WindowContext`: " << what;
