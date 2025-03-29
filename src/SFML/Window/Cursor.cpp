@@ -16,7 +16,6 @@
 
 namespace
 {
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] constexpr SDL_SystemCursor cursorTypeToSDLCursor(const sf::Cursor::Type type) noexcept
 {
