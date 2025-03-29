@@ -9,8 +9,6 @@
 
 #include "SFML/Base/TrivialVector.hpp"
 
-#include <string> // TODO P0:
-
 
 namespace sf::Touch
 {
@@ -73,30 +71,6 @@ base::Span<Device> getDevices()
     }
 
     return {devices.data(), devices.size()};
-}
-
-// TODO P0:
-const char* testsdl()
-{
-    thread_local std::string out;
-    out.clear();
-
-    auto& sdlLayer = priv::getSDLLayerSingleton();
-
-    auto d = getDevices();
-
-    for (const Device& device : d)
-    {
-        for (auto fp : sdlLayer.getTouchFingers(device.id))
-        {
-            const auto& [id, x, y, pressure] = *fp;
-
-            out += " Finger: " + std::to_string(id) + " x: " + std::to_string(x) + " y: " + std::to_string(y) +
-                   " pressure: " + std::to_string(pressure) + "\n";
-        }
-    }
-
-    return out.data();
 }
 
 } // namespace sf::Touch

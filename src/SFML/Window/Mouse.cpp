@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/WindowBase.hpp"
 
 #include <SDL3/SDL_mouse.h>
 
@@ -49,11 +50,7 @@ Vector2i getPosition()
 ////////////////////////////////////////////////////////////
 Vector2i getPosition(const WindowBase& relativeTo)
 {
-    // TODO P0: use above and subtract from window pos (which is client rect now)
-
-    Vector2f result;
-    SDL_GetMouseState(&result.x, &result.y);
-    return result.toVector2i();
+    return getPosition() - relativeTo.getPosition();
 }
 
 
@@ -67,8 +64,7 @@ void setPosition(Vector2i position)
 ////////////////////////////////////////////////////////////
 void setPosition(Vector2i position, const WindowBase& relativeTo)
 {
-    // TODO P0: use above and add window pos (which is client rect now)
-    setPosition(position);
+    setPosition(position + relativeTo.getPosition());
 }
 
 } // namespace sf::Mouse
