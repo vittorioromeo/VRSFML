@@ -223,5 +223,6 @@ template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned int>(const uns
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long long>(const unsigned long long&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned long>(const unsigned long&);
 template ErrStream::Guard& ErrStream::Guard::operator<< <unsigned short>(const unsigned short&);
+template ErrStream::Guard& ErrStream::Guard::operator<< <void*>(void* const&);
 
 } // namespace sf::priv
