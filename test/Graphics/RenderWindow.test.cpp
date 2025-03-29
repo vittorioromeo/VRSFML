@@ -82,9 +82,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
         SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
         SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
-#ifndef SFML_OPENGL_ES
         SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
-#endif
         // clang-format on
 
         sf::RenderWindow window({.size{256u, 256u},

@@ -30,6 +30,7 @@ void applyContextSettings(const sf::ContextSettings& settings)
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_RED_SIZE, 8);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_GREEN_SIZE, 8);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_BLUE_SIZE, 8);
+    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_ALPHA_SIZE, settings.sRgbCapable ? 8 : 0);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
@@ -47,7 +48,7 @@ void applyContextSettings(const sf::ContextSettings& settings)
         profile = SDL_GL_CONTEXT_PROFILE_CORE;
 
     int flags = 0;
-    if ((settings.attributeFlags & sf::ContextSettings::Attribute::Debug) != sf::ContextSettings::Attribute{})
+    if ((settings.attributeFlags & sf::ContextSettings::Attribute::Debug) != sf::ContextSettings::Attribute{0u})
         flags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_PROFILE_MASK, profile);
