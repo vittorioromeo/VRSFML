@@ -650,6 +650,13 @@ WindowHandle WindowImpl::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
+SDL_Window* WindowImpl::getSDLHandle() const
+{
+    return m_impl->sdlWindow;
+}
+
+
+////////////////////////////////////////////////////////////
 void WindowImpl::processEvents()
 {
     SDL_Event e;
