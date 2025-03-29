@@ -89,9 +89,6 @@ struct Device
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
 
-// TODO P0:
-const char* testsdl();
-
 } // namespace Touch
 } // namespace sf
 
