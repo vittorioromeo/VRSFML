@@ -416,28 +416,6 @@ namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline Keyboard::Key localizeViaSDL(const Keyboard::Scancode code) noexcept
-{
-    const SDL_Scancode sdlScancode = mapSFMLScancodeToSDL(code);
-    const SDL_Keycode  sdlKey      = SDL_GetKeyFromScancode(sdlScancode, SDL_GetModState(), true);
-
-    return mapSDLKeycodeToSFML(sdlKey);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] inline Keyboard::Scancode delocalizeViaSDL(const Keyboard::Key key) noexcept
-{
-    const SDL_Keycode sdlKey = mapSFMLKeycodeToSDL(key);
-
-    SDL_Keymod         mod{};
-    const SDL_Scancode sdlScancode = SDL_GetScancodeFromKey(sdlKey, &mod);
-
-    return mapSDLScancodeToSFML(sdlScancode);
-}
-
-
-////////////////////////////////////////////////////////////
 struct SFML_BASE_TRIVIAL_ABI UniquePtrSDLDeleter
 {
     template <typename T>
@@ -699,6 +677,45 @@ public:
         }
 
         return SDL_GetTouchDeviceName(touchDeviceId);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] inline Keyboard::Key localizeScancode(const Keyboard::Scancode code) const noexcept
+    {
+        const SDL_Scancode sdlScancode = mapSFMLScancodeToSDL(code);
+        const SDL_Keycode  sdlKey      = SDL_GetKeyFromScancode(sdlScancode, SDL_GetModState(), true);
+
+        return mapSDLKeycodeToSFML(sdlKey);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] inline Keyboard::Scancode delocalizeScancode(const Keyboard::Key key) const noexcept
+    {
+        const SDL_Keycode sdlKey = mapSFMLKeycodeToSDL(key);
+
+        SDL_Keymod         mod{};
+        const SDL_Scancode sdlScancode = SDL_GetScancodeFromKey(sdlKey, &mod);
+
+        return mapSDLScancodeToSFML(sdlScancode);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isKeyPressedByScancode(const Keyboard::Scancode code) const noexcept
+    {
+        const bool* keyboardState = SDL_GetKeyboardState(nullptr);
+        SFML_BASE_ASSERT(keyboardState != nullptr);
+
+        return keyboardState[priv::mapSFMLScancodeToSDL(code)];
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* getScancodeDescription(const Keyboard::Scancode code) const noexcept
+    {
+        return SDL_GetKeyName(priv::mapSFMLKeycodeToSDL(localize(code)));
     }
 };
 

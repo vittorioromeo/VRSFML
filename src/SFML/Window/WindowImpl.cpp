@@ -475,13 +475,12 @@ bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfac
 ////////////////////////////////////////////////////////////
 Vector2i WindowImpl::getPosition() const
 {
-    int x{};
-    int y{};
+    Vector2i result;
 
-    if (!SDL_GetWindowPosition(m_impl->sdlWindow, &x, &y))
+    if (!SDL_GetWindowPosition(m_impl->sdlWindow, &result.x, &result.y))
         err() << "Failed to get window position: " << SDL_GetError();
 
-    return {x, y};
+    return result;
 }
 
 
@@ -495,13 +494,12 @@ void WindowImpl::setPosition(Vector2i position)
 ////////////////////////////////////////////////////////////
 Vector2u WindowImpl::getSize() const
 {
-    int w{};
-    int h{};
+    Vector2i result;
 
-    if (!SDL_GetWindowSize(m_impl->sdlWindow, &w, &h))
+    if (!SDL_GetWindowSize(m_impl->sdlWindow, &result.x, &result.y))
         err() << "Failed to get window size: " << SDL_GetError();
 
-    return {static_cast<unsigned int>(w), static_cast<unsigned int>(h)};
+    return result.toVector2u();
 }
 
 
@@ -778,7 +776,7 @@ void WindowImpl::processEvents()
 
             case SDL_EVENT_FINGER_DOWN:
             {
-                const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
+                const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add pressure, etc
                 const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
