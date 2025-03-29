@@ -12,15 +12,22 @@
 
 #if defined(SFML_SYSTEM_WINDOWS)
 
-    #if defined(SFML_OPENGL_ES)
+    #if 0 // TODO P0:
+        #if defined(SFML_OPENGL_ES)
 
-        #include "SFML/GLUtils/EGL/EGLContext.hpp"
+            #include "SFML/GLUtils/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
+        #else
+
+            #include "SFML/Window/Win32/WglContext.hpp"
+using DerivedGlContextType = sf::priv::WglContext;
+
+        #endif
     #else
 
-        #include "SFML/Window/Win32/WglContext.hpp"
-using DerivedGlContextType = sf::priv::WglContext;
+        #include "SFML/Window/SDLGlContext.hpp"
+using DerivedGlContextType = sf::priv::SDLGlContext;
 
     #endif
 

@@ -364,6 +364,8 @@ namespace sf::priv
 {
     SDL_WindowFlags flags{};
 
+    flags |= SDL_WINDOW_OPENGL;
+
     if (windowSettings.fullscreen)
         flags |= SDL_WINDOW_FULLSCREEN;
 
@@ -530,6 +532,9 @@ struct SDLAllocatedArray
     }
 };
 
+
+////////////////////////////////////////////////////////////
+void applyContextSettings(const sf::ContextSettings& settings); // TODO P0
 
 ////////////////////////////////////////////////////////////
 class SDLLayer
