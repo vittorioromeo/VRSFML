@@ -17,6 +17,7 @@
 #include "HellPortal.hpp"
 #include "HueColor.hpp"
 #include "ImGuiNotify.hpp"
+#include "InputHelper.hpp"
 #include "MathUtils.hpp"
 #include "MemberGuard.hpp"
 #include "Particle.hpp"
@@ -74,7 +75,6 @@
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
-#include "SFML/Window/Touch.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowSettings.hpp"
@@ -104,8 +104,6 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
-
-#include <iostream> // TODO P0:
 
 #include <cctype>
 
@@ -1200,18 +1198,12 @@ struct Main
     Countdown                 cdLetterText;
 
     ////////////////////////////////////////////////////////////
-    // Keyboard helpers
-    bool keyPressedThisFrame[sf::Keyboard::KeyCount]{};
-    bool keyPressedLastFrame[sf::Keyboard::KeyCount]{};
-
-    ////////////////////////////////////////////////////////////
-    // Mouse helpers
-    bool mBtnsPressedThisFrame[sf::Mouse::ButtonCount]{};
-    bool mBtnsPressedLastFrame[sf::Mouse::ButtonCount]{};
-
-    ////////////////////////////////////////////////////////////
     // Minimap navigation
     sf::FloatRect minimapRect;
+
+    ////////////////////////////////////////////////////////////
+    // Input management
+    InputHelper inputHelper;
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -1490,21 +1482,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool keyDown(const sf::Keyboard::Key key) const
     {
-        return getWindow().hasFocus() && sf::Keyboard::isKeyPressed(key);
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool keyRisingEdge(const sf::Keyboard::Key key) const
-    {
-        return !keyPressedLastFrame[static_cast<sf::base::SizeT>(key)] &&
-               keyPressedThisFrame[static_cast<sf::base::SizeT>(key)];
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mBtnRisingEdge(const sf::Mouse::Button btn) const
-    {
-        return !mBtnsPressedLastFrame[static_cast<sf::base::SizeT>(btn)] &&
-               mBtnsPressedThisFrame[static_cast<sf::base::SizeT>(btn)];
+        return inputHelper.isKeyDown(key);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1513,7 +1491,7 @@ struct Main
         if (ImGui::GetIO().WantCaptureMouse && !penetrateUI)
             return false;
 
-        return getWindow().hasFocus() && sf::Mouse::isButtonPressed(button);
+        return inputHelper.isMouseButtonDown(button);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3217,7 +3195,7 @@ It's a duck.)",
 
         const auto keyboardSelectedTab = [&](const sf::Keyboard::Key key)
         {
-            return !ImGui::GetIO().WantCaptureKeyboard && keyRisingEdge(key)
+            return !ImGui::GetIO().WantCaptureKeyboard && inputHelper.wasKeyJustPressed(key)
                        ? ImGuiTabItemFlags_SetSelected
                        : ImGuiTabItemFlags_{};
         };
@@ -3543,10 +3521,13 @@ It's a duck.)",
 
             uiSetUnlockLabelY(1u);
             std::sprintf(uiTooltipBuffer,
-                         "Extend the map and enable scrolling.\n\nExtending the map will increase the total number of "
-                         "bubbles you can work with, and will also reveal magical shrines that grant unique cats upon "
+                         "Extend the map and enable scrolling.\n\nExtending the map will increase the total number "
+                         "of "
+                         "bubbles you can work with, and will also reveal magical shrines that grant unique cats "
+                         "upon "
                          "completion.\n\nYou can scroll the map with the scroll wheel, holding right click, by "
-                         "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the map "
+                         "dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can jump around the "
+                         "map "
                          "by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
             uiLabelBuffer[0] = '\0';
             if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt.mapPurchased))
@@ -3609,8 +3590,10 @@ It's a duck.)",
             uiSetUnlockLabelY(4u);
             std::sprintf(uiTooltipBuffer,
                          "Cats pop nearby bubbles or bombs. Their cooldown and range can be upgraded. Their "
-                         "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around to "
-                         "position them strategically.\n\nNo, you can't get rid of a cat once purchased, you monster.");
+                         "behavior can be permanently upgraded with prestige points.\n\nCats can be dragged around "
+                         "to "
+                         "position them strategically.\n\nNo, you can't get rid of a cat once purchased, you "
+                         "monster.");
             std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
             if (makePSVButton("Cat", pt.psvPerCatType[asIdx(CatType::Normal)]))
             {
@@ -3634,7 +3617,8 @@ It's a duck.)",
             const float nextCooldown    = CatConstants::baseCooldowns[asIdx(catType)] * psv.nextValue();
 
             std::sprintf(uiTooltipBuffer,
-                         "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, but no "
+                         "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
+                         "but no "
                          "refunds!)",
                          static_cast<double>(currentCooldown / 1000.f),
                          static_cast<double>(nextCooldown / 1000.f),
@@ -3660,7 +3644,8 @@ It's a duck.)",
             const float nextRange    = CatConstants::baseRanges[asIdx(catType)] / psv.nextValue();
 
             std::sprintf(uiTooltipBuffer,
-                         "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but no "
+                         "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
+                         "no "
                          "refunds!)",
                          static_cast<double>(currentRange),
                          static_cast<double>(nextRange),
@@ -3812,7 +3797,8 @@ It's a duck.)",
                     uiSetUnlockLabelY(14u);
                     makeRangeButton("  witchcat range",
                                     CatType::Witch,
-                                    "\n\nAllows more cats to participate in group rituals, increasing the duration of "
+                                    "\n\nAllows more cats to participate in group rituals, increasing the duration "
+                                    "of "
                                     "buffs.");
                 }
             }
@@ -3824,7 +3810,8 @@ It's a duck.)",
                 uiSetUnlockLabelY(15u);
                 makeCooldownButton("  wizardcat cooldown",
                                    CatType::Wizard,
-                                   "\n\nDoes *not* increase mana generation rate, but increases star bubble absorption "
+                                   "\n\nDoes *not* increase mana generation rate, but increases star bubble "
+                                   "absorption "
                                    "rate and decreases cooldown between spell casts.");
 
                 makeRangeButton("  wizardcat range",
@@ -4172,7 +4159,8 @@ It's a duck.)",
         if (prestigeTimes > 0u)
         {
             ImGui::Text(
-                "  prestige %zu time(s) at once\n  - increase bubble value from x%zu to x%zu\n  - obtain %llu prestige "
+                "  prestige %zu time(s) at once\n  - increase bubble value from x%zu to x%zu\n  - obtain %llu "
+                "prestige "
                 "point(s)",
                 prestigeTimes,
                 currentMult,
@@ -4369,7 +4357,8 @@ It's a duck.)",
 
             uiSetUnlockLabelY(53u);
             std::sprintf(uiTooltipBuffer,
-                         "Unicats transcend their physical form, becoming a higher entity that transforms bubbles into "
+                         "Unicats transcend their physical form, becoming a higher entity that transforms bubbles "
+                         "into "
                          "nova bubbles, worth x50.");
             uiLabelBuffer[0] = '\0';
 
@@ -4522,7 +4511,8 @@ It's a duck.)",
             const float nextUniPercentage    = pt.psvPPUniRitualBuffPercentage.nextValue();
 
             std::sprintf(uiTooltipBuffer,
-                         "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% to "
+                         "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% "
+                         "to "
                          "%.2f%%.",
                          static_cast<double>(currentUniPercentage),
                          static_cast<double>(nextUniPercentage));
@@ -4533,7 +4523,8 @@ It's a duck.)",
             const float nextDevilPercentage    = pt.psvPPDevilRitualBuffPercentage.nextValue();
 
             std::sprintf(uiTooltipBuffer,
-                         "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to %.2f%%.",
+                         "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to "
+                         "%.2f%%.",
                          static_cast<double>(currentDevilPercentage),
                          static_cast<double>(nextDevilPercentage));
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
@@ -5090,8 +5081,10 @@ It's a duck.)",
         uiButtonHueMod = 45.f;
 
         std::sprintf(uiTooltipBuffer,
-                     "The Wizardcat taps into memories of past lives, remembering a powerful spell.\n\nMana costs:\n- "
-                     "1st spell: 5 mana\n- 2nd spell: 20 mana\n- 3rd spell: 30 mana\n- 4th spell: 40 mana\n\nNote: You "
+                     "The Wizardcat taps into memories of past lives, remembering a powerful spell.\n\nMana "
+                     "costs:\n- "
+                     "1st spell: 5 mana\n- 2nd spell: 20 mana\n- 3rd spell: 30 mana\n- 4th spell: 40 mana\n\nNote: "
+                     "You "
                      "won't be able to cast a spell if the cost exceeds your maximum mana!");
         std::sprintf(uiLabelBuffer, "%zu/%zu", pt.psvSpellCount.nPurchases, pt.psvSpellCount.data->nMaxPurchases);
         (void)makePSVButtonExByCurrency("Remember spell",
@@ -5202,7 +5195,8 @@ It's a duck.)",
             uiSetUnlockLabelY(33u);
             std::sprintf(uiTooltipBuffer,
                          "Creates a value multiplier aura around the Wizardcat that affects all cats and bubbles. "
-                         "Lasts %d seconds.\n\nCasting this spell multiple times will accumulate the aura duration.",
+                         "Lasts %d seconds.\n\nCasting this spell multiple times will accumulate the aura "
+                         "duration.",
                          pt.perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
             bool done = false;
@@ -5287,7 +5281,8 @@ It's a duck.)",
             uiSetUnlockLabelY(35u);
             std::sprintf(uiTooltipBuffer,
                          "The Wizardcat controls time itself, creating a stasis field for %d seconds. All bubbles "
-                         "caught in the field become frozen in time, unable to move or be destroyed. However, they can "
+                         "caught in the field become frozen in time, unable to move or be destroyed. However, they "
+                         "can "
                          "still be popped, as many times as you want!\n\nCasting this spell multiple times will "
                          "accumulate the field duration.\n\nNote: This spell has no effect if there are no bubbles "
                          "nearby. Bombs are also affected by the stasis field.",
@@ -5440,57 +5435,73 @@ It's a duck.)",
                 };
 
                 addTip("Getting Started",
-                       "Click on bubbles to pop them and earn money.\n\nPurchase upgrades and cats to increase your "
+                       "Click on bubbles to pop them and earn money.\n\nPurchase upgrades and cats to increase "
+                       "your "
                        "income and automate your bubble popping journey.");
 
                 if (pt.comboPurchased)
                     addTip("Combos",
                            "Popping bubbles in quick succession will increase your combo multiplier, boosting your "
-                           "revenue. Keep the combo going for maximum profit!\n\nPopping high-value bubbles such as "
+                           "revenue. Keep the combo going for maximum profit!\n\nPopping high-value bubbles such "
+                           "as "
                            "star bubbles while your combo multiplier is high will yield even more revenue.");
 
                 if (pt.getCatCountByType(CatType::Normal) > 0)
                 {
                     addTip("Regular Cats",
-                           "Regular cats will automatically pop bubbles for you, even while you are away or the game "
+                           "Regular cats will automatically pop bubbles for you, even while you are away or the "
+                           "game "
                            "is in the background.\n\nThey are the bread and butter of any cat formation!");
 
                     addTip("Cat Dragging",
-                           "You can drag cats around the screen to reposition them.\n\nMoving individual cats can be "
-                           "done by clicking and dragging them.\n\nMultiple cats can be moved at once by holding down "
-                           "left shift and dragging a selection box around them. After that, either release left shift "
-                           "or the mouse button and drag them to their intended position. This is a great way to move "
+                           "You can drag cats around the screen to reposition them.\n\nMoving individual cats can "
+                           "be "
+                           "done by clicking and dragging them.\n\nMultiple cats can be moved at once by holding "
+                           "down "
+                           "left shift and dragging a selection box around them. After that, either release left "
+                           "shift "
+                           "or the mouse button and drag them to their intended position. This is a great way to "
+                           "move "
                            "an entire formation of cats at once.");
                 }
 
                 if (pt.getCatCountByType(CatType::Uni) > 0)
                     addTip("Unicats",
-                           "Unicats will convert normal bubbles into star bubbles, which are worth x15 the value of "
+                           "Unicats will convert normal bubbles into star bubbles, which are worth x15 the value "
+                           "of "
                            "normal bubbles.\n\nPopping star bubbles manually while your combo multiplier is high "
-                           "(towards the end of a combo) is a great way of making money early.\n\nAlternatively, you "
+                           "(towards the end of a combo) is a great way of making money early.\n\nAlternatively, "
+                           "you "
                            "can place regular cats under unicats to have them pop the star bubbles for you.");
 
                 if (pt.mapPurchased)
                 {
                     addTip("Map Exploration",
                            "Expand the map to discover shrines containing powerful unique cats and to have more "
-                           "real estate for your cat army.\n\nYou can scroll the map with the scroll wheel, holding "
-                           "right click, by dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou can "
+                           "real estate for your cat army.\n\nYou can scroll the map with the scroll wheel, "
+                           "holding "
+                           "right click, by dragging with two fingers, by using the A/D/Left/Right keys.\n\nYou "
+                           "can "
                            "jump around the map by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
 
                     addTip("Shrines",
-                           "Shrines contain powerful cats with unique powers and synergies.\n\nIn order to unseal the "
+                           "Shrines contain powerful cats with unique powers and synergies.\n\nIn order to unseal "
+                           "the "
                            "cats, the shrine must first be activated by purchasing \"Activate next shrine\" in the "
-                           "shop.\n\nAfterwards, the shrine must be completed by popping bubbles in its range until "
+                           "shop.\n\nAfterwards, the shrine must be completed by popping bubbles in its range "
+                           "until "
                            "the required amount of revenue is collected.");
                 }
 
                 if (pt.psvBubbleValue.nPurchases > 0 ||
                     (pt.getCatCountByType(CatType::Uni) >= 3 && pt.nShrinesCompleted > 0))
                     addTip("Prestige",
-                           "Prestige to reset your current progress, permanently increasing the value of bubbles and "
-                           "unlocking powerful permanent upgrades that persist between prestiges.\n\nDo not be afraid "
-                           "of prestiging, as its benefits will allow you to return to your current state very quickly "
+                           "Prestige to reset your current progress, permanently increasing the value of bubbles "
+                           "and "
+                           "unlocking powerful permanent upgrades that persist between prestiges.\n\nDo not be "
+                           "afraid "
+                           "of prestiging, as its benefits will allow you to return to your current state very "
+                           "quickly "
                            "and progress much further than it was possible before!");
 
                 if (pt.getCatCountByType(CatType::Devil) > 0)
@@ -5498,12 +5509,14 @@ It's a duck.)",
                            "Devilcats will convert normal bubbles into bombs, which explode when popped. Bubbles "
                            "caught in the explosion are worth x10 their original value. This means that every star "
                            "bubble caught in the explosion will be worth x150 the value of a normal "
-                           "bubble.\n\nPosition regular cats beneath Devilcats to automatically pop bombs, and Unicats "
+                           "bubble.\n\nPosition regular cats beneath Devilcats to automatically pop bombs, and "
+                           "Unicats "
                            "nearby to maximize the chance of having star bubbles caught in the explosion.");
 
                 if (pt.getCatCountByType(CatType::Astro) > 0)
                     addTip("Astrocats",
-                           "Astrocats will periodically fly across the map, looping around when they reach the edge of "
+                           "Astrocats will periodically fly across the map, looping around when they reach the "
+                           "edge of "
                            "the screen.\n\nAny bubble they touch while flying will be popped with a x20 "
                            "multiplier.\n\nUpgrading the total bubble count and expanding the map will indirectly "
                            "increase the effectiveness of Astrocats.");
@@ -5511,29 +5524,36 @@ It's a duck.)",
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
                     addTip("Witchcat",
                            "The Witchcat periodically perform voodoo rituals.\n\nDuring a ritual, a random cat in "
-                           "range of the Witchcat will be hexed and will become inactive until the ritual ends.\n\nAt "
-                           "the same time, voodoo dolls will appear throughout the map -- collect all of them to end "
-                           "the ritual and gain a powerful timed buff depending on the type of cat that was hexed.");
+                           "range of the Witchcat will be hexed and will become inactive until the ritual "
+                           "ends.\n\nAt "
+                           "the same time, voodoo dolls will appear throughout the map -- collect all of them to "
+                           "end "
+                           "the ritual and gain a powerful timed buff depending on the type of cat that was "
+                           "hexed.");
 
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
                     addTip("Wizardcat",
-                           "The Wizardcat casts powerful spells using mana that regenerates over time.\n\nIn order to "
+                           "The Wizardcat casts powerful spells using mana that regenerates over time.\n\nIn order "
+                           "to "
                            "learn new spells, the Wizardcat must concentrate and absorb wisdom from star bubbles, "
-                           "earning \"wisdom points\".\n\nCasting spells or changing the Wizardcat's state can be done "
+                           "earning \"wisdom points\".\n\nCasting spells or changing the Wizardcat's state can be "
+                           "done "
                            "in the \"Magic\" menu. ");
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
                     addTip("Mousecat",
                            "The Mousecat pops nearby bubbles keeping up its own personal combo.\n\nCombo/click "
                            "upgrades you purchased also apply to the Mousecat.\n\nRegular cats in range of the "
-                           "Mousecat will gain the same combo multiplier as the Mousecat.\n\nFurthermore, the Mousecat "
+                           "Mousecat will gain the same combo multiplier as the Mousecat.\n\nFurthermore, the "
+                           "Mousecat "
                            "provides a global click revenue value buff.");
 
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
                     addTip("Engicat",
-                           "The Engicat periodically increases the speed of nearby cats, effectively decreasing their "
+                           "The Engicat periodically increases the speed of nearby cats, effectively decreasing "
+                           "their "
                            "cooldown.\n\nFurthermore, the Mousecat provides a global cat revenue value buff.");
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
@@ -5543,13 +5563,15 @@ It's a duck.)",
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
                     addTip("Attractocat",
-                           "The Attractocat attracts nearby bubbles.\n\nBubbles in range of the Attractocat are worth "
+                           "The Attractocat attracts nearby bubbles.\n\nBubbles in range of the Attractocat are "
+                           "worth "
                            "x2 their value.");
 
                 if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
                     addTip("Copycat",
                            "The Copycat can mimic the abilities, effects, and properties of any other unique "
-                           "cat.\n\nThe mimicked cat can be chosen through the disguise menu near the bottom of the "
+                           "cat.\n\nThe mimicked cat can be chosen through the disguise menu near the bottom of "
+                           "the "
                            "screen.");
 
                 ImGui::EndChild();
@@ -8745,7 +8767,8 @@ It's a duck.)",
             const bool shouldDropCats = [&]
             {
                 if (catToPlace != nullptr)
-                    return bubbleCullingBoundaries.isInside(catToPlace->position) && mBtnRisingEdge(getLMB());
+                    return bubbleCullingBoundaries.isInside(catToPlace->position) &&
+                           inputHelper.wasMouseButtonJustPressed(getLMB());
 
                 const bool noMouseButtonNorFinger = !mBtnDown(getLMB(), /* penetrateUI */ true) && countFingersDown != 1;
 
@@ -9026,7 +9049,8 @@ It's a duck.)",
 
                             if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
                                 doTip(
-                                    "The Mousecat has been unsealed!\nThey combo-click bubbles, buff nearby cats,\nand "
+                                    "The Mousecat has been unsealed!\nThey combo-click bubbles, buff nearby "
+                                    "cats,\nand "
                                     "provide a global click buff.");
                         }
                         else if (shrine.type == ShrineType::Automation)
@@ -9035,7 +9059,8 @@ It's a duck.)",
 
                             if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
                                 doTip(
-                                    "The Engicat has been unsealed!\nThey speed-up nearby cats and provide\na global "
+                                    "The Engicat has been unsealed!\nThey speed-up nearby cats and provide\na "
+                                    "global "
                                     "cat buff.");
                         }
                         else if (shrine.type == ShrineType::Repulsion)
@@ -9044,7 +9069,8 @@ It's a duck.)",
 
                             if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
                                 doTip(
-                                    "The Repulsocat has been unsealed!\nNearby bubbles getting pushed away from\nthem "
+                                    "The Repulsocat has been unsealed!\nNearby bubbles getting pushed away "
+                                    "from\nthem "
                                     "gain a x2 multiplier.");
                         }
                         else if (shrine.type == ShrineType::Attraction)
@@ -9062,7 +9088,8 @@ It's a duck.)",
 
                             if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
                                 doTip(
-                                    "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining their "
+                                    "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining "
+                                    "their "
                                     "powers!");
                         }
                         else if (shrine.type == ShrineType::Victory)
@@ -11461,7 +11488,7 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool shouldDrawGrabbingCursor() const
     {
-        return !draggedCats.empty() || sf::Mouse::isButtonPressed(getRMB());
+        return !draggedCats.empty() || mBtnDown(getRMB(), /* penetrateUI */ true);
     }
 
     ////////////////////////////////////////////////////////////
@@ -12385,22 +12412,6 @@ It's a duck.)",
     {
         moneyText.setString("$" + std::string(toStringWithSeparators(pt.money + spentMoney)));
 
-        // TODO P0:
-        {
-            const auto touchDevices = sf::Touch::getDevices();
-
-            std::ostringstream oss;
-
-            for (const auto& [id, type, name] : touchDevices)
-            {
-                oss << "Touch device: " << id << " " << static_cast<int>(type) << " " << name << '\n';
-            }
-
-            oss << sf::Touch::testsdl();
-
-            moneyText.setString(oss.str());
-        }
-
         moneyText.setOutlineColor(outlineHueColor);
         moneyText.scale  = {0.5f, 0.5f};
         moneyText.origin = moneyText.getLocalBounds().size / 2.f;
@@ -12676,8 +12687,11 @@ It's a duck.)",
 
         sf::base::Optional<sf::Vector2f> clickPosition;
 
+        inputHelper.beginNewFrame();
+
         while (const sf::base::Optional event = window.pollEvent())
         {
+            inputHelper.applyEvent(*event);
             imGuiContext.processEvent(window, *event);
 
             if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
@@ -12735,9 +12749,7 @@ It's a duck.)",
             else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
             {
                 if (pt.mapPurchased && dragPosition.hasValue())
-                {
                     scroll = dragPosition->x - static_cast<float>(e5->position.x);
-                }
             }
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
             {
@@ -12773,22 +12785,6 @@ It's a duck.)",
         gameLoopCheats();
 
         //
-        // Keyboard helpers
-        for (sf::base::SizeT iKey = 0u; iKey < sf::Keyboard::KeyCount; ++iKey)
-        {
-            keyPressedLastFrame[iKey] = keyPressedThisFrame[iKey];
-            keyPressedThisFrame[iKey] = keyDown(static_cast<sf::Keyboard::Key>(iKey));
-        }
-
-        //
-        // Mouse helpers
-        for (sf::base::SizeT iBtn = 0u; iBtn < sf::Mouse::ButtonCount; ++iBtn)
-        {
-            mBtnsPressedLastFrame[iBtn] = mBtnsPressedThisFrame[iBtn];
-            mBtnsPressedThisFrame[iBtn] = mBtnDown(static_cast<sf::Mouse::Button>(iBtn), /* penetrateUI */ true);
-        }
-
-        //
         // TODO PO laser cursor
         if (pt.laserPopEnabled)
             if (keyDown(sf::Keyboard::Key::Z) || keyDown(sf::Keyboard::Key::X) || keyDown(sf::Keyboard::Key::Y) ||
@@ -12810,21 +12806,23 @@ It's a duck.)",
         if (pt.mapPurchased)
         {
             // Jump to beginning/end of map
-            if (keyRisingEdge(sf::Keyboard::Key::Home))
+            if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::Home))
                 scroll = 0.f;
-            else if (keyRisingEdge(sf::Keyboard::Key::End))
+            else if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::End))
                 scroll = static_cast<float>(pt.getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
 
             const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
                 sf::base::lround(scroll / (gameScreenSize.x * 0.5f)));
 
             // Jump to previous/next screen
-            if (keyRisingEdge(sf::Keyboard::Key::PageDown) || mBtnRisingEdge(sf::Mouse::Button::Extra2))
+            if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageDown) ||
+                inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra2))
             {
                 const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, pt.getMapLimitIncreases());
                 scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
             }
-            else if ((keyRisingEdge(sf::Keyboard::Key::PageUp) || mBtnRisingEdge(sf::Mouse::Button::Extra1)) &&
+            else if ((inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageUp) ||
+                      inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra1)) &&
                      currentScrollScreenIndex > 0u)
             {
                 const auto nextScrollScreenIndex = sf::base::max(static_cast<sf::base::SizeT>(0u),
@@ -13460,18 +13458,6 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 int main(int argc, const char** argv)
 {
-    /*
-    auto desktopMode = sf::VideoModeUtils::getDesktopMode();
-    sf::cOut() << "Desktop mode: " << desktopMode.size.x << "x" << desktopMode.size.y << " @ "
-              << desktopMode.bitsPerPixel << "bpp\n";
-
-    for (auto fullscreenMode : sf::VideoModeUtils::getFullscreenModes())
-    {
-        sf::cOut() << "Fullscreen mode: " << fullscreenMode.size.x << "x" << fullscreenMode.size.y << " @ "
-                  << fullscreenMode.bitsPerPixel << "bpp\n";
-    }
-    */
-
     if (argc >= 2 && SFML_BASE_STRCMP(argv[1], "dev") == 0)
         debugMode = true;
 
