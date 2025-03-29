@@ -21,6 +21,7 @@ namespace sf
 class String;
 class Time;
 struct WindowSettings;
+struct SDL_Window;
 
 namespace Vulkan
 {
@@ -114,10 +115,18 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window
     ///
-    /// \return Handle of the window
+    /// \return Native handle of the window
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] WindowHandle getNativeHandle() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the SDL-specific handle of the window
+    ///
+    /// \return SDL handle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDL_Window* getSDLHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
