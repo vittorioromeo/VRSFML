@@ -5369,10 +5369,6 @@ It's a duck.)",
             ImGui::Spacing();
             ImGui::Spacing();
 
-            ImGui::Columns(2, "twoColumnsStats", false);
-            ImGui::SetColumnWidth(0, uiWindowWidth / 2.f * profile.uiScale);
-            ImGui::SetColumnWidth(1, uiWindowWidth / 2.f * profile.uiScale);
-
             const auto [h, m, s] = formatTime(stats.secondsPlayed);
             ImGui::Text("Time played: %lluh %llum %llus", h, m, s);
 
@@ -5392,18 +5388,17 @@ It's a duck.)",
             ImGui::Spacing();
             ImGui::Spacing();
             ImGui::Text("Highest $/s: %s", toStringWithSeparators(stats.highestDPS));
-            ImGui::NextColumn();
 
             ImGui::Text("Revenue: $%s", toStringWithSeparators(bubblesPoppedRevenue));
             ImGui::Indent();
             ImGui::Text("Clicked: $%s", toStringWithSeparators(bubblesHandPoppedRevenue));
             ImGui::Text("By cats: $%s", toStringWithSeparators(bubblesPoppedRevenue - bubblesHandPoppedRevenue));
+            ImGui::Indent();
             ImGui::Text("Bombs:  $%s", toStringWithSeparators(stats.explosionRevenue));
             ImGui::Text("Flights: $%s", toStringWithSeparators(stats.flightRevenue));
             ImGui::Text("Portals: $%s", toStringWithSeparators(stats.hellPortalRevenue));
             ImGui::Unindent();
-
-            ImGui::Columns(1);
+            ImGui::Unindent();
         };
 
         if (ImGui::BeginTabBar("TabBarStats", ImGuiTabBarFlags_DrawSelectedOverline))
@@ -5587,19 +5582,26 @@ It's a duck.)",
             {
                 selectedTab(1);
 
-                uiSetFontScale(0.75f);
-
+                uiSetFontScale(1.f);
                 uiCenteredText(" ~~ Lifetime ~~ ");
+
+                uiSetFontScale(0.75f);
                 displayStats(profile.statsLifetime);
 
                 ImGui::Separator();
 
+                uiSetFontScale(1.f);
                 uiCenteredText(" ~~ This playthrough ~~ ");
+
+                uiSetFontScale(0.75f);
                 displayStats(pt.statsTotal);
 
                 ImGui::Separator();
 
+                uiSetFontScale(1.f);
                 uiCenteredText(" ~~ This prestige ~~ ");
+
+                uiSetFontScale(0.75f);
                 displayStats(pt.statsSession);
 
                 ImGui::Spacing();
@@ -5701,6 +5703,11 @@ It's a duck.)",
 
                 uiSetFontScale(uiNormalFontScale);
                 ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, sf::base::getArraySize(achievementData));
+
+                static bool showCompleted = true;
+                uiSetFontScale(0.75f);
+                uiCheckbox("Show completed", &showCompleted);
+
                 ImGui::Separator();
                 uiSetFontScale(0.75f);
 
@@ -5709,8 +5716,15 @@ It's a duck.)",
                 sf::base::U64 id = 0u;
                 for (const auto& [name, description, secret] : achievementData)
                 {
-                    const bool  unlocked = profile.unlockedAchievements[id];
-                    const float opacity  = unlocked ? 1.f : 0.5f;
+                    const bool unlocked = profile.unlockedAchievements[id];
+
+                    if (!showCompleted && unlocked)
+                    {
+                        ++id;
+                        continue;
+                    }
+
+                    const float opacity = unlocked ? 1.f : 0.5f;
 
                     const ImVec4 textColor{1.f, 1.f, 1.f, opacity};
 
@@ -5771,7 +5785,7 @@ It's a duck.)",
             return true;
 
         const Cat* copyCat = cachedCopyCat;
-        if (copyCat == nullptr && pt.copycatCopiedCatType != CatType::Wizard)
+        if (copyCat == nullptr || pt.copycatCopiedCatType != CatType::Wizard)
             return false;
 
         if ((copyCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
@@ -9699,7 +9713,7 @@ It's a duck.)",
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 1);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 3);
         unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 9); // 43
+        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 9);
 
         unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 1);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 5);
@@ -9750,8 +9764,8 @@ It's a duck.)",
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 5);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 10);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 20);
+        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 25);
         unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 30);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 40);
 
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 1);
         unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 3);
@@ -12196,7 +12210,7 @@ It's a duck.)",
                              sf::base::clamp(mousePos.y, 0.f, boundaries.y),
                              0.f};
 
-        listener.volume = profile.masterVolume * volumeMult;
+        listener.volume = profile.masterVolume / 100.f * volumeMult;
 
         (void)playbackDevice.updateListener(listener);
 
@@ -13363,6 +13377,8 @@ It's a duck.)",
         shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
 
         window.setView({window.getSize().toVector2f() / 2.f, window.getSize().toVector2f()});
+
+        window.clear();
         window.draw(rtGame->getTexture(), {.shader = &shaderPostProcess});
         window.display();
 
@@ -13490,10 +13506,11 @@ int main(int argc, const char** argv)
 // TODO P1: more steam deck improvements
 // TODO P1: drag click PP upgrade, stacks with multipop
 // TODO P1: Ability to hide maxed out upgrades would help reduce visual clutter in the Shop and Prestige menu in the late game.
+// TODO P1: Endgame upgrade and cat costs are so large that they don't fit inside the buttons. Maybe the option to swap to a different notation would be good.
+// TODO P1: Let me hold the "Buy PPS" button. Having to click it hundreds of times to get all upgrade achievements does not feel good at all.
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
-// TODO P2: encrypt save files
 // TODO P2: configurable particle spawn chance
 // TODO P2: configurable pop sound play chance
 // TODO P2: maybe 64PP prestige buff for multipop that allows "misses"
