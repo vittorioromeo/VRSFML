@@ -2960,9 +2960,7 @@ It's a duck.)",
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             if (ImGui::SliderFloat("SFX##popupsfxvolume", &profile.sfxVolume, 0.f, 100.f, "%.f%%"))
-            {
                 sounds.setupSounds(/* volumeOnly */ true, profile.sfxVolume / 100.f);
-            }
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Music##popupmusicvolume", &profile.musicVolume, 0.f, 100.f, "%.f%%");
@@ -6082,9 +6080,7 @@ It's a duck.)",
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             if (ImGui::SliderFloat("SFX volume", &profile.sfxVolume, 0.f, 100.f, "%.f%%"))
-            {
                 sounds.setupSounds(/* volumeOnly */ true, profile.sfxVolume / 100.f);
-            }
 
             ImGui::SetNextItemWidth(210.f * profile.uiScale);
             ImGui::SliderFloat("Music volume", &profile.musicVolume, 0.f, 100.f, "%.f%%");
@@ -6939,7 +6935,7 @@ It's a duck.)",
                                               getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
 
                 sounds.coindelay.setPitch(1.f);
-                sounds.coindelay.setVolume(profile.sfxVolume / 100.f * 50.f);
+                sounds.coindelay.setVolume(profile.sfxVolume / 100.f * 0.5f);
 
                 playSound(sounds.coindelay, /* maxOverlap */ 64);
             }
@@ -11966,7 +11962,7 @@ It's a duck.)",
                     sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
                                                   getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
                     sounds.coindelay.setPitch(0.8f + static_cast<float>(iComboAccReward) * 0.04f);
-                    sounds.coindelay.setVolume(profile.sfxVolume / 100.f * 100.f);
+                    sounds.coindelay.setVolume(profile.sfxVolume / 100.f);
 
                     playSound(sounds.coindelay, /* maxOverlap */ 64);
                 }
@@ -12217,7 +12213,7 @@ It's a duck.)",
                     return;
 
                 optMusic->setPosition(listener.position);
-                optMusic->setVolume(profile.musicVolume * volumeMult * transitionMult);
+                optMusic->setVolume(profile.musicVolume / 100.f * volumeMult * transitionMult);
 
                 if (sounds.countPlayingPooled(sounds.prestige) > 0u)
                     optMusic->setVolume(0.f);
@@ -12240,7 +12236,7 @@ It's a duck.)",
                     return;
 
                 optMusic->setPosition(listener.position);
-                optMusic->setVolume(profile.musicVolume * volumeMult);
+                optMusic->setVolume(profile.musicVolume / 100.f * volumeMult);
 
                 if (sounds.countPlayingPooled(sounds.prestige) > 0u)
                     optMusic->setVolume(0.f);

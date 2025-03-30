@@ -113,7 +113,7 @@ struct Sounds
                 sound.setSpatializationEnabled(true);
             }
 
-            sound.setVolume(100.f * volumeMult);
+            sound.setVolume(volumeMult);
         };
 
         const auto setupUISound = [&](auto& sound)
@@ -124,7 +124,7 @@ struct Sounds
                 sound.setSpatializationEnabled(false);
             }
 
-            sound.setVolume(100.f * volumeMult);
+            sound.setVolume(volumeMult);
         };
 
         setupWorldSound(pop);
@@ -180,13 +180,13 @@ struct Sounds
         setupUISound(paper);
         setupUISound(letterchime);
 
-        scratch.setVolume(volumeMult * 35.f);
-        buy.setVolume(volumeMult * 75.f);
-        explosion.setVolume(volumeMult * 75.f);
-        coin.setVolume(volumeMult * 50.f);
-        buffon.setVolume(volumeMult * 65.f);
-        buffoff.setVolume(volumeMult * 65.f);
-        shine3.setVolume(volumeMult * 25.f);
+        scratch.setVolume(volumeMult * 0.35f);
+        buy.setVolume(volumeMult * 0.75f);
+        explosion.setVolume(volumeMult * 0.75f);
+        coin.setVolume(volumeMult * 0.50f);
+        buffon.setVolume(volumeMult * 0.65f);
+        buffoff.setVolume(volumeMult * 0.65f);
+        shine3.setVolume(volumeMult * 0.25f);
     }
 
     ////////////////////////////////////////////////////////////
