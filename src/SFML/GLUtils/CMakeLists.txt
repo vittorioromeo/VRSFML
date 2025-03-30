@@ -14,11 +14,6 @@ if(SFML_OS_WINDOWS)
             ${SRCROOT}/EGL/EGLGlad.cpp
             ${SRCROOT}/EGL/EGLGlad.hpp
         )
-    else()
-        list(APPEND PLATFORM_SRC
-            # ${SRCROOT}/Win32/WglContext.cpp
-            # ${SRCROOT}/Win32/WglContext.hpp
-        )
     endif()
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     if(SFML_USE_DRM)
@@ -26,8 +21,6 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         set(PLATFORM_SRC
             ${SRCROOT}/EGL/EGLCheck.cpp
             ${SRCROOT}/EGL/EGLCheck.hpp
-            # ${SRCROOT}/DRM/DRMContext.cpp
-            # ${SRCROOT}/DRM/DRMContext.hpp
         )
     else()
         if(SFML_OPENGL_ES)
@@ -39,18 +32,11 @@ elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
                 ${SRCROOT}/EGL/EGLGlad.cpp
                 ${SRCROOT}/EGL/EGLGlad.hpp
             )
-        else()
-             list(APPEND PLATFORM_SRC
-                # ${SRCROOT}/Unix/GlxContext.cpp
-                # ${SRCROOT}/Unix/GlxContext.hpp
-            )
         endif()
     endif()
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
-        # ${SRCROOT}/macOS/SFContext.hpp
-        # ${SRCROOT}/macOS/SFContext.mm
         # ${SRCROOT}/macOS/SFOpenGLView.h
         # ${SRCROOT}/macOS/SFOpenGLView.mm
         # ${SRCROOT}/macOS/SFOpenGLView+keyboard.mm
@@ -60,10 +46,6 @@ elseif(SFML_OS_MACOS)
     )
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
-    set(PLATFORM_SRC
-        # ${SRCROOT}/iOS/EaglContext.mm
-        # ${SRCROOT}/iOS/EaglContext.hpp
-    )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
         ${SRCROOT}/EGL/EGLCheck.cpp
