@@ -119,8 +119,8 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Set the volume of the sound
     ///
-    /// The volume is a value between 0 (mute) and 100 (full volume).
-    /// The default value for the volume is 100.
+    /// The volume is a value between 0 (mute) and 1 (full volume).
+    /// The default value for the volume is 1.
     ///
     /// \param volume Volume of the sound
     ///
@@ -392,7 +392,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the volume of the sound
     ///
-    /// \return Volume of the sound, in the range [0, 100]
+    /// \return Volume of the sound, in the range [0, 1]
     ///
     /// \see `setVolume`
     ///
