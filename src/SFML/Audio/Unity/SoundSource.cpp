@@ -12,6 +12,7 @@
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Macros.hpp"
+
 #include <miniaudio.h>
 
 
@@ -47,7 +48,7 @@ SoundSource::~SoundSource() = default;
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setPitch(float pitch)
+void SoundSource::setPitch(const float pitch)
 {
     m_impl->savedSettings.pitch = pitch;
 
@@ -57,7 +58,7 @@ void SoundSource::setPitch(float pitch)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setPan(float pan)
+void SoundSource::setPan(const float pan)
 {
     m_impl->savedSettings.pan = pan;
 
@@ -67,13 +68,14 @@ void SoundSource::setPan(float pan)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setVolume(float volume)
+void SoundSource::setVolume(const float volume)
 {
-    // TODO P0: change range to [0, 1]?
-    m_impl->savedSettings.volume = volume * 0.01f;
+    SFML_BASE_ASSERT(volume >= 0.f && volume <= 1.f);
+
+    m_impl->savedSettings.volume = volume;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
-        ma_sound_set_volume(sound, volume * 0.01f);
+        ma_sound_set_volume(sound, volume);
 }
 
 
@@ -131,7 +133,7 @@ void SoundSource::setVelocity(const Vector3f& velocity)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setDopplerFactor(float dopplerFactor)
+void SoundSource::setDopplerFactor(const float dopplerFactor)
 {
     m_impl->savedSettings.dopplerFactor = dopplerFactor;
 
@@ -141,7 +143,7 @@ void SoundSource::setDopplerFactor(float dopplerFactor)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setDirectionalAttenuationFactor(float directionalAttenuationFactor)
+void SoundSource::setDirectionalAttenuationFactor(const float directionalAttenuationFactor)
 {
     m_impl->savedSettings.directionalAttenuationFactor = directionalAttenuationFactor;
 
@@ -161,7 +163,7 @@ void SoundSource::setRelativeToListener(bool relativeToListener)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setMinDistance(float minDistance)
+void SoundSource::setMinDistance(const float minDistance)
 {
     m_impl->savedSettings.minDistance = minDistance;
 
@@ -171,7 +173,7 @@ void SoundSource::setMinDistance(float minDistance)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setMaxDistance(float maxDistance)
+void SoundSource::setMaxDistance(const float maxDistance)
 {
     m_impl->savedSettings.maxDistance = maxDistance;
 
@@ -181,7 +183,7 @@ void SoundSource::setMaxDistance(float maxDistance)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setMinGain(float minGain)
+void SoundSource::setMinGain(const float minGain)
 {
     m_impl->savedSettings.minGain = minGain;
 
@@ -191,7 +193,7 @@ void SoundSource::setMinGain(float minGain)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setMaxGain(float maxGain)
+void SoundSource::setMaxGain(const float maxGain)
 {
     m_impl->savedSettings.maxGain = maxGain;
 
@@ -201,7 +203,7 @@ void SoundSource::setMaxGain(float maxGain)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setAttenuation(float attenuation)
+void SoundSource::setAttenuation(const float attenuation)
 {
     m_impl->savedSettings.rollOff = attenuation;
 
@@ -251,7 +253,9 @@ float SoundSource::getPan() const
 ////////////////////////////////////////////////////////////
 float SoundSource::getVolume() const
 {
-    return m_impl->savedSettings.volume * 100.f;
+    const float result = m_impl->savedSettings.volume;
+    SFML_BASE_ASSERT(result >= 0.f && result <= 1.f);
+    return result;
 }
 
 
