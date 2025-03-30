@@ -48,7 +48,7 @@ struct ContextSettings
 #endif
 
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
-    static inline constexpr auto defaultMajorVersion = 2u;
+    static inline constexpr auto defaultMajorVersion = 3u; // `3` is WebGL 2
     static inline constexpr auto defaultMinorVersion = 0u;
 #elif defined(SFML_OPENGL_ES)
     static inline constexpr auto defaultMajorVersion = 3u;
