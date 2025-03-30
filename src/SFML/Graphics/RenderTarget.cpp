@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -16,6 +17,7 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -276,7 +278,8 @@ struct [[nodiscard]] StatesCache
     bool      viewChanged{false}; //!< Has the current view changed since last draw?
     Transform lastViewTransform;  //!< Cached transform of latest view
 
-    Transform lastDrawTransform; //!< Cached last draw transform
+    Transform lastRenderStatesTransform; //!< Cached renderstates transform
+    Transform lastFinalDrawTransform;    //!< Cached last draw transform  (view * renderstates transform)
 
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
@@ -299,7 +302,12 @@ struct RenderTarget::Impl
     StatesCache              cache{};  //!< Render states cache
     RenderTargetImpl::IdType id{};     //!< Unique number that identifies the render target
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
-    CPUDrawableBatch         cpuDrawableBatch; //!< TODO P0: docs, reuse, autobatch
+
+    ////////////////////////////////////////////////////////////
+    CPUDrawableBatch cpuDrawableBatch;  //!< TODO P0: docs, reuse, autobatch
+    bool             autoBatch = true;  //!< TODO P0: docs
+    RenderStates     lastRenderStates;  //!< TODO P0: docs
+    bool             mustFlush = false; //!< TODO P0: docs
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
@@ -342,6 +350,8 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool RenderTarget::clearImpl()
 {
+    nDrawCalls = 0; // TODO P0: return from display()? add some statistics struct
+
     if (!setActive(true))
     {
         priv::err() << "Failed to activate render target in `clearImpl`";
@@ -399,6 +409,8 @@ void RenderTarget::setView(const View& view)
     if (view == m_impl->view)
         return;
 
+    flush();
+
     m_impl->view              = view;
     m_impl->cache.viewChanged = true;
 }
@@ -408,6 +420,24 @@ void RenderTarget::setView(const View& view)
 const View& RenderTarget::getView() const
 {
     return m_impl->view;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::setAutoBatchingEnabled(const bool enabled)
+{
+    if (m_impl->autoBatch == enabled)
+        return;
+
+    flush();
+    m_impl->autoBatch = enabled;
+}
+
+
+////////////////////////////////////////////////////////////
+bool RenderTarget::isAutoBatchingEnabled() const
+{
+    return m_impl->autoBatch;
 }
 
 
@@ -474,16 +504,24 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
     states.texture = &texture;
 
-    Vertex buffer[4];
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(Sprite{.textureRect = texture.getRect()});
+    }
+    else
+    {
+        Vertex buffer[4];
 
-    appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
-                                                       /* scale */ {1.f, 1.f},
-                                                       /* origin */ {0.f, 0.f}),
-                                       texture.getRect(),
-                                       Color::White,
-                                       buffer);
+        appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
+                                                           /* scale */ {1.f, 1.f},
+                                                           /* origin */ {0.f, 0.f}),
+                                           texture.getRect(),
+                                           Color::White,
+                                           buffer);
 
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
@@ -492,16 +530,32 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 {
     states.texture = &texture;
 
-    const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
 
-    Vertex buffer[4];
+        m_impl->cpuDrawableBatch.add(Sprite{
+            .position    = params.position,
+            .scale       = params.scale,
+            .origin      = params.origin,
+            .rotation    = params.rotation,
+            .textureRect = (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+            .color       = params.color,
+        });
+    }
+    else
+    {
+        const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
 
-    appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
-                                       (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
-                                       params.color,
-                                       buffer);
+        Vertex buffer[4];
 
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+        appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
+                                           (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+                                           params.color,
+                                           buffer);
+
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
@@ -510,24 +564,57 @@ void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
     SFML_BASE_ASSERT(states.texture != nullptr);
 
-    Vertex buffer[4];
-    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(sprite);
+    }
+    else
+    {
+        Vertex buffer[4];
+        appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Shape& shape, RenderStates states)
 {
-    states.transform *= shape.getTransform();
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(shape);
+    }
+    else
+    {
+        states.transform *= shape.getTransform();
 
-    const auto [fillData, fillSize]       = shape.getFillVertices();
-    const auto [outlineData, outlineSize] = shape.getOutlineVertices();
+        const auto [fillData, fillSize]       = shape.getFillVertices();
+        const auto [outlineData, outlineSize] = shape.getOutlineVertices();
 
-    drawVertices(fillData, fillSize, PrimitiveType::TriangleFan, states);
+        drawVertices(fillData, fillSize, PrimitiveType::TriangleFan, states);
 
-    if (shape.getOutlineThickness() != 0.f)
-        drawVertices(outlineData, outlineSize, PrimitiveType::TriangleStrip, states);
+        if (shape.getOutlineThickness() != 0.f)
+            drawVertices(outlineData, outlineSize, PrimitiveType::TriangleStrip, states);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Text& text, RenderStates states)
+{
+    states.texture = &text.getFont().getTexture();
+
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(text);
+    }
+    else
+    {
+        text.draw(*this, states);
+    }
 }
 
 
@@ -539,6 +626,7 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
         return;
 
     setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
 
@@ -561,6 +649,7 @@ void RenderTarget::drawIndexedVertices(
         return;
 
     setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
     RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
     RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
@@ -581,6 +670,7 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
         return;
 
     setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
+    m_impl->lastRenderStates = states;
 
     {
         GLSyncGuard syncGuard;
@@ -602,6 +692,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
         return;
 
     setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
+    m_impl->lastRenderStates = states;
 
     {
         GLSyncGuard syncGuard;
@@ -615,6 +706,9 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
+    if (m_impl->autoBatch && &drawableBatch != &m_impl->cpuDrawableBatch)
+        flush();
+
     states.transform *= drawableBatch.getTransform();
 
     drawIndexedVertices(drawableBatch.m_storage.vertices.data(),
@@ -629,6 +723,9 @@ void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates stat
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
 {
+    if (m_impl->autoBatch)
+        flush();
+
     states.transform *= drawableBatch.getTransform();
     drawPersistentMappedIndexedVertices(drawableBatch, drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
 }
@@ -644,6 +741,9 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states)
 {
+    if (m_impl->autoBatch)
+        flush();
+
     // Sanity check
     if (firstVertex > vertexBuffer.getVertexCount())
         return;
@@ -657,6 +757,7 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
         return;
 
     setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
     // Bind vertex buffer
     vertexBuffer.bind();
@@ -677,46 +778,48 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::drawShapeData(const auto& shapeData, const RenderStates& states)
+{
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(shapeData);
+        return;
+    }
+
+    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.isEmpty());
+
+    m_impl->cpuDrawableBatch.add(shapeData);
+    draw(m_impl->cpuDrawableBatch, states);
+    m_impl->cpuDrawableBatch.clear();
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& states)
 {
-    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
-
-    batch.clear();
-    batch.add(sdCircle);
-    draw(batch, states);
+    drawShapeData(sdCircle, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)
 {
-    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
-
-    batch.clear();
-    batch.add(sdEllipse);
-    draw(batch, states);
+    drawShapeData(sdEllipse, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)
 {
-    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
-
-    batch.clear();
-    batch.add(sdRectangle);
-    draw(batch, states);
+    drawShapeData(sdRectangle, states);
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states)
 {
-    auto& batch = m_impl->cpuDrawableBatch; // TODO P0: optimize
-
-    batch.clear();
-    batch.add(sdRoundedRectangle);
-    draw(batch, states);
+    drawShapeData(sdRoundedRectangle, states);
 }
 
 
@@ -779,6 +882,14 @@ bool RenderTarget::setActive(bool active)
 ////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()
 {
+    flush();
+    resetGLStatesImpl();
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::resetGLStatesImpl()
+{
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
 #if defined(SFML_SYSTEM_MACOS)
@@ -828,6 +939,25 @@ void RenderTarget::resetGLStates()
     setView(getView());
 
     m_impl->cache.enable = true;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::flush()
+{
+    draw(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
+    m_impl->cpuDrawableBatch.clear();
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::flushIfNeeded(const RenderStates& states)
+{
+    if (m_impl->lastRenderStates != states || m_impl->mustFlush)
+        flush();
+
+    m_impl->lastRenderStates = states;
+    m_impl->mustFlush        = false;
 }
 
 
@@ -925,7 +1055,6 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 void RenderTarget::unapplyTexture()
 {
     Texture::unbind();
-
     m_impl->cache.lastTextureId = 0ul;
 }
 
@@ -949,7 +1078,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // First set the persistent OpenGL states if it's the very first call
     if (!m_impl->cache.glStatesSet)
-        resetGLStates();
+        resetGLStatesImpl();
 
     // Bind GL objects
     if (!m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroup.getId())
@@ -972,11 +1101,12 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
     }
 
     // Apply the view
-    if (!m_impl->cache.enable || m_impl->cache.viewChanged)
+    const bool viewChanged = !m_impl->cache.enable || m_impl->cache.viewChanged;
+    if (viewChanged)
         applyView(m_impl->view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states, m_impl->cache.lastViewTransform, shaderChanged);
+    setupDrawMVP(states.transform, m_impl->cache.lastViewTransform, viewChanged, shaderChanged);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -996,17 +1126,22 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged)
+void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
+                                const Transform& viewTransform,
+                                const bool       viewChanged,
+                                const bool       shaderChanged)
 {
-    // Compute the final draw transform
-    const Transform trsfm = viewTransform * /* model-view matrix */ states.transform;
-
     // If there's no difference from the cached one, exit early
-    if (!shaderChanged && (m_impl->cache.enable && trsfm == m_impl->cache.lastDrawTransform))
+    if (!shaderChanged &&
+        (m_impl->cache.enable && !viewChanged && renderStatesTransform == m_impl->cache.lastRenderStatesTransform))
         return;
 
+    // Compute the final draw transform
+    const Transform trsfm = viewTransform * /* model-view matrix */ renderStatesTransform;
+
     // Update the cached transform
-    m_impl->cache.lastDrawTransform = trsfm;
+    m_impl->cache.lastRenderStatesTransform = renderStatesTransform;
+    m_impl->cache.lastFinalDrawTransform    = trsfm;
 
     // clang-format off
     const float transformMatrixBuffer[]{trsfm.a00, trsfm.a10, 0.f, 0.f,
@@ -1052,6 +1187,8 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
 {
+    ++nDrawCalls; // TODO P0:
+
     glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                          /* first vertex index */ static_cast<GLint>(firstVertex),
                          /*       vertex count */ static_cast<GLsizei>(vertexCount)));
@@ -1061,6 +1198,8 @@ void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, b
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
 {
+    ++nDrawCalls; // TODO P0:
+
     static_assert(SFML_BASE_IS_SAME(IndexType, unsigned int));
 
     glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
