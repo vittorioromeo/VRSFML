@@ -179,7 +179,7 @@ public:
         m_music.setPitch(m_pitch);
 
         // Set initial volume
-        m_music.setVolume(m_volume);
+        m_music.setVolume(m_volume / 100.f);
     }
 
     void update(float /*time*/, float x, float y) override
@@ -188,7 +188,7 @@ public:
         m_volume = std::clamp(100.f * (1.f - y), 0.f, 100.f);
 
         m_music.setPitch(m_pitch);
-        m_music.setVolume(m_volume);
+        m_music.setVolume(m_volume / 100.f);
 
         m_pitchText.setString("Pitch: " + std::to_string(m_pitch));
         m_volumeText.setString("Volume: " + std::to_string(m_volume));
