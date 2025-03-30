@@ -132,6 +132,14 @@ base::Optional<Event> RenderWindow::waitEvent(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
+void RenderWindow::display()
+{
+    RenderTarget::flush();
+    Window::display();
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderWindow::setSize(const Vector2u& size)
 {
     WindowBase::setSize(size);

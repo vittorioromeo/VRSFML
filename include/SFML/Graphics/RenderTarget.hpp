@@ -31,6 +31,7 @@ class GLPersistentBuffer;
 class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
+class Text;
 class Texture;
 class VertexBuffer;
 
@@ -60,6 +61,8 @@ namespace sf
 class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
 {
 public:
+    int nDrawCalls = 0; // TODO P0: return from display()?
+
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
@@ -152,6 +155,33 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const View& getView() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Enable or disable auto-batching
+    ///
+    /// Auto-batching is a performance optimization that groups
+    /// draw calls together to reduce the number of state changes
+    /// and improve rendering performance. When enabled, the
+    /// render target will automatically batch draw calls
+    /// together when possible, reducing the overhead of
+    /// individual draw calls.
+    ///
+    /// \param enabled `true` to enable auto-batching, `false` to disable it
+    ///
+    /// \see `isAutoBatchingEnabled`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setAutoBatchingEnabled(bool enabled);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if auto-batching is enabled
+    ///
+    /// \return `true` if auto-batching is enabled, `false` otherwise
+    ///
+    /// \see `setAutoBatchingEnabled`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isAutoBatchingEnabled() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -292,6 +322,7 @@ public:
     void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
         requires(requires { drawableObject.draw(*this, states); })
     {
+        flushIfNeeded(states);
         drawableObject.draw(*this, states);
     }
 
@@ -355,6 +386,15 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Shape& shape, RenderStates states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a text object to the render target
+    ///
+    /// \param text Text to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Text& text, RenderStates states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -556,6 +596,12 @@ public:
     ////////////////////////////////////////////////////////////
     void resetGLStates();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void flush();
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Constructor from graphics context
@@ -564,6 +610,24 @@ protected:
     [[nodiscard]] explicit RenderTarget(const View& currentView);
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void flushIfNeeded(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawShapeData(const auto& shapeData, const RenderStates& states = RenderStates::Default);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void resetGLStatesImpl();
+
     ////////////////////////////////////////////////////////////
     /// \brief Perform common cleaning operations prior to GL calls
     ///
@@ -609,10 +673,13 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: MVP matrix
     ///
-    /// \param states Render states to use for drawing
+    /// \param renderStatesTransform Transform to use for the MVP matrix
+    /// \param viewTransform         View transform to use for the MVP matrix
+    /// \param viewChanged           Whether the view has changed
+    /// \param shaderChanged         Whether the shader has changed
     ///
     ////////////////////////////////////////////////////////////
-    void setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged);
+    void setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform, bool viewChanged, bool shaderChanged);
 
     ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing: texture
