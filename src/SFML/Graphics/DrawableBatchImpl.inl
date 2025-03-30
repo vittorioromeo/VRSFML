@@ -314,4 +314,12 @@ void DrawableBatchImpl<TStorage>::clear()
     m_storage.clear();
 }
 
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+bool DrawableBatchImpl<TStorage>::isEmpty() const noexcept
+{
+    return m_storage.getNumVertices() == 0u && m_storage.getNumIndices() == 0u;
+}
+
 } // namespace sf::priv

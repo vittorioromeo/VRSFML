@@ -196,21 +196,21 @@ TEST_CASE("[Window] sf::Event")
         const auto& joystickDisconnected = *event.getIf<sf::Event::JoystickDisconnected>();
         CHECK(joystickDisconnected.joystickId == 43);
 
-        event = sf::Event::TouchBegan{99, {98, 97}};
+        event = sf::Event::TouchBegan{99, {98, 97}, 0.f};
         CHECK(event.is<sf::Event::TouchBegan>());
         CHECK(event.getIf<sf::Event::TouchBegan>());
         const auto& touchBegan = *event.getIf<sf::Event::TouchBegan>();
         CHECK(touchBegan.finger == 99);
         CHECK(touchBegan.position == sf::Vector2i{98, 97});
 
-        event = sf::Event::TouchMoved{96, {95, 94}};
+        event = sf::Event::TouchMoved{96, {95, 94}, 0.f};
         CHECK(event.is<sf::Event::TouchMoved>());
         CHECK(event.getIf<sf::Event::TouchMoved>());
         const auto& touchMoved = *event.getIf<sf::Event::TouchMoved>();
         CHECK(touchMoved.finger == 96);
         CHECK(touchMoved.position == sf::Vector2i{95, 94});
 
-        event = sf::Event::TouchEnded{93, {92, 91}};
+        event = sf::Event::TouchEnded{93, {92, 91}, 0.f};
         CHECK(event.is<sf::Event::TouchEnded>());
         CHECK(event.getIf<sf::Event::TouchEnded>());
         const auto& touchEnded = *event.getIf<sf::Event::TouchEnded>();
