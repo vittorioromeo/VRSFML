@@ -183,8 +183,8 @@ int main()
         using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    std::vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
-    std::vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
+    std::vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
+    std::vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
 
     //
     //

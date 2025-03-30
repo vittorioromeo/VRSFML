@@ -4,8 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
-
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowBase.hpp"
@@ -52,11 +50,7 @@ Vector2i getPosition()
 ////////////////////////////////////////////////////////////
 Vector2i getPosition(const WindowBase& relativeTo)
 {
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-    return getPosition(); // Calculation seems off with Emscripten
-#else
     return getPosition() - relativeTo.getPosition();
-#endif
 }
 
 
