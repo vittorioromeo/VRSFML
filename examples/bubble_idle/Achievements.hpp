@@ -117,8 +117,8 @@ inline constexpr AchievementData achievementData[] = {
     {"Engage", "Purchase 5 Astrocats."},
     {"Failure Is Not an Option", "Purchase 10 Astrocats."},
     {"Trans-Dimensional Council of Ricks", "Purchase 20 Astrocats."},
-    {"DOOP", "Purchase 30 Astrocats."},
-    {"Trisolaran Fleet", "Purchase 40 Astrocats."},
+    {"DOOP", "Purchase 25 Astrocats."},
+    {"Trisolaran Fleet", "Purchase 30 Astrocats."},
 
     {"Faster Than A Cheetah", "Improve Astrocat cooldown once."},
     {"Speed Of Sound", "Improve Astrocat cooldown 3 times."},

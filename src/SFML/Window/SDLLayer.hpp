@@ -5,12 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -334,6 +336,40 @@ namespace sf::priv
 
 ////////////////////////////////////////////////////////////
 #undef SFML_PRIV_SFML_SDL_KEYCODE_MAPPING
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr SDL_SystemCursor cursorTypeToSDLCursor(const sf::Cursor::Type type) noexcept
+{
+    // clang-format off
+    switch (type)
+    {
+        case sf::Cursor::Type::Arrow:                  return SDL_SYSTEM_CURSOR_DEFAULT;
+        case sf::Cursor::Type::ArrowWait:              return SDL_SYSTEM_CURSOR_PROGRESS;
+        case sf::Cursor::Type::Wait:                   return SDL_SYSTEM_CURSOR_WAIT;
+        case sf::Cursor::Type::Text:                   return SDL_SYSTEM_CURSOR_TEXT;
+        case sf::Cursor::Type::Hand:                   return SDL_SYSTEM_CURSOR_POINTER;
+        case sf::Cursor::Type::SizeHorizontal:         return SDL_SYSTEM_CURSOR_EW_RESIZE;
+        case sf::Cursor::Type::SizeVertical:           return SDL_SYSTEM_CURSOR_NS_RESIZE;
+        case sf::Cursor::Type::SizeTopLeftBottomRight: return SDL_SYSTEM_CURSOR_NWSE_RESIZE;
+        case sf::Cursor::Type::SizeBottomLeftTopRight: return SDL_SYSTEM_CURSOR_NESW_RESIZE;
+        case sf::Cursor::Type::SizeLeft:               return SDL_SYSTEM_CURSOR_W_RESIZE;
+        case sf::Cursor::Type::SizeRight:              return SDL_SYSTEM_CURSOR_E_RESIZE;
+        case sf::Cursor::Type::SizeTop:                return SDL_SYSTEM_CURSOR_N_RESIZE;
+        case sf::Cursor::Type::SizeBottom:             return SDL_SYSTEM_CURSOR_S_RESIZE;
+        case sf::Cursor::Type::SizeTopLeft:            return SDL_SYSTEM_CURSOR_NW_RESIZE;
+        case sf::Cursor::Type::SizeBottomRight:        return SDL_SYSTEM_CURSOR_SE_RESIZE;
+        case sf::Cursor::Type::SizeBottomLeft:         return SDL_SYSTEM_CURSOR_SW_RESIZE;
+        case sf::Cursor::Type::SizeTopRight:           return SDL_SYSTEM_CURSOR_NE_RESIZE;
+        case sf::Cursor::Type::SizeAll:                return SDL_SYSTEM_CURSOR_MOVE;
+        case sf::Cursor::Type::Cross:                  return SDL_SYSTEM_CURSOR_CROSSHAIR;
+        case sf::Cursor::Type::NotAllowed:             return SDL_SYSTEM_CURSOR_NOT_ALLOWED;
+        case sf::Cursor::Type::Help:                   break; // not supported
+    }
+    // clang-format on
+
+    return SDL_SYSTEM_CURSOR_DEFAULT;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -723,6 +759,28 @@ public:
     [[nodiscard]] const char* getScancodeDescription(const Keyboard::Scancode code) const noexcept
     {
         return SDL_GetKeyName(priv::mapSFMLKeycodeToSDL(localize(code)));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2i getGlobalMousePosition() const noexcept
+    {
+        Vector2f result;
+        SDL_GetGlobalMouseState(&result.x, &result.y);
+        return result.toVector2i();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool setGlobalMousePosition(const Vector2i position) const noexcept
+    {
+        if (!SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y)))
+        {
+            err() << "`SDL_WarpMouseGlobal` failed: " << SDL_GetError();
+            return false;
+        }
+
+        return true;
     }
 };
 

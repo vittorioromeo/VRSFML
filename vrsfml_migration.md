@@ -381,6 +381,12 @@ window.draw(batch, {.texture = &atlas.getTexture()});
 
 
 
+## Window `getPosition` Changes
+
+Window `getPosition` now returns the top-left corner of the window's contents (not including titlebar, decorations, etc).
+
+
+
 ## Joystick Query API
 
 TODO P0:
@@ -396,3 +402,9 @@ TODO P0:
 ## Volume Rescaling
 
 Sound/music volume is now in `[0.0, 1.0]` range instead of `[0.0, 100.0]` range.
+
+
+
+## Autobatching
+
+TODO P0:
