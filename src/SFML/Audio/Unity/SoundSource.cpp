@@ -69,6 +69,7 @@ void SoundSource::setPan(float pan)
 ////////////////////////////////////////////////////////////
 void SoundSource::setVolume(float volume)
 {
+    // TODO P0: change range to [0, 1]?
     m_impl->savedSettings.volume = volume * 0.01f;
 
     if (auto* sound = static_cast<ma_sound*>(getSound()))
