@@ -41,3 +41,4 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - Wisdom point counter in "Magic" menu now uses digit separators
 // - It is now possible to update spells with wisdom points while the wizard is busy (e.g. absorbing)
 // - The multipop circle range indicator is now hidden while dragging cats
+// - Added a SFX volume slider
