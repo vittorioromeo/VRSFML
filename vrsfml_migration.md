@@ -390,3 +390,9 @@ TODO P0:
 ## SDL3 Backend
 
 TODO P0:
+
+
+
+## Volume Rescaling
+
+Sound/music volume is now in `[0.0, 1.0]` range instead of `[0.0, 100.0]` range.
