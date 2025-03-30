@@ -90,4 +90,6 @@ struct [[nodiscard]] Profile
     float catRangeOutlineThickness = 1.f;
 
     bool showCursorComboBar = true;
+
+    float sfxVolume = 100.f;
 };
