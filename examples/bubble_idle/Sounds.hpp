@@ -9,6 +9,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
 
 #include <vector>
 
@@ -100,18 +101,30 @@ struct Sounds
     std::vector<sf::Sound> soundsBeingPlayed;
 
     ////////////////////////////////////////////////////////////
-    explicit Sounds()
+    void setupSounds(const bool volumeOnly, const float volumeMult)
     {
+        SFML_BASE_ASSERT(volumeMult >= 0.f && volumeMult <= 1.f);
+
         const auto setupWorldSound = [&](auto& sound, const float attenuationMult = 1.f)
         {
-            sound.setAttenuation(0.003f * attenuationMult);
-            sound.setSpatializationEnabled(true);
+            if (!volumeOnly)
+            {
+                sound.setAttenuation(0.003f * attenuationMult);
+                sound.setSpatializationEnabled(true);
+            }
+
+            sound.setVolume(100.f * volumeMult);
         };
 
         const auto setupUISound = [&](auto& sound)
         {
-            sound.setAttenuation(0.f);
-            sound.setSpatializationEnabled(false);
+            if (!volumeOnly)
+            {
+                sound.setAttenuation(0.f);
+                sound.setSpatializationEnabled(false);
+            }
+
+            sound.setVolume(100.f * volumeMult);
         };
 
         setupWorldSound(pop);
@@ -167,13 +180,19 @@ struct Sounds
         setupUISound(paper);
         setupUISound(letterchime);
 
-        scratch.setVolume(35.f);
-        buy.setVolume(75.f);
-        explosion.setVolume(75.f);
-        coin.setVolume(50.f);
-        buffon.setVolume(65.f);
-        buffoff.setVolume(65.f);
-        shine3.setVolume(25.f);
+        scratch.setVolume(volumeMult * 35.f);
+        buy.setVolume(volumeMult * 75.f);
+        explosion.setVolume(volumeMult * 75.f);
+        coin.setVolume(volumeMult * 50.f);
+        buffon.setVolume(volumeMult * 65.f);
+        buffoff.setVolume(volumeMult * 65.f);
+        shine3.setVolume(volumeMult * 25.f);
+    }
+
+    ////////////////////////////////////////////////////////////
+    explicit Sounds(const float volumeMult)
+    {
+        setupSounds(/*volumeOnly */ false, volumeMult);
     }
 
     ////////////////////////////////////////////////////////////
