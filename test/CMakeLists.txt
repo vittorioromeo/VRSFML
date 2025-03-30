@@ -1,6 +1,8 @@
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
+set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
+
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
 CPMAddPackage(
