@@ -32,8 +32,8 @@ set(SDL_TRAY OFF)
 
 CPMAddPackage(
     NAME sdl
-    GITHUB_REPOSITORY libsdl-org/SDL
-    GIT_TAG 8b924df48b17eef05834cb14129e52afb1075f46
+    GITHUB_REPOSITORY vittorioromeo/SDL
+    GIT_TAG d797b8eabd62bde2976042092b92c55bd5cc55b3
     SYSTEM TRUE
 )
 
@@ -72,39 +72,19 @@ if(SFML_OS_WINDOWS)
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
     )
-    if(NOT SFML_OPENGL_ES)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/Win32/WglContext.cpp
-            ${SRCROOT}/Win32/WglContext.hpp
-        )
-    endif()
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
-    if(SFML_USE_DRM)
-        add_definitions(-DSFML_USE_DRM)
-        set(PLATFORM_SRC
-            ${SRCROOT}/DRM/DRMContext.cpp
-            ${SRCROOT}/DRM/DRMContext.hpp
-        )
-    else()
-        set(PLATFORM_SRC
-            ${SRCROOT}/Unix/ClipboardImpl.hpp
-            ${SRCROOT}/Unix/ClipboardImpl.cpp
-            ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
-            ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
-            ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
-            ${SRCROOT}/Unix/KeySymToUnicodeMapping.cpp
-            ${SRCROOT}/Unix/Display.cpp
-            ${SRCROOT}/Unix/Display.hpp
-            ${SRCROOT}/Unix/Utils.hpp
-            ${SRCROOT}/Unix/VulkanImplX11.cpp
-        )
-        if(NOT SFML_OPENGL_ES)
-             list(APPEND PLATFORM_SRC
-                ${SRCROOT}/Unix/GlxContext.cpp
-                ${SRCROOT}/Unix/GlxContext.hpp
-            )
-        endif()
-    endif()
+    set(PLATFORM_SRC
+        ${SRCROOT}/Unix/ClipboardImpl.hpp
+        ${SRCROOT}/Unix/ClipboardImpl.cpp
+        ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
+        ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
+        ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
+        ${SRCROOT}/Unix/KeySymToUnicodeMapping.cpp
+        ${SRCROOT}/Unix/Display.cpp
+        ${SRCROOT}/Unix/Display.hpp
+        ${SRCROOT}/Unix/Utils.hpp
+        ${SRCROOT}/Unix/VulkanImplX11.cpp
+    )
     if(SFML_OS_LINUX)
         list(APPEND PLATFORM_SRC
         )
@@ -132,8 +112,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/SFApplication.m
         ${SRCROOT}/macOS/SFApplicationDelegate.h
         ${SRCROOT}/macOS/SFApplicationDelegate.m
-        ${SRCROOT}/macOS/SFContext.hpp
-        ${SRCROOT}/macOS/SFContext.mm
         ${SRCROOT}/macOS/SFKeyboardModifiersHelper.h
         ${SRCROOT}/macOS/SFKeyboardModifiersHelper.mm
         ${SRCROOT}/macOS/SFOpenGLView.h
@@ -159,8 +137,6 @@ elseif(SFML_OS_IOS)
     set(PLATFORM_SRC
         ${SRCROOT}/iOS/ClipboardImpl.mm
         ${SRCROOT}/iOS/ClipboardImpl.hpp
-        ${SRCROOT}/iOS/EaglContext.mm
-        ${SRCROOT}/iOS/EaglContext.hpp
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
         ${SRCROOT}/iOS/ObjCType.hpp

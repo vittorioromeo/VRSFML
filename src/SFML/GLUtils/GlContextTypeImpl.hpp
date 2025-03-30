@@ -9,69 +9,21 @@
 
 #include "SFML/GLUtils/Glad.hpp"
 
+////////////////////////////////////////////////////////////
+#ifdef SFML_SYSTEM_EMSCRIPTEN
 
-#if defined(SFML_SYSTEM_WINDOWS)
-
-    #if 0 // TODO P0:
-        #if defined(SFML_OPENGL_ES)
-
-            #include "SFML/GLUtils/EGL/EGLContext.hpp"
+    #include "SFML/GLUtils/EGL/EGLContext.hpp"
 using DerivedGlContextType = sf::priv::EglContext;
 
-        #else
+#else
 
-            #include "SFML/Window/Win32/WglContext.hpp"
-using DerivedGlContextType = sf::priv::WglContext;
-
-        #endif
-    #else
-
-        #include "SFML/Window/SDLGlContext.hpp"
+    #include "SFML/Window/SDLGlContext.hpp"
 using DerivedGlContextType = sf::priv::SDLGlContext;
-
-    #endif
-
-#elif defined(SFML_SYSTEM_LINUX_OR_BSD)
-
-    #if defined(SFML_USE_DRM)
-
-        #include "SFML/Window/DRM/DRMContext.hpp"
-using DerivedGlContextType = sf::priv::DRMContext;
-
-    #elif defined(SFML_OPENGL_ES)
-
-        #include "SFML/GLUtils/EGL/EGLContext.hpp"
-using DerivedGlContextType = sf::priv::EglContext;
-
-    #else
-
-        #include "SFML/Window/Unix/GlxContext.hpp"
-using DerivedGlContextType = sf::priv::GlxContext;
-
-    #endif
-
-#elif defined(SFML_SYSTEM_MACOS)
-
-    #include "SFML/Window/macOS/SFContext.hpp"
-using DerivedGlContextType = sf::priv::SFContext;
-
-#elif defined(SFML_SYSTEM_IOS)
-
-    #include "SFML/Window/iOS/EaglContext.hpp"
-using DerivedGlContextType = sf::priv::EaglContext;
-
-#elif defined(SFML_SYSTEM_ANDROID)
-
-    #include "SFML/GLUtils/EGL/EGLContext.hpp"
-using DerivedGlContextType = sf::priv::EglContext;
-
-#elif defined(SFML_SYSTEM_EMSCRIPTEN)
-
-    #include "SFML/GLUtils/EGL/EGLContext.hpp"
-using DerivedGlContextType = sf::priv::EglContext;
 
 #endif
 
+
+////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
 
 using glEnableFuncType      = void(GLAPIENTRY*)(GLenum);
