@@ -480,6 +480,8 @@ void RenderTexture::display()
     if (!RenderTarget::setActive())
         return;
 
+    RenderTarget::flush();
+
     // Update the target texture
     m_impl->updateTexture();
     m_impl->texture.invalidateMipmap();

@@ -783,7 +783,7 @@ void WindowImpl::processEvents()
 
             case SDL_EVENT_FINGER_DOWN:
             {
-                const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add pressure, etc
+                const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
                 const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
@@ -798,7 +798,7 @@ void WindowImpl::processEvents()
                 WindowImplImpl::touchMap.emplace(fingerEvent.fingerID,
                                                  WindowImplImpl::TouchInfo{fingerIdx, touchPos, getNativeHandle()});
 
-                pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos});
+                pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos, fingerEvent.pressure});
                 break;
             }
 
@@ -809,13 +809,12 @@ void WindowImpl::processEvents()
                                            static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
 
                 SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-
                 const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
 
                 WindowImplImpl::touchIndexPool[fingerIdx] = false;
                 WindowImplImpl::touchMap.erase(fingerEvent.fingerID);
 
-                pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos});
+                pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos, fingerEvent.pressure});
                 break;
             }
 
@@ -828,7 +827,7 @@ void WindowImpl::processEvents()
                 SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
                 const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
 
-                pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos});
+                pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos, fingerEvent.pressure});
                 break;
             }
 

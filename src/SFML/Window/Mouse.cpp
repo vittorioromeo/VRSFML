@@ -43,9 +43,7 @@ bool isButtonPressed(Button button)
 ////////////////////////////////////////////////////////////
 Vector2i getPosition()
 {
-    Vector2f result;
-    SDL_GetGlobalMouseState(&result.x, &result.y);
-    return result.toVector2i();
+    return priv::getSDLLayerSingleton().getGlobalMousePosition();
 }
 
 
@@ -53,7 +51,7 @@ Vector2i getPosition()
 Vector2i getPosition(const WindowBase& relativeTo)
 {
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-    return getPosition(); // Calculation seems off with Emscripten
+    return getPosition(); // Calculation seems off with Emscripten (TODO P0: wait for fix)
 #else
     return getPosition() - relativeTo.getPosition();
 #endif
@@ -61,14 +59,14 @@ Vector2i getPosition(const WindowBase& relativeTo)
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(Vector2i position)
+void setPosition(const Vector2i position)
 {
-    SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y));
+    (void)priv::getSDLLayerSingleton().setGlobalMousePosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(Vector2i position, const WindowBase& relativeTo)
+void setPosition(const Vector2i position, const WindowBase& relativeTo)
 {
     setPosition(position + relativeTo.getPosition());
 }

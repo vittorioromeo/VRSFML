@@ -35,10 +35,14 @@ struct [[nodiscard]] Version
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
 
 
-// TODO P0: CHANGELOG
+// TODO P0: CHANGELOG (already created, must make public)
 // - Added left control as another valid key for AOE selection
 // - Performing an AOE selection near the edge of the screen will now scroll
 // - Wisdom point counter in "Magic" menu now uses digit separators
 // - It is now possible to update spells with wisdom points while the wizard is busy (e.g. absorbing)
 // - The multipop circle range indicator is now hidden while dragging cats
 // - Added a SFX volume slider
+// - Fixed a crash related to the Wizard's Mewltiplier Aura spell
+// - Changed #astrocats achievements fromm [1,5,10,20,30,40] to [1,5,10,20,25,30]
+// - Improved statistics panel to avoid text going out of bounds
+// - Added checkbox in in-game achivements menu to show/hide completed achievements

@@ -31,3 +31,4 @@ old/x.x
 
 prepare_build.sh
 examples/bubble_idle/prepare_build.sh
+examples/bubble_idle/userdata*
