@@ -45,7 +45,7 @@ public:
 #define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \
     CHECK((xSoundSource).getPitch() == 1.f);                              \
     CHECK((xSoundSource).getPan() == 0.f);                                \
-    CHECK((xSoundSource).getVolume() == 100.f);                           \
+    CHECK((xSoundSource).getVolume() == 1.f);                             \
     CHECK((xSoundSource).isSpatializationEnabled());                      \
     CHECK((xSoundSource).getPosition() == sf::Vector3{0.f, 0.f, 0.f});    \
     CHECK((xSoundSource).getDirection() == sf::Vector3f{0.f, 0.f, -1.f}); \
@@ -122,11 +122,11 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
         soundSource.setVolume(0.f);
         CHECK(soundSource.getVolume() == 0.f);
 
-        soundSource.setVolume(50.f);
-        CHECK(soundSource.getVolume() == 50.f);
+        soundSource.setVolume(0.5f);
+        CHECK(soundSource.getVolume() == 0.5f);
 
-        soundSource.setVolume(100.f);
-        CHECK(soundSource.getVolume() == 100.f);
+        soundSource.setVolume(1.f);
+        CHECK(soundSource.getVolume() == 1.f);
     }
 
     SECTION("Set/get spatialization enabled")
