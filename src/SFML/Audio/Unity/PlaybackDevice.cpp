@@ -176,7 +176,7 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
     ma_engine* engine = &m_impl->maEngine;
 
     // Set master volume, position, velocity, cone and world up vector
-    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.volume * 0.01f);
+    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.volume);
         result != MA_SUCCESS)
     {
         priv::MiniaudioUtils::fail("set audio device master volume", result);
