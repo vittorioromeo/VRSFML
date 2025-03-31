@@ -42,6 +42,14 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+float VideoMode::getDPIAwareScalingFactor()
+{
+    // TODO P0: per display?
+    return priv::getSDLLayerSingleton().getDPIAwareScalingFactor();
+}
+
+
+////////////////////////////////////////////////////////////
 VideoMode VideoModeUtils::getDesktopMode()
 {
     auto& sdlLayer = priv::getSDLLayerSingleton();
