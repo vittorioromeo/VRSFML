@@ -1138,7 +1138,10 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
                                                  loadDefaultFont,
 
                                                  [](void* /*userData*/, const char* text)
-    { Clipboard::setString(StringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))); },
+    {
+        if (!Clipboard::setString(StringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))))
+            sf::priv::err() << "Failed to set clipboard text from ImGui";
+    },
 
                                                  [](void* /*userData*/)
     {
