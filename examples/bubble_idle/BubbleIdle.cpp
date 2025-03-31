@@ -13545,6 +13545,7 @@ int main(int argc, const char** argv)
 // not feel good at all.
 // TODO P1: "it still shows the tooltip for another upgrade despite it being maxed out"
 // TODO P1: demo & sponsor on playmygame with ss
+// TODO P1: "remember to buy the combo upgrade" still shows up after prestige...
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
