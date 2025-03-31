@@ -603,7 +603,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLAllocatedArray<SDL_DisplayID> getDisplays()
+    [[nodiscard]] SDLAllocatedArray<SDL_DisplayID> getDisplays() const
     {
         int            displayCount = 0;
         SDL_DisplayID* displays     = SDL_GetDisplays(&displayCount);
@@ -818,6 +818,29 @@ public:
         }
 
         return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDPIAwareScalingFactor() const
+    {
+        auto displays = getDisplays();
+        if (!displays.valid())
+        {
+            err() << "`getDPIAwareScalingFactor` failed: could not get displays";
+            return 1.f;
+        }
+
+        const SDL_DisplayID primaryDisplayID = displays[0];
+
+        const float result = SDL_GetDisplayContentScale(primaryDisplayID);
+        if (result == 0.f)
+        {
+            err() << "`SDL_GetDisplayContentScale` failed:" << SDL_GetError();
+            return 1.f;
+        }
+
+        return result;
     }
 };
 
