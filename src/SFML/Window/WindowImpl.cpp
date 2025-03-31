@@ -131,7 +131,11 @@ struct WindowImpl::Impl
 
     bool keyRepeatEnabled = false; //!< Is the key repeat feature enabled?
 
-    explicit Impl(const char* context, SDL_Window* theSDLWindow) : sdlWindow{theSDLWindow}
+    bool isExternal = false; //!< Is the window created externally?
+
+    explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal) :
+    sdlWindow{theSDLWindow},
+    isExternal{theIsExternal}
     {
         if (!sdlWindow)
         {
@@ -154,7 +158,8 @@ struct WindowImpl::Impl
         if (!SDL_StopTextInput(sdlWindow))
             err() << "Failed to stop text input for window: " << SDL_GetError();
 
-        SDL_DestroyWindow(sdlWindow);
+        if (!isExternal)
+            SDL_DestroyWindow(sdlWindow);
     }
 };
 
@@ -205,7 +210,8 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
                                              SDL_CreateWindow(windowSettings.title.toAnsiString<std::string>().data(),
                                                               static_cast<int>(windowSettings.size.x),
                                                               static_cast<int>(windowSettings.size.y),
-                                                              makeSDLWindowFlagsFromWindowSettings(windowSettings)))};
+                                                              makeSDLWindowFlagsFromWindowSettings(windowSettings))),
+                                         /* isExternal */ false};
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImplPtr;
@@ -219,7 +225,8 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
     auto* windowImplPtr = new WindowImpl{"handle",
                                          static_cast<void*>(
-                                             SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle)))};
+                                             SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle))),
+                                         /* isExternal */ true};
 
     return base::UniquePtr<WindowImpl>{windowImplPtr};
 }
@@ -322,7 +329,8 @@ base::Optional<Event> WindowImpl::popEvent()
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(const char* context, void* sdlWindow) : m_impl{context, static_cast<SDL_Window*>(sdlWindow)}
+WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal) :
+m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 
