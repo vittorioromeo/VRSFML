@@ -20,6 +20,7 @@
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <SDL3/SDL_clipboard.h>
@@ -802,9 +803,8 @@ public:
             return String{};
         }
 
-        auto result = StringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
-        SDL_free(static_cast<void*>(clipboardText));
-        return result;
+        SFML_BASE_SCOPE_GUARD({ SDL_free(static_cast<void*>(clipboardText)); });
+        return StringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
     }
 
 
