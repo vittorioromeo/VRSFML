@@ -2,6 +2,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 
+#include "SFML/Window/Keyboard.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
