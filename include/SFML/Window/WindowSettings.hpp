@@ -40,6 +40,7 @@ struct [[nodiscard]] WindowSettings
     bool            vsync{false};             //!< Is vertical sync enabled?
     unsigned int    frametimeLimit{0u};       //!< Frametime limit (FPS) (`0` for no limit)
     ContextSettings contextSettings{};        //!< Additional settings for the underlying OpenGL context
+    bool            scaleSizeWithDPI{false};  //!< TODO P0:
 };
 
 } // namespace sf
