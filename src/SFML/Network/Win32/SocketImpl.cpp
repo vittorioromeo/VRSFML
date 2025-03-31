@@ -16,6 +16,29 @@
 #include <ws2tcpip.h>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+// Windows needs some initialization and cleanup to get
+// sockets working properly... so let's create a class that will
+// do it automatically
+////////////////////////////////////////////////////////////
+struct SocketInitializer
+{
+    SocketInitializer()
+    {
+        WSADATA init;
+        WSAStartup(MAKEWORD(2, 2), &init);
+    }
+
+    ~SocketInitializer()
+    {
+        WSACleanup();
+    }
+} globalInitializer;
+} // namespace
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -419,27 +442,4 @@ Socket::Status SocketImpl::getErrorStatus()
     }
     // clang-format on
 }
-
-
-////////////////////////////////////////////////////////////
-// Windows needs some initialization and cleanup to get
-// sockets working properly... so let's create a class that will
-// do it automatically
-////////////////////////////////////////////////////////////
-struct SocketInitializer
-{
-    SocketInitializer()
-    {
-        WSADATA init;
-        WSAStartup(MAKEWORD(2, 2), &init);
-    }
-
-    ~SocketInitializer()
-    {
-        WSACleanup();
-    }
-};
-
-SocketInitializer globalInitializer;
-
 } // namespace sf::priv

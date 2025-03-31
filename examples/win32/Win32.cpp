@@ -20,9 +20,9 @@
 
 #include <cmath>
 
-
+namespace
+{
 HWND button;
-
 
 ////////////////////////////////////////////////////////////
 /// Function called whenever one of our windows receives a message
@@ -52,6 +52,7 @@ LRESULT CALLBACK onEvent(HWND handle, UINT message, WPARAM wParam, LPARAM lParam
 
     return DefWindowProc(handle, message, wParam, lParam);
 }
+} // namespace
 
 
 ////////////////////////////////////////////////////////////
