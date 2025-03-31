@@ -238,9 +238,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchBegan
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Start position of the touch, relative to the top left of the owner window
-        float        pressure; //!< Pressure of the touch (in range [0, 1])
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Start position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -249,9 +249,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchMoved
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Current position of the touch, relative to the top left of the owner window
-        float        pressure; //!< Pressure of the touch (in range [0, 1])
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Current position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -260,9 +260,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchEnded
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Final position of the touch, relative to the top left of the owner window
-        float        pressure; //!< Pressure of the touch (in range [0, 1])
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Final position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
