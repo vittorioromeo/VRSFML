@@ -113,6 +113,7 @@
 
 #include <algorithm>
 #include <array>
+#include <fstream>
 #include <random>
 #include <string>
 #include <thread>
@@ -1204,6 +1205,34 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Input management
     InputHelper inputHelper;
+
+    ////////////////////////////////////////////////////////////
+    // Logging
+    std::ofstream logFile{"bubblebyte.log", std::ios::out | std::ios::app};
+
+    ////////////////////////////////////////////////////////////
+    void log(const char* format, ...) // TODO P0: test
+    {
+        if (!logFile)
+            return;
+
+        const auto timestamp = std::chrono::system_clock::now();
+        const auto timeT     = std::chrono::system_clock::to_time_t(timestamp);
+        const auto tm        = *std::localtime(&timeT);
+
+        char buffer[1024];
+
+        va_list args{};
+        va_start(args, format);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+        vsnprintf(buffer, sizeof(buffer), format, args);
+#pragma GCC diagnostic pop
+        va_end(args);
+
+        logFile << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << " - " << buffer << '\n';
+        logFile.flush();
+    }
 
     ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
@@ -12737,10 +12766,13 @@ It's a duck.)",
 
                 if (!clickPosition.hasValue())
                     clickPosition.emplace(e0->position.toVector2f());
+
+                log("Touch began: finger %d", e0->finger); // TODO P0: test
             }
             else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
             {
                 fingerPositions[e1->finger].reset();
+                log("Touch ended: finger %d", e1->finger); // TODO P0: test
             }
             else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
             {
@@ -13505,9 +13537,14 @@ int main(int argc, const char** argv)
 // TODO P1: credits somewhere
 // TODO P1: more steam deck improvements
 // TODO P1: drag click PP upgrade, stacks with multipop
-// TODO P1: Ability to hide maxed out upgrades would help reduce visual clutter in the Shop and Prestige menu in the late game.
-// TODO P1: Endgame upgrade and cat costs are so large that they don't fit inside the buttons. Maybe the option to swap to a different notation would be good.
-// TODO P1: Let me hold the "Buy PPS" button. Having to click it hundreds of times to get all upgrade achievements does not feel good at all.
+// TODO P1: Ability to hide maxed out upgrades would help reduce visual clutter in the Shop and Prestige menu in the
+// late game.
+// TODO P1: Endgame upgrade and cat costs are so large that they don't fit inside the buttons. Maybe the option to swap
+// to a different notation would be good.
+// TODO P1: Let me hold the "Buy PPS" button. Having to click it hundreds of times to get all upgrade achievements does
+// not feel good at all.
+// TODO P1: "it still shows the tooltip for another upgrade despite it being maxed out"
+// TODO P1: demo & sponsor on playmygame with ss
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
