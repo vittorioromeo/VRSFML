@@ -215,6 +215,11 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImplPtr;
+    else if (windowSettings.scaleSizeWithDPI)
+    {
+        // TODO P0: dont do this, use VideoModeUtils instead, and make sure to set view
+        windowImplPtr->setSize((windowSettings.size.toVector2f() * windowImplPtr->getDPIAwareScalingFactor()).toVector2u());
+    }
 
     return base::UniquePtr<WindowImpl>{windowImplPtr};
 }
