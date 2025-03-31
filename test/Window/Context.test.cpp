@@ -9,6 +9,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -30,6 +31,8 @@ class GlContext
 public:
     [[nodiscard]] const ContextSettings& getSettings() const;
     [[nodiscard]] unsigned int           getId() const;
+
+    virtual ~GlContext() = default;
 
 private:
     ContextSettings    m_settings;
