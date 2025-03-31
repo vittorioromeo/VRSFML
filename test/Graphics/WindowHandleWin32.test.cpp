@@ -1,13 +1,13 @@
 #include "SFML/Config.hpp"
 
 #ifdef SFML_SYSTEM_WINDOWS
+// Other 1st party headers
+    #include "SFML/Graphics/RenderWindow.hpp"
 
-    #include "SFML/Window/WindowHandle.hpp"
-
-    // Other 1st party headers
     #include "SFML/Window/Window.hpp"
     #include "SFML/Window/WindowBase.hpp"
     #include "SFML/Window/WindowContext.hpp"
+    #include "SFML/Window/WindowHandle.hpp"
 
     #include "SFML/Base/Optional.hpp"
 
@@ -106,10 +106,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     {
         sf::base::Optional<sf::WindowBase> windowBase;
 
-        SUBCASE("WindowHandle constructor")
-        {
-            windowBase.emplace(handle);
-        }
+        windowBase.emplace(handle);
 
         INFO("sf::WindowBase test with exStyle: " << exStyle << ", withMenu: " << withMenu);
         CHECK(windowBase->getPosition() == position);
@@ -132,10 +129,8 @@ void runWindowTest(DWORD exStyle, bool withMenu)
 
         SUBCASE("Default context settings")
         {
-            SUBCASE("WindowHandle constructor")
-            {
-                window.emplace(handle);
-            }
+            window.emplace(handle);
+
             INFO("sf::Window default context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
         }
@@ -143,10 +138,9 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         SUBCASE("Custom context settings")
         {
             static constexpr sf::ContextSettings contextSettings{1, 1, 1};
-            SUBCASE("WindowHandle constructor")
-            {
-                window.emplace(handle, contextSettings);
-            }
+
+            window.emplace(handle, contextSettings);
+
             INFO("sf::Window custom context test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(window->getSettings().depthBits >= 1);
             CHECK(window->getSettings().stencilBits >= 1);
@@ -167,9 +161,50 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         CHECK(window->getSize() == size);
     }
 
+    SECTION("sf::RenderWindow")
+    {
+        sf::base::Optional<sf::RenderWindow> renderWindow;
+
+        SECTION("Default context settings")
+        {
+            renderWindow.emplace(handle);
+
+            INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
+            CHECK(renderWindow->getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
+        }
+
+        SECTION("Custom context settings")
+        {
+            static constexpr sf::ContextSettings contextSettings{/* depthBits*/ 1,
+                                                                 /* stencilBits */ 1,
+                                                                 /* antiAliasingLevel */ 1};
+
+            renderWindow.emplace(handle, contextSettings);
+
+            INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
+            CHECK(renderWindow->getSettings().depthBits >= 1);
+            CHECK(renderWindow->getSettings().stencilBits >= 1);
+            CHECK(renderWindow->getSettings().antiAliasingLevel >= 1);
+        }
+
+        INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
+        CHECK(renderWindow->getPosition() == position);
+        CHECK(renderWindow->getSize() == initialSize);
+        CHECK(renderWindow->getNativeHandle() == handle);
+
+        CHECK(renderWindow->getSize() != newSize);
+        renderWindow->setSize(newSize);
+
+        REQUIRE(GetClientRect(handle, &clientRect));
+        const auto size = sf::Vector2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVector2u();
+        CHECK(size == newSize);                 // Validate that the actual client rect is indeed what we asked for
+        CHECK(renderWindow->getSize() == size); // Validate that the `getSize` also returns the _actual_ client size
+    }
+
     INFO("Final checks with exStyle: " << exStyle << ", withMenu: " << withMenu);
     CHECK(gotWmShowWindow1);
     CHECK(IsWindow(handle));
+
     CHECK(DestroyWindow(handle));
     CHECK(UnregisterClassW(classInfo.lpszClassName, classInfo.hInstance));
     gotWmShowWindow1 = false;
