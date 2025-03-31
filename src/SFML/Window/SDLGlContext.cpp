@@ -67,7 +67,7 @@ m_ownsWindow(false)
 
     // Create a hidden window for the context
     m_window = SDL_CreateWindow("", 1, 1, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
-    if (!m_window)
+    if (m_window == nullptr)
     {
         err() << "Failed to create hidden window for SDLGlContext: " << SDL_GetError();
         return;
@@ -83,7 +83,11 @@ m_ownsWindow(false)
             err() << "Failed to activate shared SDL GL context: " << SDL_GetError();
 
             if (m_ownsWindow)
+            {
                 SDL_DestroyWindow(m_window);
+                m_window     = nullptr;
+                m_ownsWindow = false;
+            }
 
             return;
         }
@@ -98,7 +102,11 @@ m_ownsWindow(false)
         err() << "Failed to create SDL GL context: " << SDL_GetError();
 
         if (m_ownsWindow)
+        {
             SDL_DestroyWindow(m_window);
+            m_window     = nullptr;
+            m_ownsWindow = false;
+        }
 
         return;
     }
@@ -160,7 +168,7 @@ SDLGlContext::~SDLGlContext()
         SDL_GL_DestroyContext(m_context);
 
     // Destroy the window if owned
-    if (m_ownsWindow && m_window)
+    if (m_ownsWindow && m_window != nullptr)
         SDL_DestroyWindow(m_window);
 }
 
