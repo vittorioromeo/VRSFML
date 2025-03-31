@@ -119,6 +119,8 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // TODO P0: provide a way of easily scaling with DPI
+
     std::random_device rd;
     std::mt19937       rng(rd());
 
@@ -131,8 +133,14 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
-    sf::RenderWindow window(
-        {.size = gameSize.toVector2u(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false, .vsync = true});
+    sf::RenderWindow window({
+        .size             = gameSize.toVector2u(),
+        .bitsPerPixel     = 32u,
+        .title            = "SFML Tennis",
+        .resizable        = false,
+        .vsync            = true,
+        .scaleSizeWithDPI = true, // TODO P0: test, use in other examples
+    });
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
@@ -231,7 +239,7 @@ int main()
             }
 
             // Window size changed, adjust view appropriately
-            if (event->is<sf::Event::Resized>())
+            if (event->is<sf::Event::Resized>()) // TODO P0: this event is triggered on dpi scale
                 window.setView({/* center */ gameSize / 2.f, /* size */ gameSize});
         }
 
