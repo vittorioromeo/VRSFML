@@ -12,17 +12,22 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/StringUtfUtils.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Builtins/Strcmp.hpp"
+#include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
+#include <SDL3/SDL_clipboard.h>
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
+#include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
 
@@ -777,6 +782,38 @@ public:
         if (!SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y)))
         {
             err() << "`SDL_WarpMouseGlobal` failed: " << SDL_GetError();
+            return false;
+        }
+
+        return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] String getClipboardString() const noexcept
+    {
+        if (!SDL_HasClipboardText())
+            return String{};
+
+        char* clipboardText = SDL_GetClipboardText();
+        if (SFML_BASE_STRCMP(clipboardText, "") == 0)
+        {
+            err() << "`SDL_GetClipboardText` failed: " << SDL_GetError();
+            return String{};
+        }
+
+        auto result = StringUtfUtils::fromUtf8(clipboardText, clipboardText + SFML_BASE_STRLEN(clipboardText));
+        SDL_free(static_cast<void*>(clipboardText));
+        return result;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool setClipboardString(const String& string) const noexcept
+    {
+        if (!SDL_SetClipboardText(reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str())))
+        {
+            err() << "`SDL_SetClipboardText` failed: " << SDL_GetError();
             return false;
         }
 

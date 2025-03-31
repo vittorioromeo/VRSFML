@@ -40,11 +40,11 @@ TEST_CASE("[Window] sf::Clipboard" * doctest::skip(skipDisplayTests))
     }
 
     INFO("String: " << reinterpret_cast<const char*>(string.toUtf8<std::u8string>().c_str()));
-    sf::Clipboard::setString(string);
+    CHECK(sf::Clipboard::setString(string));
     CHECK(sf::Clipboard::getString() == string);
 
     // Restore clipboard
-    sf::Clipboard::setString(currentClipboard);
+    CHECK(sf::Clipboard::setString(currentClipboard));
 
     // We rely on getString triggering clipboard event processing on X11 to make
     // setString work, but note that the way setString is guaranteed to work is
