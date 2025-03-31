@@ -28,6 +28,9 @@ namespace sf
 class SFML_WINDOW_API VideoModeUtils
 {
 public:
+    // TODO P0:
+    [[nodiscard]] static float getDPIAwareScalingFactor();
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the current desktop video mode
     ///
