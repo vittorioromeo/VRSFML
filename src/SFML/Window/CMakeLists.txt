@@ -64,44 +64,24 @@ endif()
 # add platform specific sources
 if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
-        ${SRCROOT}/Win32/ClipboardImpl.hpp
         ${SRCROOT}/Win32/Utils.hpp
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
-        # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
     )
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
     set(PLATFORM_SRC
-        ${SRCROOT}/Unix/ClipboardImpl.hpp
-        ${SRCROOT}/Unix/ClipboardImpl.cpp
-        ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
-        ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
-        ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
-        ${SRCROOT}/Unix/KeySymToUnicodeMapping.cpp
         ${SRCROOT}/Unix/Display.cpp
         ${SRCROOT}/Unix/Display.hpp
         ${SRCROOT}/Unix/Utils.hpp
         ${SRCROOT}/Unix/VulkanImplX11.cpp
     )
-    if(SFML_OS_LINUX)
-        list(APPEND PLATFORM_SRC
-        )
-    elseif(SFML_OS_FREEBSD)
-        list(APPEND PLATFORM_SRC
-        )
-    elseif(SFML_OS_NETBSD)
-        list(APPEND PLATFORM_SRC
-        )
-    endif()
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
         ${SRCROOT}/macOS/cg_sf_conversion.hpp
         ${SRCROOT}/macOS/cg_sf_conversion.mm
-        ${SRCROOT}/macOS/ClipboardImpl.hpp
-        ${SRCROOT}/macOS/ClipboardImpl.mm
         ${SRCROOT}/macOS/HIDInputManager.hpp
         ${SRCROOT}/macOS/HIDInputManager.mm
         ${SRCROOT}/macOS/NSImage+raw.h
@@ -135,8 +115,6 @@ elseif(SFML_OS_MACOS)
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
     set(PLATFORM_SRC
-        ${SRCROOT}/iOS/ClipboardImpl.mm
-        ${SRCROOT}/iOS/ClipboardImpl.hpp
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
         ${SRCROOT}/iOS/ObjCType.hpp
