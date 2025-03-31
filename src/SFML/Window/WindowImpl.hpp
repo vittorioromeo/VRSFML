@@ -318,9 +318,10 @@ private:
     ///
     /// \param context   Creation context for error messages
     /// \param sdlWindow SDL window handle
+    /// \param isExternal `true` if the window was created externally
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow);
+    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow, bool isExternal);
 
     ////////////////////////////////////////////////////////////
     /// \return First event of the queue if available, `base::nullOpt` otherwise
