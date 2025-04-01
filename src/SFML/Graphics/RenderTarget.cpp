@@ -310,8 +310,10 @@ struct RenderTarget::Impl
     DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
 
     ////////////////////////////////////////////////////////////
+#ifndef SFML_OPENGL_ES
     GLsync persistentBufferFence{};   //!< Fence for persistent buffer synchronization
     bool   persistentWaitDone{false}; //!< Indicates if a sync is needed for persistent buffer
+#endif
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
@@ -955,6 +957,7 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 ////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUStartFrame()
 {
+#ifndef SFML_OPENGL_ES
     if (m_impl->persistentWaitDone || m_impl->persistentBufferFence == GLsync{})
         return;
 
@@ -963,17 +966,20 @@ void RenderTarget::syncGPUStartFrame()
 
     m_impl->persistentBufferFence = GLsync{};
     m_impl->persistentWaitDone    = true;
+#endif
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUEndFrame()
 {
+#ifndef SFML_OPENGL_ES
     if (m_impl->persistentBufferFence != GLsync{})
         glCheck(glDeleteSync(m_impl->persistentBufferFence));
 
     m_impl->persistentBufferFence = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
     m_impl->persistentWaitDone    = false;
+#endif
 }
 
 

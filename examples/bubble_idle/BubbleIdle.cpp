@@ -9665,7 +9665,9 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAchievements()
     {
+#ifdef BUBBLEBYTE_USE_STEAMWORKS
         static bool mustGetFromSteam = true; // sync achievements from Steam only once
+#endif
 
         SizeT nextId = 0u;
 
