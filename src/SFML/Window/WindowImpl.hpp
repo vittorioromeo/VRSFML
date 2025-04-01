@@ -280,7 +280,7 @@ public:
     ///         DPI-aware, otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getDPIAwareScalingFactor() const;
+    [[nodiscard]] float getWindowDisplayScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
