@@ -270,9 +270,9 @@ bool WindowBase::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float WindowBase::getDPIAwareScalingFactor() const
+float WindowBase::getWindowDisplayScale() const
 {
-    return m_impl->getDPIAwareScalingFactor();
+    return m_impl->getWindowDisplayScale();
 }
 
 
