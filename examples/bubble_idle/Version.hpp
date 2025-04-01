@@ -46,3 +46,6 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // - Changed #astrocats achievements fromm [1,5,10,20,30,40] to [1,5,10,20,25,30]
 // - Improved statistics panel to avoid text going out of bounds
 // - Added checkbox in in-game achivements menu to show/hide completed achievements
+
+// TODO P0: ADD TO PATCH NOTES
+// - In-game achievements are now always synced with Steam

@@ -304,10 +304,11 @@ struct RenderTarget::Impl
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
 
     ////////////////////////////////////////////////////////////
-    CPUDrawableBatch cpuDrawableBatch;  //!< TODO P0: docs, reuse, autobatch
-    bool             autoBatch = true;  //!< TODO P0: docs
-    RenderStates     lastRenderStates;  //!< TODO P0: docs
-    bool             mustFlush = false; //!< TODO P0: docs
+    CPUDrawableBatch cpuDrawableBatch;   //!< Internal CPU drawable batch (autobatching)
+    bool             autoBatch = true;   //!< Enable automatic batching of draw calls
+    RenderStates     lastRenderStates;   //!< Cached render states (autobatching)
+    bool             mustFlush = false;  //!< Indicates if a flush is required (autobatching)
+    DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
@@ -350,13 +351,13 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool RenderTarget::clearImpl()
 {
-    nDrawCalls = 0; // TODO P0: return from display()? add some statistics struct
-
     if (!setActive(true))
     {
         priv::err() << "Failed to activate render target in `clearImpl`";
         return false;
     }
+
+    m_impl->currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
     unapplyTexture(); // See https://en.sfml-dev.org/forums/index.php?topic=9350
@@ -943,17 +944,29 @@ void RenderTarget::resetGLStatesImpl()
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::flush()
+RenderTarget::DrawStatistics RenderTarget::flush()
 {
     draw(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
     m_impl->cpuDrawableBatch.clear();
+
+    m_impl->mustFlush = false;
+
+    return m_impl->currentDrawStats;
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::flushIfNeeded(const RenderStates& states)
 {
-    if (m_impl->lastRenderStates != states || m_impl->mustFlush)
+    enum : base::SizeT
+    {
+        vertexThreshold = 32'768u,
+        indexThreshold  = 65'536u,
+    };
+
+    if (m_impl->cpuDrawableBatch.getNumVertices() >= vertexThreshold ||
+        m_impl->cpuDrawableBatch.getNumIndices() >= indexThreshold || m_impl->mustFlush ||
+        m_impl->lastRenderStates != states)
         flush();
 
     m_impl->lastRenderStates = states;
@@ -1187,7 +1200,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
 {
-    ++nDrawCalls; // TODO P0:
+    ++m_impl->currentDrawStats.drawCalls;
 
     glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                          /* first vertex index */ static_cast<GLint>(firstVertex),
@@ -1198,7 +1211,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, b
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
 {
-    ++nDrawCalls; // TODO P0:
+    ++m_impl->currentDrawStats.drawCalls;
 
     static_assert(SFML_BASE_IS_SAME(IndexType, unsigned int));
 

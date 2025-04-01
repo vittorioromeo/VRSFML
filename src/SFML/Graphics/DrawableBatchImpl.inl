@@ -31,24 +31,6 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::reserveTriangles(const base::SizeT triangleCount)
-{
-    (void)m_storage.reserveMoreIndices(3u * triangleCount);
-    (void)m_storage.reserveMoreVertices(3u * triangleCount);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TStorage>
-void DrawableBatchImpl<TStorage>::reserveQuads(const base::SizeT quadCount)
-{
-    (void)m_storage.reserveMoreIndices(6u * quadCount);
-    (void)m_storage.reserveMoreVertices(4u * quadCount);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TStorage>
 void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const Vertex* data, base::SizeT size)
 {
     appendIncreasingIndices(static_cast<IndexType>(size), m_storage.getNumVertices(), m_storage.reserveMoreIndices(size));
@@ -304,22 +286,6 @@ void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRounded
                                             sdRoundedRectangle.cornerRadius,
                                             sdRoundedRectangle.cornerPointCount);
     });
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TStorage>
-void DrawableBatchImpl<TStorage>::clear()
-{
-    m_storage.clear();
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename TStorage>
-bool DrawableBatchImpl<TStorage>::isEmpty() const noexcept
-{
-    return m_storage.getNumVertices() == 0u && m_storage.getNumIndices() == 0u;
 }
 
 } // namespace sf::priv
