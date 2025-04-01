@@ -474,17 +474,20 @@ bool RenderTexture::setActive(bool active)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTexture::display()
+RenderTarget::DrawStatistics RenderTexture::display()
 {
     // Perform a RenderTarget-only activation if we are using FBOs
     if (!RenderTarget::setActive())
-        return;
+        return {};
 
-    RenderTarget::flush();
+    const auto result = RenderTarget::flush();
+    RenderTarget::syncGPUEndFrame();
 
     // Update the target texture
     m_impl->updateTexture();
     m_impl->texture.invalidateMipmap();
+
+    return result;
 }
 
 

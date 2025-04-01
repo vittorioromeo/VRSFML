@@ -17,12 +17,6 @@
 
 namespace
 {
-
-} // namespace
-
-
-namespace sf::priv
-{
 ////////////////////////////////////////////////////////////
 void applyContextSettings(const sf::ContextSettings& settings)
 {
@@ -45,18 +39,22 @@ void applyContextSettings(const sf::ContextSettings& settings)
 
     // Set context flags
     int profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-    if ((settings.attributeFlags & sf::ContextSettings::Attribute::Core) != sf::ContextSettings::Attribute{0u})
+    if (settings.isCore())
         profile = SDL_GL_CONTEXT_PROFILE_CORE;
 
     int flags = 0;
-    if ((settings.attributeFlags & sf::ContextSettings::Attribute::Debug) != sf::ContextSettings::Attribute{0u})
+    if (settings.isDebug())
         flags |= SDL_GL_CONTEXT_DEBUG_FLAG;
 
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_PROFILE_MASK, profile);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_FLAGS, flags);
 }
 
+} // namespace
 
+
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
 SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared) :
 GlContext(id, ContextSettings{}),
