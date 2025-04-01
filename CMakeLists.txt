@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
+set(CMAKE_POLICY_VERSION_MINIMUM "3.5") # workaround for dependencies
 
 # define a macro that helps defining an option
 macro(sfml_set_option var default type docstring)
@@ -283,6 +284,21 @@ if(SFML_ENABLE_STDLIB_ASSERTIONS)
     else()
         add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE) # see https://libcxx.llvm.org/Hardening.html
     endif()
+endif()
+
+option(SFML_ENABLE_HARDENING_FLAGS "Enable hardening flags" OFF)
+if(SFML_ENABLE_HARDENING_FLAGS)
+    add_compile_definitions(_FORTIFY_SOURCE=3)
+    add_compile_options(
+        -ftrivial-auto-var-init=pattern
+        -fstack-protector-strong
+        -fstack-clash-protection
+        -fstrict-flex-arrays=3
+        -Wl,--as-needed
+        -Wl,--no-copy-dt-needed-entries
+        -fno-delete-null-pointer-checks
+        -ftrapv
+    )
 endif()
 
 # set the output directory for SFML DLLs and executables
