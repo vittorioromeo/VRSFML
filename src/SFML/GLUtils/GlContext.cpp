@@ -225,21 +225,12 @@ void GlContext::checkSettings(const ContextSettings& requestedSettings) const
               << "Requested: version = " << requestedSettings.majorVersion << "." << requestedSettings.minorVersion
               << " ; depth bits = " << requestedSettings.depthBits << " ; stencil bits = " << requestedSettings.stencilBits
               << " ; AA level = " << requestedSettings.antiAliasingLevel << " ; core = "
-              << boolToString((requestedSettings.attributeFlags & ContextSettings::Attribute::Core) !=
-                              ContextSettings::Attribute{0u})
-              << " ; debug = "
-              << boolToString((requestedSettings.attributeFlags & ContextSettings::Attribute::Debug) !=
-                              ContextSettings::Attribute{0u})
+              << boolToString(requestedSettings.isCore()) << " ; debug = " << boolToString(requestedSettings.isDebug())
               << " ; sRGB = " << requestedSettings.sRgbCapable << '\n'
               << "Created: version = " << m_settings.majorVersion << "." << m_settings.minorVersion
               << " ; depth bits = " << m_settings.depthBits << " ; stencil bits = " << m_settings.stencilBits
-              << " ; AA level = " << m_settings.antiAliasingLevel << " ; core = "
-              << boolToString((m_settings.attributeFlags & ContextSettings::Attribute::Core) !=
-                              ContextSettings::Attribute{0u})
-              << " ; debug = "
-              << boolToString((m_settings.attributeFlags & ContextSettings::Attribute::Debug) !=
-                              ContextSettings::Attribute{0u})
-              << " ; sRGB = " << m_settings.sRgbCapable;
+              << " ; AA level = " << m_settings.antiAliasingLevel << " ; core = " << boolToString(m_settings.isCore())
+              << " ; debug = " << boolToString(m_settings.isDebug()) << " ; sRGB = " << m_settings.sRgbCapable;
     }
 }
 

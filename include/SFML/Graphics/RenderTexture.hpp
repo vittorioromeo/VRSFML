@@ -181,7 +181,7 @@ public:
     /// it may leave the texture in an undefined state.
     ///
     ////////////////////////////////////////////////////////////
-    void display();
+    RenderTarget::DrawStatistics display();
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the texture

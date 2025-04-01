@@ -13,6 +13,7 @@
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLDebugCallback.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/GlContext.hpp"
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
@@ -72,69 +73,6 @@ namespace
             result.emplace_back(extensionString);
 
     return result;
-}
-
-
-////////////////////////////////////////////////////////////
-[[maybe_unused]] void GLAPIENTRY debugGLMessageCallback(
-    GLenum       source,
-    GLenum       type,
-    unsigned int id,
-    GLenum       severity,
-    GLsizei /* length */,
-    const char* message,
-    const void* /* userParam */)
-{
-    // ignore non-significant error/warning codes
-    if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204)
-        return;
-
-    auto& multiLineErr = priv::err(true /* multiLine */);
-
-    multiLineErr << "---------------" << '\n' << "Debug message (" << id << "): " << message << "\nSource: ";
-
-    // clang-format off
-    switch (source)
-    {
-        case GL_DEBUG_SOURCE_API:             multiLineErr << "API";             break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   multiLineErr << "Window System";   break;
-        case GL_DEBUG_SOURCE_SHADER_COMPILER: multiLineErr << "Shader Compiler"; break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     multiLineErr << "Third Party";     break;
-        case GL_DEBUG_SOURCE_APPLICATION:     multiLineErr << "Application";     break;
-        case GL_DEBUG_SOURCE_OTHER:           multiLineErr << "Other";           break;
-    }
-    // clang-format on
-
-    multiLineErr << "\nType: ";
-
-    // clang-format off
-    switch (type)
-    {
-        case GL_DEBUG_TYPE_ERROR:               multiLineErr << "Error";                break;
-        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: multiLineErr << "Deprecated Behaviour"; break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  multiLineErr << "Undefined Behaviour";  break;
-        case GL_DEBUG_TYPE_PORTABILITY:         multiLineErr << "Portability";          break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         multiLineErr << "Performance";          break;
-        case GL_DEBUG_TYPE_MARKER:              multiLineErr << "Marker";               break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          multiLineErr << "Push Group";           break;
-        case GL_DEBUG_TYPE_POP_GROUP:           multiLineErr << "Pop Group";            break;
-        case GL_DEBUG_TYPE_OTHER:               multiLineErr << "Other";                break;
-    }
-    // clang-format on
-
-    multiLineErr << "\nSeverity: ";
-
-    // clang-format off
-    switch (severity)
-    {
-        case GL_DEBUG_SEVERITY_HIGH:         multiLineErr << "High";         break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       multiLineErr << "Medium";       break;
-        case GL_DEBUG_SEVERITY_LOW:          multiLineErr << "Low";          break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: multiLineErr << "Notification"; break;
-    }
-    // clang-format on
-
-    priv::err() << '\n';
 }
 
 
@@ -241,7 +179,9 @@ base::Optional<WindowContext> WindowContext::create()
 
     //
     // Try to initialize shared GL context
-    if (!wc.sharedGlContext.initialize(wc.sharedGlContext, ContextSettings{}))
+    const ContextSettings sharedContextSettings{};
+
+    if (!wc.sharedGlContext.initialize(wc.sharedGlContext, sharedContextSettings))
         return fail("could not initialize shared context");
 
     //
@@ -251,11 +191,8 @@ base::Optional<WindowContext> WindowContext::create()
     loadGLEntryPointsViaGLAD();
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-    // TODO P0: maybe conditionally enable depending on graphicscontext's debug ctx param?
-    // or for emscripten, try to enable without glcheck and then drain gl errors
-    glCheck(glEnable(GL_DEBUG_OUTPUT));
-    glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
-    glCheck(glDebugMessageCallback(debugGLMessageCallback, nullptr));
+    if (sharedContextSettings.isDebug())
+        priv::setupGLDebugCallback();
 
     // Retrieve the context version number
     const auto majorVersion = priv::getGLInteger(GL_MAJOR_VERSION);
@@ -566,6 +503,9 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
         priv::err() << "Error initializing newly created GL context in WindowContext::createGlContext()";
         return nullptr;
     }
+
+    if (contextSettings.isDebug())
+        priv::setupGLDebugCallback();
 
     glContext->checkSettings(contextSettings);
     return glContext;
