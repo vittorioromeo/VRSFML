@@ -11872,7 +11872,7 @@ It's a duck.)",
     void recreateGameRenderTexture(const sf::Vector2u newResolution)
     {
         rtGame.emplace(
-            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = true}).value());
+            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
     }
 
     ////////////////////////////////////////////////////////////
@@ -11906,7 +11906,7 @@ It's a duck.)",
                                .contextSettings = contextSettings});
 
         rtBackground.emplace(
-            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = true}).value());
+            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
 
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);

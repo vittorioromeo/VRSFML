@@ -25,7 +25,6 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLSyncGuard.hpp"
 #include "SFML/GLUtils/GLVAOGroup.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
@@ -311,6 +310,10 @@ struct RenderTarget::Impl
     DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
 
     ////////////////////////////////////////////////////////////
+    GLsync persistentBufferFence{};   //!< Fence for persistent buffer synchronization
+    bool   persistentWaitDone{false}; //!< Indicates if a sync is needed for persistent buffer
+
+    ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
     view(theView),
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed)),
@@ -356,6 +359,8 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
         priv::err() << "Failed to activate render target in `clearImpl`";
         return false;
     }
+
+    syncGPUStartFrame();
 
     m_impl->currentDrawStats = {};
 
@@ -673,11 +678,7 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
     setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
     m_impl->lastRenderStates = states;
 
-    {
-        GLSyncGuard syncGuard;
-        drawPrimitives(type, 0u, vertexCount);
-    }
-
+    drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
 }
 
@@ -695,11 +696,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
     setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
     m_impl->lastRenderStates = states;
 
-    {
-        GLSyncGuard syncGuard;
-        drawIndexedPrimitives(type, indexCount);
-    }
-
+    drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
 }
 
@@ -952,6 +949,31 @@ RenderTarget::DrawStatistics RenderTarget::flush()
     m_impl->mustFlush = false;
 
     return m_impl->currentDrawStats;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::syncGPUStartFrame()
+{
+    if (m_impl->persistentWaitDone || m_impl->persistentBufferFence == GLsync{})
+        return;
+
+    glCheck(glClientWaitSync(m_impl->persistentBufferFence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
+    glCheck(glDeleteSync(m_impl->persistentBufferFence));
+
+    m_impl->persistentBufferFence = GLsync{};
+    m_impl->persistentWaitDone    = true;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::syncGPUEndFrame()
+{
+    if (m_impl->persistentBufferFence != GLsync{})
+        glCheck(glDeleteSync(m_impl->persistentBufferFence));
+
+    m_impl->persistentBufferFence = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+    m_impl->persistentWaitDone    = false;
 }
 
 
