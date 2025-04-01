@@ -26,7 +26,7 @@ namespace
     const void* /* userParam */)
 {
     // ignore non-significant error/warning codes
-    if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204)
+    if (id == 131'169 || id == 131'185 || id == 131'218 || id == 131'204 || id == 1 || id == 2)
         return;
 
     auto& multiLineErr = sf::priv::err(true /* multiLine */);
