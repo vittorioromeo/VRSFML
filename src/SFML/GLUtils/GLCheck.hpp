@@ -25,17 +25,28 @@ namespace sf::priv
 // In debug mode, perform a test on every OpenGL call
 // The do-while loop is needed so that glCheck can be used as a single statement in if/else branches
 
-    #define glCheck(...)                                                            \
-        [](auto&& f) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN                         \
-        {                                                                           \
-            SFML_BASE_ASSERT(::sf::priv::glGetErrorImpl() == 0u /* GL_NO_ERROR */); \
-                                                                                    \
-            auto sfPrivGlCheckResult = ::sf::regularizeVoid(f);                     \
-                                                                                    \
-            while (!::sf::priv::glCheckError(__FILE__, __LINE__, #__VA_ARGS__))     \
-                /* no-op */;                                                        \
-                                                                                    \
-            return sfPrivGlCheckResult;                                             \
+    #define glCheck(...)                                                                                          \
+        [](auto&& f) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN                                                       \
+        {                                                                                                         \
+            const unsigned int openGlError = ::sf::priv::glGetErrorImpl();                                        \
+                                                                                                                  \
+            if (openGlError != 0u)                                                                                \
+            {                                                                                                     \
+                const bool previousErrorCheck = ::sf::priv::glCheckError(openGlError,                             \
+                                                                         __FILE__,                                \
+                                                                         __LINE__,                                \
+                                                                         "(EXISTING UNCHECKED ERROR BEFORE THIS " \
+                                                                         "EXPRESSION)\n" #__VA_ARGS__);           \
+                SFML_BASE_ASSERT(!previousErrorCheck);                                                            \
+                SFML_BASE_ASSERT(false);                                                                          \
+            }                                                                                                     \
+                                                                                                                  \
+            auto sfPrivGlCheckResult = ::sf::regularizeVoid(f);                                                   \
+                                                                                                                  \
+            while (!::sf::priv::glCheckError(openGlError, __FILE__, __LINE__, #__VA_ARGS__))                      \
+                /* no-op */;                                                                                      \
+                                                                                                                  \
+            return sfPrivGlCheckResult;                                                                           \
         }([&]() SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return __VA_ARGS__; })
 
 // The variants below are expected to fail, but we don't want to pollute the state of
@@ -73,6 +84,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 /// \brief Check the last OpenGL error
 ///
+/// \param openGlError The OpenGL error code to check
 /// \param file Source file where the call is located
 /// \param line Line number of the source file where the call is located
 /// \param expression The evaluated expression as a string
@@ -80,6 +92,6 @@ namespace sf::priv
 /// \return `false` if an error occurred, `true` otherwise
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool glCheckError(const char* file, unsigned int line, const char* expression);
+[[nodiscard]] bool glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
 
 } // namespace sf::priv
