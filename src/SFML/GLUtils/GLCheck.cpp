@@ -21,9 +21,9 @@ unsigned int glGetErrorImpl()
 
 
 ////////////////////////////////////////////////////////////
-bool glCheckError(const char* file, unsigned int line, const char* expression)
+bool glCheckError(const unsigned int openGlError, const char* const file, const unsigned int line, const char* const expression)
 {
-    const auto logError = [&](const char* error, const char* description)
+    const auto logError = [&](const char* const error, const char* const description)
     {
         err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
@@ -32,7 +32,7 @@ bool glCheckError(const char* file, unsigned int line, const char* expression)
         return false;
     };
 
-    switch (glGetError())
+    switch (openGlError)
     {
         case GL_NO_ERROR:
             return true;

@@ -59,6 +59,18 @@ struct ContextSettings
 #endif
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check if the context is a core context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool isCore() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if the context is a debug context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool isDebug() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     unsigned int depthBits{};                           //!< Bits of the depth buffer
@@ -70,7 +82,23 @@ struct ContextSettings
     bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
+
+
+////////////////////////////////////////////////////////////
+inline bool ContextSettings::isCore() const
+{
+    return (attributeFlags & Attribute::Core) != Attribute{0u};
+}
+
+
+////////////////////////////////////////////////////////////
+inline bool ContextSettings::isDebug() const
+{
+    return (attributeFlags & Attribute::Debug) != Attribute{0u};
+}
 
 } // namespace sf
 

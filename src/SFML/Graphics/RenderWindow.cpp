@@ -135,6 +135,7 @@ base::Optional<Event> RenderWindow::waitEvent(Time timeout)
 RenderTarget::DrawStatistics RenderWindow::display()
 {
     const auto result = RenderTarget::flush();
+    RenderTarget::syncGPUEndFrame();
     Window::display();
     return result;
 }
