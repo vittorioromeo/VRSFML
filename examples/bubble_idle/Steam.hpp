@@ -40,6 +40,7 @@ public:
 
     bool storeStats();
     bool unlockAchievement(std::size_t idx);
+    bool isAchievementUnlocked(std::size_t idx);
 
     bool setRichPresenceInGame(std::string_view levelNameFormat);
 

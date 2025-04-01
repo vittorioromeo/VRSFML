@@ -251,7 +251,7 @@ struct Playthrough
 
     //
     // New flags (v1.6.0)
-    bool laserPopEnabled = false; // TODO P0: decide what to do
+    bool laserPopEnabled = false; // TODO P0: decide what to do (charge system, release explosion, release laser, etc)
 
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()

@@ -178,7 +178,7 @@ public:
     ///         DPI-aware, otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getDPIAwareScalingFactor() const override;
+    [[nodiscard]] float getDisplayContentScale() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify an event
