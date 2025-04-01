@@ -16,7 +16,6 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 
