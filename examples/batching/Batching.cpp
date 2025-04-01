@@ -532,9 +532,14 @@ int main()
             }
             else if (batchType == BatchType::GPUStorage)
             {
+                // Calculate reservation needed based on current state
+                const sf::base::SizeT     maxEntitiesPerBatch       = (entities.size() + nWorkers - 1) / nWorkers;
+                constexpr sf::base::SizeT maxQuadsPerEntityEstimate = 96u; // Safe upper bound
+                const sf::base::SizeT     reservationSize           = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
+
                 // Must reserve in advance as reserving is not thread-safe
                 for (std::size_t iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
-                    gpuDrawableBatches[iBatch].reserveQuads(entities.size() / nWorkers * 32u);
+                    gpuDrawableBatches[iBatch].reserveQuads(reservationSize);
 
                 doMultithreadedDraw(gpuDrawableBatches);
             }
