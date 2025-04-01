@@ -215,11 +215,6 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImplPtr;
-    else if (windowSettings.scaleSizeWithDPI)
-    {
-        // TODO P0: dont do this, use VideoModeUtils instead, and make sure to set view
-        windowImplPtr->setSize((windowSettings.size.toVector2f() * windowImplPtr->getDPIAwareScalingFactor()).toVector2u());
-    }
 
     return base::UniquePtr<WindowImpl>{windowImplPtr};
 }
@@ -624,17 +619,9 @@ bool WindowImpl::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float WindowImpl::getDPIAwareScalingFactor() const
+float WindowImpl::getWindowDisplayScale() const
 {
-    const float displayScale = SDL_GetWindowDisplayScale(m_impl->sdlWindow);
-
-    if (displayScale == 0.f)
-    {
-        err() << "Failed to get window display scale: " << SDL_GetError();
-        return 1.f;
-    }
-
-    return displayScale;
+    return priv::getSDLLayerSingleton().getWindowDisplayScale(*m_impl->sdlWindow);
 }
 
 

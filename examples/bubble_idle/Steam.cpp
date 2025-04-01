@@ -123,6 +123,7 @@ public:
 
     bool storeStats();
     bool unlockAchievement(std::size_t idx);
+    bool isAchievementUnlocked(std::size_t idx);
 
     bool setRichPresenceInGame(std::string_view levelNameFormat);
 
@@ -273,6 +274,32 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
 
     m_unlockedAchievements.emplace(idx);
     return storeStats();
+}
+
+bool SteamManager::SteamManagerImpl::isAchievementUnlocked(std::size_t idx)
+{
+    if (!m_initialized)
+    {
+        sf::cOut() << "[Steam]: Attempted to check achievement when uninitialized\n";
+        return false;
+    }
+
+    if (!m_gotStats)
+    {
+        sf::cOut() << "[Steam]: Attempted to check achievement without stats\n";
+        return false;
+    }
+
+    char buf[64];
+    std::snprintf(buf, sizeof(buf), "ACH_%zu", idx);
+
+    bool unlocked = false;
+    if (!getAchievement(&unlocked, buf))
+    {
+        return false;
+    }
+
+    return unlocked;
 }
 
 bool SteamManager::SteamManagerImpl::setRichPresenceInGame(std::string_view levelNameFormat)
@@ -456,6 +483,11 @@ bool SteamManager::storeStats()
 bool SteamManager::unlockAchievement(std::size_t idx)
 {
     return impl().unlockAchievement(idx);
+}
+
+bool SteamManager::isAchievementUnlocked(std::size_t idx)
+{
+    return impl().isAchievementUnlocked(idx);
 }
 
 bool SteamManager::setRichPresenceInGame(std::string_view levelNameFormat)

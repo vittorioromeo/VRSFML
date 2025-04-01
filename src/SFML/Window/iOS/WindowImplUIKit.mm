@@ -205,7 +205,7 @@ bool WindowImplUIKit::hasFocus() const
 
 
 ////////////////////////////////////////////////////////////
-float WindowImplUIKit::getDPIAwareScalingFactor() const
+float WindowImplUIKit::getDisplayContentScale() const
 {
     // TODO P1: implement
     return 1.f;

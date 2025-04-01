@@ -200,15 +200,17 @@ int main()
         GPUStorage = 2
     };
 
-    auto        batchType           = BatchType::Disabled;
-    bool        drawSprites         = true;
-    bool        drawText            = true;
-    bool        drawShapes          = true;
-    bool        multithreadedUpdate = false;
-    bool        multithreadedDraw   = false;
-    std::size_t nWorkers            = nMaxWorkers;
-    int         numEntities         = 500;
-    std::size_t drawnVertices       = 0u;
+    auto         batchType           = BatchType::Disabled;
+    bool         autobatch           = true;
+    bool         drawSprites         = true;
+    bool         drawText            = true;
+    bool         drawShapes          = true;
+    bool         multithreadedUpdate = false;
+    bool         multithreadedDraw   = false;
+    std::size_t  nWorkers            = nMaxWorkers;
+    int          numEntities         = 500;
+    std::size_t  drawnVertices       = 0u;
+    unsigned int nDrawCalls          = 0u;
 
     //
     //
@@ -345,7 +347,7 @@ int main()
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize({340.f, 390.f});
+            ImGui::SetWindowSize({340.f, 450.f});
 
             const auto clearSamples = [&]
             {
@@ -369,6 +371,14 @@ int main()
                              batchTypeItems,
                              sf::base::getArraySize(batchTypeItems)))
                 clearSamples();
+
+            ImGui::BeginDisabled(batchType != BatchType::Disabled);
+            if (ImGui::Checkbox("Autobatch", &autobatch))
+            {
+                clearSamples();
+                window.setAutoBatchingEnabled(autobatch);
+            }
+            ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Sprites", &drawSprites))
                 clearSamples();
@@ -425,6 +435,7 @@ int main()
 
             ImGui::Spacing();
             ImGui::Text("Drawn vertices: %zu", drawnVertices);
+            ImGui::Text("Draw calls: %u", nDrawCalls);
 
             ImGui::End();
         }
@@ -535,7 +546,8 @@ int main()
         clock.restart();
         {
             imGuiContext.render(window);
-            window.display();
+            const auto stats = window.display();
+            nDrawCalls       = stats.drawCalls;
         }
         samplesDisplayMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---

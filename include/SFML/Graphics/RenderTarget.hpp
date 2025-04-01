@@ -61,7 +61,14 @@ namespace sf
 class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
 {
 public:
-    int nDrawCalls = 0; // TODO P0: return from display()?
+    ////////////////////////////////////////////////////////////
+    /// \brief Struct to hold the statistics of a render target
+    ///
+    ////////////////////////////////////////////////////////////
+    struct DrawStatistics
+    {
+        unsigned int drawCalls{0u}; //!< Number of draw calls
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -513,28 +520,28 @@ public:
               const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw a circle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CircleShapeData& sdCircle, const RenderStates& states = RenderStates::Default); // TODO P0:
+    void draw(const CircleShapeData& sdCircle, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw an ellipse shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = RenderStates::Default); // TODO P0:
+    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw a rectangle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = RenderStates::Default); // TODO P0:
+    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draw a rounded rectangle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = RenderStates::Default); // TODO P0:
+    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = RenderStates::Default);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -597,10 +604,12 @@ public:
     void resetGLStates();
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Draws the currently autobatched drawables (if any)
+    ///
+    /// \return Statistics about the draw calls that were made
     ///
     ////////////////////////////////////////////////////////////
-    void flush();
+    RenderTarget::DrawStatistics flush();
 
 protected:
     ////////////////////////////////////////////////////////////
