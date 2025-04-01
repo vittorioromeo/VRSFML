@@ -189,13 +189,21 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void reserveTriangles(base::SizeT triangleCount);
+    [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const base::SizeT triangleCount)
+    {
+        (void)m_storage.reserveMoreIndices(3u * triangleCount);
+        (void)m_storage.reserveMoreVertices(3u * triangleCount);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void reserveQuads(base::SizeT quadCount);
+    [[gnu::always_inline, gnu::flatten]] void reserveQuads(const base::SizeT quadCount)
+    {
+        (void)m_storage.reserveMoreIndices(6u * quadCount);
+        (void)m_storage.reserveMoreVertices(4u * quadCount);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -249,13 +257,37 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void clear();
+    [[gnu::always_inline]] void clear()
+    {
+        m_storage.clear();
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isEmpty() const noexcept;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] bool isEmpty() const noexcept
+    {
+        return m_storage.getNumVertices() == 0u && m_storage.getNumIndices() == 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
+    {
+        return m_storage.getNumVertices();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
+    {
+        return m_storage.getNumIndices();
+    }
 
 private:
     friend RenderTarget;

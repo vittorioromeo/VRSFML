@@ -449,11 +449,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Return a scaling factor for DPI-aware scaling
     ///
-    /// \return `1.f` for default DPI (96) or the window is not
-    ///         DPI-aware, otherwise the scaling factor
+    /// \return `1.f` for default DPI (96), otherwise the scaling factor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getDPIAwareScalingFactor() const;
+    [[nodiscard]] float getWindowDisplayScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window

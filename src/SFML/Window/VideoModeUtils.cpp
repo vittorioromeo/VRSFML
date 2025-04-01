@@ -42,10 +42,10 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-float VideoMode::getDPIAwareScalingFactor()
+float VideoModeUtils::getDisplayContentScale()
 {
     // TODO P0: per display?
-    return priv::getSDLLayerSingleton().getDPIAwareScalingFactor();
+    return priv::getSDLLayerSingleton().getDisplayContentScale();
 }
 
 

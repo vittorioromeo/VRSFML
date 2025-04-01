@@ -1211,7 +1211,7 @@ struct Main
     std::ofstream logFile{"bubblebyte.log", std::ios::out | std::ios::app};
 
     ////////////////////////////////////////////////////////////
-    void log(const char* format, ...) // TODO P0: test
+    void log(const char* format, ...)
     {
         if (!logFile)
             return;
@@ -9665,6 +9665,8 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAchievements()
     {
+        static bool mustGetFromSteam = true; // sync achievements from Steam only once
+
         SizeT nextId = 0u;
 
         const auto unlockIf = [&](const bool condition)
@@ -9672,8 +9674,17 @@ It's a duck.)",
             const auto achievementId = nextId++;
 
 #ifdef BUBBLEBYTE_USE_STEAMWORKS
-            if (steamMgr.isInitialized() && condition)
-                steamMgr.unlockAchievement(achievementId);
+            if (steamMgr.isInitialized())
+            {
+                if (condition)
+                    steamMgr.unlockAchievement(achievementId);
+
+                if (!profile.unlockedAchievements[achievementId] && mustGetFromSteam)
+                {
+                    if (steamMgr.isAchievementUnlocked(achievementId))
+                        profile.unlockedAchievements[achievementId] = true;
+                }
+            }
 #endif
 
             if (profile.unlockedAchievements[achievementId] || !condition)
@@ -10172,6 +10183,8 @@ It's a duck.)",
         unlockIf(buyReminder >= 5); // Secret
         unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
         unlockIf(wastedEffort);
+
+        mustGetFromSteam = false;
     }
 
     ////////////////////////////////////////////////////////////
@@ -11898,7 +11911,7 @@ It's a duck.)",
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);
 
-        dpiScalingFactor = optWindow->getDPIAwareScalingFactor();
+        dpiScalingFactor = optWindow->getWindowDisplayScale();
 
         static bool imguiInit = false;
         if (!imguiInit)
@@ -12766,13 +12779,10 @@ It's a duck.)",
 
                 if (!clickPosition.hasValue())
                     clickPosition.emplace(e0->position.toVector2f());
-
-                log("Touch began: finger %d", e0->finger); // TODO P0: test
             }
             else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
             {
                 fingerPositions[e1->finger].reset();
-                log("Touch ended: finger %d", e1->finger); // TODO P0: test
             }
             else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
             {
