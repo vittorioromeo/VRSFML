@@ -288,7 +288,6 @@ endif()
 
 option(SFML_ENABLE_HARDENING_FLAGS "Enable hardening flags" OFF)
 if(SFML_ENABLE_HARDENING_FLAGS)
-    add_compile_definitions(_FORTIFY_SOURCE=3)
     add_compile_options(
         -ftrivial-auto-var-init=pattern
         -fstack-protector-strong
