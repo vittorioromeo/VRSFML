@@ -545,11 +545,13 @@ struct SDLAllocatedArray
         return ptr != nullptr;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] base::SizeT size() const noexcept
     {
         return count;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] T* begin() noexcept
@@ -557,17 +559,20 @@ struct SDLAllocatedArray
         return ptr.get();
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] T* end() noexcept
     {
         return ptr.get() + count;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const T* begin() const noexcept
     {
         return ptr.get();
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const T* end() const noexcept
@@ -579,6 +584,7 @@ struct SDLAllocatedArray
 
 ////////////////////////////////////////////////////////////
 void applyContextSettings(const sf::ContextSettings& settings); // TODO P0
+
 
 ////////////////////////////////////////////////////////////
 class SDLLayer
@@ -673,7 +679,7 @@ public:
 
         if (ids == nullptr)
         {
-            err() << "`getTouchDevices` failed: " << SDL_GetError();
+            err() << "`SDL_GetTouchDevices` failed: " << SDL_GetError();
             return nullptr;
         }
 
@@ -708,7 +714,7 @@ public:
     {
         if (touchDeviceId == 0)
         {
-            err() << "`SDL_GetTouchDeviceType` failed: invalid touch device ID";
+            err() << "`getTouchDeviceType` failed: invalid touch device ID";
             return SDL_TOUCH_DEVICE_INVALID;
         }
 
@@ -721,7 +727,7 @@ public:
     {
         if (touchDeviceId == 0)
         {
-            err() << "`SDL_GetTouchDeviceType` failed: invalid touch device ID";
+            err() << "`getTouchDeviceName` failed: invalid touch device ID";
             return "INVALID TOUCH DEVICE";
         }
 
@@ -822,12 +828,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getDPIAwareScalingFactor() const
+    [[nodiscard]] float getDisplayContentScale() const
     {
         auto displays = getDisplays();
         if (!displays.valid())
         {
-            err() << "`getDPIAwareScalingFactor` failed: could not get displays";
+            err() << "`getDisplayContentScale` failed: could not get displays";
             return 1.f;
         }
 
@@ -837,6 +843,21 @@ public:
         if (result == 0.f)
         {
             err() << "`SDL_GetDisplayContentScale` failed:" << SDL_GetError();
+            return 1.f;
+        }
+
+        return result;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const
+    {
+        const float result = SDL_GetWindowDisplayScale(&window);
+
+        if (result == 0.f)
+        {
+            err() << "`SDL_GetWindowDisplayScale` failed: " << SDL_GetError();
             return 1.f;
         }
 

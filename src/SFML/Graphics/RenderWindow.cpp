@@ -132,10 +132,11 @@ base::Optional<Event> RenderWindow::waitEvent(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-void RenderWindow::display()
+RenderTarget::DrawStatistics RenderWindow::display()
 {
-    RenderTarget::flush();
+    const auto result = RenderTarget::flush();
     Window::display();
+    return result;
 }
 
 
