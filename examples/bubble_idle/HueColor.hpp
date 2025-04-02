@@ -1,17 +1,17 @@
 #pragma once
 
-#include "AssertAssume.hpp"
 #include "MathUtils.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::base::U8 hueToByte(const float hue) noexcept
 {
-    ASSERT_AND_ASSUME(hue >= 0.f && hue <= 360.f);
+    SFML_BASE_ASSERT_AND_ASSUME(hue >= 0.f && hue <= 360.f);
     return static_cast<sf::base::U8>(hue / 360.f * 255.f);
 }
 

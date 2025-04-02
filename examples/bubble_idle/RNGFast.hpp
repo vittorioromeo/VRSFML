@@ -1,9 +1,8 @@
 #pragma once
 
-#include "AssertAssume.hpp"
-
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Cos.hpp"
@@ -56,7 +55,7 @@ public:
     {
         static_assert(sf::base::isIntegral<T>);
 
-        ASSERT_AND_ASSUME(min <= max);
+        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
 
         const auto range = static_cast<SFML_BASE_MAKE_UNSIGNED(T)>(max - min) + T(1);
         return min + static_cast<T>(next() % range);
@@ -65,7 +64,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline float getF(const float min, const float max)
     {
-        ASSERT_AND_ASSUME(min <= max);
+        SFML_BASE_ASSERT_AND_ASSUME(min <= max);
 
         // Returns a float in the inclusive range [min, max].
 

@@ -7,6 +7,7 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/FastSinCos.hpp"
 
 // The code below could be `constexpr` but the `FastSinCos` header is a heavy
@@ -22,8 +23,8 @@ Transform TransformableMixinBase::getTransform(const Vector2f position,
 {
     const auto [sine, cosine] = base::fastSinCos(radians);
 
-    SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
-    SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
     return Transform::from(position, scale, origin, sine, cosine);
 }
