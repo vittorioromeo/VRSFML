@@ -60,7 +60,7 @@ struct [[nodiscard]] Profile
     bool multicolorCursor     = false;
 
     float cursorHue   = 0.f;
-    float cursorScale = 0.45f;
+    float cursorScale = 0.5f;
 
     bool showCoinParticles = true;
     bool showDpsMeter      = true;
