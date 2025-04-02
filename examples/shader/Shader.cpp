@@ -329,7 +329,8 @@ sf::base::Optional<Pixelate> tryLoadPixelate()
     if (!texture.hasValue())
         return sf::base::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/pixelate.frag");
+    auto shader = sf::Shader::loadFromFile(
+        {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/pixelate.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -338,7 +339,7 @@ sf::base::Optional<Pixelate> tryLoadPixelate()
 
 sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
 {
-    auto shader = sf::Shader::loadFromFile("resources/wave.vert", "resources/blur.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/wave.vert", .fragmentPath = "resources/blur.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -347,7 +348,7 @@ sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
 
 sf::base::Optional<StormBlink> tryLoadStormBlink()
 {
-    auto shader = sf::Shader::loadFromFile("resources/storm.vert", "resources/blink.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/storm.vert", .fragmentPath = "resources/blink.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -378,7 +379,8 @@ sf::base::Optional<Edge> tryLoadEdge()
     entityTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/edge.frag");
+    auto shader = sf::Shader::loadFromFile(
+        {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/edge.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -404,9 +406,9 @@ sf::base::Optional<Geometry> tryLoadGeometry()
     logoTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert",
-                                           "resources/billboard.geom",
-                                           "resources/billboard.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath   = "resources/billboard.vert",
+                                            .fragmentPath = "resources/billboard.frag",
+                                            .geometryPath = "resources/billboard.geom"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
