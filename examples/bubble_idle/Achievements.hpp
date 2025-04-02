@@ -480,8 +480,7 @@ inline constexpr AchievementData achievementData[] = {
     {"Yeah, Baby!", "Change Copycat disguise 25 times."},
     {"Tactical Espionage Action", "Change Copycat disguise 100 times."},
 
-    {"Rules? Meow off!", "Pop
-         bubbles without ever purchasing anything.", /* secret */ true},
+    {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
     {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
     {"Wasted Effort", "Perform a voodoo ritual with no cats around.", /* secret */ true},
 };
