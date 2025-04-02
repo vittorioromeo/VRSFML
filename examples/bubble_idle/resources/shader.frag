@@ -107,9 +107,10 @@ void main()
         float edgeFactor = distance;
 
         // Generate iridescent color pattern
+        vec2 patternCoord = centeredUV * 10.0; // Adjust multiplier as needed
         vec3 iridescence = 0.25 +
                            0.5 * cos(u_time * 2.0 + distance * 25.0 + float(sf_v_color.b) * 100.0 + vec3(0.0, 2.0, 4.0)) +
-                           (0.45 * sin(u_time * 3.0 + (float(sf_v_color.b) * 100.0 + v_worldPos.y * 500.0)));
+                           (0.45 * sin(u_time * 3.0 + float(sf_v_color.b) * 100.0 + patternCoord.y + patternCoord.x));
         iridescence *= edgeFactor * u_edgeFactorStrength; // Stronger at edges
 
         // Combine effects
