@@ -189,7 +189,7 @@ void main()
 }
 )glsl";
 
-    auto shader     = sf::Shader::loadFromMemory(shaderSrc, sf::Shader::Type::Fragment).value();
+    auto shader     = sf::Shader::loadFromMemory({.fragmentCode = shaderSrc}).value();
     auto ulTexture2 = shader.getUniformLocation("texture2").value();
     (void)shader.setUniform(ulTexture2, texture);
 
