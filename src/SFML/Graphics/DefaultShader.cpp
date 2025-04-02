@@ -17,7 +17,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 [[nodiscard]] base::Optional<Shader> DefaultShader::create()
 {
-    auto result = Shader::loadFromMemory(srcVertex, srcFragment);
+    auto result = Shader::loadFromMemory({.vertexCode = srcVertex, .fragmentCode = srcFragment});
 
     if (result)
     {
