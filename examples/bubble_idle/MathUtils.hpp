@@ -1,9 +1,8 @@
 #pragma once
 
-#include "AssertAssume.hpp"
-
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Math/Exp.hpp"
 #include "SFML/Base/Remainder.hpp"
 
@@ -16,7 +15,7 @@
     const float newMin,
     const float newMax) noexcept
 {
-    ASSERT_AND_ASSUME(oldMax != oldMin);
+    SFML_BASE_ASSERT_AND_ASSUME(oldMax != oldMin);
     return newMin + ((x - oldMin) / (oldMax - oldMin)) * (newMax - newMin);
 }
 
@@ -26,7 +25,7 @@
     const float b,
     const float value) noexcept
 {
-    ASSERT_AND_ASSUME(value >= 0.f && value <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(value >= 0.f && value <= 1.f);
     return a + (b - a) * value;
 }
 
@@ -37,7 +36,7 @@
     const float deltaTimeMs,
     const float speed) noexcept
 {
-    ASSERT_AND_ASSUME(speed >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(speed >= 0.f);
 
     const float factor = 1.f - sf::base::exp(-deltaTimeMs / speed);
     return current + (target - current) * factor;

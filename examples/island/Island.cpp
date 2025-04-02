@@ -472,7 +472,9 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Load the terrain shader
-    auto       terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag").value();
+    auto terrainShader = sf::Shader::loadFromFile(
+                             {.vertexPath = "resources/terrain.vert", .fragmentPath = "resources/terrain.frag"})
+                             .value();
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
 
     // Load the font
