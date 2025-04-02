@@ -92,4 +92,7 @@ struct [[nodiscard]] Profile
     bool showCursorComboBar = true;
 
     float sfxVolume = 100.f;
+
+    bool hideMaxedOutPurchasables = false;
+    bool hideCategorySeparators   = false;
 };

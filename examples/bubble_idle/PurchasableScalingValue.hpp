@@ -54,4 +54,10 @@ struct [[nodiscard]] PurchasableScalingValue
 
         return totalCost;
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr bool isMaxedOut() const
+    {
+        return nPurchases >= data->nMaxPurchases;
+    }
 };
