@@ -1211,6 +1211,21 @@ struct Main
     std::ofstream logFile{"bubblebyte.log", std::ios::out | std::ios::app};
 
     ////////////////////////////////////////////////////////////
+    // Achievement progress tracking
+    struct AchievementProgress
+    {
+        sf::base::SizeT value;
+        sf::base::SizeT threshold;
+    };
+
+    sf::base::Array<sf::base::Optional<AchievementProgress>, sf::base::getArraySize(achievementData)> achievementProgress{};
+
+    ////////////////////////////////////////////////////////////
+    // PP purchase undo
+    std::vector<sf::base::FixedFunction<void(), 128>> undoPPPurchase;
+    Countdown                                         undoPPPurchaseTimer;
+
+    ////////////////////////////////////////////////////////////
     void log(const char* format, ...)
     {
         if (!logFile)
@@ -1732,7 +1747,6 @@ struct Main
         const char* labelStart = subBullet ? label + 2 : label;
         const auto  labelSize  = readableLabelEnd - labelStart;
 
-
         // button label
         uiSetFontScale((subBullet ? uiSubBulletFontScale : uiNormalFontScale) * 1.15f);
         ImGui::AlignTextToFramePadding();
@@ -2043,7 +2057,10 @@ It's a duck.)",
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(const char* label, const ImVec2& btnSize)
+    [[nodiscard]] AnimatedButtonOutcome uiAnimatedButton(const char*   label,
+                                                         const ImVec2& btnSize,
+                                                         const float   fontScale,
+                                                         const float   fontScaleMult)
     {
         ImGuiWindow* window = ImGui::GetCurrentWindow();
 
@@ -2174,12 +2191,13 @@ It's a duck.)",
         // ── Draw Text with the Same Transformation ──
 
         // First, compute the untransformed text position.
-        const ImVec2 textPos = bb.Min + (size - labelSize) * 0.5f;
+        const ImVec2 textPos = bb.Min + (size - labelSize * fontScaleMult) * 0.5f;
 
         // Record the current vertex buffer size...
         const int vtxBufferSizeBeforeTransformation = drawList->VtxBuffer.Size;
 
         // ...and add the text at its normal (unrotated/unscaled) position.
+        uiSetFontScale(fontScale * fontScaleMult);
         drawList->AddText(textPos, ImGui::GetColorU32(ImGuiCol_Text), label, labelEnd);
 
         // Then, apply our transform to only the new text vertices.
@@ -2258,6 +2276,27 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool uiMakeButtonImpl(const char* label, const char* xBuffer)
     {
+        const bool  subBullet = label[0] == ' ' && label[1] == ' ';
+        const float fontScale = subBullet ? uiSubBulletFontScale : uiNormalFontScale;
+
+        float fontScaleMult = 1.f;
+
+        const auto xBufferLen = SFML_BASE_STRLEN(xBuffer);
+
+        if (xBufferLen > 20)
+            fontScaleMult = 0.65f;
+        else if (xBufferLen > 19)
+            fontScaleMult = 0.7f;
+        else if (xBufferLen > 18)
+            fontScaleMult = 0.8f;
+        else if (xBufferLen > 16)
+            fontScaleMult = 0.9f;
+        else
+            fontScaleMult = 1.f;
+
+        if (fontScale == uiSubBulletFontScale)
+            fontScaleMult = std::pow(fontScaleMult, 0.4f);
+
         const float scaledButtonWidth = uiButtonWidth * profile.uiScale;
 
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x - scaledButtonWidth - 2.5f, 0.f)); // Push to right
@@ -2266,7 +2305,7 @@ It's a duck.)",
         uiPushButtonColors();
 
         bool clicked = false;
-        if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(scaledButtonWidth, 0.f));
+        if (const auto outcome = uiAnimatedButton(xBuffer, ImVec2(scaledButtonWidth, 0.f), fontScale, fontScaleMult);
             outcome == AnimatedButtonOutcome::Clicked)
         {
             playSound(sounds.buy);
@@ -2325,7 +2364,11 @@ It's a duck.)",
         const char*              currencyFmt)
     {
         const bool maxedOut = psv.nPurchases == psv.data->nMaxPurchases;
-        bool       result   = false;
+
+        if (profile.hideMaxedOutPurchasables && maxedOut)
+            return false;
+
+        bool result = false;
 
         if (maxedOut)
             std::sprintf(uiBuffer, "MAX##%u", uiWidgetId++);
@@ -2349,6 +2392,17 @@ It's a duck.)",
                 spentMoney += cost;
 
             psv.nPurchases += times;
+
+            if (&availability == &pt.prestigePoints && times == 1u)
+            {
+                undoPPPurchase.emplace_back([&psv, &availability, times, cost]
+                {
+                    psv.nPurchases -= times;
+                    availability += cost;
+                });
+
+                undoPPPurchaseTimer.value = 10000.f;
+            }
         }
 
         ImGui::EndDisabled();
@@ -2492,6 +2546,17 @@ It's a duck.)",
                 spentMoney += cost;
 
             done = true;
+
+            if (&availability == &pt.prestigePoints && cost > 0u)
+            {
+                undoPPPurchase.emplace_back([&availability, &done, cost]
+                {
+                    done = false;
+                    availability += cost;
+                });
+
+                undoPPPurchaseTimer.value = 10000.f;
+            }
         }
 
         ImGui::EndDisabled();
@@ -3075,7 +3140,7 @@ It's a duck.)",
             style.TouchExtraPadding                = touchExtraPadding * scale;
             style.IndentSpacing                    = indentSpacing * scale;
             style.ColumnsMinSpacing                = columnsMinSpacing * scale;
-            style.ScrollbarSize                    = scrollbarSize * scale * (steamDeck ? 2.f : 0.5f);
+            style.ScrollbarSize                    = scrollbarSize * scale * (steamDeck ? 2.f : 0.65f);
             style.ScrollbarRounding                = scrollbarRounding * scale;
             style.GrabMinSize                      = grabMinSize * scale;
             style.GrabRounding                     = grabRounding * scale;
@@ -3449,6 +3514,9 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void imgsep(const sf::FloatRect& txr, const char* sepLabel, const bool first = false)
     {
+        if (profile.hideCategorySeparators)
+            return;
+
         if (!first)
         {
             ImGui::Spacing();
@@ -3477,6 +3545,9 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void imgsep2(const sf::FloatRect& txr, const char* sepLabel)
     {
+        if (profile.hideCategorySeparators)
+            return;
+
         ImGui::Spacing();
         ImGui::Spacing();
         ImGui::Spacing();
@@ -3538,11 +3609,18 @@ It's a duck.)",
             const float nextComboStartTime    = pt.psvComboStartTime.nextValue();
 
             uiSetUnlockLabelY(0u);
-            std::sprintf(uiTooltipBuffer,
-                         "Increase combo duration from %.2fs to %.2fs. We are in it for the long haul!%s",
-                         static_cast<double>(currentComboStartTime),
-                         static_cast<double>(nextComboStartTime),
-                         mouseNote);
+            if (!pt.psvComboStartTime.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase combo duration from %.2fs to %.2fs. We are in it for the long haul!%s",
+                             static_cast<double>(currentComboStartTime),
+                             static_cast<double>(nextComboStartTime),
+                             mouseNote);
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Increase combo duration (MAX). We are in it for the long haul!%s", mouseNote);
+            }
 
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentComboStartTime));
             makePSVButton("  Longer combo", pt.psvComboStartTime);
@@ -3649,13 +3727,22 @@ It's a duck.)",
             const float currentCooldown = CatConstants::baseCooldowns[asIdx(catType)] * psv.currentValue();
             const float nextCooldown    = CatConstants::baseCooldowns[asIdx(catType)] * psv.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
-                         "but no "
-                         "refunds!)",
-                         static_cast<double>(currentCooldown / 1000.f),
-                         static_cast<double>(nextCooldown / 1000.f),
-                         additionalInfo);
+            if (!psv.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Decrease cooldown from %.2fs to %.2fs.%s\n\n(Note: can be reverted by right-clicking, "
+                             "but no refunds!)",
+                             static_cast<double>(currentCooldown / 1000.f),
+                             static_cast<double>(nextCooldown / 1000.f),
+                             additionalInfo);
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Decrease cooldown (MAX).%s\n\n(Note: can be reverted by right-clicking, but "
+                             "no refunds!)",
+                             additionalInfo);
+            }
 
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedCooldownByCatType(catType) / 1000.f));
 
@@ -3676,13 +3763,23 @@ It's a duck.)",
             const float currentRange = CatConstants::baseRanges[asIdx(catType)] / psv.currentValue();
             const float nextRange    = CatConstants::baseRanges[asIdx(catType)] / psv.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
-                         "no "
-                         "refunds!)",
-                         static_cast<double>(currentRange),
-                         static_cast<double>(nextRange),
-                         additionalInfo);
+            if (!psv.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase range from %.2fpx to %.2fpx.%s\n\n(Note: can be reverted by right-clicking, but "
+                             "no refunds!)",
+                             static_cast<double>(currentRange),
+                             static_cast<double>(nextRange),
+                             additionalInfo);
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase range (MAX).%s\n\n(Note: can be reverted by right-clicking, but "
+                             "no refunds!)",
+                             additionalInfo);
+            }
+
             std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedRangeByCatType(catType)));
             makePSVButton(label, psv);
 
@@ -4210,9 +4307,21 @@ It's a duck.)",
             std::sprintf(uiTooltipBuffer, "Spend money to immediately get prestige points.");
             uiLabelBuffer[0] = '\0';
 
+            static int buyPPTimes = 1;
+
+            char buf[256];
+            std::snprintf(buf, sizeof(buf), "  Buy %d PPs", buyPPTimes * 100);
+
             bool done = false;
-            if (makePurchasableButtonOneTime("  Buy 100 PPs", 1'000'000'000'000u, done))
-                pt.prestigePoints += 100u;
+            if (makePurchasableButtonOneTime(buf, 1'000'000'000'000u * static_cast<unsigned int>(buyPPTimes), done))
+                pt.prestigePoints += 100u * static_cast<unsigned int>(buyPPTimes);
+
+            ImGui::NextColumn();
+
+            uiSetFontScale(uiSubBulletFontScale);
+            ImGui::InputInt("times##buypptimes", &buyPPTimes);
+            buyPPTimes = sf::base::clamp(buyPPTimes, 1, 100);
+            uiSetFontScale(uiNormalFontScale);
 
             ImGui::Columns(1);
         }
@@ -4237,6 +4346,41 @@ It's a duck.)",
         std::snprintf(ppBuf, sizeof(ppBuf), "%llu PPs available", pt.prestigePoints);
         uiCenteredText(ppBuf);
         uiSetFontScale(uiNormalFontScale);
+
+        ImGui::BeginDisabled(undoPPPurchase.empty());
+        {
+            ImGui::Spacing();
+
+            uiBeginColumns();
+
+            bool done = false;
+
+            uiLabelBuffer[0] = '\0';
+
+            std::sprintf(uiTooltipBuffer, "Undo your last PP purchase, refunding you the prestige points.");
+
+            if (makePurchasablePPButtonOneTime("  Undo last purchase", 0u, done))
+            {
+                SFML_BASE_ASSERT(!undoPPPurchase.empty());
+
+                undoPPPurchase.back()();
+                undoPPPurchase.pop_back();
+
+                done = false;
+            }
+
+            uiSetFontScale(uiToolTipFontScale);
+
+            if (undoPPPurchase.empty())
+                ImGui::Text("");
+            else
+                ImGui::Text("Undo time left: %.2fs", static_cast<double>(undoPPPurchaseTimer.value / 1000.f));
+
+            uiSetFontScale(uiNormalFontScale);
+
+            ImGui::Columns(1);
+        }
+        ImGui::EndDisabled();
 
         ImGui::Spacing();
         ImGui::Spacing();
@@ -4281,10 +4425,18 @@ It's a duck.)",
                     const float currentRange = pt.psvPPMultiPopRange.currentValue();
                     const float nextRange    = pt.psvPPMultiPopRange.nextValue();
 
-                    std::sprintf(uiTooltipBuffer,
-                                 "Increase the range of the multipop effect from %.2fpx to %.2fpx.",
-                                 static_cast<double>(currentRange),
-                                 static_cast<double>(nextRange));
+                    if (!pt.psvPPMultiPopRange.isMaxedOut())
+                    {
+                        std::sprintf(uiTooltipBuffer,
+                                     "Increase the range of the multipop effect from %.2fpx to %.2fpx.",
+                                     static_cast<double>(currentRange),
+                                     static_cast<double>(nextRange));
+                    }
+                    else
+                    {
+                        std::sprintf(uiTooltipBuffer, "Increase the range of the multipop effect (MAX).");
+                    }
+
                     std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(currentRange));
                     makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
                 }
@@ -4463,10 +4615,17 @@ It's a duck.)",
                 const float nextDuration    = pt.getComputedNextInspirationDuration();
 
                 uiSetUnlockLabelY(57u);
-                std::sprintf(uiTooltipBuffer,
-                             "Increase the duration of the inspiration effect from %.2fs to %.2fs.",
-                             static_cast<double>(currentDuration / 1000.f),
-                             static_cast<double>(nextDuration / 1000.f));
+                if (!pt.psvPPInspireDurationMult.isMaxedOut())
+                {
+                    std::sprintf(uiTooltipBuffer,
+                                 "Increase the duration of the inspiration effect from %.2fs to %.2fs.",
+                                 static_cast<double>(currentDuration / 1000.f),
+                                 static_cast<double>(nextDuration / 1000.f));
+                }
+                else
+                {
+                    std::sprintf(uiTooltipBuffer, "Increase the duration of the inspiration effect (MAX).");
+                }
                 std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration / 1000.f));
 
                 makePrestigePurchasablePPButtonPSV("inspire duration", pt.psvPPInspireDurationMult);
@@ -4504,10 +4663,17 @@ It's a duck.)",
             const float currentDuration = pt.psvPPWitchCatBuffDuration.currentValue();
             const float nextDuration    = pt.psvPPWitchCatBuffDuration.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase the base duration of Witchcat buffs from %.2fs to %.2fs.",
-                         static_cast<double>(currentDuration),
-                         static_cast<double>(nextDuration));
+            if (!pt.psvPPWitchCatBuffDuration.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the base duration of Witchcat buffs from %.2fs to %.2fs.",
+                             static_cast<double>(currentDuration),
+                             static_cast<double>(nextDuration));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration));
             makePrestigePurchasablePPButtonPSV("Buff duration", pt.psvPPWitchCatBuffDuration);
 
@@ -4543,23 +4709,39 @@ It's a duck.)",
             const float currentUniPercentage = pt.psvPPUniRitualBuffPercentage.currentValue();
             const float nextUniPercentage    = pt.psvPPUniRitualBuffPercentage.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% "
-                         "to "
-                         "%.2f%%.",
-                         static_cast<double>(currentUniPercentage),
-                         static_cast<double>(nextUniPercentage));
+            if (!pt.psvPPUniRitualBuffPercentage.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% "
+                             "to %.2f%%.",
+                             static_cast<double>(currentUniPercentage),
+                             static_cast<double>(nextUniPercentage));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the star bubble spawn chance during the Unicat vododoo ritual buff "
+                             "(MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentUniPercentage));
             makePrestigePurchasablePPButtonPSV("Star Spawn %", pt.psvPPUniRitualBuffPercentage);
 
             const float currentDevilPercentage = pt.psvPPDevilRitualBuffPercentage.currentValue();
             const float nextDevilPercentage    = pt.psvPPDevilRitualBuffPercentage.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to "
-                         "%.2f%%.",
-                         static_cast<double>(currentDevilPercentage),
-                         static_cast<double>(nextDevilPercentage));
+            if (!pt.psvPPDevilRitualBuffPercentage.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to "
+                             "%.2f%%.",
+                             static_cast<double>(currentDevilPercentage),
+                             static_cast<double>(nextDevilPercentage));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the bomb spawn chance during the Devil vododoo ritual buff (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
             makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
         }
@@ -4577,17 +4759,31 @@ It's a duck.)",
             const float currentManaCooldown = pt.getComputedManaCooldown();
             const float nextManaCooldown    = pt.getComputedManaCooldownNext();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Decrease mana generation cooldown from %.2fs to %.2fs.",
-                         static_cast<double>(currentManaCooldown / 1000.f),
-                         static_cast<double>(nextManaCooldown / 1000.f));
+            if (!pt.psvPPManaCooldownMult.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Decrease mana generation cooldown from %.2fs to %.2fs.",
+                             static_cast<double>(currentManaCooldown / 1000.f),
+                             static_cast<double>(nextManaCooldown / 1000.f));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Decrease mana generation cooldown (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentManaCooldown / 1000.f));
             makePrestigePurchasablePPButtonPSV("Mana cooldown", pt.psvPPManaCooldownMult);
 
             const ManaType currentMaxMana = pt.getComputedMaxMana();
             const ManaType nextMaxMana    = pt.getComputedMaxManaNext();
 
-            std::sprintf(uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
+            if (!pt.psvPPManaMaxMult.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Increase the maximum mana (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%llu mana", currentMaxMana);
             makePrestigePurchasablePPButtonPSV("Mana limit", pt.psvPPManaMaxMult);
 
@@ -4724,10 +4920,17 @@ It's a duck.)",
                 const float currentChance = pt.psvPPRepulsoCatConverterChance.currentValue();
                 const float nextChance    = pt.psvPPRepulsoCatConverterChance.nextValue();
 
-                std::sprintf(uiTooltipBuffer,
-                             "Increase the repelled bubble conversion chance from %.2f%% to %.2f%%.",
-                             static_cast<double>(currentChance),
-                             static_cast<double>(nextChance));
+                if (!pt.psvPPRepulsoCatConverterChance.isMaxedOut())
+                {
+                    std::sprintf(uiTooltipBuffer,
+                                 "Increase the repelled bubble conversion chance from %.2f%% to %.2f%%.",
+                                 static_cast<double>(currentChance),
+                                 static_cast<double>(nextChance));
+                }
+                else
+                {
+                    std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance (MAX).");
+                }
                 std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentChance));
                 makePrestigePurchasablePPButtonPSV("Conversion chance", pt.psvPPRepulsoCatConverterChance);
 
@@ -5206,10 +5409,17 @@ It's a duck.)",
             const float currentPercentage = pt.psvStarpawPercentage.currentValue();
             const float nextPercentage    = pt.psvStarpawPercentage.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase the percentage of bubbles converted into star bubbles from %.2f%% to %.2f%%.",
-                         static_cast<double>(currentPercentage),
-                         static_cast<double>(nextPercentage));
+            if (!pt.psvStarpawPercentage.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the percentage of bubbles converted into star bubbles from %.2f%% to %.2f%%.",
+                             static_cast<double>(currentPercentage),
+                             static_cast<double>(nextPercentage));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Increase the percentage of bubbles converted into star bubbles (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
             (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
                                             pt.psvStarpawPercentage,
@@ -5292,10 +5502,17 @@ It's a duck.)",
             const float currentPercentage = pt.psvDarkUnionPercentage.currentValue();
             const float nextPercentage    = pt.psvDarkUnionPercentage.nextValue();
 
-            std::sprintf(uiTooltipBuffer,
-                         "Increase the cooldown reduction percentage from %.2f%% to %.2f%%.",
-                         static_cast<double>(currentPercentage),
-                         static_cast<double>(nextPercentage));
+            if (!pt.psvDarkUnionPercentage.isMaxedOut())
+            {
+                std::sprintf(uiTooltipBuffer,
+                             "Increase the cooldown reduction percentage from %.2f%% to %.2f%%.",
+                             static_cast<double>(currentPercentage),
+                             static_cast<double>(nextPercentage));
+            }
+            else
+            {
+                std::sprintf(uiTooltipBuffer, "Increase the cooldown reduction percentage (MAX).");
+            }
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
             (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
                                             pt.psvDarkUnionPercentage,
@@ -5757,15 +5974,24 @@ It's a duck.)",
 
                     const ImVec4 textColor{1.f, 1.f, 1.f, opacity};
 
-                    uiSetFontScale(uiNormalFontScale);
-                    ImGui::TextColored(textColor, "%llu - %s", id++, (!secret || unlocked) ? name : "???");
+                    uiSetFontScale(uiNormalFontScale * 1.15f);
+                    ImGui::TextColored(textColor, "%llu - %s", id, (!secret || unlocked) ? name : "???");
 
                     ImGui::PushFont(fontImGuiMouldyCheese);
                     uiSetFontScale(0.75f);
                     ImGui::TextColored(textColor, "%s", (!secret || unlocked) ? description : "(...secret achievement...)");
+
+                    if (!unlocked && achievementProgress[id].hasValue())
+                        ImGui::TextColored(textColor,
+                                           "(%s / %s)",
+                                           toStringWithSeparators<0>(achievementProgress[id]->value),
+                                           toStringWithSeparators<1>(achievementProgress[id]->threshold));
+
                     ImGui::PopFont();
 
                     ImGui::Separator();
+
+                    ++id;
                 }
 
                 if (debugMode)
@@ -6169,6 +6395,11 @@ It's a duck.)",
             makeUIScaleButton("M", 1.f);
             makeUIScaleButton("S", 0.75f);
             makeUIScaleButton("XS", 0.5f);
+
+            ImGui::Separator();
+
+            uiCheckbox("Hide maxed-out upgrades", &profile.hideMaxedOutPurchasables);
+            uiCheckbox("Hide category separators", &profile.hideCategorySeparators);
 
             ImGui::Separator();
 
@@ -9698,219 +9929,252 @@ It's a duck.)",
                              achievementData[achievementId].description);
         };
 
+        const auto unlockIfPrestige = [&](const bool condition)
+        {
+            if (undoPPPurchaseTimer.value > 0.f) // don't unlock in undo grace period
+            {
+                ++nextId;
+                return;
+            }
+
+            unlockIf(condition);
+        };
+
+        const auto unlockIfGtEq = [&](const auto& value, const auto& threshold)
+        {
+            SFML_BASE_ASSERT(value >= 0);
+            SFML_BASE_ASSERT(threshold >= 0);
+
+            unlockIf(static_cast<sf::base::SizeT>(value) >= static_cast<sf::base::SizeT>(threshold));
+
+            achievementProgress[nextId - 1u].emplace(static_cast<sf::base::SizeT>(value),
+                                                     static_cast<sf::base::SizeT>(threshold));
+        };
+
+        const auto unlockIfGtEqPrestige = [&](const auto& value, const auto& threshold)
+        {
+            if (undoPPPurchaseTimer.value > 0.f) // don't unlock in undo grace period
+            {
+                ++nextId;
+                return;
+            }
+
+            unlockIfGtEq(value, threshold);
+        };
+
         const auto bubblesHandPopped = profile.statsLifetime.getTotalNBubblesHandPopped();
         const auto bubblesCatPopped  = profile.statsLifetime.getTotalNBubblesCatPopped();
 
-        unlockIf(bubblesHandPopped >= 1);
-        unlockIf(bubblesHandPopped >= 10);
-        unlockIf(bubblesHandPopped >= 100);
-        unlockIf(bubblesHandPopped >= 1000);
-        unlockIf(bubblesHandPopped >= 10'000);
-        unlockIf(bubblesHandPopped >= 100'000);
-        unlockIf(bubblesHandPopped >= 1'000'000);
+        unlockIfGtEq(bubblesHandPopped, 1);
+        unlockIfGtEq(bubblesHandPopped, 10);
+        unlockIfGtEq(bubblesHandPopped, 100);
+        unlockIfGtEq(bubblesHandPopped, 1000);
+        unlockIfGtEq(bubblesHandPopped, 10'000);
+        unlockIfGtEq(bubblesHandPopped, 100'000);
+        unlockIfGtEq(bubblesHandPopped, 1'000'000);
 
-        unlockIf(bubblesCatPopped >= 1);
-        unlockIf(bubblesCatPopped >= 100);
-        unlockIf(bubblesCatPopped >= 1000);
-        unlockIf(bubblesCatPopped >= 10'000);
-        unlockIf(bubblesCatPopped >= 100'000);
-        unlockIf(bubblesCatPopped >= 1'000'000);
-        unlockIf(bubblesCatPopped >= 10'000'000);
-        unlockIf(bubblesCatPopped >= 100'000'000);
+        unlockIfGtEq(bubblesCatPopped, 1);
+        unlockIfGtEq(bubblesCatPopped, 100);
+        unlockIfGtEq(bubblesCatPopped, 1000);
+        unlockIfGtEq(bubblesCatPopped, 10'000);
+        unlockIfGtEq(bubblesCatPopped, 100'000);
+        unlockIfGtEq(bubblesCatPopped, 1'000'000);
+        unlockIfGtEq(bubblesCatPopped, 10'000'000);
+        unlockIfGtEq(bubblesCatPopped, 100'000'000);
 
         unlockIf(pt.comboPurchased);
 
-        unlockIf(pt.psvComboStartTime.nPurchases >= 5);
-        unlockIf(pt.psvComboStartTime.nPurchases >= 10);
-        unlockIf(pt.psvComboStartTime.nPurchases >= 15);
-        unlockIf(pt.psvComboStartTime.nPurchases >= 20);
+        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 5);
+        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 10);
+        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 15);
+        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 20);
 
         unlockIf(pt.mapPurchased); //
-        unlockIf(pt.psvMapExtension.nPurchases >= 1);
-        unlockIf(pt.psvMapExtension.nPurchases >= 3);
-        unlockIf(pt.psvMapExtension.nPurchases >= 5);
-        unlockIf(pt.psvMapExtension.nPurchases >= 7);
+        unlockIfGtEq(pt.psvMapExtension.nPurchases, 1);
+        unlockIfGtEq(pt.psvMapExtension.nPurchases, 3);
+        unlockIfGtEq(pt.psvMapExtension.nPurchases, 5);
+        unlockIfGtEq(pt.psvMapExtension.nPurchases, 7);
 
-        unlockIf(pt.psvBubbleCount.nPurchases >= 1);
-        unlockIf(pt.psvBubbleCount.nPurchases >= 5);
-        unlockIf(pt.psvBubbleCount.nPurchases >= 10);
-        unlockIf(pt.psvBubbleCount.nPurchases >= 20);
-        unlockIf(pt.psvBubbleCount.nPurchases >= 30);
+        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 1);
+        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 5);
+        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 10);
+        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 20);
+        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 30);
 
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 1);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 5);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 10);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 20);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 30);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases >= 40);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 5);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 10);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 20);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 30);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 40);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
 
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 1);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 5);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 10);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 20);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 30);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases >= 40);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 5);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 10);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 20);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 30);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 40);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
 
-        unlockIf(pt.perm.unicatTranscendencePurchased);
-        unlockIf(pt.perm.unicatTranscendenceAOEPurchased);
+        unlockIfPrestige(pt.perm.unicatTranscendencePurchased);
+        unlockIfPrestige(pt.perm.unicatTranscendenceAOEPurchased);
 
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 5);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 10);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 20);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 30);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases >= 40);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 5);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 10);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 20);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 30);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 40);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
 
-        unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 1);
-        unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 5);
-        unlockIf(pt.psvExplosionRadiusMult.nPurchases >= 10);
+        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 1);
+        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 5);
+        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 10);
 
-        unlockIf(pt.perm.devilcatHellsingedPurchased);
+        unlockIfPrestige(pt.perm.devilcatHellsingedPurchased);
 
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 1);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 5);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 10);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 20);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 25);
-        unlockIf(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases >= 30);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 5);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 10);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 20);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 25);
+        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 30);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
 
-        unlockIf(pt.psvBubbleValue.nPurchases >= 1);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 2);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 3);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 5);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 10);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 15);
-        unlockIf(pt.psvBubbleValue.nPurchases >= 19);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 1);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 2);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 3);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 5);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 10);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 15);
+        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 19);
 
-        unlockIf(pt.perm.starterPackPurchased);
+        unlockIfPrestige(pt.perm.starterPackPurchased);
 
-        unlockIf(pt.perm.multiPopPurchased);
-        unlockIf(pt.psvPPMultiPopRange.nPurchases >= 1);
-        unlockIf(pt.psvPPMultiPopRange.nPurchases >= 2);
-        unlockIf(pt.psvPPMultiPopRange.nPurchases >= 5);
-        unlockIf(pt.psvPPMultiPopRange.nPurchases >= 10);
+        unlockIfPrestige(pt.perm.multiPopPurchased);
+        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 2);
+        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 5);
+        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 10);
 
-        unlockIf(pt.perm.windPurchased);
+        unlockIfPrestige(pt.perm.windPurchased);
 
-        unlockIf(pt.perm.smartCatsPurchased);
-        unlockIf(pt.perm.geniusCatsPurchased);
+        unlockIfPrestige(pt.perm.smartCatsPurchased);
+        unlockIfPrestige(pt.perm.geniusCatsPurchased);
 
-        unlockIf(pt.perm.astroCatInspirePurchased);
-        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 1);
-        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 4);
-        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 8);
-        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 12);
-        unlockIf(pt.psvPPInspireDurationMult.nPurchases >= 16);
+        unlockIfPrestige(pt.perm.astroCatInspirePurchased);
+        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 16);
 
-        unlockIf(combo >= 5);
-        unlockIf(combo >= 10);
-        unlockIf(combo >= 15);
-        unlockIf(combo >= 20);
-        unlockIf(combo >= 25);
+        unlockIfGtEq(combo, 5);
+        unlockIfGtEq(combo, 10);
+        unlockIfGtEq(combo, 15);
+        unlockIfGtEq(combo, 20);
+        unlockIfGtEq(combo, 25);
 
-        unlockIf(profile.statsLifetime.highestStarBubblePopCombo >= 5);
-        unlockIf(profile.statsLifetime.highestStarBubblePopCombo >= 10);
-        unlockIf(profile.statsLifetime.highestStarBubblePopCombo >= 15);
-        unlockIf(profile.statsLifetime.highestStarBubblePopCombo >= 20);
-        unlockIf(profile.statsLifetime.highestStarBubblePopCombo >= 25);
+        unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 5);
+        unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 10);
+        unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 15);
+        unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 20);
+        unlockIfGtEq(profile.statsLifetime.highestStarBubblePopCombo, 25);
 
         const auto nStarBubblesPoppedByHand = profile.statsLifetime.getNBubblesHandPopped(BubbleType::Star);
         const auto nStarBubblesPoppedByCat  = profile.statsLifetime.getNBubblesCatPopped(BubbleType::Star);
 
-        unlockIf(nStarBubblesPoppedByHand >= 1);
-        unlockIf(nStarBubblesPoppedByHand >= 100);
-        unlockIf(nStarBubblesPoppedByHand >= 1000);
-        unlockIf(nStarBubblesPoppedByHand >= 10'000);
-        unlockIf(nStarBubblesPoppedByHand >= 100'000);
+        unlockIfGtEq(nStarBubblesPoppedByHand, 1);
+        unlockIfGtEq(nStarBubblesPoppedByHand, 100);
+        unlockIfGtEq(nStarBubblesPoppedByHand, 1000);
+        unlockIfGtEq(nStarBubblesPoppedByHand, 10'000);
+        unlockIfGtEq(nStarBubblesPoppedByHand, 100'000);
 
-        unlockIf(nStarBubblesPoppedByCat >= 1);
-        unlockIf(nStarBubblesPoppedByCat >= 100);
-        unlockIf(nStarBubblesPoppedByCat >= 1000);
-        unlockIf(nStarBubblesPoppedByCat >= 10'000);
-        unlockIf(nStarBubblesPoppedByCat >= 100'000);
-        unlockIf(nStarBubblesPoppedByCat >= 1'000'000);
-        unlockIf(nStarBubblesPoppedByCat >= 10'000'000);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 1);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 100);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 1000);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 10'000);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 100'000);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 1'000'000);
+        unlockIfGtEq(nStarBubblesPoppedByCat, 10'000'000);
 
-        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 5);
-        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 10);
-        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 15);
-        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 20);
-        unlockIf(profile.statsLifetime.highestNovaBubblePopCombo >= 25);
+        unlockIfGtEq(profile.statsLifetime.highestNovaBubblePopCombo, 5);
+        unlockIfGtEq(profile.statsLifetime.highestNovaBubblePopCombo, 10);
+        unlockIfGtEq(profile.statsLifetime.highestNovaBubblePopCombo, 15);
+        unlockIfGtEq(profile.statsLifetime.highestNovaBubblePopCombo, 20);
+        unlockIfGtEq(profile.statsLifetime.highestNovaBubblePopCombo, 25);
 
         const auto nNovaBubblesPoppedByHand = profile.statsLifetime.getNBubblesHandPopped(BubbleType::Nova);
         const auto nNovaBubblesPoppedByCat  = profile.statsLifetime.getNBubblesCatPopped(BubbleType::Nova);
 
-        unlockIf(nNovaBubblesPoppedByHand >= 1);
-        unlockIf(nNovaBubblesPoppedByHand >= 100);
-        unlockIf(nNovaBubblesPoppedByHand >= 1000);
-        unlockIf(nNovaBubblesPoppedByHand >= 10'000);
-        unlockIf(nNovaBubblesPoppedByHand >= 100'000);
+        unlockIfGtEq(nNovaBubblesPoppedByHand, 1);
+        unlockIfGtEq(nNovaBubblesPoppedByHand, 100);
+        unlockIfGtEq(nNovaBubblesPoppedByHand, 1000);
+        unlockIfGtEq(nNovaBubblesPoppedByHand, 10'000);
+        unlockIfGtEq(nNovaBubblesPoppedByHand, 100'000);
 
-        unlockIf(nNovaBubblesPoppedByCat >= 1);
-        unlockIf(nNovaBubblesPoppedByCat >= 100);
-        unlockIf(nNovaBubblesPoppedByCat >= 1000);
-        unlockIf(nNovaBubblesPoppedByCat >= 10'000);
-        unlockIf(nNovaBubblesPoppedByCat >= 100'000);
-        unlockIf(nNovaBubblesPoppedByCat >= 1'000'000);
-        unlockIf(nNovaBubblesPoppedByCat >= 10'000'000);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 1);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 100);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 1000);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 10'000);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 100'000);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 1'000'000);
+        unlockIfGtEq(nNovaBubblesPoppedByCat, 10'000'000);
 
         const auto nBombBubblesPoppedByHand = profile.statsLifetime.getNBubblesHandPopped(BubbleType::Bomb);
         const auto nBombBubblesPoppedByCat  = profile.statsLifetime.getNBubblesCatPopped(BubbleType::Bomb);
 
-        unlockIf(nBombBubblesPoppedByHand >= 1);
-        unlockIf(nBombBubblesPoppedByHand >= 100);
-        unlockIf(nBombBubblesPoppedByHand >= 1000);
-        unlockIf(nBombBubblesPoppedByHand >= 10'000);
+        unlockIfGtEq(nBombBubblesPoppedByHand, 1);
+        unlockIfGtEq(nBombBubblesPoppedByHand, 100);
+        unlockIfGtEq(nBombBubblesPoppedByHand, 1000);
+        unlockIfGtEq(nBombBubblesPoppedByHand, 10'000);
 
-        unlockIf(nBombBubblesPoppedByCat >= 1);
-        unlockIf(nBombBubblesPoppedByCat >= 100);
-        unlockIf(nBombBubblesPoppedByCat >= 1000);
-        unlockIf(nBombBubblesPoppedByCat >= 10'000);
-        unlockIf(nBombBubblesPoppedByCat >= 100'000);
+        unlockIfGtEq(nBombBubblesPoppedByCat, 1);
+        unlockIfGtEq(nBombBubblesPoppedByCat, 100);
+        unlockIfGtEq(nBombBubblesPoppedByCat, 1000);
+        unlockIfGtEq(nBombBubblesPoppedByCat, 10'000);
+        unlockIfGtEq(nBombBubblesPoppedByCat, 100'000);
 
         unlockIf(pt.achAstrocatPopBomb);
 
@@ -9925,260 +10189,260 @@ It's a duck.)",
         unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Attracto)]);
         unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Copy)]);
 
-        unlockIf(pt.psvShrineActivation.nPurchases >= 1);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 2);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 3);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 4);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 5);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 6);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 7);
-        unlockIf(pt.psvShrineActivation.nPurchases >= 8);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 1);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 2);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 3);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 4);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 5);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 6);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 7);
+        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 8);
 
-        unlockIf(pt.nShrinesCompleted >= 1);
-        unlockIf(pt.nShrinesCompleted >= 2);
-        unlockIf(pt.nShrinesCompleted >= 3);
-        unlockIf(pt.nShrinesCompleted >= 4);
-        unlockIf(pt.nShrinesCompleted >= 5);
-        unlockIf(pt.nShrinesCompleted >= 6);
-        unlockIf(pt.nShrinesCompleted >= 7);
-        unlockIf(pt.nShrinesCompleted >= 8);
+        unlockIfGtEq(pt.nShrinesCompleted, 1);
+        unlockIfGtEq(pt.nShrinesCompleted, 2);
+        unlockIfGtEq(pt.nShrinesCompleted, 3);
+        unlockIfGtEq(pt.nShrinesCompleted, 4);
+        unlockIfGtEq(pt.nShrinesCompleted, 5);
+        unlockIfGtEq(pt.nShrinesCompleted, 6);
+        unlockIfGtEq(pt.nShrinesCompleted, 7);
+        unlockIfGtEq(pt.nShrinesCompleted, 8);
 
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Witch)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Wizard)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Mouse)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Engi)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Repulso)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Attracto)]);
-        unlockIf(pt.perm.unsealedByType[asIdx(CatType::Copy)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Witch)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Wizard)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Mouse)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Engi)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Repulso)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Attracto)]);
+        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Copy)]);
 
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Devil)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Wizard)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Mouse)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)] >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)] >= 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Devil)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Wizard)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Mouse)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)], 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)], 1);
 
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)] >= 500);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)] >= 100);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Devil)] >= 100);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)] >= 50);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Wizard)] >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Mouse)] >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)] >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)] >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)] >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)] >= 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)], 500);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)], 100);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Devil)], 100);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Astro)], 50);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Wizard)], 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Mouse)], 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Engi)], 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Repulso)], 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Attracto)], 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Copy)], 10);
 
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1);
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10);
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 100);
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 1000);
-        unlockIf(profile.statsLifetime.nWitchcatDollsCollected >= 10'000);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 1);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 10);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 100);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 1000);
+        unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 10'000);
 
-        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 1);
-        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 3);
-        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 6);
-        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 9);
-        unlockIf(pt.psvPPWitchCatBuffDuration.nPurchases >= 12);
+        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 3);
+        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 6);
+        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 9);
+        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 12);
 
-        unlockIf(pt.perm.witchCatBuffPowerScalesWithNCats);
-        unlockIf(pt.perm.witchCatBuffPowerScalesWithMapSize);
-        unlockIf(pt.perm.witchCatBuffFewerDolls);
-        unlockIf(pt.perm.witchCatBuffFlammableDolls);
-        unlockIf(pt.perm.witchCatBuffOrbitalDolls);
+        unlockIfPrestige(pt.perm.witchCatBuffPowerScalesWithNCats);
+        unlockIfPrestige(pt.perm.witchCatBuffPowerScalesWithMapSize);
+        unlockIfPrestige(pt.perm.witchCatBuffFewerDolls);
+        unlockIfPrestige(pt.perm.witchCatBuffFlammableDolls);
+        unlockIfPrestige(pt.perm.witchCatBuffOrbitalDolls);
 
-        unlockIf(pt.psvPPUniRitualBuffPercentage.nPurchases >= 1);
-        unlockIf(pt.psvPPUniRitualBuffPercentage.nPurchases >= 6);
-        unlockIf(pt.psvPPUniRitualBuffPercentage.nPurchases >= 12);
-        unlockIf(pt.psvPPUniRitualBuffPercentage.nPurchases >= 18);
-        unlockIf(pt.psvPPUniRitualBuffPercentage.nPurchases >= 24);
+        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 6);
+        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 18);
+        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 24);
 
-        unlockIf(pt.psvPPDevilRitualBuffPercentage.nPurchases >= 1);
-        unlockIf(pt.psvPPDevilRitualBuffPercentage.nPurchases >= 6);
-        unlockIf(pt.psvPPDevilRitualBuffPercentage.nPurchases >= 12);
-        unlockIf(pt.psvPPDevilRitualBuffPercentage.nPurchases >= 18);
-        unlockIf(pt.psvPPDevilRitualBuffPercentage.nPurchases >= 24);
+        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 6);
+        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 18);
+        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 24);
 
         const auto nActiveBuffs = sf::base::countIf(pt.buffCountdownsPerType,
                                                     pt.buffCountdownsPerType + nCatTypes,
                                                     [](const Countdown& c) { return c.value > 0.f; });
 
-        unlockIf(nActiveBuffs >= 2);
-        unlockIf(nActiveBuffs >= 3);
-        unlockIf(nActiveBuffs >= 4);
-        unlockIf(nActiveBuffs >= 5);
+        unlockIfGtEq(nActiveBuffs, 2);
+        unlockIfGtEq(nActiveBuffs, 3);
+        unlockIfGtEq(nActiveBuffs, 4);
+        unlockIfGtEq(nActiveBuffs, 5);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
 
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 1);
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 100);
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 1000);
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 10'000);
-        unlockIf(profile.statsLifetime.nAbsorbedStarBubbles >= 100'000);
+        unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 1);
+        unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 100);
+        unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 1000);
+        unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 10'000);
+        unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 100'000);
 
-        unlockIf(pt.psvSpellCount.nPurchases >= 1);
-        unlockIf(pt.psvSpellCount.nPurchases >= 2);
-        unlockIf(pt.psvSpellCount.nPurchases >= 3);
-        unlockIf(pt.psvSpellCount.nPurchases >= 4);
+        unlockIfGtEq(pt.psvSpellCount.nPurchases, 1);
+        unlockIfGtEq(pt.psvSpellCount.nPurchases, 2);
+        unlockIfGtEq(pt.psvSpellCount.nPurchases, 3);
+        unlockIfGtEq(pt.psvSpellCount.nPurchases, 4);
 
-        unlockIf(pt.psvStarpawPercentage.nPurchases >= 1);
-        unlockIf(pt.psvStarpawPercentage.nPurchases >= 4);
-        unlockIf(pt.psvStarpawPercentage.nPurchases >= 8);
+        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 1);
+        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 4);
+        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 8);
 
-        unlockIf(pt.psvMewltiplierMult.nPurchases >= 1);
-        unlockIf(pt.psvMewltiplierMult.nPurchases >= 5);
-        unlockIf(pt.psvMewltiplierMult.nPurchases >= 10);
-        unlockIf(pt.psvMewltiplierMult.nPurchases >= 15);
+        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 1);
+        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 5);
+        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 10);
+        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 15);
 
-        unlockIf(pt.psvDarkUnionPercentage.nPurchases >= 1);
-        unlockIf(pt.psvDarkUnionPercentage.nPurchases >= 4);
-        unlockIf(pt.psvDarkUnionPercentage.nPurchases >= 8);
+        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 1);
+        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 4);
+        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 8);
 
-        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1);
-        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 10);
-        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[0] >= 1000);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 1);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 10);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 100);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 1000);
 
-        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 1);
-        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 10);
-        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[1] >= 1000);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[1], 1);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[1], 10);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[1], 100);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[1], 1000);
 
-        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 1);
-        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 10);
-        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[2] >= 1000);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[2], 1);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[2], 10);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[2], 100);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[2], 1000);
 
-        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 1);
-        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 10);
-        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 100);
-        unlockIf(profile.statsLifetime.nSpellCasts[3] >= 1000);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 1);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 10);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 100);
+        unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 1000);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
 
-        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 1);
-        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 4);
-        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 8);
-        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 12);
-        unlockIf(pt.psvPPManaCooldownMult.nPurchases >= 16);
+        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 16);
 
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 1);
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 4);
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 8);
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 12);
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 16);
-        unlockIf(pt.psvPPManaMaxMult.nPurchases >= 20);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 16);
+        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 20);
 
-        unlockIf(pt.perm.starpawConversionIgnoreBombs);
-        unlockIf(pt.perm.starpawNova);
-        unlockIf(pt.perm.wizardCatDoubleMewltiplierDuration);
-        unlockIf(pt.perm.wizardCatDoubleStasisFieldDuration);
+        unlockIfPrestige(pt.perm.starpawConversionIgnoreBombs);
+        unlockIfPrestige(pt.perm.starpawNova);
+        unlockIfPrestige(pt.perm.wizardCatDoubleMewltiplierDuration);
+        unlockIfPrestige(pt.perm.wizardCatDoubleStasisFieldDuration);
 
-        unlockIf(pt.mouseCatCombo >= 25);
-        unlockIf(pt.mouseCatCombo >= 50);
-        unlockIf(pt.mouseCatCombo >= 75);
-        unlockIf(pt.mouseCatCombo >= 100);
-        unlockIf(pt.mouseCatCombo >= 125);
-        unlockIf(pt.mouseCatCombo >= 150);
-        unlockIf(pt.mouseCatCombo >= 175);
-        unlockIf(pt.mouseCatCombo >= 999);
+        unlockIfGtEq(pt.mouseCatCombo, 25);
+        unlockIfGtEq(pt.mouseCatCombo, 50);
+        unlockIfGtEq(pt.mouseCatCombo, 75);
+        unlockIfGtEq(pt.mouseCatCombo, 100);
+        unlockIfGtEq(pt.mouseCatCombo, 125);
+        unlockIfGtEq(pt.mouseCatCombo, 150);
+        unlockIfGtEq(pt.mouseCatCombo, 175);
+        unlockIfGtEq(pt.mouseCatCombo, 999);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
 
-        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 1);
-        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 2);
-        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 6);
-        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 10);
-        unlockIf(pt.psvPPMouseCatGlobalBonusMult.nPurchases >= 14);
+        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 2);
+        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 6);
+        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 10);
+        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 14);
 
-        unlockIf(profile.statsLifetime.nMaintenances >= 1);
-        unlockIf(profile.statsLifetime.nMaintenances >= 10);
-        unlockIf(profile.statsLifetime.nMaintenances >= 100);
-        unlockIf(profile.statsLifetime.nMaintenances >= 1000);
-        unlockIf(profile.statsLifetime.nMaintenances >= 10'000);
-        unlockIf(profile.statsLifetime.nMaintenances >= 100'000);
-        unlockIf(profile.statsLifetime.nMaintenances >= 1'000'000);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 1);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 10);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 100);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 1000);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 10'000);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 100'000);
+        unlockIfGtEq(profile.statsLifetime.nMaintenances, 1'000'000);
 
-        unlockIf(profile.statsLifetime.highestSimultaneousMaintenances >= 3);
-        unlockIf(profile.statsLifetime.highestSimultaneousMaintenances >= 6);
-        unlockIf(profile.statsLifetime.highestSimultaneousMaintenances >= 9);
-        unlockIf(profile.statsLifetime.highestSimultaneousMaintenances >= 12);
-        unlockIf(profile.statsLifetime.highestSimultaneousMaintenances >= 15);
+        unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 3);
+        unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 6);
+        unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 9);
+        unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 12);
+        unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 15);
 
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases >= 1);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases >= 3);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases >= 6);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases >= 9);
-        unlockIf(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases >= 12);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
+        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 12);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
 
-        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 1);
-        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 2);
-        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 6);
-        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 10);
-        unlockIf(pt.psvPPEngiCatGlobalBonusMult.nPurchases >= 14);
+        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 2);
+        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 6);
+        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 10);
+        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 14);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 9);
 
-        unlockIf(pt.perm.repulsoCatFilterPurchased);
-        unlockIf(pt.perm.repulsoCatConverterPurchased);
-        unlockIf(pt.perm.repulsoCatNovaConverterPurchased);
+        unlockIfPrestige(pt.perm.repulsoCatFilterPurchased);
+        unlockIfPrestige(pt.perm.repulsoCatConverterPurchased);
+        unlockIfPrestige(pt.perm.repulsoCatNovaConverterPurchased);
 
-        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 1);
-        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 4);
-        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 8);
-        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 12);
-        unlockIf(pt.psvPPRepulsoCatConverterChance.nPurchases >= 16);
+        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 1);
+        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 4);
+        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 8);
+        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 12);
+        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 16);
 
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 1);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 3);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 6);
-        unlockIf(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases >= 9);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 1);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 3);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 6);
+        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 9);
 
-        unlockIf(pt.perm.attractoCatFilterPurchased);
+        unlockIfPrestige(pt.perm.attractoCatFilterPurchased);
 
-        unlockIf(profile.statsLifetime.nDisguises >= 1);
-        unlockIf(profile.statsLifetime.nDisguises >= 5);
-        unlockIf(profile.statsLifetime.nDisguises >= 25);
-        unlockIf(profile.statsLifetime.nDisguises >= 100);
+        unlockIfGtEq(profile.statsLifetime.nDisguises, 1);
+        unlockIfGtEq(profile.statsLifetime.nDisguises, 5);
+        unlockIfGtEq(profile.statsLifetime.nDisguises, 25);
+        unlockIfGtEq(profile.statsLifetime.nDisguises, 100);
 
         unlockIf(buyReminder >= 5); // Secret
         unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
@@ -13069,6 +13333,11 @@ It's a duck.)",
         imGuiContext.update(window, deltaTime);
 
         //
+        // Update PP undo button
+        if (undoPPPurchaseTimer.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
+            undoPPPurchase.clear();
+
+        //
         // Draw ImGui menu
         uiDraw(mousePos);
 
@@ -13540,20 +13809,12 @@ int main(int argc, const char** argv)
 #endif
 }
 
-// TODO P1: add UNDO button for PP point purchase
 // TODO P1: review all tooltips
 // TODO P1: instead of new BGMs, attracto/repulso could unlock speed/pitch shifting for BGMs
 // TODO P1: tooltips for options, reorganize them
 // TODO P1: credits somewhere
 // TODO P1: more steam deck improvements
 // TODO P1: drag click PP upgrade, stacks with multipop
-// TODO P1: Ability to hide maxed out upgrades would help reduce visual clutter in the Shop and Prestige menu in the
-// late game.
-// TODO P1: Endgame upgrade and cat costs are so large that they don't fit inside the buttons. Maybe the option to swap
-// to a different notation would be good.
-// TODO P1: Let me hold the "Buy PPS" button. Having to click it hundreds of times to get all upgrade achievements does
-// not feel good at all.
-// TODO P1: "it still shows the tooltip for another upgrade despite it being maxed out"
 // TODO P1: demo & sponsor on playmygame with ss
 // TODO P1: "remember to buy the combo upgrade" still shows up after prestige...
 
