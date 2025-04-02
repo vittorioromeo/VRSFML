@@ -618,7 +618,10 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                          FIELD(catRangeOutlineThickness),
 
                          FIELD(showCursorComboBar),
-                         FIELD(sfxVolume));
+                         FIELD(sfxVolume),
+
+                         FIELD(hideMaxedOutPurchasables),
+                         FIELD(hideCategorySeparators));
 }
 
 ////////////////////////////////////////////////////////////
