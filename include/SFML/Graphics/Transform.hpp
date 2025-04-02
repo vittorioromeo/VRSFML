@@ -10,7 +10,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -57,8 +57,8 @@ struct [[nodiscard]] Transform
         const float    sine,
         const float    cosine)
     {
-        SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
-        SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
         const float sxc = scale.x * cosine;
         const float syc = scale.y * cosine;

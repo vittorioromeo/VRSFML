@@ -1,7 +1,6 @@
 #pragma once
 
-#include "AssertAssume.hpp"
-
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 
@@ -29,12 +28,12 @@ struct [[nodiscard]] Timer // TODO P2: turn to free funcs?
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr TimerStatusStop updateForwardAndStop(const float delta) noexcept
     {
-        ASSERT_AND_ASSUME(delta >= 0.f);
+        SFML_BASE_ASSERT_AND_ASSUME(delta >= 0.f);
 
         if (value == 1.f)
             return TimerStatusStop::AlreadyFinished;
 
-        ASSERT_AND_ASSUME(value < 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(value < 1.f);
         value += delta;
 
         if (value >= 1.f)
@@ -49,12 +48,12 @@ struct [[nodiscard]] Timer // TODO P2: turn to free funcs?
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr TimerStatusStop updateBackwardsAndStop(const float delta) noexcept
     {
-        ASSERT_AND_ASSUME(delta >= 0.f);
+        SFML_BASE_ASSERT_AND_ASSUME(delta >= 0.f);
 
         if (value == 0.f)
             return TimerStatusStop::AlreadyFinished;
 
-        ASSERT_AND_ASSUME(value > 0.f);
+        SFML_BASE_ASSERT_AND_ASSUME(value > 0.f);
         value -= delta;
 
         if (value <= 0.f)

@@ -15,6 +15,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/ClampMacro.hpp"
 
 
 namespace sf
@@ -31,6 +32,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] ScissorRect : FloatRect
     {
+        ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vector2f thePosition, Vector2f theSize) :
         FloatRect{thePosition, theSize}
         {
@@ -42,9 +44,31 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
             SFML_BASE_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
 
+        ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
         ScissorRect{rect.position, rect.size}
         {
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::FloatRect rect)
+        {
+            // Clamp the position to the range `[0, 1]`
+            rect.position.x = SFML_BASE_CLAMP(rect.position.x, 0.f, 1.f);
+            rect.position.y = SFML_BASE_CLAMP(rect.position.y, 0.f, 1.f);
+
+            // Ensure the size is non-negative
+            rect.size.x = SFML_BASE_MAX(rect.size.x, 0.f);
+            rect.size.y = SFML_BASE_MAX(rect.size.y, 0.f);
+
+            // Adjust the size so that `position + size` doesn't exceed `1`
+            if (rect.position.x + rect.size.x > 1.f)
+                rect.size.x = 1.f - rect.position.x;
+
+            if (rect.position.y + rect.size.y > 1.f)
+                rect.size.y = 1.f - rect.position.y;
+
+            return ScissorRect{rect};
         }
     };
 
