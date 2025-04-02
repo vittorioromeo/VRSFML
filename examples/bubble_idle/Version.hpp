@@ -11,10 +11,10 @@
 #define BUBBLEBYTE_VERSION_MAJOR 1
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MINOR 6
+#define BUBBLEBYTE_VERSION_MINOR 7
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 1
+#define BUBBLEBYTE_VERSION_PATCH 0
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -49,3 +49,10 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 
 // TODO P0: ADD TO PATCH NOTES
 // - In-game achievements are now always synced with Steam
+// - Made it possible to bulk purchase PPs in end game (show screenshot)
+// - Long button labels are now scaled to avoid the text going out of bounds
+// - Maxed-out button tooltips will now show "MAXED OUT" instead of calculating one more step
+// - Achievement progress for most achievements is now displayed in-game
+// - Sligthly increased menu scrollbar thickness
+// - Added ability to hide maxed-out purchasables and category separators in shop ("Interface" tab)
+// - Added "UNDO" button to undo PP purchases, can be used multiple times within 10s

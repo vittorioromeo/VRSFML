@@ -85,9 +85,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 void setupGLDebugCallback()
 {
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    // TODO P0: maybe conditionally enable depending on graphicscontext's debug ctx param?
-    // or for emscripten, try to enable without glcheck and then drain gl errors
+#ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: revisit this ifdef
     glCheck(glEnable(GL_DEBUG_OUTPUT));
     if (glGetError() != 0u)
         priv::err() << "Failed to enable OpenGL debug output";
