@@ -5,8 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 
 
 namespace sf::base
@@ -14,8 +13,7 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float remainder(const float a, const float b) noexcept
 {
-    SFML_BASE_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
-    SFML_BASE_ASSUME(b > 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(b > 0.f);
 
     return a - static_cast<float>(static_cast<int>(a / b)) * b;
 }
@@ -24,8 +22,7 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr float positiveRemainder(const float a, const float b) noexcept
 {
-    SFML_BASE_ASSERT(b > 0.f && "Cannot calculate remainder with non-positive divisor");
-    SFML_BASE_ASSUME(b > 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(b > 0.f);
 
     const auto val = a - static_cast<float>(static_cast<int>(a / b)) * b;
     return val >= 0.f ? val : val + b;

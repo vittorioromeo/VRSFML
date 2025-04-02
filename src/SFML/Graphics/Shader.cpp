@@ -67,8 +67,8 @@ namespace
 // Pair of indices into thread-local buffer
 struct [[nodiscard]] BufferSlice
 {
-    const sf::base::SizeT beginIdx;
-    const sf::base::SizeT count;
+    sf::base::SizeT beginIdx;
+    sf::base::SizeT count;
 
     [[nodiscard]] explicit BufferSlice(sf::base::SizeT b, sf::base::SizeT c) : beginIdx(b), count(c)
     {
@@ -459,202 +459,99 @@ Shader& Shader::operator=(Shader&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& filename, Type type)
+base::Optional<Shader> Shader::loadFromFile(const LoadFromFileSettings& settings)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
-    // Read the file
-    const base::Optional<BufferSlice> shaderSlice = appendFileContentsToVector(filename, buffer);
-    if (!shaderSlice.hasValue())
+    // Helper function
+    const auto readIntoBufferSlice =
+        [&](const char* typeStr, const Path& optPath, base::Optional<BufferSlice>& optBufferSlice)
     {
-        priv::err() << "Failed to open shader file\n" << priv::PathDebugFormatter{filename};
-        return base::nullOpt;
-    }
+        if (optPath.empty())
+            return true;
 
-    return loadFromMemory(shaderSlice->toView(buffer), type);
+        optBufferSlice = appendFileContentsToVector(optPath, buffer);
+        if (!optBufferSlice.hasValue())
+        {
+            priv::err() << "Failed to open " << typeStr << " shader file\n" << priv::PathDebugFormatter{optPath};
+            return false;
+        }
+
+        return true;
+    };
+
+    // Read the vertex shader file (if path provided)
+    base::Optional<BufferSlice> vertexShaderSlice;
+    if (!readIntoBufferSlice("vertex", settings.vertexPath, vertexShaderSlice))
+        return base::nullOpt;
+
+    // Read the geometry shader file (if path provided)
+    base::Optional<BufferSlice> geometryShaderSlice;
+    if (!readIntoBufferSlice("geometry", settings.geometryPath, geometryShaderSlice))
+        return base::nullOpt;
+
+    // Read the fragment shader file (if path provided)
+    base::Optional<BufferSlice> fragmentShaderSlice;
+    if (!readIntoBufferSlice("fragment", settings.fragmentPath, fragmentShaderSlice))
+        return base::nullOpt;
+
+    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{},
+                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{},
+                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename, const Path& fragmentShaderFilename)
+base::Optional<Shader> Shader::loadFromMemory(const LoadFromMemorySettings& settings)
+{
+    return compile(settings.vertexCode, settings.geometryCode, settings.fragmentCode);
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& settings)
 {
     // Prepare thread-local buffer
     base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
     buffer.clear();
 
-    // Read the vertex shader file
-    const base::Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
-    if (!vertexShaderSlice.hasValue())
+    // Helper function
+    const auto readIntoBufferSlice =
+        [&](const char* typeStr, InputStream* optStream, base::Optional<BufferSlice>& optBufferSlice)
     {
-        priv::err() << "Failed to open vertex shader file\n" << priv::PathDebugFormatter{vertexShaderFilename};
-        return base::nullOpt;
-    }
+        if (optStream == nullptr)
+            return true;
 
-    // Read the fragment shader file
-    const base::Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
-    if (!fragmentShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to open fragment shader file\n" << priv::PathDebugFormatter{fragmentShaderFilename};
-        return base::nullOpt;
-    }
+        optBufferSlice = appendStreamContentsToVector(*optStream, buffer);
+        if (!optBufferSlice.hasValue())
+        {
+            priv::err() << "Failed to open " << typeStr << " shader from stream\n";
+            return false;
+        }
 
-    return loadFromMemory(vertexShaderSlice->toView(buffer), fragmentShaderSlice->toView(buffer));
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromFile(const Path& vertexShaderFilename,
-                                            const Path& geometryShaderFilename,
-                                            const Path& fragmentShaderFilename)
-{
-    // Prepare thread-local buffer
-    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
-    buffer.clear();
-
-    // Read the vertex shader file
-    const base::Optional<BufferSlice> vertexShaderSlice = appendFileContentsToVector(vertexShaderFilename, buffer);
-    if (!vertexShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to open vertex shader file\n" << priv::PathDebugFormatter{vertexShaderFilename};
-        return base::nullOpt;
-    }
-
-    // Read the geometry shader file
-    const base::Optional<BufferSlice> geometryShaderSlice = appendFileContentsToVector(geometryShaderFilename, buffer);
-    if (!geometryShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to open geometry shader file\n" << priv::PathDebugFormatter{geometryShaderFilename};
-        return base::nullOpt;
-    }
-
-    // Read the fragment shader file
-    const base::Optional<BufferSlice> fragmentShaderSlice = appendFileContentsToVector(fragmentShaderFilename, buffer);
-    if (!fragmentShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to open fragment shader file\n" << priv::PathDebugFormatter{fragmentShaderFilename};
-        return base::nullOpt;
-    }
-
-    return loadFromMemory(vertexShaderSlice->toView(buffer),
-                          geometryShaderSlice->toView(buffer),
-                          fragmentShaderSlice->toView(buffer));
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(base::StringView shader, Type type)
-{
-    if (type == Type::Vertex)
-        return compile(shader, {}, {});
-
-    if (type == Type::Geometry)
-        return compile({}, shader, {});
-
-    SFML_BASE_ASSERT(type == Type::Fragment);
-    return compile({}, {}, shader);
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(base::StringView vertexShader, base::StringView fragmentShader)
-{
-    return compile(vertexShader, {}, fragmentShader);
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromMemory(base::StringView vertexShader,
-                                              base::StringView geometryShader,
-                                              base::StringView fragmentShader)
-{
-    return compile(vertexShader, geometryShader, fragmentShader);
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& stream, Type type)
-{
-    // Prepare thread-local buffer
-    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
-    buffer.clear();
-
-    // Read the shader code from the stream
-    const base::Optional<BufferSlice> shaderSlice = appendStreamContentsToVector(stream, buffer);
-    if (!shaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read vertex shader from stream";
-        return base::nullOpt;
-    }
-
-    return loadFromMemory(shaderSlice->toView(buffer), type);
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream, InputStream& fragmentShaderStream)
-{
-    // Prepare thread-local buffer
-    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
-    buffer.clear();
+        return true;
+    };
 
     // Read the vertex shader code from the stream
-    const base::Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
-    if (!vertexShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read vertex shader from stream";
+    base::Optional<BufferSlice> vertexShaderSlice;
+    if (!readIntoBufferSlice("vertex", settings.vertexStream, vertexShaderSlice))
         return base::nullOpt;
-    }
-
-    // Read the fragment shader code from the stream
-    const base::Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
-    if (!fragmentShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read fragment shader from stream";
-        return base::nullOpt;
-    }
-
-    return loadFromMemory(vertexShaderSlice->toView(buffer), fragmentShaderSlice->toView(buffer));
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<Shader> Shader::loadFromStream(InputStream& vertexShaderStream,
-                                              InputStream& geometryShaderStream,
-                                              InputStream& fragmentShaderStream)
-{
-    // Prepare thread-local buffer
-    base::TrivialVector<char>& buffer = getThreadLocalCharBuffer();
-    buffer.clear();
-
-    // Read the vertex shader code from the stream
-    const base::Optional<BufferSlice> vertexShaderSlice = appendStreamContentsToVector(vertexShaderStream, buffer);
-    if (!vertexShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read vertex shader from stream";
-        return base::nullOpt;
-    }
 
     // Read the geometry shader code from the stream
-    const base::Optional<BufferSlice> geometryShaderSlice = appendStreamContentsToVector(geometryShaderStream, buffer);
-    if (!geometryShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read geometry shader from stream";
+    base::Optional<BufferSlice> geometryShaderSlice;
+    if (!readIntoBufferSlice("geometry", settings.geometryStream, geometryShaderSlice))
         return base::nullOpt;
-    }
 
     // Read the fragment shader code from the stream
-    const base::Optional<BufferSlice> fragmentShaderSlice = appendStreamContentsToVector(fragmentShaderStream, buffer);
-    if (!fragmentShaderSlice.hasValue())
-    {
-        priv::err() << "Failed to read fragment shader from stream";
+    base::Optional<BufferSlice> fragmentShaderSlice;
+    if (!readIntoBufferSlice("fragment", settings.fragmentStream, fragmentShaderSlice))
         return base::nullOpt;
-    }
 
-    return loadFromMemory(vertexShaderSlice->toView(buffer),
-                          geometryShaderSlice->toView(buffer),
-                          fragmentShaderSlice->toView(buffer));
+    return compile(vertexShaderSlice.hasValue() ? vertexShaderSlice->toView(buffer) : base::StringView{},
+                   geometryShaderSlice.hasValue() ? geometryShaderSlice->toView(buffer) : base::StringView{},
+                   fragmentShaderSlice.hasValue() ? fragmentShaderSlice->toView(buffer) : base::StringView{});
 }
 
 
@@ -1078,3 +975,5 @@ void Shader::bindTextures() const
 }
 
 } // namespace sf
+
+// TODO P2: add support for `#include` in shaders
