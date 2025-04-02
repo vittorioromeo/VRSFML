@@ -88,10 +88,10 @@ public:
      */
     template <typename TFFwd>
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
-    [[nodiscard]] FixedFunction(TFFwd&& f) noexcept : FixedFunction()
+    [[nodiscard]] FixedFunction(TFFwd&& f) : FixedFunction()
     {
         using UnrefType = SFML_BASE_REMOVE_REFERENCE(TFFwd);
-        static_assert(sizeof(UnrefType) < TStorageSize);
+        static_assert(sizeof(UnrefType) <= TStorageSize);
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_methodPtr = [](char* s, FnPtrType, Ts... xs) -> RetType
@@ -125,13 +125,21 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename TFReturn, typename... TFs>
-    FixedFunction(TFReturn (*f)(TFs...)) noexcept :
+    [[nodiscard]] FixedFunction(TFReturn (*f)(TFs...)) noexcept :
     functionPtr{f},
-    m_methodPtr{[](bool, const char*, FnPtrType xf, Ts... xs) { return static_cast<decltype(f)>(xf)(xs...); }},
+    m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(xs...); }},
     m_allocPtr{nullptr}
     {
     }
 
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit FixedFunction(decltype(nullptr)) noexcept :
+    functionPtr{nullptr},
+    m_methodPtr{nullptr},
+    m_allocPtr{nullptr}
+    {
+    }
 
     ////////////////////////////////////////////////////////////
     FixedFunction(const FixedFunction& rhs) : FixedFunction()
@@ -167,6 +175,19 @@ public:
 
         m_allocPtr = rhs.m_allocPtr;
         m_allocPtr(objStorage, const_cast<char*>(rhs.objStorage), Operation::CopyConstruct);
+
+        return *this;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    FixedFunction& operator=(decltype(nullptr)) noexcept
+    {
+        destroyIfNeeded();
+
+        m_methodPtr = nullptr;
+        m_allocPtr  = nullptr;
+        functionPtr = nullptr;
 
         return *this;
     }
@@ -238,6 +259,8 @@ public:
     [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args) const
     {
         SFML_BASE_ASSERT(m_methodPtr != nullptr);
+
+        // TODO P1: not const-correct, should probably store two methodPtrs
         return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_BASE_FORWARD(args)...);
     }
 
