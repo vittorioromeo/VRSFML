@@ -3708,7 +3708,7 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
             if (makePSVButton("Cat", pt.psvPerCatType[asIdx(CatType::Normal)]))
             {
-                spawnCatCentered(CatType::Normal, getHueByCatType(CatType::Normal));
+                spawnCatCentered(CatType::Normal, getHueByCatType(CatType::Normal), /* placeInHand */ !onSteamDeck);
 
                 if (nCatNormal == 0)
                     doTip("Cats periodically pop bubbles for you!\nYou can drag them around to position them.");
@@ -3813,7 +3813,7 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%zu unicats", nCatUni);
             if (makePSVButton("Unicat", pt.psvPerCatType[asIdx(CatType::Uni)]))
             {
-                spawnCatCentered(CatType::Uni, getHueByCatType(CatType::Uni));
+                spawnCatCentered(CatType::Uni, getHueByCatType(CatType::Uni), /* placeInHand */ !onSteamDeck);
 
                 if (nCatUni == 0)
                     doTip("Unicats transform bubbles in star bubbles,\nworth x15! Pop them at the end of a combo!");
@@ -3844,7 +3844,7 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%zu devilcats", nCatDevil);
             if (makePSVButton("Devilcat", pt.psvPerCatType[asIdx(CatType::Devil)]))
             {
-                spawnCatCentered(CatType::Devil, getHueByCatType(CatType::Devil));
+                spawnCatCentered(CatType::Devil, getHueByCatType(CatType::Devil), /* placeInHand */ !onSteamDeck);
 
                 if (nCatDevil == 0)
                     doTip(
@@ -3893,7 +3893,7 @@ It's a duck.)",
             std::sprintf(uiLabelBuffer, "%zu astrocats", nCatAstro);
             if (makePSVButton("Astrocat", pt.psvPerCatType[asIdx(CatType::Astro)]))
             {
-                spawnCatCentered(CatType::Astro, getHueByCatType(CatType::Astro));
+                spawnCatCentered(CatType::Astro, getHueByCatType(CatType::Astro), /* placeInHand */ !onSteamDeck);
 
                 if (nCatAstro == 0)
                     doTip(
