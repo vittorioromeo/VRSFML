@@ -9,8 +9,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtins/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
@@ -62,8 +61,8 @@ namespace sf
 {
     const auto [sine, cosine] = base::fastSinCos(static_cast<float>(index) * angleStep);
 
-    SFML_BASE_ASSUME(sine >= -1.f && sine <= 1.f);
-    SFML_BASE_ASSUME(cosine >= -1.f && cosine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
     return {hRadius * (1.f + sine), vRadius * (1.f + cosine)};
 }
@@ -141,8 +140,7 @@ namespace sf
     const base::SizeT index,
     const Vector2f    size) noexcept
 {
-    SFML_BASE_ASSERT(index <= 4u);
-    SFML_BASE_ASSUME(index <= 4u);
+    SFML_BASE_ASSERT_AND_ASSUME(index <= 4u);
 
     const Vector2f points[]{{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
     return points[index];
@@ -159,13 +157,10 @@ namespace sf
     const unsigned int cornerPointCount) noexcept
 {
     [[maybe_unused]] const auto totalNumPoints = cornerPointCount * 4u;
-
-    SFML_BASE_ASSERT(index < totalNumPoints);
-    SFML_BASE_ASSUME(index < totalNumPoints);
+    SFML_BASE_ASSERT_AND_ASSUME(index < totalNumPoints);
 
     const base::SizeT centerIndex = index / cornerPointCount;
-    SFML_BASE_ASSERT(centerIndex <= 3u);
-    SFML_BASE_ASSUME(centerIndex <= 3u);
+    SFML_BASE_ASSERT_AND_ASSUME(centerIndex <= 3u);
 
     const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
 

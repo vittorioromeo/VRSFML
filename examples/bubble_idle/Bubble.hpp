@@ -12,7 +12,7 @@ struct [[nodiscard]] Bubble
     sf::Vector2f position;
     sf::Vector2f velocity;
 
-    float radius; // TODO P2: if these three members are turned into U8 struct size goes from 32 to 20
+    float radius;
     float rotation;
     float hueMod;
 
