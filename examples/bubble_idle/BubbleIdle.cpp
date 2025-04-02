@@ -4169,6 +4169,8 @@ It's a duck.)",
     {
         playSound(sounds.prestige);
 
+        buyReminder = 0;
+
         inPrestigeTransition = true;
         scroll               = 0.f;
 
@@ -12901,33 +12903,32 @@ It's a duck.)",
     ////////////////////////////////////////////////////////////
     void gameLoopReminderBuyCombo()
     {
-        if (pt.comboPurchased)
+        if (pt.comboPurchased || inPrestigeTransition)
             return;
 
-        const auto mult = pt.psvBubbleValue.nPurchases + 1u;
-        const auto bias = pt.perm.starterPackPurchased ? 1000u : 0u;
+        const auto handPoppedBubbles = pt.statsSession.getTotalNBubblesHandPopped();
 
-        if (pt.money >= ((25u * mult) + bias) && buyReminder == 0)
+        if (handPoppedBubbles >= 25u && buyReminder == 0)
         {
             buyReminder = 1;
             doTip("Remember to buy the combo upgrade!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= ((50u * mult) + bias) && buyReminder == 1)
+        else if (handPoppedBubbles >= 50u && buyReminder == 1)
         {
             buyReminder = 2;
             doTip("You should really buy the upgrade now!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= ((100u * mult) + bias) && buyReminder == 2)
+        else if (handPoppedBubbles >= 100u && buyReminder == 2)
         {
             buyReminder = 3;
             doTip("What are you trying to prove...?", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= ((200u * mult) + bias) && buyReminder == 3)
+        else if (handPoppedBubbles >= 200u && buyReminder == 3)
         {
             buyReminder = 4;
             doTip("There is no achievement for doing this!", /* maxPrestigeLevel */ UINT_MAX);
         }
-        else if (pt.money >= ((300u * mult) + bias) && buyReminder == 4)
+        else if (handPoppedBubbles >= 300u && buyReminder == 4)
         {
             buyReminder = 5;
             doTip("Fine, have it your way!\nHere's your dumb achievement!\nAnd now buy the upgrade!",
@@ -13816,7 +13817,6 @@ int main(int argc, const char** argv)
 // TODO P1: more steam deck improvements
 // TODO P1: drag click PP upgrade, stacks with multipop
 // TODO P1: demo & sponsor on playmygame with ss
-// TODO P1: "remember to buy the combo upgrade" still shows up after prestige...
 
 // TODO P2: idea for PP: when astrocat touches hellcat portal its buffed
 // TODO P2: rested buff 1PP: 1.25x mult, enables after Xs of inactivity, can be upgraded with PPs naybe?
