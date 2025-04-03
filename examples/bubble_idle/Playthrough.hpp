@@ -211,6 +211,7 @@ struct Playthrough
     BubbleIgnoreFlags repulsoCatIgnoreBubbles    = {};
     BubbleIgnoreFlags attractoCatIgnoreBubbles   = {};
     bool              repulsoCatConverterEnabled = false;
+    bool              disableAstrocatFlight      = false;
 
     //
     // Object state
@@ -348,6 +349,9 @@ struct Playthrough
         shrinesSpawned = false;
 
         laserPopEnabled = false;
+
+        perm.autocastIndex = 0u;
+        disableAstrocatFlight = false;
     }
 
     ////////////////////////////////////////////////////////////

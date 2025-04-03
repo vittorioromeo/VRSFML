@@ -2709,6 +2709,8 @@ void Main::uiTabBarPrestige()
 
         uiBeginColumns();
 
+        uiCheckbox("disable flight", &pt.disableAstrocatFlight);
+
         uiSetUnlockLabelY(56u);
         std::sprintf(uiTooltipBuffer,
                      "Astrocats are now equipped with fancy patriotic flags, inspiring cats watching "

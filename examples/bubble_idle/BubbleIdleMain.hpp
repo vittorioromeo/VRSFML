@@ -3562,7 +3562,7 @@ struct Main
     {
         const auto [cx, cy] = getCatRangeCenter(cat);
 
-        if (cat.astroState.hasValue())
+        if (cat.astroState.hasValue() || pt.disableAstrocatFlight)
             return;
 
         sounds.launch.setPosition({cx, cy});
@@ -5350,6 +5350,9 @@ struct Main
             return;
 
         const auto spellIndex = pt.perm.autocastIndex - 1u;
+
+        if (static_cast<sf::base::SizeT>(spellIndex) > pt.psvSpellCount.nPurchases)
+            return;
 
         if (pt.mana >= spellManaCostByIndex[spellIndex])
         {

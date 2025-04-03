@@ -783,7 +783,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
         FIELD(spendPPTipShown),
         FIELD(shrinesSpawned),
 
-        FIELD(laserPopEnabled));
+        FIELD(laserPopEnabled),
+
+        FIELD(disableAstrocatFlight));
 }
 
 ////////////////////////////////////////////////////////////
