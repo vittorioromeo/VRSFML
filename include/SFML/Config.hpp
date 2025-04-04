@@ -134,3 +134,27 @@
     #define SFML_API_IMPORT
 
 #endif
+
+
+////////////////////////////////////////////////////////////
+// ODR Violation Detection Mechanism
+////////////////////////////////////////////////////////////
+extern "C"
+{
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+    extern void sfmlInternalAbiCheckLifetimeTrackingEnabled();
+#else
+    extern void sfmlInternalAbiCheckLifetimeTrackingDisabled();
+#endif
+}
+
+namespace sf::priv
+{
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+inline void (*const abiCheckFuncPtr)() = &sfmlInternalAbiCheckLifetimeTrackingEnabled;
+#else
+inline void (*const abiCheckFuncPtr)() = &sfmlInternalAbiCheckLifetimeTrackingDisabled;
+#endif
+
+[[maybe_unused]] inline auto* sfmlForceAbiCheckReference = reinterpret_cast<void*>(abiCheckFuncPtr);
+} // namespace sf::priv
