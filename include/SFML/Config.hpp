@@ -148,13 +148,26 @@ extern "C"
 #endif
 }
 
+
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
 inline void (*const abiCheckFuncPtr)() = &sfmlInternalAbiCheckLifetimeTrackingEnabled;
 #else
 inline void (*const abiCheckFuncPtr)() = &sfmlInternalAbiCheckLifetimeTrackingDisabled;
 #endif
 
-[[maybe_unused]] inline auto* sfmlForceAbiCheckReference = reinterpret_cast<void*>(abiCheckFuncPtr);
+////////////////////////////////////////////////////////////
+struct [[maybe_unused]] ABICheckTrigger
+{
+    ABICheckTrigger()
+    {
+        [[maybe_unused]] volatile auto* dummy = reinterpret_cast<void*>(abiCheckFuncPtr);
+    }
+};
+
+////////////////////////////////////////////////////////////
+[[maybe_unused]] inline volatile sf::priv::ABICheckTrigger abiCheckTrigger;
+
 } // namespace sf::priv
