@@ -1,3 +1,5 @@
+// TODO P0: figure out way of detecting compilation mismatch
+
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
