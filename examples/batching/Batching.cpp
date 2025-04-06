@@ -1,3 +1,4 @@
+#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
 
 #include "SFML/ImGui/ImGui.hpp"
@@ -33,8 +34,6 @@
 #include <imgui.h>
 
 #include <latch>
-#include <random>
-#include <string>
 #include <thread>
 #include <vector>
 
@@ -51,16 +50,15 @@ int main()
     //
     //
     // Set up random generator
-    std::minstd_rand rng(/* seed */ 1234);
+    RNGFast rng(/* seed */ 1234);
 
-    const auto getRndFloat = [&](const float min, const float max)
-    { return std::uniform_real_distribution<float>{min, max}(rng); };
+    const auto getRndFloat = [&](const float min, const float max) { return rng.getF(min, max); };
 
     const auto getRndUInt = [&](const unsigned int min, const unsigned int max)
-    { return std::uniform_int_distribution<unsigned int>{min, max}(rng); };
+    { return rng.getI<unsigned int>(min, max); };
 
     const auto getRndU8 = [&](const sf::base::U8 min, const sf::base::U8 max)
-    { return std::uniform_int_distribution<sf::base::U8>{min, max}(rng); };
+    { return rng.getI<sf::base::U8>(min, max); };
 
     //
     //

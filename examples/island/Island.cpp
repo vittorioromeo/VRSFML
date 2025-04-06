@@ -24,14 +24,14 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/System/Vector3.hpp"
 
+#include "SFML/Base/Clamp.hpp"
+
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
-#include <algorithm>
 #include <array>
 #include <mutex>
 #include <queue>
-#include <sstream>
 #include <thread>
 #include <vector>
 
@@ -133,7 +133,7 @@ float getElevation(sf::Vector2u position)
 
     const float distance = 2.f * normalized.length();
     elevation            = (elevation + heightBase) * (1.f - edgeFactor * std::pow(distance, edgeDropoffExponent));
-    elevation            = std::clamp(elevation, 0.f, 1.f);
+    elevation            = sf::base::clamp(elevation, 0.f, 1.f);
 
     return elevation;
 }
@@ -540,8 +540,8 @@ int main()
 
     std::size_t currentSetting = 0;
 
-    std::ostringstream oss;
-    sf::Clock          clock;
+    sf::OutStringStream oss;
+    sf::Clock           clock;
 
     while (true)
     {
@@ -606,7 +606,7 @@ int main()
         }
 
         // Update and draw the HUD text
-        oss.str("");
+        oss.setStr("");
         oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
             << "perlinOctaves:  " << perlinOctaves << "\n\n"
             << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
@@ -615,7 +615,7 @@ int main()
             oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
                 << '\n';
 
-        hudText.setString(oss.str());
+        hudText.setString(oss.to<sf::String>());
 
         window.draw(hudText);
 

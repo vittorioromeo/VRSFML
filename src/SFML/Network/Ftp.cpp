@@ -276,7 +276,7 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
-    std::ostringstream directoryData;
+    std::ostringstream oss;
     DataChannel        data(*this);
     Response           response = data.open(TransferMode::Ascii);
     if (response.isOk())
@@ -286,14 +286,14 @@ Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
         if (response.isOk())
         {
             // Receive the listing
-            data.receive(directoryData);
+            data.receive(oss);
 
             // Get the response from the server
             response = getResponse();
         }
     }
 
-    return {response, directoryData.str()};
+    return {response, oss.str()};
 }
 
 
@@ -521,9 +521,9 @@ Ftp::Response Ftp::getResponse()
                         // Append it to the message
                         if (code == lastCode)
                         {
-                            std::ostringstream out;
-                            out << code << separator << line;
-                            message += out.str();
+                            std::ostringstream oss;
+                            oss << code << separator << line;
+                            message += oss.str();
                         }
                         else
                         {
@@ -551,9 +551,9 @@ Ftp::Response Ftp::getResponse()
                         line.erase(line.length() - 1);
 
                         // Append it to the current message
-                        std::ostringstream out;
-                        out << code << separator << line << '\n';
-                        message += out.str();
+                        std::ostringstream oss;
+                        oss << code << separator << line << '\n';
+                        message += oss.str();
                     }
                 }
             }

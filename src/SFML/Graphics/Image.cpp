@@ -7,6 +7,7 @@
 #include "SFML/Graphics/Image.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
@@ -31,8 +32,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 
 #include <stb_image.h>
-
-#include <fstream>
 
 
 namespace
@@ -162,32 +161,32 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
 #endif
 
-    // Set up the stb_image callbacks for the `std::ifstream`
+    // Set up the stb_image callbacks for the input stream
     const auto readStdIfStream = [](void* user, char* data, int size)
     {
-        auto& file = *static_cast<std::ifstream*>(user);
+        auto& file = *static_cast<InFileStream*>(user);
         file.read(data, size);
         return static_cast<int>(file.gcount());
     };
 
     const auto skipStdIfStream = [](void* user, int size)
     {
-        auto& file = *static_cast<std::ifstream*>(user);
-        if (!file.seekg(size, std::ios_base::cur))
-            priv::err() << "Failed to seek image loader std::ifstream";
+        auto& file = *static_cast<InFileStream*>(user);
+        if (!file.seekg(size, SeekDir::cur))
+            priv::err() << "Failed to seek image loader InFileStream";
     };
 
     const auto eofStdIfStream = [](void* user)
     {
-        auto& file = *static_cast<std::ifstream*>(user);
-        return static_cast<int>(file.eof());
+        auto& file = *static_cast<InFileStream*>(user);
+        return static_cast<int>(file.isEOF());
     };
 
     const stbi_io_callbacks callbacks{readStdIfStream, skipStdIfStream, eofStdIfStream};
 
     // Open file
-    std::ifstream file(filename.c_str(), std::ios::binary);
-    if (!file.is_open())
+    InFileStream file(filename.c_str(), FileOpenMode::bin);
+    if (!file.isOpen())
     {
         // Error, failed to open the file
         priv::err() << "Failed to load image\n"
