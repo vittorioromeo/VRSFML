@@ -49,7 +49,9 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        auto androidFile = base::makeUnique<priv::ResourceStream>(filename);
+        m_androidFile = base::makeUnique<priv::ResourceStream>();
+        if (!m_androidFile->open(filename))
+            return false;
         return androidFile->tell().hasValue()
                    ? base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(androidFile))
                    : base::nullOpt;
