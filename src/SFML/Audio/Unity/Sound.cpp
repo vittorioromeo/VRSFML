@@ -20,6 +20,7 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+
 #include <miniaudio.h>
 
 

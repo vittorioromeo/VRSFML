@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
+#include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Traits/IsSame.hpp"
 
@@ -149,6 +150,13 @@ bool Path::exists() const
 
 
 ////////////////////////////////////////////////////////////
+bool Path::extensionIs(const base::StringView str) const
+{
+    return priv::toLower(m_impl->fsPath.extension().string()) == str;
+}
+
+
+////////////////////////////////////////////////////////////
 Path& Path::operator/=(const Path& rhs)
 {
     m_impl->fsPath /= rhs.m_impl->fsPath;
@@ -174,7 +182,9 @@ std::ostream& operator<<(std::ostream& os, const Path& path)
 template <typename T>
 T Path::to() const
 {
-    if constexpr (SFML_BASE_IS_SAME(T, std::string))
+    if constexpr (SFML_BASE_IS_SAME(T, std::filesystem::path))
+        return m_impl->fsPath;
+    else if constexpr (SFML_BASE_IS_SAME(T, std::string))
         return m_impl->fsPath.string();
     else if constexpr (SFML_BASE_IS_SAME(T, std::u8string))
         return m_impl->fsPath.u8string();
@@ -223,8 +233,9 @@ bool Path::operator!=(const T& str) const
 
 
 ////////////////////////////////////////////////////////////
-template std::string   Path::to<std::string>() const;
-template std::u8string Path::to<std::u8string>() const;
+template std::filesystem::path Path::to<std::filesystem::path>() const;
+template std::string           Path::to<std::string>() const;
+template std::u8string         Path::to<std::u8string>() const;
 
 
 ////////////////////////////////////////////////////////////

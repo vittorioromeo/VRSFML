@@ -7,9 +7,9 @@
 #include "SFML/Audio/SoundFileWriterWav.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -17,7 +17,6 @@
 #include "SFML/Base/SizeT.hpp"
 
 #include <algorithm> // std::sort, std::adjacent_find
-#include <fstream>
 #include <vector>
 
 
@@ -26,19 +25,19 @@ namespace
 // The following functions takes integers in host byte order
 // and writes them to a stream as little endian
 
-void encode(std::ostream& stream, sf::base::I16 value)
+void encode(sf::OutFileStream& stream, sf::base::I16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
     stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
 }
 
-void encode(std::ostream& stream, sf::base::U16 value)
+void encode(sf::OutFileStream& stream, sf::base::U16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
     stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
 }
 
-void encode(std::ostream& stream, sf::base::U32 value)
+void encode(sf::OutFileStream& stream, sf::base::U32 value)
 {
     const char bytes[]{
         static_cast<char>((value & 0x00'00'00'FF) >> 0),
@@ -56,16 +55,16 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct SoundFileWriterWav::Impl
 {
-    std::ofstream file;             //!< File stream to write to
-    unsigned int  channelCount{};   //!< Channel count of the sound being written
-    base::SizeT   remapTable[18]{}; //!< Table we use to remap source to target channel order
+    sf::OutFileStream file;             //!< File stream to write to
+    unsigned int      channelCount{};   //!< Channel count of the sound being written
+    base::SizeT       remapTable[18]{}; //!< Table we use to remap source to target channel order
 };
 
 
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterWav::check(const Path& filename)
 {
-    return priv::toLower(filename.extension().to<std::string>()) == ".wav";
+    return filename.extensionIs(".wav");
 }
 
 
@@ -76,17 +75,17 @@ SoundFileWriterWav::SoundFileWriterWav() = default;
 ////////////////////////////////////////////////////////////
 SoundFileWriterWav::~SoundFileWriterWav()
 {
-    if (!m_impl->file.is_open())
+    if (!m_impl->file.isOpen())
         return;
 
     // If the file is open, finalize the header and close it
     m_impl->file.flush();
 
     // Update the main chunk size and data sub-chunk size
-    const base::U32 fileSize = static_cast<base::U32>(m_impl->file.tellp());
-    m_impl->file.seekp(4);
+    const auto fileSize = static_cast<base::U32>(m_impl->file.tellPos());
+    m_impl->file.seekPos(4);
     encode(m_impl->file, fileSize - 8); // 8 bytes RIFF header
-    m_impl->file.seekp(40);
+    m_impl->file.seekPos(40);
     encode(m_impl->file, fileSize - 44); // 44 bytes RIFF + WAVE headers
 
     m_impl->file.close();
@@ -217,7 +216,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
     m_impl->channelCount = channelCount;
 
     // Open the file
-    m_impl->file.open(filename.c_str(), std::ios::binary);
+    m_impl->file.open(filename.c_str(), FileOpenMode::bin);
     if (!m_impl->file)
     {
         priv::err() << "Failed to open WAV sound file for writing\n" << priv::PathDebugFormatter{filename};
@@ -234,7 +233,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
 {
-    SFML_BASE_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
+    SFML_BASE_ASSERT(m_impl->file.isGood() && "Most recent I/O operation failed");
     SFML_BASE_ASSERT(count % m_impl->channelCount == 0);
 
     if (count % m_impl->channelCount != 0)
@@ -254,7 +253,7 @@ void SoundFileWriterWav::write(const base::I16* samples, base::U64 count)
 ////////////////////////////////////////////////////////////
 void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int channelCount, unsigned int channelMask)
 {
-    SFML_BASE_ASSERT(m_impl->file.good() && "Most recent I/O operation failed");
+    SFML_BASE_ASSERT(m_impl->file.isGood() && "Most recent I/O operation failed");
 
     // Write the main chunk ID
     constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
