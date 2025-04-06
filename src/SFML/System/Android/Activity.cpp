@@ -7,6 +7,7 @@
 #include "SFML/System/Android/Activity.hpp"
 
 #include "SFML/Base/Assert.hpp"
+
 #include <android/log.h>
 
 

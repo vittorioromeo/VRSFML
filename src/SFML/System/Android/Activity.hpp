@@ -11,6 +11,7 @@
 
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/SizeT.hpp"
+
 #include <android/configuration.h>
 #include <android/native_activity.h>
 

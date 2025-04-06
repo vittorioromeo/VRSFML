@@ -20,6 +20,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+
 #include <miniaudio.h>
 
 #include <mutex>

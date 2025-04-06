@@ -8,18 +8,19 @@
 #include "SFML/Audio/SoundFileWriterOgg.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/MinMax.hpp"
+
 #include <vorbis/vorbisenc.h>
 
 #include <algorithm> // std::is_permutation
-#include <fstream>
-#include <random>
+
+#include <ctime>
 
 
 namespace sf::priv
@@ -29,7 +30,7 @@ struct SoundFileWriterOgg::Impl
 {
     unsigned int     channelCount{};  //!< Channel count of the sound being written
     base::SizeT      remapTable[8]{}; //!< Table we use to remap source to target channel order
-    std::ofstream    file;            //!< Output file
+    OutFileStream    file;            //!< Output file
     ogg_stream_state ogg{};           //!< OGG stream
     vorbis_info      vorbis{};        //!< Vorbis handle
     vorbis_dsp_state state{};         //!< Current encoding state
@@ -39,7 +40,7 @@ struct SoundFileWriterOgg::Impl
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterOgg::check(const Path& filename)
 {
-    return priv::toLower(filename.extension().to<std::string>()) == ".ogg";
+    return filename.extensionIs(".ogg");
 }
 
 
@@ -132,8 +133,23 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     m_impl->channelCount = channelCount;
 
     // Initialize the ogg/vorbis stream
-    static std::mt19937 rng(std::random_device{}());
-    ogg_stream_init(&m_impl->ogg, std::uniform_int_distribution(0, std::numeric_limits<int>::max())(rng));
+    const auto makeSerialNumber = []
+    {
+        if (static bool seeded = false; !seeded)
+        {
+            std::srand(static_cast<unsigned int>(std::time(nullptr)));
+            seeded = true;
+        }
+
+        // Combine current time with a random number
+        const std::time_t currentTime = std::time(nullptr);
+        const int         randomPart  = std::rand();
+
+        // XOR the timestamp with the random number to create a unique 32-bit value
+        return (static_cast<int>(currentTime) ^ randomPart);
+    };
+
+    ogg_stream_init(&m_impl->ogg, makeSerialNumber());
     vorbis_info_init(&m_impl->vorbis);
 
     // Setup the encoder: VBR, automatic bitrate management
@@ -148,7 +164,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     vorbis_analysis_init(&m_impl->state, &m_impl->vorbis);
 
     // Open the file after the vorbis setup is ok
-    m_impl->file.open(filename.c_str(), std::ios::binary);
+    m_impl->file.open(filename, FileOpenMode::bin);
     if (!m_impl->file)
     {
         priv::err() << "Failed to write ogg/vorbis file (cannot open file)\n" << priv::PathDebugFormatter{filename};
@@ -263,7 +279,7 @@ void SoundFileWriterOgg::flushBlocks()
 ////////////////////////////////////////////////////////////
 void SoundFileWriterOgg::close()
 {
-    if (m_impl->file.is_open())
+    if (m_impl->file.isOpen())
     {
         // Submit an empty packet to mark the end of stream
         vorbis_analysis_wrote(&m_impl->state, 0);

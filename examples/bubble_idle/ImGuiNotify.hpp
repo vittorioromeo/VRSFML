@@ -16,13 +16,15 @@
 #pragma GCC system_header
 
 #include <vector>			// Vector for storing notifications list
-#include <chrono>			// For the notifications timed dissmiss
+#include <cstdint>			// Vector for storing notifications list
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"
 
 #include "IconsFontAwesome6.h"
+#include "SFML/System/Clock.hpp"
+#include "SFML/System/Time.hpp"
 
 
 
@@ -109,7 +111,7 @@ private:
     char										content[NOTIFY_MAX_MSG_LENGTH];
 
     int											dismissTime = NOTIFY_DEFAULT_DISMISS;
-    std::chrono::system_clock::time_point		creationTime = std::chrono::system_clock::now();
+    sf::Time		creationTime = sf::Clock::now();
 
     char 										buttonLabel[NOTIFY_MAX_MSG_LENGTH];
 
@@ -303,9 +305,9 @@ public:
      * @return int64_t The elapsed time in milliseconds.
      * @throws An exception with the message "Unsupported platform" if the platform is not supported.
      */
-    inline std::chrono::nanoseconds getElapsedTime()
+    inline sf::Time getElapsedTime()
     {
-        return std::chrono::system_clock::now() - this->creationTime;
+        return sf::Clock::now() - this->creationTime;
     }
 
     /**
@@ -319,7 +321,7 @@ public:
      */
     inline ImGuiToastPhase getPhase()
     {
-        const int64_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(getElapsedTime()).count();
+        const int64_t elapsed = getElapsedTime().asMilliseconds();
 
         if (elapsed > NOTIFY_FADE_IN_OUT_TIME + this->dismissTime + NOTIFY_FADE_IN_OUT_TIME)
         {
@@ -345,7 +347,7 @@ public:
     inline float getFadePercent()
     {
         const ImGuiToastPhase phase = getPhase();
-        const int64_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(getElapsedTime()).count();
+        const int64_t elapsed = getElapsedTime().asMilliseconds();
 
         if (phase == ImGuiToastPhase::FadeIn)
         {
@@ -392,7 +394,7 @@ public:
         this->type = type;
         this->dismissTime = dismissTime;
 
-        this->creationTime = std::chrono::system_clock::now();
+        this->creationTime = sf::Clock::now();
 
         memset(this->title, 0, sizeof(this->title));
         memset(this->content, 0, sizeof(this->content));

@@ -8,6 +8,7 @@
 #include "SFML/Graphics/ImageUtils.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -23,8 +24,6 @@
 #include <stb_image_write.h>
 
 #pragma GCC diagnostic pop
-
-#include <fstream>
 
 
 namespace
@@ -50,10 +49,10 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     const Path extension     = filename.extension();
     const auto convertedSize = image.getSize().toVector2i();
 
-    // Callback to write to std::ofstream
+    // Callback to write to output stream
     auto writeStdOfstream = [](void* context, void* data, int size)
     {
-        auto& file = *static_cast<std::ofstream*>(context);
+        auto& file = *static_cast<OutFileStream*>(context);
         if (file)
             file.write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
     };
@@ -62,7 +61,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     if (extension == ".bmp")
     {
         // BMP format
-        std::ofstream file(filename.c_str(), std::ios::binary);
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
         if (stbi_write_bmp_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()) &&
             file)
             return true;
@@ -70,7 +69,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     else if (extension == ".tga")
     {
         // TGA format
-        std::ofstream file(filename.c_str(), std::ios::binary);
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
         if (stbi_write_tga_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()) &&
             file)
             return true;
@@ -78,7 +77,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     else if (extension == ".png")
     {
         // PNG format
-        std::ofstream file(filename.c_str(), std::ios::binary);
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
         if (stbi_write_png_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 0) &&
             file)
             return true;
@@ -86,7 +85,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     else if (extension == ".jpg" || extension == ".jpeg")
     {
         // JPG format
-        std::ofstream file(filename.c_str(), std::ios::binary);
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
         if (stbi_write_jpg_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 90) &&
             file)
             return true;
