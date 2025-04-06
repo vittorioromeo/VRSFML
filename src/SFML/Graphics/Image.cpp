@@ -155,7 +155,9 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        priv::ResourceStream stream(filename);
+        priv::ResourceStream stream;
+        if (!stream.open(filename))
+            return false;
         return loadFromStream(stream);
     }
 
