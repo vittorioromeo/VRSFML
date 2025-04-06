@@ -11,7 +11,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -21,11 +21,13 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <iomanip>
+#include "SFML/Base/Abort.hpp"
+
 #include <unordered_set>
 
 #include <cstddef>
@@ -36,7 +38,6 @@
 #endif
 
 #include <array>
-#include <sstream>
 #include <vector>
 
 #include <cassert>
@@ -321,7 +322,8 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
 #undef CASE
     }
 
-    throw std::runtime_error("invalid keyboard code");
+    sf::cErr() << "invalid keyboard code";
+    sf::base::abort();
 }
 
 // Get the C++ enumerator name of the given `sf::Keyboard::Scancode` value including `Scan::` prefix
@@ -582,7 +584,8 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
 #undef CASE
     }
 
-    throw std::runtime_error("invalid keyboard scancode");
+    sf::cErr() << "invalid keyboard scancode";
+    sf::base::abort();
 }
 
 
@@ -1018,9 +1021,9 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
     text += textEntered.unicode;
     text += "\nU+";
 
-    std::ostringstream oss;
-    oss << std::hex << std::setw(4) << std::setfill('0') << static_cast<sf::base::U32>(textEntered.unicode);
-    text += oss.str();
+    sf::OutStringStream oss;
+    oss << sf::Hex{} << sf::SetWidth{4} << sf::SetFill{'0'} << static_cast<sf::base::U32>(textEntered.unicode);
+    text += oss.to<sf::String>();
 
     return text;
 }

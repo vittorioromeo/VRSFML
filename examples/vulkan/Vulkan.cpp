@@ -22,7 +22,8 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <algorithm>
+#include "SFML/Base/Clamp.hpp"
+
 #include <array>
 #include <limits>
 #include <string_view>
@@ -833,14 +834,14 @@ public:
             return;
         }
 
-        swapchainExtent.width  = std::clamp(window.getSize().x,
-                                           surfaceCapabilities.minImageExtent.width,
-                                           surfaceCapabilities.maxImageExtent.width);
-        swapchainExtent.height = std::clamp(window.getSize().y,
-                                            surfaceCapabilities.minImageExtent.height,
-                                            surfaceCapabilities.maxImageExtent.height);
+        swapchainExtent.width  = sf::base::clamp(window.getSize().x,
+                                                surfaceCapabilities.minImageExtent.width,
+                                                surfaceCapabilities.maxImageExtent.width);
+        swapchainExtent.height = sf::base::clamp(window.getSize().y,
+                                                 surfaceCapabilities.minImageExtent.height,
+                                                 surfaceCapabilities.maxImageExtent.height);
 
-        const auto imageCount = std::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+        const auto imageCount = sf::base::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
         VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR();
         swapchainCreateInfo.sType                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -2407,8 +2408,8 @@ public:
         // Translate the model based on the mouse position
         const auto  mousePosition = sf::Mouse::getPosition(window).toVector2f();
         const auto  windowSize    = window.getSize().toVector2f();
-        const float x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
-        const float y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
+        const float x             = sf::base::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
+        const float y             = sf::base::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;

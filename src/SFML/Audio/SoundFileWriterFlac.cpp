@@ -11,7 +11,6 @@
 #include "SFML/System/FileUtils.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -20,7 +19,6 @@
 
 #include <FLAC/stream_encoder.h>
 #include <algorithm> // std::is_permutation
-#include <string>
 
 #include <cstdio>
 
@@ -61,7 +59,7 @@ SoundFileWriterFlac::~SoundFileWriterFlac() = default;
 ////////////////////////////////////////////////////////////
 bool SoundFileWriterFlac::check(const Path& filename)
 {
-    return priv::toLower(filename.extension().to<std::string>()) == ".flac";
+    return filename.extensionIs(".flac");
 }
 
 

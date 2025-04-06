@@ -1,3 +1,5 @@
+#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -21,7 +23,6 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <random>
 #include <vector>
 
 #include <cstddef>
@@ -37,8 +38,8 @@ int main()
     //
     //
     // Set up random generator
-    std::minstd_rand rng(/* seed */ 1234);
-    const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
+    RNGFast    rng(/* seed */ 1234);
+    const auto getRndFloat = [&](float min, float max) { return rng.getF(min, max); };
 
     //
     //
