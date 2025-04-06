@@ -1,5 +1,6 @@
 #include "SFML/System/FileInputStream.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -12,8 +13,6 @@
 #include <StringifyOptionalUtil.hpp>
 #include <StringifyStringViewUtil.hpp>
 
-#include <fstream>
-#include <sstream>
 #include <string>
 
 
@@ -23,10 +22,10 @@ sf::Path getTemporaryFilePath()
 {
     static int counter = 0;
 
-    std::ostringstream oss;
+    sf::OutStringStream oss;
     oss << "sfmltemp" << counter++ << ".tmp";
 
-    return sf::Path::tempDirectoryPath() / oss.str();
+    return sf::Path::tempDirectoryPath() / oss.to<std::string>();
 }
 
 class TemporaryFile
@@ -35,7 +34,7 @@ public:
     // Create a temporary file with a randomly generated path, containing 'contents'.
     explicit TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
-        std::ofstream ofs(m_path.to<std::string>());
+        sf::OutFileStream ofs(m_path);
         SFML_BASE_ASSERT(ofs && "Stream encountered an error");
 
         ofs << contents;

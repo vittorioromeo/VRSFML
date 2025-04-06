@@ -16,6 +16,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
@@ -29,7 +30,6 @@
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
-#include <fstream>
 #include <string>
 #include <string_view>
 #include <unordered_map>
@@ -86,7 +86,7 @@ struct [[nodiscard]] BufferSlice
 [[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path&                filename,
                                                                          sf::base::TrivialVector<char>& buffer)
 {
-    std::ifstream file(filename.c_str(), std::ios_base::binary);
+    sf::InFileStream file(filename.c_str(), sf::FileOpenMode::bin);
 
     if (!file)
     {
@@ -94,14 +94,14 @@ struct [[nodiscard]] BufferSlice
         return sf::base::nullOpt;
     }
 
-    file.seekg(0, std::ios_base::end);
-    const std::ifstream::pos_type size = file.tellg();
+    file.seekg(0, sf::SeekDir::end);
+    const auto size = file.tellg();
 
     const sf::base::SizeT bufferSizeBeforeRead = buffer.size();
 
     if (size > 0)
     {
-        file.seekg(0, std::ios_base::beg);
+        file.seekg(0, sf::SeekDir::beg);
         buffer.resize(static_cast<sf::base::SizeT>(size) + bufferSizeBeforeRead);
         file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
     }

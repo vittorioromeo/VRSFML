@@ -109,9 +109,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include <algorithm>
 #include <array>
-#include <fstream>
+#include <iomanip>
 #include <random>
 #include <string>
 #include <thread>
@@ -1176,7 +1175,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Logging
-    std::ofstream logFile{"bubblebyte.log", std::ios::out | std::ios::app};
+    sf::OutFileStream logFile{"bubblebyte.log", sf::FileOpenMode::out | sf::FileOpenMode::app};
 
     ////////////////////////////////////////////////////////////
     // Achievement progress tracking
