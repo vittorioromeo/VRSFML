@@ -35,7 +35,17 @@ public:
     /// \param filename Filename of the asset
     ///
     ////////////////////////////////////////////////////////////
-    explicit ResourceStream(const Path& filename);
+    ResourceStream() = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Open the stream from a file path
+    ///
+    /// \param filename Name of the file to open
+    ///
+    /// \return `true` on success, `false` on error
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool open(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read data from the asset
