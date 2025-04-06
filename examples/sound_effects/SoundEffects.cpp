@@ -9,7 +9,6 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -34,7 +33,8 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <algorithm>
+#include "SFML/Base/Clamp.hpp"
+
 #include <array>
 #include <limits>
 #include <string>
@@ -184,8 +184,8 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_pitch  = std::clamp(2.f * x, 0.f, 2.f);
-        m_volume = std::clamp(100.f * (1.f - y), 0.f, 100.f);
+        m_pitch  = sf::base::clamp(2.f * x, 0.f, 2.f);
+        m_volume = sf::base::clamp(100.f * (1.f - y), 0.f, 100.f);
 
         m_music.setPitch(m_pitch);
         m_music.setVolume(m_volume / 100.f);
@@ -352,8 +352,8 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_amplitude = std::clamp(0.2f * (1.f - y), 0.f, 0.2f);
-        m_frequency = std::clamp(500.f * x, 0.f, 500.f);
+        m_amplitude = sf::base::clamp(0.2f * (1.f - y), 0.f, 0.2f);
+        m_frequency = sf::base::clamp(500.f * x, 0.f, 500.f);
 
         m_currentAmplitude.setString("Amplitude: " + std::to_string(m_amplitude));
         m_currentFrequency.setString("Frequency: " + std::to_string(m_frequency) + " Hz");
@@ -496,8 +496,8 @@ public:
 
     void update(float time, float x, float y) override
     {
-        m_velocity = std::clamp(150.f * (1.f - y), 0.f, 150.f);
-        m_factor   = std::clamp(x, 0.f, 1.f);
+        m_velocity = sf::base::clamp(150.f * (1.f - y), 0.f, 150.f);
+        m_factor   = sf::base::clamp(x, 0.f, 1.f);
 
         m_currentVelocity.setString("Velocity: " + std::to_string(m_velocity));
         m_currentFactor.setString("Doppler Factor: " + std::to_string(m_factor));

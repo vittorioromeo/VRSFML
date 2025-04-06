@@ -8,6 +8,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/StringView.hpp"
 
 #include <iosfwd>
 
@@ -55,6 +56,8 @@ public:
     [[nodiscard]] bool remove() const;
     [[nodiscard]] bool empty() const;
     [[nodiscard]] bool exists() const;
+
+    [[nodiscard]] bool extensionIs(base::StringView str) const;
 
     Path& operator/=(const Path& rhs);
 

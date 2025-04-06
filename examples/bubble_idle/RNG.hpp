@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RNGSeedType.hpp"
+
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
@@ -15,7 +17,7 @@
 class [[nodiscard]] RNG
 {
 public:
-    using SeedType = unsigned int;
+    using SeedType = RNGSeedType;
 
 private:
     SeedType          m_seed;

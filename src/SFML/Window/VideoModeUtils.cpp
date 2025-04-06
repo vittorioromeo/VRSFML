@@ -8,6 +8,8 @@
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 
+#include "SFML/System/Err.hpp"
+
 #include "SFML/Base/Algorithm.hpp"
 
 #include <algorithm> // std::sort

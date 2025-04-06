@@ -13,6 +13,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PassKey.hpp"
+
 #include <miniaudio.h>
 
 #include <vector>

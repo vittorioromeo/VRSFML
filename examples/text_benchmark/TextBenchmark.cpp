@@ -1,14 +1,12 @@
 
 #include "SFML/ImGui/ImGui.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
@@ -19,31 +17,15 @@
 #include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 
-#include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
-#include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-
-#include <array>
-#include <random>
-#include <sstream>
-#include <string>
-#include <vector>
-
-#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////
@@ -107,7 +89,7 @@ int main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         window.clear();
@@ -475,7 +457,7 @@ int main()
     ;
 
     sf::Clock          clock;
-    std::ostringstream sstr;
+    std::ostringstream oss;
 
     while (true)
     {
@@ -508,10 +490,10 @@ int main()
 
         window.display();
 
-        sstr.str("");
-        sstr << "Test -- Frame: " << clock.restart().asSeconds() << " sec";
+        oss.str("");
+        oss << "Test -- Frame: " << clock.restart().asSeconds() << " sec";
 
-        window.setTitle(sstr.str());
+        window.setTitle(oss.str());
     }
 
     return EXIT_SUCCESS;
