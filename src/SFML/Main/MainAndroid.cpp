@@ -20,6 +20,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
+
 #include <android/native_activity.h>
 #include <android/window.h>
 

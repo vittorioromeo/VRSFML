@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 
+
 TEST_CASE("[System] sf::err")
 {
     SECTION("Overflow default buffer")

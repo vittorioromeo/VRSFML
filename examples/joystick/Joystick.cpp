@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <array>
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -50,8 +49,8 @@ int main()
 
     std::unordered_map<std::string, JoystickTexts> texts;
 
-    std::ostringstream sstr;
-    float              threshold = 0.1f;
+    sf::OutStringStream oss;
+    float               threshold = 0.1f;
 
     // Axes labels in as strings
     const std::array<std::string, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
@@ -59,20 +58,20 @@ int main()
     // Helper to set text entries to a specified value
     const auto set = [&](const std::string& label, const auto& value)
     {
-        sstr.str("");
-        sstr << value;
+        oss.setStr("");
+        oss << value;
 
-        texts.at(label).value.setString(sstr.str());
+        texts.at(label).value.setString(oss.to<sf::String>());
     };
 
     // Update joystick identification
     const auto updateIdentification = [&](const sf::Joystick::Query& query)
     {
-        sstr.str("");
-        sstr << "Joystick " << query.getIndex() << ":";
+        oss.setStr("");
+        oss << "Joystick " << query.getIndex() << ":";
 
         auto& [label, value] = texts.at("ID");
-        label.setString(sstr.str());
+        label.setString(oss.to<sf::String>());
         value.setString(query.getName());
     };
 
@@ -89,10 +88,10 @@ int main()
     {
         for (unsigned int j = 0; j < query.getButtonCount(); ++j)
         {
-            sstr.str("");
-            sstr << "Button " << j;
+            oss.setStr("");
+            oss << "Button " << j;
 
-            set(sstr.str(), query.isButtonPressed(j));
+            set(oss.to<std::string>(), query.isButtonPressed(j));
         }
     };
 
@@ -112,18 +111,18 @@ int main()
 
     const auto updateThresholdText = [&]
     {
-        sstr.str("");
-        sstr << threshold << "  (Change with up/down arrow keys)";
+        oss.setStr("");
+        oss << threshold << "  (Change with up/down arrow keys)";
 
-        texts.at("Threshold").value.setString(sstr.str());
+        texts.at("Threshold").value.setString(oss.to<sf::String>());
     };
 
     // Create the window of the application
     sf::RenderWindow window({.size{400, 775}, .title = "Joystick", .resizable = false, .vsync = true});
 
     // Set up our string conversion parameters
-    sstr.precision(2);
-    sstr.setf(std::ios::fixed | std::ios::boolalpha);
+    oss.setPrecision(2);
+    oss.setFormatFlags(sf::FormatFlags::fixed | sf::FormatFlags::boolalpha);
 
     // Utility function to create text objects
     const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
@@ -159,10 +158,10 @@ int main()
 
     for (unsigned int i = 0; i < sf::Joystick::ButtonCount; ++i)
     {
-        sstr.str("");
-        sstr << "Button " << i;
+        oss.setStr("");
+        oss << "Button " << i;
 
-        emplaceTexts(sstr.str(), "N/A", static_cast<float>(sf::Joystick::AxisCount + i + 4));
+        emplaceTexts(oss.to<std::string>(), "N/A", static_cast<float>(sf::Joystick::AxisCount + i + 4));
     }
 
     // Update initially displayed joystick values if a joystick is already connected on startup

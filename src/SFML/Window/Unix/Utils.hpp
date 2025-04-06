@@ -5,6 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/UniquePtr.hpp"
+
 #include <X11/Xlib.h>
 
 
