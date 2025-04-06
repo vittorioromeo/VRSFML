@@ -417,12 +417,20 @@ base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* text
         return result; // Empty optional
     }
 
-    const auto            stream = std::make_shared<FileInputStream>(SFML_BASE_MOVE(*optStream));
+    auto                  stream = std::make_shared<FileInputStream>(SFML_BASE_MOVE(*optStream));
     constexpr const char* type   = "file";
 
 #else
 
-    const auto            stream = std::make_shared<priv::ResourceStream>(filename);
+    // Create the input stream and open the file
+    auto optStream = ResourceStream::open(filename);
+    if (!optStream.hasValue())
+    {
+        priv::err() << "Failed to load font (" << priv::PathDebugFormatter{filename} << "): failed to open file";
+        return result; // Empty optional
+    }
+
+    auto                  stream = std::make_shared<priv::ResourceStream>(SFML_BASE_MOVE(*optStream));
     constexpr const char* type   = "Android resource stream";
 
 #endif
@@ -431,7 +439,7 @@ base::Optional<Font> Font::openFromFile(const Path& filename, TextureAtlas* text
 
     // Open the font, and if successful save the stream to keep it alive
     if (result.hasValue())
-        result->m_impl->stream = stream;
+        result->m_impl->stream = SFML_BASE_MOVE(stream);
     else
     {
         // If loading failed, print filename (after the error message already printed in openFromStreamImpl)
@@ -454,13 +462,13 @@ base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBy
     }
 
     // Create memory stream - the memory is owned by the user
-    const auto memoryStream = std::make_shared<MemoryInputStream>(data, sizeInBytes);
+    auto memoryStream = std::make_shared<MemoryInputStream>(data, sizeInBytes);
 
     result = openFromStreamImpl(*memoryStream, textureAtlas, "memory");
 
     // Open the font, and if successful save the stream to keep it alive
     if (result.hasValue())
-        result->m_impl->stream = memoryStream;
+        result->m_impl->stream = SFML_BASE_MOVE(memoryStream);
 
     return result;
 }
