@@ -12,7 +12,7 @@
 #include "Milestones.hpp"
 #include "PSVDataConstants.hpp"
 #include "PurchasableScalingValue.hpp"
-#include "RNG.hpp"
+#include "RNGSeedType.hpp"
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
@@ -37,8 +37,8 @@ struct Playthrough
 {
     //
     // RNG stuff
-    RNG::SeedType seed;
-    SizeT         nextCatNamePerType[nCatTypes] = {};
+    RNGSeedType seed;
+    SizeT       nextCatNamePerType[nCatTypes] = {};
 
     //
     // PSV instances
@@ -350,7 +350,7 @@ struct Playthrough
 
         laserPopEnabled = false;
 
-        perm.autocastIndex = 0u;
+        perm.autocastIndex    = 0u;
         disableAstrocatFlight = false;
     }
 

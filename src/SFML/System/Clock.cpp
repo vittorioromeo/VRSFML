@@ -98,7 +98,7 @@ Time Clock::getElapsedTime() const
     const priv::ClockImpl::duration diff = isRunning() ? priv::ClockImpl::now() - m_impl->refPoint
                                                        : m_impl->stopPoint - m_impl->refPoint;
 
-    return TimeChronoUtil::fromDuration(std::chrono::duration_cast<std::chrono::microseconds>(diff));
+    return TimeChronoUtil::fromDuration(diff);
 }
 
 
@@ -147,6 +147,13 @@ Time Clock::reset()
     m_impl->refPoint   = priv::ClockImpl::now();
     m_impl->stopPoint  = m_impl->refPoint;
     return elapsed;
+}
+
+
+////////////////////////////////////////////////////////////
+Time Clock::now()
+{
+    return TimeChronoUtil::fromDuration(priv::ClockImpl::now().time_since_epoch());
 }
 
 } // namespace sf

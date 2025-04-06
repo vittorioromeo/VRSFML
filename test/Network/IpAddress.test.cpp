@@ -2,8 +2,6 @@
 
 #include "SFML/Network/IpAddressUtils.hpp"
 
-#include "SFML/System/Time.hpp"
-
 #include "SFML/Base/StringView.hpp"
 
 #include <Doctest.hpp>
@@ -11,7 +9,6 @@
 #include <CommonTraits.hpp>
 
 #include <sstream>
-#include <string>
 
 
 using namespace sf::base::literals;
@@ -83,15 +80,15 @@ TEST_CASE("[Network] sf::IpAddress")
         // requirement on our test suite of internet access. This causes issues for developers
         // trying to work offline and for package managers who may be building and running the
         // tests offline as well.
-        (void)[]
+        (void)([]
         {
             const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getLocalAddress();
             REQUIRE(ipAddress.hasValue());
             CHECK(sf::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
             CHECK(ipAddress->toInteger() != 0);
-        };
+        });
 
-        (void)[]
+        (void)([]
         {
             const sf::base::Optional<sf::IpAddress> ipAddress = sf::IpAddress::getPublicAddress(sf::milliseconds(250));
             if (ipAddress.hasValue())
@@ -99,7 +96,7 @@ TEST_CASE("[Network] sf::IpAddress")
                 CHECK(sf::IpAddressUtils::toString(*ipAddress) != "0.0.0.0");
                 CHECK(ipAddress->toInteger() != 0);
             }
-        };
+        });
     }
 
     SECTION("Static constants")
@@ -193,9 +190,9 @@ TEST_CASE("[Network] sf::IpAddress")
 
         SECTION("operator<<")
         {
-            std::ostringstream out;
-            out << sf::IpAddress(192, 0, 2, 10);
-            CHECK(out.str() == "192.0.2.10"s);
+            std::ostringstream oss;
+            oss << sf::IpAddress(192, 0, 2, 10);
+            CHECK(oss.str() == "192.0.2.10"s);
         }
     }
 }

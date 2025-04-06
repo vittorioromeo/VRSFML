@@ -8,16 +8,17 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
+#include "SFML/System/String.hpp"
 
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 
-#include <atomic>
+#include <filesystem>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <istream>
-#include <mutex>
 #include <ostream>
 #include <sstream>
 #include <string>
@@ -274,5 +275,512 @@ bool readFromFile(base::StringView filename, std::string& target)
 
     return static_cast<bool>(file >> target);
 }
+
+
+////////////////////////////////////////////////////////////
+struct OutFileStream::Impl
+{
+    std::ofstream ofs;
+
+    Impl() = default;
+
+    Impl(auto&&... args) : ofs(static_cast<decltype(args)>(args)...)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+OutFileStream::OutFileStream() = default;
+
+
+////////////////////////////////////////////////////////////
+OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) :
+m_impl(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode))
+{
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream::~OutFileStream() = default;
+
+
+////////////////////////////////////////////////////////////
+OutFileStream::OutFileStream(OutFileStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator=(OutFileStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+void OutFileStream::open(const Path& filename, FileOpenMode mode)
+{
+    m_impl->ofs.open(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode));
+}
+
+
+////////////////////////////////////////////////////////////
+void OutFileStream::write(const char* data, base::PtrDiffT size)
+{
+    m_impl->ofs.write(data, static_cast<std::streamsize>(size));
+}
+
+
+////////////////////////////////////////////////////////////
+void OutFileStream::flush()
+{
+    m_impl->ofs.flush();
+}
+
+
+////////////////////////////////////////////////////////////
+void OutFileStream::close()
+{
+    m_impl->ofs.close();
+}
+
+
+////////////////////////////////////////////////////////////
+bool OutFileStream::isOpen() const
+{
+    return m_impl->ofs.is_open();
+}
+
+
+////////////////////////////////////////////////////////////
+bool OutFileStream::isGood() const
+{
+    return m_impl->ofs.good();
+}
+
+
+////////////////////////////////////////////////////////////
+void OutFileStream::seekPos(base::PtrDiffT absolutePos)
+{
+    m_impl->ofs.seekp(static_cast<std::streamoff>(absolutePos));
+}
+
+
+////////////////////////////////////////////////////////////
+base::PtrDiffT OutFileStream::tellPos()
+{
+    return static_cast<base::PtrDiffT>(m_impl->ofs.tellp());
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream::operator bool() const
+{
+    return static_cast<bool>(m_impl->ofs);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+OutFileStream& OutFileStream::operator<<(const T& value)
+{
+    if constexpr (base::isEnum<T>)
+    {
+        return *m_impl << static_cast<base::UnderlyingType<T>>(value);
+    }
+    else if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
+    {
+        m_impl->ofs.write(value.data(), static_cast<std::streamsize>(value.size()));
+    }
+    else
+    {
+        m_impl->ofs << value;
+    }
+
+    return *this;
+}
+
+////////////////////////////////////////////////////////////
+template OutFileStream& OutFileStream::operator<< <base::StringView>(const base::StringView&);
+template OutFileStream& OutFileStream::operator<< <bool>(const bool&);
+template OutFileStream& OutFileStream::operator<< <char>(const char&);
+template OutFileStream& OutFileStream::operator<< <const char* const>(const char* const&);
+template OutFileStream& OutFileStream::operator<< <float>(const float&);
+template OutFileStream& OutFileStream::operator<< <int>(const int&);
+template OutFileStream& OutFileStream::operator<< <long>(const long&);
+template OutFileStream& OutFileStream::operator<< <Path>(const Path&);
+template OutFileStream& OutFileStream::operator<< <short*>(short* const&);
+template OutFileStream& OutFileStream::operator<< <std::string_view>(const std::string_view&);
+template OutFileStream& OutFileStream::operator<< <std::string>(const std::string&);
+template OutFileStream& OutFileStream::operator<< <unsigned int>(const unsigned int&);
+template OutFileStream& OutFileStream::operator<< <unsigned long long>(const unsigned long long&);
+template OutFileStream& OutFileStream::operator<< <unsigned long>(const unsigned long&);
+template OutFileStream& OutFileStream::operator<< <unsigned short>(const unsigned short&);
+template OutFileStream& OutFileStream::operator<< <void*>(void* const&);
+template OutFileStream& OutFileStream::operator<< <std::filesystem::path>(const std::filesystem::path&);
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(SetFill fill)
+{
+    m_impl->ofs << std::setfill(fill.c);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(SetWidth width)
+{
+    m_impl->ofs << std::setw(width.width);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(Hex)
+{
+    m_impl->ofs << std::hex;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(std::ios_base& (*func)(std::ios_base&))
+{
+    m_impl->ofs << func;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutFileStream& OutFileStream::operator<<(std::ostream& (*func)(std::ostream&))
+{
+    m_impl->ofs << func;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+struct OutStringStream::Impl
+{
+    std::ostringstream oss;
+
+    Impl() = default;
+
+    Impl(auto&&... args) : oss(static_cast<decltype(args)>(args)...)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+OutStringStream::OutStringStream() = default;
+
+
+////////////////////////////////////////////////////////////
+OutStringStream::OutStringStream(const char* str) : m_impl(str)
+{
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream::~OutStringStream() = default;
+
+
+////////////////////////////////////////////////////////////
+OutStringStream::OutStringStream(OutStringStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator=(OutStringStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+void OutStringStream::write(const char* data, base::PtrDiffT size)
+{
+    m_impl->oss.write(data, static_cast<std::streamsize>(size));
+}
+
+
+////////////////////////////////////////////////////////////
+void OutStringStream::flush()
+{
+    m_impl->oss.flush();
+}
+
+
+////////////////////////////////////////////////////////////
+void OutStringStream::setStr(base::StringView str)
+{
+    m_impl->oss.str(str.toString<std::string>());
+}
+
+
+////////////////////////////////////////////////////////////
+void OutStringStream::setPrecision(base::PtrDiffT precision)
+{
+    m_impl->oss.precision(static_cast<std::streamsize>(precision));
+}
+
+
+////////////////////////////////////////////////////////////
+void OutStringStream::setFormatFlags(FormatFlags flags)
+{
+    m_impl->oss.setf(static_cast<std::ios_base::fmtflags>(flags));
+}
+
+
+////////////////////////////////////////////////////////////
+bool OutStringStream::isGood() const
+{
+    return m_impl->oss.good();
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream::operator bool() const
+{
+    return static_cast<bool>(m_impl->oss);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+T OutStringStream::to() const
+{
+    return m_impl->oss.str();
+}
+
+
+////////////////////////////////////////////////////////////
+template String      OutStringStream::to() const;
+template std::string OutStringStream::to() const;
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+OutStringStream& OutStringStream::operator<<(const T& value)
+{
+    if constexpr (base::isEnum<T>)
+    {
+        m_impl->oss << static_cast<base::UnderlyingType<T>>(value);
+    }
+    else if constexpr (SFML_BASE_IS_SAME(T, base::StringView))
+    {
+        m_impl->oss.write(value.data(), static_cast<std::streamsize>(value.size()));
+    }
+    else
+    {
+        m_impl->oss << value;
+    }
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+template OutStringStream& OutStringStream::operator<< <base::StringView>(const base::StringView&);
+template OutStringStream& OutStringStream::operator<< <bool>(const bool&);
+template OutStringStream& OutStringStream::operator<< <char>(const char&);
+template OutStringStream& OutStringStream::operator<< <const char*>(const char* const&);
+template OutStringStream& OutStringStream::operator<< <float>(const float&);
+template OutStringStream& OutStringStream::operator<< <int>(const int&);
+template OutStringStream& OutStringStream::operator<< <long>(const long&);
+template OutStringStream& OutStringStream::operator<< <Path>(const Path&);
+template OutStringStream& OutStringStream::operator<< <short*>(short* const&);
+template OutStringStream& OutStringStream::operator<< <std::string_view>(const std::string_view&);
+template OutStringStream& OutStringStream::operator<< <std::string>(const std::string&);
+template OutStringStream& OutStringStream::operator<< <unsigned int>(const unsigned int&);
+template OutStringStream& OutStringStream::operator<< <unsigned long long>(const unsigned long long&);
+template OutStringStream& OutStringStream::operator<< <unsigned long>(const unsigned long&);
+template OutStringStream& OutStringStream::operator<< <unsigned short>(const unsigned short&);
+template OutStringStream& OutStringStream::operator<< <void*>(void* const&);
+template OutStringStream& OutStringStream::operator<< <std::filesystem::path>(const std::filesystem::path&);
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(SetFill fill)
+{
+    m_impl->oss << std::setfill(fill.c);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(SetWidth width)
+{
+    m_impl->oss << std::setw(width.width);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(Hex)
+{
+    m_impl->oss << std::hex;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(std::ios_base& (*func)(std::ios_base&))
+{
+    m_impl->oss << func;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+OutStringStream& OutStringStream::operator<<(std::ostream& (*func)(std::ostream&))
+{
+    m_impl->oss << func;
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+struct InFileStream::Impl
+{
+    std::ifstream ifs;
+
+    Impl() = default;
+
+    Impl(auto&&... args) : ifs(static_cast<decltype(args)>(args)...)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+InFileStream::InFileStream() = default;
+
+
+////////////////////////////////////////////////////////////
+InFileStream::InFileStream(const Path& filename, FileOpenMode mode) :
+m_impl(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode))
+{
+}
+
+
+////////////////////////////////////////////////////////////
+InFileStream::~InFileStream() = default;
+
+
+////////////////////////////////////////////////////////////
+InFileStream::InFileStream(InFileStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+InFileStream& InFileStream::operator=(InFileStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+void InFileStream::open(const Path& filename, FileOpenMode mode)
+{
+    m_impl->ifs.open(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode));
+}
+
+
+////////////////////////////////////////////////////////////
+InFileStream& InFileStream::read(char* data, base::PtrDiffT size)
+{
+    m_impl->ifs.read(data, static_cast<std::streamsize>(size));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+void InFileStream::close()
+{
+    m_impl->ifs.close();
+}
+
+
+////////////////////////////////////////////////////////////
+InFileStream& InFileStream::seekg(base::PtrDiffT absolutePos)
+{
+    m_impl->ifs.seekg(static_cast<std::streamoff>(absolutePos));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+InFileStream& InFileStream::seekg(base::PtrDiffT offset, SeekDir dir)
+{
+    m_impl->ifs.seekg(static_cast<std::streamoff>(offset), static_cast<std::ios_base::seekdir>(dir));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+base::PtrDiffT InFileStream::gcount() const
+{
+    return static_cast<base::PtrDiffT>(m_impl->ifs.gcount());
+}
+
+
+////////////////////////////////////////////////////////////
+base::PtrDiffT InFileStream::tellg()
+{
+    return static_cast<base::PtrDiffT>(m_impl->ifs.tellg());
+}
+
+
+////////////////////////////////////////////////////////////
+bool InFileStream::isOpen() const
+{
+    return m_impl->ifs.is_open();
+}
+
+
+////////////////////////////////////////////////////////////
+bool InFileStream::isGood() const
+{
+    return m_impl->ifs.good();
+}
+
+
+////////////////////////////////////////////////////////////
+bool InFileStream::isEOF() const
+{
+    return m_impl->ifs.eof();
+}
+
+
+////////////////////////////////////////////////////////////
+InFileStream::operator bool() const
+{
+    return static_cast<bool>(m_impl->ifs);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+InFileStream& InFileStream::operator>>(T& value)
+{
+    if constexpr (base::isEnum<T>)
+    {
+        m_impl->ifs >> static_cast<base::UnderlyingType<T>>(value);
+    }
+    else
+    {
+        m_impl->ifs >> value;
+    }
+
+    return *this;
+}
+
+
+//////////////////////////////////////////////////////////////
+template InFileStream& InFileStream::operator>> <bool>(bool&);
+template InFileStream& InFileStream::operator>> <char>(char&);
+template InFileStream& InFileStream::operator>> <float>(float&);
+template InFileStream& InFileStream::operator>> <int>(int&);
+template InFileStream& InFileStream::operator>> <long>(long&);
+template InFileStream& InFileStream::operator>> <short>(short&);
+template InFileStream& InFileStream::operator>> <std::string>(std::string&);
+template InFileStream& InFileStream::operator>> <unsigned int>(unsigned int&);
+template InFileStream& InFileStream::operator>> <unsigned long long>(unsigned long long&);
+template InFileStream& InFileStream::operator>> <unsigned long>(unsigned long&);
+template InFileStream& InFileStream::operator>> <unsigned short>(unsigned short&);
+template InFileStream& InFileStream::operator>> <void*>(void*&);
+template InFileStream& InFileStream::operator>> <std::filesystem::path>(std::filesystem::path&);
+
 
 } // namespace sf

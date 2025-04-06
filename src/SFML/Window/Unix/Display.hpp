@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/StringView.hpp"
+
 #include <X11/Xlib.h>
 
 #include <memory>
