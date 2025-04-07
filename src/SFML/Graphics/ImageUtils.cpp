@@ -54,7 +54,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     {
         auto& file = *static_cast<OutFileStream*>(context);
         if (file)
-            file.write(static_cast<const char*>(data), static_cast<std::streamsize>(size));
+            file.write(static_cast<const char*>(data), static_cast<base::PtrDiffT>(size));
     };
 
     // Deduce the image type from its extension
