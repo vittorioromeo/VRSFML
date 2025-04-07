@@ -393,7 +393,7 @@ namespace sf::priv
 #elif defined(SFML_SYSTEM_ANDROID)
     // TODO P0: doesn't seem to be implemented in SDL
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID, handle);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, handle);
 #endif
 
     return props;
