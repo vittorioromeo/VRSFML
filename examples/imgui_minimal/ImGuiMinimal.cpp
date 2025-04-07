@@ -64,8 +64,8 @@ int main()
     baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
-
-    sf::Clock deltaClock;
+    sf::Clock    deltaClock;
+    sf::Vector2i eventMousePosition;
 
     while (true)
     {
@@ -78,6 +78,9 @@ int main()
 
             if (const auto* eResized = event->getIf<sf::Event::Resized>())
                 sf::cOut() << "Resized event: " << eResized->size.x << ", " << eResized->size.y << '\n';
+
+            if (const auto* eMouseMoved = event->getIf<sf::Event::MouseMoved>())
+                eventMousePosition = eMouseMoved->position;
         }
 
         imGuiContext.update(window, deltaClock.restart());
@@ -91,6 +94,8 @@ int main()
 
         const auto relativeMousePosition = sf::Mouse::getPosition(window);
         ImGui::Text("Relative mouse position: %d, %d", relativeMousePosition.x, relativeMousePosition.y);
+
+        ImGui::Text("Event mouse position: %d, %d", eventMousePosition.x, eventMousePosition.y);
 
         if (ImGui::Button("Set Window Size to 400x400"))
             window.setSize({400u, 400u});
