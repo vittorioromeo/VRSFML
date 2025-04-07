@@ -676,6 +676,10 @@ void WindowImpl::processEvents()
 
             case SDL_EVENT_WINDOW_RESIZED:
             {
+                // TODO P0: test
+                if (SDL_GetWindowID(m_impl->sdlWindow) != e.window.windowID)
+                    break;
+
                 pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
                 break;
             }
