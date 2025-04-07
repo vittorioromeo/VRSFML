@@ -50,11 +50,7 @@ Vector2i getPosition()
 ////////////////////////////////////////////////////////////
 Vector2i getPosition(const WindowBase& relativeTo)
 {
-#ifdef SFML_SYSTEM_EMSCRIPTEN
-    return getPosition(); // Calculation seems off with Emscripten (TODO P0: wait for fix)
-#else
     return getPosition() - relativeTo.getPosition();
-#endif
 }
 
 
