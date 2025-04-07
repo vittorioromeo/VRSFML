@@ -53,3 +53,5 @@ int main(int argc, const char** argv)
 // TODO P2: pp upgrade around 128pp that makes manually clicked bombs worth 100x (or maybe all bubbles)
 // TODO P2: built-in speedrun splits system
 // TODO P2: challenge runs, separate saves, separate speedrun save
+
+// TODO P0: speedrun update, advertise with vidoe
