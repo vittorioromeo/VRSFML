@@ -42,8 +42,8 @@ using WindowHandle = void*;
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-// Window handle is int on Emscripten
-using WindowHandle = int;
+// Window handle is string on Emscripten
+using WindowHandle = const char*;
 
 #elif defined(SFML_DOXYGEN)
 

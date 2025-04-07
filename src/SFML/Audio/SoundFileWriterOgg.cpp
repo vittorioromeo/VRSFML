@@ -20,6 +20,7 @@
 
 #include <algorithm> // std::is_permutation
 
+#include <cstdlib>
 #include <ctime>
 
 
