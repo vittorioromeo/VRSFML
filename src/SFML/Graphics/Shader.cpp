@@ -103,7 +103,7 @@ struct [[nodiscard]] BufferSlice
     {
         file.seekg(0, sf::SeekDir::beg);
         buffer.resize(static_cast<sf::base::SizeT>(size) + bufferSizeBeforeRead);
-        file.read(buffer.data() + bufferSizeBeforeRead, static_cast<std::streamsize>(size));
+        file.read(buffer.data() + bufferSizeBeforeRead, static_cast<sf::base::PtrDiffT>(size));
     }
 
     buffer.pushBack('\0');
