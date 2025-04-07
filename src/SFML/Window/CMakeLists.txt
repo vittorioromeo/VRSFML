@@ -32,8 +32,8 @@ set(SDL_TRAY OFF)
 
 CPMAddPackage(
     NAME sdl
-    GITHUB_REPOSITORY vittorioromeo/SDL
-    GIT_TAG 01ec4c2bb8b704bb108d3c1f837505e29c8e2caf
+    GITHUB_REPOSITORY libsdl-org/SDL
+    GIT_TAG 8b924df48b17eef05834cb14129e52afb1075f46
     SYSTEM TRUE
 )
 
