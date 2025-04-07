@@ -104,6 +104,7 @@
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+
 #include <iostream>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -2385,12 +2386,12 @@ struct Main
     {
         constexpr float gameRatio = gameScreenSize.x / gameScreenSize.y;
 
-        const auto  fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVector2f();
+        const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVector2f();
 
         // TODO P0:
         std::cout << "fullscreenSize: " << fullscreenSize.x << " " << fullscreenSize.y << std::endl;
 
-        const float aspectRatio    = fullscreenSize.x / fullscreenSize.y;
+        const float aspectRatio = fullscreenSize.x / fullscreenSize.y;
 
         const bool isUltrawide = aspectRatio >= 2.f;
         const bool isWide      = aspectRatio >= 1.6f && aspectRatio < 2.f;
@@ -8689,6 +8690,11 @@ struct Main
             }
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
             {
+
+                auto sz = e6->size;
+                // TODO P0:
+                std::cout << "sz: " << sz.x << ", " << sz.y << std::endl;
+
                 recreateImGuiRenderTexture(e6->size);
                 recreateGameRenderTexture(e6->size);
 
