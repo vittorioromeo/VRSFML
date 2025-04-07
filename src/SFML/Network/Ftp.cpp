@@ -668,7 +668,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
     base::SizeT received = 0;
     while (m_dataSocket.receive(buffer, sizeof(buffer), received) == Socket::Status::Done)
     {
-        stream.write(buffer, static_cast<std::streamsize>(received));
+        stream.write(buffer, static_cast<sf::base::PtrDiffT>(received));
 
         if (!stream.good())
         {

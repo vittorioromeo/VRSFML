@@ -28,13 +28,13 @@ namespace
 void encode(sf::OutFileStream& stream, sf::base::I16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
+    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
 }
 
 void encode(sf::OutFileStream& stream, sf::base::U16 value)
 {
     const char bytes[]{static_cast<char>(value & 0xFF), static_cast<char>(value >> 8)};
-    stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
+    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
 }
 
 void encode(sf::OutFileStream& stream, sf::base::U32 value)
@@ -45,7 +45,7 @@ void encode(sf::OutFileStream& stream, sf::base::U32 value)
         static_cast<char>((value & 0x00'FF'00'00) >> 16),
         static_cast<char>((value & 0xFF'00'00'00) >> 24),
     };
-    stream.write(bytes, static_cast<std::streamsize>(sf::base::getArraySize(bytes)));
+    stream.write(bytes, static_cast<sf::base::PtrDiffT>(sf::base::getArraySize(bytes)));
 }
 } // namespace
 
@@ -257,16 +257,16 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
 
     // Write the main chunk ID
     constexpr const char mainChunkId[]{'R', 'I', 'F', 'F'};
-    m_impl->file.write(mainChunkId, static_cast<std::streamsize>(base::getArraySize(mainChunkId)));
+    m_impl->file.write(mainChunkId, static_cast<base::PtrDiffT>(base::getArraySize(mainChunkId)));
 
     // Write the main chunk header
     encode(m_impl->file, base::U32{0}); // 0 is a placeholder, will be written later
     constexpr const char mainChunkFormat[]{'W', 'A', 'V', 'E'};
-    m_impl->file.write(mainChunkFormat, static_cast<std::streamsize>(base::getArraySize(mainChunkFormat)));
+    m_impl->file.write(mainChunkFormat, static_cast<base::PtrDiffT>(base::getArraySize(mainChunkFormat)));
 
     // Write the sub-chunk 1 ("format") id and size
     constexpr const char fmtChunkId[]{'f', 'm', 't', ' '};
-    m_impl->file.write(fmtChunkId, static_cast<std::streamsize>(base::getArraySize(fmtChunkId)));
+    m_impl->file.write(fmtChunkId, static_cast<base::PtrDiffT>(base::getArraySize(fmtChunkId)));
 
     if (channelCount > 2)
     {
@@ -306,12 +306,12 @@ void SoundFileWriterWav::writeHeader(unsigned int sampleRate, unsigned int chann
         // Write the subformat (PCM)
         char subformat[] =
             {'\x01', '\x00', '\x00', '\x00', '\x00', '\x00', '\x10', '\x00', '\x80', '\x00', '\x00', '\xAA', '\x00', '\x38', '\x9B', '\x71'};
-        m_impl->file.write(subformat, static_cast<std::streamsize>(base::getArraySize(subformat)));
+        m_impl->file.write(subformat, static_cast<base::PtrDiffT>(base::getArraySize(subformat)));
     }
 
     // Write the sub-chunk 2 ("data") id and size
     char dataChunkId[]{'d', 'a', 't', 'a'};
-    m_impl->file.write(dataChunkId, static_cast<std::streamsize>(base::getArraySize(dataChunkId)));
+    m_impl->file.write(dataChunkId, static_cast<base::PtrDiffT>(base::getArraySize(dataChunkId)));
     const base::U32 dataChunkSize = 0; // placeholder, will be written later
     encode(m_impl->file, dataChunkSize);
 }
