@@ -11,6 +11,8 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
 #include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
@@ -66,6 +68,10 @@ int main()
 
     sf::Clock    deltaClock;
     sf::Vector2i eventMousePosition;
+
+    const auto modes = sf::VideoModeUtils::getFullscreenModes();
+    for (const auto& mode : modes)
+        sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << '\n';
 
     while (true)
     {
