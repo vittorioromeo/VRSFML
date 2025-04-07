@@ -8,9 +8,12 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
+#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Mouse.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -72,6 +75,9 @@ int main()
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (const auto* eResized = event->getIf<sf::Event::Resized>())
+                sf::cOut() << "Resized event: " << eResized->size.x << ", " << eResized->size.y << '\n';
         }
 
         imGuiContext.update(window, deltaClock.restart());
@@ -79,8 +85,22 @@ int main()
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Hello, world!");
+
+        const auto globalMousePosition = sf::Mouse::getPosition();
+        ImGui::Text("Global mouse position: %d, %d", globalMousePosition.x, globalMousePosition.y);
+
+        const auto relativeMousePosition = sf::Mouse::getPosition(window);
+        ImGui::Text("Relative mouse position: %d, %d", relativeMousePosition.x, relativeMousePosition.y);
+
+        if (ImGui::Button("Set Window Size to 400x400"))
+            window.setSize({400u, 400u});
+
+        if (ImGui::Button("Set Window Size to 800x800"))
+            window.setSize({800u, 800u});
+
         ImGui::Button("Look at this pretty button");
         imGuiContext.image(baseRenderTexture, size.toVector2f());
+
         ImGui::End();
 
         window.clear();
