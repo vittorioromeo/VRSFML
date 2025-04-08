@@ -170,7 +170,7 @@ public:
     (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Clamps the components of the `*this` to the given range
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseClamp(
@@ -181,7 +181,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Clamps the X component of the `*this` between `[minX, maxX]`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampX(const T minX, const T maxX) const
@@ -190,7 +190,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Clamps the Y component of the `*this` between `[minY, maxY]`
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampY(const T minY, const T maxY) const
@@ -201,7 +201,7 @@ public:
 #undef SFML_PRIV_CLAMP_BY_VALUE
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Returns a new vector with `addedX` added to the X component
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 addX(const T addedX) const
@@ -210,7 +210,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Returns a new vector with `addedY` added to the Y component
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 addY(const T addedY) const
@@ -228,11 +228,21 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector2 to() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief More convenient conversion functions
+    /// \brief Convert `*this` to a `Vector2<int>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int>   toVector2i() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int> toVector2i() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Vector2<float>`
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<float> toVector2f() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert `*this` to a `Vector2<unsigned int>`
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
 
     ////////////////////////////////////////////////////////////
