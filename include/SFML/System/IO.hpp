@@ -8,6 +8,7 @@
 #include "SFML/System/Export.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
+#include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
