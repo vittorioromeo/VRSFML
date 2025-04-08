@@ -293,8 +293,6 @@ if(SFML_ENABLE_HARDENING_FLAGS)
         -fstack-protector-strong
         -fstack-clash-protection
         -fstrict-flex-arrays=3
-        -Wl,--as-needed
-        -Wl,--no-copy-dt-needed-entries
         -fno-delete-null-pointer-checks
         -ftrapv
     )
