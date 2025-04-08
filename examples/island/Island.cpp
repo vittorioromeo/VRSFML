@@ -52,9 +52,9 @@ constexpr sf::Vector2u resolution(800, 600);
 constexpr unsigned int blockCount   = 32;
 constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
+// Worker status
 bool                      bufferUploadPending = false;
 std::atomic<unsigned int> pendingTasks{0u};
-
 
 struct Setting
 {
@@ -297,27 +297,17 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, sf::Vertex* const target
 
             // Top left corner (first triangle)
             if (x > 0)
-            {
                 vertices[arrayIndexBase + 0] = vertices[arrayIndexBase - 6 + 5];
-            }
             else if (y > rowStart)
-            {
                 vertices[arrayIndexBase + 0] = vertices[arrayIndexBase - resolution.x * 6 + 1];
-            }
             else
-            {
                 vertices[arrayIndexBase + 0] = computeVertex({x, y});
-            }
 
             // Bottom left corner (first triangle)
             if (x > 0)
-            {
                 vertices[arrayIndexBase + 1] = vertices[arrayIndexBase - 6 + 2];
-            }
             else
-            {
                 vertices[arrayIndexBase + 1] = computeVertex({x, y + 1});
-            }
 
             // Bottom right corner (first triangle)
             vertices[arrayIndexBase + 2] = computeVertex({x + 1, y + 1});
@@ -330,13 +320,9 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, sf::Vertex* const target
 
             // Top right corner (second triangle)
             if (y > rowStart)
-            {
                 vertices[arrayIndexBase + 5] = vertices[arrayIndexBase - resolution.x * 6 + 2];
-            }
             else
-            {
                 vertices[arrayIndexBase + 5] = computeVertex({x + 1, y});
-            }
         }
     }
 
