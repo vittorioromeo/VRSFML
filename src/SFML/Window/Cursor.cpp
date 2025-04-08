@@ -16,25 +16,17 @@
 
 namespace sf
 {
-
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vector2u size, const Vector2u hotspot)
 {
-    SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
-                                                 static_cast<int>(size.y),
-                                                 SDL_PIXELFORMAT_RGBA32,
-                                                 const_cast<Uint8*>(pixels), // SDL requires non-const, but data is read-only
-                                                 static_cast<int>(size.x * 4));
-
+    auto surface = priv::getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
     if (surface == nullptr)
     {
-        priv::err() << "Failed to create surface from pixels: " << SDL_GetError();
+        priv::err() << "Failed to reload cursor from pixels";
         return false;
     }
 
-    SDL_Cursor* cursor = SDL_CreateColorCursor(surface, static_cast<int>(hotspot.x), static_cast<int>(hotspot.y));
-    SDL_DestroySurface(surface);
-
+    SDL_Cursor* cursor = SDL_CreateColorCursor(surface.get(), static_cast<int>(hotspot.x), static_cast<int>(hotspot.y));
     if (cursor == nullptr)
     {
         priv::err() << "Failed to create cursor from surface: " << SDL_GetError();
@@ -53,7 +45,6 @@ namespace sf
 [[nodiscard]] bool Cursor::reloadFromSystem(const Cursor::Type type)
 {
     SDL_Cursor* cursor = SDL_CreateSystemCursor(priv::cursorTypeToSDLCursor(type));
-
     if (cursor == nullptr)
     {
         priv::err() << "Failed to create system cursor: " << SDL_GetError();

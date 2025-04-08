@@ -26,6 +26,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf.hpp"
+#include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
@@ -101,9 +102,11 @@ std::unordered_map<SDL_FingerID, TouchInfo> touchMap;
 ////////////////////////////////////////////////////////////
 const sf::priv::WindowImpl* fullscreenWindow = nullptr;
 
+
+////////////////////////////////////////////////////////////
+std::unordered_map<SDL_WindowID, sf::priv::WindowImpl*> windowImplMap;
+
 } // namespace WindowImplImpl
-
-
 } // namespace
 
 
@@ -161,7 +164,294 @@ struct WindowImpl::Impl
         if (!isExternal)
             SDL_DestroyWindow(sdlWindow);
     }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDL_WindowID getWindowID() const
+    {
+        const auto result = SDL_GetWindowID(sdlWindow);
+
+        if (result == 0)
+            err() << "Failed to get window ID: " << SDL_GetError();
+
+        return result;
+    }
 };
+
+
+////////////////////////////////////////////////////////////
+void WindowImpl::processSDLEvent(const SDL_Event& e)
+{
+    const auto et = static_cast<SDL_EventType>(e.type);
+
+    switch (et)
+    {
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+        {
+            pushEvent(Event::Closed{});
+            break;
+        }
+
+        case SDL_EVENT_WINDOW_RESIZED:
+        {
+            pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
+            break;
+        }
+
+        case SDL_EVENT_WINDOW_MOUSE_ENTER:
+        {
+            pushEvent(Event::MouseEntered{});
+            break;
+        }
+
+        case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+        {
+            pushEvent(Event::MouseLeft{});
+            break;
+        }
+
+        case SDL_EVENT_WINDOW_FOCUS_GAINED:
+        {
+            pushEvent(Event::FocusGained{});
+            break;
+        }
+
+        case SDL_EVENT_WINDOW_FOCUS_LOST:
+        {
+            pushEvent(Event::FocusLost{});
+            break;
+        }
+
+        case SDL_EVENT_KEY_DOWN:
+        {
+            if (!m_impl->keyRepeatEnabled && e.key.repeat)
+                return;
+
+            pushEvent(Event::KeyPressed{.code     = mapSDLKeycodeToSFML(e.key.key),
+                                        .scancode = mapSDLScancodeToSFML(e.key.scancode),
+                                        .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
+                                        .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
+                                        .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
+                                        .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
+            break;
+        }
+
+        case SDL_EVENT_KEY_UP:
+        {
+            pushEvent(Event::KeyReleased{.code     = mapSDLKeycodeToSFML(e.key.key),
+                                         .scancode = mapSDLScancodeToSFML(e.key.scancode),
+                                         .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
+                                         .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
+                                         .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
+                                         .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
+            break;
+        }
+
+        case SDL_EVENT_TEXT_INPUT:
+        {
+            char32_t     unicode   = 0;
+            const char*  keyBuffer = e.text.text;
+            const size_t length    = SFML_BASE_STRLEN(keyBuffer);
+            const auto*  iter      = keyBuffer;
+
+            while (iter < keyBuffer + length)
+            {
+                iter = Utf8::decode(iter, keyBuffer + length, unicode, 0);
+                if (unicode != 0)
+                    pushEvent(Event::TextEntered{unicode});
+            }
+
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_MOTION:
+        {
+            pushEvent(Event::MouseMoved{
+                .position = {static_cast<int>(e.motion.x), static_cast<int>(e.motion.y)},
+            });
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        {
+            pushEvent(Event::MouseButtonPressed{
+                .button   = getButtonFromSDLButton(e.button.button),
+                .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
+            });
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_BUTTON_UP:
+        {
+            pushEvent(Event::MouseButtonReleased{
+                .button   = getButtonFromSDLButton(e.button.button),
+                .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
+            });
+            break;
+        }
+
+        case SDL_EVENT_MOUSE_WHEEL:
+        {
+            pushEvent(Event::MouseWheelScrolled{
+                .wheel    = Mouse::Wheel::Vertical, // TODO P0: horizontal wheel support?
+                .delta    = static_cast<float>(e.wheel.y),
+                .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)},
+            });
+            break;
+        }
+
+        case SDL_EVENT_FINGER_DOWN:
+        {
+            const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
+            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+
+            SFML_BASE_ASSERT(!WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+
+            const int normalizedIndex = WindowImplImpl::findFirstNormalizedTouchIndex();
+            if (normalizedIndex == -1)
+                break;
+
+            const auto fingerIdx                      = static_cast<unsigned int>(normalizedIndex);
+            WindowImplImpl::touchIndexPool[fingerIdx] = true;
+            WindowImplImpl::touchMap.emplace(fingerEvent.fingerID,
+                                             WindowImplImpl::TouchInfo{fingerIdx, touchPos, getNativeHandle()});
+
+            pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos, fingerEvent.pressure});
+            break;
+        }
+
+        case SDL_EVENT_FINGER_UP:
+        {
+            const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
+            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+
+            SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
+
+            WindowImplImpl::touchIndexPool[fingerIdx] = false;
+            WindowImplImpl::touchMap.erase(fingerEvent.fingerID);
+
+            pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos, fingerEvent.pressure});
+            break;
+        }
+
+        case SDL_EVENT_FINGER_MOTION:
+        {
+            const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
+            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+
+            SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
+
+            pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos, fingerEvent.pressure});
+            break;
+        }
+
+        case SDL_EVENT_FINGER_CANCELED: // TODO
+        {
+            break;
+        }
+
+            // unused
+        case SDL_EVENT_QUIT:
+        case SDL_EVENT_FIRST:
+        case SDL_EVENT_TERMINATING:
+        case SDL_EVENT_LOW_MEMORY:
+        case SDL_EVENT_WILL_ENTER_BACKGROUND:
+        case SDL_EVENT_DID_ENTER_BACKGROUND:
+        case SDL_EVENT_WILL_ENTER_FOREGROUND:
+        case SDL_EVENT_DID_ENTER_FOREGROUND:
+        case SDL_EVENT_LOCALE_CHANGED:
+        case SDL_EVENT_SYSTEM_THEME_CHANGED:
+        case SDL_EVENT_DISPLAY_ORIENTATION:
+        case SDL_EVENT_DISPLAY_ADDED:
+        case SDL_EVENT_DISPLAY_REMOVED:
+        case SDL_EVENT_DISPLAY_MOVED:
+        case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
+        case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+        case SDL_EVENT_WINDOW_SHOWN:
+        case SDL_EVENT_WINDOW_HIDDEN:
+        case SDL_EVENT_WINDOW_EXPOSED:
+        case SDL_EVENT_WINDOW_MOVED:
+        case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+        case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
+        case SDL_EVENT_WINDOW_MINIMIZED:
+        case SDL_EVENT_WINDOW_MAXIMIZED:
+        case SDL_EVENT_WINDOW_RESTORED:
+        case SDL_EVENT_WINDOW_HIT_TEST:
+        case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
+        case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+        case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+        case SDL_EVENT_WINDOW_SAFE_AREA_CHANGED:
+        case SDL_EVENT_WINDOW_OCCLUDED:
+        case SDL_EVENT_WINDOW_ENTER_FULLSCREEN:
+        case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
+        case SDL_EVENT_WINDOW_DESTROYED:
+        case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
+        case SDL_EVENT_TEXT_EDITING:
+        case SDL_EVENT_KEYMAP_CHANGED:
+        case SDL_EVENT_KEYBOARD_ADDED:
+        case SDL_EVENT_KEYBOARD_REMOVED:
+        case SDL_EVENT_TEXT_EDITING_CANDIDATES:
+        case SDL_EVENT_MOUSE_ADDED:
+        case SDL_EVENT_MOUSE_REMOVED:
+        case SDL_EVENT_JOYSTICK_AXIS_MOTION:
+        case SDL_EVENT_JOYSTICK_BALL_MOTION:
+        case SDL_EVENT_JOYSTICK_HAT_MOTION:
+        case SDL_EVENT_JOYSTICK_BUTTON_DOWN:
+        case SDL_EVENT_JOYSTICK_BUTTON_UP:
+        case SDL_EVENT_JOYSTICK_ADDED:
+        case SDL_EVENT_JOYSTICK_REMOVED:
+        case SDL_EVENT_JOYSTICK_BATTERY_UPDATED:
+        case SDL_EVENT_JOYSTICK_UPDATE_COMPLETE:
+        case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        case SDL_EVENT_GAMEPAD_BUTTON_UP:
+        case SDL_EVENT_GAMEPAD_ADDED:
+        case SDL_EVENT_GAMEPAD_REMOVED:
+        case SDL_EVENT_GAMEPAD_REMAPPED:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_DOWN:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_MOTION:
+        case SDL_EVENT_GAMEPAD_TOUCHPAD_UP:
+        case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
+        case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
+        case SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED:
+        case SDL_EVENT_CLIPBOARD_UPDATE:
+        case SDL_EVENT_DROP_FILE:
+        case SDL_EVENT_DROP_TEXT:
+        case SDL_EVENT_DROP_BEGIN:
+        case SDL_EVENT_DROP_COMPLETE:
+        case SDL_EVENT_DROP_POSITION:
+        case SDL_EVENT_AUDIO_DEVICE_ADDED:
+        case SDL_EVENT_AUDIO_DEVICE_REMOVED:
+        case SDL_EVENT_AUDIO_DEVICE_FORMAT_CHANGED:
+        case SDL_EVENT_SENSOR_UPDATE:
+        case SDL_EVENT_PEN_PROXIMITY_IN:
+        case SDL_EVENT_PEN_PROXIMITY_OUT:
+        case SDL_EVENT_PEN_DOWN:
+        case SDL_EVENT_PEN_UP:
+        case SDL_EVENT_PEN_BUTTON_DOWN:
+        case SDL_EVENT_PEN_BUTTON_UP:
+        case SDL_EVENT_PEN_MOTION:
+        case SDL_EVENT_PEN_AXIS:
+        case SDL_EVENT_CAMERA_DEVICE_ADDED:
+        case SDL_EVENT_CAMERA_DEVICE_REMOVED:
+        case SDL_EVENT_CAMERA_DEVICE_APPROVED:
+        case SDL_EVENT_CAMERA_DEVICE_DENIED:
+        case SDL_EVENT_RENDER_TARGETS_RESET:
+        case SDL_EVENT_RENDER_DEVICE_RESET:
+        case SDL_EVENT_RENDER_DEVICE_LOST:
+        case SDL_EVENT_PRIVATE0:
+        case SDL_EVENT_PRIVATE1:
+        case SDL_EVENT_PRIVATE2:
+        case SDL_EVENT_PRIVATE3:
+        case SDL_EVENT_POLL_SENTINEL:
+        case SDL_EVENT_USER:
+        case SDL_EVENT_LAST:
+        case SDL_EVENT_ENUM_PADDING:
+            break;
+    }
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -237,6 +527,11 @@ WindowImpl::~WindowImpl()
 {
     if (WindowImplImpl::fullscreenWindow == this)
         WindowImplImpl::fullscreenWindow = nullptr;
+
+    // Unregister the window from the global map
+    const auto windowId = m_impl->getWindowID();
+    SFML_BASE_ASSERT(WindowImplImpl::windowImplMap.contains(windowId));
+    WindowImplImpl::windowImplMap.erase(windowId);
 }
 
 
@@ -347,6 +642,11 @@ m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
     // Get the initial sensor states
     for (Vector3f& vec : m_impl->sensorValue.data)
         vec = Vector3f{0.f, 0.f, 0.f};
+
+    // Register the window in the global map
+    const auto windowId = m_impl->getWindowID();
+    SFML_BASE_ASSERT(!WindowImplImpl::windowImplMap.contains(windowId));
+    WindowImplImpl::windowImplMap.emplace(windowId, this); // Needs address stability
 }
 
 
@@ -458,7 +758,7 @@ void WindowImpl::populateEventQueue()
 {
     processJoystickEvents();
     processSensorEvents();
-    processEvents();
+    WindowImpl::processEvents();
 }
 
 
@@ -530,22 +830,15 @@ void WindowImpl::setTitle(const String& title)
 ////////////////////////////////////////////////////////////
 void WindowImpl::setIcon(Vector2u size, const base::U8* pixels)
 {
-    SDL_Surface* iconSurface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
-                                                     static_cast<int>(size.y),
-                                                     SDL_PIXELFORMAT_RGBA32,
-                                                     const_cast<void*>(static_cast<const void*>(pixels)),
-                                                     static_cast<int>(size.x * 4));
-
-    if (iconSurface == nullptr)
+    auto surface = getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
+    if (surface == nullptr)
     {
-        err() << "Failed to create icon surface: " << SDL_GetError();
+        err() << "Failed to set icon";
         return;
     }
 
-    if (!SDL_SetWindowIcon(m_impl->sdlWindow, iconSurface))
+    if (!SDL_SetWindowIcon(m_impl->sdlWindow, surface.get()))
         err() << "Failed to set window icon: " << SDL_GetError();
-
-    SDL_DestroySurface(iconSurface);
 }
 
 
@@ -660,6 +953,15 @@ SDL_Window* WindowImpl::getSDLHandle() const
 ////////////////////////////////////////////////////////////
 void WindowImpl::processEvents()
 {
+    const auto dispatchSDLEvent = [&](const SDL_WindowID windowID, const SDL_Event& e)
+    {
+        const auto it = WindowImplImpl::windowImplMap.find(windowID);
+        if (it == WindowImplImpl::windowImplMap.end())
+            return;
+
+        it->second->processSDLEvent(e);
+    };
+
     SDL_Event e;
 
     while (SDL_PollEvent(&e))
@@ -668,181 +970,8 @@ void WindowImpl::processEvents()
 
         switch (et)
         {
-            case SDL_EVENT_QUIT:
-            {
-                pushEvent(Event::Closed{});
-                break;
-            }
-
-            case SDL_EVENT_WINDOW_RESIZED:
-            {
-                // TODO P0: test
-                if (SDL_GetWindowID(m_impl->sdlWindow) != e.window.windowID)
-                    break;
-
-                pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
-                break;
-            }
-
-            case SDL_EVENT_WINDOW_MOUSE_ENTER:
-            {
-                pushEvent(Event::MouseEntered{});
-                break;
-            }
-
-            case SDL_EVENT_WINDOW_MOUSE_LEAVE:
-            {
-                pushEvent(Event::MouseLeft{});
-                break;
-            }
-
-            case SDL_EVENT_WINDOW_FOCUS_GAINED:
-            {
-                pushEvent(Event::FocusGained{});
-                break;
-            }
-
-            case SDL_EVENT_WINDOW_FOCUS_LOST:
-            {
-                pushEvent(Event::FocusLost{});
-                break;
-            }
-
-            case SDL_EVENT_KEY_DOWN:
-            {
-                if (!m_impl->keyRepeatEnabled && e.key.repeat)
-                    continue;
-
-                pushEvent(Event::KeyPressed{.code     = mapSDLKeycodeToSFML(e.key.key),
-                                            .scancode = mapSDLScancodeToSFML(e.key.scancode),
-                                            .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
-                                            .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
-                                            .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
-                                            .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
-                break;
-            }
-
-            case SDL_EVENT_KEY_UP:
-            {
-                pushEvent(Event::KeyReleased{.code     = mapSDLKeycodeToSFML(e.key.key),
-                                             .scancode = mapSDLScancodeToSFML(e.key.scancode),
-                                             .alt      = static_cast<bool>(e.key.mod & SDL_KMOD_ALT),
-                                             .control  = static_cast<bool>(e.key.mod & SDL_KMOD_CTRL),
-                                             .shift    = static_cast<bool>(e.key.mod & SDL_KMOD_SHIFT),
-                                             .system   = static_cast<bool>(e.key.mod & SDL_KMOD_GUI)});
-                break;
-            }
-
-            case SDL_EVENT_TEXT_INPUT:
-            {
-                char32_t     unicode   = 0;
-                const char*  keyBuffer = e.text.text;
-                const size_t length    = SFML_BASE_STRLEN(keyBuffer);
-                const auto*  iter      = keyBuffer;
-
-                while (iter < keyBuffer + length)
-                {
-                    iter = Utf8::decode(iter, keyBuffer + length, unicode, 0);
-                    if (unicode != 0)
-                        pushEvent(Event::TextEntered{unicode});
-                }
-
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_MOTION:
-            {
-                pushEvent(Event::MouseMoved{
-                    .position = {static_cast<int>(e.motion.x), static_cast<int>(e.motion.y)},
-                });
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            {
-                pushEvent(Event::MouseButtonPressed{
-                    .button   = getButtonFromSDLButton(e.button.button),
-                    .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
-                });
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-            {
-                pushEvent(Event::MouseButtonReleased{
-                    .button   = getButtonFromSDLButton(e.button.button),
-                    .position = {static_cast<int>(e.button.x), static_cast<int>(e.button.y)},
-                });
-                break;
-            }
-
-            case SDL_EVENT_MOUSE_WHEEL:
-            {
-                pushEvent(Event::MouseWheelScrolled{
-                    .wheel    = Mouse::Wheel::Vertical, // TODO P0: horizontal wheel support?
-                    .delta    = static_cast<float>(e.wheel.y),
-                    .position = {static_cast<int>(e.wheel.x), static_cast<int>(e.wheel.y)},
-                });
-                break;
-            }
-
-            case SDL_EVENT_FINGER_DOWN:
-            {
-                const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
-                const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
-                                           static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
-
-                SFML_BASE_ASSERT(!WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-
-                const int normalizedIndex = WindowImplImpl::findFirstNormalizedTouchIndex();
-                if (normalizedIndex == -1)
-                    break;
-
-                const auto fingerIdx                      = static_cast<unsigned int>(normalizedIndex);
-                WindowImplImpl::touchIndexPool[fingerIdx] = true;
-                WindowImplImpl::touchMap.emplace(fingerEvent.fingerID,
-                                                 WindowImplImpl::TouchInfo{fingerIdx, touchPos, getNativeHandle()});
-
-                pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos, fingerEvent.pressure});
-                break;
-            }
-
-            case SDL_EVENT_FINGER_UP:
-            {
-                const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
-                const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
-                                           static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
-
-                SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-                const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
-
-                WindowImplImpl::touchIndexPool[fingerIdx] = false;
-                WindowImplImpl::touchMap.erase(fingerEvent.fingerID);
-
-                pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos, fingerEvent.pressure});
-                break;
-            }
-
-            case SDL_EVENT_FINGER_MOTION:
-            {
-                const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
-                const Vector2i touchPos = {static_cast<int>(fingerEvent.x * static_cast<float>(getSize().x)),
-                                           static_cast<int>(fingerEvent.y * static_cast<float>(getSize().y))};
-
-                SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-                const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
-
-                pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos, fingerEvent.pressure});
-                break;
-            }
-
-            case SDL_EVENT_FINGER_CANCELED: // TODO
-            {
-                break;
-            }
-
-                // unused
             case SDL_EVENT_FIRST:
+            case SDL_EVENT_QUIT:
             case SDL_EVENT_TERMINATING:
             case SDL_EVENT_LOW_MEMORY:
             case SDL_EVENT_WILL_ENTER_BACKGROUND:
@@ -858,15 +987,22 @@ void WindowImpl::processEvents()
             case SDL_EVENT_DISPLAY_DESKTOP_MODE_CHANGED:
             case SDL_EVENT_DISPLAY_CURRENT_MODE_CHANGED:
             case SDL_EVENT_DISPLAY_CONTENT_SCALE_CHANGED:
+                break;
+
             case SDL_EVENT_WINDOW_SHOWN:
             case SDL_EVENT_WINDOW_HIDDEN:
             case SDL_EVENT_WINDOW_EXPOSED:
             case SDL_EVENT_WINDOW_MOVED:
+            case SDL_EVENT_WINDOW_RESIZED:
             case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
             case SDL_EVENT_WINDOW_METAL_VIEW_RESIZED:
             case SDL_EVENT_WINDOW_MINIMIZED:
             case SDL_EVENT_WINDOW_MAXIMIZED:
             case SDL_EVENT_WINDOW_RESTORED:
+            case SDL_EVENT_WINDOW_MOUSE_ENTER:
+            case SDL_EVENT_WINDOW_MOUSE_LEAVE:
+            case SDL_EVENT_WINDOW_FOCUS_GAINED:
+            case SDL_EVENT_WINDOW_FOCUS_LOST:
             case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             case SDL_EVENT_WINDOW_HIT_TEST:
             case SDL_EVENT_WINDOW_ICCPROF_CHANGED:
@@ -878,11 +1014,38 @@ void WindowImpl::processEvents()
             case SDL_EVENT_WINDOW_LEAVE_FULLSCREEN:
             case SDL_EVENT_WINDOW_DESTROYED:
             case SDL_EVENT_WINDOW_HDR_STATE_CHANGED:
+                dispatchSDLEvent(e.window.windowID, e);
+                break;
+
+            case SDL_EVENT_KEY_DOWN:
+            case SDL_EVENT_KEY_UP:
+                dispatchSDLEvent(e.key.windowID, e);
+                break;
+
             case SDL_EVENT_TEXT_EDITING:
+            case SDL_EVENT_TEXT_INPUT:
+                dispatchSDLEvent(e.text.windowID, e);
+                break;
+
             case SDL_EVENT_KEYMAP_CHANGED:
             case SDL_EVENT_KEYBOARD_ADDED:
             case SDL_EVENT_KEYBOARD_REMOVED:
             case SDL_EVENT_TEXT_EDITING_CANDIDATES:
+                break;
+
+            case SDL_EVENT_MOUSE_MOTION:
+                dispatchSDLEvent(e.motion.windowID, e);
+                break;
+
+            case SDL_EVENT_MOUSE_BUTTON_DOWN:
+            case SDL_EVENT_MOUSE_BUTTON_UP:
+                dispatchSDLEvent(e.button.windowID, e);
+                break;
+
+            case SDL_EVENT_MOUSE_WHEEL:
+                dispatchSDLEvent(e.wheel.windowID, e);
+                break;
+
             case SDL_EVENT_MOUSE_ADDED:
             case SDL_EVENT_MOUSE_REMOVED:
             case SDL_EVENT_JOYSTICK_AXIS_MOTION:
@@ -906,6 +1069,15 @@ void WindowImpl::processEvents()
             case SDL_EVENT_GAMEPAD_SENSOR_UPDATE:
             case SDL_EVENT_GAMEPAD_UPDATE_COMPLETE:
             case SDL_EVENT_GAMEPAD_STEAM_HANDLE_UPDATED:
+                break;
+
+            case SDL_EVENT_FINGER_DOWN:
+            case SDL_EVENT_FINGER_UP:
+            case SDL_EVENT_FINGER_MOTION:
+            case SDL_EVENT_FINGER_CANCELED:
+                dispatchSDLEvent(e.tfinger.windowID, e);
+                break;
+
             case SDL_EVENT_CLIPBOARD_UPDATE:
             case SDL_EVENT_DROP_FILE:
             case SDL_EVENT_DROP_TEXT:
