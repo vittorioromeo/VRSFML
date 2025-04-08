@@ -344,20 +344,11 @@ struct Font::Impl
         return {size, size};
     }
 
-    [[nodiscard]] static base::Optional<TextureAtlas> initFallbackTextureAtlas(TextureAtlas* ptr, bool smooth)
-    {
-        if (ptr != nullptr)
-            return base::nullOpt;
-
-        auto texture = Texture::create({1024u, 1024u}).value();
-        texture.setSmooth(smooth);
-
-        return base::makeOptional<TextureAtlas>(SFML_BASE_MOVE(texture));
-    }
-
     explicit Impl(TextureAtlas* theTextureAtlasPtr, std::shared_ptr<FontHandles>&& theFontHandles, const char* theFamilyName) :
     textureAtlasPtr(theTextureAtlasPtr),
-    fallbackTextureAtlas(initFallbackTextureAtlas(theTextureAtlasPtr, /* smooth */ true)),
+    fallbackTextureAtlas(theTextureAtlasPtr == nullptr
+                             ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
+                             : base::nullOpt),
     fontHandles(SFML_BASE_MOVE(theFontHandles)),
     info{theFamilyName}
     {
