@@ -25,14 +25,13 @@
 #include "SFML/System/Vector3.hpp"
 
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/ThreadPool.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
 #include <array>
-#include <mutex>
-#include <queue>
-#include <thread>
+#include <atomic>
 #include <vector>
 
 #include <cmath>
@@ -50,41 +49,12 @@ constexpr sf::Vector2u windowSize(800, 600);
 constexpr sf::Vector2u resolution(800, 600);
 
 // Thread pool parameters
-constexpr unsigned int threadCount  = 4;
 constexpr unsigned int blockCount   = 32;
 constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
-struct WorkItem
-{
-    sf::Vertex*  targetBuffer{};
-    unsigned int index{};
-};
+bool                      bufferUploadPending = false;
+std::atomic<unsigned int> pendingTasks{0u};
 
-struct ThreadPool
-{
-    std::mutex               poolMutex;
-    std::vector<std::thread> threads;
-    std::queue<WorkItem>     workQueue;
-    unsigned int             pendingWorkCount    = 0u;
-    bool                     bufferUploadPending = false;
-    bool                     finished            = false;
-
-    explicit ThreadPool() = default;
-
-    ThreadPool(const ThreadPool&) = delete;
-    ThreadPool(ThreadPool&&)      = delete;
-
-    ~ThreadPool()
-    {
-        {
-            const std::lock_guard lock(poolMutex);
-            finished = true;
-        }
-
-        for (std::thread& t : threads)
-            t.join();
-    }
-};
 
 struct Setting
 {
@@ -309,9 +279,9 @@ sf::Vertex computeVertex(sf::Vector2u position)
 /// the vertex buffer when done.
 ///
 ////////////////////////////////////////////////////////////
-void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem)
+void processWorkItem(std::vector<sf::Vertex>& vertices, sf::Vertex* const targetBuffer, const unsigned int index)
 {
-    const unsigned int rowStart = rowBlockSize * workItem.index;
+    const unsigned int rowStart = rowBlockSize * index;
 
     if (rowStart >= resolution.y)
         return;
@@ -371,57 +341,9 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
     }
 
     // Copy the resulting geometry from our thread-local buffer into the target buffer
-    std::memcpy(workItem.targetBuffer + (resolution.x * rowStart * 6),
+    std::memcpy(targetBuffer + (resolution.x * rowStart * 6),
                 vertices.data(),
                 sizeof(sf::Vertex) * resolution.x * rowCount * 6);
-}
-
-
-////////////////////////////////////////////////////////////
-/// Worker thread entry point. We use a thread pool to avoid
-/// the heavy cost of constantly recreating and starting
-/// new threads whenever we need to regenerate the terrain.
-///
-////////////////////////////////////////////////////////////
-void threadFunction(ThreadPool& threadPool)
-{
-    std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
-
-    WorkItem workItem{nullptr, 0};
-
-    // Loop until the application exits
-    for (;;)
-    {
-        workItem.targetBuffer = nullptr;
-
-        // Check if there are new work items in the queue
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            if (threadPool.finished)
-                return;
-
-            if (!threadPool.workQueue.empty())
-            {
-                workItem = threadPool.workQueue.front();
-                threadPool.workQueue.pop();
-            }
-        }
-
-        // If we didn't receive a new work item, keep looping
-        if (workItem.targetBuffer == nullptr)
-        {
-            sf::sleep(sf::milliseconds(10));
-            continue;
-        }
-
-        processWorkItem(vertices, workItem);
-
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-            --threadPool.pendingWorkCount;
-        }
-    }
 }
 
 
@@ -431,32 +353,25 @@ void threadFunction(ThreadPool& threadPool)
 /// and process.
 ///
 ////////////////////////////////////////////////////////////
-void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
+void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
 {
-    threadPool.bufferUploadPending = true;
+    bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
-    for (;;)
-    {
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            if (threadPool.pendingWorkCount == 0u)
-                break;
-        }
-
+    while (pendingTasks.load(std::memory_order::acquire) > 0u)
         sf::sleep(sf::milliseconds(10));
-    }
 
     // Queue all the new work items
-    {
-        const std::lock_guard lock(threadPool.poolMutex);
+    for (unsigned int i = 0u; i < blockCount; ++i)
+        threadPool.post([buffer, i]
+        {
+            static thread_local std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
+            processWorkItem(vertices, buffer, i);
 
-        for (unsigned int i = 0u; i < blockCount; ++i)
-            threadPool.workQueue.emplace(buffer, i);
+            pendingTasks.fetch_sub(1u, std::memory_order::release);
+        });
 
-        threadPool.pendingWorkCount = blockCount;
-    }
+    pendingTasks.fetch_add(blockCount, std::memory_order::release);
 }
 
 } // namespace
@@ -504,11 +419,8 @@ int main()
     std::vector<sf::Vertex> terrainStagingBuffer;
 
     // Create a thread pool
-    ThreadPool threadPool;
-
-    // Start up our thread pool
-    for (unsigned int i = 0; i < threadCount; ++i)
-        threadPool.threads.emplace_back([&threadPool] { threadFunction(threadPool); });
+    constexpr unsigned int workerCount = 8u;
+    sf::base::ThreadPool   threadPool{workerCount};
 
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
@@ -582,27 +494,23 @@ int main()
 
         window.draw(statusText);
 
+        // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
+        if (pendingTasks.load(std::memory_order::acquire) == 0u)
         {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-            if (threadPool.pendingWorkCount == 0u)
+            // If there is new data pending to be uploaded to the VertexBuffer, do it now
+            if (bufferUploadPending)
             {
-                // If there is new data pending to be uploaded to the VertexBuffer, do it now
-                if (threadPool.bufferUploadPending)
+                if (!terrain.update(terrainStagingBuffer.data()))
                 {
-                    if (!terrain.update(terrainStagingBuffer.data()))
-                    {
-                        sf::cErr() << "Failed to update vertex buffer" << sf::endL;
-                        return EXIT_SUCCESS;
-                    }
-
-                    threadPool.bufferUploadPending = false;
+                    sf::cErr() << "Failed to update vertex buffer" << sf::endL;
+                    return EXIT_SUCCESS;
                 }
 
-                terrainShader.setUniform(ulLightFactor, lightFactor);
-                window.draw(terrain, {.shader = &terrainShader});
+                bufferUploadPending = false;
             }
+
+            terrainShader.setUniform(ulLightFactor, lightFactor);
+            window.draw(terrain, {.shader = &terrainShader});
         }
 
         // Update and draw the HUD text
@@ -623,5 +531,3 @@ int main()
         window.display();
     }
 }
-
-// TODO P1: use base thread pool

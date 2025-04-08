@@ -16,13 +16,16 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Builtins/Memcmp.hpp"
 #include "SFML/Base/Builtins/Strcmp.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 
 #include <SDL3/SDL_clipboard.h>
+#include <SDL3/SDL_hints.h>
 #include <SDL3/SDL_init.h>
+#include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keycode.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
@@ -462,6 +465,10 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 SDLLayer::SDLLayer()
 {
+    // Ensures window position is synced with DOM position on Emscripten.
+    if (!SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1"))
+        err() << "`SDL_SetHint` failed: " << SDL_GetError();
+
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
         err() << "`SDL_Init` failed: " << SDL_GetError();
@@ -749,6 +756,103 @@ SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vector2u size, const base::U8* 
     }
 
     return SDLSurfaceUPtr{surface};
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int SDLLayer::getJoystickButtonCount(SDL_Joystick& handle)
+{
+    const int count = SDL_GetNumJoystickButtons(&handle);
+
+    if (count == -1)
+    {
+        err() << "`SDL_GetNumJoystickButtons` failed: " << SDL_GetError();
+        return 0u;
+    }
+
+    return static_cast<unsigned int>(count);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int SDLLayer::getJoystickAxisCount(SDL_Joystick& handle)
+{
+    const int count = SDL_GetNumJoystickAxes(&handle);
+
+    if (count == -1)
+    {
+        err() << "`SDL_GetNumJoystickAxes` failed: " << SDL_GetError();
+        return 0u;
+    }
+
+    return static_cast<unsigned int>(count);
+}
+
+
+////////////////////////////////////////////////////////////
+unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
+{
+    const int count = SDL_GetNumJoystickHats(&handle);
+
+    if (count == -1)
+    {
+        err() << "`SDL_GetNumJoystickHats` failed: " << SDL_GetError();
+        return 0u;
+    }
+
+    return static_cast<unsigned int>(count);
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] const char* SDLLayer::getJoystickName(SDL_Joystick& handle)
+{
+    const char* name = SDL_GetJoystickName(&handle);
+
+    if (name == nullptr)
+    {
+        err() << "`SDL_GetJoystickName` failed: " << SDL_GetError();
+        return nullptr;
+    }
+
+    return name;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] unsigned int SDLLayer::getJoystickVendor(SDL_Joystick& handle)
+{
+    const unsigned int vendor = SDL_GetJoystickVendor(&handle);
+
+    if (vendor == 0u)
+    {
+        err() << "`SDL_GetJoystickVendor` failed: " << SDL_GetError();
+        return 0u;
+    }
+
+    return vendor;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] unsigned int SDLLayer::getJoystickProduct(SDL_Joystick& handle)
+{
+    const unsigned int product = SDL_GetJoystickProduct(&handle);
+
+    if (product == 0u)
+    {
+        err() << "`SDL_GetJoystickProduct` failed: " << SDL_GetError();
+        return 0u;
+    }
+
+    return product;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool SDLLayer::areGUIDsEqual(const SDL_GUID& a, const SDL_GUID& b)
+{
+    return SFML_BASE_MEMCMP(&a, &b, sizeof(SDL_GUID)) == 0;
 }
 
 

@@ -13,7 +13,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Define the data members of a shape's settings
 ///
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                                \
