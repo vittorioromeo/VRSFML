@@ -44,6 +44,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -410,8 +411,9 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
     if (animState == nullptr)
     {
-        // TODO P2: rewrite to use static unordered_map
-        animState = new AnimState{0.f, 0.f, -1.f}; // intentionally leaked, shouldn't be an issue
+        static std::vector<sf::base::UniquePtr<AnimState>> animStateStorage;
+
+        animState = animStateStorage.emplace_back(sf::base::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
         storage->SetVoidPtr(animStateId, animState);
     }
 
