@@ -465,9 +465,11 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 SDLLayer::SDLLayer()
 {
-    // Ensures window position is synced with DOM position on Emscripten.
+// Ensures window position is synced with DOM position on Emscripten.
+#ifdef SFML_SYSTEM_EMSCRIPTEN
     if (!SDL_SetHint(SDL_HINT_VIDEO_SYNC_WINDOW_OPERATIONS, "1"))
         err() << "`SDL_SetHint` failed: " << SDL_GetError();
+#endif
 
     if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
     {
