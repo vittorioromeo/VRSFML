@@ -19,21 +19,25 @@ namespace sf::priv
 template <GLenum BufferType, GLenum BindingType>
 struct GLBufferObjectFuncs
 {
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void create(unsigned int& id)
     {
         glCheck(glGenBuffers(1, &id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
         glCheck(glDeleteBuffers(1, &id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void bind(unsigned int id)
     {
         glCheck(glBindBuffer(BufferType, id));
     }
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void get(unsigned int& id)
     {
         glCheck(glGetIntegerv(BindingType, reinterpret_cast<GLint*>(&id)));
