@@ -939,9 +939,7 @@ WindowHandle WindowImpl::getNativeHandle() const
 #elif defined(SFML_SYSTEM_ANDROID)
         SDL_GetPointerProperty(props, SDL_PROP_WINDOW_ANDROID_WINDOW_POINTER, nullptr)
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
-        // TODO P0:
-        // SDL_GetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, nullptr)
-        ""
+        SDL_GetStringProperty(props, SDL_PROP_WINDOW_EMSCRIPTEN_CANVAS_ID_STRING, nullptr)
 #endif
     );
 }
