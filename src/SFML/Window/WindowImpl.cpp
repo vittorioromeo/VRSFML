@@ -759,6 +759,10 @@ void WindowImpl::populateEventQueue()
     processJoystickEvents();
     processSensorEvents();
     WindowImpl::processEvents();
+
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    SDL_SyncWindow(m_impl->sdlWindow);
+#endif
 }
 
 
