@@ -173,14 +173,12 @@ TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
                 CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!TestContext::hasActiveThreadLocalGlContext());
 
-                // TODO P1: fix
-                /*
                 TestContext context;
+                CHECK(context.setActive(false));
                 context = SFML_BASE_MOVE(movedContext);
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
                 CHECK(!TestContext::hasActiveThreadLocalGlContext());
-                */
             }
         }
     }

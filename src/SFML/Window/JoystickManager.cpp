@@ -8,12 +8,12 @@
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Memcmp.hpp"
 
 // TODO P1: move to SDLLayer
 #include <SDL3/SDL_dialog.h>
@@ -28,70 +28,20 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool sdlGuidEqual(const SDL_GUID& a, const SDL_GUID& b)
-{
-    return SFML_BASE_MEMCMP(&a, &b, sizeof(SDL_GUID)) == 0;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned int getButtonCountFromSDL(SDL_Joystick& handle)
-{
-    const int count = SDL_GetNumJoystickButtons(&handle);
-
-    if (count < 0)
-    {
-        sf::priv::err() << "`SDL_GetNumJoystickButtons` failed: " << SDL_GetError();
-        return 0u;
-    }
-
-    return static_cast<unsigned int>(count);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned int getAxisCountFromSDL(SDL_Joystick& handle)
-{
-    const int count = SDL_GetNumJoystickAxes(&handle);
-
-    if (count < 0)
-    {
-        sf::priv::err() << "`SDL_GetNumJoystickAxes` failed: " << SDL_GetError();
-        return 0u;
-    }
-
-    return static_cast<unsigned int>(count);
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] unsigned int getHatCountFromSDL(SDL_Joystick& handle)
-{
-    const int count = SDL_GetNumJoystickHats(&handle);
-
-    if (count < 0)
-    {
-        sf::priv::err() << "`SDL_GetNumJoystickHats` failed: " << SDL_GetError();
-        return 0u;
-    }
-
-    return static_cast<unsigned int>(count);
-}
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard]] sf::priv::JoystickCapabilities getCapabilitiesFromSDL(SDL_Joystick& handle)
 {
+    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
+
     sf::priv::JoystickCapabilities caps{
-        .buttonCount = getButtonCountFromSDL(handle),
+        .buttonCount = sdlLayer.getJoystickButtonCount(handle),
     };
 
-    const unsigned int numAxes = getAxisCountFromSDL(handle);
+    const unsigned int numAxes = sdlLayer.getJoystickAxisCount(handle);
 
     for (unsigned int i = 0u; i < sf::Joystick::AxisCount; ++i)
         caps.axes[static_cast<sf::Joystick::Axis>(i)] = (i < static_cast<unsigned int>(numAxes));
 
-    const unsigned int numHats = getHatCountFromSDL(handle);
+    const unsigned int numHats = sdlLayer.getJoystickHatCount(handle);
 
     if (numHats > 0u)
     {
@@ -106,10 +56,12 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::priv::JoystickIdentification getIdentificationFromSDL(SDL_Joystick& handle)
 {
+    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
+
     return {
-        .name      = SDL_GetJoystickName(&handle),
-        .vendorId  = SDL_GetJoystickVendor(&handle),
-        .productId = SDL_GetJoystickProduct(&handle),
+        .name      = sdlLayer.getJoystickName(handle),
+        .vendorId  = sdlLayer.getJoystickVendor(handle),
+        .productId = sdlLayer.getJoystickProduct(handle),
     };
 }
 
@@ -117,12 +69,14 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::priv::JoystickState getStateFromSDL(SDL_Joystick& handle)
 {
+    auto& sdlLayer = sf::priv::getSDLLayerSingleton();
+
     sf::priv::JoystickState state;
 
     ////////////////////////////////////////////////////////////
     // Update axes
-    const int numAxes = SDL_GetNumJoystickAxes(&handle);
-    const int numHats = SDL_GetNumJoystickHats(&handle);
+    const unsigned int numAxes = sdlLayer.getJoystickAxisCount(handle);
+    const unsigned int numHats = sdlLayer.getJoystickHatCount(handle);
 
     for (unsigned int j = 0; j < sf::Joystick::AxisCount; ++j)
     {
@@ -228,6 +182,8 @@ bool JoystickManager::isConnected(const unsigned int joystickId) const
 ////////////////////////////////////////////////////////////
 void JoystickManager::update()
 {
+    auto& sdlLayer = priv::getSDLLayerSingleton();
+
     ////////////////////////////////////////////////////////////
     SDL_UpdateJoysticks();
 
@@ -250,7 +206,7 @@ void JoystickManager::update()
         for (int i = 0; i < count; ++i)
         {
             const auto guid = SDL_GetJoystickGUIDForID(ids[i]);
-            SFML_BASE_ASSERT(!sdlGuidEqual(guid, SDL_GUID{}));
+            SFML_BASE_ASSERT(!sdlLayer.areGUIDsEqual(guid, SDL_GUID{}));
 
             SFML_BASE_ASSERT(nextInfoIdx < Joystick::MaxCount);
             connectedJoystickInfos[nextInfoIdx++].emplace(ids[i], guid);
@@ -274,7 +230,7 @@ void JoystickManager::update()
                         [&](const base::Optional<JoystickInfo>& info)
         {
             SFML_BASE_ASSERT(info.hasValue());
-            return sdlGuidEqual(joyImpl->guid, info->guid);
+            return sdlLayer.areGUIDsEqual(joyImpl->guid, info->guid);
         }))
         {
             continue; // Not newly disconnected
@@ -301,7 +257,7 @@ void JoystickManager::update()
         if (base::anyOf(m_impl->impls,
                         m_impl->impls + Joystick::MaxCount,
                         [&](const base::Optional<JoystickImpl>& impl)
-        { return impl.hasValue() && sdlGuidEqual(impl->guid, guid); }))
+        { return impl.hasValue() && sdlLayer.areGUIDsEqual(impl->guid, guid); }))
             continue; // Not newly connected
 
         // Find an empty slot

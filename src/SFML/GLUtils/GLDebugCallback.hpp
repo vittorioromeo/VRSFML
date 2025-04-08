@@ -11,7 +11,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Set up the OpenGL debug callback
+///
+/// This function sets up the OpenGL debug callback to log
+/// OpenGL errors and warnings to the SFML error stream.
 ///
 ////////////////////////////////////////////////////////////
 void setupGLDebugCallback();

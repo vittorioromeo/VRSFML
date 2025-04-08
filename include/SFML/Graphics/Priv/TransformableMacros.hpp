@@ -13,7 +13,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Define the data members of a transformable object's settings
 ///
 ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE                                     \
@@ -26,7 +26,7 @@
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Define the data members of a transformable object
 ///
 ////////////////////////////////////////////////////////////
 #define SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS                                                   \
