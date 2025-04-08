@@ -73,6 +73,18 @@ template <typename T>
 using SDLUPtr = base::UniquePtr<T, UniquePtrSDLDeleter>;
 
 ////////////////////////////////////////////////////////////
+struct SFML_BASE_TRIVIAL_ABI UniquePtrSDLSurfaceDeleter
+{
+    [[gnu::always_inline]] void operator()(SDL_Surface* const ptr) const noexcept
+    {
+        SDL_DestroySurface(ptr);
+    }
+};
+
+////////////////////////////////////////////////////////////
+using SDLSurfaceUPtr = base::UniquePtr<SDL_Surface, UniquePtrSDLSurfaceDeleter>;
+
+////////////////////////////////////////////////////////////
 template <typename T>
 struct SDLAllocatedArray
 {
@@ -235,6 +247,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(Vector2u size, const base::U8* pixels) const;
 };
 
 ////////////////////////////////////////////////////////////

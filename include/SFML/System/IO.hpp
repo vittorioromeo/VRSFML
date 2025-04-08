@@ -312,7 +312,7 @@ public:
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 
@@ -367,7 +367,7 @@ public:
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 
@@ -410,7 +410,7 @@ public:
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 512> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
 
 } // namespace sf
