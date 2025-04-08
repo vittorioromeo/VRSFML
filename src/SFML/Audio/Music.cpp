@@ -19,8 +19,6 @@
 
 #include <mutex>
 
-// TODO P1: PR digit separator usage upstream
-
 namespace
 {
 ////////////////////////////////////////////////////////////

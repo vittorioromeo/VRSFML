@@ -88,15 +88,15 @@ void setupGLDebugCallback()
 #ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: revisit this ifdef
     glCheck(glEnable(GL_DEBUG_OUTPUT));
     if (glGetError() != 0u)
-        priv::err() << "Failed to enable OpenGL debug output";
+        err() << "Failed to enable OpenGL debug output";
 
     glCheck(glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS));
     if (glGetError() != 0u)
-        priv::err() << "Failed to enable OpenGL synchronous debug output";
+        err() << "Failed to enable OpenGL synchronous debug output";
 
     glCheck(glDebugMessageCallback(debugGLMessageCallback, nullptr));
     if (glGetError() != 0u)
-        priv::err() << "Failed to setup OpenGL debug output callback";
+        err() << "Failed to setup OpenGL debug output callback";
 #endif
 }
 
