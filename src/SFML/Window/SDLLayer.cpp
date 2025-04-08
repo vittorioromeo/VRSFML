@@ -31,6 +31,7 @@
 #include <SDL3/SDL_video.h>
 
 
+////////////////////////////////////////////////////////////
 #define SFML_PRIV_SFML_SDL_KEYCODE_MAPPING                                  \
     X(SDLK_UNKNOWN, ::sf::Keyboard::Key::Unknown)                           \
     X(SDLK_RETURN, ::sf::Keyboard::Key::Enter)                              \
@@ -729,6 +730,25 @@ float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
     }
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vector2u size, const base::U8* pixels) const
+{
+    SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
+                                                 static_cast<int>(size.y),
+                                                 SDL_PIXELFORMAT_RGBA32,
+                                                 const_cast<void*>(static_cast<const void*>(pixels)),
+                                                 static_cast<int>(size.x * 4));
+
+    if (surface == nullptr)
+    {
+        err() << "`SDL_CreateSurfaceFrom` faile: " << SDL_GetError();
+        return nullptr;
+    }
+
+    return SDLSurfaceUPtr{surface};
 }
 
 
