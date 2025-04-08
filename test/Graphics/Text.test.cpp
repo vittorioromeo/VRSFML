@@ -19,6 +19,7 @@
 #include <GraphicsUtil.hpp>
 #include <WindowUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
@@ -164,7 +165,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         CHECK(text.findCharacterPos(4) == sf::Vector2f{198, 240});
 
         // Indices that are too large are capped at maximum valid index
-        CHECK(text.findCharacterPos(1'000) == sf::Vector2f{120, 277});
+        CHECK(text.findCharacterPos(1000) == sf::Vector2f{120, 277});
     }
 
     SECTION("Get bounds")
