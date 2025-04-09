@@ -306,7 +306,6 @@ struct RenderTarget::Impl
     CPUDrawableBatch cpuDrawableBatch;   //!< Internal CPU drawable batch (autobatching)
     bool             autoBatch = true;   //!< Enable automatic batching of draw calls
     RenderStates     lastRenderStates;   //!< Cached render states (autobatching)
-    bool             mustFlush = false;  //!< Indicates if a flush is required (autobatching)
     DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
 
     ////////////////////////////////////////////////////////////
@@ -948,8 +947,6 @@ RenderTarget::DrawStatistics RenderTarget::flush()
     draw(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
     m_impl->cpuDrawableBatch.clear();
 
-    m_impl->mustFlush = false;
-
     return m_impl->currentDrawStats;
 }
 
@@ -993,12 +990,10 @@ void RenderTarget::flushIfNeeded(const RenderStates& states)
     };
 
     if (m_impl->cpuDrawableBatch.getNumVertices() >= vertexThreshold ||
-        m_impl->cpuDrawableBatch.getNumIndices() >= indexThreshold || m_impl->mustFlush ||
-        m_impl->lastRenderStates != states)
+        m_impl->cpuDrawableBatch.getNumIndices() >= indexThreshold || m_impl->lastRenderStates != states)
         flush();
 
     m_impl->lastRenderStates = states;
-    m_impl->mustFlush        = false;
 }
 
 
