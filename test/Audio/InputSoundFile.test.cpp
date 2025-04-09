@@ -51,7 +51,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                     CHECK(inputSoundFile.getChannelCount() == 1);
                     CHECK(inputSoundFile.getSampleRate() == 44'100);
                     CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-                    CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
                     CHECK(inputSoundFile.getSampleOffset() == 0);
                 }
 
@@ -65,7 +65,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                     CHECK(inputSoundFile.getChannelCount() == 1);
                     CHECK(inputSoundFile.getSampleRate() == 44'100);
                     CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-                    CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
                     CHECK(inputSoundFile.getSampleOffset() == 0);
                 }
 
@@ -79,7 +79,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                     CHECK(inputSoundFile.getChannelCount() == 2);
                     CHECK(inputSoundFile.getSampleRate() == 44'100);
                     CHECK(inputSoundFile.getDuration() == sf::microseconds(24'002'176));
-                    CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
                     CHECK(inputSoundFile.getSampleOffset() == 0);
                 }
 
@@ -93,7 +93,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
                     CHECK(inputSoundFile.getChannelCount() == 1);
                     CHECK(inputSoundFile.getSampleRate() == 22'050);
                     CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-                    CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
                     CHECK(inputSoundFile.getSampleOffset() == 0);
                 }
             }
@@ -108,7 +108,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
         CHECK(inputSoundFile.getChannelCount() == 1);
         CHECK(inputSoundFile.getSampleRate() == 22'050);
         CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-        CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+        CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
         CHECK(inputSoundFile.getSampleOffset() == 0);
     }
 
@@ -122,7 +122,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -134,7 +134,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -146,7 +146,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 2);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(24'002'176));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -158,7 +158,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 22'050);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
     }

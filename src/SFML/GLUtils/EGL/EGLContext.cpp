@@ -232,7 +232,8 @@ struct EglContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(unsigned int id, EglContext* shared) : GlContext(id, {})
+EglContext::EglContext(unsigned int id, EglContext* shared, const ContextSettings& contextSettings) :
+GlContext(id, contextSettings)
 {
     EglContextImpl::ensureInit();
 

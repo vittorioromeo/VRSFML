@@ -939,7 +939,7 @@ public:
         color.a         = static_cast<sf::base::U8>(255 * alpha);
         setOutlineColor(color);
 
-        if (m_remaining > sf::Time::Zero)
+        if (m_remaining > sf::Time{})
             m_remaining -= frameTime;
     }
 
@@ -1146,7 +1146,7 @@ int main()
 
         // Render frame
         window.clear();
-        keyboardView.drawOnto(window, sf::RenderStates::Default);
+        keyboardView.drawOnto(window, sf::RenderStates{});
         window.draw(keyPressedText);
         window.draw(keyReleasedText);
         window.draw(textEnteredText);

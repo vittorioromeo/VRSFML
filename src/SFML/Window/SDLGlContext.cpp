@@ -1,5 +1,6 @@
 #include "SDLGlContext.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -56,8 +57,8 @@ void applyContextSettings(const sf::ContextSettings& settings)
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared) :
-GlContext(id, ContextSettings{}),
+SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, const ContextSettings& settings) :
+GlContext(id, settings),
 m_window(nullptr),
 m_context(nullptr),
 m_ownsWindow(false)

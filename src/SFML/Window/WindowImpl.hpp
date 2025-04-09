@@ -112,7 +112,7 @@ public:
     /// If there's no event available, this function calls the
     /// window's internal event processing function.
     ///
-    /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
+    /// \param timeout Maximum time to wait (`Time{}` for infinite)
     ///
     /// \return The event on success, `base::nullOpt` otherwise
     ///

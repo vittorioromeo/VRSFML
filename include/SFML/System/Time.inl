@@ -13,7 +13,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-constexpr Time::Time(base::I64 microseconds) : m_microseconds(microseconds)
+constexpr Time::Time(const base::I64 microseconds) : m_microseconds(microseconds)
 {
 }
 
@@ -40,49 +40,49 @@ constexpr base::I64 Time::asMicroseconds() const
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time seconds(float amount)
+constexpr Time seconds(const float amount)
 {
     return Time(static_cast<base::I64>(amount * 1'000'000.f));
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time milliseconds(base::I32 amount)
+constexpr Time milliseconds(const base::I32 amount)
 {
     return Time(amount * 1000);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time microseconds(base::I64 amount)
+constexpr Time microseconds(const base::I64 amount)
 {
     return Time(amount);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<(Time lhs, Time rhs)
+constexpr bool operator<(const Time lhs, const Time rhs)
 {
     return lhs.asMicroseconds() < rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>(Time lhs, Time rhs)
+constexpr bool operator>(const Time lhs, const Time rhs)
 {
     return lhs.asMicroseconds() > rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator<=(Time lhs, Time rhs)
+constexpr bool operator<=(const Time lhs, const Time rhs)
 {
     return lhs.asMicroseconds() <= rhs.asMicroseconds();
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr bool operator>=(Time lhs, Time rhs)
+constexpr bool operator>=(const Time lhs, const Time rhs)
 {
     return lhs.asMicroseconds() >= rhs.asMicroseconds();
 }
@@ -96,77 +96,77 @@ constexpr Time operator-(Time rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator+(Time lhs, Time rhs)
+constexpr Time operator+(const Time lhs, const Time rhs)
 {
     return microseconds(lhs.asMicroseconds() + rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator+=(Time& lhs, Time rhs)
+constexpr Time& operator+=(Time& lhs, const Time rhs)
 {
     return lhs = lhs + rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator-(Time lhs, Time rhs)
+constexpr Time operator-(const Time lhs, const Time rhs)
 {
     return microseconds(lhs.asMicroseconds() - rhs.asMicroseconds());
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator-=(Time& lhs, Time rhs)
+constexpr Time& operator-=(Time& lhs, const Time rhs)
 {
     return lhs = lhs - rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(Time lhs, float rhs)
+constexpr Time operator*(const Time lhs, const float rhs)
 {
     return seconds(lhs.asSeconds() * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(Time lhs, base::I64 rhs)
+constexpr Time operator*(const Time lhs, const base::I64 rhs)
 {
     return microseconds(lhs.asMicroseconds() * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(float lhs, Time rhs)
+constexpr Time operator*(const float lhs, const Time rhs)
 {
     return rhs * lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator*(base::I64 lhs, Time rhs)
+constexpr Time operator*(const base::I64 lhs, const Time rhs)
 {
     return rhs * lhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator*=(Time& lhs, float rhs)
+constexpr Time& operator*=(Time& lhs, const float rhs)
 {
     return lhs = lhs * rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator*=(Time& lhs, base::I64 rhs)
+constexpr Time& operator*=(Time& lhs, const base::I64 rhs)
 {
     return lhs = lhs * rhs;
 }
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator/(Time lhs, float rhs)
+constexpr Time operator/(const Time lhs, const float rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
     return seconds(lhs.asSeconds() / rhs);
@@ -174,7 +174,7 @@ constexpr Time operator/(Time lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator/(Time lhs, base::I64 rhs)
+constexpr Time operator/(const Time lhs, const base::I64 rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
     return microseconds(lhs.asMicroseconds() / rhs);
@@ -182,7 +182,7 @@ constexpr Time operator/(Time lhs, base::I64 rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator/=(Time& lhs, float rhs)
+constexpr Time& operator/=(Time& lhs, const float rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
     return lhs = lhs / rhs;
@@ -190,7 +190,7 @@ constexpr Time& operator/=(Time& lhs, float rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator/=(Time& lhs, base::I64 rhs)
+constexpr Time& operator/=(Time& lhs, const base::I64 rhs)
 {
     SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
     return lhs = lhs / rhs;
@@ -198,7 +198,7 @@ constexpr Time& operator/=(Time& lhs, base::I64 rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr float operator/(Time lhs, Time rhs)
+constexpr float operator/(const Time lhs, const Time rhs)
 {
     SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
     return lhs.asSeconds() / rhs.asSeconds();
@@ -206,7 +206,7 @@ constexpr float operator/(Time lhs, Time rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time operator%(Time lhs, Time rhs)
+constexpr Time operator%(const Time lhs, const Time rhs)
 {
     SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
     return microseconds(lhs.asMicroseconds() % rhs.asMicroseconds());
@@ -214,19 +214,10 @@ constexpr Time operator%(Time lhs, Time rhs)
 
 
 ////////////////////////////////////////////////////////////
-constexpr Time& operator%=(Time& lhs, Time rhs)
+constexpr Time& operator%=(Time& lhs, const Time rhs)
 {
     SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
     return lhs = lhs % rhs;
 }
-
-
-////////////////////////////////////////////////////////////
-// Static member data
-////////////////////////////////////////////////////////////
-
-// Note: the 'inline' keyword here is technically not required, but VS2019 fails
-// to compile with a bogus "multiple definition" error if not explicitly used.
-inline constexpr Time Time::Zero;
 
 } // namespace sf

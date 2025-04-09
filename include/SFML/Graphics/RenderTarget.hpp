@@ -175,20 +175,45 @@ public:
     ///
     /// \param enabled `true` to enable auto-batching, `false` to disable it
     ///
-    /// \see `isAutoBatchingEnabled`
+    /// \see `isAutoBatchEnabled`
     ///
     ////////////////////////////////////////////////////////////
-    void setAutoBatchingEnabled(bool enabled);
+    void setAutoBatchEnabled(bool enabled);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if auto-batching is enabled
     ///
     /// \return `true` if auto-batching is enabled, `false` otherwise
     ///
-    /// \see `setAutoBatchingEnabled`
+    /// \see `setAutoBatchEnabled`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isAutoBatchingEnabled() const;
+    [[nodiscard]] bool isAutoBatchEnabled() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the vertex threshold for auto-batching
+    ///
+    /// When the current number of vertices in the batch exceeds
+    /// this threshold, the batch will be flushed and a new one
+    /// will be started. This can help to control the size of
+    /// the batches and optimize performance.
+    ///
+    /// \param threshold The vertex threshold for auto-batching
+    ///
+    /// \see `getAutoBatchVertexThreshold`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setAutoBatchVertexThreshold(base::SizeT threshold);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the vertex threshold for auto-batching
+    ///
+    /// \return The vertex threshold for auto-batching
+    ///
+    /// \see `setAutoBatchVertexThreshold`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the viewport of a view, applied to this render target
@@ -326,7 +351,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    void draw(const DrawableObject& drawableObject, const RenderStates& states = RenderStates::Default)
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
         requires(requires { drawableObject.draw(*this, states); })
     {
         flushIfNeeded(states);
@@ -360,7 +385,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, RenderStates states = RenderStates::Default); // TODO P1: RenderStatesWithoutTexture?
+    void draw(const Texture& texture, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a texture to the render target
@@ -370,7 +395,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states = RenderStates::Default);
+    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -392,7 +417,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Shape& shape, RenderStates states = RenderStates::Default);
+    void draw(const Shape& shape, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text object to the render target
@@ -401,7 +426,7 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Text& text, RenderStates states = RenderStates::Default);
+    void draw(const Text& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -412,10 +437,7 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawVertices(const Vertex*       vertexData,
-                      base::SizeT         vertexCount,
-                      PrimitiveType       type,
-                      const RenderStates& states = RenderStates::Default);
+    void drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -426,7 +448,7 @@ public:
                              const unsigned int* indexData,
                              base::SizeT         indexCount,
                              PrimitiveType       type,
-                             const RenderStates& states = RenderStates::Default);
+                             const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -441,7 +463,7 @@ public:
     void drawPersistentMappedVertices(const PersistentGPUDrawableBatch& batch,
                                       base::SizeT                       vertexCount,
                                       PrimitiveType                     type,
-                                      const RenderStates&               states = RenderStates::Default);
+                                      const RenderStates&               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -450,19 +472,19 @@ public:
     void drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
                                              base::SizeT                       indexCount,
                                              PrimitiveType                     type,
-                                             const RenderStates&               states = RenderStates::Default);
+                                             const RenderStates&               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+    void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = RenderStates::Default);
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
@@ -476,7 +498,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = RenderStates::Default)
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
         requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
     {
         drawVertices(vertices.data(), vertices.size(), type, states);
@@ -491,7 +513,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = RenderStates::Default)
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
         drawVertices(vertices, N, type, states);
     }
@@ -503,7 +525,7 @@ public:
     /// \param states       Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = RenderStates::Default);
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -517,31 +539,31 @@ public:
     void draw(const VertexBuffer& vertexBuffer,
               base::SizeT         firstVertex,
               base::SizeT         vertexCount,
-              const RenderStates& states = RenderStates::Default);
+              const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a circle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CircleShapeData& sdCircle, const RenderStates& states = RenderStates::Default);
+    void draw(const CircleShapeData& sdCircle, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw an ellipse shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = RenderStates::Default);
+    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a rectangle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = RenderStates::Default);
+    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a rounded rectangle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = RenderStates::Default);
+    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -645,7 +667,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawShapeData(const auto& shapeData, const RenderStates& states = RenderStates::Default);
+    void drawShapeData(const auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
