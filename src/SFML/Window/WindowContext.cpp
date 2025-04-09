@@ -512,9 +512,9 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> WindowContext::createGlContext()
+base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings& contextSettings)
 {
-    return createGlContextImpl(ContextSettings{});
+    return createGlContextImpl(contextSettings);
 }
 
 
