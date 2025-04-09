@@ -79,8 +79,8 @@ struct [[nodiscard]] Vertex
 /// Example:
 /// \code
 /// // C++17 and above
-/// sf::Vertex v0{{5.f, 5.f}};                               // explicit 'position', implicit 'color' and 'texCoords'
-/// sf::Vertex v1{{5.f, 5.f}, sf::Color::Red};               // explicit 'position' and 'color', implicit 'texCoords'
+/// sf::Vertex v0{{5.f, 5.f}};                             // explicit 'position', implicit 'color' and 'texCoords'
+/// sf::Vertex v1{{5.f, 5.f}, sf::Color::Red};             // explicit 'position' and 'color', implicit 'texCoords'
 /// sf::Vertex v2{{5.f, 5.f}, sf::Color::Red, {1.f, 1.f}}; // everything is explicitly specified
 ///
 /// // C++20 and above (or compilers supporting "designated initializers" as an extension)
