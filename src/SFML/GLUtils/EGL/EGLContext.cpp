@@ -25,12 +25,6 @@
     #include <mutex>
 #endif
 
-#if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-    #include "SFML/Window/Unix/Utils.hpp"
-
-    #include <X11/Xlib.h>
-#endif
-
 
 namespace
 {
@@ -95,6 +89,33 @@ bool ensureInit()
 #endif
 }
 
+////////////////////////////////////////////////////////////
+int evaluateFormat(unsigned int               bitsPerPixel,
+                   const sf::ContextSettings& contextSettings,
+                   int                        colorBits,
+                   int                        depthBits,
+                   int                        stencilBits,
+                   int                        antiAliasing,
+                   bool                       accelerated,
+                   bool                       sRgb)
+{
+    // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
+    const auto adjustNegativeScore = [](int x) { return static_cast<unsigned int>(x * (x > 0 ? 100'000 : -1)); };
+
+    const auto colorDiff   = adjustNegativeScore(static_cast<int>(bitsPerPixel) - colorBits);
+    const auto depthDiff   = adjustNegativeScore(static_cast<int>(contextSettings.depthBits) - depthBits);
+    const auto stencilDiff = adjustNegativeScore(static_cast<int>(contextSettings.stencilBits) - stencilBits);
+    const auto antiAliasingDiff = adjustNegativeScore(static_cast<int>(contextSettings.antiAliasingLevel) - antiAliasing);
+
+    // Aggregate the scores
+    return static_cast<int>(
+        colorDiff + depthDiff + stencilDiff + antiAliasingDiff +
+        // If the user wants an sRGB capable format, try really hard to get one
+        ((contextSettings.sRgbCapable && !sRgb) ? 10'000'000 : 0) +
+        // Make sure we prefer hardware acceleration over features
+        (!accelerated ? 100'000'000 : 0));
+}
+
 
 ////////////////////////////////////////////////////////////
 EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf::ContextSettings& contextSettings)
@@ -151,14 +172,14 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
 
         // Evaluate the config
         const int color = red + green + blue + alpha;
-        const int score = sf::priv::GlContext::evaluateFormat(bitsPerPixel,
-                                                              contextSettings,
-                                                              color,
-                                                              depth,
-                                                              stencil,
-                                                              multiSampling ? samples : 0,
-                                                              caveat == EGL_NONE,
-                                                              false);
+        const int score = evaluateFormat(bitsPerPixel,
+                                         contextSettings,
+                                         color,
+                                         depth,
+                                         stencil,
+                                         multiSampling ? samples : 0,
+                                         caveat == EGL_NONE,
+                                         false);
 
         // If it's better than the current best, make it the new best
         if (score < bestScore)
@@ -423,51 +444,5 @@ void EglContext::updateSettings()
         eglCheck(eglGetConfigAttrib(m_impl->display, m_impl->config, EGL_SAMPLES, &tmp)) != EGL_FALSE)
         m_settings.antiAliasingLevel = static_cast<unsigned int>(tmp);
 }
-
-
-#if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-////////////////////////////////////////////////////////////
-XVisualInfo EglContext::selectBestVisual(::Display* xDisplay, unsigned int bitsPerPixel, const ContextSettings& contextSettings)
-{
-    EglContextImpl::ensureInit();
-
-    // Get the initialized EGL display
-    EGLDisplay display = EglContextImpl::getInitializedDisplay();
-
-    // Get the best EGL config matching the default video contextSettings
-    EGLConfig config = EglContextImpl::getBestConfig(display, bitsPerPixel, contextSettings);
-
-    // Retrieve the visual id associated with this EGL config
-    EGLint nativeVisualId = 0;
-
-    eglCheck(eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &nativeVisualId));
-
-    if (nativeVisualId == 0)
-    {
-        // Should never happen...
-        priv::err() << "No EGL visual found. You should check your graphics driver";
-
-        return {};
-    }
-
-    XVisualInfo vTemplate;
-    vTemplate.visualid = static_cast<VisualID>(nativeVisualId);
-
-    // Get X11 visuals compatible with this EGL config
-    int visualCount = 0;
-    const auto availableVisuals = X11Ptr<XVisualInfo[]>(XGetVisualInfo(xDisplay, VisualIDMask, &vTemplate, &visualCount));
-
-    if (visualCount == 0)
-    {
-        // Can't happen...
-        priv::err() << "No X11 visual found. Bug in your EGL implementation ?";
-
-        return {};
-    }
-
-    // Pick up the best one
-    return availableVisuals.get()[0];
-}
-#endif
 
 } // namespace sf::priv
