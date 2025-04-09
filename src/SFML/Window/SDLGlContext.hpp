@@ -17,7 +17,7 @@ class SDLGlContext : public GlContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SDLGlContext(unsigned int id, SDLGlContext* shared);
+    [[nodiscard]] explicit SDLGlContext(unsigned int id, SDLGlContext* shared, const ContextSettings& settings);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit SDLGlContext(unsigned int           id,
