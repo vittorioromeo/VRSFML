@@ -22,11 +22,6 @@ namespace
 void applyContextSettings(const sf::ContextSettings& settings)
 {
     // Set context flags
-    // TODO P0: these slow down programs a lot on surface, are they needed at all?
-    // SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_RED_SIZE, 8);
-    // SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_GREEN_SIZE, 8);
-    // SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_BLUE_SIZE, 8);
-    // SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_ALPHA_SIZE, settings.sRgbCapable ? 8 : 0);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
