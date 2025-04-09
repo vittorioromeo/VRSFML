@@ -83,35 +83,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings);
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Evaluate a pixel format configuration
-    ///
-    /// This functions can be used by implementations that have
-    /// several valid formats and want to get the best one.
-    /// A score is returned for the given configuration: the
-    /// lower the score is, the better the configuration is.
-    ///
-    /// \param bitsPerPixel Requested pixel depth (bits per pixel)
-    /// \param settings     Requested additional settings
-    /// \param colorBits    Color bits of the configuration to evaluate
-    /// \param depthBits    Depth bits of the configuration to evaluate
-    /// \param stencilBits  Stencil bits of the configuration to evaluate
-    /// \param antiAliasing Anti-aliasing level of the configuration to evaluate
-    /// \param accelerated  Whether the pixel format is hardware accelerated
-    /// \param sRgb         Whether the pixel format is sRGB capable
-    ///
-    /// \return Score of the configuration
-    ///
-    ////////////////////////////////////////////////////////////
-    static int evaluateFormat(unsigned int           bitsPerPixel,
-                              const ContextSettings& contextSettings,
-                              int                    colorBits,
-                              int                    depthBits,
-                              int                    stencilBits,
-                              int                    antiAliasing,
-                              bool                   accelerated,
-                              bool                   sRgb);
-
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

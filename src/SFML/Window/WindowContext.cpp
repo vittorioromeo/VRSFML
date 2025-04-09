@@ -17,6 +17,7 @@
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/GlContext.hpp"
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
+#include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
