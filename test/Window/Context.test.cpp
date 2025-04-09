@@ -43,9 +43,9 @@ private:
 
 struct TestContext
 {
-    decltype(sf::WindowContext::createGlContext()) glContext;
+    decltype(sf::WindowContext::createGlContext(sf::ContextSettings{})) glContext;
 
-    TestContext() : glContext(sf::WindowContext::createGlContext())
+    TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
     {
         if (!setActive(true))
             sf::priv::err() << "Failed to set context as active during construction";
