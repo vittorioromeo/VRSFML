@@ -137,7 +137,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext();
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
