@@ -183,17 +183,9 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
          EGL_GREEN_SIZE,
          8,
          EGL_DEPTH_SIZE,
-    #ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.depthBits),
-    #else
-         24, // Not propagated to shared context settings from window context settings...
-    #endif
          EGL_STENCIL_SIZE,
-    #ifndef SFML_SYSTEM_EMSCRIPTEN
          static_cast<EGLint>(contextSettings.stencilBits),
-    #else
-         8, // Not propagated to shared context settings from window context settings...
-    #endif
          EGL_SAMPLE_BUFFERS,
          static_cast<EGLint>(contextSettings.antiAliasingLevel),
          EGL_SURFACE_TYPE,
@@ -240,10 +232,8 @@ GlContext(id, contextSettings)
     // Get the initialized EGL display
     m_impl->display = EglContextImpl::getInitializedDisplay();
 
-    // Get the best EGL config matching the default video contextSettings
-    m_impl->config = EglContextImpl::getBestConfig(m_impl->display,
-                                                   VideoModeUtils::getDesktopMode().bitsPerPixel,
-                                                   ContextSettings{});
+    // Get the best EGL config matching the given contextSettings
+    m_impl->config = EglContextImpl::getBestConfig(m_impl->display, VideoModeUtils::getDesktopMode().bitsPerPixel, contextSettings);
     updateSettings();
 
 #ifndef SFML_SYSTEM_EMSCRIPTEN
