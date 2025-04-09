@@ -309,7 +309,7 @@ int main()
         // ---
         clock.restart();
         {
-            // TODO P0: bottleneck
+            // This is the bottleneck, consider reusing the particle instead of shifting/swapping
             if (destroyParticles)
             {
                 const auto destroyPredicate = [](const float opacity) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
