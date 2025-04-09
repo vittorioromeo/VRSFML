@@ -31,16 +31,10 @@ namespace sf
 struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 {
     ////////////////////////////////////////////////////////////
-    // Static member data
-    ////////////////////////////////////////////////////////////
-    // NOLINTNEXTLINE(readability-identifier-naming)
-    static const RenderStates Default; //!< Special instance holding the default render states
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    BlendMode   blendMode{BlendAlpha}; //!< Blending mode
-    StencilMode stencilMode{};         //!< Stencil mode
+    BlendMode   blendMode{};   //!< Blending mode
+    StencilMode stencilMode{}; //!< Stencil mode
 
     // NOLINTNEXTLINE(readability-redundant-member-init)
     Transform transform{}; //!< Transform
@@ -50,8 +44,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API RenderStates
 
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const RenderStates&) const = default;
 };
-
-inline constexpr RenderStates RenderStates::Default{.blendMode = BlendAlpha};
 
 } // namespace sf
 

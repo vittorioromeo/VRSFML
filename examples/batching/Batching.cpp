@@ -28,6 +28,7 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -198,17 +199,18 @@ int main()
         GPUStorage = 2
     };
 
-    auto          batchType           = BatchType::Disabled;
-    bool          autobatch           = true;
-    bool          drawSprites         = true;
-    bool          drawText            = true;
-    bool          drawShapes          = true;
-    bool          multithreadedUpdate = false;
-    bool          multithreadedDraw   = false;
-    sf::base::U64 nWorkers            = nMaxWorkers;
-    int           numEntities         = 500;
-    std::size_t   drawnVertices       = 0u;
-    unsigned int  nDrawCalls          = 0u;
+    auto          batchType                = BatchType::Disabled;
+    bool          autobatch                = true;
+    sf::base::U64 autoBatchVertexThreshold = 32'768u;
+    bool          drawSprites              = true;
+    bool          drawText                 = true;
+    bool          drawShapes               = true;
+    bool          multithreadedUpdate      = false;
+    bool          multithreadedDraw        = false;
+    sf::base::U64 nWorkers                 = nMaxWorkers;
+    int           numEntities              = 500;
+    std::size_t   drawnVertices            = 0u;
+    unsigned int  nDrawCalls               = 0u;
 
     //
     //
@@ -345,7 +347,7 @@ int main()
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: batching example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize({340.f, 450.f});
+            ImGui::SetWindowSize({420.f, 490.f});
 
             const auto clearSamples = [&]
             {
@@ -374,8 +376,14 @@ int main()
             if (ImGui::Checkbox("Autobatch", &autobatch))
             {
                 clearSamples();
-                window.setAutoBatchingEnabled(autobatch);
+                window.setAutoBatchEnabled(autobatch);
             }
+
+            const sf::base::U64 step = 1u;
+            ImGui::SetNextItemWidth(172.f);
+            if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
+                window.setAutoBatchVertexThreshold(
+                    static_cast<sf::base::SizeT>(sf::base::max(autoBatchVertexThreshold, sf::base::U64{1024u})));
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Sprites", &drawSprites))
@@ -395,13 +403,14 @@ int main()
             ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
             ImGui::EndDisabled();
 
-            const sf::base::U64 step = 1u;
+            ImGui::SetNextItemWidth(172.f);
             ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
             nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
 
             ImGui::NewLine();
 
             ImGui::Text("Number of entities:");
+            ImGui::SetNextItemWidth(172.f);
             ImGui::InputInt("##InputInt", &numEntities);
 
             if (ImGui::Button("Repopulate") && numEntities > 0)

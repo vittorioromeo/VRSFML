@@ -286,7 +286,7 @@ struct [[nodiscard]] StatesCache
     unsigned int lastVaoGroup{0u}; //!< Last bound vertex array object id
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
-    StencilMode lastStencilMode;           //!< Cached stencil
+    StencilMode lastStencilMode{};         //!< Cached stencil
     base::U64   lastTextureId{0u};         //!< Cached texture
 
     GLuint lastProgramId{0u}; //!< GL id of the last used shader program
@@ -303,10 +303,11 @@ struct RenderTarget::Impl
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
 
     ////////////////////////////////////////////////////////////
-    CPUDrawableBatch cpuDrawableBatch;   //!< Internal CPU drawable batch (autobatching)
-    bool             autoBatch = true;   //!< Enable automatic batching of draw calls
-    RenderStates     lastRenderStates;   //!< Cached render states (autobatching)
-    DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
+    CPUDrawableBatch cpuDrawableBatch;                  //!< Internal CPU drawable batch (autobatching)
+    bool             autoBatch = true;                  //!< Enable automatic batching of draw calls
+    RenderStates     lastRenderStates;                  //!< Cached render states (autobatching)
+    DrawStatistics   currentDrawStats{};                //!< Statistics for current draw calls
+    base::SizeT      autoBatchVertexThreshold{32'768u}; //!< Threshold for batch vertex count
 
     ////////////////////////////////////////////////////////////
 #ifndef SFML_OPENGL_ES
@@ -377,7 +378,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(Color color)
+void RenderTarget::clear(const Color color)
 {
     if (!clearImpl())
         return;
@@ -388,7 +389,7 @@ void RenderTarget::clear(Color color)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clearStencil(StencilValue stencilValue)
+void RenderTarget::clearStencil(const StencilValue stencilValue)
 {
     if (!clearImpl())
         return;
@@ -399,7 +400,7 @@ void RenderTarget::clearStencil(StencilValue stencilValue)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(Color color, StencilValue stencilValue)
+void RenderTarget::clear(const Color color, const StencilValue stencilValue)
 {
     if (!clearImpl())
         return;
@@ -431,7 +432,7 @@ const View& RenderTarget::getView() const
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setAutoBatchingEnabled(const bool enabled)
+void RenderTarget::setAutoBatchEnabled(const bool enabled)
 {
     if (m_impl->autoBatch == enabled)
         return;
@@ -442,9 +443,27 @@ void RenderTarget::setAutoBatchingEnabled(const bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-bool RenderTarget::isAutoBatchingEnabled() const
+bool RenderTarget::isAutoBatchEnabled() const
 {
     return m_impl->autoBatch;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::setAutoBatchVertexThreshold(const base::SizeT threshold)
+{
+    if (m_impl->autoBatchVertexThreshold == threshold)
+        return;
+
+    flush();
+    m_impl->autoBatchVertexThreshold = threshold;
+}
+
+
+////////////////////////////////////////////////////////////
+base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
+{
+    return m_impl->autoBatchVertexThreshold;
 }
 
 
@@ -983,17 +1002,11 @@ void RenderTarget::syncGPUEndFrame()
 ////////////////////////////////////////////////////////////
 void RenderTarget::flushIfNeeded(const RenderStates& states)
 {
-    enum : base::SizeT
+    if (m_impl->cpuDrawableBatch.getNumVertices() >= m_impl->autoBatchVertexThreshold || m_impl->lastRenderStates != states)
     {
-        vertexThreshold = 32'768u,
-        indexThreshold  = 65'536u,
-    };
-
-    if (m_impl->cpuDrawableBatch.getNumVertices() >= vertexThreshold ||
-        m_impl->cpuDrawableBatch.getNumIndices() >= indexThreshold || m_impl->lastRenderStates != states)
         flush();
-
-    m_impl->lastRenderStates = states;
+        m_impl->lastRenderStates = states;
+    }
 }
 
 

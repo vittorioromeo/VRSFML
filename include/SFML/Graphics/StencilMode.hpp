@@ -18,8 +18,9 @@ namespace sf
 ///
 /// The comparisons are mapped directly to their OpenGL equivalents,
 /// specified by `glStencilFunc()`.
+///
 ////////////////////////////////////////////////////////
-enum class [[nodiscard]] StencilComparison : unsigned int
+enum class [[nodiscard]] StencilComparison : unsigned char
 {
     Never = 0u,     //!< The stencil test never passes
     Less  = 1u,     //!< The stencil test passes if the new value is less than the value in the stencil buffer
@@ -36,8 +37,9 @@ enum class [[nodiscard]] StencilComparison : unsigned int
 ///
 /// The update operations are mapped directly to their OpenGL equivalents,
 /// specified by `glStencilOp()`.
+///
 ////////////////////////////////////////////////////////
-enum class [[nodiscard]] StencilUpdateOperation : unsigned int
+enum class [[nodiscard]] StencilUpdateOperation : unsigned char
 {
     Keep    = 0u, //!< If the stencil test passes, the value in the stencil buffer is not modified
     Zero    = 1u, //!< If the stencil test passes, the value in the stencil buffer is set to zero
@@ -89,12 +91,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 {
-    StencilComparison stencilComparison{StencilComparison::Always}; //!< The comparison we're performing the stencil test with
-    StencilUpdateOperation stencilUpdateOperation{
+    StencilComparison stencilComparison : 3 {
+        StencilComparison::Always}; //!< The comparison we're performing the stencil test with
+
+    StencilUpdateOperation stencilUpdateOperation : 3 {
         StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
+
+    bool stencilOnly : 1 {false}; //!< Whether we should update the color buffer in addition to the stencil buffer
+
     StencilValue stencilReference{0u}; //!< The reference value we're performing the stencil test with
+
     StencilValue stencilMask{~0u}; //!< The mask to apply to both the reference value and the value in the stencil buffer
-    bool stencilOnly{};            //!< Whether we should update the color buffer in addition to the stencil buffer
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of the `operator==`

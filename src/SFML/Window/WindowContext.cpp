@@ -142,7 +142,7 @@ WindowContextImpl& ensureInstalled()
 } // namespace
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowContext> WindowContext::create()
+base::Optional<WindowContext> WindowContext::create(const ContextSettings& sharedContextSettings)
 {
     priv::getSDLLayerSingleton(); // TODO P0:
 
@@ -159,7 +159,7 @@ base::Optional<WindowContext> WindowContext::create()
 
     //
     // Install window context
-    auto& wc = installedWindowContext.emplace(/* id */ 1u, /* shared */ nullptr);
+    auto& wc = installedWindowContext.emplace(/* id */ 1u, /* shared */ nullptr, sharedContextSettings);
 
     //
     // Define fatal signal handlers for the user that will display a stack trace
@@ -179,8 +179,6 @@ base::Optional<WindowContext> WindowContext::create()
 
     //
     // Try to initialize shared GL context
-    const ContextSettings sharedContextSettings{};
-
     if (!wc.sharedGlContext.initialize(wc.sharedGlContext, sharedContextSettings))
         return fail("could not initialize shared context");
 
@@ -487,6 +485,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
     auto glContext = base::makeUnique<DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
                                                             &wc.sharedGlContext,
+                                                            contextSettings,
                                                             SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContextToSharedContext(false))
@@ -524,7 +523,7 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
                                                                 const priv::WindowImpl& owner,
                                                                 unsigned int            bitsPerPixel)
 {
-    return createGlContextImpl(contextSettings, contextSettings, owner, bitsPerPixel);
+    return createGlContextImpl(contextSettings, owner, bitsPerPixel);
 }
 
 

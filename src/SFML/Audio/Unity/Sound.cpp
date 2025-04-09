@@ -298,7 +298,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
     }
 
     if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time::Zero);
+        setPlayingOffset(Time{});
 
     if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
@@ -343,7 +343,7 @@ void Sound::stop()
         return;
     }
 
-    setPlayingOffset(Time::Zero);
+    setPlayingOffset(Time{});
     m_impl->status = Status::Stopped;
 }
 

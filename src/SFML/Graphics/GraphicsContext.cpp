@@ -65,7 +65,7 @@ struct GraphicsContext::Impl
 };
 
 ////////////////////////////////////////////////////////////
-base::Optional<GraphicsContext> GraphicsContext::create()
+base::Optional<GraphicsContext> GraphicsContext::create(const ContextSettings& sharedContextSettings)
 {
     const auto fail = [](const char* what)
     {
@@ -81,7 +81,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
     //
     // Install window context if necessary
     auto windowContext = WindowContext::isInstalled() ? WindowContext{base::PassKey<GraphicsContext>{}}
-                                                      : WindowContext::create().value();
+                                                      : WindowContext::create(sharedContextSettings).value();
 
     //
     // Initialize built-in shader

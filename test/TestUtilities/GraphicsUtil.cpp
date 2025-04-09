@@ -73,8 +73,8 @@ std::ostream& operator<<(std::ostream& os, const StencilUpdateOperation& updateO
 std::ostream& operator<<(std::ostream& os, const StencilMode& stencilMode)
 {
     return os << "( " << stencilMode.stencilComparison << ", " << stencilMode.stencilUpdateOperation << ", "
-              << stencilMode.stencilReference.value << ", " << stencilMode.stencilMask.value << ", "
-              << stencilMode.stencilOnly << " )";
+              << stencilMode.stencilOnly << ", " << stencilMode.stencilReference.value << ", "
+              << stencilMode.stencilMask.value << " )";
 }
 
 std::ostream& operator<<(std::ostream& os, Color color)

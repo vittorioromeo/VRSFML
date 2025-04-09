@@ -138,7 +138,7 @@ struct SoundStream::Impl
         impl.samplesProcessed   = frameIndex * impl.channelCount;
 
         const Time offset = impl.sampleRate == 0
-                                ? Time::Zero
+                                ? Time{}
                                 : seconds(static_cast<float>(frameIndex) / static_cast<float>(impl.sampleRate));
 
         impl.owner->onSeek(offset);
@@ -272,7 +272,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
     }
 
     if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time::Zero);
+        setPlayingOffset(Time{});
 
     if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
@@ -313,7 +313,7 @@ void SoundStream::stop()
         return;
     }
 
-    setPlayingOffset(Time::Zero);
+    setPlayingOffset(Time{});
     m_impl->status = Status::Stopped;
 }
 
@@ -396,7 +396,7 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 ////////////////////////////////////////////////////////////
 base::Optional<base::U64> SoundStream::onLoop()
 {
-    onSeek(Time::Zero);
+    onSeek(Time{});
     return base::makeOptional(base::U64{0});
 }
 

@@ -12,8 +12,8 @@
 
 namespace sf
 {
-enum class StencilComparison : unsigned int;
-enum class StencilUpdateOperation : unsigned int;
+enum class StencilComparison : unsigned char;
+enum class StencilUpdateOperation : unsigned char;
 
 struct BlendMode;
 struct Color;
@@ -22,8 +22,6 @@ struct Transform;
 
 template <typename>
 class Rect;
-
-class COlor;
 
 std::ostream& operator<<(std::ostream& os, const BlendMode& blendMode);
 std::ostream& operator<<(std::ostream& os, const StencilComparison& comparison);
