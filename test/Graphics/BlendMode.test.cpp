@@ -16,17 +16,20 @@ TEST_CASE("[Graphics] sf::BlendMode")
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::BlendMode));
-        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::BlendMode));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::BlendMode));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::BlendMode, sf::BlendMode));
+
+        STATIC_CHECK(sizeof(sf::BlendMode) <= 4); // should be packed via bitfields
     }
 
     SECTION("Construction")
     {
         SECTION("Combined color and alpha constructor using default parameter")
         {
-            const sf::BlendMode blendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::SrcColor);
+            const auto blendMode = sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::SrcColor);
+
             CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::Zero);
             CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::SrcColor);
             CHECK(blendMode.colorEquation == sf::BlendMode::Equation::Add);
@@ -37,9 +40,10 @@ TEST_CASE("[Graphics] sf::BlendMode")
 
         SECTION("Combined color and alpha constructor")
         {
-            const sf::BlendMode blendMode(sf::BlendMode::Factor::Zero,
-                                          sf::BlendMode::Factor::SrcColor,
-                                          sf::BlendMode::Equation::ReverseSubtract);
+            const auto blendMode = sf::BlendMode::from(sf::BlendMode::Factor::Zero,
+                                                       sf::BlendMode::Factor::SrcColor,
+                                                       sf::BlendMode::Equation::ReverseSubtract);
+
             CHECK(blendMode.colorSrcFactor == sf::BlendMode::Factor::Zero);
             CHECK(blendMode.colorDstFactor == sf::BlendMode::Factor::SrcColor);
             CHECK(blendMode.colorEquation == sf::BlendMode::Equation::ReverseSubtract);
@@ -69,8 +73,8 @@ TEST_CASE("[Graphics] sf::BlendMode")
     {
         SECTION("operator==")
         {
-            CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
-                  sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
+            CHECK(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
+                  sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,
                                 sf::BlendMode::Factor::SrcColor,
                                 sf::BlendMode::Equation::ReverseSubtract,
@@ -84,8 +88,8 @@ TEST_CASE("[Graphics] sf::BlendMode")
                                 sf::BlendMode::Factor::DstAlpha,
                                 sf::BlendMode::Equation::Max));
 
-            CHECK_FALSE(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
-                        sf::BlendMode(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
+            CHECK_FALSE(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) ==
+                        sf::BlendMode::from(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
             CHECK_FALSE(
                 sf::BlendMode(sf::BlendMode::Factor::Zero,
                               sf::BlendMode::Factor::SrcColor,
@@ -103,8 +107,8 @@ TEST_CASE("[Graphics] sf::BlendMode")
 
         SECTION("operator!=")
         {
-            CHECK_FALSE(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
-                        sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
+            CHECK_FALSE(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
+                        sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One));
             CHECK_FALSE(
                 sf::BlendMode(sf::BlendMode::Factor::Zero,
                               sf::BlendMode::Factor::SrcColor,
@@ -119,8 +123,8 @@ TEST_CASE("[Graphics] sf::BlendMode")
                               sf::BlendMode::Factor::DstAlpha,
                               sf::BlendMode::Equation::Max));
 
-            CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
-                  sf::BlendMode(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
+            CHECK(sf::BlendMode::from(sf::BlendMode::Factor::Zero, sf::BlendMode::Factor::One) !=
+                  sf::BlendMode::from(sf::BlendMode::Factor::One, sf::BlendMode::Factor::Zero));
             CHECK(sf::BlendMode(sf::BlendMode::Factor::Zero,
                                 sf::BlendMode::Factor::SrcColor,
                                 sf::BlendMode::Equation::ReverseSubtract,
@@ -138,6 +142,13 @@ TEST_CASE("[Graphics] sf::BlendMode")
 
     SECTION("Static constants")
     {
+        CHECK(sf::BlendMode{}.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
+        CHECK(sf::BlendMode{}.colorDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(sf::BlendMode{}.colorEquation == sf::BlendMode::Equation::Add);
+        CHECK(sf::BlendMode{}.alphaSrcFactor == sf::BlendMode::Factor::One);
+        CHECK(sf::BlendMode{}.alphaDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
+        CHECK(sf::BlendMode{}.alphaEquation == sf::BlendMode::Equation::Add);
+
         CHECK(sf::BlendAlpha.colorSrcFactor == sf::BlendMode::Factor::SrcAlpha);
         CHECK(sf::BlendAlpha.colorDstFactor == sf::BlendMode::Factor::OneMinusSrcAlpha);
         CHECK(sf::BlendAlpha.colorEquation == sf::BlendMode::Equation::Add);

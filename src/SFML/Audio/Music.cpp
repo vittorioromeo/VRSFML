@@ -26,7 +26,7 @@ namespace
 {
     // Make sure we don't divide by 0
     if (sampleRate == 0u || channelCount == 0u)
-        return sf::Time::Zero;
+        return sf::Time{};
 
     return sf::microseconds(static_cast<sf::base::I64>((samples * 1'000'000u) / (channelCount * sampleRate)));
 }
@@ -289,7 +289,7 @@ void Music::setLoopPoints(TimeSpan timePoints)
     m_impl->loopSpan = samplePoints;
 
     // Restore
-    if (oldPos != Time::Zero)
+    if (oldPos != Time{})
         setPlayingOffset(oldPos);
 
     // Resume

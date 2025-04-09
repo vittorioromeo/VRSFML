@@ -171,7 +171,7 @@ public:
     /// \see WindowBase::waitEvent
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
