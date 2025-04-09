@@ -2949,10 +2949,18 @@ void Main::uiTabBarPrestige()
         const float currentReward = pt.psvPPMouseCatGlobalBonusMult.currentValue();
         const float nextReward    = pt.psvPPMouseCatGlobalBonusMult.nextValue();
 
-        std::sprintf(uiTooltipBuffer,
-                     "Increase the global click reward value multiplier from x%.2f to x%.2f.",
-                     static_cast<double>(currentReward),
-                     static_cast<double>(nextReward));
+        if (!pt.psvPPMouseCatGlobalBonusMult.isMaxedOut())
+        {
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the global click reward value multiplier from x%.2f to x%.2f.",
+                         static_cast<double>(currentReward),
+                         static_cast<double>(nextReward));
+        }
+        else
+        {
+            std::sprintf(uiTooltipBuffer, "Increase the global click reward value multiplier (MAX).");
+        }
+
         std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
         makePrestigePurchasablePPButtonPSV("Global click mult", pt.psvPPMouseCatGlobalBonusMult);
     }
@@ -2970,10 +2978,18 @@ void Main::uiTabBarPrestige()
         const float currentReward = pt.psvPPEngiCatGlobalBonusMult.currentValue();
         const float nextReward    = pt.psvPPEngiCatGlobalBonusMult.nextValue();
 
-        std::sprintf(uiTooltipBuffer,
-                     "Increase the global cat reward value multiplierfrom x%.2f to x%.2f.",
-                     static_cast<double>(currentReward),
-                     static_cast<double>(nextReward));
+        if (!pt.psvPPEngiCatGlobalBonusMult.isMaxedOut())
+        {
+            std::sprintf(uiTooltipBuffer,
+                         "Increase the global cat reward value multiplierfrom x%.2f to x%.2f.",
+                         static_cast<double>(currentReward),
+                         static_cast<double>(nextReward));
+        }
+        else
+        {
+            std::sprintf(uiTooltipBuffer, "Increase the global cat reward value multiplier (MAX).");
+        }
+
         std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
         makePrestigePurchasablePPButtonPSV("Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
     }
