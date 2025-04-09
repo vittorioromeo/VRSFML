@@ -49,8 +49,8 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(span.length == 0);
 
         const sf::Music::TimeSpan timeSpan;
-        CHECK(timeSpan.offset == sf::Time::Zero);
-        CHECK(timeSpan.length == sf::Time::Zero);
+        CHECK(timeSpan.offset == sf::Time{});
+        CHECK(timeSpan.length == sf::Time{});
     }
 
     SECTION("openFromFile()")
@@ -73,11 +73,11 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
                 CHECK(music.getDuration() == sf::microseconds(1990884));
 
                 const auto [offset, length] = music.getLoopPoints();
-                CHECK(offset == sf::Time::Zero);
+                CHECK(offset == sf::Time{});
                 CHECK(length == sf::microseconds(1990884));
 
                 CHECK(music.getStatus() == sf::Music::Status::Stopped);
-                CHECK(music.getPlayingOffset() == sf::Time::Zero);
+                CHECK(music.getPlayingOffset() == sf::Time{});
                 CHECK(!music.isLooping());
             }
         }
@@ -103,10 +103,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
             const auto [offset, length] = music.getLoopPoints();
-            CHECK(offset == sf::Time::Zero);
+            CHECK(offset == sf::Time{});
             CHECK(length == sf::microseconds(1990884));
             CHECK(music.getStatus() == sf::Music::Status::Stopped);
-            CHECK(music.getPlayingOffset() == sf::Time::Zero);
+            CHECK(music.getPlayingOffset() == sf::Time{});
             CHECK(!music.isLooping());
         }
     }
@@ -120,10 +120,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
         const auto [offset, length] = music.getLoopPoints();
-        CHECK(offset == sf::Time::Zero);
+        CHECK(offset == sf::Time{});
         CHECK(length == sf::microseconds(24002176));
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
-        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
 
@@ -185,7 +185,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(music.getChannelCount() == 1);
         CHECK(music.getSampleRate() == 22050);
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
-        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
 }

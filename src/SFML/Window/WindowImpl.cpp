@@ -577,7 +577,7 @@ base::Optional<Event> WindowImpl::waitEvent(Time timeout)
 
     const auto timedOut = [&clock, timeout, startTime = clock.getElapsedTime()]
     {
-        const bool infiniteTimeout = timeout == Time::Zero;
+        const bool infiniteTimeout = timeout == Time{};
         return !infiniteTimeout && (clock.getElapsedTime() - startTime) >= timeout;
     };
 

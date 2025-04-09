@@ -119,7 +119,7 @@ public:
     /// \see `getLocalAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
+    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator==` to compare two IP addresses

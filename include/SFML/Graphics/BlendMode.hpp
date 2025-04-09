@@ -21,8 +21,9 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     ///
     /// The factors are mapped directly to their OpenGL equivalents,
     /// specified by `glBlendFunc` or `glBlendFuncSeparate`.
+    ///
     ////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Factor : unsigned int
+    enum class [[nodiscard]] Factor : unsigned char
     {
         Zero             = 0u, //!< (0, 0, 0, 0)
         One              = 1u, //!< (1, 1, 1, 1)
@@ -41,8 +42,9 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     ///
     /// The equations are mapped directly to their OpenGL equivalents,
     /// specified by `glBlendEquation` or `glBlendEquationSeparate`.
+    ///
     ////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Equation : unsigned int
+    enum class [[nodiscard]] Equation : unsigned char
     {
         Add             = 0u, //!< Pixel = Src * SrcFactor + Dst * DstFactor
         Subtract        = 1u, //!< Pixel = Src * SrcFactor - Dst * DstFactor
@@ -62,41 +64,19 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     /// \param blendEquation     Specifies how to combine the source and destination colors and alpha.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr BlendMode(Factor sourceFactor, Factor destinationFactor, Equation blendEquation = Equation::Add) :
-    colorSrcFactor(sourceFactor),
-    colorDstFactor(destinationFactor),
-    colorEquation(blendEquation),
-    alphaSrcFactor(sourceFactor),
-    alphaDstFactor(destinationFactor),
-    alphaEquation(blendEquation)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr BlendMode from(
+        const Factor   sourceFactor,
+        const Factor   destinationFactor,
+        const Equation blendEquation = Equation::Add)
     {
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Construct the blend mode given the factors and equation.
-    ///
-    /// \param colorSourceFactor      Specifies how to compute the source factor for the color channels.
-    /// \param colorDestinationFactor Specifies how to compute the destination factor for the color channels.
-    /// \param colorBlendEquation     Specifies how to combine the source and destination colors.
-    /// \param alphaSourceFactor      Specifies how to compute the source factor.
-    /// \param alphaDestinationFactor Specifies how to compute the destination factor.
-    /// \param alphaBlendEquation     Specifies how to combine the source and destination alphas.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr explicit BlendMode(
-        Factor   colorSourceFactor,
-        Factor   colorDestinationFactor,
-        Equation colorBlendEquation,
-        Factor   alphaSourceFactor,
-        Factor   alphaDestinationFactor,
-        Equation alphaBlendEquation) :
-    colorSrcFactor(colorSourceFactor),
-    colorDstFactor(colorDestinationFactor),
-    colorEquation(colorBlendEquation),
-    alphaSrcFactor(alphaSourceFactor),
-    alphaDstFactor(alphaDestinationFactor),
-    alphaEquation(alphaBlendEquation)
-    {
+        return {
+            .colorSrcFactor = sourceFactor,
+            .colorDstFactor = destinationFactor,
+            .colorEquation  = blendEquation,
+            .alphaSrcFactor = sourceFactor,
+            .alphaDstFactor = destinationFactor,
+            .alphaEquation  = blendEquation,
+        };
     }
 
     ////////////////////////////////////////////////////////////
@@ -112,12 +92,12 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Factor colorSrcFactor{BlendMode::Factor::SrcAlpha};         //!< Source blending factor for the color channels
-    Factor colorDstFactor{BlendMode::Factor::OneMinusSrcAlpha}; //!< Destination blending factor for the color channels
-    Equation colorEquation{BlendMode::Equation::Add};           //!< Blending equation for the color channels
-    Factor   alphaSrcFactor{BlendMode::Factor::One};            //!< Source blending factor for the alpha channel
-    Factor   alphaDstFactor{BlendMode::Factor::OneMinusSrcAlpha}; //!< Destination blending factor for the alpha channel
-    Equation alphaEquation{BlendMode::Equation::Add};             //!< Blending equation for the alpha channel
+    Factor   colorSrcFactor : 4 {Factor::SrcAlpha};         //!< Source blending factor for the color channels
+    Factor   colorDstFactor : 4 {Factor::OneMinusSrcAlpha}; //!< Destination blending factor for the color channels
+    Equation colorEquation  : 3 {Equation::Add};            //!< Blending equation for the color channels
+    Factor   alphaSrcFactor : 4 {Factor::One};              //!< Source blending factor for the alpha channel
+    Factor   alphaDstFactor : 4 {Factor::OneMinusSrcAlpha}; //!< Destination blending factor for the alpha channel
+    Equation alphaEquation  : 3 {Equation::Add};            //!< Blending equation for the alpha channel
 };
 
 ////////////////////////////////////////////////////////////
@@ -126,34 +106,38 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
 // NOLINTBEGIN(readability-identifier-naming)
 
 /// Blend source and dest according to dest alpha
-inline constexpr BlendMode BlendAlpha(
-    BlendMode::Factor::SrcAlpha,
-    BlendMode::Factor::OneMinusSrcAlpha,
-    BlendMode::Equation::Add,
-    BlendMode::Factor::One,
-    BlendMode::Factor::OneMinusSrcAlpha,
-    BlendMode::Equation::Add);
+inline constexpr BlendMode BlendAlpha{
+    .colorSrcFactor = BlendMode::Factor::SrcAlpha,
+    .colorDstFactor = BlendMode::Factor::OneMinusSrcAlpha,
+    .colorEquation  = BlendMode::Equation::Add,
+    .alphaSrcFactor = BlendMode::Factor::One,
+    .alphaDstFactor = BlendMode::Factor::OneMinusSrcAlpha,
+    .alphaEquation  = BlendMode::Equation::Add,
+};
 
 /// Add source to dest
-inline constexpr BlendMode BlendAdd(
-    BlendMode::Factor::SrcAlpha,
-    BlendMode::Factor::One,
-    BlendMode::Equation::Add,
-    BlendMode::Factor::One,
-    BlendMode::Factor::One,
-    BlendMode::Equation::Add);
+inline constexpr BlendMode BlendAdd{
+    .colorSrcFactor = BlendMode::Factor::SrcAlpha,
+    .colorDstFactor = BlendMode::Factor::One,
+    .colorEquation  = BlendMode::Equation::Add,
+    .alphaSrcFactor = BlendMode::Factor::One,
+    .alphaDstFactor = BlendMode::Factor::One,
+    .alphaEquation  = BlendMode::Equation::Add,
+};
 
 /// Multiply source and dest
-inline constexpr BlendMode BlendMultiply(BlendMode::Factor::DstColor, BlendMode::Factor::Zero, BlendMode::Equation::Add);
+inline constexpr auto BlendMultiply = BlendMode::from(BlendMode::Factor::DstColor,
+                                                      BlendMode::Factor::Zero,
+                                                      BlendMode::Equation::Add);
 
 /// Take minimum between source and dest
-inline constexpr BlendMode BlendMin(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Min);
+inline constexpr auto BlendMin = BlendMode::from(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Min);
 
 /// Take maximum between source and dest
-inline constexpr BlendMode BlendMax(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Max);
+inline constexpr auto BlendMax = BlendMode::from(BlendMode::Factor::One, BlendMode::Factor::One, BlendMode::Equation::Max);
 
 /// Overwrite dest with source
-inline constexpr BlendMode BlendNone(BlendMode::Factor::One, BlendMode::Factor::Zero, BlendMode::Equation::Add);
+inline constexpr auto BlendNone = BlendMode::from(BlendMode::Factor::One, BlendMode::Factor::Zero, BlendMode::Equation::Add);
 
 // NOLINTEND(readability-identifier-naming)
 

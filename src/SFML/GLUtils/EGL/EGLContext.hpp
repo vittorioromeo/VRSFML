@@ -36,7 +36,7 @@ public:
     /// \param shared Context to share the new one with (can be a null pointer)
     ///
     ////////////////////////////////////////////////////////////
-    explicit EglContext(unsigned int id, EglContext* shared);
+    explicit EglContext(unsigned int id, EglContext* shared, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
