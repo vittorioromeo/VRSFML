@@ -91,7 +91,7 @@ public:
     /// \see `disconnect`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Status connect(IpAddress remoteAddress, unsigned short remotePort, Time timeout = Time::Zero);
+    [[nodiscard]] Status connect(IpAddress remoteAddress, unsigned short remotePort, Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Disconnect the socket from its remote peer

@@ -61,7 +61,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         CHECK(testSoundStream.getChannelCount() == 0);
         CHECK(testSoundStream.getSampleRate() == 0);
         CHECK(testSoundStream.getStatus() == sf::SoundStream::Status::Stopped);
-        CHECK(testSoundStream.getPlayingOffset() == sf::Time::Zero);
+        CHECK(testSoundStream.getPlayingOffset() == sf::Time{});
         CHECK(!testSoundStream.isLooping());
     }
 
@@ -89,7 +89,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         CHECK(soundStream.getSampleRate() == 44100);
         CHECK(soundStream.getChannelMap() == channelMap);
         CHECK(soundStream.getStatus() == sf::SoundStream::Status::Stopped);
-        CHECK(soundStream.getPlayingOffset() == sf::Time::Zero);
+        CHECK(soundStream.getPlayingOffset() == sf::Time{});
         CHECK(!soundStream.isLooping());
     }
     */

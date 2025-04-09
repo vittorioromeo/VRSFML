@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
+
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
@@ -57,7 +59,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<WindowContext> create();
+    [[nodiscard]] static base::Optional<WindowContext> create(const ContextSettings& sharedContextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \private
