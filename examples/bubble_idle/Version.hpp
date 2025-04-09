@@ -33,3 +33,7 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
+
+
+// TODO P0: CHANGELOG:
+// - Fixed engi cat global mult and mouse cat global mult tooltip not showing (MAX)
