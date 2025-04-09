@@ -2388,9 +2388,6 @@ struct Main
 
         const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVector2f();
 
-        // TODO P0:
-        std::cout << "fullscreenSize: " << fullscreenSize.x << " " << fullscreenSize.y << std::endl;
-
         const float aspectRatio = fullscreenSize.x / fullscreenSize.y;
 
         const bool isUltrawide = aspectRatio >= 2.f;
@@ -2399,9 +2396,6 @@ struct Main
         const float scalingFactor = isUltrawide ? 0.9f : isWide ? 0.8f : 0.7f;
 
         const auto windowSize = fullscreenSize * scalingFactor * scalingFactorMult;
-
-        // TODO P0:
-        std::cout << "windowSize: " << windowSize.x << " " << windowSize.y << std::endl;
 
         const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
@@ -7764,9 +7758,6 @@ struct Main
 
         const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
 
-        // TODO P0:
-        sf::cOut() << "New resolution: " << newResolution.x << "x" << newResolution.y << "\n";
-
         rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
         rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
         rtGame.reset();       // TODO P2: (lib) workaround to unregister framebuffers
@@ -8693,11 +8684,6 @@ struct Main
             }
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
             {
-
-                auto sz = e6->size;
-                // TODO P0:
-                std::cout << "sz: " << sz.x << ", " << sz.y << std::endl;
-
                 recreateImGuiRenderTexture(e6->size);
                 recreateGameRenderTexture(e6->size);
 
