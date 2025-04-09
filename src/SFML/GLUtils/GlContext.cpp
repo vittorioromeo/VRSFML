@@ -12,6 +12,7 @@
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GlContext.hpp"
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
+#include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
@@ -54,35 +55,6 @@ GlContext::GlContext(unsigned int id, const ContextSettings& contextSettings) : 
 void GlContext::cleanupUnsharedFrameBuffers()
 {
     WindowContext::cleanupUnsharedFrameBuffers(*this);
-}
-
-
-////////////////////////////////////////////////////////////
-int GlContext::evaluateFormat(
-    unsigned int           bitsPerPixel,
-    const ContextSettings& contextSettings,
-    int                    colorBits,
-    int                    depthBits,
-    int                    stencilBits,
-    int                    antiAliasing,
-    bool                   accelerated,
-    bool                   sRgb)
-{
-    // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
-    const auto adjustNegativeScore = [](int x) { return static_cast<unsigned int>(x * (x > 0 ? 100'000 : -1)); };
-
-    const auto colorDiff   = adjustNegativeScore(static_cast<int>(bitsPerPixel) - colorBits);
-    const auto depthDiff   = adjustNegativeScore(static_cast<int>(contextSettings.depthBits) - depthBits);
-    const auto stencilDiff = adjustNegativeScore(static_cast<int>(contextSettings.stencilBits) - stencilBits);
-    const auto antiAliasingDiff = adjustNegativeScore(static_cast<int>(contextSettings.antiAliasingLevel) - antiAliasing);
-
-    // Aggregate the scores
-    return static_cast<int>(
-        colorDiff + depthDiff + stencilDiff + antiAliasingDiff +
-        // If the user wants an sRGB capable format, try really hard to get one
-        ((contextSettings.sRgbCapable && !sRgb) ? 10'000'000 : 0) +
-        // Make sure we prefer hardware acceleration over features
-        (!accelerated ? 100'000'000 : 0));
 }
 
 
