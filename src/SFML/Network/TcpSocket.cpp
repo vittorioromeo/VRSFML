@@ -107,7 +107,7 @@ Socket::Status TcpSocket::connect(IpAddress remoteAddress, unsigned short remote
     // Create the remote address
     priv::SockAddrIn address = priv::SocketImpl::createAddress(remoteAddress.toInteger(), remotePort);
 
-    if (timeout <= Time::Zero)
+    if (timeout <= Time{})
     {
         // ----- We're not using a timeout: just try to connect -----
 

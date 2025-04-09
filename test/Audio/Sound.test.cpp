@@ -43,7 +43,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         const sf::Sound sound(soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
         CHECK(!sound.isLooping());
-        CHECK(sound.getPlayingOffset() == sf::Time::Zero);
+        CHECK(sound.getPlayingOffset() == sf::Time{});
         CHECK(sound.getStatus() == sf::Sound::Status::Stopped);
     }
 
@@ -56,7 +56,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             const sf::Sound soundCopy(sound); // NOLINT(performance-unnecessary-copy-initialization)
             CHECK(&soundCopy.getBuffer() == &soundBuffer);
             CHECK(!soundCopy.isLooping());
-            CHECK(soundCopy.getPlayingOffset() == sf::Time::Zero);
+            CHECK(soundCopy.getPlayingOffset() == sf::Time{});
             CHECK(soundCopy.getStatus() == sf::Sound::Status::Stopped);
         }
 
@@ -67,7 +67,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             soundCopy = sound;
             CHECK(&soundCopy.getBuffer() == &soundBuffer);
             CHECK(!soundCopy.isLooping());
-            CHECK(soundCopy.getPlayingOffset() == sf::Time::Zero);
+            CHECK(soundCopy.getPlayingOffset() == sf::Time{});
             CHECK(soundCopy.getStatus() == sf::Sound::Status::Stopped);
         }
     }

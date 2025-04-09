@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
+
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -43,7 +45,7 @@ public:
     /// \brief Create a new graphics context TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<GraphicsContext> create();
+    [[nodiscard]] static base::Optional<GraphicsContext> create(const ContextSettings& sharedContextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \private
