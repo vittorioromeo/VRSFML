@@ -149,14 +149,14 @@ public:
     /// }
     /// \endcode
     ///
-    /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
+    /// \param timeout Maximum time to wait (`Time{}` for infinite)
     ///
     /// \return The event on success, `base::nullOpt` on timeout or if window was closed
     ///
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events

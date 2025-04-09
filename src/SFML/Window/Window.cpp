@@ -120,7 +120,7 @@ void Window::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
+    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time{};
 }
 
 
@@ -145,7 +145,7 @@ void Window::display()
         m_impl->glContext->display();
 
     // Limit the framerate if needed
-    if (m_impl->frameTimeLimit != Time::Zero)
+    if (m_impl->frameTimeLimit != Time{})
     {
         sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
         m_impl->clock.restart();

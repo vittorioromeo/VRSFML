@@ -152,9 +152,9 @@ TEST_CASE("[System] sf::Time")
 
     SECTION("Zero time")
     {
-        STATIC_CHECK(sf::Time::Zero.asSeconds() == 0.f);
-        STATIC_CHECK(sf::Time::Zero.asMilliseconds() == 0);
-        STATIC_CHECK(sf::Time::Zero.asMicroseconds() == 0);
+        STATIC_CHECK(sf::Time{}.asSeconds() == 0.f);
+        STATIC_CHECK(sf::Time{}.asMilliseconds() == 0);
+        STATIC_CHECK(sf::Time{}.asMicroseconds() == 0);
     }
 
     SECTION("Operators")

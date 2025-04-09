@@ -22,6 +22,8 @@ TEST_CASE("[Graphics] sf::RenderStates")
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::RenderStates));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::RenderStates));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::RenderStates, sf::RenderStates));
+
+        STATIC_CHECK(sizeof(sf::RenderStates) <= 64);
     }
 
     SECTION("Construction")
@@ -39,10 +41,10 @@ TEST_CASE("[Graphics] sf::RenderStates")
 
     SECTION("Default constant")
     {
-        CHECK(sf::RenderStates::Default.blendMode == sf::BlendAlpha);
-        CHECK(sf::RenderStates::Default.stencilMode == sf::StencilMode{});
-        CHECK(sf::RenderStates::Default.transform == sf::Transform());
-        CHECK(sf::RenderStates::Default.texture == nullptr);
-        CHECK(sf::RenderStates::Default.shader == nullptr);
+        CHECK(sf::RenderStates{}.blendMode == sf::BlendAlpha);
+        CHECK(sf::RenderStates{}.stencilMode == sf::StencilMode{});
+        CHECK(sf::RenderStates{}.transform == sf::Transform());
+        CHECK(sf::RenderStates{}.texture == nullptr);
+        CHECK(sf::RenderStates{}.shader == nullptr);
     }
 }
