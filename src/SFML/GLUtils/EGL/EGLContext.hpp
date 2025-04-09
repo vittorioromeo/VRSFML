@@ -3,24 +3,21 @@
 
 
 ////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/Config.hpp"
-
 #ifndef SFML_OPENGL_ES
     #error "EGLContext included but ES disabled"
 #endif
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/GLUtils/GlContext.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
-
-#if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-    #include <X11/Xlib.h>
-    #include <X11/Xutil.h>
-#endif
 
 
 namespace sf::priv
@@ -128,20 +125,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void destroySurface();
-
-#if defined(SFML_SYSTEM_LINUX) && !defined(SFML_USE_DRM)
-    ////////////////////////////////////////////////////////////
-    /// \brief Select the best EGL visual for a given set of settings
-    ///
-    /// \param display      X display
-    /// \param bitsPerPixel Pixel depth, in bits per pixel
-    /// \param settings     Requested context settings
-    ///
-    /// \return The best visual
-    ///
-    ////////////////////////////////////////////////////////////
-    static XVisualInfo selectBestVisual(::Display* display, unsigned int bitsPerPixel, const ContextSettings& contextSettings);
-#endif
 
 private:
     ////////////////////////////////////////////////////////////
