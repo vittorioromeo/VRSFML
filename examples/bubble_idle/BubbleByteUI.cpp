@@ -4337,6 +4337,9 @@ void Main::uiTabBarSettings()
             if (ImGui::Button("End Speedrun"))
             {
                 pt = &ptMain;
+
+                rng.reseed(pt->seed);
+                shuffledCatNamesPerType = makeShuffledCatNames(rng);
             }
         }
         else
@@ -4368,6 +4371,15 @@ void Main::uiTabBarSettings()
             if (fixedBgSlideTarget >= 3.f)
                 fixedBgSlideTarget = 0.f;
         }
+
+        ImGui::Separator();
+
+        constexpr sf::base::I64 iStep            = 1;
+        static sf::base::I64    speedrunTimerSet = 0;
+
+        ImGui::SetNextItemWidth(240.f * profile.uiScale);
+        if (ImGui::InputScalar("Speedrun timer", ImGuiDataType_S64, &speedrunTimerSet, &iStep, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal))
+            pt->speedrunStartTime.emplace(speedrunTimerSet);
 
         ImGui::Separator();
 
