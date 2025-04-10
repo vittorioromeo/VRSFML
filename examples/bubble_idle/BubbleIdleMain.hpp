@@ -5062,17 +5062,16 @@ struct Main
                         if (!pt->perm.shrineCompletedOnceByCatType[catType])
                         {
                             pushNotification("New unlocks!", "A new background and BGM have been unlocked!");
-
                             pt->perm.shrineCompletedOnceByCatType[catType] = true;
-
-                            profile.selectedBackground = static_cast<int>(shrine.type) + 1;
-                            profile.selectedBGM        = static_cast<int>(shrine.type) + 1;
-
-                            updateSelectedBackgroundSelectorIndex();
-                            updateSelectedBGMSelectorIndex();
-
-                            switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
                         }
+
+                        profile.selectedBackground = static_cast<int>(shrine.type) + 1;
+                        profile.selectedBGM        = static_cast<int>(shrine.type) + 1;
+
+                        updateSelectedBackgroundSelectorIndex();
+                        updateSelectedBGMSelectorIndex();
+
+                        switchToBGM(static_cast<sf::base::SizeT>(profile.selectedBGM), /* force */ false);
                     }
                     else if (cdStatus == CountdownStatusStop::Running)
                     {
@@ -5566,11 +5565,14 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateSplits()
     {
-        if (!pt->speedrunStartTime.hasValue())
+        if (!inSpeedrunPlaythrough() || !pt->speedrunStartTime.hasValue())
             return;
 
         const auto updateSplit = [&](const char* name, sf::base::U64& split)
         {
+            if (split == 0u)
+                return;
+
             const auto oldSplit    = split;
             const auto splitTimeUs = (sf::Clock::now() - pt->speedrunStartTime.value()).asMicroseconds();
 
@@ -6151,6 +6153,23 @@ struct Main
         unlockIf(pt->geniusCatIgnoreBubbles.normal && pt->geniusCatIgnoreBubbles.star &&
                  pt->geniusCatIgnoreBubbles.bomb); // Secret
         unlockIf(wastedEffort);
+
+        const auto minutesToMicroseconds = [](const sf::base::I64 nMinutes) -> sf::base::I64
+        { return nMinutes * 60 * 1'000'000; };
+
+        const bool inSpeedrunMode = inSpeedrunPlaythrough();
+
+        unlockIf(inSpeedrunMode);
+
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel2 <= minutesToMicroseconds(9));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel2 <= minutesToMicroseconds(7));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel2 <= minutesToMicroseconds(5));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel2 <= minutesToMicroseconds(4));
+
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel3 <= minutesToMicroseconds(30));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel3 <= minutesToMicroseconds(26));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel3 <= minutesToMicroseconds(22));
+        unlockIf(inSpeedrunMode && pt->speedrunSplits.prestigeLevel3 <= minutesToMicroseconds(18));
 
         mustGetFromSteam = false;
     }
@@ -8290,6 +8309,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAutosave(const sf::base::I64 elapsedUs)
     {
+        if (inSpeedrunPlaythrough())
+            return;
+
         autosaveUsAccumulator += elapsedUs;
 
         if (autosaveUsAccumulator >= 180'000'000) // 3 min
