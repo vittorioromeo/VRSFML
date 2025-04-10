@@ -37,7 +37,7 @@ void addLine(sf::Vertex*      vertices,
              float            thickness,
              float            outlineThickness = 0)
 {
-    const float top    = SFML_BASE_MATH_FLOORF(lineTop + offset - (thickness / 2) + 0.5f);
+    const float top    = SFML_BASE_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
     const float bottom = top + SFML_BASE_MATH_FLOORF(thickness + 0.5f);
 
     auto* ptr = vertices + index;
@@ -58,7 +58,7 @@ void addGlyphQuad(sf::Vertex*      vertices,
                   const sf::Glyph& glyph,
                   float            italicShear)
 {
-    const sf::Vector2f padding(1.f, 1.f);
+    constexpr sf::Vector2f padding{1.f, 1.f};
 
     const sf::Vector2f p1 = glyph.bounds.position - padding;
     const sf::Vector2f p2 = glyph.bounds.position + glyph.bounds.size + padding;

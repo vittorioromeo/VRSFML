@@ -21,6 +21,7 @@
 #pragma GCC diagnostic pop
 
 #include "SFML/System/IO.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/SizeT.hpp"
@@ -51,6 +52,19 @@ void from_json(const nlohmann::json& j, Vector2<T>& p)
 {
     p.x = j[0].get<T>();
     p.y = j[1].get<T>();
+}
+
+////////////////////////////////////////////////////////////
+void to_json(nlohmann::json& j, const Time& p)
+{
+    j = p.asMicroseconds();
+}
+
+
+////////////////////////////////////////////////////////////
+void from_json(const nlohmann::json& j, Time& p)
+{
+    p = Time{j.get<base::I64>()};
 }
 
 } // namespace sf
@@ -532,6 +546,20 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Mile
 
 ////////////////////////////////////////////////////////////
 template <bool Serialize>
+void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<SpeedrunningSplits> auto&& p)
+{
+    twoWayAll<Serialize>(0u,
+                         j,
+
+                         FIELD(prestigeLevel2),
+                         FIELD(prestigeLevel3),
+                         FIELD(prestigeLevel4),
+                         FIELD(prestigeLevel5));
+}
+
+
+////////////////////////////////////////////////////////////
+template <bool Serialize>
 void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Profile> auto&& p)
 {
     auto version = currentVersion;
@@ -785,7 +813,10 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
 
         FIELD(laserPopEnabled),
 
-        FIELD(disableAstrocatFlight));
+        FIELD(disableAstrocatFlight),
+
+        FIELD(speedrunStartTime),
+        FIELD(speedrunSplits));
 }
 
 ////////////////////////////////////////////////////////////
