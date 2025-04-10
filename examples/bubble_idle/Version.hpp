@@ -38,4 +38,6 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 // TODO P0: CHANGELOG:
 // - Fixed engi cat global mult and mouse cat global mult tooltip not showing (MAX)
 // - Added speedrun mode
-// TODO ACHIEVES
+// - Fixed borderless fullscreen actually being exclusive
+// - Fixed background/music not switching after unlocking a shrine after 1st prestige
+// - Added speedrunning achievements (8 of them)
