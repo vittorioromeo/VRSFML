@@ -1,36 +1,88 @@
+#if 1
 
-#include "SFML/ImGui/ImGui.hpp"
+    #include "SFML/Graphics/Color.hpp"
+    #include "SFML/Graphics/DrawableBatch.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/Image.hpp"
+    #include "SFML/Graphics/PrimitiveType.hpp"
+    #include "SFML/Graphics/RenderStates.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/RenderWindow.hpp"
+    #include "SFML/Graphics/Shader.hpp"
+    #include "SFML/Graphics/Sprite.hpp"
+    #include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Texture.hpp"
+    #include "SFML/Graphics/TextureAtlas.hpp"
+    #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+    #include "SFML/Window/EventUtils.hpp"
+    #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Window/EventUtils.hpp"
+int main()
+{
+    auto windowContext = sf::WindowContext::create().value();
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Vector2.hpp"
+    sf::RenderWindow rw{
+        {.size            = {3440u, 1440u},
+         .title           = "sus",
+         .fullscreen      = false,
+         .resizable       = false,
+         .closable        = false,
+         .hasTitlebar     = false,
+         .vsync           = false,
+         .frametimeLimit  = 60u,
+         .contextSettings = {}}};
 
-#include "SFML/Base/Optional.hpp"
+    while (true)
+    {
+        while (sf::base::Optional event = rw.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return 0;
+        }
 
-#define IMGUI_DEFINE_MATH_OPERATORS
-#include <imgui.h>
+        rw.clear(sf::Color::Black);
+        rw.display();
+    }
+}
+
+
+#else
+
+
+    #include "SFML/ImGui/ImGui.hpp"
+
+    #include "SFML/Graphics/Color.hpp"
+    #include "SFML/Graphics/DrawableBatch.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/Image.hpp"
+    #include "SFML/Graphics/PrimitiveType.hpp"
+    #include "SFML/Graphics/RenderStates.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/RenderWindow.hpp"
+    #include "SFML/Graphics/Shader.hpp"
+    #include "SFML/Graphics/Sprite.hpp"
+    #include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Texture.hpp"
+    #include "SFML/Graphics/TextureAtlas.hpp"
+    #include "SFML/Graphics/Vertex.hpp"
+
+    #include "SFML/Window/EventUtils.hpp"
+
+    #include "SFML/System/Path.hpp"
+    #include "SFML/System/Vector2.hpp"
+
+    #include "SFML/Base/Optional.hpp"
+
+    #define IMGUI_DEFINE_MATH_OPERATORS
+    #include <imgui.h>
 
 
 ////////////////////////////////////////////////////////////
 
-#if 1
+    #if 1
 
 int main()
 {
@@ -72,14 +124,14 @@ int main()
 
     auto winRT = sf::Texture::create(window.getSize()).value();
 
-    // auto finalImage = baseRenderTexture.getTexture().copyToImage();
-    // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
+        // auto finalImage = baseRenderTexture.getTexture().copyToImage();
+        // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
 
-    #define CHECK(...)                                  \
-        if (!(__VA_ARGS__))                             \
-        {                                               \
-            sf::cOut() << "fail " #__VA_ARGS__ << '\n'; \
-        }
+        #define CHECK(...)                                  \
+            if (!(__VA_ARGS__))                             \
+            {                                               \
+                sf::cOut() << "fail " #__VA_ARGS__ << '\n'; \
+            }
 
     sf::Sprite rtSprite{.textureRect = baseRenderTexture.getTexture().getRect()};
     sf::Sprite rtAASprite{.textureRect = baseRenderTextureAA.getTexture().getRect()};
@@ -131,7 +183,7 @@ int main()
     }
 }
 
-#elif 0
+    #elif 0
 
 int main()
 {
@@ -196,7 +248,7 @@ void main()
     return 0;
 }
 
-#elif 1
+    #elif 1
 
 int main()
 {
@@ -241,7 +293,7 @@ int main()
     }
 }
 
-#elif 0
+    #elif 0
 
 int main()
 {
@@ -331,7 +383,7 @@ int main()
     return -100;
 }
 
-#elif defined(FOOOO)
+    #elif defined(FOOOO)
 
 int main()
 {
@@ -421,17 +473,17 @@ int main()
     return 0;
 }
 
-#elif defined(BARABARAR)
+    #elif defined(BARABARAR)
 
-    #include "SFML/Graphics/Font.hpp"
-    #include "SFML/Graphics/GraphicsContext.hpp"
-    #include "SFML/Graphics/RenderTexture.hpp"
-    #include "SFML/Graphics/Text.hpp"
+        #include "SFML/Graphics/Font.hpp"
+        #include "SFML/Graphics/GraphicsContext.hpp"
+        #include "SFML/Graphics/RenderTexture.hpp"
+        #include "SFML/Graphics/Text.hpp"
 
-    #include "SFML/System/Path.hpp"
-    #include "SFML/System/String.hpp"
+        #include "SFML/System/Path.hpp"
+        #include "SFML/System/String.hpp"
 
-    #include <sstream>
+        #include <sstream>
 
 int main()
 {
@@ -499,17 +551,17 @@ int main()
     return EXIT_SUCCESS;
 }
 
-#else
+    #else
 
-    #include "SFML/Graphics/Font.hpp"
-    #include "SFML/Graphics/GraphicsContext.hpp"
-    #include "SFML/Graphics/RenderTexture.hpp"
-    #include "SFML/Graphics/Text.hpp"
+        #include "SFML/Graphics/Font.hpp"
+        #include "SFML/Graphics/GraphicsContext.hpp"
+        #include "SFML/Graphics/RenderTexture.hpp"
+        #include "SFML/Graphics/Text.hpp"
 
-    #include "SFML/System/Path.hpp"
-    #include "SFML/System/String.hpp"
+        #include "SFML/System/Path.hpp"
+        #include "SFML/System/String.hpp"
 
-    #include <cstdlib>
+        #include <cstdlib>
 
 int main()
 {
@@ -531,5 +583,7 @@ int main()
 
     renderTexture.display();
 }
+
+    #endif
 
 #endif

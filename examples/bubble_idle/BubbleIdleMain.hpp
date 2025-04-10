@@ -832,11 +832,16 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Playthrough (game state)
-    Playthrough pt;
+    Playthrough ptMain;
+    Playthrough ptSpeedrun;
     MEMBER_SCOPE_GUARD(Main, {
         sf::cOut() << "Saving playthrough to file on exit\n";
-        savePlaythroughToFile(self.pt);
+        savePlaythroughToFile(self.ptMain, "userdata/playthrough.json");
     });
+
+    ////////////////////////////////////////////////////////////
+    // Currently active playthrough (game state)
+    Playthrough* pt = &ptMain;
 
     ////////////////////////////////////////////////////////////
     // Prestige availability tracking
@@ -1219,9 +1224,15 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool inSpeedrunPlaythrough() const
+    {
+        return pt == &ptSpeedrun;
+    }
+
+    ////////////////////////////////////////////////////////////
     void addMoney(const MoneyType reward)
     {
-        pt.money += reward;
+        pt->money += reward;
         moneyGainedLastSecond += reward;
     }
 
@@ -1246,7 +1257,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SizeT getNextCatNameIdx(const CatType catType)
     {
-        return pt.nextCatNamePerType[asIdx(catType)]++ % shuffledCatNamesPerType[asIdx(catType)].size();
+        return pt->nextCatNamePerType[asIdx(catType)]++ % shuffledCatNamesPerType[asIdx(catType)].size();
     }
 
     ////////////////////////////////////////////////////////////
@@ -1368,8 +1379,8 @@ struct Main
     void withAllStats(auto&& func)
     {
         func(profile.statsLifetime);
-        func(pt.statsTotal);
-        func(pt.statsSession);
+        func(pt->statsTotal);
+        func(pt->statsSession);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1531,15 +1542,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void addDelayedAction(const float delayMs, sf::base::FixedFunction<void(), 128>&& f)
-    {
-        delayedActions.emplace_back(Countdown{.value = delayMs}, SFML_BASE_MOVE(f));
-    }
-
-    ////////////////////////////////////////////////////////////
     void forEachBubbleInRadiusSquared(const sf::Vector2f center, const float radiusSq, auto&& func)
     {
-        for (Bubble& bubble : pt.bubbles)
+        for (Bubble& bubble : pt->bubbles)
             if ((bubble.position - center).lengthSquared() <= radiusSq)
                 if (func(bubble) == ControlFlow::Break)
                     break;
@@ -1559,7 +1564,7 @@ struct Main
         SizeT   count    = 0u;
         Bubble* selected = nullptr;
 
-        for (Bubble& bubble : pt.bubbles)
+        for (Bubble& bubble : pt->bubbles)
             if (predicate(bubble) && (bubble.position - center).lengthSquared() <= radiusSq)
             {
                 ++count;
@@ -1610,7 +1615,7 @@ struct Main
 
         catToPlace = nullptr;
 
-        return pt.cats.emplace_back(Cat{
+        return pt->cats.emplace_back(Cat{
             .position    = pos,
             .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
             .pawPosition = pos,
@@ -1644,7 +1649,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnSpecialCat(const sf::Vector2f pos, const CatType catType)
     {
-        ++pt.psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
+        ++pt->psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
         return spawnCat(pos, catType, /* hue */ 0.f);
     }
 
@@ -1664,7 +1669,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void doTip(const std::string& str, const SizeT maxPrestigeLevel = 0u)
     {
-        if (!profile.tipsEnabled || pt.psvBubbleValue.nPurchases > maxPrestigeLevel)
+        if (!profile.tipsEnabled || pt->psvBubbleValue.nPurchases > maxPrestigeLevel || inSpeedrunPlaythrough())
             return;
 
         playSound(sounds.byteMeow, /* maxOverlap */ 1u);
@@ -1680,13 +1685,13 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool isUnicatTranscendenceActive() const
     {
-        return pt.perm.unicatTranscendencePurchased && pt.perm.unicatTranscendenceEnabled;
+        return pt->perm.unicatTranscendencePurchased && pt->perm.unicatTranscendenceEnabled;
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] bool isDevilcatHellsingedActive() const
     {
-        return pt.perm.devilcatHellsingedPurchased && pt.perm.devilcatHellsingedEnabled;
+        return pt->perm.devilcatHellsingedPurchased && pt->perm.devilcatHellsingedEnabled;
     }
 
     ////////////////////////////////////////////////////////////
@@ -1800,7 +1805,7 @@ struct Main
     static inline constexpr float uiToolTipFontScale   = 0.65f;
     static inline constexpr float uiWindowWidth        = 425.f;
     static inline constexpr float uiButtonWidth        = 150.f;
-    const float                   uiTooltipWidth       = uiWindowWidth;
+    static inline constexpr float uiTooltipWidth       = uiWindowWidth;
 
     ////////////////////////////////////////////////////////////
     char         uiBuffer[256]{};
@@ -1941,7 +1946,7 @@ struct Main
         scroll               = 0.f;
 
         resetAllDraggedCats();
-        pt.onPrestige(ppReward);
+        pt->onPrestige(ppReward);
 
         profile.selectedBackground = 0;
         profile.selectedBGM        = 0;
@@ -1969,6 +1974,7 @@ struct Main
     void                       uiDrawQuickbar();
     void                       uiDraw(sf::Vector2f mousePos);
     void                       uiDpsMeter();
+    void                       uiSpeedrunning();
     void                       uiTabBar();
     void                       uiSetUnlockLabelY(sf::base::SizeT unlockId);
     [[nodiscard]] bool         checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
@@ -2060,14 +2066,14 @@ struct Main
         if (wizardCat == nullptr)
             return false;
 
-        return pt.absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->isHexedOrCopyHexed() ||
+        return pt->absorbingWisdom || wizardCat->cooldown.value != 0.f || wizardCat->isHexedOrCopyHexed() ||
                isCatBeingDragged(*wizardCat);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Cat* findFirstCatByType(const CatType catType)
     {
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
             if (cat.type == catType)
                 return &cat;
 
@@ -2077,7 +2083,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] const Cat* findFirstCatByType(const CatType catType) const
     {
-        for (const Cat& cat : pt.cats)
+        for (const Cat& cat : pt->cats)
             if (cat.type == catType)
                 return &cat;
 
@@ -2090,7 +2096,7 @@ struct Main
         if (xCombo == 0)
         {
             xCombo                = 1;
-            xComboCountdown.value = pt.psvComboStartTime.currentValue() * 1000.f;
+            xComboCountdown.value = pt->psvComboStartTime.currentValue() * 1000.f;
         }
         else
         {
@@ -2124,13 +2130,13 @@ struct Main
                               range,
                               [&](Bubble& bubble)
         {
-            if (pt.perm.starpawConversionIgnoreBombs && bubble.type != BubbleType::Normal)
+            if (pt->perm.starpawConversionIgnoreBombs && bubble.type != BubbleType::Normal)
                 return ControlFlow::Continue;
 
-            if (rng.getF(0.f, 99.f) > pt.psvStarpawPercentage.currentValue())
+            if (rng.getF(0.f, 99.f) > pt->psvStarpawPercentage.currentValue())
                 return ControlFlow::Continue;
 
-            bubble.type   = pt.perm.starpawNova ? BubbleType::Nova : BubbleType::Star;
+            bubble.type   = pt->perm.starpawNova ? BubbleType::Nova : BubbleType::Star;
             bubble.hueMod = rng.getF(0.f, 360.f);
             bubble.velocity.y -= rng.getF(0.025f, 0.05f);
 
@@ -2165,7 +2171,7 @@ struct Main
 
         Cat* witchCat = cachedWitchCat;
 
-        const bool castSuccessful = pt.dolls.empty() && witchCat != nullptr &&
+        const bool castSuccessful = pt->dolls.empty() && witchCat != nullptr &&
                                     (witchCat->position - wizardCat.position).lengthSquared() <= range * range;
 
         if (castSuccessful)
@@ -2185,7 +2191,7 @@ struct Main
                                     rngFast.getF(0.25f, 1.25f),
                                     rngFast.getF(0.5f, 3.f));
 
-            witchCat->cooldown.value -= witchCat->cooldown.value * (pt.psvDarkUnionPercentage.currentValue() / 100.f);
+            witchCat->cooldown.value -= witchCat->cooldown.value * (pt->psvDarkUnionPercentage.currentValue() / 100.f);
         }
         else
         {
@@ -2219,7 +2225,7 @@ struct Main
     {
         SFML_BASE_ASSERT(index < 4u);
 
-        const bool copyCatMustCast = copyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard;
+        const bool copyCatMustCast = copyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard;
 
         wizardcatSpin.value = sf::base::tau;
         statSpellCast(index);
@@ -2236,7 +2242,7 @@ struct Main
 
         if (index == 1u) // Mewltiplier Aura
         {
-            pt.mewltiplierAuraTimer += pt.perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
+            pt->mewltiplierAuraTimer += pt->perm.wizardCatDoubleMewltiplierDuration ? 12'000.f : 6000.f;
 
             doWizardSpellMewltiplierAura(*wizardCat);
 
@@ -2258,7 +2264,7 @@ struct Main
 
         if (index == 3u) // Stasis Field
         {
-            pt.stasisFieldTimer += pt.perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
+            pt->stasisFieldTimer += pt->perm.wizardCatDoubleStasisFieldDuration ? 12'000.f : 6000.f;
 
             doWizardSpellStasisField(*wizardCat);
 
@@ -2283,22 +2289,47 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] static constexpr auto formatSpeedrunTime(const sf::Time time)
+    {
+        const sf::base::I64 elapsedTime       = time.asMicroseconds();
+        const sf::base::U64 totalMicroseconds = (elapsedTime >= 0) ? static_cast<sf::base::U64>(elapsedTime) : 0ULL;
+
+        constexpr sf::base::U64 usPerMs   = 1000ULL;
+        constexpr sf::base::U64 usPerSec  = 1000ULL * usPerMs; // 1,000,000
+        constexpr sf::base::U64 usPerMin  = 60ULL * usPerSec;  // 60,000,000
+        constexpr sf::base::U64 usPerHour = 60ULL * usPerMin;  // 3,600,000,000
+
+        struct Result
+        {
+            sf::base::U64 hours;
+            sf::base::U64 mins;
+            sf::base::U64 secs;
+            sf::base::U64 millis;
+        };
+
+        return Result{totalMicroseconds / usPerHour,
+                      (totalMicroseconds % usPerHour) / usPerMin,
+                      (totalMicroseconds % usPerMin) / usPerSec,
+                      (totalMicroseconds % usPerSec) / usPerMs};
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool mustApplyMewltiplierAura(const sf::Vector2f bubblePosition) const
     {
-        if (pt.mewltiplierAuraTimer <= 0.f)
+        if (pt->mewltiplierAuraTimer <= 0.f)
             return false;
 
         const Cat* wizardCat = cachedWizardCat;
         if (wizardCat == nullptr)
             return false;
 
-        const float wizardCatRangeSquared = pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+        const float wizardCatRangeSquared = pt->getComputedSquaredRangeByCatType(CatType::Wizard);
 
         if ((wizardCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
             return true;
 
         const Cat* copyCat = cachedCopyCat;
-        if (copyCat == nullptr || pt.copycatCopiedCatType != CatType::Wizard)
+        if (copyCat == nullptr || pt->copycatCopiedCatType != CatType::Wizard)
             return false;
 
         if ((copyCat->position - bubblePosition).lengthSquared() <= wizardCatRangeSquared)
@@ -2318,7 +2349,7 @@ struct Main
 
         const bool popperCatIsMousecat = //
             !byPlayerClick && (popperCat->type == CatType::Mouse ||
-                               (popperCat->type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse));
+                               (popperCat->type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse));
 
         const bool popperCatIsNormal = !byPlayerClick && popperCat->type == CatType::Normal;
 
@@ -2327,7 +2358,7 @@ struct Main
 
         const bool nearShrineOfClicking = byPlayerClick && ([&]
         {
-            for (const Shrine& shrine : pt.shrines)
+            for (const Shrine& shrine : pt->shrines)
                 if (shrine.type == ShrineType::Clicking && shrine.isInRange(bubble.position))
                     return true;
 
@@ -2335,39 +2366,39 @@ struct Main
         })();
 
         // Base reward: bubble value by type multiplied by static multiplier (e.g. x10 for bombs, x20 for astro)
-        float result = static_cast<float>(pt.getComputedRewardByBubbleType(bubble.type)) * multiplier;
+        float result = static_cast<float>(pt->getComputedRewardByBubbleType(bubble.type)) * multiplier;
 
         // Combo mult: applied for player clicks or mousecat clicks
         result *= comboMult;
 
         // Wizard spells: mewltiplier aura
         if (mustApplyMewltiplierAura(bubble.position))
-            result *= pt.psvMewltiplierMult.currentValue();
+            result *= pt->psvMewltiplierMult.currentValue();
 
         // Global bonus -- mousecat (applies to clicks)
-        const bool isMouseBeingCopied = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Mouse;
+        const bool isMouseBeingCopied = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse;
         if (mustApplyHandMult && cachedMouseCat != nullptr)
-            result *= pt.psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
+            result *= pt->psvPPMouseCatGlobalBonusMult.currentValue() * (isMouseBeingCopied ? 2.f : 1.f);
 
         // Global bonus -- engicat (applies to cats)
-        const bool isEngiBeingCopied = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Engi;
+        const bool isEngiBeingCopied = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Engi;
         if (mustApplyCatMult && cachedEngiCat != nullptr)
-            result *= pt.psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
+            result *= pt->psvPPEngiCatGlobalBonusMult.currentValue() * (isEngiBeingCopied ? 2.f : 1.f);
 
         // Shrine of clicking: x5 reward for clicks
         if (mustApplyHandMult && nearShrineOfClicking)
             result *= 5.f;
 
         // Ritual buff -- normalcat: x5 reward for cats
-        if (mustApplyCatMult && pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
+        if (mustApplyCatMult && pt->buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f)
             result *= 5.f;
 
         // Ritual buff -- mousecat: x10 reward for clicks
-        if (mustApplyHandMult && pt.buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
+        if (mustApplyHandMult && pt->buffCountdownsPerType[asIdx(CatType::Mouse)].value > 0.f)
             result *= 10.f;
 
         // Genius cats: x2 reward for normal cats only
-        if (!byPlayerClick && popperCatIsNormal && pt.perm.geniusCatsPurchased)
+        if (!byPlayerClick && popperCatIsNormal && pt->perm.geniusCatsPurchased)
             result *= 2.f;
 
         // Repulsocat: x2 reward for repelled bubbles
@@ -2463,16 +2494,16 @@ struct Main
 
         data.entries.emplace_back(0, "Default");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
             data.entries.emplace_back(1, "Ritual Circle");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
             data.entries.emplace_back(2, "The Wise One");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
             data.entries.emplace_back(3, "Click N Chill");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
             data.entries.emplace_back(4, "Use More Cat");
 
         if (data.selectedIndex == -1)
@@ -2498,25 +2529,25 @@ struct Main
 
         data.entries.emplace_back(0, "Default");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
             data.entries.emplace_back(1, "Swamp");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
             data.entries.emplace_back(2, "Observatory");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
             data.entries.emplace_back(3, "Aim Labs");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
             data.entries.emplace_back(4, "Factory");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
             data.entries.emplace_back(5, "Wind Tunnel");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
             data.entries.emplace_back(6, "Magnetosphere");
 
-        if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+        if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
             data.entries.emplace_back(7, "Auditorium");
 
         if (data.selectedIndex == -1)
@@ -2535,30 +2566,60 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void forceResetGame()
+    void forceResetGame(const bool goToShopTab = true)
     {
         sounds.stopPlayingAll(sounds.ritual);
         sounds.stopPlayingAll(sounds.copyritual);
 
+        delayedActions.clear();
+
         rng.reseed(std::random_device{}());
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
-        pt      = Playthrough{};
-        pt.seed = rng.getSeed();
+        *pt      = Playthrough{};
+        pt->seed = rng.getSeed();
 
         wasPrestigeAvailableLastFrame = false;
         buyReminder                   = 0u;
 
         resetAllDraggedCats();
+        resetTipState();
 
         particles.clear();
-        spentCoinParticles.clear();
-        hudTopParticles.clear();
-        hudBottomParticles.clear();
         textParticles.clear();
+        spentCoinParticles.clear();
+        hudBottomParticles.clear();
+        hudTopParticles.clear();
         earnedCoinParticles.clear();
 
-        shopSelectOnce = ImGuiTabItemFlags_SetSelected;
+        inPrestigeTransition = false;
+
+        combo            = 0u;
+        laserCursorCombo = 0;
+
+        comboNStars         = 0;
+        comboNOthers        = 0;
+        comboAccReward      = 0;
+        comboAccStarReward  = 0;
+        iComboAccReward     = 0;
+        iComboAccStarReward = 0;
+
+        scroll = 0.f;
+
+        screenShakeAmount = 0.f;
+        screenShakeTimer  = 0.f;
+
+        spentMoney            = 0u;
+        moneyGainedLastSecond = 0u;
+        samplerMoneyPerSecond.clear();
+
+        bombIdxToCatIdx.clear();
+        purchaseUnlockedEffects.clear();
+        btnWasDisabled.clear();
+        undoPPPurchase.clear();
+
+        if (goToShopTab)
+            shopSelectOnce = ImGuiTabItemFlags_SetSelected;
 
         profile.selectedBackground = 0;
         profile.selectedBGM        = 0;
@@ -2656,12 +2717,12 @@ struct Main
                           ParticleType::Smoke);
 
         // TODO P2: cleanup
-        const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
+        const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
         const auto bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
 
-        Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt.cats.data() + bombIdxItr->second : nullptr;
+        Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
 
-        const float explosionRadius = pt.getComputedBombExplosionRadius();
+        const float explosionRadius = pt->getComputedBombExplosionRadius();
 
         forEachBubbleInRadius(bubble.position,
                               explosionRadius,
@@ -2689,13 +2750,13 @@ struct Main
             return ControlFlow::Continue;
         });
 
-        if (pt.perm.witchCatBuffFlammableDolls)
+        if (pt->perm.witchCatBuffFlammableDolls)
         {
-            for (Doll& doll : pt.dolls)
+            for (Doll& doll : pt->dolls)
                 if ((doll.position - bubble.position).length() <= explosionRadius && !doll.tcDeath.hasValue())
                     collectDoll(doll);
 
-            for (Doll& copyDoll : pt.copyDolls)
+            for (Doll& copyDoll : pt->copyDolls)
                 if ((copyDoll.position - bubble.position).length() <= explosionRadius && !copyDoll.tcDeath.hasValue())
                     collectCopyDoll(copyDoll);
         }
@@ -2728,16 +2789,16 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isBubbleInStasisField(const Bubble& bubble) const
     {
-        if (pt.stasisFieldTimer <= 0.f)
+        if (pt->stasisFieldTimer <= 0.f)
             return false;
 
-        const auto rangeSquared = pt.getComputedSquaredRangeByCatType(CatType::Wizard);
+        const auto rangeSquared = pt->getComputedSquaredRangeByCatType(CatType::Wizard);
 
         if (cachedWizardCat != nullptr)
             if ((bubble.position - cachedWizardCat->position).lengthSquared() <= rangeSquared)
                 return true;
 
-        if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+        if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
             if ((bubble.position - cachedCopyCat->position).lengthSquared() <= rangeSquared)
                 return true;
 
@@ -2760,7 +2821,7 @@ struct Main
             statHighestNovaBubblePopCombo(static_cast<sf::base::U64>(combo));
 
         Shrine* collectorShrine = nullptr;
-        for (Shrine& shrine : pt.shrines)
+        for (Shrine& shrine : pt->shrines)
         {
             if ((bubble.position - shrine.position).lengthSquared() > shrine.getRangeSquared())
                 continue;
@@ -2778,7 +2839,7 @@ struct Main
             std::snprintf(tp.buffer, sizeof(tp.buffer), "+$%llu", reward);
         }
 
-        if (profile.accumulatingCombo && !multiPop && byPlayerClick && pt.comboPurchased && !collectedByShrine)
+        if (profile.accumulatingCombo && !multiPop && byPlayerClick && pt->comboPurchased && !collectedByShrine)
         {
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                 comboNStars += 1;
@@ -2803,7 +2864,7 @@ struct Main
 
             const sf::Vector2f hudPos = fromWorldToHud(bubble.position);
 
-            if ((!profile.accumulatingCombo || !pt.comboPurchased || !byPlayerClick) && !collectedByShrine &&
+            if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
                 spawnEarnedCoinParticle(hudPos))
             {
                 sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
@@ -2843,7 +2904,7 @@ struct Main
 
         if (!isBubbleInStasisField(bubble))
         {
-            bubble = makeRandomBubble(pt, rng, pt.getMapLimit(), 0.f);
+            bubble = makeRandomBubble(*pt, rng, pt->getMapLimit(), 0.f);
             bubble.position.y -= bubble.radius;
         }
     }
@@ -2862,20 +2923,20 @@ struct Main
 
         if (keyDown(sf::Keyboard::Key::F4))
         {
-            pt.comboPurchased = true;
-            pt.mapPurchased   = true;
+            pt->comboPurchased = true;
+            pt->mapPurchased   = true;
         }
         else if (keyDown(sf::Keyboard::Key::F5))
         {
-            pt.money = 1'000'000'000u;
+            pt->money = 1'000'000'000u;
         }
         else if (keyDown(sf::Keyboard::Key::F6))
         {
-            pt.money += 15u;
+            pt->money += 15u;
         }
         else if (keyDown(sf::Keyboard::Key::F7))
         {
-            pt.prestigePoints += 15u;
+            pt->prestigePoints += 15u;
         }
     }
 
@@ -2883,7 +2944,7 @@ struct Main
     void turnBubbleNormal(Bubble& bubble)
     {
         if (bubble.type == BubbleType::Bomb)
-            bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data()));
+            bombIdxToCatIdx.erase(static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data()));
 
         bubble.type     = BubbleType::Normal;
         bubble.rotation = 0.f;
@@ -2913,7 +2974,7 @@ struct Main
         // Scrolling
         scroll = sf::base::clamp(scroll,
                                  0.f,
-                                 sf::base::min(pt.getMapLimit() / 2.f - gameScreenSize.x / 2.f,
+                                 sf::base::min(pt->getMapLimit() / 2.f - gameScreenSize.x / 2.f,
                                                (boundaries.x - gameScreenSize.x) / 2.f));
 
         actualScroll = exponentialApproach(actualScroll, scroll, deltaTimeMs, 75.f);
@@ -2924,14 +2985,14 @@ struct Main
     {
         // Compute screen count
         constexpr auto nMaxScreens       = boundaries.x / gameScreenSize.x;
-        const auto     nPurchasedScreens = static_cast<SizeT>(pt.getMapLimit() / gameScreenSize.x) + 1u;
+        const auto     nPurchasedScreens = static_cast<SizeT>(pt->getMapLimit() / gameScreenSize.x) + 1u;
 
         // Compute total target bubble count
-        const auto targetBubbleCountPerScreen = static_cast<SizeT>(pt.psvBubbleCount.currentValue() / nMaxScreens);
+        const auto targetBubbleCountPerScreen = static_cast<SizeT>(pt->psvBubbleCount.currentValue() / nMaxScreens);
 
         auto targetBubbleCount = targetBubbleCountPerScreen * nPurchasedScreens;
 
-        const bool repulsoBuffActive = pt.buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f;
+        const bool repulsoBuffActive = pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f;
 
         if (repulsoBuffActive)
             targetBubbleCount *= 2u;
@@ -2952,16 +3013,16 @@ struct Main
         if (!inPrestigeTransition)
         {
             // Spawn shrines if required
-            pt.spawnAllShrinesIfNeeded();
+            pt->spawnAllShrinesIfNeeded();
 
             // Spawn bubbles (or remove extra bubbles via debug menu)
-            if (pt.bubbles.size() < targetBubbleCount)
+            if (pt->bubbles.size() < targetBubbleCount)
             {
-                const SizeT times = (targetBubbleCount - pt.bubbles.size()) > 500u ? 25u : 1u;
+                const SizeT times = (targetBubbleCount - pt->bubbles.size()) > 500u ? 25u : 1u;
 
                 for (SizeT i = 0; i < times; ++i)
                 {
-                    auto& bubble = pt.bubbles.emplace_back(makeRandomBubble(pt, rng, pt.getMapLimit(), boundaries.y));
+                    auto& bubble = pt->bubbles.emplace_back(makeRandomBubble(*pt, rng, pt->getMapLimit(), boundaries.y));
                     const auto bPos = bubble.position;
 
                     if (repulsoBuffActive)
@@ -2971,14 +3032,14 @@ struct Main
                     playReversePopAt(bPos);
                 }
             }
-            else if (pt.bubbles.size() > targetBubbleCount)
+            else if (pt->bubbles.size() > targetBubbleCount)
             {
-                const SizeT times = (pt.bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
+                const SizeT times = (pt->bubbles.size() - targetBubbleCount) > 500u ? 25u : 1u;
 
                 for (SizeT i = 0; i < times; ++i)
                 {
-                    const auto bPos = pt.bubbles.back().position;
-                    pt.bubbles.pop_back();
+                    const auto bPos = pt->bubbles.back().position;
+                    pt->bubbles.pop_back();
 
                     spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
                     playReversePopAt(bPos);
@@ -2993,28 +3054,28 @@ struct Main
         // Despawn cats, dolls, copydolls, and shrines
         if (catRemoveTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
         {
-            if (!pt.cats.empty())
+            if (!pt->cats.empty())
             {
-                for (auto& cat : pt.cats)
+                for (auto& cat : pt->cats)
                 {
                     cat.astroState.reset();
                     cat.cooldown.value = 100.f;
                 }
 
                 // Find rightmost cat
-                const auto rightmostIt = std::max_element(pt.cats.begin(),
-                                                          pt.cats.end(),
+                const auto rightmostIt = std::max_element(pt->cats.begin(),
+                                                          pt->cats.end(),
                                                           [](const Cat& a, const Cat& b)
                 { return a.position.x < b.position.x; });
 
                 const float targetScroll = (rightmostIt->position.x - gameScreenSize.x / 2.f) / 2.f;
                 scroll                   = exponentialApproach(scroll, targetScroll, deltaTimeMs, 15.f);
 
-                if (rightmostIt != pt.cats.end())
-                    std::swap(*rightmostIt, pt.cats.back());
+                if (rightmostIt != pt->cats.end())
+                    std::swap(*rightmostIt, pt->cats.back());
 
-                const auto cPos = pt.cats.back().position;
-                pt.cats.pop_back();
+                const auto cPos = pt->cats.back().position;
+                pt->cats.pop_back();
 
                 spawnParticle({.position      = cPos.addY(29.f),
                                .velocity      = {0.f, 0.f},
@@ -3032,67 +3093,68 @@ struct Main
                 playReversePopAt(cPos);
             }
 
-            if (!pt.shrines.empty())
+            if (!pt->shrines.empty())
             {
-                const auto cPos = pt.shrines.back().position;
-                pt.shrines.pop_back();
+                const auto cPos = pt->shrines.back().position;
+                pt->shrines.pop_back();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
             }
 
-            if (!pt.dolls.empty())
+            if (!pt->dolls.empty())
             {
-                const auto cPos = pt.dolls.back().position;
-                pt.dolls.pop_back();
+                const auto cPos = pt->dolls.back().position;
+                pt->dolls.pop_back();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
             }
 
-            if (!pt.copyDolls.empty())
+            if (!pt->copyDolls.empty())
             {
-                const auto cPos = pt.copyDolls.back().position;
-                pt.copyDolls.pop_back();
+                const auto cPos = pt->copyDolls.back().position;
+                pt->copyDolls.pop_back();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
             }
 
-            if (!pt.hellPortals.empty())
+            if (!pt->hellPortals.empty())
             {
-                const auto cPos = pt.hellPortals.back().position;
-                pt.hellPortals.pop_back();
+                const auto cPos = pt->hellPortals.back().position;
+                pt->hellPortals.pop_back();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
             }
         }
 
-        const bool gameElementsRemoved = pt.cats.empty() && pt.shrines.empty() && pt.dolls.empty() &&
-                                         pt.copyDolls.empty() && pt.hellPortals.empty();
+        const bool gameElementsRemoved = pt->cats.empty() && pt->shrines.empty() && pt->dolls.empty() &&
+                                         pt->copyDolls.empty() && pt->hellPortals.empty();
 
         // Reset map extension and scroll, and remove bubbles outside of view
         if (gameElementsRemoved)
         {
-            pt.mapPurchased               = false;
-            pt.psvMapExtension.nPurchases = 0u;
+            pt->mapPurchased               = false;
+            pt->psvMapExtension.nPurchases = 0u;
 
             scroll = 0.f;
 
-            sf::base::vectorEraseIf(pt.bubbles, [&](const Bubble& b) { return b.position.x > pt.getMapLimit() + 128.f; });
+            sf::base::vectorEraseIf(pt->bubbles,
+                                    [&](const Bubble& b) { return b.position.x > pt->getMapLimit() + 128.f; });
         }
 
         // Despawn bubbles after other things
-        if (gameElementsRemoved && !pt.bubbles.empty() &&
+        if (gameElementsRemoved && !pt->bubbles.empty() &&
             bubbleSpawnTimer.updateAndLoop(deltaTimeMs) == CountdownStatusLoop::Looping)
         {
-            const SizeT times = pt.bubbles.size() > 500u ? 25u : 1u;
+            const SizeT times = pt->bubbles.size() > 500u ? 25u : 1u;
 
             for (SizeT i = 0; i < times; ++i)
             {
-                const auto bPos = pt.bubbles.back().position;
-                pt.bubbles.pop_back();
+                const auto bPos = pt->bubbles.back().position;
+                pt->bubbles.pop_back();
 
                 spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
                 playReversePopAt(bPos);
@@ -3100,12 +3162,12 @@ struct Main
         }
 
         // End prestige transition
-        if (gameElementsRemoved && pt.bubbles.empty())
+        if (gameElementsRemoved && pt->bubbles.empty())
         {
-            pt.statsSession = Stats{};
+            pt->statsSession = Stats{};
 
             inPrestigeTransition = false;
-            pt.money             = pt.perm.starterPackPurchased ? 1000u : 0u;
+            pt->money            = pt->perm.starterPackPurchased ? 1000u : 0u;
 
             resetAllDraggedCats();
 
@@ -3127,7 +3189,7 @@ struct Main
         constexpr float windMult[4]           = {0.f, 0.00009f, 0.00018f, 0.0005f};
         constexpr float windStartVelocityY[4] = {0.07f, 0.18f, 0.25f, 0.55f};
 
-        for (Bubble& bubble : pt.bubbles)
+        for (Bubble& bubble : pt->bubbles)
         {
             if (bubble.velocity.lengthSquared() > maxVelocityMagnitude * maxVelocityMagnitude)
                 bubble.velocity = bubble.velocity.normalized() * maxVelocityMagnitude;
@@ -3138,9 +3200,9 @@ struct Main
             if (bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova)
                 bubble.hueMod += deltaTimeMs * 0.125f;
 
-            float windVelocity = windMult[pt.windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
+            float windVelocity = windMult[pt->windStrength] * (bubble.type == BubbleType::Bomb ? 0.01f : 0.9f);
 
-            if (pt.buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
+            if (pt->buffCountdownsPerType[asIdx(CatType::Repulso)].value > 0.f)
                 windVelocity += 0.00015f;
 
             if (windVelocity > 0.f)
@@ -3155,30 +3217,30 @@ struct Main
             bubble.position += bubble.velocity * deltaTimeMs;
 
             // X-axis wraparound
-            if (bubble.position.x - bubble.radius > pt.getMapLimit())
+            if (bubble.position.x - bubble.radius > pt->getMapLimit())
                 bubble.position.x = -bubble.radius;
             else if (bubble.position.x + bubble.radius < 0.f)
-                bubble.position.x = pt.getMapLimit() + bubble.radius;
+                bubble.position.x = pt->getMapLimit() + bubble.radius;
 
             // Y-axis below and above screen
             if (bubble.position.y - bubble.radius > boundaries.y)
             {
-                bubble.position.x = rng.getF(0.f, pt.getMapLimit());
+                bubble.position.x = rng.getF(0.f, pt->getMapLimit());
                 bubble.position.y = -bubble.radius * rng.getF(1.f, 2.f);
 
-                bubble.velocity.y = windStartVelocityY[pt.windStrength];
+                bubble.velocity.y = windStartVelocityY[pt->windStrength];
 
                 if (sf::base::fabs(bubble.velocity.x) > 0.04f)
                     bubble.velocity.x = 0.04f;
 
-                const bool uniBuffEnabled       = pt.buffCountdownsPerType[asIdx(CatType::Uni)].value > 0.f;
+                const bool uniBuffEnabled       = pt->buffCountdownsPerType[asIdx(CatType::Uni)].value > 0.f;
                 const bool devilBombBuffEnabled = !isDevilcatHellsingedActive() &&
-                                                  pt.buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f;
+                                                  pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f;
 
                 const bool willBeStar = uniBuffEnabled &&
-                                        rng.getF(0.f, 100.f) <= pt.psvPPUniRitualBuffPercentage.currentValue();
+                                        rng.getF(0.f, 100.f) <= pt->psvPPUniRitualBuffPercentage.currentValue();
                 const bool willBeBomb = devilBombBuffEnabled &&
-                                        rng.getF(0.f, 100.f) <= pt.psvPPDevilRitualBuffPercentage.currentValue();
+                                        rng.getF(0.f, 100.f) <= pt->psvPPDevilRitualBuffPercentage.currentValue();
 
                 const auto starType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
 
@@ -3206,16 +3268,16 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAttractoBuff(const float deltaTimeMs)
     {
-        if (pt.buffCountdownsPerType[asIdx(CatType::Attracto)].value <= 0.f)
+        if (pt->buffCountdownsPerType[asIdx(CatType::Attracto)].value <= 0.f)
             return;
 
-        const auto sqAttractoRange = pt.getComputedSquaredRangeByCatType(CatType::Attracto);
+        const auto sqAttractoRange = pt->getComputedSquaredRangeByCatType(CatType::Attracto);
         const auto attractoRange   = SFML_BASE_MATH_SQRTF(sqAttractoRange);
 
         static thread_local std::vector<Bubble*> bombs;
         bombs.clear();
 
-        for (Bubble& bubble : pt.bubbles)
+        for (Bubble& bubble : pt->bubbles)
             if (bubble.type == BubbleType::Bomb)
                 bombs.push_back(&bubble);
 
@@ -3235,12 +3297,12 @@ struct Main
             bubble.attractedCountdown.value = sf::base::max(bubble.attractedCountdown.value, 750.f);
         };
 
-        for (Bubble& bubble : pt.bubbles)
+        for (Bubble& bubble : pt->bubbles)
         {
             if (bubble.type == BubbleType::Bomb)
                 continue;
 
-            for (const HellPortal& hp : pt.hellPortals)
+            for (const HellPortal& hp : pt->hellPortals)
                 attract(hp.position, bubble);
 
             for (const Bubble* bomb : bombs)
@@ -3272,7 +3334,7 @@ struct Main
                 return ControlFlow::Continue;
 
             // Prevent clicks around shrine of automation
-            for (Shrine& shrine : pt.shrines)
+            for (Shrine& shrine : pt->shrines)
                 if (shrine.type == ShrineType::Automation && shrine.isInRange(clickPos))
                 {
                     sounds.failpop.setPosition({clickPos.x, clickPos.y});
@@ -3283,9 +3345,9 @@ struct Main
 
             anyBubblePoppedByClicking = true;
 
-            if (pt.comboPurchased)
+            if (pt->comboPurchased)
             {
-                if (!pt.laserPopEnabled)
+                if (!pt->laserPopEnabled)
                 {
                     addCombo(combo, comboCountdown);
                     comboTextShakeEffect.bump(rngFast, 1.f + static_cast<float>(combo) * 0.2f);
@@ -3300,7 +3362,7 @@ struct Main
                         comboTextShakeEffect.bump(rngFast, 0.01f + static_cast<float>(combo) * 0.002f);
 
                         comboCountdown.value = sf::base::min(comboCountdown.value,
-                                                             pt.psvComboStartTime.currentValue() * 100.f);
+                                                             pt->psvComboStartTime.currentValue() * 100.f);
 
                         combo = sf::base::min(combo, 998);
                     }
@@ -3314,7 +3376,7 @@ struct Main
             const MoneyType
                 reward = computeFinalReward(/* bubble     */ bubble,
                                             /* multiplier */ 1.f,
-                                            /* comboMult  */ getComboValueMult(combo, pt.laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
+                                            /* comboMult  */ getComboValueMult(combo, pt->laserPopEnabled ? playerComboDecayLaser : playerComboDecay),
                                             /* popperCat  */ nullptr);
 
             popWithRewardAndReplaceBubble({
@@ -3326,9 +3388,12 @@ struct Main
                 .multiPop        = false,
             });
 
-            if (pt.multiPopEnabled && !pt.laserPopEnabled)
+            if (!pt->speedrunStartTime.hasValue())
+                pt->speedrunStartTime.emplace(sf::Clock::now());
+
+            if (pt->multiPopEnabled && !pt->laserPopEnabled)
                 forEachBubbleInRadius(clickPos,
-                                      pt.psvPPMultiPopRange.currentValue(),
+                                      pt->psvPPMultiPopRange.currentValue(),
                                       [&](Bubble& otherBubble)
                 {
                     if (&otherBubble == &bubble)
@@ -3362,8 +3427,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionNormal(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = pt->getComputedCooldownByCatType(cat.type);
+        const auto range       = pt->getComputedRangeByCatType(cat.type);
         const auto [cx, cy]    = getCatRangeCenter(cat);
 
         const auto normalCatPopBubble = [&](Bubble& bubble)
@@ -3372,15 +3437,15 @@ struct Main
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (bubble.position - cat.position).angle() + sf::degrees(45);
 
-            const float squaredMouseCatRange = pt.getComputedSquaredRangeByCatType(CatType::Mouse);
+            const float squaredMouseCatRange = pt->getComputedSquaredRangeByCatType(CatType::Mouse);
 
             const bool inMouseCatRange = cachedMouseCat != nullptr &&
                                          (cachedMouseCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
-            const bool inCopyMouseCatRange = cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Mouse &&
+            const bool inCopyMouseCatRange = cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Mouse &&
                                              (cachedCopyCat->position - cat.position).lengthSquared() <= squaredMouseCatRange;
 
-            const int comboMult = (inMouseCatRange || inCopyMouseCatRange) ? pt.mouseCatCombo : 1;
+            const int comboMult = (inMouseCatRange || inCopyMouseCatRange) ? pt->mouseCatCombo : 1;
 
             const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
                                                         /* multiplier */ 1.f,
@@ -3402,7 +3467,7 @@ struct Main
             cat.cooldown.value = maxCooldown;
         };
 
-        if (!pt.perm.smartCatsPurchased)
+        if (!pt->perm.smartCatsPurchased)
         {
             if (Bubble* b = pickRandomBubbleInRadius({cx, cy}, range))
                 normalCatPopBubble(*b);
@@ -3417,7 +3482,7 @@ struct Main
                                                     [&](const Bubble& b) { return ((b.type == types) || ...); });
         };
 
-        if (!pt.perm.geniusCatsPurchased)
+        if (!pt->perm.geniusCatsPurchased)
         {
             if (Bubble* specialBubble = pickAny(BubbleType::Nova, BubbleType::Star, BubbleType::Bomb))
                 normalCatPopBubble(*specialBubble);
@@ -3427,13 +3492,13 @@ struct Main
             return;
         }
 
-        if (Bubble* bBomb = pickAny(BubbleType::Bomb); bBomb != nullptr && !pt.geniusCatIgnoreBubbles.bomb)
+        if (Bubble* bBomb = pickAny(BubbleType::Bomb); bBomb != nullptr && !pt->geniusCatIgnoreBubbles.bomb)
             normalCatPopBubble(*bBomb);
-        else if (Bubble* bNova = pickAny(BubbleType::Nova); bNova != nullptr && !pt.geniusCatIgnoreBubbles.star)
+        else if (Bubble* bNova = pickAny(BubbleType::Nova); bNova != nullptr && !pt->geniusCatIgnoreBubbles.star)
             normalCatPopBubble(*bNova);
-        else if (Bubble* bStar = pickAny(BubbleType::Star); bStar != nullptr && !pt.geniusCatIgnoreBubbles.star)
+        else if (Bubble* bStar = pickAny(BubbleType::Star); bStar != nullptr && !pt->geniusCatIgnoreBubbles.star)
             normalCatPopBubble(*bStar);
-        else if (Bubble* bNormal = pickAny(BubbleType::Normal); bNormal != nullptr && !pt.geniusCatIgnoreBubbles.normal)
+        else if (Bubble* bNormal = pickAny(BubbleType::Normal); bNormal != nullptr && !pt->geniusCatIgnoreBubbles.normal)
             normalCatPopBubble(*bNormal);
     }
 
@@ -3441,7 +3506,7 @@ struct Main
     void gameLoopUpdateCatActionUni(const float /* deltaTimeMs */, Cat& cat)
     {
         const auto starBubbleType = isUnicatTranscendenceActive() ? BubbleType::Nova : BubbleType::Star;
-        const auto nStarParticles = pt.perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
+        const auto nStarParticles = pt->perm.unicatTranscendenceAOEPurchased ? 1u : 4u;
 
         const auto transformBubble = [&](Bubble& bToTransform)
         {
@@ -3453,10 +3518,10 @@ struct Main
             ++cat.hits;
         };
 
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = pt->getComputedCooldownByCatType(cat.type);
+        const auto range       = pt->getComputedRangeByCatType(cat.type);
 
-        if (pt.perm.unicatTranscendenceAOEPurchased)
+        if (pt->perm.unicatTranscendenceAOEPurchased)
         {
             Bubble* firstBubble = nullptr;
 
@@ -3511,8 +3576,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionDevil(const float /* deltaTimeMs */, Cat& cat)
     {
-        const auto maxCooldown = pt.getComputedCooldownByCatType(cat.type);
-        const auto range       = pt.getComputedRangeByCatType(cat.type);
+        const auto maxCooldown = pt->getComputedCooldownByCatType(cat.type);
+        const auto range       = pt->getComputedRangeByCatType(cat.type);
 
         if (!isDevilcatHellsingedActive())
         {
@@ -3528,8 +3593,8 @@ struct Main
 
             bubble.type = BubbleType::Bomb;
 
-            const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt.bubbles.data());
-            const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt.cats.data());
+            const auto bubbleIdx = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+            const auto catIdx    = static_cast<sf::base::SizeT>(&cat - pt->cats.data());
 
             bombIdxToCatIdx[bubbleIdx] = catIdx;
 
@@ -3543,10 +3608,10 @@ struct Main
         {
             const auto portalPos = getCatRangeCenter(cat);
 
-            pt.hellPortals.push_back({
+            pt->hellPortals.push_back({
                 .position = portalPos,
                 .life     = Countdown{.value = 1750.f},
-                .catIdx   = static_cast<sf::base::SizeT>(&cat - pt.cats.data()),
+                .catIdx   = static_cast<sf::base::SizeT>(&cat - pt->cats.data()),
             });
 
             sounds.makeBomb.setPosition({portalPos.x, portalPos.y});
@@ -3564,7 +3629,7 @@ struct Main
     {
         const auto [cx, cy] = getCatRangeCenter(cat);
 
-        if (cat.astroState.hasValue() || pt.disableAstrocatFlight)
+        if (cat.astroState.hasValue() || pt->disableAstrocatFlight)
             return;
 
         sounds.launch.setPosition({cx, cy});
@@ -3578,7 +3643,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Cat* getHexedCat()
     {
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
             if (cat.hexedTimer.hasValue())
                 return &cat;
 
@@ -3588,7 +3653,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Cat* getCopyHexedCat()
     {
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
             if (cat.hexedCopyTimer.hasValue())
                 return &cat;
 
@@ -3598,20 +3663,20 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool anyCatHexedOrCopyHexed() const
     {
-        return sf::base::anyOf(pt.cats.begin(), pt.cats.end(), [](const Cat& cat) { return cat.isHexedOrCopyHexed(); });
+        return sf::base::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.isHexedOrCopyHexed(); });
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool anyCatHexed() const
     {
-        return sf::base::anyOf(pt.cats.begin(), pt.cats.end(), [](const Cat& cat) { return cat.hexedTimer.hasValue(); });
+        return sf::base::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) { return cat.hexedTimer.hasValue(); });
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool anyCatCopyHexed() const
     {
-        return sf::base::anyOf(pt.cats.begin(),
-                               pt.cats.end(),
+        return sf::base::anyOf(pt->cats.begin(),
+                               pt->cats.end(),
                                [](const Cat& cat) { return cat.hexedCopyTimer.hasValue(); });
     }
 
@@ -3648,13 +3713,13 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedCooldownByCatTypeOrCopyCat(const CatType catType) const
     {
-        return pt.getComputedCooldownByCatType(catType == CatType::Copy ? pt.copycatCopiedCatType : catType);
+        return pt->getComputedCooldownByCatType(catType == CatType::Copy ? pt->copycatCopiedCatType : catType);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] inline float getComputedRangeByCatTypeOrCopyCat(const CatType catType) const
     {
-        return pt.getComputedRangeByCatType(catType == CatType::Copy ? pt.copycatCopiedCatType : catType);
+        return pt->getComputedRangeByCatType(catType == CatType::Copy ? pt->copycatCopiedCatType : catType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3666,7 +3731,7 @@ struct Main
         SizeT otherCatCount = 0u;
         Cat*  selected      = nullptr;
 
-        for (Cat& otherCat : pt.cats)
+        for (Cat& otherCat : pt->cats)
         {
             if (otherCat.type == CatType::Duck)
                 continue;
@@ -3674,7 +3739,7 @@ struct Main
             if (otherCat.type == CatType::Witch)
                 continue;
 
-            if (otherCat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch)
+            if (otherCat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch)
                 continue;
 
             if ((otherCat.position - cat.position).length() > range)
@@ -3694,24 +3759,24 @@ struct Main
         {
             SFML_BASE_ASSERT(selected != nullptr);
 
-            hexCat(*selected, /* copy */ &dollsToUse == &pt.copyDolls);
+            hexCat(*selected, /* copy */ &dollsToUse == &pt->copyDolls);
 
-            float buffPower = pt.psvPPWitchCatBuffDuration.currentValue();
+            float buffPower = pt->psvPPWitchCatBuffDuration.currentValue();
 
-            if (pt.perm.witchCatBuffPowerScalesWithNCats)
+            if (pt->perm.witchCatBuffPowerScalesWithNCats)
                 buffPower += sf::base::ceil(sf::base::pow(static_cast<float>(otherCatCount), 0.9f)) * 0.5f;
 
-            if (pt.perm.witchCatBuffPowerScalesWithMapSize)
+            if (pt->perm.witchCatBuffPowerScalesWithMapSize)
             {
-                const float nMapExtensions = (pt.mapPurchased ? 1.f : 0.f) +
-                                             static_cast<float>(pt.psvMapExtension.nPurchases);
+                const float nMapExtensions = (pt->mapPurchased ? 1.f : 0.f) +
+                                             static_cast<float>(pt->psvMapExtension.nPurchases);
 
                 buffPower += static_cast<float>(nMapExtensions) * 0.75f;
             }
 
             const auto nDollsToSpawn = sf::base::max(SizeT{2u},
                                                      static_cast<SizeT>(
-                                                         buffPower * (pt.perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
+                                                         buffPower * (pt->perm.witchCatBuffFewerDolls ? 1.f : 2.f) / 4.f));
 
             SFML_BASE_ASSERT(dollsToUse.empty());
 
@@ -3728,7 +3793,7 @@ struct Main
 
             const auto isOnTopOfAnyCat = [&](const sf::Vector2f& position) -> bool
             {
-                for (const Cat& c : pt.cats)
+                for (const Cat& c : pt->cats)
                     if ((c.position - position).lengthSquared() < c.getRadiusSquared())
                         return true;
 
@@ -3737,7 +3802,7 @@ struct Main
 
             const auto isOnTopOfAnyShrine = [&](const sf::Vector2f& position) -> bool
             {
-                for (const Shrine& s : pt.shrines)
+                for (const Shrine& s : pt->shrines)
                     if ((s.position - position).lengthSquared() < s.getRadiusSquared())
                         return true;
 
@@ -3747,7 +3812,7 @@ struct Main
             const auto rndDollPosition = [&]
             {
                 constexpr float offset = 64.f;
-                return rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset - uiWindowWidth, boundaries.y - offset});
+                return rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset - uiWindowWidth, boundaries.y - offset});
             };
 
             const auto pickDollPosition = [&]
@@ -3769,22 +3834,22 @@ struct Main
                     Doll{.position      = pickDollPosition(),
                          .wobbleRadians = rng.getF(0.f, sf::base::tau),
                          .buffPower     = buffPower,
-                         .catType       = selected->type == CatType::Copy ? pt.copycatCopiedCatType : selected->type,
+                         .catType       = selected->type == CatType::Copy ? pt->copycatCopiedCatType : selected->type,
                          .tcActivation  = {.startingValue = rng.getF(300.f, 600.f) * static_cast<float>(i + 1)},
                          .tcDeath       = {}});
 
                 d.tcActivation.restart();
             }
 
-            const bool copy = &dollsToUse == &pt.copyDolls;
+            const bool copy = &dollsToUse == &pt->copyDolls;
             spawnParticlesWithHue(copy ? 180.f : 0.f, 128, selected->position, ParticleType::Hex, 0.5f, 0.35f);
 
             cat.textStatusShakeEffect.bump(rngFast, 1.5f);
             cat.hits += 1u;
 
-            if (!pt.dollTipShown)
+            if (!pt->dollTipShown)
             {
-                pt.dollTipShown = true;
+                pt->dollTipShown = true;
                 doTip("Click on all the dolls to\nreceive a powerful timed buff!\nYou might need to scroll...");
             }
         }
@@ -3800,13 +3865,13 @@ struct Main
     void gameLoopUpdateCatActionWitch(const float deltaTimeMs, Cat& cat)
     {
         SFML_BASE_ASSERT(!anyCatHexed());
-        gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt.dolls);
+        gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->dolls);
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionWizard(const float deltaTimeMs, Cat& cat)
     {
-        if (!pt.absorbingWisdom)
+        if (!pt->absorbingWisdom)
             return;
 
         const auto maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
@@ -3847,7 +3912,7 @@ struct Main
 
         if (bubble.rotation >= sf::base::tau)
         {
-            const auto wisdomReward = pt.getComputedRewardByBubbleType(bubble.type);
+            const auto wisdomReward = pt->getComputedRewardByBubbleType(bubble.type);
 
             if (profile.showTextParticles)
             {
@@ -3860,7 +3925,7 @@ struct Main
 
             spawnParticlesWithHue(230.f, 16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
 
-            pt.wisdom += wisdomReward;
+            pt->wisdom += wisdomReward;
             turnBubbleNormal(bubble);
 
             cat.cooldown.value = maxCooldown;
@@ -3884,28 +3949,28 @@ struct Main
         cat.pawPosition = bubble.position;
         cat.pawOpacity  = 255.f;
 
-        addCombo(pt.mouseCatCombo, pt.mouseCatComboCountdown);
-        pt.mouseCatCombo = sf::base::min(pt.mouseCatCombo, 999); // cap at 999x
+        addCombo(pt->mouseCatCombo, pt->mouseCatComboCountdown);
+        pt->mouseCatCombo = sf::base::min(pt->mouseCatCombo, 999); // cap at 999x
 
         const auto savedBubblePos = bubble.position;
 
         const MoneyType reward = computeFinalReward(/* bubble     */ bubble,
-                                                    /* multiplier */ pt.mouseCatCombo == 999 ? 5.f : 1.f,
-                                                    /* comboMult  */ getComboValueMult(pt.mouseCatCombo, mouseCatComboDecay),
+                                                    /* multiplier */ pt->mouseCatCombo == 999 ? 5.f : 1.f,
+                                                    /* comboMult  */ getComboValueMult(pt->mouseCatCombo, mouseCatComboDecay),
                                                     /* popperCat  */ &cat);
 
         popWithRewardAndReplaceBubble({
             .reward          = reward,
             .bubble          = bubble,
-            .xCombo          = pt.mouseCatCombo,
+            .xCombo          = pt->mouseCatCombo,
             .popSoundOverlap = true,
             .popperCat       = &cat,
             .multiPop        = false,
         });
 
-        if (pt.multiPopMouseCatEnabled)
+        if (pt->multiPopMouseCatEnabled)
             forEachBubbleInRadius(savedBubblePos,
-                                  pt.psvPPMultiPopRange.currentValue(),
+                                  pt->psvPPMultiPopRange.currentValue(),
                                   [&](Bubble& otherBubble)
             {
                 if (&otherBubble == &bubble)
@@ -3914,7 +3979,7 @@ struct Main
                 popWithRewardAndReplaceBubble({
                     .reward          = reward,
                     .bubble          = otherBubble,
-                    .xCombo          = pt.mouseCatCombo,
+                    .xCombo          = pt->mouseCatCombo,
                     .popSoundOverlap = false,
                     .popperCat       = &cat,
                     .multiPop        = true,
@@ -3938,7 +4003,7 @@ struct Main
 
         SizeT nCatsHit = 0u;
 
-        for (Cat& otherCat : pt.cats)
+        for (Cat& otherCat : pt->cats)
         {
             if (otherCat.type == CatType::Engi)
                 continue;
@@ -3974,16 +4039,16 @@ struct Main
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
-        if (pt.repulsoCatConverterEnabled && !pt.repulsoCatIgnoreBubbles.normal)
+        if (pt->repulsoCatConverterEnabled && !pt->repulsoCatIgnoreBubbles.normal)
         {
             Bubble* b = pickRandomBubbleInRadiusMatching(cat.position,
                                                          range,
                                                          [&](Bubble& bubble)
             { return bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova; });
 
-            if (b != nullptr && rng.getF(0.f, 100.f) < pt.psvPPRepulsoCatConverterChance.currentValue())
+            if (b != nullptr && rng.getF(0.f, 100.f) < pt->psvPPRepulsoCatConverterChance.currentValue())
             {
-                b->type   = pt.perm.repulsoCatNovaConverterPurchased ? BubbleType::Nova : BubbleType::Star;
+                b->type   = pt->perm.repulsoCatNovaConverterPurchased ? BubbleType::Nova : BubbleType::Star;
                 b->hueMod = rng.getF(0.f, 360.f);
                 spawnParticles(2, b->position, ParticleType::Star, 0.5f, 0.35f);
 
@@ -4009,20 +4074,20 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCatActionCopy(const float deltaTimeMs, Cat& cat)
     {
-        if (pt.copycatCopiedCatType == CatType::Witch)
+        if (pt->copycatCopiedCatType == CatType::Witch)
         {
             SFML_BASE_ASSERT(!anyCatCopyHexed());
-            gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt.copyDolls);
+            gameLoopUpdateCatActionWitchImpl(deltaTimeMs, cat, pt->copyDolls);
         }
-        else if (pt.copycatCopiedCatType == CatType::Wizard)
+        else if (pt->copycatCopiedCatType == CatType::Wizard)
             gameLoopUpdateCatActionWizard(deltaTimeMs, cat);
-        else if (pt.copycatCopiedCatType == CatType::Mouse)
+        else if (pt->copycatCopiedCatType == CatType::Mouse)
             gameLoopUpdateCatActionMouse(deltaTimeMs, cat);
-        else if (pt.copycatCopiedCatType == CatType::Engi)
+        else if (pt->copycatCopiedCatType == CatType::Engi)
             gameLoopUpdateCatActionEngi(deltaTimeMs, cat);
-        else if (pt.copycatCopiedCatType == CatType::Repulso)
+        else if (pt->copycatCopiedCatType == CatType::Repulso)
             gameLoopUpdateCatActionRepulso(deltaTimeMs, cat);
-        else if (pt.copycatCopiedCatType == CatType::Attracto)
+        else if (pt->copycatCopiedCatType == CatType::Attracto)
             gameLoopUpdateCatActionAttracto(deltaTimeMs, cat);
     }
 
@@ -4037,14 +4102,14 @@ struct Main
     [[nodiscard]] float getWindRepulsionMult() const
     {
         constexpr float mults[4] = {1.f, 5.f, 10.f, 15.f};
-        return mults[pt.windStrength];
+        return mults[pt->windStrength];
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getWindAttractionMult() const
     {
         constexpr float mults[4] = {1.f, 1.5f, 3.f, 4.5f};
-        return mults[pt.windStrength];
+        return mults[pt->windStrength];
     }
 
     ////////////////////////////////////////////////////////////
@@ -4084,14 +4149,14 @@ struct Main
     {
         (void)wizardcatSpin.updateAndStop(deltaTimeMs * 0.015f);
 
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
         {
             // Keep cat in boundaries
             const float catRadius = cat.getRadius();
 
             // Keep cats away from shrine of clicking
             // Buff cats in shrine of automation
-            for (Shrine& shrine : pt.shrines)
+            for (Shrine& shrine : pt->shrines)
             {
                 if (shrine.type == ShrineType::Clicking && shrine.isActive() && cat.type != CatType::Mouse)
                 {
@@ -4122,10 +4187,10 @@ struct Main
 
             if (!allowOOBCat)
                 cat.position = cat.position.componentWiseClamp({catRadius, catRadius},
-                                                               {pt.getMapLimit() - catRadius, boundaries.y - catRadius});
+                                                               {pt->getMapLimit() - catRadius, boundaries.y - catRadius});
 
-            const auto maxCooldown  = pt.getComputedCooldownByCatType(cat.type);
-            const auto range        = pt.getComputedRangeByCatType(cat.type);
+            const auto maxCooldown  = pt->getComputedCooldownByCatType(cat.type);
+            const auto range        = pt->getComputedRangeByCatType(cat.type);
             const auto rangeSquared = range * range;
 
             const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
@@ -4187,7 +4252,7 @@ struct Main
 
                     const float intensity = remap(cat.cooldown.value, 0.f, 10'000.f, 1.f, 0.f);
 
-                    for (Cat& otherCat : pt.cats)
+                    for (Cat& otherCat : pt->cats)
                     {
                         if (otherCat.isHexedOrCopyHexed())
                             continue;
@@ -4228,10 +4293,10 @@ struct Main
             if (cat.type == CatType::Witch && !anyCatHexed())
                 doWitchBehavior(/* hueMod */ 0.f, sounds.ritual, sounds.ritualend);
 
-            if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && !anyCatCopyHexed())
+            if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && !anyCatCopyHexed())
                 doWitchBehavior(/* hueMod */ 180.f, sounds.copyritual, sounds.copyritualend);
 
-            if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt.dolls.empty())))
+            if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt->dolls.empty())))
             {
                 spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -4248,8 +4313,8 @@ struct Main
                 continue;
             }
 
-            if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch &&
-                                                  (anyCatCopyHexed() || !pt.copyDolls.empty())))
+            if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch &&
+                                                  (anyCatCopyHexed() || !pt->copyDolls.empty())))
             {
                 spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -4266,7 +4331,7 @@ struct Main
                 continue;
             }
 
-            if (pt.buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f && cat.pawOpacity >= 75.f)
+            if (pt->buffCountdownsPerType[asIdx(CatType::Normal)].value > 0.f && cat.pawOpacity >= 75.f)
             {
                 spawnParticle({.position      = cat.pawPosition + rngFast.getVec2f({-12.f, -12.f}, {12.f, 12.f}),
                                .velocity      = rngFast.getVec2f({-0.015f, -0.015f}, {0.015f, 0.015f}),
@@ -4299,7 +4364,7 @@ struct Main
                               ParticleType::Star);
             }
 
-            const float globalBoost = pt.buffCountdownsPerType[asIdx(CatType::Engi)].value;
+            const float globalBoost = pt->buffCountdownsPerType[asIdx(CatType::Engi)].value;
             if ((globalBoost > 0.f || cat.boostCountdown.value > 0.f) && rngFast.getF(0.f, 1.f) > 0.75f)
             {
                 spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
@@ -4403,7 +4468,7 @@ struct Main
                         statFlightRevenue(reward);
 
                         if (bubble.type == BubbleType::Bomb)
-                            pt.achAstrocatPopBomb = true;
+                            pt->achAstrocatPopBomb = true;
 
                         popWithRewardAndReplaceBubble({
                             .reward          = reward,
@@ -4429,9 +4494,9 @@ struct Main
 
                 if (!wrapped && cat.position.x + catRadius < 0.f)
                 {
-                    cat.position.x = pt.getMapLimit() + catRadius;
+                    cat.position.x = pt->getMapLimit() + catRadius;
 
-                    if (pt.buffCountdownsPerType[asIdx(CatType::Astro)].value == 0.f) // loop if astro buff active
+                    if (pt->buffCountdownsPerType[asIdx(CatType::Astro)].value == 0.f) // loop if astro buff active
                         wrapped = true;
                 }
 
@@ -4447,7 +4512,7 @@ struct Main
 
             if (cat.type == CatType::Wizard)
             {
-                if (pt.absorbingWisdom)
+                if (pt->absorbingWisdom)
                 {
                     static float absorbSin = 0.f;
                     absorbSin += deltaTimeMs * 0.002f;
@@ -4481,9 +4546,9 @@ struct Main
                 }
             }
 
-            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
+            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse))
             {
-                for (const Cat& otherCat : pt.cats)
+                for (const Cat& otherCat : pt->cats)
                 {
                     if (otherCat.type != CatType::Normal)
                         continue;
@@ -4507,9 +4572,9 @@ struct Main
                 }
             }
 
-            if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Repulso))
+            if (cat.type == CatType::Repulso || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Repulso))
                 forEachBubbleInRadius(cat.position,
-                                      pt.getComputedRangeByCatType(CatType::Repulso),
+                                      pt->getComputedRangeByCatType(CatType::Repulso),
                                       makeMagnetAction(cat.position,
                                                        cat.type,
                                                        deltaTimeMs,
@@ -4517,11 +4582,12 @@ struct Main
                                                        1500.f,
                                                        getWindRepulsionMult(),
                                                        -1.f,
-                                                       pt.repulsoCatIgnoreBubbles));
+                                                       pt->repulsoCatIgnoreBubbles));
 
-            if (cat.type == CatType::Attracto || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto))
+            if (cat.type == CatType::Attracto ||
+                (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto))
                 forEachBubbleInRadius(cat.position,
-                                      pt.getComputedRangeByCatType(CatType::Attracto),
+                                      pt->getComputedRangeByCatType(CatType::Attracto),
                                       makeMagnetAction(cat.position,
                                                        cat.type,
                                                        deltaTimeMs,
@@ -4529,7 +4595,7 @@ struct Main
                                                        750.f,
                                                        getWindAttractionMult(),
                                                        1.f,
-                                                       pt.attractoCatIgnoreBubbles));
+                                                       pt->attractoCatIgnoreBubbles));
 
             if (isCatBeingDragged(cat))
                 continue;
@@ -4574,13 +4640,13 @@ struct Main
         if (cat.type == CatType::Witch && anyCatHexed())
             return false;
 
-        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && anyCatCopyHexed())
+        if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && anyCatCopyHexed())
             return false;
 
         if (cat.type == CatType::Witch && cat.cooldown.value <= 10'000.f)
             return false;
 
-        if (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Witch && cat.cooldown.value <= 10'000.f)
+        if (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch && cat.cooldown.value <= 10'000.f)
             return false;
 
         return true;
@@ -4632,7 +4698,7 @@ struct Main
             catDragOrigin.reset();
             draggedCats.clear();
 
-            for (Cat& cat : pt.cats)
+            for (Cat& cat : pt->cats)
             {
                 if (!isCatDraggable(cat))
                     continue;
@@ -4709,7 +4775,7 @@ struct Main
 
             // Only check for hover targets during initial press phase
             if (catDragPressDuration <= profile.catDragPressDuration)
-                for (Cat& cat : pt.cats)
+                for (Cat& cat : pt->cats)
                 {
                     if (!isCatDraggable(cat))
                         continue;
@@ -4750,9 +4816,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateShrines(const float deltaTimeMs)
     {
-        for (SizeT i = 0u; i < pt.psvShrineActivation.nPurchases; ++i)
+        for (SizeT i = 0u; i < pt->psvShrineActivation.nPurchases; ++i)
         {
-            for (Shrine& shrine : pt.shrines)
+            for (Shrine& shrine : pt->shrines)
             {
                 if (shrine.tcActivation.hasValue() || shrine.type != static_cast<ShrineType>(i))
                     continue;
@@ -4769,12 +4835,12 @@ struct Main
         }
 
         // Should only be triggered in testing via cheats
-        for (SizeT i = pt.psvShrineActivation.nPurchases; i < nShrineTypes; ++i)
-            for (Shrine& shrine : pt.shrines)
+        for (SizeT i = pt->psvShrineActivation.nPurchases; i < nShrineTypes; ++i)
+            for (Shrine& shrine : pt->shrines)
                 if (shrine.type == static_cast<ShrineType>(i))
                     shrine.tcActivation.reset();
 
-        for (Shrine& shrine : pt.shrines)
+        for (Shrine& shrine : pt->shrines)
         {
             if (shrine.tcActivation.hasValue())
             {
@@ -4804,7 +4870,7 @@ struct Main
                     if (asCatType >= asIdx(CatType::Count))
                         return;
 
-                    if (pt.perm.unsealedByType[asCatType])
+                    if (pt->perm.unsealedByType[asCatType])
                         spawnSpecialCat(shrine.position, static_cast<CatType>(asCatType));
                 }
             }
@@ -4864,7 +4930,7 @@ struct Main
                 return ControlFlow::Continue;
             });
 
-            if (shrine.collectedReward >= pt.getComputedRequiredRewardByShrineType(shrine.type))
+            if (shrine.collectedReward >= pt->getComputedRequiredRewardByShrineType(shrine.type))
             {
                 if (!shrine.tcDeath.hasValue())
                 {
@@ -4883,7 +4949,7 @@ struct Main
                     if (cdStatus == CountdownStatusStop::JustFinished)
                     {
                         playSound(sounds.woosh);
-                        ++pt.nShrinesCompleted;
+                        ++pt->nShrinesCompleted;
 
                         const auto doShrineReward = [&](const CatType catType)
                         {
@@ -4912,7 +4978,7 @@ struct Main
                         {
                             doShrineReward(CatType::Witch);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
                                 doTip(
                                     "The Witchcat has been unsealed!\nThey perform voodoo rituals on nearby "
                                     "cats,\ngiving you powerful timed buffs.");
@@ -4921,7 +4987,7 @@ struct Main
                         {
                             doShrineReward(CatType::Wizard);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
                                 doTip(
                                     "The Wizardcat has been unsealed!\nThey absorb star bubbles to learn "
                                     "spells,\nwhich can be casted on demand.");
@@ -4930,7 +4996,7 @@ struct Main
                         {
                             doShrineReward(CatType::Mouse);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
                                 doTip(
                                     "The Mousecat has been unsealed!\nThey combo-click bubbles, buff nearby "
                                     "cats,\nand "
@@ -4940,7 +5006,7 @@ struct Main
                         {
                             doShrineReward(CatType::Engi);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
                                 doTip(
                                     "The Engicat has been unsealed!\nThey speed-up nearby cats and provide\na "
                                     "global "
@@ -4950,7 +5016,7 @@ struct Main
                         {
                             doShrineReward(CatType::Repulso);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
                                 doTip(
                                     "The Repulsocat has been unsealed!\nNearby bubbles getting pushed away "
                                     "from\nthem "
@@ -4960,7 +5026,7 @@ struct Main
                         {
                             doShrineReward(CatType::Attracto);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
                                 doTip(
                                     "The Attractocat has been unsealed!\nNearby bubbles getting attracted to\nthem "
                                     "gain a x2 multiplier.");
@@ -4969,7 +5035,7 @@ struct Main
                         {
                             doShrineReward(CatType::Copy);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
                                 doTip(
                                     "The Copycat has been unsealed!\nThey can mimic other unique cats,\ngaining "
                                     "their "
@@ -4979,7 +5045,7 @@ struct Main
                         {
                             doShrineReward(CatType::Duck);
 
-                            if (!pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)])
+                            if (!pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)])
                                 doTip(
                                     "It's... a duck. I am as confused\nas you are! But hey,\nyou won! "
                                     "Congratulations!");
@@ -4993,11 +5059,11 @@ struct Main
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
-                        if (!pt.perm.shrineCompletedOnceByCatType[catType])
+                        if (!pt->perm.shrineCompletedOnceByCatType[catType])
                         {
                             pushNotification("New unlocks!", "A new background and BGM have been unlocked!");
 
-                            pt.perm.shrineCompletedOnceByCatType[catType] = true;
+                            pt->perm.shrineCompletedOnceByCatType[catType] = true;
 
                             profile.selectedBackground = static_cast<int>(shrine.type) + 1;
                             profile.selectedBGM        = static_cast<int>(shrine.type) + 1;
@@ -5028,7 +5094,7 @@ struct Main
             }
         }
 
-        sf::base::vectorEraseIf(pt.shrines, [](const Shrine& shrine) { return shrine.getDeathProgress() >= 1.f; });
+        sf::base::vectorEraseIf(pt->shrines, [](const Shrine& shrine) { return shrine.getDeathProgress() >= 1.f; });
     }
 
     ////////////////////////////////////////////////////////////
@@ -5036,7 +5102,7 @@ struct Main
     {
         SFML_BASE_ASSERT(!d.tcDeath.hasValue());
 
-        const bool copy = &dollsToUse == &pt.copyDolls;
+        const bool copy = &dollsToUse == &pt->copyDolls;
 
         statDollCollected();
 
@@ -5085,13 +5151,13 @@ struct Main
             constexpr float buffDurationSoftCap = 60'000.f;
             const float     buffDuration        = d.buffPower * 1000.f;
 
-            const float currentBuff = pt.buffCountdownsPerType[asIdx(d.catType)].value;
+            const float currentBuff = pt->buffCountdownsPerType[asIdx(d.catType)].value;
 
             const float factor = (currentBuff < buffDurationSoftCap)
                                      ? std::pow((buffDurationSoftCap - currentBuff) / buffDurationSoftCap, 0.15f)
                                      : 0.1f;
 
-            pt.buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
+            pt->buffCountdownsPerType[asIdx(d.catType)].value += buffDuration * factor;
 
             const auto* hexedCat = copy ? getCopyHexedCat() : getHexedCat();
             SFML_BASE_ASSERT(hexedCat != nullptr);
@@ -5122,19 +5188,19 @@ struct Main
     ////////////////////////////////////////////////////////////
     void collectDoll(Doll& d)
     {
-        collectDollImpl(d, pt.dolls);
+        collectDollImpl(d, pt->dolls);
     }
 
     ////////////////////////////////////////////////////////////
     void collectCopyDoll(Doll& d)
     {
-        collectDollImpl(d, pt.copyDolls);
+        collectDollImpl(d, pt->copyDolls);
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vector2f mousePos, std::vector<Doll>& dollsToUse, Cat* hexedCat)
     {
-        const bool copy = &dollsToUse == &pt.copyDolls;
+        const bool copy = &dollsToUse == &pt->copyDolls;
 
         if (dollsToUse.empty())
         {
@@ -5205,24 +5271,24 @@ struct Main
         if (cachedWitchCat == nullptr)
             return;
 
-        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt.dolls, getHexedCat());
+        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->dolls, getHexedCat());
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
     {
-        if (cachedCopyCat == nullptr || pt.copycatCopiedCatType != CatType::Witch)
+        if (cachedCopyCat == nullptr || pt->copycatCopiedCatType != CatType::Witch)
             return;
 
-        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt.copyDolls, getCopyHexedCat());
+        gameLoopUpdateDollsImpl(deltaTimeMs, mousePos, pt->copyDolls, getCopyHexedCat());
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateHellPortals(const float deltaTimeMs)
     {
-        const float hellPortalRadius = pt.getComputedRangeByCatType(CatType::Devil);
+        const float hellPortalRadius = pt->getComputedRangeByCatType(CatType::Devil);
 
-        for (HellPortal& hp : pt.hellPortals)
+        for (HellPortal& hp : pt->hellPortals)
         {
             if (hp.life.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
             {
@@ -5246,13 +5312,13 @@ struct Main
                               ParticleType::Fire2);
         }
 
-        sf::base::vectorEraseIf(pt.hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
+        sf::base::vectorEraseIf(pt->hellPortals, [](const HellPortal& hp) { return hp.life.isDone(); });
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateWitchBuffs(const float deltaTimeMs)
     {
-        for (Countdown& buffCountdown : pt.buffCountdownsPerType)
+        for (Countdown& buffCountdown : pt->buffCountdownsPerType)
             if (buffCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
                 playSound(sounds.buffoff);
     }
@@ -5265,36 +5331,36 @@ struct Main
 
         //
         // Mana mult buff
-        const float manaMult = pt.buffCountdownsPerType[asIdx(CatType::Wizard)].value > 0.f ? 3.5f : 1.f;
+        const float manaMult = pt->buffCountdownsPerType[asIdx(CatType::Wizard)].value > 0.f ? 3.5f : 1.f;
 
         //
         // Mana
-        if (pt.mana < pt.getComputedMaxMana())
-            pt.manaTimer += deltaTimeMs * manaMult;
+        if (pt->mana < pt->getComputedMaxMana())
+            pt->manaTimer += deltaTimeMs * manaMult;
         else
-            pt.manaTimer = 0.f;
+            pt->manaTimer = 0.f;
 
-        if (pt.manaTimer >= pt.getComputedManaCooldown())
+        if (pt->manaTimer >= pt->getComputedManaCooldown())
         {
-            pt.manaTimer = 0.f;
+            pt->manaTimer = 0.f;
 
-            if (pt.mana < pt.getComputedMaxMana())
+            if (pt->mana < pt->getComputedMaxMana())
             {
-                pt.mana += 1u;
+                pt->mana += 1u;
 
-                if (profile.showFullManaNotification && pt.mana == pt.getComputedMaxMana())
+                if (profile.showFullManaNotification && pt->mana == pt->getComputedMaxMana())
                     pushNotification("Mana fully charged!", "The Wizardcat is eager to cast a spell...");
             }
         }
 
         //
         // Mewltiplier Aura spell
-        if (pt.mewltiplierAuraTimer > 0.f)
+        if (pt->mewltiplierAuraTimer > 0.f)
         {
-            pt.mewltiplierAuraTimer -= deltaTimeMs;
-            pt.mewltiplierAuraTimer = sf::base::max(pt.mewltiplierAuraTimer, 0.f);
+            pt->mewltiplierAuraTimer -= deltaTimeMs;
+            pt->mewltiplierAuraTimer = sf::base::max(pt->mewltiplierAuraTimer, 0.f);
 
-            const float wizardRange = pt.getComputedRangeByCatType(CatType::Wizard);
+            const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
             if (cachedWizardCat != nullptr)
                 for (SizeT i = 0u; i < 8u; ++i)
@@ -5305,7 +5371,7 @@ struct Main
                                                    0.15f,
                                                    0.05f);
 
-            if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+            if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(230.f,
                                                    1,
@@ -5318,12 +5384,12 @@ struct Main
 
         //
         // Stasis Field spell
-        if (pt.stasisFieldTimer > 0.f)
+        if (pt->stasisFieldTimer > 0.f)
         {
-            pt.stasisFieldTimer -= deltaTimeMs;
-            pt.stasisFieldTimer = sf::base::max(pt.stasisFieldTimer, 0.f);
+            pt->stasisFieldTimer -= deltaTimeMs;
+            pt->stasisFieldTimer = sf::base::max(pt->stasisFieldTimer, 0.f);
 
-            const float wizardRange = pt.getComputedRangeByCatType(CatType::Wizard);
+            const float wizardRange = pt->getComputedRangeByCatType(CatType::Wizard);
 
             if (cachedWizardCat != nullptr)
                 for (SizeT i = 0u; i < 8u; ++i)
@@ -5334,7 +5400,7 @@ struct Main
                                                    0.15f,
                                                    0.05f);
 
-            if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Wizard)
+            if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Wizard)
                 for (SizeT i = 0u; i < 8u; ++i)
                     spawnParticlesWithHueNoGravity(50.f,
                                                    1,
@@ -5348,17 +5414,17 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateAutocast()
     {
-        if (cachedWizardCat == nullptr || !pt.perm.autocastPurchased || pt.perm.autocastIndex == 0u || isWizardBusy())
+        if (cachedWizardCat == nullptr || !pt->perm.autocastPurchased || pt->perm.autocastIndex == 0u || isWizardBusy())
             return;
 
-        const auto spellIndex = pt.perm.autocastIndex - 1u;
+        const auto spellIndex = pt->perm.autocastIndex - 1u;
 
-        if (static_cast<sf::base::SizeT>(spellIndex) > pt.psvSpellCount.nPurchases)
+        if (static_cast<sf::base::SizeT>(spellIndex) > pt->psvSpellCount.nPurchases)
             return;
 
-        if (pt.mana >= spellManaCostByIndex[spellIndex])
+        if (pt->mana >= spellManaCostByIndex[spellIndex])
         {
-            pt.mana -= spellManaCostByIndex[spellIndex];
+            pt->mana -= spellManaCostByIndex[spellIndex];
             castSpellByIndex(spellIndex, cachedWizardCat, cachedCopyCat);
 
             constexpr const char* spellNames[4] = {
@@ -5396,7 +5462,7 @@ struct Main
         {
             const auto oldMilestone = milestone;
 
-            milestone = sf::base::min(milestone, pt.statsTotal.secondsPlayed);
+            milestone = sf::base::min(milestone, pt->statsTotal.secondsPlayed);
 
             if (milestone != oldMilestone)
             {
@@ -5405,96 +5471,129 @@ struct Main
             }
         };
 
-        const auto nCatNormal = pt.getCatCountByType(CatType::Normal);
-        const auto nCatUni    = pt.getCatCountByType(CatType::Uni);
-        const auto nCatDevil  = pt.getCatCountByType(CatType::Devil);
-        const auto nCatAstro  = pt.getCatCountByType(CatType::Astro);
+        const auto nCatNormal = pt->getCatCountByType(CatType::Normal);
+        const auto nCatUni    = pt->getCatCountByType(CatType::Uni);
+        const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
+        const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
         if (nCatNormal >= 1)
-            updateMilestone("1st Cat", pt.milestones.firstCat);
+            updateMilestone("1st Cat", pt->milestones.firstCat);
 
         if (nCatUni >= 1)
-            updateMilestone("1st Unicat", pt.milestones.firstUnicat);
+            updateMilestone("1st Unicat", pt->milestones.firstUnicat);
 
         if (nCatDevil >= 1)
-            updateMilestone("1st Devilcat", pt.milestones.firstDevilcat);
+            updateMilestone("1st Devilcat", pt->milestones.firstDevilcat);
 
         if (nCatAstro >= 1)
-            updateMilestone("1st Astrocat", pt.milestones.firstAstrocat);
+            updateMilestone("1st Astrocat", pt->milestones.firstAstrocat);
 
         if (nCatNormal >= 5)
-            updateMilestone("5th Cat", pt.milestones.fiveCats);
+            updateMilestone("5th Cat", pt->milestones.fiveCats);
 
         if (nCatUni >= 5)
-            updateMilestone("5th Unicat", pt.milestones.fiveUnicats);
+            updateMilestone("5th Unicat", pt->milestones.fiveUnicats);
 
         if (nCatDevil >= 5)
-            updateMilestone("5th Devilcat", pt.milestones.fiveDevilcats);
+            updateMilestone("5th Devilcat", pt->milestones.fiveDevilcats);
 
         if (nCatAstro >= 5)
-            updateMilestone("5th Astrocat", pt.milestones.fiveAstrocats);
+            updateMilestone("5th Astrocat", pt->milestones.fiveAstrocats);
 
         if (nCatNormal >= 10)
-            updateMilestone("10th Cat", pt.milestones.tenCats);
+            updateMilestone("10th Cat", pt->milestones.tenCats);
 
         if (nCatUni >= 10)
-            updateMilestone("10th Unicat", pt.milestones.tenUnicats);
+            updateMilestone("10th Unicat", pt->milestones.tenUnicats);
 
         if (nCatDevil >= 10)
-            updateMilestone("10th Devilcat", pt.milestones.tenDevilcats);
+            updateMilestone("10th Devilcat", pt->milestones.tenDevilcats);
 
         if (nCatAstro >= 10)
-            updateMilestone("10th Astrocat", pt.milestones.tenAstrocats);
+            updateMilestone("10th Astrocat", pt->milestones.tenAstrocats);
 
-        if (pt.psvBubbleValue.nPurchases >= 1)
-            updateMilestone("Prestige Level 2", pt.milestones.prestigeLevel2);
+        if (pt->psvBubbleValue.nPurchases >= 1)
+            updateMilestone("Prestige Level 2", pt->milestones.prestigeLevel2);
 
-        if (pt.psvBubbleValue.nPurchases >= 2)
-            updateMilestone("Prestige Level 3", pt.milestones.prestigeLevel3);
+        if (pt->psvBubbleValue.nPurchases >= 2)
+            updateMilestone("Prestige Level 3", pt->milestones.prestigeLevel3);
 
-        if (pt.psvBubbleValue.nPurchases >= 3)
-            updateMilestone("Prestige Level 4", pt.milestones.prestigeLevel4);
+        if (pt->psvBubbleValue.nPurchases >= 3)
+            updateMilestone("Prestige Level 4", pt->milestones.prestigeLevel4);
 
-        if (pt.psvBubbleValue.nPurchases >= 4)
-            updateMilestone("Prestige Level 5", pt.milestones.prestigeLevel5);
+        if (pt->psvBubbleValue.nPurchases >= 4)
+            updateMilestone("Prestige Level 5", pt->milestones.prestigeLevel5);
 
-        if (pt.psvBubbleValue.nPurchases >= 5)
-            updateMilestone("Prestige Level 6", pt.milestones.prestigeLevel6);
+        if (pt->psvBubbleValue.nPurchases >= 5)
+            updateMilestone("Prestige Level 6", pt->milestones.prestigeLevel6);
 
-        if (pt.psvBubbleValue.nPurchases >= 9)
-            updateMilestone("Prestige Level 10", pt.milestones.prestigeLevel10);
+        if (pt->psvBubbleValue.nPurchases >= 9)
+            updateMilestone("Prestige Level 10", pt->milestones.prestigeLevel10);
 
-        if (pt.psvBubbleValue.nPurchases >= 14)
-            updateMilestone("Prestige Level 15", pt.milestones.prestigeLevel15);
+        if (pt->psvBubbleValue.nPurchases >= 14)
+            updateMilestone("Prestige Level 15", pt->milestones.prestigeLevel15);
 
-        if (pt.psvBubbleValue.nPurchases >= 19)
-            updateMilestone("Prestige Level 20 (MAX)", pt.milestones.prestigeLevel20);
+        if (pt->psvBubbleValue.nPurchases >= 19)
+            updateMilestone("Prestige Level 20 (MAX)", pt->milestones.prestigeLevel20);
 
-        const auto totalRevenue = pt.statsTotal.getTotalRevenue();
+        const auto totalRevenue = pt->statsTotal.getTotalRevenue();
 
         if (totalRevenue >= 10'000)
-            updateMilestone("$10.000 Revenue", pt.milestones.revenue10000);
+            updateMilestone("$10.000 Revenue", pt->milestones.revenue10000);
 
         if (totalRevenue >= 100'000)
-            updateMilestone("$100.000 Revenue", pt.milestones.revenue100000);
+            updateMilestone("$100.000 Revenue", pt->milestones.revenue100000);
 
         if (totalRevenue >= 1'000'000)
-            updateMilestone("$1.000.000 Revenue", pt.milestones.revenue1000000);
+            updateMilestone("$1.000.000 Revenue", pt->milestones.revenue1000000);
 
         if (totalRevenue >= 10'000'000)
-            updateMilestone("$10.000.000 Revenue", pt.milestones.revenue10000000);
+            updateMilestone("$10.000.000 Revenue", pt->milestones.revenue10000000);
 
         if (totalRevenue >= 100'000'000)
-            updateMilestone("$100.000.000 Revenue", pt.milestones.revenue100000000);
+            updateMilestone("$100.000.000 Revenue", pt->milestones.revenue100000000);
 
         if (totalRevenue >= 1'000'000'000)
-            updateMilestone("$1.000.000.000 Revenue", pt.milestones.revenue1000000000);
+            updateMilestone("$1.000.000.000 Revenue", pt->milestones.revenue1000000000);
 
-        for (SizeT i = 0u; i < pt.nShrinesCompleted; ++i)
+        for (SizeT i = 0u; i < pt->nShrinesCompleted; ++i)
         {
-            const char* shrineName = i >= pt.getMapLimitIncreases() ? "Shrine Of ???" : shrineNames[i];
-            updateMilestone(shrineName, pt.milestones.shrineCompletions[i]);
+            const char* shrineName = i >= pt->getMapLimitIncreases() ? "Shrine Of ???" : shrineNames[i];
+            updateMilestone(shrineName, pt->milestones.shrineCompletions[i]);
         }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void gameLoopUpdateSplits()
+    {
+        if (!pt->speedrunStartTime.hasValue())
+            return;
+
+        const auto updateSplit = [&](const char* name, sf::base::U64& split)
+        {
+            const auto oldSplit    = split;
+            const auto splitTimeUs = (sf::Clock::now() - pt->speedrunStartTime.value()).asMicroseconds();
+
+            split = sf::base::min(split, static_cast<sf::base::U64>(splitTimeUs));
+
+            if (split != oldSplit)
+            {
+                const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Time{splitTimeUs});
+                pushNotification("Split reached!", "'%s' at %02llu:%02llu:%02llu:%03llu", name, hours, mins, secs, millis);
+            }
+        };
+
+        if (pt->psvBubbleValue.nPurchases >= 1)
+            updateSplit("Prestige Lv.2", pt->speedrunSplits.prestigeLevel2);
+
+        if (pt->psvBubbleValue.nPurchases >= 2)
+            updateSplit("Prestige Lv.3", pt->speedrunSplits.prestigeLevel3);
+
+        if (pt->psvBubbleValue.nPurchases >= 3)
+            updateSplit("Prestige Lv.4", pt->speedrunSplits.prestigeLevel4);
+
+        if (pt->psvBubbleValue.nPurchases >= 4)
+            updateSplit("Prestige Lv.5", pt->speedrunSplits.prestigeLevel5);
     }
 
     ////////////////////////////////////////////////////////////
@@ -5586,133 +5685,133 @@ struct Main
         unlockIfGtEq(bubblesCatPopped, 10'000'000);
         unlockIfGtEq(bubblesCatPopped, 100'000'000);
 
-        unlockIf(pt.comboPurchased);
+        unlockIf(pt->comboPurchased);
 
-        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 5);
-        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 10);
-        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 15);
-        unlockIfGtEq(pt.psvComboStartTime.nPurchases, 20);
+        unlockIfGtEq(pt->psvComboStartTime.nPurchases, 5);
+        unlockIfGtEq(pt->psvComboStartTime.nPurchases, 10);
+        unlockIfGtEq(pt->psvComboStartTime.nPurchases, 15);
+        unlockIfGtEq(pt->psvComboStartTime.nPurchases, 20);
 
-        unlockIf(pt.mapPurchased); //
-        unlockIfGtEq(pt.psvMapExtension.nPurchases, 1);
-        unlockIfGtEq(pt.psvMapExtension.nPurchases, 3);
-        unlockIfGtEq(pt.psvMapExtension.nPurchases, 5);
-        unlockIfGtEq(pt.psvMapExtension.nPurchases, 7);
+        unlockIf(pt->mapPurchased); //
+        unlockIfGtEq(pt->psvMapExtension.nPurchases, 1);
+        unlockIfGtEq(pt->psvMapExtension.nPurchases, 3);
+        unlockIfGtEq(pt->psvMapExtension.nPurchases, 5);
+        unlockIfGtEq(pt->psvMapExtension.nPurchases, 7);
 
-        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 1);
-        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 5);
-        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 10);
-        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 20);
-        unlockIfGtEq(pt.psvBubbleCount.nPurchases, 30);
+        unlockIfGtEq(pt->psvBubbleCount.nPurchases, 1);
+        unlockIfGtEq(pt->psvBubbleCount.nPurchases, 5);
+        unlockIfGtEq(pt->psvBubbleCount.nPurchases, 10);
+        unlockIfGtEq(pt->psvBubbleCount.nPurchases, 20);
+        unlockIfGtEq(pt->psvBubbleCount.nPurchases, 30);
 
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 5);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 10);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 20);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 30);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Normal)].nPurchases, 40);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 5);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 10);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 20);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 30);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Normal)].nPurchases, 40);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Normal)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Normal)].nPurchases, 9);
 
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 5);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 10);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 20);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 30);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Uni)].nPurchases, 40);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 5);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 10);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 20);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 30);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Uni)].nPurchases, 40);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Uni)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Uni)].nPurchases, 9);
 
-        unlockIfPrestige(pt.perm.unicatTranscendencePurchased);
-        unlockIfPrestige(pt.perm.unicatTranscendenceAOEPurchased);
+        unlockIfPrestige(pt->perm.unicatTranscendencePurchased);
+        unlockIfPrestige(pt->perm.unicatTranscendenceAOEPurchased);
 
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 5);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 10);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 20);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 30);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Devil)].nPurchases, 40);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 5);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 10);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 20);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 30);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Devil)].nPurchases, 40);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Devil)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Devil)].nPurchases, 9);
 
-        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 1);
-        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 5);
-        unlockIfGtEq(pt.psvExplosionRadiusMult.nPurchases, 10);
+        unlockIfGtEq(pt->psvExplosionRadiusMult.nPurchases, 1);
+        unlockIfGtEq(pt->psvExplosionRadiusMult.nPurchases, 5);
+        unlockIfGtEq(pt->psvExplosionRadiusMult.nPurchases, 10);
 
-        unlockIfPrestige(pt.perm.devilcatHellsingedPurchased);
+        unlockIfPrestige(pt->perm.devilcatHellsingedPurchased);
 
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 5);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 10);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 20);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 25);
-        unlockIfGtEq(pt.psvPerCatType[asIdx(CatType::Astro)].nPurchases, 30);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 5);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 10);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 20);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 25);
+        unlockIfGtEq(pt->psvPerCatType[asIdx(CatType::Astro)].nPurchases, 30);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Astro)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Astro)].nPurchases, 9);
 
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 1);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 2);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 3);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 5);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 10);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 15);
-        unlockIfGtEq(pt.psvBubbleValue.nPurchases, 19);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 1);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 2);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 3);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 5);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 10);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 15);
+        unlockIfGtEq(pt->psvBubbleValue.nPurchases, 19);
 
-        unlockIfPrestige(pt.perm.starterPackPurchased);
+        unlockIfPrestige(pt->perm.starterPackPurchased);
 
-        unlockIfPrestige(pt.perm.multiPopPurchased);
-        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 2);
-        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 5);
-        unlockIfGtEqPrestige(pt.psvPPMultiPopRange.nPurchases, 10);
+        unlockIfPrestige(pt->perm.multiPopPurchased);
+        unlockIfGtEqPrestige(pt->psvPPMultiPopRange.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPMultiPopRange.nPurchases, 2);
+        unlockIfGtEqPrestige(pt->psvPPMultiPopRange.nPurchases, 5);
+        unlockIfGtEqPrestige(pt->psvPPMultiPopRange.nPurchases, 10);
 
-        unlockIfPrestige(pt.perm.windPurchased);
+        unlockIfPrestige(pt->perm.windPurchased);
 
-        unlockIfPrestige(pt.perm.smartCatsPurchased);
-        unlockIfPrestige(pt.perm.geniusCatsPurchased);
+        unlockIfPrestige(pt->perm.smartCatsPurchased);
+        unlockIfPrestige(pt->perm.geniusCatsPurchased);
 
-        unlockIfPrestige(pt.perm.astroCatInspirePurchased);
-        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 4);
-        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 8);
-        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPInspireDurationMult.nPurchases, 16);
+        unlockIfPrestige(pt->perm.astroCatInspirePurchased);
+        unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPInspireDurationMult.nPurchases, 16);
 
         unlockIfGtEq(combo, 5);
         unlockIfGtEq(combo, 10);
@@ -5780,44 +5879,44 @@ struct Main
         unlockIfGtEq(nBombBubblesPoppedByCat, 10'000);
         unlockIfGtEq(nBombBubblesPoppedByCat, 100'000);
 
-        unlockIf(pt.achAstrocatPopBomb);
+        unlockIf(pt->achAstrocatPopBomb);
 
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Normal)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Uni)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Devil)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Witch)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Wizard)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Mouse)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Engi)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Repulso)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Attracto)]);
-        unlockIf(pt.achAstrocatInspireByType[asIdx(CatType::Copy)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Normal)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Uni)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Devil)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Witch)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Wizard)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Mouse)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Engi)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Repulso)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Attracto)]);
+        unlockIf(pt->achAstrocatInspireByType[asIdx(CatType::Copy)]);
 
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 1);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 2);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 3);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 4);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 5);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 6);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 7);
-        unlockIfGtEq(pt.psvShrineActivation.nPurchases, 8);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 1);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 2);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 3);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 4);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 5);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 6);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 7);
+        unlockIfGtEq(pt->psvShrineActivation.nPurchases, 8);
 
-        unlockIfGtEq(pt.nShrinesCompleted, 1);
-        unlockIfGtEq(pt.nShrinesCompleted, 2);
-        unlockIfGtEq(pt.nShrinesCompleted, 3);
-        unlockIfGtEq(pt.nShrinesCompleted, 4);
-        unlockIfGtEq(pt.nShrinesCompleted, 5);
-        unlockIfGtEq(pt.nShrinesCompleted, 6);
-        unlockIfGtEq(pt.nShrinesCompleted, 7);
-        unlockIfGtEq(pt.nShrinesCompleted, 8);
+        unlockIfGtEq(pt->nShrinesCompleted, 1);
+        unlockIfGtEq(pt->nShrinesCompleted, 2);
+        unlockIfGtEq(pt->nShrinesCompleted, 3);
+        unlockIfGtEq(pt->nShrinesCompleted, 4);
+        unlockIfGtEq(pt->nShrinesCompleted, 5);
+        unlockIfGtEq(pt->nShrinesCompleted, 6);
+        unlockIfGtEq(pt->nShrinesCompleted, 7);
+        unlockIfGtEq(pt->nShrinesCompleted, 8);
 
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Witch)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Wizard)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Mouse)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Engi)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Repulso)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Attracto)]);
-        unlockIfPrestige(pt.perm.unsealedByType[asIdx(CatType::Copy)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Witch)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Wizard)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Mouse)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Engi)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Repulso)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Attracto)]);
+        unlockIfPrestige(pt->perm.unsealedByType[asIdx(CatType::Copy)]);
 
         unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Normal)], 1);
         unlockIfGtEq(profile.statsLifetime.nWitchcatRitualsPerCatType[asIdx(CatType::Uni)], 1);
@@ -5847,32 +5946,32 @@ struct Main
         unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 1000);
         unlockIfGtEq(profile.statsLifetime.nWitchcatDollsCollected, 10'000);
 
-        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 3);
-        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 6);
-        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 9);
-        unlockIfGtEqPrestige(pt.psvPPWitchCatBuffDuration.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPWitchCatBuffDuration.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPWitchCatBuffDuration.nPurchases, 3);
+        unlockIfGtEqPrestige(pt->psvPPWitchCatBuffDuration.nPurchases, 6);
+        unlockIfGtEqPrestige(pt->psvPPWitchCatBuffDuration.nPurchases, 9);
+        unlockIfGtEqPrestige(pt->psvPPWitchCatBuffDuration.nPurchases, 12);
 
-        unlockIfPrestige(pt.perm.witchCatBuffPowerScalesWithNCats);
-        unlockIfPrestige(pt.perm.witchCatBuffPowerScalesWithMapSize);
-        unlockIfPrestige(pt.perm.witchCatBuffFewerDolls);
-        unlockIfPrestige(pt.perm.witchCatBuffFlammableDolls);
-        unlockIfPrestige(pt.perm.witchCatBuffOrbitalDolls);
+        unlockIfPrestige(pt->perm.witchCatBuffPowerScalesWithNCats);
+        unlockIfPrestige(pt->perm.witchCatBuffPowerScalesWithMapSize);
+        unlockIfPrestige(pt->perm.witchCatBuffFewerDolls);
+        unlockIfPrestige(pt->perm.witchCatBuffFlammableDolls);
+        unlockIfPrestige(pt->perm.witchCatBuffOrbitalDolls);
 
-        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 6);
-        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 18);
-        unlockIfGtEqPrestige(pt.psvPPUniRitualBuffPercentage.nPurchases, 24);
+        unlockIfGtEqPrestige(pt->psvPPUniRitualBuffPercentage.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPUniRitualBuffPercentage.nPurchases, 6);
+        unlockIfGtEqPrestige(pt->psvPPUniRitualBuffPercentage.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPUniRitualBuffPercentage.nPurchases, 18);
+        unlockIfGtEqPrestige(pt->psvPPUniRitualBuffPercentage.nPurchases, 24);
 
-        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 6);
-        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 18);
-        unlockIfGtEqPrestige(pt.psvPPDevilRitualBuffPercentage.nPurchases, 24);
+        unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 6);
+        unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 18);
+        unlockIfGtEqPrestige(pt->psvPPDevilRitualBuffPercentage.nPurchases, 24);
 
-        const auto nActiveBuffs = sf::base::countIf(pt.buffCountdownsPerType,
-                                                    pt.buffCountdownsPerType + nCatTypes,
+        const auto nActiveBuffs = sf::base::countIf(pt->buffCountdownsPerType,
+                                                    pt->buffCountdownsPerType + nCatTypes,
                                                     [](const Countdown& c) { return c.value > 0.f; });
 
         unlockIfGtEq(nActiveBuffs, 2);
@@ -5880,16 +5979,16 @@ struct Main
         unlockIfGtEq(nActiveBuffs, 4);
         unlockIfGtEq(nActiveBuffs, 5);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Witch)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Witch)].nPurchases, 9);
 
         unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 1);
         unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 100);
@@ -5897,23 +5996,23 @@ struct Main
         unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 10'000);
         unlockIfGtEq(profile.statsLifetime.nAbsorbedStarBubbles, 100'000);
 
-        unlockIfGtEq(pt.psvSpellCount.nPurchases, 1);
-        unlockIfGtEq(pt.psvSpellCount.nPurchases, 2);
-        unlockIfGtEq(pt.psvSpellCount.nPurchases, 3);
-        unlockIfGtEq(pt.psvSpellCount.nPurchases, 4);
+        unlockIfGtEq(pt->psvSpellCount.nPurchases, 1);
+        unlockIfGtEq(pt->psvSpellCount.nPurchases, 2);
+        unlockIfGtEq(pt->psvSpellCount.nPurchases, 3);
+        unlockIfGtEq(pt->psvSpellCount.nPurchases, 4);
 
-        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 1);
-        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 4);
-        unlockIfGtEq(pt.psvStarpawPercentage.nPurchases, 8);
+        unlockIfGtEq(pt->psvStarpawPercentage.nPurchases, 1);
+        unlockIfGtEq(pt->psvStarpawPercentage.nPurchases, 4);
+        unlockIfGtEq(pt->psvStarpawPercentage.nPurchases, 8);
 
-        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 1);
-        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 5);
-        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 10);
-        unlockIfGtEq(pt.psvMewltiplierMult.nPurchases, 15);
+        unlockIfGtEq(pt->psvMewltiplierMult.nPurchases, 1);
+        unlockIfGtEq(pt->psvMewltiplierMult.nPurchases, 5);
+        unlockIfGtEq(pt->psvMewltiplierMult.nPurchases, 10);
+        unlockIfGtEq(pt->psvMewltiplierMult.nPurchases, 15);
 
-        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 1);
-        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 4);
-        unlockIfGtEq(pt.psvDarkUnionPercentage.nPurchases, 8);
+        unlockIfGtEq(pt->psvDarkUnionPercentage.nPurchases, 1);
+        unlockIfGtEq(pt->psvDarkUnionPercentage.nPurchases, 4);
+        unlockIfGtEq(pt->psvDarkUnionPercentage.nPurchases, 8);
 
         unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 1);
         unlockIfGtEq(profile.statsLifetime.nSpellCasts[0], 10);
@@ -5935,60 +6034,60 @@ struct Main
         unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 100);
         unlockIfGtEq(profile.statsLifetime.nSpellCasts[3], 1000);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Wizard)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Wizard)].nPurchases, 9);
 
-        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 4);
-        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 8);
-        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPManaCooldownMult.nPurchases, 16);
+        unlockIfGtEqPrestige(pt->psvPPManaCooldownMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPManaCooldownMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt->psvPPManaCooldownMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt->psvPPManaCooldownMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPManaCooldownMult.nPurchases, 16);
 
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 4);
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 8);
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 16);
-        unlockIfGtEqPrestige(pt.psvPPManaMaxMult.nPurchases, 20);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 4);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 8);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 16);
+        unlockIfGtEqPrestige(pt->psvPPManaMaxMult.nPurchases, 20);
 
-        unlockIfPrestige(pt.perm.starpawConversionIgnoreBombs);
-        unlockIfPrestige(pt.perm.starpawNova);
-        unlockIfPrestige(pt.perm.wizardCatDoubleMewltiplierDuration);
-        unlockIfPrestige(pt.perm.wizardCatDoubleStasisFieldDuration);
+        unlockIfPrestige(pt->perm.starpawConversionIgnoreBombs);
+        unlockIfPrestige(pt->perm.starpawNova);
+        unlockIfPrestige(pt->perm.wizardCatDoubleMewltiplierDuration);
+        unlockIfPrestige(pt->perm.wizardCatDoubleStasisFieldDuration);
 
-        unlockIfGtEq(pt.mouseCatCombo, 25);
-        unlockIfGtEq(pt.mouseCatCombo, 50);
-        unlockIfGtEq(pt.mouseCatCombo, 75);
-        unlockIfGtEq(pt.mouseCatCombo, 100);
-        unlockIfGtEq(pt.mouseCatCombo, 125);
-        unlockIfGtEq(pt.mouseCatCombo, 150);
-        unlockIfGtEq(pt.mouseCatCombo, 175);
-        unlockIfGtEq(pt.mouseCatCombo, 999);
+        unlockIfGtEq(pt->mouseCatCombo, 25);
+        unlockIfGtEq(pt->mouseCatCombo, 50);
+        unlockIfGtEq(pt->mouseCatCombo, 75);
+        unlockIfGtEq(pt->mouseCatCombo, 100);
+        unlockIfGtEq(pt->mouseCatCombo, 125);
+        unlockIfGtEq(pt->mouseCatCombo, 150);
+        unlockIfGtEq(pt->mouseCatCombo, 175);
+        unlockIfGtEq(pt->mouseCatCombo, 999);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Mouse)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Mouse)].nPurchases, 9);
 
-        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 2);
-        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 6);
-        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 10);
-        unlockIfGtEqPrestige(pt.psvPPMouseCatGlobalBonusMult.nPurchases, 14);
+        unlockIfGtEqPrestige(pt->psvPPMouseCatGlobalBonusMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPMouseCatGlobalBonusMult.nPurchases, 2);
+        unlockIfGtEqPrestige(pt->psvPPMouseCatGlobalBonusMult.nPurchases, 6);
+        unlockIfGtEqPrestige(pt->psvPPMouseCatGlobalBonusMult.nPurchases, 10);
+        unlockIfGtEqPrestige(pt->psvPPMouseCatGlobalBonusMult.nPurchases, 14);
 
         unlockIfGtEq(profile.statsLifetime.nMaintenances, 1);
         unlockIfGtEq(profile.statsLifetime.nMaintenances, 10);
@@ -6004,44 +6103,44 @@ struct Main
         unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 12);
         unlockIfGtEq(profile.statsLifetime.highestSimultaneousMaintenances, 15);
 
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
-        unlockIfGtEq(pt.psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 12);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
+        unlockIfGtEq(pt->psvCooldownMultsPerCatType[asIdx(CatType::Engi)].nPurchases, 12);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Engi)].nPurchases, 9);
 
-        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 2);
-        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 6);
-        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 10);
-        unlockIfGtEqPrestige(pt.psvPPEngiCatGlobalBonusMult.nPurchases, 14);
+        unlockIfGtEqPrestige(pt->psvPPEngiCatGlobalBonusMult.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPEngiCatGlobalBonusMult.nPurchases, 2);
+        unlockIfGtEqPrestige(pt->psvPPEngiCatGlobalBonusMult.nPurchases, 6);
+        unlockIfGtEqPrestige(pt->psvPPEngiCatGlobalBonusMult.nPurchases, 10);
+        unlockIfGtEqPrestige(pt->psvPPEngiCatGlobalBonusMult.nPurchases, 14);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Repulso)].nPurchases, 9);
 
-        unlockIfPrestige(pt.perm.repulsoCatFilterPurchased);
-        unlockIfPrestige(pt.perm.repulsoCatConverterPurchased);
-        unlockIfPrestige(pt.perm.repulsoCatNovaConverterPurchased);
+        unlockIfPrestige(pt->perm.repulsoCatFilterPurchased);
+        unlockIfPrestige(pt->perm.repulsoCatConverterPurchased);
+        unlockIfPrestige(pt->perm.repulsoCatNovaConverterPurchased);
 
-        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 1);
-        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 4);
-        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 8);
-        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 12);
-        unlockIfGtEqPrestige(pt.psvPPRepulsoCatConverterChance.nPurchases, 16);
+        unlockIfGtEqPrestige(pt->psvPPRepulsoCatConverterChance.nPurchases, 1);
+        unlockIfGtEqPrestige(pt->psvPPRepulsoCatConverterChance.nPurchases, 4);
+        unlockIfGtEqPrestige(pt->psvPPRepulsoCatConverterChance.nPurchases, 8);
+        unlockIfGtEqPrestige(pt->psvPPRepulsoCatConverterChance.nPurchases, 12);
+        unlockIfGtEqPrestige(pt->psvPPRepulsoCatConverterChance.nPurchases, 16);
 
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 1);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 3);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 6);
-        unlockIfGtEq(pt.psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 9);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 1);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 3);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 6);
+        unlockIfGtEq(pt->psvRangeDivsPerCatType[asIdx(CatType::Attracto)].nPurchases, 9);
 
-        unlockIfPrestige(pt.perm.attractoCatFilterPurchased);
+        unlockIfPrestige(pt->perm.attractoCatFilterPurchased);
 
         unlockIfGtEq(profile.statsLifetime.nDisguises, 1);
         unlockIfGtEq(profile.statsLifetime.nDisguises, 5);
@@ -6049,7 +6148,8 @@ struct Main
         unlockIfGtEq(profile.statsLifetime.nDisguises, 100);
 
         unlockIf(buyReminder >= 5); // Secret
-        unlockIf(pt.geniusCatIgnoreBubbles.normal && pt.geniusCatIgnoreBubbles.star && pt.geniusCatIgnoreBubbles.bomb); // Secret
+        unlockIf(pt->geniusCatIgnoreBubbles.normal && pt->geniusCatIgnoreBubbles.star &&
+                 pt->geniusCatIgnoreBubbles.bomb); // Secret
         unlockIf(wastedEffort);
 
         mustGetFromSteam = false;
@@ -6089,9 +6189,9 @@ struct Main
                                                  &starBubbleDrawableBatch};
         static_assert(sf::base::getArraySize(batchToUseByType) == nBubbleTypes);
 
-        for (SizeT i = 0u; i < pt.bubbles.size(); ++i)
+        for (SizeT i = 0u; i < pt->bubbles.size(); ++i)
         {
-            Bubble& bubble = pt.bubbles[i];
+            Bubble& bubble = pt->bubbles[i];
 
             if (!bubbleCullingBoundaries.isInside(bubble.position))
                 continue;
@@ -6144,7 +6244,7 @@ struct Main
 
         const sf::Vector2f trailStep = mousePosDiff.normalized() * chunkLen;
 
-        const float trailScaleMult = pt.laserPopEnabled ? 1.5f : 1.f;
+        const float trailScaleMult = pt->laserPopEnabled ? 1.5f : 1.f;
 
         for (float i = 0.f; i < chunks; ++i)
             spawnParticle(ParticleData{.position      = mousePos + trailStep * i,
@@ -6182,7 +6282,7 @@ struct Main
 
         static_assert(sf::base::getArraySize(mmCatTxrs) == nCatTypes);
 
-        for (const Shrine& shrine : pt.shrines)
+        for (const Shrine& shrine : pt->shrines)
         {
             const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
 
@@ -6195,7 +6295,7 @@ struct Main
                            .color       = hueColor(shrine.getHue(), shrineAlpha)});
         }
 
-        for (const Cat& cat : pt.cats)
+        for (const Cat& cat : pt->cats)
         {
             const auto& catMMTxr = *mmCatTxrs[asIdx(cat.type)];
 
@@ -6208,7 +6308,7 @@ struct Main
                            .color       = hueColor(cat.hue, 255u)});
         }
 
-        for (const Doll& doll : pt.dolls)
+        for (const Doll& doll : pt->dolls)
         {
             minimapDrawableBatch.add(
                 sf::Sprite{.position    = doll.position,
@@ -6219,7 +6319,7 @@ struct Main
                            .color       = hueColor(doll.hue, 255u)});
         }
 
-        for (const Doll& doll : pt.copyDolls)
+        for (const Doll& doll : pt->copyDolls)
         {
             minimapDrawableBatch.add(
                 sf::Sprite{.position    = doll.position,
@@ -6392,7 +6492,7 @@ struct Main
         static_assert(sf::base::getArraySize(catHueByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
             gameLoopDrawCat(cat,
                             deltaTimeMs,
                             mousePos,
@@ -6422,7 +6522,7 @@ struct Main
             return;
 
         const auto isCopyCatWithType = [&](const CatType copiedType)
-        { return cat.type == CatType::Copy && pt.copycatCopiedCatType == copiedType; };
+        { return cat.type == CatType::Copy && pt->copycatCopiedCatType == copiedType; };
 
         const bool beingDragged = isCatBeingDragged(cat);
 
@@ -6457,12 +6557,12 @@ struct Main
                 const float frequency = remap(witch.cooldown.value, 0.f, 10'000.f, 0.1f, 0.05f);
                 wobblePhase += frequency * deltaTimeMs * 0.005f;
 
-                const auto range        = pt.getComputedRangeByCatType(CatType::Witch);
+                const auto range        = pt->getComputedRangeByCatType(CatType::Witch);
                 const auto rangeSquared = range * range;
 
                 const bool catInWitchRange = (witch.position - cat.position).lengthSquared() <= rangeSquared;
 
-                if (&cat == &witch || (pt.perm.witchCatBuffPowerScalesWithNCats && catInWitchRange))
+                if (&cat == &witch || (pt->perm.witchCatBuffPowerScalesWithNCats && catInWitchRange))
                 {
                     const float amplitude = remap(witch.cooldown.value, 0.f, 10'000.f, 0.5f, 0.f);
                     catRotation           = sf::base::sin(wobblePhase) * amplitude;
@@ -6491,7 +6591,7 @@ struct Main
         {
             doWitchAnimation(witchcatWobblePhase, *cachedWitchCat);
         }
-        else if (cachedCopyCat != nullptr && pt.copycatCopiedCatType == CatType::Witch)
+        else if (cachedCopyCat != nullptr && pt->copycatCopiedCatType == CatType::Witch)
         {
             doWitchAnimation(copyWitchcatWobblePhase, *cachedCopyCat);
         }
@@ -6563,7 +6663,7 @@ struct Main
 
         //
         // Draw brain jar in the background
-        if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
+        if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
         {
             batchToUse.add(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
                                       .scale       = catScale,
@@ -6639,7 +6739,7 @@ struct Main
         {
             //
             // Draw graudation hat
-            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased)
+            if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased)
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset({-150.f, -535.f}),
                                           .scale       = catScale,
@@ -6705,7 +6805,7 @@ struct Main
 
             //
             // Draw attachments
-            if (cat.type == CatType::Normal && pt.perm.smartCatsPurchased) // Smart cat diploma
+            if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased) // Smart cat diploma
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
                                           .scale       = catScale,
@@ -6714,7 +6814,7 @@ struct Main
                                           .textureRect = txrSmartCatDiploma,
                                           .color       = catColor});
             }
-            else if (cat.type == CatType::Astro && pt.perm.astroCatInspirePurchased) // Astro cat flag
+            else if (cat.type == CatType::Astro && pt->perm.astroCatInspirePurchased) // Astro cat flag
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
                                           .scale       = catScale,
@@ -6724,7 +6824,7 @@ struct Main
                                           .color       = catColor});
             }
             else if (cat.type == CatType::Engi ||
-                     (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
+                     (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
                                           .scale       = catScale,
@@ -6734,7 +6834,7 @@ struct Main
                                           .color       = catColor});
             }
             else if (cat.type == CatType::Attracto ||
-                     (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
+                     (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
                                           .scale       = catScale,
@@ -6763,7 +6863,7 @@ struct Main
 
             //
             // Mousecat: mouse
-            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt.copycatCopiedCatType == CatType::Mouse))
+            if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse))
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
                                           .scale       = catScale,
@@ -6817,7 +6917,7 @@ struct Main
                                .color = attachmentHue});
             }
 
-            if (cat.type == CatType::Normal && pt.perm.geniusCatsPurchased)
+            if (cat.type == CatType::Normal && pt->perm.geniusCatsPurchased)
             {
                 batchToUse.add(sf::Sprite{.position    = anchorOffset({210.f, -235.f}),
                                           .scale       = catScale,
@@ -6854,22 +6954,22 @@ struct Main
 
                 const auto* txrMaskToUse = [&]() -> const sf::FloatRect*
                 {
-                    if (pt.copycatCopiedCatType == CatType::Witch)
+                    if (pt->copycatCopiedCatType == CatType::Witch)
                         return &txrCCMaskWitch;
 
-                    if (pt.copycatCopiedCatType == CatType::Wizard)
+                    if (pt->copycatCopiedCatType == CatType::Wizard)
                         return &txrCCMaskWizard;
 
-                    if (pt.copycatCopiedCatType == CatType::Mouse)
+                    if (pt->copycatCopiedCatType == CatType::Mouse)
                         return &txrCCMaskMouse;
 
-                    if (pt.copycatCopiedCatType == CatType::Engi)
+                    if (pt->copycatCopiedCatType == CatType::Engi)
                         return &txrCCMaskEngi;
 
-                    if (pt.copycatCopiedCatType == CatType::Repulso)
+                    if (pt->copycatCopiedCatType == CatType::Repulso)
                         return &txrCCMaskRepulso;
 
-                    if (pt.copycatCopiedCatType == CatType::Attracto)
+                    if (pt->copycatCopiedCatType == CatType::Attracto)
                         return &txrCCMaskAttracto;
 
                     return nullptr;
@@ -6891,12 +6991,12 @@ struct Main
             static thread_local std::string catNameBuffer;
             catNameBuffer.clear();
 
-            if (pt.perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
+            if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
                 catNameBuffer += "Dr. ";
 
             catNameBuffer += shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx];
 
-            if (pt.perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
+            if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
                 catNameBuffer += ", PhD";
 
             // Name text
@@ -6912,7 +7012,7 @@ struct Main
                 !isCopyCatWithType(CatType::Repulso) && !isCopyCatWithType(CatType::Attracto))
             {
                 const char* actionName = CatConstants::actionNames[asIdx(
-                    cat.type == CatType::Copy ? pt.copycatCopiedCatType : cat.type)];
+                    cat.type == CatType::Copy ? pt->copycatCopiedCatType : cat.type)];
 
                 if (cat.type == CatType::Devil && isDevilcatHellsingedActive())
                     actionName = "Portals";
@@ -6928,7 +7028,7 @@ struct Main
                 if (cat.type == CatType::Mouse || isCopyCatWithType(CatType::Mouse))
                 {
                     actionString += " (x";
-                    actionString += std::to_string(pt.mouseCatCombo + 1);
+                    actionString += std::to_string(pt->mouseCatCombo + 1);
                     actionString += ")";
                 }
 
@@ -6981,7 +7081,7 @@ struct Main
     {
         Shrine* hoveredShrine = nullptr;
 
-        for (Shrine& shrine : pt.shrines)
+        for (Shrine& shrine : pt->shrines)
         {
             U8 rangeInnerAlpha = 0u;
 
@@ -6991,11 +7091,11 @@ struct Main
                 hoveredShrine   = &shrine;
                 rangeInnerAlpha = 75u;
 
-                if (!pt.shrineHoverTipShown)
+                if (!pt->shrineHoverTipShown)
                 {
-                    pt.shrineHoverTipShown = true;
+                    pt->shrineHoverTipShown = true;
 
-                    if (pt.psvBubbleValue.nPurchases == 0u)
+                    if (pt->psvBubbleValue.nPurchases == 0u)
                     {
                         doTip(
                             "Unique cats are sealed inside shrines!\nShrines absorb money, and can have\ndangerous "
@@ -7050,7 +7150,7 @@ struct Main
                 shrineStatus = "$";
                 shrineStatus += toStringWithSeparators(shrine.collectedReward);
                 shrineStatus += " / $";
-                shrineStatus += toStringWithSeparators(pt.getComputedRequiredRewardByShrineType(shrine.type));
+                shrineStatus += toStringWithSeparators(pt->getComputedRequiredRewardByShrineType(shrine.type));
 
                 textStatusBuffer.setString(shrineStatus);
             }
@@ -7068,7 +7168,7 @@ struct Main
             textStatusBuffer.scale *= 0.5f;
             cpuDrawableBatch.add(textStatusBuffer);
 
-            if (pt.psvBubbleValue.nPurchases == 0u)
+            if (pt->psvBubbleValue.nPurchases == 0u)
             {
                 if (shrine.isActive())
                     textMoneyBuffer.setString("Pop bubbles in shrine range to complete it");
@@ -7134,16 +7234,16 @@ struct Main
             }
         };
 
-        processDolls(pt.dolls, /* hueMod */ 0.f);
-        processDolls(pt.copyDolls, /* hueMod */ 180.f);
+        processDolls(pt->dolls, /* hueMod */ 0.f);
+        processDolls(pt->copyDolls, /* hueMod */ 180.f);
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopDrawHellPortals()
     {
-        const float hellPortalRadius = pt.getComputedRangeByCatType(CatType::Devil);
+        const float hellPortalRadius = pt->getComputedRangeByCatType(CatType::Devil);
 
-        for (HellPortal& hp : pt.hellPortals)
+        for (HellPortal& hp : pt->hellPortals)
         {
             const float scaleMult = //
                 (hp.life.value > 1500.f)  ? easeOutBack(remap(hp.life.value, 1500.f, 1750.f, 1.f, 0.f))
@@ -7445,8 +7545,8 @@ struct Main
         profile.cursorHue = wrapHue(profile.cursorHue);
 
         rtGame->draw(shouldDrawGrabbingCursor() ? txCursorGrab
-                     : pt.laserPopEnabled       ? txCursorLaser
-                     : pt.multiPopEnabled       ? txCursorMultipop
+                     : pt->laserPopEnabled      ? txCursorLaser
+                     : pt->multiPopEnabled      ? txCursorMultipop
                                                 : txCursor,
                      {.position = sf::Mouse::getPosition(window).toVector2f(),
                       .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
@@ -7460,7 +7560,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursorComboText(const float deltaTimeMs, const float cursorGrow)
     {
-        if (!pt.comboPurchased || !profile.showCursorComboText || shouldDrawGrabbingCursor())
+        if (!pt->comboPurchased || !profile.showCursorComboText || shouldDrawGrabbingCursor())
             return;
 
         static float alpha = 0.f;
@@ -7507,7 +7607,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursorComboBar()
     {
-        if (!pt.comboPurchased || !profile.showCursorComboBar || comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
+        if (!pt->comboPurchased || !profile.showCursorComboBar || comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
             return;
 
         auto&       window    = *optWindow;
@@ -7521,7 +7621,7 @@ struct Main
             .fillColor          = sf::Color::blackMask(80u),
             .outlineColor       = cursorComboText.getOutlineColor(),
             .outlineThickness   = 1.f,
-            .size = {64.f * scaleMult * pt.psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
+            .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
         });
 
         rtGame->draw(sf::RectangleShapeData{
@@ -7823,7 +7923,7 @@ struct Main
                              const sf::base::Optional<sf::Vector2f> clickPosition)
     {
         // Mousecat combo
-        checkComboEnd(deltaTimeMs, pt.mouseCatCombo, pt.mouseCatComboCountdown);
+        checkComboEnd(deltaTimeMs, pt->mouseCatCombo, pt->mouseCatComboCountdown);
 
         // Combo failure countdown for red text effect
         (void)comboFailCountdown.updateAndStop(deltaTimeMs);
@@ -7838,7 +7938,7 @@ struct Main
 
 
         // Player combo failure due to missed click
-        if (!anyBubblePoppedByClicking && clickPosition.hasValue() && !pt.laserPopEnabled)
+        if (!anyBubblePoppedByClicking && clickPosition.hasValue() && !pt->laserPopEnabled)
         {
             if (combo > 1)
             {
@@ -7922,7 +8022,7 @@ struct Main
         auto func = [&](const SizeT bubbleIdxI, const SizeT bubbleIdxJ) SFML_BASE_LAMBDA_ALWAYS_INLINE
         {
             // TODO P2: technically this is a data race
-            handleBubbleCollision(deltaTimeMs, pt.bubbles[bubbleIdxI], pt.bubbles[bubbleIdxJ]);
+            handleBubbleCollision(deltaTimeMs, pt->bubbles[bubbleIdxI], pt->bubbles[bubbleIdxJ]);
         };
 
         const sf::base::SizeT nWorkers = threadPool.getWorkerCount();
@@ -7932,11 +8032,11 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateCollisionsCatCat(const float deltaTimeMs)
     {
-        for (SizeT i = 0u; i < pt.cats.size(); ++i)
-            for (SizeT j = i + 1; j < pt.cats.size(); ++j)
+        for (SizeT i = 0u; i < pt->cats.size(); ++i)
+            for (SizeT j = i + 1; j < pt->cats.size(); ++j)
             {
-                Cat& iCat = pt.cats[i];
-                Cat& jCat = pt.cats[j];
+                Cat& iCat = pt->cats[i];
+                Cat& jCat = pt->cats[j];
 
                 if (isCatBeingDragged(iCat) || isCatBeingDragged(jCat))
                     continue;
@@ -7946,12 +8046,12 @@ struct Main
                     if (!catA.isAstroAndInFlight())
                         return false;
 
-                    if (pt.perm.astroCatInspirePurchased && catB.type != CatType::Astro &&
+                    if (pt->perm.astroCatInspirePurchased && catB.type != CatType::Astro &&
                         detectCollision(catA.position, catB.position, catA.getRadius(), catB.getRadius()))
                     {
-                        catB.inspiredCountdown.value = pt.getComputedInspirationDuration();
+                        catB.inspiredCountdown.value = pt->getComputedInspirationDuration();
 
-                        pt.achAstrocatInspireByType[asIdx(catB.type)] = true;
+                        pt->achAstrocatInspireByType[asIdx(catB.type)] = true;
                     }
 
                     return true;
@@ -7964,14 +8064,14 @@ struct Main
                 if (applyAstroInspireAndIgnore(jCat, iCat))
                     continue;
 
-                handleCatCollision(deltaTimeMs, pt.cats[i], pt.cats[j]);
+                handleCatCollision(deltaTimeMs, pt->cats[i], pt->cats[j]);
             }
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCollisionsCatShrine(const float deltaTimeMs)
+    void gameLoopUpdateCollisionsCatShrine(const float deltaTimeMs) const
     {
-        for (Cat& cat : pt.cats)
+        for (Cat& cat : pt->cats)
         {
             if (cat.isAstroAndInFlight())
                 continue;
@@ -7979,7 +8079,7 @@ struct Main
             if (isCatBeingDragged(cat))
                 continue;
 
-            for (Shrine& shrine : pt.shrines)
+            for (Shrine& shrine : pt->shrines)
                 handleCatShrineCollision(deltaTimeMs, cat, shrine);
         }
     }
@@ -7989,12 +8089,12 @@ struct Main
     {
         const auto checkCollisionWithDoll = [&](Doll& d, auto collectFn)
         {
-            for (Cat& cat : pt.cats)
+            for (Cat& cat : pt->cats)
             {
                 if (!cat.isAstroAndInFlight())
                     continue;
 
-                if (pt.perm.witchCatBuffOrbitalDolls && d.isActive() && !d.tcDeath.hasValue() &&
+                if (pt->perm.witchCatBuffOrbitalDolls && d.isActive() && !d.tcDeath.hasValue() &&
                     detectCollision(cat.position, d.position, cat.getRadius(), d.getRadius()))
                 {
                     collectFn(d);
@@ -8002,10 +8102,10 @@ struct Main
             }
         };
 
-        for (Doll& doll : pt.dolls)
+        for (Doll& doll : pt->dolls)
             checkCollisionWithDoll(doll, [&](Doll& d) { collectDoll(d); });
 
-        for (Doll& copyDoll : pt.copyDolls)
+        for (Doll& copyDoll : pt->copyDolls)
             checkCollisionWithDoll(copyDoll, [&](Doll& d) { collectCopyDoll(d); });
     }
 
@@ -8015,12 +8115,12 @@ struct Main
         if (!frameProcThisFrame)
             return;
 
-        const float hellPortalRadius        = pt.getComputedRangeByCatType(CatType::Devil) * 1.25f;
+        const float hellPortalRadius        = pt->getComputedRangeByCatType(CatType::Devil) * 1.25f;
         const float hellPortalRadiusSquared = hellPortalRadius * hellPortalRadius;
 
-        for (HellPortal& hellPortal : pt.hellPortals)
+        for (HellPortal& hellPortal : pt->hellPortals)
         {
-            Cat* linkedCat = hellPortal.catIdx < pt.cats.size() ? &pt.cats[hellPortal.catIdx] : nullptr;
+            Cat* linkedCat = hellPortal.catIdx < pt->cats.size() ? &pt->cats[hellPortal.catIdx] : nullptr;
 
             forEachBubbleInRadiusSquared(hellPortal.position,
                                          hellPortalRadiusSquared,
@@ -8059,8 +8159,8 @@ struct Main
             screenShakeTimer = sf::base::max(0.f, screenShakeTimer);
         }
 
-        const bool anyShrineDying = sf::base::anyOf(pt.shrines.begin(),
-                                                    pt.shrines.end(),
+        const bool anyShrineDying = sf::base::anyOf(pt->shrines.begin(),
+                                                    pt->shrines.end(),
                                                     [](const Shrine& shrine) { return shrine.tcDeath.hasValue(); });
 
         if (!anyShrineDying && screenShakeTimer <= 0.f && screenShakeAmount > 0.f)
@@ -8116,7 +8216,7 @@ struct Main
 #ifndef BUBBLEBYTE_NO_AUDIO
         const float volumeMult = profile.playAudioInBackground || getWindow().hasFocus() ? 1.f : 0.f;
 
-        listener.position = {sf::base::clamp(mousePos.x, 0.f, pt.getMapLimit()),
+        listener.position = {sf::base::clamp(mousePos.x, 0.f, pt->getMapLimit()),
                              sf::base::clamp(mousePos.y, 0.f, boundaries.y),
                              0.f};
 
@@ -8197,7 +8297,7 @@ struct Main
             autosaveUsAccumulator = 0;
 
             sf::cOut() << "Autosaving...\n";
-            savePlaythroughToFile(pt);
+            savePlaythroughToFile(ptMain, "userdata/playthrough.json");
         }
     }
 
@@ -8342,7 +8442,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateMoneyText(const float deltaTimeMs, const float yBelowMinimap)
     {
-        moneyText.setString("$" + std::string(toStringWithSeparators(pt.money + spentMoney)));
+        moneyText.setString("$" + std::string(toStringWithSeparators(pt->money + spentMoney)));
 
         moneyText.setOutlineColor(outlineHueColor);
         moneyText.scale  = {0.5f, 0.5f};
@@ -8392,7 +8492,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopUpdateComboText(const float deltaTimeMs, const float yBelowMinimap)
     {
-        if (!pt.comboPurchased)
+        if (!pt->comboPurchased)
             return;
 
         comboText.setString("x" + std::to_string(combo + 1));
@@ -8432,12 +8532,12 @@ struct Main
         char  buffStrBuffer[1024]{};
         SizeT writeIdx = 0u;
 
-        const SizeT nDollsToClick = sf::base::countIf(pt.dolls.begin(),
-                                                      pt.dolls.end(),
+        const SizeT nDollsToClick = sf::base::countIf(pt->dolls.begin(),
+                                                      pt->dolls.end(),
                                                       [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
 
-        const SizeT nCopyDollsToClick = sf::base::countIf(pt.copyDolls.begin(),
-                                                          pt.copyDolls.end(),
+        const SizeT nCopyDollsToClick = sf::base::countIf(pt->copyDolls.begin(),
+                                                          pt->copyDolls.end(),
                                                           [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
 
         if (nDollsToClick > 0u)
@@ -8451,24 +8551,24 @@ struct Main
                               "Dolls (copy) to collect: %zu\n",
                               nCopyDollsToClick));
 
-        if (pt.mewltiplierAuraTimer > 0.f)
+        if (pt->mewltiplierAuraTimer > 0.f)
             writeIdx += static_cast<SizeT>(
                 std::snprintf(buffStrBuffer + writeIdx,
                               sizeof(buffStrBuffer) - writeIdx,
                               "Mewltiplier Aura (x%.1f Any Reward): %.2fs\n",
-                              static_cast<double>(pt.psvMewltiplierMult.currentValue()),
-                              static_cast<double>(pt.mewltiplierAuraTimer / 1000.f)));
+                              static_cast<double>(pt->psvMewltiplierMult.currentValue()),
+                              static_cast<double>(pt->mewltiplierAuraTimer / 1000.f)));
 
-        if (pt.stasisFieldTimer > 0.f)
+        if (pt->stasisFieldTimer > 0.f)
             writeIdx += static_cast<SizeT>(
                 std::snprintf(buffStrBuffer + writeIdx,
                               sizeof(buffStrBuffer) - writeIdx,
                               "Stasis Field (Bubbles Stuck In Time): %.2fs\n",
-                              static_cast<double>(pt.stasisFieldTimer / 1000.f)));
+                              static_cast<double>(pt->stasisFieldTimer / 1000.f)));
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
-            const float buffTime = pt.buffCountdownsPerType[i].value;
+            const float buffTime = pt->buffCountdownsPerType[i].value;
 
             if (buffTime == 0.f)
                 continue;
@@ -8491,24 +8591,24 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopPrestigeAvailableReminder()
     {
-        if (!wasPrestigeAvailableLastFrame && pt.canBuyNextPrestige())
+        if (!wasPrestigeAvailableLastFrame && pt->canBuyNextPrestige())
         {
             pushNotification("Prestige available!", "Purchase through the \"Prestige\" menu!");
 
-            if (pt.psvBubbleValue.nPurchases == 0u)
+            if (pt->psvBubbleValue.nPurchases == 0u)
                 doTip("You can now prestige for the first time!");
         }
 
-        wasPrestigeAvailableLastFrame = pt.canBuyNextPrestige();
+        wasPrestigeAvailableLastFrame = pt->canBuyNextPrestige();
     }
 
     ////////////////////////////////////////////////////////////
     void gameLoopReminderBuyCombo()
     {
-        if (pt.comboPurchased || inPrestigeTransition)
+        if (pt->comboPurchased || inPrestigeTransition)
             return;
 
-        const auto handPoppedBubbles = pt.statsSession.getTotalNBubblesHandPopped();
+        const auto handPoppedBubbles = pt->statsSession.getTotalNBubblesHandPopped();
 
         if (handPoppedBubbles >= 25u && buyReminder == 0)
         {
@@ -8541,9 +8641,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopReminderSpendPPs()
     {
-        if (!pt.spendPPTipShown && pt.psvBubbleValue.nPurchases == 1u && pt.prestigePoints > 0u && pt.money > 500u)
+        if (!pt->spendPPTipShown && pt->psvBubbleValue.nPurchases == 1u && pt->prestigePoints > 0u && pt->money > 500u)
         {
-            pt.spendPPTipShown = true;
+            pt->spendPPTipShown = true;
             doTip("Remember that you have some\nprestige points to spend!");
         }
     }
@@ -8655,7 +8755,7 @@ struct Main
             {
                 fingerPositions[e2->finger].emplace(e2->position.toVector2f());
 
-                if (pt.laserPopEnabled)
+                if (pt->laserPopEnabled)
                     if (!clickPosition.hasValue())
                         clickPosition.emplace(e2->position.toVector2f());
             }
@@ -8679,7 +8779,7 @@ struct Main
             }
             else if (const auto* e5 = event->getIf<sf::Event::MouseMoved>())
             {
-                if (pt.mapPurchased && dragPosition.hasValue())
+                if (pt->mapPurchased && dragPosition.hasValue())
                     scroll = dragPosition->x - static_cast<float>(e5->position.x);
             }
             else if (const auto* e6 = event->getIf<sf::Event::Resized>())
@@ -8717,7 +8817,7 @@ struct Main
 
         //
         // TODO PO laser cursor
-        if (pt.laserPopEnabled)
+        if (pt->laserPopEnabled)
             if (keyDown(sf::Keyboard::Key::Z) || keyDown(sf::Keyboard::Key::X) || keyDown(sf::Keyboard::Key::Y) ||
                 mBtnDown(getLMB(), /* penetrateUI */ false))
             {
@@ -8734,13 +8834,13 @@ struct Main
 
         //
         // Map scrolling via keyboard and touch
-        if (pt.mapPurchased)
+        if (pt->mapPurchased)
         {
             // Jump to beginning/end of map
             if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::Home))
                 scroll = 0.f;
             else if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::End))
-                scroll = static_cast<float>(pt.getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
+                scroll = static_cast<float>(pt->getMapLimitIncreases()) * gameScreenSize.x * 0.5f;
 
             const auto currentScrollScreenIndex = static_cast<sf::base::SizeT>(
                 sf::base::lround(scroll / (gameScreenSize.x * 0.5f)));
@@ -8749,7 +8849,7 @@ struct Main
             if (inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageDown) ||
                 inputHelper.wasMouseButtonJustPressed(sf::Mouse::Button::Extra2))
             {
-                const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, pt.getMapLimitIncreases());
+                const auto nextScrollScreenIndex = sf::base::min(currentScrollScreenIndex + 1u, pt->getMapLimitIncreases());
                 scroll = static_cast<float>(nextScrollScreenIndex) * gameScreenSize.x * 0.5f;
             }
             else if ((inputHelper.wasKeyJustPressed(sf::Keyboard::Key::PageUp) ||
@@ -8846,7 +8946,7 @@ struct Main
         //
         // Update spatial partitioning (needs to be done before updating bubbles)
         sweepAndPrune.clear();
-        sweepAndPrune.populate(pt.bubbles);
+        sweepAndPrune.populate(pt->bubbles);
 
         //
         // Update frameproc
@@ -8932,6 +9032,10 @@ struct Main
         gameLoopUpdateAchievements();
 
         //
+        // Speedrunning splits
+        gameLoopUpdateSplits();
+
+        //
         // Update ImGui
         imGuiContext.update(window, deltaTime);
 
@@ -9013,9 +9117,9 @@ struct Main
         catTextTopDrawableBatch.clear();
 
         // Draw multipop range
-        if (pt.multiPopEnabled && draggedCats.empty())
+        if (pt->multiPopEnabled && draggedCats.empty())
         {
-            const auto range = pt.psvPPMultiPopRange.currentValue() * 0.9f;
+            const auto range = pt->psvPPMultiPopRange.currentValue() * 0.9f;
 
             cpuDrawableBatch.add(sf::CircleShapeData{
                 .position           = mousePos,
@@ -9085,7 +9189,7 @@ struct Main
 
         //
         // Y coordinate below minimap to position money, combo, and buff texts
-        const float yBelowMinimap = pt.mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
+        const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
 
         //
         // Money text & spent money effect
@@ -9101,7 +9205,7 @@ struct Main
         //
         // Combo text
         gameLoopUpdateComboText(deltaTimeMs, yBelowMinimap);
-        if (!debugHideUI && pt.comboPurchased)
+        if (!debugHideUI && pt->comboPurchased)
         {
             comboText.setFillColorAlpha(shouldDrawUIAlpha);
             comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
@@ -9110,15 +9214,15 @@ struct Main
 
         //
         // Portal storm buff
-        if (isDevilcatHellsingedActive() && pt.buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
+        if (isDevilcatHellsingedActive() && pt->buffCountdownsPerType[asIdx(CatType::Devil)].value > 0.f)
         {
             if (portalStormTimer.updateAndLoop(deltaTimeMs, 10.f) == CountdownStatusLoop::Looping &&
-                rng.getF(0.f, 100.f) <= pt.psvPPDevilRitualBuffPercentage.currentValue())
+                rng.getF(0.f, 100.f) <= pt->psvPPDevilRitualBuffPercentage.currentValue())
             {
                 const float offset = 64.f;
-                const auto portalPos = rng.getVec2f({offset, offset}, {pt.getMapLimit() - offset, boundaries.y - offset});
+                const auto portalPos = rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset, boundaries.y - offset});
 
-                pt.hellPortals.push_back({
+                pt->hellPortals.push_back({
                     .position = portalPos,
                     .life     = Countdown{.value = 1750.f},
                     .catIdx   = 100'000u, // invalid
@@ -9148,11 +9252,11 @@ struct Main
 
         //
         // Minimap
-        if (!debugHideUI && pt.mapPurchased)
+        if (!debugHideUI && pt->mapPurchased)
         {
             drawMinimap(shader,
                         profile.minimapScale,
-                        pt.getMapLimit(),
+                        pt->getMapLimit(),
                         gameView,
                         scaledHUDView,
                         *rtGame,
@@ -9171,7 +9275,7 @@ struct Main
             if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
             {
                 const auto minimapPos = p - minimapRect.position;
-                scroll = minimapPos.x * 0.5f * pt.getMapLimit() / minimapRect.size.x - gameScreenSize.x * 0.25f;
+                scroll = minimapPos.x * 0.5f * pt->getMapLimit() / minimapRect.size.x - gameScreenSize.x * 0.25f;
             }
         }
 
@@ -9256,10 +9360,10 @@ struct Main
 
         //
         // Doll on screen particle border
-        if (!pt.dolls.empty())
+        if (!pt->dolls.empty())
             gameLoopDrawDollParticleBorder(0.f);
 
-        if (!pt.copyDolls.empty())
+        if (!pt->copyDolls.empty())
             gameLoopDrawDollParticleBorder(180.f);
 
         //
@@ -9306,12 +9410,12 @@ struct Main
     ////////////////////////////////////////////////////////////
     void loadPlaythroughFromFileAndReseed()
     {
-        const sf::base::StringView loadMessage = loadPlaythroughFromFile(pt);
+        const sf::base::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
 
         if (!loadMessage.empty())
             pushNotification("Playthrough version updated", "%s", loadMessage.data());
 
-        rng.reseed(pt.seed);
+        rng.reseed(pt->seed);
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
     }
 
@@ -9350,7 +9454,7 @@ struct Main
         }
         else
         {
-            pt.seed = rng.getSeed();
+            pt->seed = rng.getSeed();
         }
 
         //
@@ -9358,8 +9462,8 @@ struct Main
         particles.reserve(512);
         spentCoinParticles.reserve(512);
         textParticles.reserve(256);
-        pt.bubbles.reserve(32'768);
-        pt.cats.reserve(512);
+        pt->bubbles.reserve(32'768);
+        pt->cats.reserve(512);
 
         //
         // Touch state

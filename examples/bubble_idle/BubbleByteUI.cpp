@@ -7,6 +7,7 @@
 #include "Constants.hpp"
 #include "Countdown.hpp"
 #include "InputHelper.hpp"
+#include "Milestones.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
 #include "Profile.hpp"
@@ -15,6 +16,7 @@
 #include "Sampler.hpp"
 #include "Serialization.hpp"
 #include "Sounds.hpp"
+#include "Version.hpp"
 
 #include "SFML/ImGui/ImGui.hpp"
 
@@ -32,6 +34,7 @@
 
 #include "SFML/Window/Keyboard.hpp"
 
+#include "SFML/System/Clock.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
@@ -156,7 +159,7 @@ void Main::uiMakeShrineOrCatTooltip(const sf::Vector2f mousePos)
 {
     const auto* hoveredShrine = [&]() -> const Shrine*
     {
-        for (Shrine& shrine : pt.shrines)
+        for (Shrine& shrine : pt->shrines)
             if ((mousePos - shrine.position).lengthSquared() <= shrine.getRadiusSquared())
                 return &shrine;
 
@@ -166,7 +169,7 @@ void Main::uiMakeShrineOrCatTooltip(const sf::Vector2f mousePos)
     const auto* hoveredCat = [&]() -> const Cat*
     {
         if (hoveredShrine == nullptr)
-            for (const Cat& cat : pt.cats)
+            for (const Cat& cat : pt->cats)
                 if ((mousePos - cat.position).lengthSquared() <= cat.getRadiusSquared())
                     return &cat;
 
@@ -192,7 +195,7 @@ Pops bubbles or bombs, whatever comes first. Not the brightest, despite not bein
 
 Prestige points can be spent for their college tuition, making them more cleverer.)";
 
-        if (pt.perm.geniusCatsPurchased)
+        if (pt->perm.geniusCatsPurchased)
         {
             catNormalTooltip =
                 R"(
@@ -204,7 +207,7 @@ Through the sheer power of their intellect, they also get a x2 multiplier on all
 
 We do not speak of the origin of the large brain attached to their body.)";
         }
-        else if (pt.perm.smartCatsPurchased)
+        else if (pt->perm.smartCatsPurchased)
         {
             catNormalTooltip =
                 R"(
@@ -254,7 +257,7 @@ Pride of the NCSA, a highly trained feline astronaut that continuously flies acr
 
 Desperately trying to get funding from the government for a mission on the cheese moon. Perhaps some prestige points could help?)";
 
-        if (pt.perm.astroCatInspirePurchased)
+        if (pt->perm.astroCatInspirePurchased)
         {
             catAstroTooltip =
                 R"(
@@ -642,12 +645,12 @@ bool Main::makePSVButtonExByCurrency(
         result = true;
         availability -= cost;
 
-        if (&availability == &pt.money)
+        if (&availability == &pt->money)
             spentMoney += cost;
 
         psv.nPurchases += times;
 
-        if (&availability == &pt.prestigePoints && times == 1u)
+        if (&availability == &pt->prestigePoints && times == 1u)
         {
             undoPPPurchase.emplace_back([&psv, &availability, times, cost]
             {
@@ -667,7 +670,7 @@ bool Main::makePSVButtonExByCurrency(
 ////////////////////////////////////////////////////////////
 bool Main::makePSVButtonEx(const char* label, PurchasableScalingValue& psv, const SizeT times, const MoneyType cost)
 {
-    return makePSVButtonExByCurrency(label, psv, times, cost, pt.money, "$%s##%u");
+    return makePSVButtonExByCurrency(label, psv, times, cost, pt->money, "$%s##%u");
 }
 
 ////////////////////////////////////////////////////////////
@@ -749,12 +752,12 @@ bool Main::makePurchasableButtonOneTimeByCurrency(
         result = true;
         availability -= cost;
 
-        if (&availability == &pt.money)
+        if (&availability == &pt->money)
             spentMoney += cost;
 
         done = true;
 
-        if (&availability == &pt.prestigePoints && cost > 0u)
+        if (&availability == &pt->prestigePoints && cost > 0u)
         {
             undoPPPurchase.emplace_back([&availability, &done, cost]
             {
@@ -773,13 +776,13 @@ bool Main::makePurchasableButtonOneTimeByCurrency(
 ////////////////////////////////////////////////////////////
 bool Main::makePurchasableButtonOneTime(const char* label, const MoneyType cost, bool& done)
 {
-    return makePurchasableButtonOneTimeByCurrency(label, done, cost, pt.money, "$%s##%u");
+    return makePurchasableButtonOneTimeByCurrency(label, done, cost, pt->money, "$%s##%u");
 }
 
 ////////////////////////////////////////////////////////////
 bool Main::makePurchasablePPButtonOneTime(const char* label, const PrestigePointsType prestigePointsCost, bool& done)
 {
-    return makePurchasableButtonOneTimeByCurrency(label, done, prestigePointsCost, pt.prestigePoints, "%s PPs##%u");
+    return makePurchasableButtonOneTimeByCurrency(label, done, prestigePointsCost, pt->prestigePoints, "%s PPs##%u");
 }
 
 ////////////////////////////////////////////////////////////
@@ -789,7 +792,7 @@ bool Main::makePrestigePurchasablePPButtonPSV(const char* label, PurchasableScal
                                      psv,
                                      /* times */ 1u,
                                      /* cost */ static_cast<PrestigePointsType>(psv.nextCost()),
-                                     /* availability */ pt.prestigePoints,
+                                     /* availability */ pt->prestigePoints,
                                      "%s PPs##%u");
 }
 
@@ -876,9 +879,9 @@ void Main::uiDrawExitPopup(const float newScalingFactor)
 ////////////////////////////////////////////////////////////
 void Main::uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
 {
-    const bool asWitchAndBusy = pt.copycatCopiedCatType == CatType::Witch && (anyCatCopyHexed() || !pt.copyDolls.empty());
+    const bool asWitchAndBusy = pt->copycatCopiedCatType == CatType::Witch && (anyCatCopyHexed() || !pt->copyDolls.empty());
 
-    const bool asWizardAndBusy = pt.copycatCopiedCatType == CatType::Wizard && isWizardBusy();
+    const bool asWizardAndBusy = pt->copycatCopiedCatType == CatType::Wizard && isWizardBusy();
 
     const bool mustDisable = asWitchAndBusy || asWizardAndBusy;
 
@@ -910,7 +913,7 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
     {
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
 
-        if (ImGui::BeginCombo("##copycatsel", CatConstants::typeNamesLong[asIdx(pt.copycatCopiedCatType)]))
+        if (ImGui::BeginCombo("##copycatsel", CatConstants::typeNamesLong[asIdx(pt->copycatCopiedCatType)]))
         {
             for (SizeT i = asIdx(CatType::Normal); i < nCatTypes; ++i)
             {
@@ -926,13 +929,13 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
                 if (findFirstCatByType(static_cast<CatType>(i)) == nullptr)
                     continue;
 
-                const bool isSelected = pt.copycatCopiedCatType == static_cast<CatType>(i);
+                const bool isSelected = pt->copycatCopiedCatType == static_cast<CatType>(i);
                 if (ImGui::Selectable(CatConstants::typeNamesLong[i], isSelected))
                 {
                     statDisguise();
-                    pt.copycatCopiedCatType = static_cast<CatType>(i);
+                    pt->copycatCopiedCatType = static_cast<CatType>(i);
 
-                    copyCat.cooldown.value = pt.getComputedCooldownByCatType(pt.copycatCopiedCatType);
+                    copyCat.cooldown.value = pt->getComputedCooldownByCatType(pt->copycatCopiedCatType);
                     copyCat.hits           = 0u;
 
                     sounds.smokebomb.setPosition({copyCat.position.x, copyCat.position.y});
@@ -1368,6 +1371,9 @@ void Main::uiDraw(const sf::Vector2f mousePos)
     if (profile.showDpsMeter && !debugHideUI)
         uiDpsMeter();
 
+    if (inSpeedrunPlaythrough())
+        uiSpeedrunning();
+
     if (!debugHideUI)
         uiDrawQuickbar();
 
@@ -1432,6 +1438,81 @@ void Main::uiDpsMeter()
                      0.f,
                      FLT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
+
+    ImGui::End();
+}
+
+////////////////////////////////////////////////////////////
+void Main::uiSpeedrunning()
+{
+    const auto resolution = getResolution();
+
+    const float  dpsMeterScale = profile.uiScale;
+    const ImVec2 dpsMeterSize(240.f * dpsMeterScale, 65.f * dpsMeterScale);
+    const ImVec2 speedrunningWindowSize(240.f * 2.f * dpsMeterScale - 45.f, 1.f * 65.f * dpsMeterScale);
+
+    ImGui::SetNextWindowPos({dpsMeterSize.x + 15.f + 15.f, resolution.y - 15.f}, 0, {0.f, 1.f});
+    ImGui::SetNextWindowSizeConstraints(speedrunningWindowSize, speedrunningWindowSize);
+
+    ImGui::Begin("##speedrunning",
+                 nullptr,
+                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize |
+                     ImGuiWindowFlags_NoTitleBar);
+
+    uiSetFontScale(0.55f);
+
+    ImGui::Text("Game Version: %s", BUBBLEBYTE_VERSION_STR);
+
+    ImGui::SetCursorPosY(21.f * profile.uiScale);
+    uiSetFontScale(1.40f);
+
+    if (pt->speedrunStartTime.hasValue())
+    {
+        const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Clock::now() - *(pt->speedrunStartTime));
+        ImGui::Text("%02llu:%02llu:%02llu:%03llu", hours, mins, secs, millis);
+    }
+    else
+    {
+        ImGui::Text("POP TO START");
+    }
+
+    uiSetFontScale(0.75f);
+
+
+    const ImVec4 textColorLocked{1.f, 1.f, 1.f, 0.5f};
+    const ImVec4 textColorUnlocked{1.f, 1.f, 1.f, 1.f};
+
+    const auto textSplit = [&](const char* title, const MilestoneTimestamp split)
+    {
+        if (split == maxMilestone)
+        {
+            ImGui::TextColored(textColorLocked, "%s: XX:XX:XX:XXX", title);
+        }
+        else
+        {
+            const auto [hours, mins, secs, millis] = formatSpeedrunTime(sf::Time{static_cast<sf::base::I64>(split)});
+            ImGui::TextColored(textColorUnlocked, "%s: %02llu:%02llu:%02llu:%03llu", title, hours, mins, secs, millis);
+        }
+    };
+
+    ImGui::SetCursorPosY(10.f * profile.uiScale);
+    ImGui::SetCursorPosX(205.f * profile.uiScale);
+
+    ImGui::BeginGroup();
+    textSplit("Prestige Lv.2", pt->speedrunSplits.prestigeLevel2);
+    textSplit("Prestige Lv.3", pt->speedrunSplits.prestigeLevel3);
+    ImGui::EndGroup();
+
+    /*
+    // TODO P0: balance and enable
+    ImGui::SetCursorPosY(10.f * profile.uiScale);
+    ImGui::SetCursorPosX((250.f + 230.f) * profile.uiScale);
+
+    ImGui::BeginGroup();
+    textSplit("Prestige Lv.4", pt->speedrunSplits.prestigeLevel4);
+    textSplit("Prestige Lv.5", pt->speedrunSplits.prestigeLevel5);
+    ImGui::EndGroup();
+    */
 
     ImGui::End();
 }
@@ -1509,15 +1590,15 @@ void Main::uiTabBar()
         ImGui::EndTabItem();
     }
 
-    if (pt.isBubbleValueUnlocked())
+    if (pt->isBubbleValueUnlocked())
     {
-        if (!pt.prestigeTipShown)
+        if (!pt->prestigeTipShown)
         {
-            pt.prestigeTipShown = true;
+            pt->prestigeTipShown = true;
             doTip("Prestige to increase bubble value\nand unlock permanent upgrades!");
         }
 
-        const bool canPrestige = pt.canBuyNextPrestige();
+        const bool canPrestige = pt->canBuyNextPrestige();
 
         if (canPrestige)
         {
@@ -1703,10 +1784,10 @@ void Main::uiImgsep2(const sf::FloatRect& txr, const char* sepLabel)
 ////////////////////////////////////////////////////////////
 void Main::uiTabBarShop()
 {
-    const auto nCatNormal = pt.getCatCountByType(CatType::Normal);
-    const auto nCatUni    = pt.getCatCountByType(CatType::Uni);
-    const auto nCatDevil  = pt.getCatCountByType(CatType::Devil);
-    const auto nCatAstro  = pt.getCatCountByType(CatType::Astro);
+    const auto nCatNormal = pt->getCatCountByType(CatType::Normal);
+    const auto nCatUni    = pt->getCatCountByType(CatType::Uni);
+    const auto nCatDevil  = pt->getCatCountByType(CatType::Devil);
+    const auto nCatAstro  = pt->getCatCountByType(CatType::Astro);
 
     Cat* catWitch    = cachedWitchCat;
     Cat* catWizard   = cachedWizardCat;
@@ -1728,21 +1809,21 @@ void Main::uiTabBarShop()
                  "one.\n\nCombos expire on misclicks and over time, but can be upgraded to last "
                  "longer.\n\nStar bubbles are affected -- pop them while your multiplier is high!");
     uiLabelBuffer[0] = '\0';
-    if (makePurchasableButtonOneTime("Combo", 20u, pt.comboPurchased))
+    if (makePurchasableButtonOneTime("Combo", 20u, pt->comboPurchased))
     {
         combo = 0;
         doTip("Pop bubbles quickly to keep\nyour combo up and make more money!");
     }
 
-    if (checkUiUnlock(0u, pt.comboPurchased))
+    if (checkUiUnlock(0u, pt->comboPurchased))
     {
         const char* mouseNote = catMouse == nullptr ? "" : "\n\n(Note: this also applies to the Mousecat!)";
 
-        const float currentComboStartTime = pt.psvComboStartTime.currentValue();
-        const float nextComboStartTime    = pt.psvComboStartTime.nextValue();
+        const float currentComboStartTime = pt->psvComboStartTime.currentValue();
+        const float nextComboStartTime    = pt->psvComboStartTime.nextValue();
 
         uiSetUnlockLabelY(0u);
-        if (!pt.psvComboStartTime.isMaxedOut())
+        if (!pt->psvComboStartTime.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase combo duration from %.2fs to %.2fs. We are in it for the long haul!%s",
@@ -1756,10 +1837,10 @@ void Main::uiTabBarShop()
         }
 
         std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentComboStartTime));
-        makePSVButton("  Longer combo", pt.psvComboStartTime);
+        makePSVButton("  Longer combo", pt->psvComboStartTime);
     }
 
-    if (checkUiUnlock(1u, nCatNormal > 0 && pt.psvComboStartTime.nPurchases > 0))
+    if (checkUiUnlock(1u, nCatNormal > 0 && pt->psvComboStartTime.nPurchases > 0))
     {
         uiImgsep(txrMenuSeparator1, "exploration");
 
@@ -1774,36 +1855,36 @@ void Main::uiTabBarShop()
                      "map "
                      "by clicking on the minimap or using the PgUp/PgDn/Home/End keys.");
         uiLabelBuffer[0] = '\0';
-        if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt.mapPurchased))
+        if (makePurchasableButtonOneTime("Map scrolling", 1000u, pt->mapPurchased))
         {
             scroll = 0.f;
             doTip(
                 "Explore the map by using the mouse wheel,\ndragging via right click, or with your "
                 "keyboard.\nYou can also click on the minimap!");
 
-            if (pt.psvBubbleValue.nPurchases == 0u)
+            if (pt->psvBubbleValue.nPurchases == 0u)
                 scrollArrowCountdown.value = 2000.f;
         }
 
-        if (checkUiUnlock(2u, pt.mapPurchased))
+        if (checkUiUnlock(2u, pt->mapPurchased))
         {
             uiSetUnlockLabelY(2u);
             std::sprintf(uiTooltipBuffer, "Extend the map further by one screen.");
-            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt.getMapLimit() / boundaries.x * 100.f));
-            makePSVButton("  Extend map", pt.psvMapExtension);
+            std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(pt->getMapLimit() / boundaries.x * 100.f));
+            makePSVButton("  Extend map", pt->psvMapExtension);
 
-            ImGui::BeginDisabled(pt.psvShrineActivation.nPurchases > pt.psvMapExtension.nPurchases);
+            ImGui::BeginDisabled(pt->psvShrineActivation.nPurchases > pt->psvMapExtension.nPurchases);
             std::sprintf(uiTooltipBuffer,
                          "Activates the next shrine, enabling it to absorb nearby popped bubbles. Once enough "
                          "bubbles are absorbed by a shrine, it will grant a unique cat.");
-            std::sprintf(uiLabelBuffer, "%zu/9", pt.psvShrineActivation.nPurchases);
-            if (makePSVButton("  Activate next shrine", pt.psvShrineActivation))
+            std::sprintf(uiLabelBuffer, "%zu/9", pt->psvShrineActivation.nPurchases);
+            if (makePSVButton("  Activate next shrine", pt->psvShrineActivation))
             {
-                if (!pt.shrineActivateTipShown)
+                if (!pt->shrineActivateTipShown)
                 {
-                    pt.shrineActivateTipShown = true;
+                    pt->shrineActivateTipShown = true;
 
-                    if (pt.psvBubbleValue.nPurchases == 0u)
+                    if (pt->psvBubbleValue.nPurchases == 0u)
                     {
                         doTip(
                             "Move your cats near the shrine to help\n it absorb bubbles and unlock a unique "
@@ -1815,7 +1896,7 @@ void Main::uiTabBarShop()
         }
     }
 
-    if (checkUiUnlock(3u, nCatNormal > 0 && pt.psvComboStartTime.nPurchases > 0))
+    if (checkUiUnlock(3u, nCatNormal > 0 && pt->psvComboStartTime.nPurchases > 0))
     {
         uiImgsep(txrMenuSeparator2, "bubble upgrades");
 
@@ -1823,11 +1904,11 @@ void Main::uiTabBarShop()
         std::sprintf(uiTooltipBuffer,
                      "Increase the total number of bubbles. Scales with map size.\n\nMore bubbles, "
                      "more money, fewer FPS!");
-        std::sprintf(uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt.psvBubbleCount.currentValue()));
-        makePSVButton("More bubbles", pt.psvBubbleCount);
+        std::sprintf(uiLabelBuffer, "%zu bubbles", static_cast<SizeT>(pt->psvBubbleCount.currentValue()));
+        makePSVButton("More bubbles", pt->psvBubbleCount);
     }
 
-    if (checkUiUnlock(4u, pt.comboPurchased && pt.psvComboStartTime.nPurchases > 0))
+    if (checkUiUnlock(4u, pt->comboPurchased && pt->psvComboStartTime.nPurchases > 0))
     {
         uiImgsep(txrMenuSeparator3, "cats");
 
@@ -1839,7 +1920,7 @@ void Main::uiTabBarShop()
                      "position them strategically.\n\nNo, you can't get rid of a cat once purchased, you "
                      "monster.");
         std::sprintf(uiLabelBuffer, "%zu cats", nCatNormal);
-        if (makePSVButton("Cat", pt.psvPerCatType[asIdx(CatType::Normal)]))
+        if (makePSVButton("Cat", pt->psvPerCatType[asIdx(CatType::Normal)]))
         {
             spawnCatCentered(CatType::Normal, getHueByCatType(CatType::Normal), /* placeInHand */ !onSteamDeck);
 
@@ -1855,7 +1936,7 @@ void Main::uiTabBarShop()
 
     const auto makeCooldownButton = [this](const char* label, const CatType catType, const char* additionalInfo = "")
     {
-        auto& psv = pt.psvCooldownMultsPerCatType[asIdx(catType)];
+        auto& psv = pt->psvCooldownMultsPerCatType[asIdx(catType)];
 
         const float currentCooldown = CatConstants::baseCooldowns[asIdx(catType)] * psv.currentValue();
         const float nextCooldown    = CatConstants::baseCooldowns[asIdx(catType)] * psv.nextValue();
@@ -1877,7 +1958,7 @@ void Main::uiTabBarShop()
                          additionalInfo);
         }
 
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.getComputedCooldownByCatType(catType) / 1000.f));
+        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->getComputedCooldownByCatType(catType) / 1000.f));
 
         makePSVButton(label, psv);
 
@@ -1891,7 +1972,7 @@ void Main::uiTabBarShop()
 
     const auto makeRangeButton = [this](const char* label, const CatType catType, const char* additionalInfo = "")
     {
-        auto& psv = pt.psvRangeDivsPerCatType[asIdx(catType)];
+        auto& psv = pt->psvRangeDivsPerCatType[asIdx(catType)];
 
         const float currentRange = CatConstants::baseRanges[asIdx(catType)] / psv.currentValue();
         const float nextRange    = CatConstants::baseRanges[asIdx(catType)] / psv.nextValue();
@@ -1913,7 +1994,7 @@ void Main::uiTabBarShop()
                          additionalInfo);
         }
 
-        std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt.getComputedRangeByCatType(catType)));
+        std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(pt->getComputedRangeByCatType(catType)));
         makePSVButton(label, psv);
 
         if (ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled) &&
@@ -1924,7 +2005,7 @@ void Main::uiTabBarShop()
         }
     };
 
-    const bool catUpgradesUnlocked = pt.psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
+    const bool catUpgradesUnlocked = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 2 && nCatUni >= 1;
     if (checkUiUnlock(5u, catUpgradesUnlocked))
     {
         uiSetUnlockLabelY(5u);
@@ -1933,7 +2014,7 @@ void Main::uiTabBarShop()
     }
 
     // UNICAT
-    const bool catUnicornUnlocked         = pt.psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
+    const bool catUnicornUnlocked         = pt->psvBubbleCount.nPurchases > 0 && nCatNormal >= 3;
     const bool catUnicornUpgradesUnlocked = catUnicornUnlocked && nCatUni >= 2 && nCatDevil >= 1;
     if (checkUiUnlock(6u, catUnicornUnlocked))
     {
@@ -1944,7 +2025,7 @@ void Main::uiTabBarShop()
                      "Unicats transform bubbles into star bubbles, which are worth x15 more!\n\nHave "
                      "your cats pop them for you, or pop them towards the end of a combo for huge rewards!");
         std::sprintf(uiLabelBuffer, "%zu unicats", nCatUni);
-        if (makePSVButton("Unicat", pt.psvPerCatType[asIdx(CatType::Uni)]))
+        if (makePSVButton("Unicat", pt->psvPerCatType[asIdx(CatType::Uni)]))
         {
             spawnCatCentered(CatType::Uni, getHueByCatType(CatType::Uni), /* placeInHand */ !onSteamDeck);
 
@@ -1957,14 +2038,14 @@ void Main::uiTabBarShop()
             uiSetUnlockLabelY(7u);
             makeCooldownButton("  cooldown##Uni", CatType::Uni);
 
-            if (pt.perm.unicatTranscendencePurchased && pt.perm.unicatTranscendenceAOEPurchased)
+            if (pt->perm.unicatTranscendencePurchased && pt->perm.unicatTranscendenceAOEPurchased)
                 makeRangeButton("  range##Uni", CatType::Uni);
         }
     }
 
     // DEVILCAT
-    const bool catDevilUnlocked = pt.psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
-                                  pt.nShrinesCompleted >= 1;
+    const bool catDevilUnlocked = pt->psvBubbleValue.nPurchases > 0 && nCatNormal >= 6 && nCatUni >= 4 &&
+                                  pt->nShrinesCompleted >= 1;
     const bool catDevilUpgradesUnlocked = catDevilUnlocked && nCatDevil >= 2 && nCatAstro >= 1;
     if (checkUiUnlock(8u, catDevilUnlocked))
     {
@@ -1975,7 +2056,7 @@ void Main::uiTabBarShop()
                      "Devilcats transform bubbles into bombs that explode when popped. Bubbles affected by the "
                      "explosion are worth x10 more! Bomb explosion range can be upgraded.");
         std::sprintf(uiLabelBuffer, "%zu devilcats", nCatDevil);
-        if (makePSVButton("Devilcat", pt.psvPerCatType[asIdx(CatType::Devil)]))
+        if (makePSVButton("Devilcat", pt->psvPerCatType[asIdx(CatType::Devil)]))
         {
             spawnCatCentered(CatType::Devil, getHueByCatType(CatType::Devil), /* placeInHand */ !onSteamDeck);
 
@@ -1988,8 +2069,8 @@ void Main::uiTabBarShop()
 
         if (checkUiUnlock(9u, nCatDevil >= 1) && !isDevilcatHellsingedActive())
         {
-            const float currentExplosionRadius = pt.psvExplosionRadiusMult.currentValue();
-            const float nextExplosionRadius    = pt.psvExplosionRadiusMult.nextValue();
+            const float currentExplosionRadius = pt->psvExplosionRadiusMult.currentValue();
+            const float nextExplosionRadius    = pt->psvExplosionRadiusMult.nextValue();
 
             uiSetUnlockLabelY(9u);
             std::sprintf(uiTooltipBuffer,
@@ -1997,7 +2078,7 @@ void Main::uiTabBarShop()
                          static_cast<double>(currentExplosionRadius),
                          static_cast<double>(nextExplosionRadius));
             std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentExplosionRadius));
-            makePSVButton("  Explosion radius", pt.psvExplosionRadiusMult);
+            makePSVButton("  Explosion radius", pt->psvExplosionRadiusMult);
         }
 
         if (checkUiUnlock(10u, catDevilUpgradesUnlocked))
@@ -2005,13 +2086,13 @@ void Main::uiTabBarShop()
             uiSetUnlockLabelY(10u);
             makeCooldownButton("  cooldown##Devil", CatType::Devil);
 
-            if (pt.perm.devilcatHellsingedPurchased)
+            if (pt->perm.devilcatHellsingedPurchased)
                 makeRangeButton("  range##Devil", CatType::Devil);
         }
     }
 
     // ASTROCAT
-    const bool astroCatUnlocked = nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2 && pt.nShrinesCompleted >= 2;
+    const bool astroCatUnlocked = nCatNormal >= 10 && nCatUni >= 5 && nCatDevil >= 2 && pt->nShrinesCompleted >= 2;
     const bool astroCatUpgradesUnlocked = astroCatUnlocked && nCatDevil >= 9 && nCatAstro >= 5;
     if (checkUiUnlock(11u, astroCatUnlocked))
     {
@@ -2024,7 +2105,7 @@ void Main::uiTabBarShop()
                      "multiplier!\n\nThey can be permanently upgraded with prestige points to inspire cats "
                      "watching them fly past to pop bubbles faster.");
         std::sprintf(uiLabelBuffer, "%zu astrocats", nCatAstro);
-        if (makePSVButton("Astrocat", pt.psvPerCatType[asIdx(CatType::Astro)]))
+        if (makePSVButton("Astrocat", pt->psvPerCatType[asIdx(CatType::Astro)]))
         {
             spawnCatCentered(CatType::Astro, getHueByCatType(CatType::Astro), /* placeInHand */ !onSteamDeck);
 
@@ -2055,7 +2136,7 @@ void Main::uiTabBarShop()
                                CatType::Witch,
                                "\n\nEffectively increases the frequency of rituals.");
 
-            if (checkUiUnlock(14u, pt.perm.witchCatBuffPowerScalesWithNCats))
+            if (checkUiUnlock(14u, pt->perm.witchCatBuffPowerScalesWithNCats))
             {
                 uiSetUnlockLabelY(14u);
                 makeRangeButton("  witchcat range",
@@ -2129,13 +2210,13 @@ void Main::uiTabBarShop()
     {
         std::string result; // Use a single local variable for NRVO
 
-        if (!pt.comboPurchased)
+        if (!pt->comboPurchased)
         {
             result = "- buy combo to earn money faster";
             return result;
         }
 
-        if (pt.psvComboStartTime.nPurchases == 0)
+        if (pt->psvComboStartTime.nPurchases == 0)
         {
             result = "- buy longer combo to unlock cats";
             return result;
@@ -2168,7 +2249,7 @@ void Main::uiTabBarShop()
                 result += "\n    - buy " + std::to_string(needed - count) + " more " + name + "(s)";
         };
 
-        if (!pt.mapPurchased)
+        if (!pt->mapPurchased)
         {
             startList("- to extend playing area:");
             result += "\n    - buy map scrolling";
@@ -2178,7 +2259,7 @@ void Main::uiTabBarShop()
         {
             startList("- to unlock unicats:");
 
-            if (pt.psvBubbleCount.nPurchases == 0)
+            if (pt->psvBubbleCount.nPurchases == 0)
                 result += "\n    - buy more bubbles";
 
             needNCats(nCatNormal, 3);
@@ -2188,7 +2269,7 @@ void Main::uiTabBarShop()
         {
             startList("- to unlock cat upgrades:");
 
-            if (pt.psvBubbleCount.nPurchases == 0)
+            if (pt->psvBubbleCount.nPurchases == 0)
                 result += "\n    - buy more bubbles";
 
             needNCats(nCatNormal, 2);
@@ -2196,30 +2277,30 @@ void Main::uiTabBarShop()
         }
 
         // TODO P2: change dynamically
-        if (catUnicornUnlocked && !pt.isBubbleValueUnlocked())
+        if (catUnicornUnlocked && !pt->isBubbleValueUnlocked())
         {
             startList("- to unlock prestige:");
 
-            if (pt.psvBubbleCount.nPurchases == 0)
+            if (pt->psvBubbleCount.nPurchases == 0)
                 result += "\n    - buy more bubbles";
 
-            if (pt.nShrinesCompleted < 1)
+            if (pt->nShrinesCompleted < 1)
                 result += "\n    - complete at least one shrine";
 
             needNCats(nCatUni, 3);
         }
 
-        if (catUnicornUnlocked && pt.isBubbleValueUnlocked() && !catDevilUnlocked)
+        if (catUnicornUnlocked && pt->isBubbleValueUnlocked() && !catDevilUnlocked)
         {
             startList("- to unlock devilcats:");
 
-            if (pt.psvBubbleValue.nPurchases == 0)
+            if (pt->psvBubbleValue.nPurchases == 0)
                 result += "\n    - prestige at least once";
 
-            if (pt.nShrinesCompleted < 1)
+            if (pt->nShrinesCompleted < 1)
                 result += "\n    - complete at least one shrine";
 
-            if (pt.psvBubbleValue.nPurchases > 0u)
+            if (pt->psvBubbleValue.nPurchases > 0u)
             {
                 needNCats(nCatNormal, 6);
                 needNCats(nCatUni, 4);
@@ -2237,7 +2318,7 @@ void Main::uiTabBarShop()
         {
             startList("- to unlock astrocats:");
 
-            if (pt.nShrinesCompleted < 2)
+            if (pt->nShrinesCompleted < 2)
                 result += "\n    - complete at least two shrines";
 
             needNCats(nCatNormal, 10);
@@ -2314,12 +2395,12 @@ void Main::uiTabBarPrestige()
                  "upgrades.\n\nYou will sacrifice all your cats, bubbles, and money, but you will keep your "
                  "prestige points and permanent upgrades, and the value of bubbles will be permanently "
                  "increased.\n\nDo not be afraid to prestige -- it is what enables you to progress further!");
-    std::sprintf(uiLabelBuffer, "current bubble value x%llu", pt.getComputedRewardByBubbleType(BubbleType::Normal));
+    std::sprintf(uiLabelBuffer, "current bubble value x%llu", pt->getComputedRewardByBubbleType(BubbleType::Normal));
 
     // Figure out how many times we can prestige in a row
 
-    const auto currentPrestigeLevel    = pt.psvBubbleValue.nPurchases;
-    const auto currentCompletedShrines = pt.nShrinesCompleted;
+    const auto currentPrestigeLevel    = pt->psvBubbleValue.nPurchases;
+    const auto currentCompletedShrines = pt->nShrinesCompleted;
     const auto maxPrestigeLevel        = sf::base::SizeT{20u};
 
     sf::base::SizeT maxPurchaseablePrestigeLevel = currentPrestigeLevel;
@@ -2328,11 +2409,11 @@ void Main::uiTabBarPrestige()
     for (sf::base::SizeT iPrestige = currentPrestigeLevel + 1u; iPrestige < maxPrestigeLevel; ++iPrestige)
     {
         const auto requiredMoney = static_cast<MoneyType>(
-            pt.psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, iPrestige));
+            pt->psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, iPrestige));
 
         const auto requiredCompletedShrines = Playthrough::getShrinesCompletedNeededForPrestigeLevel(iPrestige);
 
-        if (pt.money >= requiredMoney && currentCompletedShrines >= requiredCompletedShrines)
+        if (pt->money >= requiredMoney && currentCompletedShrines >= requiredCompletedShrines)
         {
             maxPurchaseablePrestigeLevel = iPrestige;
             maxCost                      = requiredMoney;
@@ -2344,11 +2425,11 @@ void Main::uiTabBarPrestige()
     }
 
     const auto prestigeTimes = maxPurchaseablePrestigeLevel - currentPrestigeLevel;
-    const auto ppReward      = pt.calculatePrestigePointReward(prestigeTimes);
+    const auto ppReward      = pt->calculatePrestigePointReward(prestigeTimes);
 
     const auto printNextPrestigeRequirements = [&](const sf::base::SizeT level)
     {
-        const auto nextCost = static_cast<MoneyType>(pt.psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, level));
+        const auto nextCost = static_cast<MoneyType>(pt->psvBubbleValue.cumulativeCostBetween(currentPrestigeLevel, level));
 
         const auto nextRequiredShrines = Playthrough::getShrinesCompletedNeededForPrestigeLevel(level);
 
@@ -2385,7 +2466,7 @@ void Main::uiTabBarPrestige()
     uiButtonHueMod = 120.f;
 
     ImGui::BeginDisabled(prestigeTimes == 0u);
-    if (makePSVButtonEx("Prestige", pt.psvBubbleValue, prestigeTimes, maxCost))
+    if (makePSVButtonEx("Prestige", pt->psvBubbleValue, prestigeTimes, maxCost))
     {
         beginPrestigeTransition(ppReward);
     }
@@ -2396,7 +2477,7 @@ void Main::uiTabBarPrestige()
     uiButtonHueMod = 0.f;
     uiSetFontScale(0.75f);
 
-    const auto currentMult = static_cast<SizeT>(pt.psvBubbleValue.currentValue()) + 1u;
+    const auto currentMult = static_cast<SizeT>(pt->psvBubbleValue.currentValue()) + 1u;
 
     if (prestigeTimes > 0u)
     {
@@ -2409,7 +2490,7 @@ void Main::uiTabBarPrestige()
             currentMult + prestigeTimes,
             ppReward);
     }
-    else if (pt.psvBubbleValue.nPurchases == 19u)
+    else if (pt->psvBubbleValue.nPurchases == 19u)
     {
         ImGui::Text("  max prestige level reached!");
 
@@ -2426,7 +2507,7 @@ void Main::uiTabBarPrestige()
 
         bool done = false;
         if (makePurchasableButtonOneTime(buf, 1'000'000'000'000u * static_cast<unsigned int>(buyPPTimes), done))
-            pt.prestigePoints += 100u * static_cast<unsigned int>(buyPPTimes);
+            pt->prestigePoints += 100u * static_cast<unsigned int>(buyPPTimes);
 
         ImGui::NextColumn();
 
@@ -2442,10 +2523,10 @@ void Main::uiTabBarPrestige()
         if (maxCost == 0u)
             ImGui::Text("  not enough money to prestige");
 
-        const SizeT shrinesNeeded = pt.getShrinesCompletedNeededForNextPrestige();
+        const SizeT shrinesNeeded = pt->getShrinesCompletedNeededForNextPrestige();
 
-        if (pt.nShrinesCompleted < shrinesNeeded)
-            ImGui::Text("  must complete %zu more shrine(s)", shrinesNeeded - pt.nShrinesCompleted);
+        if (pt->nShrinesCompleted < shrinesNeeded)
+            ImGui::Text("  must complete %zu more shrine(s)", shrinesNeeded - pt->nShrinesCompleted);
     }
 
     uiSetFontScale(uiNormalFontScale);
@@ -2455,7 +2536,7 @@ void Main::uiTabBarPrestige()
 
     uiSetFontScale(uiNormalFontScale * 1.1f);
     char ppBuf[256];
-    std::snprintf(ppBuf, sizeof(ppBuf), "%llu PPs available", pt.prestigePoints);
+    std::snprintf(ppBuf, sizeof(ppBuf), "%llu PPs available", pt->prestigePoints);
     uiCenteredText(ppBuf);
     uiSetFontScale(uiNormalFontScale);
 
@@ -2503,17 +2584,17 @@ void Main::uiTabBarPrestige()
 
     uiButtonHueMod = 190.f;
 
-    if (checkUiUnlock(47u, pt.psvBubbleValue.nPurchases >= 3u))
+    if (checkUiUnlock(47u, pt->psvBubbleValue.nPurchases >= 3u))
     {
         uiImgsep2(txrPrestigeSeparator4, "faster beginning");
 
         uiSetUnlockLabelY(47u);
         std::sprintf(uiTooltipBuffer, "Begin your next prestige with $1000.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt.perm.starterPackPurchased);
+        (void)makePurchasablePPButtonOneTime("Starter pack", 1u, pt->perm.starterPackPurchased);
     }
 
-    if (checkUiUnlock(48u, pt.psvBubbleValue.nPurchases >= 1u))
+    if (checkUiUnlock(48u, pt->psvBubbleValue.nPurchases >= 1u))
     {
         uiImgsep2(txrPrestigeSeparator2, "clicking tools");
 
@@ -2524,20 +2605,20 @@ void Main::uiTabBarPrestige()
                      "toggled "
                      "at will.)");
         uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("Multipop click", 0u, pt.perm.multiPopPurchased))
+        if (makePurchasablePPButtonOneTime("Multipop click", 0u, pt->perm.multiPopPurchased))
             doTip("Popping a bubble now also pops\nnearby bubbles automatically!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
-        if (checkUiUnlock(49u, pt.perm.multiPopPurchased))
+        if (checkUiUnlock(49u, pt->perm.multiPopPurchased))
         {
             uiSetUnlockLabelY(49u);
 
-            if (pt.psvBubbleValue.nPurchases >= 2u)
+            if (pt->psvBubbleValue.nPurchases >= 2u)
             {
-                const float currentRange = pt.psvPPMultiPopRange.currentValue();
-                const float nextRange    = pt.psvPPMultiPopRange.nextValue();
+                const float currentRange = pt->psvPPMultiPopRange.currentValue();
+                const float nextRange    = pt->psvPPMultiPopRange.nextValue();
 
-                if (!pt.psvPPMultiPopRange.isMaxedOut())
+                if (!pt->psvPPMultiPopRange.isMaxedOut())
                 {
                     std::sprintf(uiTooltipBuffer,
                                  "Increase the range of the multipop effect from %.2fpx to %.2fpx.",
@@ -2550,15 +2631,15 @@ void Main::uiTabBarPrestige()
                 }
 
                 std::sprintf(uiLabelBuffer, "%.2fpx", static_cast<double>(currentRange));
-                makePrestigePurchasablePPButtonPSV("  range", pt.psvPPMultiPopRange);
+                makePrestigePurchasablePPButtonPSV("  range", pt->psvPPMultiPopRange);
             }
 
             uiSetFontScale(uiSubBulletFontScale);
-            uiCheckbox("enable ##multipop", &pt.multiPopEnabled);
+            uiCheckbox("enable ##multipop", &pt->multiPopEnabled);
             if (cachedMouseCat != nullptr)
             {
                 ImGui::SameLine();
-                uiCheckbox("mousecat##multipopmousecat", &pt.multiPopMouseCatEnabled);
+                uiCheckbox("mousecat##multipopmousecat", &pt->multiPopMouseCatEnabled);
             }
             uiSetFontScale(uiNormalFontScale);
             ImGui::NextColumn();
@@ -2572,22 +2653,22 @@ void Main::uiTabBarPrestige()
                  "A giant fan (off-screen) will produce an intense wind, making bubbles move and "
                  "flow much faster.\n\n(Note: this effect can be toggled at will.)");
     uiLabelBuffer[0] = '\0';
-    if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt.perm.windPurchased))
+    if (makePurchasablePPButtonOneTime("Giant fan", 6u, pt->perm.windPurchased))
         doTip("Hold onto something!", /* maxPrestigeLevel */ UINT_MAX);
 
-    if (checkUiUnlock(50u, pt.perm.windPurchased))
+    if (checkUiUnlock(50u, pt->perm.windPurchased))
     {
         uiSetFontScale(uiSubBulletFontScale);
         ImGui::Columns(1);
 
         uiSetUnlockLabelY(50u);
-        uiRadio("off##windOff", &pt.windStrength, 0);
+        uiRadio("off##windOff", &pt->windStrength, 0);
         ImGui::SameLine();
-        uiRadio("slow##windSlow", &pt.windStrength, 1);
+        uiRadio("slow##windSlow", &pt->windStrength, 1);
         ImGui::SameLine();
-        uiRadio("medium##windMed", &pt.windStrength, 2);
+        uiRadio("medium##windMed", &pt->windStrength, 2);
         ImGui::SameLine();
-        uiRadio("fast##windFast", &pt.windStrength, 3);
+        uiRadio("fast##windFast", &pt->windStrength, 3);
 
         uiBeginColumns();
         uiSetFontScale(uiNormalFontScale);
@@ -2603,11 +2684,11 @@ void Main::uiTabBarPrestige()
                  "Cats have graduated!\n\nThey still cannot resist their popping insticts, but they will go "
                  "for star bubbles and bombs first, ensuring they are not wasted!");
     uiLabelBuffer[0] = '\0';
-    if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt.perm.smartCatsPurchased))
+    if (makePurchasablePPButtonOneTime("Smart cats", 1u, pt->perm.smartCatsPurchased))
         doTip("Cats will now prioritize popping\nspecial bubbles over basic ones!",
               /* maxPrestigeLevel */ UINT_MAX);
 
-    if (checkUiUnlock(51u, pt.perm.smartCatsPurchased))
+    if (checkUiUnlock(51u, pt->perm.smartCatsPurchased))
     {
         uiSetUnlockLabelY(51u);
         std::sprintf(uiTooltipBuffer,
@@ -2617,12 +2698,12 @@ void Main::uiTabBarPrestige()
                      "power of their intellect, they also get a x2 multiplier on all bubble values.\n\n(Note: "
                      "this effect can be toggled at will.)");
         uiLabelBuffer[0] = '\0';
-        if (makePurchasablePPButtonOneTime("genius cats", 8u, pt.perm.geniusCatsPurchased))
+        if (makePurchasablePPButtonOneTime("genius cats", 8u, pt->perm.geniusCatsPurchased))
             doTip("Genius cats prioritize bombs and\ncan be instructed to ignore certain bubbles!",
                   /* maxPrestigeLevel */ UINT_MAX);
     }
 
-    if (checkUiUnlock(52u, pt.perm.geniusCatsPurchased))
+    if (checkUiUnlock(52u, pt->perm.geniusCatsPurchased))
     {
         ImGui::Columns(1);
         uiSetFontScale(uiSubBulletFontScale);
@@ -2632,7 +2713,7 @@ void Main::uiTabBarPrestige()
         ImGui::Text("  ignore: ");
         ImGui::SameLine();
 
-        auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.geniusCatIgnoreBubbles;
+        auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt->geniusCatIgnoreBubbles;
 
         uiCheckbox("normal##genius", &ignoreNormal);
         ImGui::SameLine();
@@ -2646,7 +2727,7 @@ void Main::uiTabBarPrestige()
         uiBeginColumns();
     }
 
-    if (checkUiUnlock(53u, pt.psvBubbleValue.nPurchases >= 3))
+    if (checkUiUnlock(53u, pt->psvBubbleValue.nPurchases >= 3))
     {
         uiImgsep2(txrPrestigeSeparator6, "unicats");
 
@@ -2659,10 +2740,10 @@ void Main::uiTabBarPrestige()
                      "nova bubbles, worth x50.");
         uiLabelBuffer[0] = '\0';
 
-        if (makePurchasablePPButtonOneTime("transcendence", 96u, pt.perm.unicatTranscendencePurchased))
+        if (makePurchasablePPButtonOneTime("transcendence", 96u, pt->perm.unicatTranscendencePurchased))
             doTip("Are you ready for that sweet x50?", /* maxPrestigeLevel */ UINT_MAX);
 
-        if (checkUiUnlock(54u, pt.perm.unicatTranscendencePurchased))
+        if (checkUiUnlock(54u, pt->perm.unicatTranscendencePurchased))
         {
             uiSetUnlockLabelY(54u);
             std::sprintf(uiTooltipBuffer,
@@ -2670,19 +2751,19 @@ void Main::uiTabBarPrestige()
                          "upgrades.");
             uiLabelBuffer[0] = '\0';
 
-            if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt.perm.unicatTranscendenceAOEPurchased))
+            if (makePurchasablePPButtonOneTime("nova expanse", 128u, pt->perm.unicatTranscendenceAOEPurchased))
                 doTip("It's about to get crazy...", /* maxPrestigeLevel */ UINT_MAX);
 
-            if (pt.perm.unicatTranscendencePurchased)
+            if (pt->perm.unicatTranscendencePurchased)
             {
                 ImGui::Columns(1);
-                uiCheckbox("enable transcendent unicats", &pt.perm.unicatTranscendenceEnabled);
+                uiCheckbox("enable transcendent unicats", &pt->perm.unicatTranscendenceEnabled);
                 uiBeginColumns();
             }
         }
     }
 
-    if (checkUiUnlock(55u, pt.psvBubbleValue.nPurchases >= 3))
+    if (checkUiUnlock(55u, pt->psvBubbleValue.nPurchases >= 3))
     {
         uiImgsep2(txrPrestigeSeparator7, "devilcats");
 
@@ -2694,24 +2775,24 @@ void Main::uiTabBarPrestige()
                      "bubbles into the abyss, with a x50 multiplier. Also unlocks Devilcat range upgrades.");
         uiLabelBuffer[0] = '\0';
 
-        if (makePurchasablePPButtonOneTime("hellsinged", 192u, pt.perm.devilcatHellsingedPurchased))
+        if (makePurchasablePPButtonOneTime("hellsinged", 192u, pt->perm.devilcatHellsingedPurchased))
             doTip("I'm starting to get a bit scared...", /* maxPrestigeLevel */ UINT_MAX);
 
-        if (pt.perm.devilcatHellsingedPurchased)
+        if (pt->perm.devilcatHellsingedPurchased)
         {
             ImGui::Columns(1);
-            uiCheckbox("enable hellsinged devilcats", &pt.perm.devilcatHellsingedEnabled);
+            uiCheckbox("enable hellsinged devilcats", &pt->perm.devilcatHellsingedEnabled);
             uiBeginColumns();
         }
     }
 
-    if (checkUiUnlock(56u, pt.getCatCountByType(CatType::Astro) >= 1u || pt.psvBubbleValue.nPurchases >= 3))
+    if (checkUiUnlock(56u, pt->getCatCountByType(CatType::Astro) >= 1u || pt->psvBubbleValue.nPurchases >= 3))
     {
         uiImgsep2(txrPrestigeSeparator8, "astrocats");
 
         uiBeginColumns();
 
-        uiCheckbox("disable flight", &pt.disableAstrocatFlight);
+        uiCheckbox("disable flight", &pt->disableAstrocatFlight);
 
         uiSetUnlockLabelY(56u);
         std::sprintf(uiTooltipBuffer,
@@ -2719,17 +2800,17 @@ void Main::uiTabBarPrestige()
                      "them fly by to work faster!");
         uiLabelBuffer[0] = '\0';
 
-        if (makePurchasablePPButtonOneTime("Space propaganda", 16u, pt.perm.astroCatInspirePurchased))
+        if (makePurchasablePPButtonOneTime("Space propaganda", 16u, pt->perm.astroCatInspirePurchased))
             doTip("Astrocats will inspire other cats\nto work faster when flying by!",
                   /* maxPrestigeLevel */ UINT_MAX);
 
-        if (checkUiUnlock(57u, pt.perm.astroCatInspirePurchased))
+        if (checkUiUnlock(57u, pt->perm.astroCatInspirePurchased))
         {
-            const float currentDuration = pt.getComputedInspirationDuration();
-            const float nextDuration    = pt.getComputedNextInspirationDuration();
+            const float currentDuration = pt->getComputedInspirationDuration();
+            const float nextDuration    = pt->getComputedNextInspirationDuration();
 
             uiSetUnlockLabelY(57u);
-            if (!pt.psvPPInspireDurationMult.isMaxedOut())
+            if (!pt->psvPPInspireDurationMult.isMaxedOut())
             {
                 std::sprintf(uiTooltipBuffer,
                              "Increase the duration of the inspiration effect from %.2fs to %.2fs.",
@@ -2742,13 +2823,13 @@ void Main::uiTabBarPrestige()
             }
             std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration / 1000.f));
 
-            makePrestigePurchasablePPButtonPSV("inspire duration", pt.psvPPInspireDurationMult);
+            makePrestigePurchasablePPButtonPSV("inspire duration", pt->psvPPInspireDurationMult);
         }
     }
 
     const auto makeUnsealButton = [&](const PrestigePointsType ppCost, const char* catName, const CatType type)
     {
-        if (!pt.perm.shrineCompletedOnceByCatType[asIdx(type)])
+        if (!pt->perm.shrineCompletedOnceByCatType[asIdx(type)])
             return;
 
         std::sprintf(uiTooltipBuffer,
@@ -2761,10 +2842,10 @@ void Main::uiTabBarPrestige()
         char buf[256];
         std::snprintf(buf, sizeof(buf), "%s##%s", "Break the seal", catName);
 
-        (void)makePurchasablePPButtonOneTime(buf, ppCost, pt.perm.unsealedByType[asIdx(type)]);
+        (void)makePurchasablePPButtonOneTime(buf, ppCost, pt->perm.unsealedByType[asIdx(type)]);
     };
 
-    if (checkUiUnlock(58u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]))
+    if (checkUiUnlock(58u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]))
     {
         uiImgsep2(txrPrestigeSeparator9, "witchcat");
 
@@ -2774,10 +2855,10 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(4u, "Witchcat", CatType::Witch);
         ImGui::Separator();
 
-        const float currentDuration = pt.psvPPWitchCatBuffDuration.currentValue();
-        const float nextDuration    = pt.psvPPWitchCatBuffDuration.nextValue();
+        const float currentDuration = pt->psvPPWitchCatBuffDuration.currentValue();
+        const float nextDuration    = pt->psvPPWitchCatBuffDuration.nextValue();
 
-        if (!pt.psvPPWitchCatBuffDuration.isMaxedOut())
+        if (!pt->psvPPWitchCatBuffDuration.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the base duration of Witchcat buffs from %.2fs to %.2fs.",
@@ -2789,41 +2870,41 @@ void Main::uiTabBarPrestige()
             std::sprintf(uiTooltipBuffer, "Increase the base duration of Witchcat buffs (MAX).");
         }
         std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentDuration));
-        makePrestigePurchasablePPButtonPSV("Buff duration", pt.psvPPWitchCatBuffDuration);
+        makePrestigePurchasablePPButtonPSV("Buff duration", pt->psvPPWitchCatBuffDuration);
 
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer,
                      "The duration of Witchcat buffs scales with the number of cats in range of the ritual.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Group ritual", 4u, pt.perm.witchCatBuffPowerScalesWithNCats);
+        (void)makePurchasablePPButtonOneTime("Group ritual", 4u, pt->perm.witchCatBuffPowerScalesWithNCats);
 
         std::sprintf(uiTooltipBuffer, "The duration of Witchcat buffs scales with the size of the explored map.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Worldwide cult", 4u, pt.perm.witchCatBuffPowerScalesWithMapSize);
+        (void)makePurchasablePPButtonOneTime("Worldwide cult", 4u, pt->perm.witchCatBuffPowerScalesWithMapSize);
 
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer, "Half as many voodoo dolls will appear per ritual.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Material shortage", 8u, pt.perm.witchCatBuffFewerDolls);
+        (void)makePurchasablePPButtonOneTime("Material shortage", 8u, pt->perm.witchCatBuffFewerDolls);
 
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Devilcat bomb explosions.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Flammable dolls", 8u, pt.perm.witchCatBuffFlammableDolls);
+        (void)makePurchasablePPButtonOneTime("Flammable dolls", 8u, pt->perm.witchCatBuffFlammableDolls);
 
         std::sprintf(uiTooltipBuffer, "Dolls are automatically collected by Astrocats during their flyby.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Orbital dolls", 16u, pt.perm.witchCatBuffOrbitalDolls);
+        (void)makePurchasablePPButtonOneTime("Orbital dolls", 16u, pt->perm.witchCatBuffOrbitalDolls);
 
         ImGui::Separator();
 
-        const float currentUniPercentage = pt.psvPPUniRitualBuffPercentage.currentValue();
-        const float nextUniPercentage    = pt.psvPPUniRitualBuffPercentage.nextValue();
+        const float currentUniPercentage = pt->psvPPUniRitualBuffPercentage.currentValue();
+        const float nextUniPercentage    = pt->psvPPUniRitualBuffPercentage.nextValue();
 
-        if (!pt.psvPPUniRitualBuffPercentage.isMaxedOut())
+        if (!pt->psvPPUniRitualBuffPercentage.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the star bubble spawn chance during the Unicat vododoo ritual buff from %.2f%% "
@@ -2838,12 +2919,12 @@ void Main::uiTabBarPrestige()
                          "(MAX).");
         }
         std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentUniPercentage));
-        makePrestigePurchasablePPButtonPSV("Star Spawn %", pt.psvPPUniRitualBuffPercentage);
+        makePrestigePurchasablePPButtonPSV("Star Spawn %", pt->psvPPUniRitualBuffPercentage);
 
-        const float currentDevilPercentage = pt.psvPPDevilRitualBuffPercentage.currentValue();
-        const float nextDevilPercentage    = pt.psvPPDevilRitualBuffPercentage.nextValue();
+        const float currentDevilPercentage = pt->psvPPDevilRitualBuffPercentage.currentValue();
+        const float nextDevilPercentage    = pt->psvPPDevilRitualBuffPercentage.nextValue();
 
-        if (!pt.psvPPDevilRitualBuffPercentage.isMaxedOut())
+        if (!pt->psvPPDevilRitualBuffPercentage.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the bomb spawn chance during the Devil vododoo ritual buff from %.2f%% to "
@@ -2856,10 +2937,10 @@ void Main::uiTabBarPrestige()
             std::sprintf(uiTooltipBuffer, "Increase the bomb spawn chance during the Devil vododoo ritual buff (MAX).");
         }
         std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentDevilPercentage));
-        makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt.psvPPDevilRitualBuffPercentage);
+        makePrestigePurchasablePPButtonPSV("Bomb Spawn %", pt->psvPPDevilRitualBuffPercentage);
     }
 
-    if (checkUiUnlock(59u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]))
+    if (checkUiUnlock(59u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]))
     {
         uiImgsep2(txrPrestigeSeparator10, "wizardcat");
 
@@ -2869,10 +2950,10 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(8u, "Wizardcat", CatType::Wizard);
         ImGui::Separator();
 
-        const float currentManaCooldown = pt.getComputedManaCooldown();
-        const float nextManaCooldown    = pt.getComputedManaCooldownNext();
+        const float currentManaCooldown = pt->getComputedManaCooldown();
+        const float nextManaCooldown    = pt->getComputedManaCooldownNext();
 
-        if (!pt.psvPPManaCooldownMult.isMaxedOut())
+        if (!pt->psvPPManaCooldownMult.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Decrease mana generation cooldown from %.2fs to %.2fs.",
@@ -2884,12 +2965,12 @@ void Main::uiTabBarPrestige()
             std::sprintf(uiTooltipBuffer, "Decrease mana generation cooldown (MAX).");
         }
         std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(currentManaCooldown / 1000.f));
-        makePrestigePurchasablePPButtonPSV("Mana cooldown", pt.psvPPManaCooldownMult);
+        makePrestigePurchasablePPButtonPSV("Mana cooldown", pt->psvPPManaCooldownMult);
 
-        const ManaType currentMaxMana = pt.getComputedMaxMana();
-        const ManaType nextMaxMana    = pt.getComputedMaxManaNext();
+        const ManaType currentMaxMana = pt->getComputedMaxMana();
+        const ManaType nextMaxMana    = pt->getComputedMaxManaNext();
 
-        if (!pt.psvPPManaMaxMult.isMaxedOut())
+        if (!pt->psvPPManaMaxMult.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer, "Increase the maximum mana from %llu to %llu.", currentMaxMana, nextMaxMana);
         }
@@ -2898,7 +2979,7 @@ void Main::uiTabBarPrestige()
             std::sprintf(uiTooltipBuffer, "Increase the maximum mana (MAX).");
         }
         std::sprintf(uiLabelBuffer, "%llu mana", currentMaxMana);
-        makePrestigePurchasablePPButtonPSV("Mana limit", pt.psvPPManaMaxMult);
+        makePrestigePurchasablePPButtonPSV("Mana limit", pt->psvPPManaMaxMult);
 
         ImGui::Separator();
 
@@ -2906,7 +2987,7 @@ void Main::uiTabBarPrestige()
                      "Allow the Wizardcat to automatically cast spells when enough mana is available. Can be "
                      "enabled and configured from the \"Magic\" tab.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Autocast", 4u, pt.perm.autocastPurchased);
+        (void)makePurchasablePPButtonOneTime("Autocast", 4u, pt->perm.autocastPurchased);
 
         ImGui::Separator();
 
@@ -2914,29 +2995,29 @@ void Main::uiTabBarPrestige()
                      "Starpaw conversion ignores bombs, transforming only normal bubbles around the wizard "
                      "into star bubbles.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Selective starpaw", 4u, pt.perm.starpawConversionIgnoreBombs);
+        (void)makePurchasablePPButtonOneTime("Selective starpaw", 4u, pt->perm.starpawConversionIgnoreBombs);
 
-        if (pt.perm.unicatTranscendencePurchased && pt.perm.starpawConversionIgnoreBombs)
+        if (pt->perm.unicatTranscendencePurchased && pt->perm.starpawConversionIgnoreBombs)
         {
             std::sprintf(uiTooltipBuffer, "Starpaw conversion now turns all normal bubbles into nova bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("Nova starpaw", 64u, pt.perm.starpawNova);
+            (void)makePurchasablePPButtonOneTime("Nova starpaw", 64u, pt->perm.starpawNova);
         }
 
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer, "The duration of Mewltiplier Aura is extended from 6s to 12s.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt.perm.wizardCatDoubleMewltiplierDuration);
+        (void)makePurchasablePPButtonOneTime("Meeeeeewltiplier", 64u, pt->perm.wizardCatDoubleMewltiplierDuration);
 
         ImGui::Separator();
 
         std::sprintf(uiTooltipBuffer, "The duration of Stasis Field is extended from 6s to 12s.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Pop Stuck In Time", 256u, pt.perm.wizardCatDoubleStasisFieldDuration);
+        (void)makePurchasablePPButtonOneTime("Pop Stuck In Time", 256u, pt->perm.wizardCatDoubleStasisFieldDuration);
     }
 
-    if (checkUiUnlock(60u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
+    if (checkUiUnlock(60u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]))
     {
         uiImgsep2(txrPrestigeSeparator11, "mousecat");
 
@@ -2946,10 +3027,10 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(8u, "Mousecat", CatType::Mouse);
         ImGui::Separator();
 
-        const float currentReward = pt.psvPPMouseCatGlobalBonusMult.currentValue();
-        const float nextReward    = pt.psvPPMouseCatGlobalBonusMult.nextValue();
+        const float currentReward = pt->psvPPMouseCatGlobalBonusMult.currentValue();
+        const float nextReward    = pt->psvPPMouseCatGlobalBonusMult.nextValue();
 
-        if (!pt.psvPPMouseCatGlobalBonusMult.isMaxedOut())
+        if (!pt->psvPPMouseCatGlobalBonusMult.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the global click reward value multiplier from x%.2f to x%.2f.",
@@ -2962,10 +3043,10 @@ void Main::uiTabBarPrestige()
         }
 
         std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
-        makePrestigePurchasablePPButtonPSV("Global click mult", pt.psvPPMouseCatGlobalBonusMult);
+        makePrestigePurchasablePPButtonPSV("Global click mult", pt->psvPPMouseCatGlobalBonusMult);
     }
 
-    if (checkUiUnlock(61u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]))
+    if (checkUiUnlock(61u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]))
     {
         uiImgsep2(txrPrestigeSeparator12, "engicat");
 
@@ -2975,10 +3056,10 @@ void Main::uiTabBarPrestige()
         makeUnsealButton(16u, "Engicat", CatType::Engi);
         ImGui::Separator();
 
-        const float currentReward = pt.psvPPEngiCatGlobalBonusMult.currentValue();
-        const float nextReward    = pt.psvPPEngiCatGlobalBonusMult.nextValue();
+        const float currentReward = pt->psvPPEngiCatGlobalBonusMult.currentValue();
+        const float nextReward    = pt->psvPPEngiCatGlobalBonusMult.nextValue();
 
-        if (!pt.psvPPEngiCatGlobalBonusMult.isMaxedOut())
+        if (!pt->psvPPEngiCatGlobalBonusMult.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the global cat reward value multiplierfrom x%.2f to x%.2f.",
@@ -2991,10 +3072,10 @@ void Main::uiTabBarPrestige()
         }
 
         std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentReward));
-        makePrestigePurchasablePPButtonPSV("Global cat mult", pt.psvPPEngiCatGlobalBonusMult);
+        makePrestigePurchasablePPButtonPSV("Global cat mult", pt->psvPPEngiCatGlobalBonusMult);
     }
 
-    if (checkUiUnlock(62u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]))
+    if (checkUiUnlock(62u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]))
     {
         uiImgsep2(txrPrestigeSeparator13, "repulsocat");
 
@@ -3006,9 +3087,9 @@ void Main::uiTabBarPrestige()
 
         std::sprintf(uiTooltipBuffer, "The Repulsocat cordially asks their fan to filter repelled bubbles by type.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Repulsion filter", 16u, pt.perm.repulsoCatFilterPurchased);
+        (void)makePurchasablePPButtonOneTime("Repulsion filter", 16u, pt->perm.repulsoCatFilterPurchased);
 
-        if (checkUiUnlock(63u, pt.perm.repulsoCatFilterPurchased))
+        if (checkUiUnlock(63u, pt->perm.repulsoCatFilterPurchased))
         {
             ImGui::Columns(1);
             uiSetFontScale(uiSubBulletFontScale);
@@ -3017,7 +3098,7 @@ void Main::uiTabBarPrestige()
             ImGui::Text("  ignore: ");
             ImGui::SameLine();
 
-            auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.repulsoCatIgnoreBubbles;
+            auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt->repulsoCatIgnoreBubbles;
 
             uiCheckbox("normal##repulso", &ignoreNormal);
             ImGui::SameLine();
@@ -3035,21 +3116,21 @@ void Main::uiTabBarPrestige()
                      "The Repulsocat coats the fan blades with star powder, giving it a chance to convert "
                      "repelled bubbles to star bubbles.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Conversion field", 32u, pt.perm.repulsoCatConverterPurchased);
+        (void)makePurchasablePPButtonOneTime("Conversion field", 32u, pt->perm.repulsoCatConverterPurchased);
 
-        if (checkUiUnlock(64u, pt.perm.repulsoCatConverterPurchased))
+        if (checkUiUnlock(64u, pt->perm.repulsoCatConverterPurchased))
         {
             uiSetFontScale(uiSubBulletFontScale);
             uiSetUnlockLabelY(64u);
-            uiCheckbox("enable ##repulsoconv", &pt.repulsoCatConverterEnabled);
+            uiCheckbox("enable ##repulsoconv", &pt->repulsoCatConverterEnabled);
             uiSetFontScale(uiNormalFontScale);
             ImGui::NextColumn();
             ImGui::NextColumn();
 
-            const float currentChance = pt.psvPPRepulsoCatConverterChance.currentValue();
-            const float nextChance    = pt.psvPPRepulsoCatConverterChance.nextValue();
+            const float currentChance = pt->psvPPRepulsoCatConverterChance.currentValue();
+            const float nextChance    = pt->psvPPRepulsoCatConverterChance.nextValue();
 
-            if (!pt.psvPPRepulsoCatConverterChance.isMaxedOut())
+            if (!pt->psvPPRepulsoCatConverterChance.isMaxedOut())
             {
                 std::sprintf(uiTooltipBuffer,
                              "Increase the repelled bubble conversion chance from %.2f%% to %.2f%%.",
@@ -3061,15 +3142,15 @@ void Main::uiTabBarPrestige()
                 std::sprintf(uiTooltipBuffer, "Increase the repelled bubble conversion chance (MAX).");
             }
             std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentChance));
-            makePrestigePurchasablePPButtonPSV("Conversion chance", pt.psvPPRepulsoCatConverterChance);
+            makePrestigePurchasablePPButtonPSV("Conversion chance", pt->psvPPRepulsoCatConverterChance);
 
             std::sprintf(uiTooltipBuffer, "Bubbles are converted into nova bubbles instead of star bubbles.");
             uiLabelBuffer[0] = '\0';
-            (void)makePurchasablePPButtonOneTime("Nova conversion", 96u, pt.perm.repulsoCatNovaConverterPurchased);
+            (void)makePurchasablePPButtonOneTime("Nova conversion", 96u, pt->perm.repulsoCatNovaConverterPurchased);
         }
     }
 
-    if (checkUiUnlock(65u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
+    if (checkUiUnlock(65u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]))
     {
         uiImgsep2(txrPrestigeSeparator14, "attractocat");
 
@@ -3083,9 +3164,9 @@ void Main::uiTabBarPrestige()
                      "The Attractocat does some quantum science stuff to its magnet to allow filtering of "
                      "attracted bubbles by type.");
         uiLabelBuffer[0] = '\0';
-        (void)makePurchasablePPButtonOneTime("Attraction filter", 96u, pt.perm.attractoCatFilterPurchased);
+        (void)makePurchasablePPButtonOneTime("Attraction filter", 96u, pt->perm.attractoCatFilterPurchased);
 
-        if (checkUiUnlock(66u, pt.perm.attractoCatFilterPurchased))
+        if (checkUiUnlock(66u, pt->perm.attractoCatFilterPurchased))
         {
             ImGui::Columns(1);
             uiSetFontScale(uiSubBulletFontScale);
@@ -3094,7 +3175,7 @@ void Main::uiTabBarPrestige()
             ImGui::Text("  ignore: ");
             ImGui::SameLine();
 
-            auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt.attractoCatIgnoreBubbles;
+            auto& [ignoreNormal, ignoreStar, ignoreBomb] = pt->attractoCatIgnoreBubbles;
 
             uiCheckbox("normal##attracto", &ignoreNormal);
             ImGui::SameLine();
@@ -3109,7 +3190,7 @@ void Main::uiTabBarPrestige()
         }
     }
 
-    if (checkUiUnlock(67u, pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]))
+    if (checkUiUnlock(67u, pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]))
     {
         uiImgsep2(txrPrestigeSeparator15, "copycat");
 
@@ -3148,9 +3229,9 @@ void Main::uiTabBarMagic()
     uiImgsep(txrMagicSeparator0, "wisdom", /* first */ true);
     ImGui::Columns(1);
 
-    ImGui::Text("Wisdom points: %s WP", toStringWithSeparators(pt.wisdom));
+    ImGui::Text("Wisdom points: %s WP", toStringWithSeparators(pt->wisdom));
 
-    uiCheckbox("Absorb wisdom from star bubbles", &pt.absorbingWisdom);
+    uiCheckbox("Absorb wisdom from star bubbles", &pt->absorbingWisdom);
     std::sprintf(uiTooltipBuffer,
                  "The Wizardcat concentrates, absorbing wisdom points from nearby star bubbles. While the "
                  "Wizardcat is concentrating, it cannot cast spells nor be moved around.");
@@ -3165,12 +3246,12 @@ void Main::uiTabBarMagic()
                  "1st spell: 5 mana\n- 2nd spell: 20 mana\n- 3rd spell: 30 mana\n- 4th spell: 40 mana\n\nNote: "
                  "You "
                  "won't be able to cast a spell if the cost exceeds your maximum mana!");
-    std::sprintf(uiLabelBuffer, "%zu/%zu", pt.psvSpellCount.nPurchases, pt.psvSpellCount.data->nMaxPurchases);
+    std::sprintf(uiLabelBuffer, "%zu/%zu", pt->psvSpellCount.nPurchases, pt->psvSpellCount.data->nMaxPurchases);
     (void)makePSVButtonExByCurrency("Remember spell",
-                                    pt.psvSpellCount,
+                                    pt->psvSpellCount,
                                     1u,
-                                    static_cast<MoneyType>(pt.psvSpellCount.nextCost()),
-                                    pt.wisdom,
+                                    static_cast<MoneyType>(pt->psvSpellCount.nextCost()),
+                                    pt->wisdom,
                                     "%s WP##%u");
 
     uiButtonHueMod = 0.f;
@@ -3178,7 +3259,7 @@ void Main::uiTabBarMagic()
     uiImgsep(txrMagicSeparator1, "mana");
     ImGui::Columns(1);
 
-    ImGui::Text("Mana: %llu / %llu", pt.mana, pt.getComputedMaxMana());
+    ImGui::Text("Mana: %llu / %llu", pt->mana, pt->getComputedMaxMana());
 
     ImGui::AlignTextToFramePadding();
     ImGui::Text("Next mana:");
@@ -3186,22 +3267,22 @@ void Main::uiTabBarMagic()
     ImGui::SameLine();
 
     ImGui::PushStyleColor(ImGuiCol_PlotHistogram, IM_COL32(157, 0, 255, 128));
-    ImGui::ProgressBar(pt.manaTimer / pt.getComputedManaCooldown());
+    ImGui::ProgressBar(pt->manaTimer / pt->getComputedManaCooldown());
     ImGui::PopStyleColor();
 
     ImGui::Text("Wizard cooldown: %.2fs", static_cast<double>(wizardCat->cooldown.value / 1000.f));
 
     uiImgsep(txrMagicSeparator2, "spells");
 
-    if (pt.psvSpellCount.nPurchases == 0)
+    if (pt->psvSpellCount.nPurchases == 0)
         ImGui::Text("No spells revealed yet...");
 
     ImGui::Columns(1);
     uiSetFontScale(0.8f);
 
-    if (pt.psvSpellCount.nPurchases > 0)
+    if (pt->psvSpellCount.nPurchases > 0)
     {
-        if (pt.absorbingWisdom)
+        if (pt->absorbingWisdom)
             uiCenteredText("Cannot cast spells while absorbing wisdom...");
         else if (wizardCat->isHexedOrCopyHexed())
             uiCenteredText("Cannot cast spells while hexed...");
@@ -3211,7 +3292,7 @@ void Main::uiTabBarMagic()
             uiCenteredText("Cannot cast spells while being dragged...");
         else
         {
-            const bool anySpellCastable = pt.mana >= spellManaCostByIndex[0] && pt.psvSpellCount.nPurchases >= 1;
+            const bool anySpellCastable = pt->mana >= spellManaCostByIndex[0] && pt->psvSpellCount.nPurchases >= 1;
 
             if (anySpellCastable)
                 uiCenteredText("Ready to cast a spell!");
@@ -3228,7 +3309,7 @@ void Main::uiTabBarMagic()
 
     //
     // SPELL 0
-    if (checkUiUnlock(32u, pt.psvSpellCount.nPurchases >= 1))
+    if (checkUiUnlock(32u, pt->psvSpellCount.nPurchases >= 1))
     {
         uiSetUnlockLabelY(32u);
         std::sprintf(uiTooltipBuffer,
@@ -3241,7 +3322,7 @@ void Main::uiTabBarMagic()
         if (makePurchasableButtonOneTimeByCurrency("Starpaw Conversion",
                                                    done,
                                                    spellManaCostByIndex[0],
-                                                   pt.mana,
+                                                   pt->mana,
                                                    "%s mana##%u"))
         {
             castSpellByIndex(0u, wizardCat, copyCat);
@@ -3249,10 +3330,10 @@ void Main::uiTabBarMagic()
         }
         ImGui::EndDisabled();
 
-        const float currentPercentage = pt.psvStarpawPercentage.currentValue();
-        const float nextPercentage    = pt.psvStarpawPercentage.nextValue();
+        const float currentPercentage = pt->psvStarpawPercentage.currentValue();
+        const float nextPercentage    = pt->psvStarpawPercentage.nextValue();
 
-        if (!pt.psvStarpawPercentage.isMaxedOut())
+        if (!pt->psvStarpawPercentage.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the percentage of bubbles converted into star bubbles from %.2f%% to %.2f%%.",
@@ -3265,16 +3346,16 @@ void Main::uiTabBarMagic()
         }
         std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
         (void)makePSVButtonExByCurrency("  higher percentage##starpawperc",
-                                        pt.psvStarpawPercentage,
+                                        pt->psvStarpawPercentage,
                                         1u,
-                                        static_cast<MoneyType>(pt.psvStarpawPercentage.nextCost()),
-                                        pt.wisdom,
+                                        static_cast<MoneyType>(pt->psvStarpawPercentage.nextCost()),
+                                        pt->wisdom,
                                         "%s WP##%u");
     }
 
     //
     // SPELL 1
-    if (checkUiUnlock(33u, pt.psvSpellCount.nPurchases >= 2))
+    if (checkUiUnlock(33u, pt->psvSpellCount.nPurchases >= 2))
     {
         ImGui::Separator();
 
@@ -3283,15 +3364,15 @@ void Main::uiTabBarMagic()
                      "Creates a value multiplier aura around the Wizardcat that affects all cats and bubbles. "
                      "Lasts %d seconds.\n\nCasting this spell multiple times will accumulate the aura "
                      "duration.",
-                     pt.perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.mewltiplierAuraTimer / 1000.f));
+                     pt->perm.wizardCatDoubleMewltiplierDuration ? 12 : 6);
+        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->mewltiplierAuraTimer / 1000.f));
         bool done = false;
 
         ImGui::BeginDisabled(isWizardBusy());
         if (makePurchasableButtonOneTimeByCurrency("Mewltiplier Aura",
                                                    done,
                                                    spellManaCostByIndex[1],
-                                                   pt.mana,
+                                                   pt->mana,
                                                    "%s mana##%u"))
         {
             castSpellByIndex(1u, wizardCat, copyCat);
@@ -3299,8 +3380,8 @@ void Main::uiTabBarMagic()
         }
         ImGui::EndDisabled();
 
-        const float currentMultiplier = pt.psvMewltiplierMult.currentValue();
-        const float nextMultiplier    = pt.psvMewltiplierMult.nextValue();
+        const float currentMultiplier = pt->psvMewltiplierMult.currentValue();
+        const float nextMultiplier    = pt->psvMewltiplierMult.nextValue();
 
         std::sprintf(uiTooltipBuffer,
                      "Increase the multiplier applied while the aura is active from x%.2f to x%.2f.",
@@ -3308,16 +3389,16 @@ void Main::uiTabBarMagic()
                      static_cast<double>(nextMultiplier));
         std::sprintf(uiLabelBuffer, "x%.2f", static_cast<double>(currentMultiplier));
         (void)makePSVButtonExByCurrency("  higher multiplier",
-                                        pt.psvMewltiplierMult,
+                                        pt->psvMewltiplierMult,
                                         1u,
-                                        static_cast<MoneyType>(pt.psvMewltiplierMult.nextCost()),
-                                        pt.wisdom,
+                                        static_cast<MoneyType>(pt->psvMewltiplierMult.nextCost()),
+                                        pt->wisdom,
                                         "%s WP##%u");
     }
 
     //
     // SPELL 2
-    if (checkUiUnlock(34u, pt.psvSpellCount.nPurchases >= 3))
+    if (checkUiUnlock(34u, pt->psvSpellCount.nPurchases >= 3))
     {
         ImGui::Separator();
 
@@ -3331,17 +3412,17 @@ void Main::uiTabBarMagic()
         bool done = false;
 
         ImGui::BeginDisabled(isWizardBusy());
-        if (makePurchasableButtonOneTimeByCurrency("Dark Union", done, spellManaCostByIndex[2], pt.mana, "%s mana##%u"))
+        if (makePurchasableButtonOneTimeByCurrency("Dark Union", done, spellManaCostByIndex[2], pt->mana, "%s mana##%u"))
         {
             castSpellByIndex(2u, wizardCat, copyCat);
             done = false;
         }
         ImGui::EndDisabled();
 
-        const float currentPercentage = pt.psvDarkUnionPercentage.currentValue();
-        const float nextPercentage    = pt.psvDarkUnionPercentage.nextValue();
+        const float currentPercentage = pt->psvDarkUnionPercentage.currentValue();
+        const float nextPercentage    = pt->psvDarkUnionPercentage.nextValue();
 
-        if (!pt.psvDarkUnionPercentage.isMaxedOut())
+        if (!pt->psvDarkUnionPercentage.isMaxedOut())
         {
             std::sprintf(uiTooltipBuffer,
                          "Increase the cooldown reduction percentage from %.2f%% to %.2f%%.",
@@ -3354,16 +3435,16 @@ void Main::uiTabBarMagic()
         }
         std::sprintf(uiLabelBuffer, "%.2f%%", static_cast<double>(currentPercentage));
         (void)makePSVButtonExByCurrency("  higher reduction##darkunionperc",
-                                        pt.psvDarkUnionPercentage,
+                                        pt->psvDarkUnionPercentage,
                                         1u,
-                                        static_cast<MoneyType>(pt.psvDarkUnionPercentage.nextCost()),
-                                        pt.wisdom,
+                                        static_cast<MoneyType>(pt->psvDarkUnionPercentage.nextCost()),
+                                        pt->wisdom,
                                         "%s WP##%u");
     }
 
     //
     // SPELL 3
-    if (checkUiUnlock(35u, pt.psvSpellCount.nPurchases >= 4))
+    if (checkUiUnlock(35u, pt->psvSpellCount.nPurchases >= 4))
     {
         ImGui::Separator();
 
@@ -3375,8 +3456,8 @@ void Main::uiTabBarMagic()
                      "still be popped, as many times as you want!\n\nCasting this spell multiple times will "
                      "accumulate the field duration.\n\nNote: This spell has no effect if there are no bubbles "
                      "nearby. Bombs are also affected by the stasis field.",
-                     pt.perm.wizardCatDoubleStasisFieldDuration ? 12 : 6);
-        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt.stasisFieldTimer / 1000.f));
+                     pt->perm.wizardCatDoubleStasisFieldDuration ? 12 : 6);
+        std::sprintf(uiLabelBuffer, "%.2fs", static_cast<double>(pt->stasisFieldTimer / 1000.f));
 
         bool done = false;
 
@@ -3384,7 +3465,7 @@ void Main::uiTabBarMagic()
         if (makePurchasableButtonOneTimeByCurrency("Stasis Field",
                                                    done,
                                                    spellManaCostByIndex[3],
-                                                   pt.mana,
+                                                   pt->mana,
                                                    "%s mana##%u"))
         {
             castSpellByIndex(3u, wizardCat, copyCat);
@@ -3396,7 +3477,7 @@ void Main::uiTabBarMagic()
     uiButtonHueMod = 0.f;
     ImGui::Columns(1);
 
-    if (pt.psvSpellCount.nPurchases > 0 && pt.perm.autocastPurchased)
+    if (pt->psvSpellCount.nPurchases > 0 && pt->perm.autocastPurchased)
     {
         uiImgsep(txrMagicSeparator3, "autocast");
 
@@ -3411,14 +3492,14 @@ void Main::uiTabBarMagic()
             "Stasis Field",
         };
 
-        if (ImGui::BeginCombo("Spell##autocastspell", entries[pt.perm.autocastIndex]))
+        if (ImGui::BeginCombo("Spell##autocastspell", entries[pt->perm.autocastIndex]))
         {
-            for (SizeT i = 0u; i < pt.psvSpellCount.nPurchases + 1; ++i)
+            for (SizeT i = 0u; i < pt->psvSpellCount.nPurchases + 1; ++i)
             {
-                const bool isSelected = pt.perm.autocastIndex == i;
+                const bool isSelected = pt->perm.autocastIndex == i;
                 if (ImGui::Selectable(entries[i], isSelected))
                 {
-                    pt.perm.autocastIndex = i;
+                    pt->perm.autocastIndex = i;
                     playSound(sounds.uitab);
                 }
 
@@ -3510,14 +3591,14 @@ void Main::uiTabBarStats()
                    "your "
                    "income and automate your bubble popping journey.");
 
-            if (pt.comboPurchased)
+            if (pt->comboPurchased)
                 addTip("Combos",
                        "Popping bubbles in quick succession will increase your combo multiplier, boosting your "
                        "revenue. Keep the combo going for maximum profit!\n\nPopping high-value bubbles such "
                        "as "
                        "star bubbles while your combo multiplier is high will yield even more revenue.");
 
-            if (pt.getCatCountByType(CatType::Normal) > 0)
+            if (pt->getCatCountByType(CatType::Normal) > 0)
             {
                 addTip("Regular Cats",
                        "Regular cats will automatically pop bubbles for you, even while you are away or the "
@@ -3536,7 +3617,7 @@ void Main::uiTabBarStats()
                        "an entire formation of cats at once.");
             }
 
-            if (pt.getCatCountByType(CatType::Uni) > 0)
+            if (pt->getCatCountByType(CatType::Uni) > 0)
                 addTip("Unicats",
                        "Unicats will convert normal bubbles into star bubbles, which are worth x15 the value "
                        "of "
@@ -3545,7 +3626,7 @@ void Main::uiTabBarStats()
                        "you "
                        "can place regular cats under unicats to have them pop the star bubbles for you.");
 
-            if (pt.mapPurchased)
+            if (pt->mapPurchased)
             {
                 addTip("Map Exploration",
                        "Expand the map to discover shrines containing powerful unique cats and to have more "
@@ -3564,7 +3645,8 @@ void Main::uiTabBarStats()
                        "the required amount of revenue is collected.");
             }
 
-            if (pt.psvBubbleValue.nPurchases > 0 || (pt.getCatCountByType(CatType::Uni) >= 3 && pt.nShrinesCompleted > 0))
+            if (pt->psvBubbleValue.nPurchases > 0 ||
+                (pt->getCatCountByType(CatType::Uni) >= 3 && pt->nShrinesCompleted > 0))
                 addTip("Prestige",
                        "Prestige to reset your current progress, permanently increasing the value of bubbles "
                        "and "
@@ -3574,7 +3656,7 @@ void Main::uiTabBarStats()
                        "quickly "
                        "and progress much further than it was possible before!");
 
-            if (pt.getCatCountByType(CatType::Devil) > 0)
+            if (pt->getCatCountByType(CatType::Devil) > 0)
                 addTip("Devilcats",
                        "Devilcats will convert normal bubbles into bombs, which explode when popped. Bubbles "
                        "caught in the explosion are worth x10 their original value. This means that every star "
@@ -3583,7 +3665,7 @@ void Main::uiTabBarStats()
                        "Unicats "
                        "nearby to maximize the chance of having star bubbles caught in the explosion.");
 
-            if (pt.getCatCountByType(CatType::Astro) > 0)
+            if (pt->getCatCountByType(CatType::Astro) > 0)
                 addTip("Astrocats",
                        "Astrocats will periodically fly across the map, looping around when they reach the "
                        "edge of "
@@ -3591,7 +3673,7 @@ void Main::uiTabBarStats()
                        "multiplier.\n\nUpgrading the total bubble count and expanding the map will indirectly "
                        "increase the effectiveness of Astrocats.");
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
                 addTip("Witchcat",
                        "The Witchcat periodically perform voodoo rituals.\n\nDuring a ritual, a random cat in "
                        "range of the Witchcat will be hexed and will become inactive until the ritual "
@@ -3602,7 +3684,7 @@ void Main::uiTabBarStats()
                        "hexed.");
 
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
                 addTip("Wizardcat",
                        "The Wizardcat casts powerful spells using mana that regenerates over time.\n\nIn order "
                        "to "
@@ -3611,7 +3693,7 @@ void Main::uiTabBarStats()
                        "done "
                        "in the \"Magic\" menu. ");
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
                 addTip("Mousecat",
                        "The Mousecat pops nearby bubbles keeping up its own personal combo.\n\nCombo/click "
                        "upgrades you purchased also apply to the Mousecat.\n\nRegular cats in range of the "
@@ -3620,24 +3702,24 @@ void Main::uiTabBarStats()
                        "provides a global click revenue value buff.");
 
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
                 addTip("Engicat",
                        "The Engicat periodically increases the speed of nearby cats, effectively decreasing "
                        "their "
                        "cooldown.\n\nFurthermore, the Mousecat provides a global cat revenue value buff.");
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
                 addTip("Repulsocat",
                        "The Repulsocat blows nearby bubbles away.\n\nRecently blown bubbles are worth x2 their "
                        "value.");
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
                 addTip("Attractocat",
                        "The Attractocat attracts nearby bubbles.\n\nBubbles in range of the Attractocat are "
                        "worth "
                        "x2 their value.");
 
-            if (pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
+            if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
                 addTip("Copycat",
                        "The Copycat can mimic the abilities, effects, and properties of any other unique "
                        "cat.\n\nThe mimicked cat can be chosen through the disguise menu near the bottom of "
@@ -3665,7 +3747,7 @@ void Main::uiTabBarStats()
             uiCenteredText(" ~~ This playthrough ~~ ");
 
             uiSetFontScale(0.75f);
-            displayStats(pt.statsTotal);
+            displayStats(pt->statsTotal);
 
             ImGui::Separator();
 
@@ -3673,7 +3755,7 @@ void Main::uiTabBarStats()
             uiCenteredText(" ~~ This prestige ~~ ");
 
             uiSetFontScale(0.75f);
-            displayStats(pt.statsSession);
+            displayStats(pt->statsSession);
 
             ImGui::Spacing();
             ImGui::Spacing();
@@ -3681,7 +3763,7 @@ void Main::uiTabBarStats()
             // per cat type
             MoneyType revenueByCatType[nCatTypes] = {};
 
-            for (const Cat& cat : pt.cats)
+            for (const Cat& cat : pt->cats)
                 revenueByCatType[asIdx(cat.type)] += cat.moneyEarned;
 
             ImGui::Text("Cat revenue: $%s", toStringWithSeparators(revenueByCatType[asIdx(CatType::Normal)]));
@@ -3714,52 +3796,52 @@ void Main::uiTabBarStats()
                 ImGui::Text("%s: %lluh %llum %llus", name, h, m, s);
             };
 
-            doMilestone("1st Cat", pt.milestones.firstCat);
-            doMilestone("5th Cat", pt.milestones.fiveCats);
-            doMilestone("10th Cat", pt.milestones.tenCats);
+            doMilestone("1st Cat", pt->milestones.firstCat);
+            doMilestone("5th Cat", pt->milestones.fiveCats);
+            doMilestone("10th Cat", pt->milestones.tenCats);
 
             ImGui::Separator();
 
-            doMilestone("1st Unicat", pt.milestones.firstUnicat);
-            doMilestone("5th Unicat", pt.milestones.fiveUnicats);
-            doMilestone("10th Unicat", pt.milestones.tenUnicats);
+            doMilestone("1st Unicat", pt->milestones.firstUnicat);
+            doMilestone("5th Unicat", pt->milestones.fiveUnicats);
+            doMilestone("10th Unicat", pt->milestones.tenUnicats);
 
             ImGui::Separator();
 
-            doMilestone("1st Devilcat", pt.milestones.firstDevilcat);
-            doMilestone("5th Devilcat", pt.milestones.fiveDevilcats);
-            doMilestone("10th Devilcat", pt.milestones.tenDevilcats);
+            doMilestone("1st Devilcat", pt->milestones.firstDevilcat);
+            doMilestone("5th Devilcat", pt->milestones.fiveDevilcats);
+            doMilestone("10th Devilcat", pt->milestones.tenDevilcats);
 
             ImGui::Separator();
 
-            doMilestone("1st Astrocat", pt.milestones.firstAstrocat);
-            doMilestone("5th Astrocat", pt.milestones.fiveAstrocats);
-            doMilestone("10th Astrocat", pt.milestones.tenAstrocats);
+            doMilestone("1st Astrocat", pt->milestones.firstAstrocat);
+            doMilestone("5th Astrocat", pt->milestones.fiveAstrocats);
+            doMilestone("10th Astrocat", pt->milestones.tenAstrocats);
 
             ImGui::Separator();
 
-            doMilestone("Prestige Level 2", pt.milestones.prestigeLevel2);
-            doMilestone("Prestige Level 3", pt.milestones.prestigeLevel3);
-            doMilestone("Prestige Level 4", pt.milestones.prestigeLevel4);
-            doMilestone("Prestige Level 5", pt.milestones.prestigeLevel5);
-            doMilestone("Prestige Level 6", pt.milestones.prestigeLevel6);
-            doMilestone("Prestige Level 10", pt.milestones.prestigeLevel10);
-            doMilestone("Prestige Level 15", pt.milestones.prestigeLevel15);
-            doMilestone("Prestige Level 20", pt.milestones.prestigeLevel20);
+            doMilestone("Prestige Level 2", pt->milestones.prestigeLevel2);
+            doMilestone("Prestige Level 3", pt->milestones.prestigeLevel3);
+            doMilestone("Prestige Level 4", pt->milestones.prestigeLevel4);
+            doMilestone("Prestige Level 5", pt->milestones.prestigeLevel5);
+            doMilestone("Prestige Level 6", pt->milestones.prestigeLevel6);
+            doMilestone("Prestige Level 10", pt->milestones.prestigeLevel10);
+            doMilestone("Prestige Level 15", pt->milestones.prestigeLevel15);
+            doMilestone("Prestige Level 20", pt->milestones.prestigeLevel20);
 
             ImGui::Separator();
 
-            doMilestone("$10.000 Revenue", pt.milestones.revenue10000);
-            doMilestone("$100.000 Revenue", pt.milestones.revenue100000);
-            doMilestone("$1.000.000 Revenue", pt.milestones.revenue1000000);
-            doMilestone("$10.000.000 Revenue", pt.milestones.revenue10000000);
-            doMilestone("$100.000.000 Revenue", pt.milestones.revenue100000000);
-            doMilestone("$1.000.000.000 Revenue", pt.milestones.revenue1000000000);
+            doMilestone("$10.000 Revenue", pt->milestones.revenue10000);
+            doMilestone("$100.000 Revenue", pt->milestones.revenue100000);
+            doMilestone("$1.000.000 Revenue", pt->milestones.revenue1000000);
+            doMilestone("$10.000.000 Revenue", pt->milestones.revenue10000000);
+            doMilestone("$100.000.000 Revenue", pt->milestones.revenue100000000);
+            doMilestone("$1.000.000.000 Revenue", pt->milestones.revenue1000000000);
 
             ImGui::Separator();
 
             for (SizeT i = 0u; i < nShrineTypes; ++i)
-                doMilestone(shrineNames[i], pt.milestones.shrineCompletions[i]);
+                doMilestone(shrineNames[i], pt->milestones.shrineCompletions[i]);
 
             ImGui::EndTabItem();
         }
@@ -4243,6 +4325,34 @@ void Main::uiTabBarSettings()
 
         ImGui::EndDisabled();
 
+        ImGui::Separator();
+
+        if (inSpeedrunPlaythrough())
+        {
+            ImGui::Text("Speedrun mode enabled!");
+            uiSetFontScale(0.75f);
+            ImGui::Text("Currently in a speedrun playthrough");
+            uiSetFontScale(uiNormalFontScale);
+
+            if (ImGui::Button("End Speedrun"))
+            {
+                pt = &ptMain;
+            }
+        }
+        else
+        {
+            ImGui::Text("Speedrun mode disabled!");
+            uiSetFontScale(0.75f);
+            ImGui::Text("Currently in the normal playthrough");
+            uiSetFontScale(uiNormalFontScale);
+
+            if (ImGui::Button("Start New Speedrun"))
+            {
+                pt = &ptSpeedrun;
+                forceResetGame(/* goToShopTab */ false);
+            }
+        }
+
         ImGui::EndTabItem();
     }
 
@@ -4262,7 +4372,7 @@ void Main::uiTabBarSettings()
         ImGui::Separator();
 
         if (ImGui::Button("Save game"))
-            savePlaythroughToFile(pt);
+            savePlaythroughToFile(ptMain, "userdata/playthrough.json");
 
         ImGui::SameLine();
 
@@ -4332,8 +4442,8 @@ void Main::uiTabBarSettings()
 
         if (ImGui::Button("Do Prestige"))
         {
-            ++pt.psvBubbleValue.nPurchases;
-            const auto ppReward = pt.calculatePrestigePointReward(1u);
+            ++pt->psvBubbleValue.nPurchases;
+            const auto ppReward = pt->calculatePrestigePointReward(1u);
             beginPrestigeTransition(ppReward);
         }
 
@@ -4355,23 +4465,23 @@ void Main::uiTabBarSettings()
         ImGui::InputText("##Filename", filenameBuf, sizeof(filenameBuf));
 
         if (ImGui::Button("Custom save"))
-            savePlaythroughToFile(pt, filenameBuf);
+            savePlaythroughToFile(*pt, filenameBuf);
 
         ImGui::SameLine();
 
         if (ImGui::Button("Custom load"))
-            (void)loadPlaythroughFromFile(pt, filenameBuf);
+            (void)loadPlaythroughFromFile(*pt, filenameBuf);
 
         ImGui::Separator();
 
         if (ImGui::Button("Feed next shrine"))
         {
-            for (Shrine& shrine : pt.shrines)
+            for (Shrine& shrine : pt->shrines)
             {
                 if (!shrine.isActive() || shrine.tcDeath.hasValue())
                     continue;
 
-                const auto requiredReward = pt.getComputedRequiredRewardByShrineType(shrine.type);
+                const auto requiredReward = pt->getComputedRequiredRewardByShrineType(shrine.type);
                 shrine.collectedReward += requiredReward / 3u;
                 break;
             }
@@ -4380,16 +4490,16 @@ void Main::uiTabBarSettings()
         ImGui::Separator();
 
         ImGui::SetNextItemWidth(240.f * profile.uiScale);
-        ImGui::InputScalar("Money", ImGuiDataType_U64, &pt.money, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("Money", ImGuiDataType_U64, &pt->money, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
         ImGui::SetNextItemWidth(240.f * profile.uiScale);
-        ImGui::InputScalar("PPs", ImGuiDataType_U64, &pt.prestigePoints, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("PPs", ImGuiDataType_U64, &pt->prestigePoints, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
         ImGui::SetNextItemWidth(240.f * profile.uiScale);
-        ImGui::InputScalar("WPs", ImGuiDataType_U64, &pt.wisdom, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("WPs", ImGuiDataType_U64, &pt->wisdom, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
         ImGui::SetNextItemWidth(240.f * profile.uiScale);
-        ImGui::InputScalar("Mana", ImGuiDataType_U64, &pt.mana, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
+        ImGui::InputScalar("Mana", ImGuiDataType_U64, &pt->mana, &step, nullptr, nullptr, ImGuiInputTextFlags_CharsDecimal);
 
         ImGui::Separator();
 
@@ -4418,19 +4528,19 @@ void Main::uiTabBarSettings()
                 psv.nPurchases = sf::base::clamp(psv.nPurchases, SizeT{0u}, psv.data->nMaxPurchases);
         };
 
-        psvScalarInput("ComboStartTime", pt.psvComboStartTime);
-        psvScalarInput("MapExtension", pt.psvMapExtension);
-        psvScalarInput("ShrineActivation", pt.psvShrineActivation);
-        psvScalarInput("BubbleCount", pt.psvBubbleCount);
-        psvScalarInput("SpellCount", pt.psvSpellCount);
-        psvScalarInput("BubbleValue", pt.psvBubbleValue);
-        psvScalarInput("ExplosionRadiusMult", pt.psvExplosionRadiusMult);
+        psvScalarInput("ComboStartTime", pt->psvComboStartTime);
+        psvScalarInput("MapExtension", pt->psvMapExtension);
+        psvScalarInput("ShrineActivation", pt->psvShrineActivation);
+        psvScalarInput("BubbleCount", pt->psvBubbleCount);
+        psvScalarInput("SpellCount", pt->psvSpellCount);
+        psvScalarInput("BubbleValue", pt->psvBubbleValue);
+        psvScalarInput("ExplosionRadiusMult", pt->psvExplosionRadiusMult);
 
         ImGui::Separator();
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
-            scalarInput((std::to_string(i) + "Buff").c_str(), pt.buffCountdownsPerType[i].value);
+            scalarInput((std::to_string(i) + "Buff").c_str(), pt->buffCountdownsPerType[i].value);
         }
 
         ImGui::Separator();
@@ -4438,62 +4548,62 @@ void Main::uiTabBarSettings()
         for (SizeT i = 0u; i < nCatTypes; ++i)
         {
             ImGui::Text("%s", CatConstants::typeNames[i]);
-            psvScalarInput("PerCatType", pt.psvPerCatType[i]);
-            psvScalarInput("CooldownMultsPerCatType", pt.psvCooldownMultsPerCatType[i]);
-            psvScalarInput("RangeDivsPerCatType", pt.psvRangeDivsPerCatType[i]);
+            psvScalarInput("PerCatType", pt->psvPerCatType[i]);
+            psvScalarInput("CooldownMultsPerCatType", pt->psvCooldownMultsPerCatType[i]);
+            psvScalarInput("RangeDivsPerCatType", pt->psvRangeDivsPerCatType[i]);
 
             ImGui::Separator();
         }
 
-        psvScalarInput("PPMultiPopRange", pt.psvPPMultiPopRange);
-        psvScalarInput("PPInspireDurationMult", pt.psvPPInspireDurationMult);
-        psvScalarInput("PPManaCooldownMult", pt.psvPPManaCooldownMult);
-        psvScalarInput("PPManaMaxMult", pt.psvPPManaMaxMult);
-        psvScalarInput("PPMouseCatGlobalBonusMult", pt.psvPPMouseCatGlobalBonusMult);
-        psvScalarInput("PPEngiCatGlobalBonusMult", pt.psvPPEngiCatGlobalBonusMult);
-        psvScalarInput("PPRepulsoCatConverterChance", pt.psvPPRepulsoCatConverterChance);
-        psvScalarInput("PPWitchCatBuffDuration", pt.psvPPWitchCatBuffDuration);
-        psvScalarInput("PPUniRitualBuffPercentage", pt.psvPPUniRitualBuffPercentage);
-        psvScalarInput("PPDevilRitualBuffPercentage", pt.psvPPDevilRitualBuffPercentage);
+        psvScalarInput("PPMultiPopRange", pt->psvPPMultiPopRange);
+        psvScalarInput("PPInspireDurationMult", pt->psvPPInspireDurationMult);
+        psvScalarInput("PPManaCooldownMult", pt->psvPPManaCooldownMult);
+        psvScalarInput("PPManaMaxMult", pt->psvPPManaMaxMult);
+        psvScalarInput("PPMouseCatGlobalBonusMult", pt->psvPPMouseCatGlobalBonusMult);
+        psvScalarInput("PPEngiCatGlobalBonusMult", pt->psvPPEngiCatGlobalBonusMult);
+        psvScalarInput("PPRepulsoCatConverterChance", pt->psvPPRepulsoCatConverterChance);
+        psvScalarInput("PPWitchCatBuffDuration", pt->psvPPWitchCatBuffDuration);
+        psvScalarInput("PPUniRitualBuffPercentage", pt->psvPPUniRitualBuffPercentage);
+        psvScalarInput("PPDevilRitualBuffPercentage", pt->psvPPDevilRitualBuffPercentage);
 
         ImGui::Separator();
 
-        ImGui::Checkbox("starterPackPurchased", &pt.perm.starterPackPurchased);
-        ImGui::Checkbox("multiPopPurchased", &pt.perm.multiPopPurchased);
-        ImGui::Checkbox("smartCatsPurchased", &pt.perm.smartCatsPurchased);
-        ImGui::Checkbox("geniusCatsPurchased", &pt.perm.geniusCatsPurchased);
-        ImGui::Checkbox("windPurchased", &pt.perm.windPurchased);
-        ImGui::Checkbox("astroCatInspirePurchased", &pt.perm.astroCatInspirePurchased);
-        ImGui::Checkbox("starpawConversionIgnoreBombs", &pt.perm.starpawConversionIgnoreBombs);
-        ImGui::Checkbox("starpawNova", &pt.perm.starpawNova);
-        ImGui::Checkbox("repulsoCatFilterPurchased", &pt.perm.repulsoCatFilterPurchased);
-        ImGui::Checkbox("repulsoCatConverterPurchased", &pt.perm.repulsoCatConverterPurchased);
-        ImGui::Checkbox("repulsoCatNovaConverterPurchased", &pt.perm.repulsoCatNovaConverterPurchased);
-        ImGui::Checkbox("attractoCatFilterPurchased", &pt.perm.attractoCatFilterPurchased);
-        ImGui::Checkbox("witchCatBuffPowerScalesWithNCats", &pt.perm.witchCatBuffPowerScalesWithNCats);
-        ImGui::Checkbox("witchCatBuffPowerScalesWithMapSize", &pt.perm.witchCatBuffPowerScalesWithMapSize);
-        ImGui::Checkbox("witchCatBuffFewerDolls", &pt.perm.witchCatBuffFewerDolls);
-        ImGui::Checkbox("witchCatBuffFlammableDolls", &pt.perm.witchCatBuffFlammableDolls);
-        ImGui::Checkbox("witchCatBuffOrbitalDolls", &pt.perm.witchCatBuffOrbitalDolls);
-        ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &pt.perm.wizardCatDoubleMewltiplierDuration);
-        ImGui::Checkbox("wizardCatDoubleStasisFieldDuration", &pt.perm.wizardCatDoubleStasisFieldDuration);
-        ImGui::Checkbox("unicatTranscendencePurchased", &pt.perm.unicatTranscendencePurchased);
-        ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt.perm.unicatTranscendenceAOEPurchased);
-        ImGui::Checkbox("devilcatHellsingedPurchased", &pt.perm.devilcatHellsingedPurchased);
-        ImGui::Checkbox("unicatTranscendenceEnabled", &pt.perm.unicatTranscendenceEnabled);
-        ImGui::Checkbox("devilcatHellsingedEnabled", &pt.perm.devilcatHellsingedEnabled);
-        ImGui::Checkbox("autocastPurchased", &pt.perm.autocastPurchased);
+        ImGui::Checkbox("starterPackPurchased", &pt->perm.starterPackPurchased);
+        ImGui::Checkbox("multiPopPurchased", &pt->perm.multiPopPurchased);
+        ImGui::Checkbox("smartCatsPurchased", &pt->perm.smartCatsPurchased);
+        ImGui::Checkbox("geniusCatsPurchased", &pt->perm.geniusCatsPurchased);
+        ImGui::Checkbox("windPurchased", &pt->perm.windPurchased);
+        ImGui::Checkbox("astroCatInspirePurchased", &pt->perm.astroCatInspirePurchased);
+        ImGui::Checkbox("starpawConversionIgnoreBombs", &pt->perm.starpawConversionIgnoreBombs);
+        ImGui::Checkbox("starpawNova", &pt->perm.starpawNova);
+        ImGui::Checkbox("repulsoCatFilterPurchased", &pt->perm.repulsoCatFilterPurchased);
+        ImGui::Checkbox("repulsoCatConverterPurchased", &pt->perm.repulsoCatConverterPurchased);
+        ImGui::Checkbox("repulsoCatNovaConverterPurchased", &pt->perm.repulsoCatNovaConverterPurchased);
+        ImGui::Checkbox("attractoCatFilterPurchased", &pt->perm.attractoCatFilterPurchased);
+        ImGui::Checkbox("witchCatBuffPowerScalesWithNCats", &pt->perm.witchCatBuffPowerScalesWithNCats);
+        ImGui::Checkbox("witchCatBuffPowerScalesWithMapSize", &pt->perm.witchCatBuffPowerScalesWithMapSize);
+        ImGui::Checkbox("witchCatBuffFewerDolls", &pt->perm.witchCatBuffFewerDolls);
+        ImGui::Checkbox("witchCatBuffFlammableDolls", &pt->perm.witchCatBuffFlammableDolls);
+        ImGui::Checkbox("witchCatBuffOrbitalDolls", &pt->perm.witchCatBuffOrbitalDolls);
+        ImGui::Checkbox("wizardCatDoubleMewltiplierDuration", &pt->perm.wizardCatDoubleMewltiplierDuration);
+        ImGui::Checkbox("wizardCatDoubleStasisFieldDuration", &pt->perm.wizardCatDoubleStasisFieldDuration);
+        ImGui::Checkbox("unicatTranscendencePurchased", &pt->perm.unicatTranscendencePurchased);
+        ImGui::Checkbox("unicatTranscendenceAOEPurchased", &pt->perm.unicatTranscendenceAOEPurchased);
+        ImGui::Checkbox("devilcatHellsingedPurchased", &pt->perm.devilcatHellsingedPurchased);
+        ImGui::Checkbox("unicatTranscendenceEnabled", &pt->perm.unicatTranscendenceEnabled);
+        ImGui::Checkbox("devilcatHellsingedEnabled", &pt->perm.devilcatHellsingedEnabled);
+        ImGui::Checkbox("autocastPurchased", &pt->perm.autocastPurchased);
 
         ImGui::Separator();
 
-        ImGui::Checkbox("shrineCompleted Witch", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]);
-        ImGui::Checkbox("shrineCompleted Wizard", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]);
-        ImGui::Checkbox("shrineCompleted Mouse", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]);
-        ImGui::Checkbox("shrineCompleted Engi", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
-        ImGui::Checkbox("shrineCompleted Attracto", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
-        ImGui::Checkbox("shrineCompleted Repulso", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
-        ImGui::Checkbox("shrineCompleted Copy", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
-        ImGui::Checkbox("shrineCompleted Duck", &pt.perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
+        ImGui::Checkbox("shrineCompleted Witch", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)]);
+        ImGui::Checkbox("shrineCompleted Wizard", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)]);
+        ImGui::Checkbox("shrineCompleted Mouse", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)]);
+        ImGui::Checkbox("shrineCompleted Engi", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)]);
+        ImGui::Checkbox("shrineCompleted Attracto", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)]);
+        ImGui::Checkbox("shrineCompleted Repulso", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)]);
+        ImGui::Checkbox("shrineCompleted Copy", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)]);
+        ImGui::Checkbox("shrineCompleted Duck", &pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Duck)]);
 
         uiSetFontScale(uiNormalFontScale);
         ImGui::PopFont();

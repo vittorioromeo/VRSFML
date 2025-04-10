@@ -11,10 +11,10 @@
 #define BUBBLEBYTE_VERSION_MAJOR 1
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_MINOR 7
+#define BUBBLEBYTE_VERSION_MINOR 8
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 1
+#define BUBBLEBYTE_VERSION_PATCH 0
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
@@ -37,3 +37,5 @@ inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VER
 
 // TODO P0: CHANGELOG:
 // - Fixed engi cat global mult and mouse cat global mult tooltip not showing (MAX)
+// - Added speedrun mode
+// TODO ACHIEVES
