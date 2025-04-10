@@ -47,6 +47,7 @@
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
     #include "SFML/Window/VulkanImpl.hpp"
+    #include "SFML/Window/Win32/Utils.hpp"
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
     #if defined(SFML_USE_DRM)
         #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
@@ -495,13 +496,30 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
         windowSettings.hasTitlebar = true;
 #endif
 
+    SDL_Window* sdlWindowPtr = SDL_CreateWindow(windowSettings.title.toAnsiString<std::string>().data(),
+                                                static_cast<int>(windowSettings.size.x),
+                                                static_cast<int>(windowSettings.size.y),
+                                                makeSDLWindowFlagsFromWindowSettings(windowSettings));
+
     auto* windowImplPtr = new WindowImpl{"window settings",
-                                         static_cast<void*>(
-                                             SDL_CreateWindow(windowSettings.title.toAnsiString<std::string>().data(),
-                                                              static_cast<int>(windowSettings.size.x),
-                                                              static_cast<int>(windowSettings.size.y),
-                                                              makeSDLWindowFlagsFromWindowSettings(windowSettings))),
+                                         static_cast<void*>(sdlWindowPtr),
                                          /* isExternal */ false};
+
+#ifdef SFML_SYSTEM_WINDOWS
+    {
+        // See https://github.com/libsdl-org/SDL/issues/12791
+
+        const auto desktopModeSize = sf::VideoModeUtils::getDesktopMode().size;
+        if (!windowSettings.hasTitlebar && !windowSettings.fullscreen && windowSettings.size == desktopModeSize)
+        {
+            void* hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindowPtr),
+                                                SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+                                                nullptr);
+
+            priv::setWindowBorderless(hwnd, windowSettings.size.x, windowSettings.size.y);
+        }
+    }
+#endif
 
     if (windowSettings.fullscreen)
         WindowImplImpl::fullscreenWindow = windowImplPtr;
