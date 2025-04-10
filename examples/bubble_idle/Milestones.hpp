@@ -62,3 +62,12 @@ struct [[nodiscard]] Milestones
 
     // TODO P1: other milestones, achievements for fast milestones
 };
+
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] SpeedrunningSplits
+{
+    MilestoneTimestamp prestigeLevel2 = maxMilestone;
+    MilestoneTimestamp prestigeLevel3 = maxMilestone;
+    MilestoneTimestamp prestigeLevel4 = maxMilestone;
+    MilestoneTimestamp prestigeLevel5 = maxMilestone;
+};
