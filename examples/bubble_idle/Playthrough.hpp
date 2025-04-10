@@ -17,6 +17,7 @@
 #include "ShrineType.hpp"
 #include "Stats.hpp"
 
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Math/Pow.hpp"
@@ -253,6 +254,11 @@ struct Playthrough
     //
     // New flags (v1.6.0)
     bool laserPopEnabled = false; // TODO P0: decide what to do (charge system, release explosion, release laser, etc)
+
+    //
+    // Speedrunning
+    sf::base::Optional<sf::Time> speedrunStartTime;
+    SpeedrunningSplits           speedrunSplits;
 
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()
