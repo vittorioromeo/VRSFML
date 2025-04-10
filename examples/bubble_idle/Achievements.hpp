@@ -483,6 +483,18 @@ inline constexpr AchievementData achievementData[] = {
     {"Rules? Meow off!", "Pop 300 bubbles without ever purchasing anything.", /* secret */ true},
     {"I Am Above This", "Have genius cats ignore every single bubble type.", /* secret */ true},
     {"Wasted Effort", "Perform a voodoo ritual with no cats around.", /* secret */ true},
+
+    {"First Try", "Enable Speedrun Mode."},
+
+    {"Gotta Reset", "(Speedrun) Reach Prestige Lv.2 in 9min or less."},
+    {"Absolute Legend", "(Speedrun) Reach Prestige Lv.2 in 7min or less."},
+    {"King of MAME", "(Speedrun) Reach Prestige Lv.2 in 5min or less."},
+    {"The Human Element", "(Speedrun) Reach Prestige Lv.2 in 4min or less."},
+
+    {"Backup Strat", "(Speedrun) Reach Prestige Lv.3 in 30min or less."},
+    {"Good Gaming Chair", "(Speedrun) Reach Prestige Lv.3 in 26min or less."},
+    {"Dream RNG", "(Speedrun) Reach Prestige Lv.3 in 22min or less."},
+    {"TASBot", "(Speedrun) Reach Prestige Lv.3 in 18min or less."},
 };
 
 ////////////////////////////////////////////////////////////
@@ -494,6 +506,4 @@ enum : sf::base::SizeT
 // TODO P2: come up with more secret achivements
 // ---- have shrine of voodoo affect astrocat
 // TODO P1: speedrun/milestone achievements
-// ---- prestige 1 mid 5min, good 4min, insane 3.45min
-// ---- prestige 2 mid 25min, good 22min, insane 18min
-// ---- prestige 3? maybe test with auto combos
+// -- other achievements name ideas: splicing, riolu alt account, cosmic rays, no a button presses, parallel universes,
