@@ -34,4 +34,21 @@ std::string getErrorString(DWORD error)
     return message.toAnsiString<std::string>();
 }
 
+
+////////////////////////////////////////////////////////////
+void setWindowBorderless(void* const hwnd, const unsigned int width, const unsigned int height)
+{
+    auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
+
+    SetWindowLongPtr(hwndPtr, GWL_STYLE, WS_OVERLAPPED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
+    SetWindowLongPtr(hwndPtr, GWL_EXSTYLE, WS_EX_APPWINDOW);
+    SetWindowPos(hwndPtr,
+                 HWND_TOP,
+                 0,
+                 0,
+                 static_cast<int>(width),
+                 static_cast<int>(height),
+                 SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+}
+
 } // namespace sf::priv
