@@ -15,4 +15,7 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 std::string getErrorString(DWORD error);
 
+////////////////////////////////////////////////////////////
+void setWindowBorderless(void* hwnd, unsigned int width, unsigned int height);
+
 } // namespace sf::priv
