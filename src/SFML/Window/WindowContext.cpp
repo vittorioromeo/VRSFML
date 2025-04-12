@@ -25,13 +25,14 @@
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/NonTrivialVector.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <atomic>
 #include <mutex>
 #include <string>
-#include <vector>
 
 #include <csignal>
 
@@ -44,9 +45,9 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::vector<std::string> loadExtensions(DerivedGlContextType& glContext)
+[[nodiscard]] sf::base::NonTrivialVector<std::string> loadExtensions(DerivedGlContextType& glContext)
 {
-    std::vector<std::string> result; // Use a single local variable for NRVO
+    sf::base::NonTrivialVector<std::string> result; // Use a single local variable for NRVO
 
     auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(glContext.getFunction("glGetError"));
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(glContext.getFunction("glGetIntegerv"));
@@ -71,7 +72,7 @@ namespace
     for (int i = 0; i < numExtensions; ++i)
         if (const auto* extensionString = reinterpret_cast<const char*>(
                 glCheckIgnoreWithFunc(glGetErrorFunc, glGetStringiFunc(GL_EXTENSIONS, static_cast<unsigned int>(i)))))
-            result.emplace_back(extensionString);
+            result.emplaceBack(extensionString);
 
     return result;
 }
@@ -97,7 +98,7 @@ struct WindowContextImpl
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
-    std::vector<std::string> extensions; //!< Supported OpenGL extensions
+    base::NonTrivialVector<std::string> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
@@ -107,8 +108,8 @@ struct WindowContextImpl
         WindowContext::UnsharedDeleteFn deleteFn;
     };
 
-    std::mutex                       unsharedFrameBuffersMutex;
-    std::vector<UnsharedFrameBuffer> unsharedFrameBuffers;
+    std::mutex                               unsharedFrameBuffersMutex;
+    base::TrivialVector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
     base::Optional<priv::JoystickManager> joystickManager;
@@ -257,7 +258,7 @@ void WindowContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsign
     SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
 
     const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
-    wc.unsharedFrameBuffers.emplace_back(glContextId, frameBufferId, deleteFn);
+    wc.unsharedFrameBuffers.emplaceBack(glContextId, frameBufferId, deleteFn);
 }
 
 
@@ -274,9 +275,9 @@ void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsi
 
     // Find the object in unshared objects and remove it if its associated context is currently active
     // Assume that the object has already been deleted with the right OpenGL delete call
-    const auto iter = base::findIf(wc.unsharedFrameBuffers.begin(),
-                                   wc.unsharedFrameBuffers.end(),
-                                   [&](const WindowContextImpl::UnsharedFrameBuffer& obj)
+    auto* const iter = base::findIf(wc.unsharedFrameBuffers.begin(),
+                                    wc.unsharedFrameBuffers.end(),
+                                    [&](const WindowContextImpl::UnsharedFrameBuffer& obj)
     { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
     if (iter != wc.unsharedFrameBuffers.end())
@@ -304,7 +305,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
         const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
 
         // Destroy the unshared objects contained in this context
-        for (auto iter = wc.unsharedFrameBuffers.begin(); iter != wc.unsharedFrameBuffers.end();)
+        for (auto* iter = wc.unsharedFrameBuffers.begin(); iter != wc.unsharedFrameBuffers.end();)
         {
             if (iter->glContextId == glContext.m_id)
             {

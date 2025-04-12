@@ -11,8 +11,6 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
-#include <vector>
-
 
 namespace
 {
@@ -78,21 +76,6 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         testSoundStream.setLooping(true);
         CHECK(testSoundStream.isLooping());
     }
-
-    /*
-    SECTION("initialize")
-    {
-        const std::vector channelMap{sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
-        TestSoundStream   soundStream;
-        soundStream.initialize(2, 44100, channelMap);
-        CHECK(soundStream.getChannelCount() == 2);
-        CHECK(soundStream.getSampleRate() == 44100);
-        CHECK(soundStream.getChannelMap() == channelMap);
-        CHECK(soundStream.getStatus() == sf::SoundStream::Status::Stopped);
-        CHECK(soundStream.getPlayingOffset() == sf::Time{});
-        CHECK(!soundStream.isLooping());
-    }
-    */
 
     SECTION("Set/get pitch")
     {

@@ -60,12 +60,26 @@ template <typename Iter, typename Predicate>
 
 ////////////////////////////////////////////////////////////
 template <typename Iter>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT count(Iter rangeBegin, Iter rangeEnd)
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countTruthy(Iter rangeBegin, Iter rangeEnd)
 {
     SizeT result = 0u;
 
     for (; rangeBegin != rangeEnd; ++rangeBegin)
         if (static_cast<bool>(*rangeBegin))
+            ++result;
+
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename Iter, typename T>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT count(Iter rangeBegin, Iter rangeEnd, const T& value)
+{
+    SizeT result = 0u;
+
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (*rangeBegin == value)
             ++result;
 
     return result;

@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/RectUtils.hpp" // NOLINT(misc-header-include-cycle)
 
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 
 
 namespace sf
@@ -17,32 +17,43 @@ base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& re
 {
     // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
+    // Precompute right/bottom edges
+    const T r0Right  = rect0.position.x + rect0.size.x;
+    const T r0Bottom = rect0.position.y + rect0.size.y;
+    const T r1Right  = rect1.position.x + rect1.size.x;
+    const T r1Bottom = rect1.position.y + rect1.size.y;
+
     // Compute the min and max of the first rectangle on both axes
-    const T r1MinX = base::min(rect0.position.x, static_cast<T>(rect0.position.x + rect0.size.x));
-    const T r1MaxX = base::max(rect0.position.x, static_cast<T>(rect0.position.x + rect0.size.x));
-    const T r1MinY = base::min(rect0.position.y, static_cast<T>(rect0.position.y + rect0.size.y));
-    const T r1MaxY = base::max(rect0.position.y, static_cast<T>(rect0.position.y + rect0.size.y));
+    const T r0MinX = SFML_BASE_MIN(rect0.position.x, r0Right);
+    const T r0MaxX = SFML_BASE_MAX(rect0.position.x, r0Right);
+    const T r0MinY = SFML_BASE_MIN(rect0.position.y, r0Bottom);
+    const T r0MaxY = SFML_BASE_MAX(rect0.position.y, r0Bottom);
 
     // Compute the min and max of the second rectangle on both axes
-    const T r2MinX = base::min(rect1.position.x, static_cast<T>(rect1.position.x + rect1.size.x));
-    const T r2MaxX = base::max(rect1.position.x, static_cast<T>(rect1.position.x + rect1.size.x));
-    const T r2MinY = base::min(rect1.position.y, static_cast<T>(rect1.position.y + rect1.size.y));
-    const T r2MaxY = base::max(rect1.position.y, static_cast<T>(rect1.position.y + rect1.size.y));
+    const T r1MinX = SFML_BASE_MIN(rect1.position.x, r1Right);
+    const T r1MaxX = SFML_BASE_MAX(rect1.position.x, r1Right);
+    const T r1MinY = SFML_BASE_MIN(rect1.position.y, r1Bottom);
+    const T r1MaxY = SFML_BASE_MAX(rect1.position.y, r1Bottom);
 
-    // Compute the intersection boundaries
-    const T interLeft   = base::max(r1MinX, r2MinX);
-    const T interTop    = base::max(r1MinY, r2MinY);
-    const T interRight  = base::min(r1MaxX, r2MaxX);
-    const T interBottom = base::min(r1MaxY, r2MaxY);
+    // Compute the intersection boundaries for the X axis
+    const T interLeft  = SFML_BASE_MAX(r0MinX, r1MinX);
+    const T interRight = SFML_BASE_MIN(r0MaxX, r1MaxX);
 
-    // If the intersection is valid (positive non zero area), then there is an intersection
-    if ((interLeft < interRight) && (interTop < interBottom))
-    {
-        return base::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
-                                           Vector2<T>{interRight - interLeft, interBottom - interTop});
-    }
+    // Early exit if no overlap on X axis
+    if (interLeft >= interRight)
+        return base::nullOpt;
 
-    return base::nullOpt;
+    // Compute the intersection boundaries for the Y axis
+    const T interTop    = SFML_BASE_MAX(r0MinY, r1MinY);
+    const T interBottom = SFML_BASE_MIN(r0MaxY, r1MaxY);
+
+    // Check for overlap on Y axis
+    if (interTop >= interBottom)
+        return base::nullOpt;
+
+    // Intersection found
+    return base::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
+                                       Vector2<T>{interRight - interLeft, interBottom - interTop});
 }
 
 } // namespace sf
