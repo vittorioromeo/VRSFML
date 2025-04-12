@@ -10,6 +10,7 @@
 #include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
 

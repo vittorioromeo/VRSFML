@@ -34,6 +34,7 @@
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/NonTrivialVector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -41,7 +42,6 @@
 #include <imgui.h>
 
 #include <string>
-#include <vector>
 
 #if defined(__APPLE__)
     #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
@@ -1066,7 +1066,7 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {
-    std::vector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
+    base::NonTrivialVector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
 
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
@@ -1126,12 +1126,12 @@ bool ImGuiContext::init(Window& window, RenderTarget& target, bool loadDefaultFo
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFont)
 {
-    m_impl->perWindowContexts.emplace_back(base::makeUnique<ImGuiPerWindowContext>(window));
+    m_impl->perWindowContexts.emplaceBack(base::makeUnique<ImGuiPerWindowContext>(window));
 
     m_impl->currentPerWindowContext = m_impl->perWindowContexts.back().get();
     ::ImGui::SetCurrentContext(m_impl->currentPerWindowContext->imContext);
 
-    thread_local std::string* clipboardTextPtr;
+    static thread_local std::string* clipboardTextPtr;
     clipboardTextPtr = &m_impl->clipboardText;
 
     return m_impl->currentPerWindowContext->init(displaySize,
@@ -1155,9 +1155,9 @@ bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFo
 ////////////////////////////////////////////////////////////
 void ImGuiContext::setCurrentWindow(const Window& window)
 {
-    auto found = base::findIf(m_impl->perWindowContexts.begin(),
-                              m_impl->perWindowContexts.end(),
-                              [&](base::UniquePtr<ImGuiPerWindowContext>& ctx)
+    auto* found = base::findIf(m_impl->perWindowContexts.begin(),
+                               m_impl->perWindowContexts.end(),
+                               [&](base::UniquePtr<ImGuiPerWindowContext>& ctx)
     { return ctx->window->getNativeHandle() == window.getNativeHandle(); });
 
     SFML_BASE_ASSERT(found != m_impl->perWindowContexts.end() &&
@@ -1244,9 +1244,9 @@ void ImGuiContext::shutdown(const Window& window)
     const bool needReplacement = (m_impl->currentPerWindowContext->window->getNativeHandle() == window.getNativeHandle());
 
     // remove window's context
-    auto found = base::findIf(m_impl->perWindowContexts.begin(),
-                              m_impl->perWindowContexts.end(),
-                              [&](base::UniquePtr<ImGuiPerWindowContext>& ctx)
+    auto* found = base::findIf(m_impl->perWindowContexts.begin(),
+                               m_impl->perWindowContexts.end(),
+                               [&](base::UniquePtr<ImGuiPerWindowContext>& ctx)
     { return ctx->window->getNativeHandle() == window.getNativeHandle(); });
 
     SFML_BASE_ASSERT(found != m_impl->perWindowContexts.end() &&
@@ -1258,7 +1258,7 @@ void ImGuiContext::shutdown(const Window& window)
     if (!needReplacement)
         return;
 
-    auto it = m_impl->perWindowContexts.begin();
+    auto* it = m_impl->perWindowContexts.begin();
     if (it == m_impl->perWindowContexts.end())
     {
         // no alternatives...

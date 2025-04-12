@@ -2,6 +2,7 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
+////////////////////////////////////////////////////////////
 #if __has_include(<bits/localefwd.h>)
 
     #include <bits/localefwd.h>
