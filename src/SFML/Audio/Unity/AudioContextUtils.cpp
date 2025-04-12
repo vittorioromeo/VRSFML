@@ -16,19 +16,18 @@
 
 #include <miniaudio.h>
 
-#include <vector>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
-std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContextUtils>&& passKey,
-                                               ma_context&                                maContext,
-                                               const char*                                type,
-                                               F&&                                        fMAContextGetDevices)
+sf::base::NonTrivialVector<THandle> getAvailableDeviceHandles(
+    sf::base::PassKey<sf::AudioContextUtils>&& passKey,
+    ma_context&                                maContext,
+    const char*                                type,
+    F&&                                        fMAContextGetDevices)
 {
-    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
+    sf::base::NonTrivialVector<THandle> deviceHandles; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};
@@ -45,7 +44,7 @@ std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContex
     deviceHandles.reserve(maDeviceInfoCount);
 
     for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplace_back(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
+        deviceHandles.emplaceBack(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
 
     return deviceHandles;
 }
@@ -56,7 +55,7 @@ std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContex
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::vector<PlaybackDeviceHandle> AudioContextUtils::getAvailablePlaybackDeviceHandles(AudioContext& audioContext)
+base::NonTrivialVector<PlaybackDeviceHandle> AudioContextUtils::getAvailablePlaybackDeviceHandles(AudioContext& audioContext)
 {
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
         (base::PassKey<AudioContextUtils>{},
@@ -79,7 +78,7 @@ base::Optional<PlaybackDeviceHandle> AudioContextUtils::getDefaultPlaybackDevice
 
 
 ////////////////////////////////////////////////////////////
-std::vector<CaptureDeviceHandle> AudioContextUtils::getAvailableCaptureDeviceHandles(AudioContext& audioContext)
+base::NonTrivialVector<CaptureDeviceHandle> AudioContextUtils::getAvailableCaptureDeviceHandles(AudioContext& audioContext)
 {
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
         (base::PassKey<AudioContextUtils>{},

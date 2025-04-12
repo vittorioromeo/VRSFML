@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtins/Memmove.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -50,7 +51,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void reserveImpl(base::SizeT targetCapacity)
+    [[gnu::cold, gnu::noinline]] void reserveImpl(const SizeT targetCapacity)
     {
         auto*      newData = new ItemUnion[targetCapacity];
         const auto oldSize = size();
@@ -84,7 +85,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(base::SizeT initialSize) :
+    [[nodiscard]] explicit TrivialVector(const SizeT initialSize) :
     m_data{new ItemUnion[initialSize]},
     m_endSize{data() + initialSize},
     m_endCapacity{data() + initialSize}
@@ -95,13 +96,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const TItem* src, base::SizeT srcCount) :
+    [[nodiscard]] explicit TrivialVector(const TItem* src, const SizeT srcCount) :
     m_data{new ItemUnion[srcCount]},
     m_endSize{data() + srcCount},
     m_endCapacity{data() + srcCount}
     {
-        for (TItem* p = data(); p < m_endSize; ++p)
-            SFML_BASE_PLACEMENT_NEW(p) TItem(*src++);
+        SFML_BASE_MEMCPY(m_data, src, sizeof(TItem) * srcCount);
     }
 
 
@@ -214,7 +214,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void assignRange(const TItem* b, const TItem* e) noexcept
+    [[gnu::always_inline, gnu::flatten]] void assignRange(const TItem* const b, const TItem* const e) noexcept
     {
         SFML_BASE_ASSERT(b != nullptr);
         SFML_BASE_ASSERT(e != nullptr);
@@ -230,7 +230,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* ptr, SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* const ptr, const SizeT count) noexcept
     {
         SFML_BASE_ASSERT(size() + count <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
@@ -243,7 +243,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void emplaceRange(const TItem* ptr, SizeT count) noexcept
+    [[gnu::always_inline, gnu::flatten]] void emplaceRange(const TItem* const ptr, const SizeT count) noexcept
     {
         reserveMore(count);
         unsafeEmplaceRange(ptr, count);
@@ -287,31 +287,54 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceBack(Ts&&... xs)
+    [[gnu::always_inline, gnu::flatten]] TItem& unsafeEmplaceBack(Ts&&... xs)
     {
         SFML_BASE_ASSERT(size() <= capacity());
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...);
+        return *(SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<Ts&&>(xs)...));
     }
 
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline, gnu::flatten]] void emplaceBack(Ts&&... xs)
+    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
     {
         reserveMore(1);
-        unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
+        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
     }
 
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[gnu::always_inline, gnu::flatten]] void pushBack(T&& x)
+    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
     {
         reserveMore(1);
-        unsafeEmplaceBack(static_cast<T&&>(x));
+        return unsafeEmplaceBack(static_cast<T&&>(x));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    TItem* erase(TItem* const it)
+    {
+        SFML_BASE_ASSERT(it >= begin());
+        SFML_BASE_ASSERT(it < end());
+
+        const TItem* const elementAfter      = it + 1;
+        const auto         numElementsToMove = static_cast<SizeT>(end() - elementAfter);
+
+        if (numElementsToMove > 0)
+        {
+            // Move elements from [it + 1, end()) to [it, end() - 1)
+            SFML_BASE_MEMMOVE(it,                                 // Destination
+                              elementAfter,                       // Source
+                              numElementsToMove * sizeof(TItem)); // Number of bytes
+        }
+
+        --m_endSize;
+
+        return it;
     }
 
 
@@ -353,8 +376,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept
     {
-        SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
+        SFML_BASE_ASSERT(i < size());
 
         return *(data() + i);
     }
@@ -363,8 +386,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
     {
-        SFML_BASE_ASSERT(i < size());
         SFML_BASE_ASSERT(m_data != nullptr);
+        SFML_BASE_ASSERT(i < size());
 
         return *(data() + i);
     }
@@ -441,9 +464,35 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(base::SizeT newSize) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
     {
         m_endSize = SFML_BASE_LAUNDER_CAST(TItem*, m_data) + newSize;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator==(const TrivialVector& rhs) const
+    {
+        if (this == &rhs)
+            return true;
+
+        const SizeT lhsSize = size();
+
+        if (lhsSize != rhs.size())
+            return false;
+
+        for (SizeT i = 0u; i < lhsSize; ++i)
+            if (m_data[i] != rhs.m_data[i])
+                return false;
+
+        return true;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool operator!=(const TrivialVector& rhs) const
+    {
+        return !(*this == rhs);
     }
 };
 
