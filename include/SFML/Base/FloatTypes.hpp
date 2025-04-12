@@ -72,6 +72,3 @@ using F128 = decltype(0.f128);
 #endif
 
 } // namespace sf::base
-
-
-// TODO P2: F16, F32, etc...

@@ -3851,8 +3851,8 @@ void Main::uiTabBarStats()
         {
             selectedTab(3);
 
-            const sf::base::SizeT nAchievementsUnlocked = sf::base::count(profile.unlockedAchievements,
-                                                                          profile.unlockedAchievements + nAchievements);
+            const sf::base::SizeT nAchievementsUnlocked = sf::base::countTruthy(profile.unlockedAchievements,
+                                                                                profile.unlockedAchievements + nAchievements);
 
             uiSetFontScale(uiNormalFontScale);
             ImGui::Text("%zu / %zu achievements unlocked", nAchievementsUnlocked, sf::base::getArraySize(achievementData));

@@ -11,9 +11,9 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <algorithm> // std::sort
-#include <vector>
 
 
 namespace
@@ -64,7 +64,7 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 {
     static const auto cachedModes = []
     {
-        std::vector<VideoMode> result;
+        base::TrivialVector<VideoMode> result;
 
         auto& sdlLayer = priv::getSDLLayerSingleton();
 
@@ -83,7 +83,7 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
             const sf::VideoMode res = sdlModeToVideoMode(mode);
 
             if (base::find(result.begin(), result.end(), res) == result.end())
-                result.push_back(res);
+                result.pushBack(res);
         }
 
         std::sort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
