@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Transform.hpp" // NOLINT(misc-header-include-cycle)
 
+#include "SFML/System/Vector2.hpp"
+
 #include "SFML/Base/MinMaxMacros.hpp"
 
 
@@ -50,11 +52,18 @@ constexpr Vector2f Transform::transformPoint(Vector2f point) const
 ////////////////////////////////////////////////////////////
 constexpr FloatRect Transform::transformRect(const FloatRect& rectangle) const
 {
-    // Transform the 4 corners of the rectangle
-    const auto p0 = transformPoint(rectangle.position);
-    const auto p1 = transformPoint(rectangle.position + Vector2f(0.f, rectangle.size.y));
-    const auto p2 = transformPoint(rectangle.position + Vector2f(rectangle.size.x, 0.f));
-    const auto p3 = transformPoint(rectangle.position + rectangle.size);
+    const Vector2f p0 = transformPoint(rectangle.position);
+
+    // Transformed offset vector for the X-direction side
+    const Vector2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
+
+    // Transformed offset vector for the Y-direction side
+    const Vector2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
+
+    // Calculate other corners relative to `p0`
+    const Vector2f p1 = p0 + dy;
+    const Vector2f p2 = p0 + dx;
+    const Vector2f p3 = p2 + dy; // Or `p1 + dx`
 
     // Compute the bounding rectangle of the transformed points
     const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));

@@ -15,9 +15,9 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <algorithm> // std::sort, std::adjacent_find
-#include <vector>
 
 
 namespace
@@ -144,25 +144,27 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
             SoundChannel channel;
         };
 
-        std::vector<SupportedChannel>
-            targetChannelMap{{speakerFrontLeft, SoundChannel::FrontLeft},
-                             {speakerFrontRight, SoundChannel::FrontRight},
-                             {speakerFrontCenter, SoundChannel::FrontCenter},
-                             {speakerLowFrequency, SoundChannel::LowFrequencyEffects},
-                             {speakerBackLeft, SoundChannel::BackLeft},
-                             {speakerBackRight, SoundChannel::BackRight},
-                             {speakerFrontLeftOfCenter, SoundChannel::FrontLeftOfCenter},
-                             {speakerFrontRightOfCenter, SoundChannel::FrontRightOfCenter},
-                             {speakerBackCenter, SoundChannel::BackCenter},
-                             {speakerSideLeft, SoundChannel::SideLeft},
-                             {speakerSideRight, SoundChannel::SideRight},
-                             {speakerTopCenter, SoundChannel::TopCenter},
-                             {speakerTopFrontLeft, SoundChannel::TopFrontLeft},
-                             {speakerTopFrontCenter, SoundChannel::TopFrontCenter},
-                             {speakerTopFrontRight, SoundChannel::TopFrontRight},
-                             {speakerTopBackLeft, SoundChannel::TopBackLeft},
-                             {speakerTopBackCenter, SoundChannel::TopBackCenter},
-                             {speakerTopBackRight, SoundChannel::TopBackRight}};
+        base::TrivialVector<SupportedChannel> targetChannelMap;
+        targetChannelMap
+            .pushBackMultiple(SupportedChannel{speakerFrontLeft, SoundChannel::FrontLeft},
+                              SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
+                              SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},
+                              SupportedChannel{speakerLowFrequency, SoundChannel::LowFrequencyEffects},
+                              SupportedChannel{speakerBackLeft, SoundChannel::BackLeft},
+                              SupportedChannel{speakerBackRight, SoundChannel::BackRight},
+                              SupportedChannel{speakerFrontLeftOfCenter, SoundChannel::FrontLeftOfCenter},
+                              SupportedChannel{speakerFrontRightOfCenter, SoundChannel::FrontRightOfCenter},
+                              SupportedChannel{speakerBackCenter, SoundChannel::BackCenter},
+                              SupportedChannel{speakerSideLeft, SoundChannel::SideLeft},
+                              SupportedChannel{speakerSideRight, SoundChannel::SideRight},
+                              SupportedChannel{speakerTopCenter, SoundChannel::TopCenter},
+                              SupportedChannel{speakerTopFrontLeft, SoundChannel::TopFrontLeft},
+                              SupportedChannel{speakerTopFrontCenter, SoundChannel::TopFrontCenter},
+                              SupportedChannel{speakerTopFrontRight, SoundChannel::TopFrontRight},
+                              SupportedChannel{speakerTopBackLeft, SoundChannel::TopBackLeft},
+                              SupportedChannel{speakerTopBackCenter, SoundChannel::TopBackCenter},
+                              SupportedChannel{speakerTopBackRight, SoundChannel::TopBackRight});
+
 
         // Check for duplicate channel entries
         {
@@ -177,7 +179,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         }
 
         // Construct the target channel map by removing unused channels
-        for (auto iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
+        for (auto* iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
         {
             if (base::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
             {

@@ -17,29 +17,18 @@ namespace sf
 ////////////////////////////////////////////////////////////
 /// \brief Check the intersection between two rectangles
 ///
-/// \param rectangle Rectangle to test
+/// \param rect0 First rectangle
+/// \param rect1 Second rectangle
 ///
 /// \return Intersection rectangle if intersecting, `base::nullOpt` otherwise
 ///
-/// \see contains
-///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard]] SFML_SYSTEM_API base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
+[[nodiscard, gnu::pure]] SFML_SYSTEM_API base::Optional<Rect<T>> findIntersection(const Rect<T>& rect0, const Rect<T>& rect1);
 
 } // namespace sf
 
 #include "SFML/System/RectUtils.inl"
-
-
-////////////////////////////////////////////////////////////
-// Explicit instantiation declarations
-////////////////////////////////////////////////////////////
-extern template class sf::Rect<float>;
-extern template class sf::Rect<double>;
-extern template class sf::Rect<long double>;
-extern template class sf::Rect<int>;
-extern template class sf::Rect<unsigned int>;
 
 
 ////////////////////////////////////////////////////////////
