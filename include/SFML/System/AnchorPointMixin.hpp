@@ -15,7 +15,7 @@ template <typename T>
 struct AnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getAnchorPoint(Vector2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getAnchorPoint(const Vector2f factors) const
     {
         if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
         {
@@ -48,17 +48,41 @@ struct AnchorPointMixin
 #undef SFML_PRIV_DEFINE_MIXIN_GETTER
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(Vector2f factors, Vector2f newPosition)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLeft() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().getLeft();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getRight() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().getRight();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getTop() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().getTop();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getBottom() const
+    {
+        return static_cast<const T&>(*this).getGlobalBounds().getBottom();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(const Vector2f factors, const Vector2f newPosition)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
         static_cast<T&>(*this).position += newPosition - bounds.position + bounds.getAnchorPointOffset(factors);
     }
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                          \
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(Vector2f newPosition) \
-    {                                                                                     \
-        this->setAnchorPoint(__VA_ARGS__, newPosition);                                   \
+#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                                \
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(const Vector2f newPosition) \
+    {                                                                                           \
+        this->setAnchorPoint(__VA_ARGS__, newPosition);                                         \
     }
 
     SFML_PRIV_DEFINE_MIXIN_SETTER(setTopLeft, {0.f, 0.f});
@@ -72,6 +96,34 @@ struct AnchorPointMixin
     SFML_PRIV_DEFINE_MIXIN_SETTER(setBottomRight, {1.f, 1.f});
 
 #undef SFML_PRIV_DEFINE_MIXIN_SETTER
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setLeft(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setRight(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x - bounds.size.x;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setTop(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setBottom(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y - bounds.size.y;
+    }
 };
 
 } // namespace sf

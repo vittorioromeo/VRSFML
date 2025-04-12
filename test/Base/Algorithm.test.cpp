@@ -40,12 +40,10 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
     SECTION("Count")
     {
         const bool bools[]{true, false, true, true, false};
-        CHECK(sf::base::count(bools, bools + 5) == 3);
+        CHECK(sf::base::count(bools, bools + 5, true) == 3);
 
-        const int ints[]{1, 0, 5, 0, -1, 0, 7}; // Non-zero ints convert to true
-        CHECK(sf::base::count(ints, ints + 7) == 4);
-
-        CHECK(sf::base::count(ints, ints + 0) == 0);
+        const int ints[]{1, 0, 5, 0, -1, 0, 7};
+        CHECK(sf::base::count(ints, ints + 7, 0) == 3);
     }
 
     SECTION("CountIf")

@@ -167,7 +167,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Invalid size")
         {
-            const std::byte testByte{0xAB};
+            const unsigned char testByte{0xAB};
             CHECK(!sf::Image::loadFromMemory(&testByte, 0).hasValue());
         }
 
@@ -328,7 +328,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            std::vector<sf::base::U8> output;
+            sf::base::TrivialVector<sf::base::U8> output;
 
             SECTION("To bmp")
             {
@@ -338,10 +338,10 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(output[1] == 77);
                 CHECK(output[2] == 122);
                 CHECK(output[3] == 4);
-                CHECK(output[1'000] == 255);
-                CHECK(output[1'001] == 255);
-                CHECK(output[1'002] == 255);
-                CHECK(output[1'003] == 0);
+                CHECK(output[1000] == 255);
+                CHECK(output[1001] == 255);
+                CHECK(output[1002] == 255);
+                CHECK(output[1003] == 0);
             }
 
             SECTION("To tga")

@@ -14,13 +14,13 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/NonTrivialVector.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <vector>
 
 #include <cctype>
 
@@ -151,7 +151,7 @@ const Path& Ftp::DirectoryResponse::getDirectory() const
 ////////////////////////////////////////////////////////////
 struct Ftp::ListingResponse::Impl
 {
-    std::vector<std::string> listing; //!< Directory/file names extracted from the data
+    base::NonTrivialVector<std::string> listing; //!< Directory/file names extracted from the data
 };
 
 
@@ -164,7 +164,7 @@ Ftp::ListingResponse::ListingResponse(const Ftp::Response& response, base::Strin
         std::string::size_type lastPos = 0;
         for (std::string::size_type pos = data.find("\r\n"); pos != std::string::npos; pos = data.find("\r\n", lastPos))
         {
-            m_impl->listing.push_back(data.substrByPosLen(lastPos, pos - lastPos).toString<std::string>());
+            m_impl->listing.pushBack(data.substrByPosLen(lastPos, pos - lastPos).toString<std::string>());
             lastPos = pos + 2;
         }
     }
