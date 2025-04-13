@@ -120,7 +120,7 @@ IncludeCategories:
   - Priority: 12
     Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest|blockingconcurrentqueue|concurrentqueue|SDL3)'
   - Priority: 13
-    Regex: '^<(CommonTraits|AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyStringViewUtil|SStringifyArrayUtil|LoadIntoMemoryUtil)'
+    Regex: '^<(CommonTraits|AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyStringViewUtil|StringifyArrayUtil|StringifyIpAddressUtil|LoadIntoMemoryUtil)'
   - Priority: 14
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
   - Priority: 15

@@ -35,6 +35,7 @@
 #include <imgui.h>
 
 #include <latch>
+#include <new>
 #include <string>
 #include <thread>
 #include <vector>

@@ -4,12 +4,15 @@
 #include "UDP.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/UdpSocket.hpp"
 
+#include "SFML/System/IO.hpp"
+
 #include "SFML/Base/Optional.hpp"
 
-#include "SFML/System/IO.hpp"
+#include <string>
 
 #include <cstddef>
 
@@ -35,7 +38,8 @@ void runUdpServer(unsigned short port)
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Message received from client " << sender.value() << ": \"" << in << '"' << sf::endL;
+    sf::cOut() << "Message received from client " << sf::IpAddressUtils::toString(sender.value()) << ": \"" << in << '"'
+               << sf::endL;
 
     // Send an answer to the client
     const char out[] = "Hi, I'm the server";
@@ -56,7 +60,10 @@ void runUdpClient(unsigned short port)
     do
     {
         sf::cOut() << "Type the address or name of the server to connect to: ";
-        sf::cIn() >> server;
+
+        std::string addressStr;
+        sf::cIn() >> addressStr;
+        server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
@@ -75,5 +82,6 @@ void runUdpClient(unsigned short port)
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Message received from " << sender.value() << ": \"" << in << '"' << sf::endL;
+    sf::cOut() << "Message received from " << sf::IpAddressUtils::toString(sender.value()) << ": \"" << in << '"'
+               << sf::endL;
 }
