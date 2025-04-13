@@ -10,6 +10,7 @@
 #include "SFML/Base/Traits/IsSame.hpp"
 
 #include <filesystem>
+#include <ostream>
 #include <string>
 
 
