@@ -32,7 +32,7 @@ namespace
 using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
 
 ////////////////////////////////////////////////////////////
-void parseFields(std::istream& in, FieldTable& fields)
+void parseFields(auto& in, FieldTable& fields)
 {
     std::string line;
     while (sf::getLine(in, line) && (line.size() > 2))
@@ -148,7 +148,7 @@ void Http::Request::setBody(const std::string& body)
 ////////////////////////////////////////////////////////////
 std::string Http::Request::prepare() const
 {
-    std::ostringstream oss;
+    OutStringStream oss;
 
     // Convert the method to its string representation
     switch (m_impl->method)
@@ -186,7 +186,7 @@ std::string Http::Request::prepare() const
     // Add the body
     oss << m_impl->body;
 
-    return oss.str();
+    return oss.getString();
 }
 
 
@@ -418,9 +418,9 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     }
     if (!toSend.hasField("Content-Length"))
     {
-        std::ostringstream oss;
+        OutStringStream oss;
         oss << toSend.m_impl->body.size();
-        toSend.setField("Content-Length", oss.str());
+        toSend.setField("Content-Length", oss.getString());
     }
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
     {

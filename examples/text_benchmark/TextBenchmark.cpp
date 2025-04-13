@@ -483,8 +483,6 @@ int main()
         #include "SFML/System/Path.hpp"
         #include "SFML/System/String.hpp"
 
-        #include <sstream>
-
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();

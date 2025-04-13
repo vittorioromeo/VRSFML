@@ -7,18 +7,20 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundStream.hpp"
 
+#include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
-#include "SFML/System/IO.hpp"
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <cstdint>
@@ -43,7 +45,7 @@ public:
     NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
     {
         // Set the sound parameters
-        initialize(1, 44100, {sf::SoundChannel::Mono});
+        initialize(1, 44'100, {sf::SoundChannel::Mono});
     }
 
     ////////////////////////////////////////////////////////////
@@ -62,7 +64,8 @@ public:
             // Wait for a connection
             if (m_listener.accept(m_client) != sf::Socket::Status::Done)
                 return;
-            sf::cOut() << "Client connected: " << m_client.getRemoteAddress().value() << sf::endL;
+            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client.getRemoteAddress().value())
+                       << sf::endL;
 
             // Start playback
             play(playbackDevice);
@@ -116,7 +119,7 @@ private:
     ////////////////////////////////////////////////////////////
     void onSeek(sf::Time timeOffset) override
     {
-        m_offset = static_cast<std::size_t>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1'000;
+        m_offset = static_cast<std::size_t>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1000;
     }
 
     ////////////////////////////////////////////////////////////
