@@ -4,13 +4,16 @@
 #include "TCP.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/System/IO.hpp"
+
 #include "SFML/Base/Optional.hpp"
 
-#include "SFML/System/IO.hpp"
+#include <string> // used
 
 #include <cstddef>
 
@@ -34,7 +37,7 @@ void runTcpServer(unsigned short port)
     sf::TcpSocket socket(/* isBlocking */ true);
     if (listener.accept(socket) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Client connected: " << socket.getRemoteAddress().value() << sf::endL;
+    sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(socket.getRemoteAddress().value()) << sf::endL;
 
     // Send a message to the connected client
     const char out[] = "Hi, I'm the server";
@@ -63,7 +66,10 @@ void runTcpClient(unsigned short port)
     do
     {
         sf::cOut() << "Type the address or name of the server to connect to: ";
-        sf::cIn() >> server;
+
+        std::string addressStr;
+        sf::cIn() >> addressStr;
+        server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
     // Create a socket for communicating with the server
@@ -72,7 +78,7 @@ void runTcpClient(unsigned short port)
     // Connect to the server
     if (socket.connect(server.value(), port) != sf::Socket::Status::Done)
         return;
-    sf::cOut() << "Connected to server " << server.value() << sf::endL;
+    sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(server.value()) << sf::endL;
 
     // Receive a message from the server
     char        in[128];

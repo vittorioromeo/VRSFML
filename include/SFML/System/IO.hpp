@@ -345,7 +345,7 @@ public:
     template <typename T>
     T to() const;
 
-    [[nodiscard]] const std::string& getString() const;
+    [[nodiscard]] std::string getString() const;
 
     [[nodiscard]] bool isGood() const;
 
@@ -413,6 +413,58 @@ private:
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+class InStringStream
+{
+    template <typename T>
+    friend bool getLine(InStringStream&, T&);
+
+public:
+    explicit InStringStream();
+    explicit InStringStream(const std::string& str, FileOpenMode mode = FileOpenMode::in);
+
+    ~InStringStream();
+
+    InStringStream(const InStringStream&)            = delete;
+    InStringStream& operator=(const InStringStream&) = delete;
+
+    InStringStream(InStringStream&&) noexcept;
+    InStringStream& operator=(InStringStream&&) noexcept;
+
+    InStringStream& get(char& ch);
+    InStringStream& read(char* data, base::PtrDiffT size);
+
+    void            clear();
+    InStringStream& ignore(base::PtrDiffT count = 1, char delim = '\n');
+
+    [[nodiscard]] base::PtrDiffT gcount() const;
+    [[nodiscard]] base::PtrDiffT tellg();
+
+    [[nodiscard]] bool isGood() const;
+    [[nodiscard]] bool isEOF() const;
+
+    [[nodiscard]] explicit operator bool() const;
+
+    template <typename T>
+    InStringStream& operator>>(T& value);
+
+private:
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+bool getLine(InStringStream& stream, T& target);
 
 } // namespace sf
 
