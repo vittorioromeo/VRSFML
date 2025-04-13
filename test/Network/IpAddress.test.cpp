@@ -7,8 +7,9 @@
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
+#include <StringifyIpAddressUtil.hpp>
 
-#include <sstream>
+#include <string>
 
 
 using namespace sf::base::literals;
@@ -169,30 +170,6 @@ TEST_CASE("[Network] sf::IpAddress")
 
             CHECK(sf::IpAddress(0xC6, 0x33, 0x64, 0x7B) >= sf::IpAddress(0xC6'33'64'7B));
             CHECK(sf::IpAddress(0xCB'00'71'D2) >= sf::IpAddress(203, 0, 113, 210));
-        }
-
-        SECTION("operator>>")
-        {
-            sf::base::Optional<sf::IpAddress> ipAddress;
-            std::istringstream("198.51.100.4") >> ipAddress;
-            REQUIRE(ipAddress.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*ipAddress) == "198.51.100.4"s);
-            CHECK(ipAddress->toInteger() == 0xC6'33'64'04);
-
-            std::istringstream("203.0.113.72") >> ipAddress;
-            REQUIRE(ipAddress.hasValue());
-            CHECK(sf::IpAddressUtils::toString(*ipAddress) == "203.0.113.72"s);
-            CHECK(ipAddress->toInteger() == 0xCB'00'71'48);
-
-            std::istringstream("") >> ipAddress;
-            CHECK(!ipAddress.hasValue());
-        }
-
-        SECTION("operator<<")
-        {
-            std::ostringstream oss;
-            oss << sf::IpAddress(192, 0, 2, 10);
-            CHECK(oss.str() == "192.0.2.10"s);
         }
     }
 }

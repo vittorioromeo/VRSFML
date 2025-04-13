@@ -8,14 +8,17 @@
 #include "SFML/Audio/SoundRecorder.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/System/IO.hpp"
+
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include "SFML/System/IO.hpp"
+#include <string>
 
 #include <cstddef>
 #include <cstdint>
@@ -67,7 +70,7 @@ private:
     {
         if (m_socket.connect(m_host, m_port) == sf::Socket::Status::Done)
         {
-            sf::cOut() << "Connected to server " << m_host << sf::endL;
+            sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(m_host) << sf::endL;
             return true;
         }
 
@@ -133,7 +136,10 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     do
     {
         sf::cOut() << "Type address or name of the server to connect to: ";
-        sf::cIn() >> server;
+
+        std::string addressStr;
+        sf::cIn() >> addressStr;
+        server = sf::IpAddressUtils::resolve(addressStr);
     } while (!server.hasValue());
 
     // Create an instance of our custom recorder
@@ -145,7 +151,7 @@ void doClient(sf::CaptureDevice& captureDevice, unsigned short port)
     sf::cIn().ignore(10'000, '\n');
 
     // Start capturing audio data
-    if (!recorder.start(captureDevice, 44100))
+    if (!recorder.start(captureDevice, 44'100))
     {
         sf::cErr() << "Failed to start recorder" << sf::endL;
         return;

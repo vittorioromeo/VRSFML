@@ -4,12 +4,15 @@
 #include "SFML/Network/Ftp.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
 
 #include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
 #include <string>
+
+#include <cstdlib>
 
 
 namespace
@@ -47,7 +50,10 @@ int main()
     do
     {
         sf::cOut() << "Enter the FTP server address: ";
-        sf::cIn() >> address;
+
+        std::string addressStr;
+        sf::cIn() >> addressStr;
+        address = sf::IpAddressUtils::resolve(addressStr);
     } while (!address.hasValue());
 
     // Connect to the server
