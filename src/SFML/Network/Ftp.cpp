@@ -18,8 +18,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 
-#include <fstream>
-#include <sstream>
 #include <string>
 
 #include <cctype>
@@ -50,10 +48,10 @@ public:
     Ftp::Response open(Ftp::TransferMode mode);
 
     ////////////////////////////////////////////////////////////
-    void send(std::istream& stream);
+    void send(auto& stream);
 
     ////////////////////////////////////////////////////////////
-    void receive(std::ostream& stream);
+    void receive(auto& stream);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -276,9 +274,9 @@ Ftp::DirectoryResponse Ftp::getWorkingDirectory()
 Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
 {
     // Open a data channel on default port (20) using ASCII transfer mode
-    std::ostringstream oss;
-    DataChannel        data(*this);
-    Response           response = data.open(TransferMode::Ascii);
+    OutStringStream oss;
+    DataChannel     data(*this);
+    Response        response = data.open(TransferMode::Ascii);
     if (response.isOk())
     {
         // Tell the server to send us the listing
@@ -293,7 +291,7 @@ Ftp::ListingResponse Ftp::getDirectoryListing(base::StringView directory)
         }
     }
 
-    return {response, oss.str()};
+    return {response, oss.getString()};
 }
 
 
@@ -361,7 +359,7 @@ Ftp::Response Ftp::download(const Path& remoteFile, const Path& localPath, Trans
 
     // Create the file and truncate it if necessary
     const Path    filepath = localPath / remoteFile.filename();
-    std::ofstream file(filepath.to<std::string>(), std::ios_base::binary | std::ios_base::trunc);
+    OutFileStream file(filepath.to<std::string>(), FileOpenMode::bin | FileOpenMode::trunc);
 
     if (!file)
     {
@@ -393,7 +391,7 @@ Ftp::Response Ftp::upload(const Path& localFile, const Path& remotePath, Transfe
     Response response; //  Use a single local variable for NRVO
 
     // Get the contents of the file to send
-    std::ifstream file(localFile.to<std::string>(), std::ios_base::binary);
+    InFileStream file(localFile.to<std::string>(), FileOpenMode::bin);
     if (!file)
     {
         response = Response(Response::Status::InvalidFile);
@@ -477,7 +475,7 @@ Ftp::Response Ftp::getResponse()
         }
 
         // There can be several lines inside the received buffer, extract them all
-        std::istringstream in(std::string(buffer, length), std::ios_base::binary);
+        InStringStream in(std::string(buffer, length), FileOpenMode::bin);
         while (in)
         {
             // Try to extract the code
@@ -521,9 +519,9 @@ Ftp::Response Ftp::getResponse()
                         // Append it to the message
                         if (code == lastCode)
                         {
-                            std::ostringstream oss;
+                            OutStringStream oss;
                             oss << code << separator << line;
-                            message += oss.str();
+                            message += oss.getString();
                         }
                         else
                         {
@@ -551,9 +549,9 @@ Ftp::Response Ftp::getResponse()
                         line.erase(line.length() - 1);
 
                         // Append it to the current message
-                        std::ostringstream oss;
+                        OutStringStream oss;
                         oss << code << separator << line << '\n';
-                        message += oss.str();
+                        message += oss.getString();
                     }
                 }
             }
@@ -661,7 +659,7 @@ Ftp::Response Ftp::DataChannel::open(Ftp::TransferMode mode)
 
 
 ////////////////////////////////////////////////////////////
-void Ftp::DataChannel::receive(std::ostream& stream)
+void Ftp::DataChannel::receive(auto& stream)
 {
     // Receive data
     char        buffer[1024];
@@ -670,7 +668,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
     {
         stream.write(buffer, static_cast<sf::base::PtrDiffT>(received));
 
-        if (!stream.good())
+        if (!stream.isGood())
         {
             priv::err() << "FTP Error: Writing to the file has failed";
             break;
@@ -684,7 +682,7 @@ void Ftp::DataChannel::receive(std::ostream& stream)
 
 
 ////////////////////////////////////////////////////////////
-void Ftp::DataChannel::send(std::istream& stream)
+void Ftp::DataChannel::send(auto& stream)
 {
     // Send data
     char        buffer[1024];
@@ -695,7 +693,7 @@ void Ftp::DataChannel::send(std::istream& stream)
         // read some data from the stream
         stream.read(buffer, sizeof(buffer));
 
-        if (!stream.good() && !stream.eof())
+        if (!stream.isGood() && !stream.isEOF())
         {
             priv::err() << "FTP Error: Reading from the file has failed";
             break;

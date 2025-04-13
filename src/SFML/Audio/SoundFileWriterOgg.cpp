@@ -18,8 +18,6 @@
 
 #include <vorbis/vorbisenc.h>
 
-#include <algorithm> // std::is_permutation
-
 #include <cstdlib>
 #include <ctime>
 
@@ -119,7 +117,7 @@ bool SoundFileWriterOgg::open(const Path& filename, unsigned int sampleRate, uns
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
-    if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
+    if (!channelMap.isPermutationOf(targetChannelMap))
     {
         priv::err() << "Provided channel map cannot be reordered to a channel map supported by Vorbis";
         return false;
