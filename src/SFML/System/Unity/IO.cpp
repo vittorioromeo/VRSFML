@@ -245,6 +245,7 @@ template bool getLine<std::istream, std::string>(std::istream&, std::string&);
 
 ////////////////////////////////////////////////////////////
 template bool getLine<std::string>(IOStreamInput&, std::string&);
+template bool getLine<std::string>(InStringStream&, std::string&);
 
 
 ////////////////////////////////////////////////////////////
@@ -554,6 +555,13 @@ template std::string OutStringStream::to() const;
 
 
 ////////////////////////////////////////////////////////////
+std::string OutStringStream::getString() const
+{
+    return m_impl->oss.str();
+}
+
+
+////////////////////////////////////////////////////////////
 template <typename T>
 OutStringStream& OutStringStream::operator<<(const T& value)
 {
@@ -782,5 +790,147 @@ template InFileStream& InFileStream::operator>> <unsigned short>(unsigned short&
 template InFileStream& InFileStream::operator>> <void*>(void*&);
 template InFileStream& InFileStream::operator>> <std::filesystem::path>(std::filesystem::path&);
 
+
+////////////////////////////////////////////////////////////
+struct InStringStream::Impl
+{
+    std::istringstream iss;
+
+    Impl() = default;
+
+    Impl(auto&&... args) : iss(static_cast<decltype(args)>(args)...)
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+InStringStream::InStringStream() = default;
+
+
+////////////////////////////////////////////////////////////
+InStringStream::InStringStream(const std::string& str, FileOpenMode mode) :
+m_impl(str, static_cast<std::ios_base::openmode>(mode))
+{
+}
+
+
+////////////////////////////////////////////////////////////
+InStringStream::~InStringStream() = default;
+
+
+////////////////////////////////////////////////////////////
+InStringStream::InStringStream(InStringStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+InStringStream& InStringStream::operator=(InStringStream&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+InStringStream& InStringStream::get(char& ch)
+{
+    m_impl->iss.get(ch);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+InStringStream& InStringStream::read(char* data, base::PtrDiffT size)
+{
+    m_impl->iss.read(data, static_cast<std::streamsize>(size));
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+void InStringStream::clear()
+{
+    m_impl->iss.clear();
+}
+
+
+////////////////////////////////////////////////////////////
+InStringStream& InStringStream::ignore(base::PtrDiffT count, char delim)
+{
+    m_impl->iss.ignore(static_cast<std::streamsize>(count), delim);
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+base::PtrDiffT InStringStream::gcount() const
+{
+    return static_cast<base::PtrDiffT>(m_impl->iss.gcount());
+}
+
+
+////////////////////////////////////////////////////////////
+base::PtrDiffT InStringStream::tellg()
+{
+    return static_cast<base::PtrDiffT>(m_impl->iss.tellg());
+}
+
+
+////////////////////////////////////////////////////////////
+bool InStringStream::isGood() const
+{
+    return m_impl->iss.good();
+}
+
+
+////////////////////////////////////////////////////////////
+bool InStringStream::isEOF() const
+{
+    return m_impl->iss.eof();
+}
+
+
+////////////////////////////////////////////////////////////
+InStringStream::operator bool() const
+{
+    return static_cast<bool>(m_impl->iss);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+InStringStream& InStringStream::operator>>(T& value)
+{
+    if constexpr (base::isEnum<T>)
+    {
+        m_impl->iss >> static_cast<base::UnderlyingType<T>>(value);
+    }
+    else
+    {
+        m_impl->iss >> value;
+    }
+
+    return *this;
+}
+
+
+//////////////////////////////////////////////////////////////
+template InStringStream& InStringStream::operator>> <bool>(bool&);
+template InStringStream& InStringStream::operator>> <char>(char&);
+template InStringStream& InStringStream::operator>> <float>(float&);
+template InStringStream& InStringStream::operator>> <int>(int&);
+template InStringStream& InStringStream::operator>> <long>(long&);
+template InStringStream& InStringStream::operator>> <short>(short&);
+template InStringStream& InStringStream::operator>> <std::string>(std::string&);
+template InStringStream& InStringStream::operator>> <unsigned int>(unsigned int&);
+template InStringStream& InStringStream::operator>> <unsigned long long>(unsigned long long&);
+template InStringStream& InStringStream::operator>> <unsigned long>(unsigned long&);
+template InStringStream& InStringStream::operator>> <unsigned short>(unsigned short&);
+template InStringStream& InStringStream::operator>> <void*>(void*&);
+template InStringStream& InStringStream::operator>> <std::filesystem::path>(std::filesystem::path&);
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+bool getLine(InStringStream& stream, T& target)
+{
+    return static_cast<bool>(std::getline(stream.m_impl->iss, target));
+}
 
 } // namespace sf
