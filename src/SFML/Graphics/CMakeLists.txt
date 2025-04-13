@@ -83,6 +83,10 @@ target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype SFML::GLUtils)
 # add preprocessor symbols
 target_compile_definitions(sfml-graphics PRIVATE "STBI_FAILURE_USERMSG")
 
+if(SFML_FATAL_OPENGL_ERRORS)
+    target_compile_definitions(sfml-graphics PRIVATE "SFML_FATAL_OPENGL_ERRORS")
+endif()
+
 # Image.cpp must be compiled with the -fno-strict-aliasing
 # when gcc is used; otherwise saving PNGs may crash in stb_image_write
 if(SFML_COMPILER_GCC)

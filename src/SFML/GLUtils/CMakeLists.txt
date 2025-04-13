@@ -111,3 +111,7 @@ elseif(SFML_OS_IOS)
 elseif(SFML_OS_ANDROID)
     target_link_libraries(sfml-glutils PRIVATE android)
 endif()
+
+if(SFML_FATAL_OPENGL_ERRORS)
+    target_compile_definitions(sfml-glutils PRIVATE "SFML_FATAL_OPENGL_ERRORS")
+endif()
