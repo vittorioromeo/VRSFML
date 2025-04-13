@@ -18,7 +18,6 @@
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_encoder.h>
-#include <algorithm> // std::is_permutation
 
 #include <cstdio>
 
@@ -126,7 +125,7 @@ bool SoundFileWriterFlac::open(const Path& filename, unsigned int sampleRate, un
     }
 
     // Check if the channel map contains channels that we cannot remap to a mapping supported by FLAC
-    if (!std::is_permutation(channelMap.begin(), channelMap.end(), targetChannelMap.begin()))
+    if (!channelMap.isPermutationOf(targetChannelMap))
     {
         priv::err() << "Provided channel map cannot be reordered to a channel map supported by FLAC";
         return false;
