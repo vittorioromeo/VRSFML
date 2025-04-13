@@ -65,9 +65,10 @@
       "installDir": "${sourceDir}/build_vrdev_clang/install",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}",
+        "SFML_FATAL_OPENGL_ERRORS": "ON"
       }
     },
     {
