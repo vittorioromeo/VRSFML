@@ -4,11 +4,15 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"
+
+#include "SFML/Base/Assert.hpp"
 
 
 namespace sf::priv
@@ -23,11 +27,26 @@ unsigned int glGetErrorImpl()
 ////////////////////////////////////////////////////////////
 bool glCheckError(const unsigned int openGlError, const char* const file, const unsigned int line, const char* const expression)
 {
+    if (!WindowContext::hasActiveThreadLocalOrSharedGlContext())
+    {
+        err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
+              << "\nExpression:\n   " << expression << "\nNo active OpenGL context on calling thread.\n";
+
+#ifdef SFML_FATAL_OPENGL_ERRORS
+        SFML_BASE_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
+#endif
+    }
+
+
     const auto logError = [&](const char* const error, const char* const description)
     {
         err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nError description:\n   " << error << "\n   " << description
               << '\n';
+
+#ifdef SFML_FATAL_OPENGL_ERRORS
+        SFML_BASE_ASSERT(false && "OpenGL error (fatal OpenGL errors enabled)");
+#endif
 
         return false;
     };

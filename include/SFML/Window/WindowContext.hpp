@@ -24,6 +24,9 @@ class GlContext;
 class JoystickManager;
 class SensorManager;
 class WindowImpl;
+
+bool glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
+
 } // namespace sf::priv
 
 
@@ -114,6 +117,8 @@ private:
     friend VertexBuffer;      // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
     friend Window;            // for `createGlContext`
     friend WindowContextImpl; // for `UnsharedDeleteFn`
+
+    friend bool sf::priv::glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
