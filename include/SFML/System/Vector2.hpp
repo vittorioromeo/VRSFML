@@ -3,6 +3,19 @@
 
 
 ////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/System/Angle.hpp"
+
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Atan2.hpp"
+#include "SFML/Base/Math/Cos.hpp"
+#include "SFML/Base/Math/Sin.hpp"
+#include "SFML/Base/Math/Sqrt.hpp"
+#include "SFML/Base/Traits/IsFloatingPoint.hpp"
+
+
+////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
 namespace sf
@@ -36,7 +49,14 @@ public:
     /// * `Vector2(r, phi) == Vector2(r, phi + n * 360_deg)`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] static inline constexpr Vector2 fromAngle(T r, Angle phi);
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] static inline constexpr Vector2 fromAngle(const T r, const Angle phi)
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::Vector2(T, Angle) is only supported for floating point types");
+
+        return {r * static_cast<T>(base::cos(phi.asRadians())), r * static_cast<T>(base::sin(phi.asRadians()))};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Length of the vector <i><b>(floating-point)</b></i>.
@@ -44,7 +64,14 @@ public:
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T length() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T length() const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::length() is only supported for floating point types");
+
+        // don't use std::hypot because of slow performance
+        return base::sqrt(x * x + y * y);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Square of vector's length.
@@ -52,7 +79,11 @@ public:
     /// Suitable for comparisons, more efficient than `length()`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T lengthSquared() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T lengthSquared() const
+    {
+        return dot(*this);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
@@ -60,7 +91,15 @@ public:
     /// \pre `*this` is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 normalized() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 normalized() const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::normalized() is only supported for floating point types");
+
+        SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::normalized() cannot normalize a zero vector");
+
+        return (*this) / length();
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from `*this` to `rhs` <i><b>(floating-point)</b></i>.
@@ -71,7 +110,15 @@ public:
     /// \pre Neither `*this` nor `rhs` is a zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angleTo(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angleTo(const Vector2 rhs) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::angleTo() is only supported for floating point types");
+
+        SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::angleTo() cannot calculate angle from a zero vector");
+        SFML_BASE_ASSERT(rhs != Vector2<T>() && "Vector2::angleTo() cannot calculate angle to a zero vector");
+
+        return radians(static_cast<float>(base::atan2(cross(rhs), dot(rhs))));
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Signed angle from +X or (1,0) vector <i><b>(floating-point)</b></i>.
@@ -82,7 +129,14 @@ public:
     /// \pre This vector is no zero vector.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angle() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle angle() const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::angle() is only supported for floating point types");
+
+        SFML_BASE_ASSERT(*this != Vector2<T>() && "Vector2::angle() cannot calculate angle from a zero vector");
+
+        return radians(static_cast<float>(base::atan2(y, x)));
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Rotate by angle \c phi <i><b>(floating-point)</b></i>.
@@ -93,7 +147,18 @@ public:
     /// this amounts to a clockwise rotation by `phi`.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 rotatedBy(Angle phi) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 rotatedBy(const Angle phi) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector2::rotatedBy() is only supported for floating point types");
+
+        // No zero vector assert, because rotating a zero vector is well-defined (yields always itself)
+        const T cos = base::cos(static_cast<T>(phi.asRadians()));
+        const T sin = base::sin(static_cast<T>(phi.asRadians()));
+
+        // Don't manipulate x and y separately, otherwise they're overwritten too early
+        return Vector2<T>(cos * x - sin * y, sin * x + cos * y);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Move towards angle \c phi <i><b>(floating-point)</b></i> by \c r.
@@ -105,7 +170,13 @@ public:
     /// this amounts to a clockwise rotation by \c phi.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 movedTowards(T r, Angle phi) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 movedTowards(const T r, const Angle phi) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::movedTowards() is only supported for floating point types");
+
+        return *this + Vector2<T>::fromAngle(r, phi);
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Projection of this vector onto `axis` <i><b>(floating-point)</b></i>.
@@ -114,7 +185,15 @@ public:
     /// \pre `axis` must not have length zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 projectedOnto(Vector2 axis) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 projectedOnto(const Vector2 axis) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::projectedOnto() is only supported for floating point types");
+
+        SFML_BASE_ASSERT(axis != Vector2<T>() && "Vector2::projectedOnto() cannot project onto a zero vector");
+        return dot(axis) / axis.lengthSquared() * axis;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a perpendicular vector.
@@ -126,13 +205,21 @@ public:
     /// this amounts to a clockwise rotation.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 perpendicular() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 perpendicular() const
+    {
+        return Vector2<T>(-y, x);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Dot product of two 2D vectors.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T dot(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T dot(const Vector2 rhs) const
+    {
+        return x * rhs.x + y * rhs.y;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Z component of the cross product of two 2D vectors.
@@ -141,7 +228,11 @@ public:
     /// and returns the result's Z component (X and Y components are always zero).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T cross(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr T cross(const Vector2 rhs) const
+    {
+        return x * rhs.y - y * rhs.x;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise multiplication of `*this` and `rhs`.
@@ -152,7 +243,11 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseMul(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseMul(const Vector2 rhs) const
+    {
+        return Vector2<T>(x * rhs.x, y * rhs.y);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Component-wise division of `*this` and `rhs`.
@@ -164,7 +259,14 @@ public:
     /// \pre Neither component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(Vector2 rhs) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 componentWiseDiv(const Vector2 rhs) const
+    {
+        SFML_BASE_ASSERT(rhs.x != 0 && "Vector2::componentWiseDiv() cannot divide by 0 (x coordinate)");
+        SFML_BASE_ASSERT(rhs.y != 0 && "Vector2::componentWiseDiv() cannot divide by 0 (y coordinate)");
+
+        return Vector2<T>(x / rhs.x, y / rhs.y);
+    }
+
 
 #define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
     (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
@@ -180,6 +282,7 @@ public:
         return {SFML_PRIV_CLAMP_BY_VALUE(x, mins.x, maxs.x), SFML_PRIV_CLAMP_BY_VALUE(y, mins.y, maxs.y)};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Clamps the X component of the `*this` between `[minX, maxX]`
     ///
@@ -188,6 +291,7 @@ public:
     {
         return {SFML_PRIV_CLAMP_BY_VALUE(x, minX, maxX), y};
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Clamps the Y component of the `*this` between `[minY, maxY]`
@@ -199,6 +303,7 @@ public:
     }
 
 #undef SFML_PRIV_CLAMP_BY_VALUE
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a new vector with `addedX` added to the X component
@@ -218,6 +323,7 @@ public:
         return {x, y + addedY};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vector2` of type `OtherVector2`
     ///
@@ -225,25 +331,42 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename OtherVector2>
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector2 to() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector2 to() const
+    {
+        using ValueType = decltype(OtherVector2{}.x);
+        return Vector2<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y)};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert `*this` to a `Vector2<int>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int> toVector2i() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<int> toVector2i() const
+    {
+        return {static_cast<int>(x), static_cast<int>(y)};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert `*this` to a `Vector2<float>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<float> toVector2f() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<float> toVector2f() const
+    {
+        return {static_cast<float>(x), static_cast<float>(y)};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert `*this` to a `Vector2<unsigned int>`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2<unsigned int> toVector2u() const
+    {
+        return {static_cast<unsigned int>(x), static_cast<unsigned int>(y)};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of binary `operator==`
@@ -256,6 +379,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr bool operator==(const Vector2& rhs) const = default;
+
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -279,7 +403,11 @@ using Vector2f = Vector2<float>;
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(const Vector2<T> rhs)
+{
+    return Vector2<T>(-rhs.x, -rhs.y);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -295,7 +423,14 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator+=(Vector2<T>& lhs, Vector2<T> rhs);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator+=(Vector2<T>& lhs, const Vector2<T> rhs)
+{
+    lhs.x += rhs.x;
+    lhs.y += rhs.y;
+
+    return lhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -311,7 +446,14 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator-=(Vector2<T>& lhs, Vector2<T> rhs);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator-=(Vector2<T>& lhs, const Vector2<T> rhs)
+{
+    lhs.x -= rhs.x;
+    lhs.y -= rhs.y;
+
+    return lhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -324,7 +466,12 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator+(Vector2<T> lhs, Vector2<T> rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator+(const Vector2<T> lhs,
+                                                                                           const Vector2<T> rhs)
+{
+    return Vector2<T>(lhs.x + rhs.x, lhs.y + rhs.y);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -337,7 +484,12 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(Vector2<T> lhs, Vector2<T> rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator-(const Vector2<T> lhs,
+                                                                                           const Vector2<T> rhs)
+{
+    return Vector2<T>(lhs.x - rhs.x, lhs.y - rhs.y);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -350,7 +502,11 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(Vector2<T> lhs, T rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(const Vector2<T> lhs, const T rhs)
+{
+    return Vector2<T>(lhs.x * rhs, lhs.y * rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -363,7 +519,11 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(T lhs, Vector2<T> rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator*(const T lhs, const Vector2<T> rhs)
+{
+    return Vector2<T>(rhs.x * lhs, rhs.y * lhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -379,7 +539,14 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator*=(Vector2<T>& lhs, T rhs);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator*=(Vector2<T>& lhs, const T rhs)
+{
+    lhs.x *= rhs;
+    lhs.y *= rhs;
+
+    return lhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -392,7 +559,13 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator/(Vector2<T> lhs, T rhs);
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vector2<T> operator/(const Vector2<T> lhs, const T rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Vector2::operator/ cannot divide by 0");
+
+    return Vector2<T>(lhs.x / rhs, lhs.y / rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Vector2
@@ -408,7 +581,16 @@ template <typename T>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator/=(Vector2<T>& lhs, T rhs);
+[[gnu::always_inline, gnu::flatten]] constexpr Vector2<T>& operator/=(Vector2<T>& lhs, const T rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Vector2::operator/= cannot divide by 0");
+
+    lhs.x /= rhs;
+    lhs.y /= rhs;
+
+    return lhs;
+}
+
 
 } // namespace sf
 
@@ -422,8 +604,6 @@ extern template class sf::Vector2<long double>;
 extern template class sf::Vector2<bool>;
 extern template class sf::Vector2<int>;
 extern template class sf::Vector2<unsigned int>;
-
-#include "SFML/System/Vector2.inl"
 
 
 ////////////////////////////////////////////////////////////

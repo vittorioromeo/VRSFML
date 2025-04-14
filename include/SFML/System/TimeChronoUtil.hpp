@@ -26,7 +26,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>
-    [[nodiscard]] static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration);
+    [[nodiscard]] static constexpr Time fromDuration(const std::chrono::duration<Rep, Period>& duration)
+    {
+        return Time(std::chrono::duration_cast<std::chrono::microseconds>(duration).count());
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert `time` to a `std::chrono::microseconds` duration
@@ -34,7 +38,11 @@ public:
     /// \return Time in microseconds
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static constexpr std::chrono::microseconds toDuration(Time time);
+    [[nodiscard]] static constexpr std::chrono::microseconds toDuration(const Time time)
+    {
+        return std::chrono::microseconds(time.asMicroseconds());
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert `time` to a custom `std::chrono::duration`
@@ -43,12 +51,13 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Rep, typename Period>
-    [[nodiscard]] static constexpr std::chrono::duration<Rep, Period> toCustomDuration(Time time);
+    [[nodiscard]] static constexpr std::chrono::duration<Rep, Period> toCustomDuration(const Time time)
+    {
+        return std::chrono::microseconds(time.asMicroseconds());
+    }
 };
 
 } // namespace sf
-
-#include "SFML/System/TimeChronoUtil.inl"
 
 
 ////////////////////////////////////////////////////////////
