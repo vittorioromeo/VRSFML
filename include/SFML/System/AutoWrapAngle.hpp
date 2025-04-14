@@ -90,6 +90,12 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    friend constexpr bool operator==(AutoWrapAngle lhs, AutoWrapAngle rhs) = default;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(Angle rhs)
     {
         m_radians += rhs.m_radians;
