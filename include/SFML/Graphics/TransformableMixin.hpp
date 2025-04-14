@@ -10,6 +10,9 @@
 #include "SFML/Graphics/Priv/TransformableMacros.hpp" // used, exposes macros
 #include "SFML/Graphics/Transform.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/FastSinCos.hpp"
+
 
 namespace sf
 {
@@ -20,10 +23,18 @@ namespace sf
 struct SFML_GRAPHICS_API TransformableMixinBase
 {
     [[nodiscard, gnu::pure, gnu::flatten]] Transform getTransform(
-        Vector2f position,
-        Vector2f scale,
-        Vector2f origin,
-        float    radians) const;
+        const Vector2f position,
+        const Vector2f scale,
+        const Vector2f origin,
+        const float    radians) const
+    {
+        const auto [sine, cosine] = base::fastSinCos(radians);
+
+        SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+
+        return Transform::from(position, scale, origin, sine, cosine);
+    }
 };
 
 ////////////////////////////////////////////////////////////
