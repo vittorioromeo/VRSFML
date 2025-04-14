@@ -164,6 +164,7 @@ template ErrStream::Guard ErrStream::operator<< <long>(const long&);
 template ErrStream::Guard ErrStream::operator<< <unsigned long>(const unsigned long&);
 template ErrStream::Guard ErrStream::operator<< <unsigned long long>(const unsigned long long&);
 
+
 ////////////////////////////////////////////////////////////
 ErrStream::Guard& ErrStream::Guard::operator<<(const char* value)
 {
