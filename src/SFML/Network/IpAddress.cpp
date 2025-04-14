@@ -10,11 +10,10 @@
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
-#include <istream>
+#include <string>
 
 
 namespace sf

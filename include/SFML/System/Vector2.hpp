@@ -8,6 +8,7 @@
 #include "SFML/System/Angle.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/Math/Atan2.hpp"
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
@@ -268,9 +269,6 @@ public:
     }
 
 
-#define SFML_PRIV_CLAMP_BY_VALUE(value, minValue, maxValue) \
-    (((value) < (minValue)) ? (minValue) : (((value) > (maxValue)) ? (maxValue) : (value)))
-
     ////////////////////////////////////////////////////////////
     /// \brief Clamps the components of the `*this` to the given range
     ///
@@ -279,7 +277,7 @@ public:
         const Vector2 mins,
         const Vector2 maxs) const
     {
-        return {SFML_PRIV_CLAMP_BY_VALUE(x, mins.x, maxs.x), SFML_PRIV_CLAMP_BY_VALUE(y, mins.y, maxs.y)};
+        return {SFML_BASE_CLAMP(x, mins.x, maxs.x), SFML_BASE_CLAMP(y, mins.y, maxs.y)};
     }
 
 
@@ -289,7 +287,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampX(const T minX, const T maxX) const
     {
-        return {SFML_PRIV_CLAMP_BY_VALUE(x, minX, maxX), y};
+        return {SFML_BASE_CLAMP(x, minX, maxX), y};
     }
 
 
@@ -299,10 +297,8 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampY(const T minY, const T maxY) const
     {
-        return {x, SFML_PRIV_CLAMP_BY_VALUE(y, minY, maxY)};
+        return {x, SFML_BASE_CLAMP(y, minY, maxY)};
     }
-
-#undef SFML_PRIV_CLAMP_BY_VALUE
 
 
     ////////////////////////////////////////////////////////////
