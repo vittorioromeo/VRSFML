@@ -5,9 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/Builtins/IsConstantEvaluated.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Priv/ConstexprSinCos.hpp"
 
 
 namespace sf::base::priv
@@ -40,44 +43,11 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr struct SinTable
-{
-    ////////////////////////////////////////////////////////////
-    float data[sinCount]{
-#include "SFML/Base/FastSinCosTable.inl"
-    };
-
-
-    ////////////////////////////////////////////////////////////
-    static_assert(sizeof(data) == (sinCount) * sizeof(float));
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr SinTable() noexcept
-    {
-        data[fastSinIdx(halfPi * 0.f) & sinMask]  = 0.f;
-        data[fastSinIdx(halfPi * 0.5f) & sinMask] = 0.70710678118f;
-        data[fastSinIdx(halfPi * 1.f) & sinMask]  = 1.f;
-        data[fastSinIdx(halfPi * 1.5f) & sinMask] = 0.70710678118f;
-        data[fastSinIdx(halfPi * 2.f) & sinMask]  = 0.f;
-        data[fastSinIdx(halfPi * 2.5f) & sinMask] = -0.70710678118f;
-        data[fastSinIdx(halfPi * 3.f) & sinMask]  = -1.f;
-        data[fastSinIdx(halfPi * 3.5f) & sinMask] = -0.70710678118f;
-        data[fastSinIdx(halfPi * 4.f) & sinMask]  = 0.f;
-
-        data[fastCosIdx(halfPi * 0.f) & sinMask]  = 1.f;
-        data[fastCosIdx(halfPi * 0.5f) & sinMask] = 0.70710678118f;
-        data[fastCosIdx(halfPi * 1.f) & sinMask]  = 0.f;
-        data[fastCosIdx(halfPi * 1.5f) & sinMask] = -0.70710678118f;
-        data[fastCosIdx(halfPi * 2.f) & sinMask]  = -1.f;
-        data[fastCosIdx(halfPi * 2.5f) & sinMask] = -0.70710678118f;
-        data[fastCosIdx(halfPi * 3.f) & sinMask]  = 0.f;
-        data[fastCosIdx(halfPi * 3.5f) & sinMask] = 0.70710678118f;
-        data[fastCosIdx(halfPi * 4.f) & sinMask]  = 1.f;
-    }
-} sinTable;
+extern const Array<float, sinCount> sinTableData;
+static_assert(sizeof(sinTableData) == sinCount * sizeof(float));
 
 } // namespace sf::base::priv
+
 
 namespace sf::base
 {
@@ -88,7 +58,11 @@ namespace sf::base
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(const float radians) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
-    return priv::sinTable.data[priv::fastSinIdx(radians) & priv::sinMask];
+
+    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+        return priv::constexprSin(radians);
+
+    return priv::sinTableData[priv::fastSinIdx(radians) & priv::sinMask];
 }
 
 
@@ -99,7 +73,11 @@ namespace sf::base
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(const float radians) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
-    return priv::sinTable.data[priv::fastCosIdx(radians) & priv::sinMask];
+
+    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+        return priv::constexprCos(radians);
+
+    return priv::sinTableData[priv::fastCosIdx(radians) & priv::sinMask];
 }
 
 
@@ -117,7 +95,7 @@ namespace sf::base
     };
 
     const auto sinIndex = static_cast<U32>(radians * priv::radToIndex);
-    return Result{priv::sinTable.data[sinIndex & priv::sinMask], priv::sinTable.data[(sinIndex + 16'384u) & priv::sinMask]};
+    return Result{priv::sinTableData[sinIndex & priv::sinMask], priv::sinTableData[(sinIndex + 16'384u) & priv::sinMask]};
 }
 
 } // namespace sf::base

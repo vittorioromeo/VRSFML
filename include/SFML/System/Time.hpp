@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
@@ -25,11 +26,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr Time() = default;
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Construct from microseconds
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit Time(base::I64 microseconds);
+    [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
+    m_microseconds(microseconds)
+    {
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of seconds
@@ -39,7 +45,11 @@ public:
     /// \see `asMilliseconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float asSeconds() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr float asSeconds() const
+    {
+        return static_cast<float>(m_microseconds) / 1'000'000.f;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of milliseconds
@@ -49,7 +59,11 @@ public:
     /// \see `asSeconds`, `asMicroseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I32 asMilliseconds() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I32 asMilliseconds() const
+    {
+        return static_cast<base::I32>(static_cast<float>(m_microseconds) / 1000.f);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the time value as a number of microseconds
@@ -59,7 +73,11 @@ public:
     /// \see `asSeconds`, `asMilliseconds`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I64 asMicroseconds() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr base::I64 asMicroseconds() const
+    {
+        return m_microseconds;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator==` to compare two time values
@@ -78,6 +96,7 @@ private:
     base::I64 m_microseconds{}; //!< Time value stored as microseconds
 };
 
+
 ////////////////////////////////////////////////////////////
 /// \relates Time
 /// \brief Construct a time value from a number of seconds
@@ -89,7 +108,10 @@ private:
 /// \see `milliseconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time seconds(float amount);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time seconds(const float amount)
+{
+    return Time(static_cast<base::I64>(amount * 1'000'000.f));
+}
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -102,7 +124,11 @@ private:
 /// \see `seconds`, `microseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(base::I32 amount);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time milliseconds(const base::I32 amount)
+{
+    return Time(amount * 1000);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -115,7 +141,11 @@ private:
 /// \see `seconds`, `milliseconds`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(base::I64 amount);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time microseconds(const base::I64 amount)
+{
+    return Time(amount);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -127,7 +157,10 @@ private:
 /// \return `true` if `lhs` is lesser than `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<(const Time lhs, const Time rhs)
+{
+    return lhs.asMicroseconds() < rhs.asMicroseconds();
+}
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -139,7 +172,11 @@ private:
 /// \return `true` if `lhs` is greater than `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>(const Time lhs, const Time rhs)
+{
+    return lhs.asMicroseconds() > rhs.asMicroseconds();
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -151,7 +188,11 @@ private:
 /// \return `true` if `lhs` is lesser or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<=(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator<=(const Time lhs, const Time rhs)
+{
+    return lhs.asMicroseconds() <= rhs.asMicroseconds();
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -163,7 +204,11 @@ private:
 /// \return `true` if `lhs` is greater or equal than `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>=(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator>=(const Time lhs, const Time rhs)
+{
+    return lhs.asMicroseconds() >= rhs.asMicroseconds();
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -174,7 +219,11 @@ private:
 /// \return Opposite of the time value
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator-(Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator-(const Time rhs)
+{
+    return microseconds(-rhs.asMicroseconds());
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -186,7 +235,11 @@ private:
 /// \return Sum of the two times values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator+(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator+(const Time lhs, const Time rhs)
+{
+    return microseconds(lhs.asMicroseconds() + rhs.asMicroseconds());
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -198,7 +251,11 @@ private:
 /// \return Sum of the two times values
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator+=(Time& lhs, Time rhs);
+[[gnu::always_inline]] constexpr Time& operator+=(Time& lhs, const Time rhs)
+{
+    return lhs = lhs + rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -210,7 +267,11 @@ private:
 /// \return Difference of the two times values
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator-(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator-(const Time lhs, const Time rhs)
+{
+    return microseconds(lhs.asMicroseconds() - rhs.asMicroseconds());
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -222,7 +283,11 @@ private:
 /// \return Difference of the two times values
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator-=(Time& lhs, Time rhs);
+[[gnu::always_inline]] constexpr Time& operator-=(Time& lhs, const Time rhs)
+{
+    return lhs = lhs - rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -234,7 +299,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, float rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, float rhs)
+{
+    return seconds(lhs.asSeconds() * rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -246,7 +315,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(Time lhs, base::I64 rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(const Time lhs, const base::I64 rhs)
+{
+    return microseconds(lhs.asMicroseconds() * rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -258,7 +331,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(float lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(const float lhs, const Time rhs)
+{
+    return rhs * lhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -270,7 +347,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(base::I64 lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator*(const base::I64 lhs, const Time rhs)
+{
+    return rhs * lhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -282,7 +363,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, float rhs);
+[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, const float rhs)
+{
+    return lhs = lhs * rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -294,7 +379,11 @@ private:
 /// \return `lhs` multiplied by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, base::I64 rhs);
+[[gnu::always_inline]] constexpr Time& operator*=(Time& lhs, const base::I64 rhs)
+{
+    return lhs = lhs * rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -306,7 +395,12 @@ private:
 /// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, float rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(const Time lhs, const float rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
+    return seconds(lhs.asSeconds() / rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -318,7 +412,12 @@ private:
 /// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(Time lhs, base::I64 rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator/(const Time lhs, const base::I64 rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/ cannot divide by 0");
+    return microseconds(lhs.asMicroseconds() / rhs);
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -330,7 +429,12 @@ private:
 /// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, float rhs);
+[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, const float rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
+    return lhs = lhs / rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -342,7 +446,12 @@ private:
 /// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, base::I64 rhs);
+[[gnu::always_inline]] constexpr Time& operator/=(Time& lhs, const base::I64 rhs)
+{
+    SFML_BASE_ASSERT(rhs != 0 && "Time::operator/= cannot divide by 0");
+    return lhs = lhs / rhs;
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -354,7 +463,12 @@ private:
 /// \return `lhs` divided by `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr float operator/(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr float operator/(const Time lhs, const Time rhs)
+{
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator/ cannot divide by 0");
+    return lhs.asSeconds() / rhs.asSeconds();
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -366,7 +480,12 @@ private:
 /// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator%(Time lhs, Time rhs);
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Time operator%(const Time lhs, const Time rhs)
+{
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator% cannot modulus by 0");
+    return microseconds(lhs.asMicroseconds() % rhs.asMicroseconds());
+}
+
 
 ////////////////////////////////////////////////////////////
 /// \relates Time
@@ -378,11 +497,13 @@ private:
 /// \return `lhs` modulo `rhs`
 ///
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] constexpr Time& operator%=(Time& lhs, Time rhs);
+[[gnu::always_inline]] constexpr Time& operator%=(Time& lhs, const Time rhs)
+{
+    SFML_BASE_ASSERT(rhs.asMicroseconds() != 0 && "Time::operator%= cannot modulus by 0");
+    return lhs = lhs % rhs;
+}
 
 } // namespace sf
-
-#include "SFML/System/Time.inl"
 
 
 ////////////////////////////////////////////////////////////
