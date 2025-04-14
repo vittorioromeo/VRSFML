@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 
 
@@ -33,7 +34,19 @@ public:
     /// \see `findIntersection`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr bool contains(Vector2<T> point) const;
+    [[nodiscard]] constexpr bool contains(const Vector2<T> point) const
+    {
+        // Rectangles with negative dimensions are allowed, so we must handle them correctly
+
+        // Compute the real min and max of the rectangle on both axes
+        const T minX = base::min(position.x, static_cast<T>(position.x + size.x));
+        const T maxX = base::max(position.x, static_cast<T>(position.x + size.x));
+        const T minY = base::min(position.y, static_cast<T>(position.y + size.y));
+        const T maxY = base::max(position.y, static_cast<T>(position.y + size.y));
+
+        return (point.x >= minX) && (point.x < maxX) && (point.y >= minY) && (point.y < maxY);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Rect` of type `OtherRect`
@@ -42,7 +55,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename U>
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const
+    {
+        using ValueType = decltype(U{}.position.x);
+        return Rect<ValueType>{position.template to<Vector2<ValueType>>(), size.template to<Vector2<ValueType>>()};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of binary `operator==`
@@ -55,6 +73,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(const Rect<T>& rhs) const = default;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -71,6 +90,7 @@ public:
             return position + size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>();
         }
     }
+
 
     ////////////////////////////////////////////////////////////
 #define SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                           \
@@ -93,36 +113,60 @@ SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(getBottomRight,  {1.f,  1.f});
 
 #undef SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPointOffset(const Vector2f factors) const
     {
         return -(size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>());
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getLeft() const
     {
         return position.x;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getRight() const
     {
         return position.x + size.x;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getTop() const
     {
         return position.y;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr T getBottom() const
     {
         return position.y + size.y;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setAnchorPoint(const Vector2f factors, const Vector2<T> newPosition)
     {
@@ -151,28 +195,44 @@ SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(setBottomRight,  {1.f,  1.f});
 #undef SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setLeft(const T newCoordinate)
     {
         position.x = newCoordinate;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setRight(const T newCoordinate)
     {
         position.x = newCoordinate - size.x;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setTop(const T newCoordinate)
     {
         position.y = newCoordinate;
     }
 
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] constexpr void setBottom(const T newCoordinate)
     {
         position.y = newCoordinate - size.y;
     }
+
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -187,8 +247,6 @@ using FloatRect = Rect<float>;
 using UIntRect  = Rect<unsigned int>;
 
 } // namespace sf
-
-#include "SFML/System/Rect.inl"
 
 
 ////////////////////////////////////////////////////////////
