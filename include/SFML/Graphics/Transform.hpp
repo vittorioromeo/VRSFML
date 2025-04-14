@@ -7,19 +7,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-
-
-////////////////////////////////////////////////////////////
-// Forward declarations
-////////////////////////////////////////////////////////////
-namespace sf
-{
-class Angle;
-} // namespace sf
+#include "SFML/Base/FastSinCos.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 
 
 namespace sf
@@ -46,6 +40,7 @@ struct [[nodiscard]] Transform
                 /* a12 */ -origin.y * scale.y + position.y};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
@@ -70,6 +65,7 @@ struct [[nodiscard]] Transform
         return {/* a00 */ sxc, /* a01 */ sys, /* a02 */ tx, -/* a10 */ sxs, /* a11 */ syc, /* a12 */ ty};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Return the transform as a 4x4 matrix
     ///
@@ -85,7 +81,16 @@ struct [[nodiscard]] Transform
     /// \return Pointer to a 4x4 matrix
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void getMatrix(float (&target)[16]) const;
+    [[gnu::always_inline]] constexpr void getMatrix(float (&target)[16]) const
+    {
+        target[0]  = a00;
+        target[1]  = a10;
+        target[4]  = a01;
+        target[5]  = a11;
+        target[12] = a02;
+        target[13] = a12;
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the inverse of the transform
@@ -96,7 +101,21 @@ struct [[nodiscard]] Transform
     /// \return A new transform which is the inverse of self
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] constexpr Transform getInverse() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getInverse() const
+    {
+        // clang-format off
+        // Compute the determinant
+        const float det = a00 * a11 - a10 * a01;
+        // clang-format on
+
+        // Compute the inverse if the determinant is not zero
+        // (don't use an epsilon because the determinant may *really* be tiny)
+        if (det == 0.f)
+            return Identity;
+
+        return {a11 / det, -a01 / det, (a12 * a01 - a11 * a02) / det, -a10 / det, a00 / det, -(a12 * a00 - a10 * a02) / det};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a 2D point
@@ -112,7 +131,11 @@ struct [[nodiscard]] Transform
     /// \return Transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2f transformPoint(Vector2f point) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2f transformPoint(const Vector2f point) const
+    {
+        return {a00 * point.x + a01 * point.y + a02, a10 * point.x + a11 * point.y + a12};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Transform a rectangle
@@ -128,7 +151,89 @@ struct [[nodiscard]] Transform
     /// \return Transformed rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const
+    {
+        const Vector2f p0 = transformPoint(rectangle.position);
+
+        // Transformed offset vector for the X-direction side
+        const Vector2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
+
+        // Transformed offset vector for the Y-direction side
+        const Vector2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
+
+        // Calculate other corners relative to `p0`
+        const Vector2f p1 = p0 + dy;
+        const Vector2f p2 = p0 + dx;
+        const Vector2f p3 = p2 + dy; // Or `p1 + dx`
+
+        // Compute the bounding rectangle of the transformed points
+        const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));
+        const float maxX = SFML_BASE_MAX(SFML_BASE_MAX(p0.x, p1.x), SFML_BASE_MAX(p2.x, p3.x));
+        const float minY = SFML_BASE_MIN(SFML_BASE_MIN(p0.y, p1.y), SFML_BASE_MIN(p2.y, p3.y));
+        const float maxY = SFML_BASE_MAX(SFML_BASE_MAX(p0.y, p1.y), SFML_BASE_MAX(p2.y, p3.y));
+
+        return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates sf::Transform
+    /// \brief Overload of binary `operator*` to combine two transforms
+    ///
+    /// This call is equivalent to calling `Transform(lhs).combine(rhs)`.
+    ///
+    /// \param lhs Left operand (the first transform)
+    /// \param rhs Right operand (the second transform)
+    ///
+    /// \return New combined transform
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Transform operator*(const Transform& lhs, const Transform& rhs)
+    {
+        return {lhs.a00 * rhs.a00 + lhs.a01 * rhs.a10,
+                lhs.a00 * rhs.a01 + lhs.a01 * rhs.a11,
+                lhs.a00 * rhs.a02 + lhs.a01 * rhs.a12 + lhs.a02,
+                lhs.a10 * rhs.a00 + lhs.a11 * rhs.a10,
+                lhs.a10 * rhs.a01 + lhs.a11 * rhs.a11,
+                lhs.a10 * rhs.a02 + lhs.a11 * rhs.a12 + lhs.a12};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates sf::Transform
+    /// \brief Overload of binary `operator*=` to combine two transforms
+    ///
+    /// This call is equivalent to calling `lhs.combine(rhs)`.
+    ///
+    /// \param lhs Left operand (the first transform)
+    /// \param rhs Right operand (the second transform)
+    ///
+    /// \return The combined transform
+    ///
+    ////////////////////////////////////////////////////////////
+    friend constexpr Transform& operator*=(Transform& lhs, const Transform& rhs)
+    {
+        return lhs.combine(rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \relates sf::Transform
+    /// \brief Overload of binary `operator*` to transform a point
+    ///
+    /// This call is equivalent to calling `lhs.transformPoint(rhs)`.
+    ///
+    /// \param lhs Left operand (the transform)
+    /// \param rhs Right operand (the point to transform)
+    ///
+    /// \return New transformed point
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs)
+    {
+        return lhs.transformPoint(rhs);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with another one
@@ -148,7 +253,11 @@ struct [[nodiscard]] Transform
     /// \return Reference to `*this`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& combine(const Transform& transform);
+    [[gnu::always_inline]] constexpr Transform& combine(const Transform& transform)
+    {
+        return *this = operator*(*this, transform);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a translation
@@ -167,7 +276,16 @@ struct [[nodiscard]] Transform
     /// \see `rotate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& translate(Vector2f offset);
+    [[gnu::always_inline]] constexpr Transform& translate(const Vector2f offset)
+    {
+        // clang-format off
+        const Transform translation(1.f, 0.f, offset.x,
+                                    0.f, 1.f, offset.y);
+        // clang-format on
+
+        return combine(translation);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -186,7 +304,18 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API Transform& rotate(Angle angle);
+    [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle)
+    {
+        const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
+
+        // clang-format off
+    const Transform rotation(cosine, -sine, 0.f,
+                             sine,  cosine, 0.f);
+        // clang-format on
+
+        return combine(rotation);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a rotation
@@ -211,7 +340,18 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    SFML_GRAPHICS_API Transform& rotate(Angle angle, Vector2f center);
+    [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle, const Vector2f center)
+    {
+        const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
+
+        // clang-format off
+            const Transform rotation(cosine, -sine, center.x * (1.f - cosine) + center.y * sine,
+                                     sine,  cosine, center.y * (1.f - cosine) - center.x * sine);
+        // clang-format on
+
+        return combine(rotation);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -230,7 +370,16 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vector2f factors)
+    {
+        // clang-format off
+        const Transform scaling(factors.x, 0.f,       0.f,
+                                0.f,       factors.y, 0.f);
+        // clang-format on
+
+        return combine(scaling);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Combine the current transform with a scaling
@@ -255,7 +404,16 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scaleBy(Vector2f factors, Vector2f center);
+    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vector2f factors, const Vector2f center)
+    {
+        // clang-format off
+        const Transform scaling(factors.x, 0.f,       center.x * (1.f - factors.x),
+                                0.f,       factors.y, center.y * (1.f - factors.y));
+        // clang-format on
+
+        return combine(scaling);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of binary `operator==` to compare two transforms
@@ -282,51 +440,11 @@ struct [[nodiscard]] Transform
     float a00{1.f}, a01{0.f}, a02{0.f}, a10{0.f}, a11{1.f}, a12{0.f};
 };
 
-////////////////////////////////////////////////////////////
-/// \relates sf::Transform
-/// \brief Overload of binary `operator*` to combine two transforms
-///
-/// This call is equivalent to calling `Transform(lhs).combine(rhs)`.
-///
-/// \param lhs Left operand (the first transform)
-/// \param rhs Right operand (the second transform)
-///
-/// \return New combined transform
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Transform operator*(const Transform& lhs, const Transform& rhs);
 
 ////////////////////////////////////////////////////////////
-/// \relates sf::Transform
-/// \brief Overload of binary `operator*=` to combine two transforms
-///
-/// This call is equivalent to calling `lhs.combine(rhs)`.
-///
-/// \param lhs Left operand (the first transform)
-/// \param rhs Right operand (the second transform)
-///
-/// \return The combined transform
-///
-////////////////////////////////////////////////////////////
-constexpr Transform& operator*=(Transform& lhs, const Transform& rhs);
-
-////////////////////////////////////////////////////////////
-/// \relates sf::Transform
-/// \brief Overload of binary `operator*` to transform a point
-///
-/// This call is equivalent to calling `lhs.transformPoint(rhs)`.
-///
-/// \param lhs Left operand (the transform)
-/// \param rhs Right operand (the point to transform)
-///
-/// \return New transformed point
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs);
+inline constexpr Transform Transform::Identity{};
 
 } // namespace sf
-
-#include "SFML/Graphics/Transform.inl"
 
 
 ////////////////////////////////////////////////////////////
