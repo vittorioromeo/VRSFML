@@ -8,4 +8,5 @@
 // NOLINTBEGIN(bugprone-suspicious-include)
 #include "SFML/System/Unity/Err.cpp"
 #include "SFML/System/Unity/IO.cpp"
+#include "SFML/System/Unity/Path.cpp"
 // NOLINTEND(bugprone-suspicious-include)
