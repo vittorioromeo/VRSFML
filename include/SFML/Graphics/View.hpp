@@ -16,6 +16,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
+#include "SFML/Base/FastSinCos.hpp"
 
 
 namespace sf
@@ -78,7 +79,11 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static View fromRect(const FloatRect& rectangle);
+    [[nodiscard, gnu::const]] static constexpr View fromRect(const FloatRect& rectangle)
+    {
+        return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the projection transform of the view
@@ -90,7 +95,24 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Transform getTransform() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
+    {
+        // Rotation components
+        const float angle         = rotation.asRadians();
+        const auto [sine, cosine] = base::fastSinCos(angle);
+
+        const float tx = -center.x * cosine - center.y * sine + center.x;
+        const float ty = center.x * sine - center.y * cosine + center.y;
+
+        // Projection components
+        const float a = 2.f / size.x;
+        const float b = -2.f / size.y;
+        const float c = -a * center.x;
+        const float d = -b * center.y;
+
+        // Rebuild the projection matrix
+        return {a * cosine, a * sine, a * tx + c, -b * sine, b * cosine, b * ty + d};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -102,7 +124,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
+    {
+        return getTransform().getInverse();
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Compare strict equality between two `View` objects
