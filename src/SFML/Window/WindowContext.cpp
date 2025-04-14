@@ -25,14 +25,13 @@
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/NonTrivialVector.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <atomic>
 #include <mutex>
-#include <string>
 
 #include <csignal>
 
@@ -45,9 +44,9 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::NonTrivialVector<std::string> loadExtensions(DerivedGlContextType& glContext)
+[[nodiscard]] sf::base::TrivialVector<sf::base::StringView> loadExtensions(DerivedGlContextType& glContext)
 {
-    sf::base::NonTrivialVector<std::string> result; // Use a single local variable for NRVO
+    sf::base::TrivialVector<sf::base::StringView> result; // Use a single local variable for NRVO
 
     auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(glContext.getFunction("glGetError"));
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(glContext.getFunction("glGetIntegerv"));
@@ -98,7 +97,7 @@ struct WindowContextImpl
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
-    base::NonTrivialVector<std::string> extensions; //!< Supported OpenGL extensions
+    base::TrivialVector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
