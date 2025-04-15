@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -41,7 +42,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] static void deallocate(TItem* const beginPtr)
     {
-        ::operator delete(static_cast<void*>(beginPtr));
+        ::operator delete(beginPtr);
     }
 
 
@@ -54,26 +55,10 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] static void uninitializedDefaultConstruct(TItem* first, TItem* const last)
-    {
-        for (; first != last; ++first)
-            SFML_BASE_PLACEMENT_NEW(static_cast<void*>(first)) TItem();
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] static void uninitializedValueConstruct(TItem* first, TItem* const last, const TItem& value)
-    {
-        for (; first != last; ++first)
-            SFML_BASE_PLACEMENT_NEW(static_cast<void*>(first)) TItem(value);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] static void uninitializedCopy(const TItem* first, const TItem* const last, TItem* destStart)
     {
         for (; first != last; ++first, ++destStart)
-            SFML_BASE_PLACEMENT_NEW(static_cast<void*>(destStart)) TItem(*first);
+            SFML_BASE_PLACEMENT_NEW(destStart) TItem(*first);
     }
 
 
@@ -82,7 +67,7 @@ private:
     {
         for (; first != last; ++first, ++destStart)
         {
-            SFML_BASE_PLACEMENT_NEW(static_cast<void*>(destStart)) TItem(SFML_BASE_MOVE(*first));
+            SFML_BASE_PLACEMENT_NEW(destStart) TItem(SFML_BASE_MOVE(*first));
             first->~TItem();
         }
     }
@@ -125,7 +110,10 @@ private:
             reserve(newSize);
 
             if (constructWithDefault)
-                uninitializedDefaultConstruct(m_endSize, m_data + newSize);
+            {
+                for (TItem* p = m_endSize; p != m_data + newSize; ++p)
+                    SFML_BASE_PLACEMENT_NEW(p) TItem();
+            }
 
             m_endSize = m_data + newSize;
         }
@@ -158,7 +146,8 @@ public:
         m_data    = allocate(initialSize);
         m_endSize = m_endCapacity = m_data + initialSize;
 
-        uninitializedDefaultConstruct(m_data, m_endSize);
+        for (TItem* p = m_data; p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem();
     }
 
 
@@ -171,7 +160,8 @@ public:
         m_data    = allocate(initialSize);
         m_endSize = m_endCapacity = m_data + initialSize;
 
-        uninitializedValueConstruct(m_data, m_endSize, value);
+        for (TItem* p = m_data; p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem(value);
     }
 
 
@@ -188,6 +178,13 @@ public:
         m_endSize = m_endCapacity = m_data + srcCount;
 
         uninitializedCopy(srcBegin, srcEnd, m_data);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit NonTrivialVector(const std::initializer_list<TItem> iList) :
+    NonTrivialVector(iList.begin(), iList.end())
+    {
     }
 
 
@@ -278,7 +275,9 @@ public:
         if (newSize > size())
         {
             reserve(newSize);
-            uninitializedValueConstruct(m_endSize, m_data + newSize, item);
+
+            for (TItem* p = m_endSize; p != m_data + newSize; ++p)
+                SFML_BASE_PLACEMENT_NEW(p) TItem(item);
 
             m_endSize = m_data + newSize;
         }

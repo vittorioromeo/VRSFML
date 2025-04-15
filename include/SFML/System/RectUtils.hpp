@@ -81,16 +81,16 @@ template <typename T>
 /// and can be accessed directly, just like the vector classes
 /// (Vector2 and Vector3).
 ///
-/// To keep things simple, sf::Rect doesn't define
+/// To keep things simple, `sf::Rect` doesn't define
 /// functions to emulate the properties that are not directly
 /// members (such as right, bottom, etc.), it rather
 /// only provides intersection functions.
 ///
-/// sf::Rect uses the usual rules for its boundaries:
+/// `sf::Rect` uses the usual rules for its boundaries:
 /// \li The left and top edges are included in the rectangle's area
 /// \li The right and bottom edges are excluded from the rectangle's area
 ///
-/// This means that sf::IntRect({0, 0}, {1, 1}) and sf::IntRect({1, 1}, {1, 1})
+/// This means that `sf::IntRect({0, 0}, {1, 1})` and `sf::IntRect({1, 1}, {1, 1})`
 /// don't intersect.
 ///
 /// sf::Rect is a template and may be used with any numeric type, but

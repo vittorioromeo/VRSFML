@@ -13,17 +13,17 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#include <unordered_set>
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
+using SoundList = ankerl::unordered_dense::set<Sound*>; //!< Set of unique sound instances
+
 
 ////////////////////////////////////////////////////////////
 struct SoundBuffer::Impl
@@ -143,10 +143,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
     unsigned int      sampleRate,
     const ChannelMap& channelMap)
 {
-    return loadFromSamplesImpl(base::TrivialVector<base::I16>(samples, static_cast<base::SizeT>(sampleCount)),
-                               channelCount,
-                               sampleRate,
-                               channelMap);
+    return loadFromSamplesImpl(base::TrivialVector<base::I16>(samples, samples + sampleCount), channelCount, sampleRate, channelMap);
 }
 
 
