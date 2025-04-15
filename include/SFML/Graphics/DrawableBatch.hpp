@@ -1,4 +1,6 @@
 #pragma once
+#include "TextData.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -21,16 +23,17 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class Font;
 class RenderTarget;
 class Shape;
 class Text;
-struct Sprite;
-struct Transform;
-
 struct CircleShapeData;
 struct EllipseShapeData;
 struct RectangleShapeData;
 struct RoundedRectangleShapeData;
+struct Sprite;
+struct TextData;
+struct Transform;
 } // namespace sf
 
 
@@ -252,6 +255,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void add(const RoundedRectangleShapeData& sdRoundedRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const Font& font, const TextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

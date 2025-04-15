@@ -28,6 +28,7 @@ class CPUDrawableBatch;
 template <typename TBufferObject>
 class GLPersistentBuffer;
 
+class Font;
 class PersistentGPUDrawableBatch;
 class Shader;
 class Shape;
@@ -46,6 +47,7 @@ struct RoundedRectangleShapeData;
 struct Sprite;
 struct StencilMode;
 struct StencilValue;
+struct TextData;
 struct Transform;
 struct Vertex;
 struct View;
@@ -564,6 +566,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a text from a font and its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target

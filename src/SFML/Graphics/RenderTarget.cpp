@@ -842,6 +842,26 @@ void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, con
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
+{
+    states.texture = &font.getTexture();
+
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->cpuDrawableBatch.add(font, textData);
+        return;
+    }
+
+    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.isEmpty());
+
+    m_impl->cpuDrawableBatch.add(font, textData);
+    draw(m_impl->cpuDrawableBatch, states);
+    m_impl->cpuDrawableBatch.clear();
+}
+
+
+////////////////////////////////////////////////////////////
 bool RenderTarget::isSrgb() const
 {
     // By default sRGB encoding is not enabled for an arbitrary RenderTarget
