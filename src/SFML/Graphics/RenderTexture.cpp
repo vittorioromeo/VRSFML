@@ -18,11 +18,10 @@
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-
-#include <unordered_map>
 
 
 namespace
@@ -98,7 +97,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct RenderTexture::Impl
 {
-    using FramebufferIdMap = std::unordered_map<unsigned int, unsigned int>;
+    using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
 
     Texture texture;    //!< Target texture to draw on
     Texture tmpTexture; //!< Temporary texture used for Y-axis flipping

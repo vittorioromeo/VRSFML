@@ -20,7 +20,7 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename T>
-inline constexpr bool isConstructible = SFML_BASE_IS_CONSTRUCTIBLE(T);
+template <typename T, typename... Args>
+inline constexpr bool isConstructible = SFML_BASE_IS_CONSTRUCTIBLE(T, Args...);
 
 } // namespace sf::base

@@ -2,7 +2,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-// clang-format off
 #if __has_builtin(__builtin_is_constant_evaluated)
 
     ////////////////////////////////////////////////////////////
