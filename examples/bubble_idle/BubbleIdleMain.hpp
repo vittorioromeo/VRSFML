@@ -90,6 +90,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
@@ -114,7 +115,6 @@
 #include <random>
 #include <string>
 #include <thread>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -1101,7 +1101,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Bomb-cat tracker for money earned
-    std::unordered_map<sf::base::SizeT, sf::base::SizeT> bombIdxToCatIdx;
+    ankerl::unordered_dense::map<sf::base::SizeT, sf::base::SizeT> bombIdxToCatIdx;
 
     ////////////////////////////////////////////////////////////
     // Notification queue
@@ -1130,7 +1130,7 @@ struct Main
     };
 
     std::vector<PurchaseUnlockedEffect>   purchaseUnlockedEffects;
-    std::unordered_map<std::string, bool> btnWasDisabled;
+    ankerl::unordered_dense::map<std::string, bool> btnWasDisabled;
 
     ////////////////////////////////////////////////////////////
     // Debug stuff
@@ -1814,7 +1814,7 @@ struct Main
     float        lastFontScale  = 1.f;
 
     ////////////////////////////////////////////////////////////
-    std::unordered_map<std::string, float> uiLabelToY;
+    ankerl::unordered_dense::map<std::string, float> uiLabelToY;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float uiGetMaxWindowHeight() const;

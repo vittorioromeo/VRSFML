@@ -16,7 +16,7 @@ constexpr auto sinTableData{[]
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wimplicit-float-conversion"
     Array<float, sinCount> data{
-#include "SFML/Base/FastSinCosTable.inl"
+#include "SFML/Base/Priv/FastSinCosTable.inl"
     };
 #pragma GCC diagnostic pop
 

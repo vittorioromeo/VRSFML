@@ -141,7 +141,7 @@ Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_
 ////////////////////////////////////////////////////////////
 Image::Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd) :
 m_size(size),
-m_pixels(itBegin, static_cast<base::SizeT>(itEnd - itBegin))
+m_pixels(itBegin, itEnd)
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
