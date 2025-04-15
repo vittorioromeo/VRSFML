@@ -28,6 +28,7 @@
 #include "SFML/System/Utf.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
@@ -41,7 +42,6 @@
 
 #include <queue>
 #include <string>
-#include <unordered_map>
 
 
 ////////////////////////////////////////////////////////////
@@ -97,7 +97,7 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
 
 
 ////////////////////////////////////////////////////////////
-std::unordered_map<SDL_FingerID, TouchInfo> touchMap;
+ankerl::unordered_dense::map<SDL_FingerID, TouchInfo> touchMap;
 
 
 ////////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ const sf::priv::WindowImpl* fullscreenWindow = nullptr;
 
 
 ////////////////////////////////////////////////////////////
-std::unordered_map<SDL_WindowID, sf::priv::WindowImpl*> windowImplMap;
+ankerl::unordered_dense::map<SDL_WindowID, sf::priv::WindowImpl*> windowImplMap;
 
 } // namespace WindowImplImpl
 } // namespace

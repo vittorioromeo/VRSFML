@@ -14,12 +14,12 @@
 
 #include "SFML/System/IO.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <string_view>
-#include <unordered_set>
 
 #include <cstdio>
 #include <cstring>
@@ -86,7 +86,7 @@ public:
     bool m_initialized;
     bool m_gotStats;
 
-    std::unordered_set<std::size_t> m_unlockedAchievements;
+    ankerl::unordered_dense::set<std::size_t> m_unlockedAchievements;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"

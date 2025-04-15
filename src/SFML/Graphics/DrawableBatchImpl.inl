@@ -9,6 +9,7 @@
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
@@ -16,6 +17,7 @@
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -23,8 +25,8 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
-#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf::priv
@@ -286,6 +288,50 @@ void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRounded
                                             sdRoundedRectangle.cornerRadius,
                                             sdRoundedRectangle.cornerPointCount);
     });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
+{
+    if (textData.string.isEmpty())
+        return;
+
+    const auto fillQuadCount    = precomputeTextQuadCount(textData.string, textData.style);
+    const auto outlineQuadCount = textData.outlineThickness == 0.f ? 0u : fillQuadCount;
+
+    const auto numQuads = fillQuadCount + outlineQuadCount;
+
+    IndexType* indexPtr  = m_storage.reserveMoreIndices(6u * numQuads);
+    const auto nextIndex = m_storage.getNumVertices();
+
+    for (IndexType i = 0u; i < numQuads; ++i)
+        appendQuadIndices(indexPtr, nextIndex + (i * 4u));
+
+    const auto [sine, cosine] = base::fastSinCos(textData.rotation.asRadians());
+    const auto transform      = Transform::from(textData.position, textData.scale, textData.origin, sine, cosine);
+
+    Vertex* vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
+
+    createTextGeometryAndGetBounds</* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
+                                                                vertexPtr,
+                                                                font,
+                                                                textData.string,
+                                                                textData.style,
+                                                                textData.characterSize,
+                                                                textData.letterSpacing,
+                                                                textData.lineSpacing,
+                                                                textData.outlineThickness,
+                                                                textData.fillColor,
+                                                                textData.outlineColor,
+                                                                [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return addLinePreTransformed(transform, SFML_BASE_FORWARD(xs)...); },
+                                                                [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return addGlyphQuadPreTransformed(transform, SFML_BASE_FORWARD(xs)...); });
+
+    m_storage.commitMoreIndices(6u * numQuads);
+    m_storage.commitMoreVertices(4u * numQuads);
 }
 
 } // namespace sf::priv

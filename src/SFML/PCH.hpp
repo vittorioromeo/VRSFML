@@ -41,7 +41,6 @@
     #include <chrono>
     #include <mutex>
     #include <string>
-    #include <unordered_map>
     #include <vector>
 
     #include <cstdlib>
