@@ -9,10 +9,10 @@
 
 #include "SFML/System/LifetimeDependee.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -321,17 +321,14 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Font(base::PassKey<Font>&&,
-                                TextureAtlas* textureAtlas,
-                                void*         fontHandlesSharedPtr,
-                                const char*   familyName);
+    [[nodiscard]] explicit Font(base::PassKey<Font>&&, TextureAtlas* textureAtlas);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

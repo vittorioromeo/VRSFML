@@ -8,6 +8,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Builtins/Memmove.hpp"
+#include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -85,23 +86,53 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const SizeT initialSize) :
-    m_data{new ItemUnion[initialSize]},
-    m_endSize{data() + initialSize},
-    m_endCapacity{data() + initialSize}
+    [[nodiscard]] explicit TrivialVector(const SizeT initialSize)
     {
+        if (initialSize == 0u)
+            return;
+
+        m_data    = new ItemUnion[initialSize];
+        m_endSize = m_endCapacity = data() + initialSize;
+
         for (TItem* p = data(); p < m_endSize; ++p)
             SFML_BASE_PLACEMENT_NEW(p) TItem();
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const TItem* src, const SizeT srcCount) :
-    m_data{new ItemUnion[srcCount]},
-    m_endSize{data() + srcCount},
-    m_endCapacity{data() + srcCount}
+    [[nodiscard]] explicit TrivialVector(const SizeT initialSize, const TItem& value)
     {
-        SFML_BASE_MEMCPY(m_data, src, sizeof(TItem) * srcCount);
+        if (initialSize == 0u)
+            return;
+
+        m_data    = new ItemUnion[initialSize];
+        m_endSize = m_endCapacity = data() + initialSize;
+
+        for (TItem* p = data(); p < m_endSize; ++p)
+            SFML_BASE_PLACEMENT_NEW(p) TItem(value);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit TrivialVector(const TItem* const srcBegin, const TItem* const srcEnd)
+    {
+        SFML_BASE_ASSERT(srcBegin <= srcEnd);
+        const auto srcCount = static_cast<SizeT>(srcEnd - srcBegin);
+
+        if (srcCount == 0u)
+            return;
+
+        m_data    = new ItemUnion[srcCount];
+        m_endSize = m_endCapacity = data() + srcCount;
+
+        SFML_BASE_MEMCPY(m_data, srcBegin, sizeof(TItem) * srcCount);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit TrivialVector(const std::initializer_list<TItem> iList) :
+    TrivialVector(iList.begin(), iList.end())
+    {
     }
 
 
@@ -482,7 +513,7 @@ public:
             return false;
 
         for (SizeT i = 0u; i < lhsSize; ++i)
-            if (m_data[i] != rhs.m_data[i])
+            if (m_data[i].item != rhs.m_data[i].item)
                 return false;
 
         return true;

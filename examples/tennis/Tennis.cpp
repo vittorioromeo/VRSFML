@@ -377,6 +377,17 @@ int main()
             window.draw(sfmlLogoTexture, {.position = {170.f, 50.f}});
         }
 
+        for (int i = 0; i < 20'000; ++i)
+            window.draw(font,
+                        {
+                            .position      = {gameSize.x - 200.f - (static_cast<float>(i) * 0.01f), gameSize.y - 50.f},
+                            .string        = "SFML Tennis",
+                            .characterSize = 30u,
+                            .fillColor     = sf::Color::White,
+                            .outlineColor  = sf::Color::Black,
+                            .outlineThickness = 2.f,
+                        });
+
         // Display things on screen
         window.display();
     }
