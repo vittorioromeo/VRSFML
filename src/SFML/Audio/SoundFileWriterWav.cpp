@@ -144,26 +144,25 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
             SoundChannel channel;
         };
 
-        base::TrivialVector<SupportedChannel> targetChannelMap;
-        targetChannelMap
-            .pushBackMultiple(SupportedChannel{speakerFrontLeft, SoundChannel::FrontLeft},
-                              SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
-                              SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},
-                              SupportedChannel{speakerLowFrequency, SoundChannel::LowFrequencyEffects},
-                              SupportedChannel{speakerBackLeft, SoundChannel::BackLeft},
-                              SupportedChannel{speakerBackRight, SoundChannel::BackRight},
-                              SupportedChannel{speakerFrontLeftOfCenter, SoundChannel::FrontLeftOfCenter},
-                              SupportedChannel{speakerFrontRightOfCenter, SoundChannel::FrontRightOfCenter},
-                              SupportedChannel{speakerBackCenter, SoundChannel::BackCenter},
-                              SupportedChannel{speakerSideLeft, SoundChannel::SideLeft},
-                              SupportedChannel{speakerSideRight, SoundChannel::SideRight},
-                              SupportedChannel{speakerTopCenter, SoundChannel::TopCenter},
-                              SupportedChannel{speakerTopFrontLeft, SoundChannel::TopFrontLeft},
-                              SupportedChannel{speakerTopFrontCenter, SoundChannel::TopFrontCenter},
-                              SupportedChannel{speakerTopFrontRight, SoundChannel::TopFrontRight},
-                              SupportedChannel{speakerTopBackLeft, SoundChannel::TopBackLeft},
-                              SupportedChannel{speakerTopBackCenter, SoundChannel::TopBackCenter},
-                              SupportedChannel{speakerTopBackRight, SoundChannel::TopBackRight});
+        base::TrivialVector<SupportedChannel>
+            targetChannelMap{{speakerFrontLeft, SoundChannel::FrontLeft},
+                             SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
+                             SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},
+                             SupportedChannel{speakerLowFrequency, SoundChannel::LowFrequencyEffects},
+                             SupportedChannel{speakerBackLeft, SoundChannel::BackLeft},
+                             SupportedChannel{speakerBackRight, SoundChannel::BackRight},
+                             SupportedChannel{speakerFrontLeftOfCenter, SoundChannel::FrontLeftOfCenter},
+                             SupportedChannel{speakerFrontRightOfCenter, SoundChannel::FrontRightOfCenter},
+                             SupportedChannel{speakerBackCenter, SoundChannel::BackCenter},
+                             SupportedChannel{speakerSideLeft, SoundChannel::SideLeft},
+                             SupportedChannel{speakerSideRight, SoundChannel::SideRight},
+                             SupportedChannel{speakerTopCenter, SoundChannel::TopCenter},
+                             SupportedChannel{speakerTopFrontLeft, SoundChannel::TopFrontLeft},
+                             SupportedChannel{speakerTopFrontCenter, SoundChannel::TopFrontCenter},
+                             SupportedChannel{speakerTopFrontRight, SoundChannel::TopFrontRight},
+                             SupportedChannel{speakerTopBackLeft, SoundChannel::TopBackLeft},
+                             SupportedChannel{speakerTopBackCenter, SoundChannel::TopBackCenter},
+                             SupportedChannel{speakerTopBackRight, SoundChannel::TopBackRight}};
 
 
         // Check for duplicate channel entries
@@ -182,13 +181,9 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         for (auto* iter = targetChannelMap.begin(); iter != targetChannelMap.end();)
         {
             if (base::find(channelMap.begin(), channelMap.end(), iter->channel) == channelMap.end())
-            {
                 iter = targetChannelMap.erase(iter);
-            }
             else
-            {
                 ++iter;
-            }
         }
 
         // Verify that all the input channels exist in the target channel map

@@ -24,6 +24,7 @@
 #include "SFML/System/Vector3.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -32,7 +33,6 @@
 
 #include <string>
 #include <string_view>
-#include <unordered_map>
 
 
 using GLhandle = GLuint;
@@ -336,8 +336,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Shader::Impl
 {
-    using TextureTable = std::unordered_map<int, const Texture*>;
-    using UniformTable = std::unordered_map<std::string, int, StringHash, StringEq>;
+    using TextureTable = ankerl::unordered_dense::map<int, const Texture*>;
+    using UniformTable = ankerl::unordered_dense::map<std::string, int, StringHash, StringEq>;
 
     unsigned int shaderProgram{};    //!< OpenGL identifier for the program
     int          currentTexture{-1}; //!< Location of the current texture in the shader

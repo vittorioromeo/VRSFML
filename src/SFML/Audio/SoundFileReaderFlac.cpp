@@ -401,7 +401,7 @@ base::U64 SoundFileReaderFlac::read(base::I16* samples, base::U64 maxCount)
                 samples[i] = m_impl->clientData.leftovers[i];
 
             m_impl->clientData.leftovers = base::TrivialVector<base::I16>(m_impl->clientData.leftovers.begin(),
-                                                                          static_cast<base::SizeT>(maxCount));
+                                                                          m_impl->clientData.leftovers.begin() + maxCount);
             return maxCount;
         }
 
