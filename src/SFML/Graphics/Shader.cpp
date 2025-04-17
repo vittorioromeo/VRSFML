@@ -28,11 +28,9 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/TrivialVector.hpp"
-
-#include <string>
-#include <string_view>
 
 
 using GLhandle = GLuint;
@@ -151,7 +149,7 @@ struct [[nodiscard]] BufferSlice
 // This function is non-reentrant
 [[nodiscard]] sf::base::TrivialVector<char>& getThreadLocalCharBuffer()
 {
-    thread_local sf::base::TrivialVector<char> result;
+    static thread_local sf::base::TrivialVector<char> result;
     return result;
 }
 
@@ -214,55 +212,6 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-struct StringHash
-{
-    using is_transparent = void;
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const char* txt) const
-    {
-        return std::hash<std::string_view>{}(txt);
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(sf::base::StringView txt) const
-    {
-        return std::hash<std::string_view>{}({txt.data(), txt.size()});
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] sf::base::SizeT operator()(const std::string& txt) const
-    {
-        return std::hash<std::string>{}(txt);
-    }
-};
-
-
-////////////////////////////////////////////////////////////
-struct StringEq
-{
-    using is_transparent = void;
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const sf::base::StringView& a, const std::string& b) const
-    {
-        return a == sf::base::StringView{b};
-    }
-
-    [[nodiscard, gnu::always_inline, gnu::flatten]] bool operator()(const std::string& a, const sf::base::StringView& b) const
-    {
-        return sf::base::StringView{a} == b;
-    }
-
-    [[nodiscard, gnu::always_inline]] bool operator()(const sf::base::StringView& a, const sf::base::StringView& b) const
-    {
-        return a == b;
-    }
-
-    [[nodiscard, gnu::always_inline]] bool operator()(const std::string& a, const std::string& b) const
-    {
-        return a == b;
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard]] sf::base::StringView adjustPreamble(sf::base::StringView src)
 {
     constexpr sf::base::StringView preamble{
@@ -294,7 +243,7 @@ precision highp float;
 #endif
     };
 
-    thread_local sf::base::TrivialVector<char> buffer; // Cannot reuse the other buffer here
+    static thread_local sf::base::TrivialVector<char> buffer; // Cannot reuse the other buffer here
     buffer.clear();
 
     buffer.emplaceRange(preamble.data(), preamble.size() - 1);
@@ -336,15 +285,11 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct Shader::Impl
 {
-    using TextureTable = ankerl::unordered_dense::map<int, const Texture*>;
-    using UniformTable = ankerl::unordered_dense::map<std::string, int, StringHash, StringEq>;
-
     unsigned int shaderProgram{};    //!< OpenGL identifier for the program
     int          currentTexture{-1}; //!< Location of the current texture in the shader
 
     // TODO P1: protect with mutex? Change API?
-    mutable TextureTable textures; //!< Texture variables in the shader, mapped to their location
-    mutable UniformTable uniforms; //!< Parameters location cache
+    mutable ankerl::unordered_dense::map<int, const Texture*> textures; //!< Texture variables in the shader, mapped to their location
 
     explicit Impl(unsigned int theShaderProgram) : shaderProgram(theShaderProgram)
     {
@@ -353,8 +298,7 @@ struct Shader::Impl
     explicit Impl(Impl&& rhs) noexcept :
     shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
     currentTexture(base::exchange(rhs.currentTexture, -1)),
-    textures(SFML_BASE_MOVE(rhs.textures)),
-    uniforms(SFML_BASE_MOVE(rhs.uniforms))
+    textures(SFML_BASE_MOVE(rhs.textures))
     {
     }
 };
@@ -452,7 +396,6 @@ Shader& Shader::operator=(Shader&& right) noexcept
     m_impl->shaderProgram  = base::exchange(right.m_impl->shaderProgram, 0u);
     m_impl->currentTexture = base::exchange(right.m_impl->currentTexture, -1);
     m_impl->textures       = SFML_BASE_MOVE(right.m_impl->textures);
-    m_impl->uniforms       = SFML_BASE_MOVE(right.m_impl->uniforms);
 
     return *this;
 }
@@ -558,22 +501,20 @@ base::Optional<Shader> Shader::loadFromStream(const LoadFromStreamSettings& sett
 ////////////////////////////////////////////////////////////
 base::Optional<Shader::UniformLocation> Shader::getUniformLocation(base::StringView uniformName) const
 {
-    // Check the cache
-    if (const auto it = m_impl->uniforms.find(uniformName); it != m_impl->uniforms.end())
+    enum : base::SizeT
     {
-        // Already in cache, return it
-        return it->second == -1 ? base::nullOpt : base::makeOptional(UniformLocation{it->second});
-    }
+        maxUniformNameLength = 256
+    };
 
-    // Use thread-local string buffer to get a null-terminated uniform name
-    static thread_local std::string uniformNameBuffer;
-    uniformNameBuffer.clear();
-    uniformNameBuffer.assign(uniformName.data(), uniformName.size());
+    SFML_BASE_ASSERT(uniformName.size() < maxUniformNameLength && "Uniform name too long");
 
-    // Not in cache, request the location from OpenGL
-    const int location = glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer.c_str());
-    m_impl->uniforms.try_emplace(uniformNameBuffer, location);
+    // To get a a null-terminated string
+    char uniformNameBuffer[maxUniformNameLength];
+    SFML_BASE_MEMCPY(uniformNameBuffer, uniformName.data(), uniformName.size());
+    uniformNameBuffer[uniformName.size()] = '\0';
 
+    // Request the location from OpenGL
+    const int location = glGetUniformLocation(castToGlHandle(m_impl->shaderProgram), uniformNameBuffer);
     return location == -1 ? base::nullOpt : base::makeOptional(UniformLocation{location});
 }
 
@@ -961,7 +902,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 void Shader::bindTextures() const
 {
     auto it = m_impl->textures.begin();
-    for (base::SizeT i = 0; i < m_impl->textures.size(); ++i)
+    for (base::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);
         glCheck(glUniform1i(it->first, index));
