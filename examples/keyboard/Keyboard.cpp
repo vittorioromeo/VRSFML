@@ -28,8 +28,6 @@
 
 #include "SFML/Base/Abort.hpp"
 
-#include <unordered_set>
-
 #include <cstddef>
 #include <cstdio>
 
@@ -600,16 +598,18 @@ public:
     {
         // Check all the scancodes are in the matrix exactly once
         {
-            std::unordered_set<sf::Keyboard::Scancode> scancodesInMatrix;
+            bool scancodesInMatrix[sf::Keyboard::ScancodeCount]{};
+
             for (const auto& [cells, marginBottom] : m_matrix)
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    assert(!scancodesInMatrix.contains(scancode));
-                    scancodesInMatrix.insert(scancode);
+                    assert(!scancodesInMatrix[static_cast<std::size_t>(scancode)]);
+                    scancodesInMatrix[static_cast<std::size_t>(scancode)] = true;
                 }
             }
 
+            // TODO P1: restore?
             // assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
         }
 
