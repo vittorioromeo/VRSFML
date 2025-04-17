@@ -39,7 +39,7 @@ Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo)
 ////////////////////////////////////////////////////////////
 base::Span<Device> getDevices()
 {
-    thread_local static base::TrivialVector<Device> devices;
+    static thread_local base::TrivialVector<Device> devices;
     devices.clear();
 
     {
