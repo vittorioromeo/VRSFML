@@ -405,8 +405,7 @@ int main()
     std::vector<sf::Vertex> terrainStagingBuffer;
 
     // Create a thread pool
-    constexpr unsigned int workerCount = 8u;
-    sf::base::ThreadPool   threadPool{workerCount};
+    sf::base::ThreadPool threadPool{sf::base::ThreadPool::getHardwareWorkerCount()};
 
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))

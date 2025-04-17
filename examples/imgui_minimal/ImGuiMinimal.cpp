@@ -69,6 +69,7 @@ int main()
     sf::Clock    deltaClock;
     sf::Vector2i eventMousePosition;
 
+    // TODO P0:
     const auto modes = sf::VideoModeUtils::getFullscreenModes();
     for (const auto& mode : modes)
         sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << '\n';
