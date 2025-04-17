@@ -86,7 +86,6 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/RectUtils.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
@@ -110,11 +109,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include <array>
-#include <iomanip>
 #include <random>
 #include <string>
-#include <thread>
 #include <utility>
 #include <vector>
 
@@ -123,6 +119,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 
 
 ////////////////////////////////////////////////////////////
@@ -1129,7 +1126,7 @@ struct Main
         int         type;
     };
 
-    std::vector<PurchaseUnlockedEffect>   purchaseUnlockedEffects;
+    std::vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
     ankerl::unordered_dense::map<std::string, bool> btnWasDisabled;
 
     ////////////////////////////////////////////////////////////
@@ -1203,21 +1200,23 @@ struct Main
         if (!logFile)
             return;
 
-        const auto timestamp = std::chrono::system_clock::now();
-        const auto timeT     = std::chrono::system_clock::to_time_t(timestamp);
-        const auto tm        = *std::localtime(&timeT);
+        const std::time_t currentTime = std::time(nullptr);
+        const auto        localTime   = *std::localtime(&currentTime);
 
-        char buffer[1024];
+        char timeBuffer[100]; // Buffer for the timestamp string
+        std::strftime(timeBuffer, sizeof(timeBuffer), "%Y-%m-%d %H:%M:%S", &localTime);
+
+        char messageBuffer[1024];
 
         va_list args{};
         va_start(args, format);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-        vsnprintf(buffer, sizeof(buffer), format, args);
+        vsnprintf(messageBuffer, sizeof(messageBuffer), format, args);
 #pragma GCC diagnostic pop
         va_end(args);
 
-        logFile << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << " - " << buffer << '\n';
+        logFile << timeBuffer << " - " << messageBuffer << '\n';
         logFile.flush();
     }
 
@@ -1248,7 +1247,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static unsigned int getTPWorkerCount()
     {
-        const unsigned int numThreads = std::thread::hardware_concurrency();
+        const auto numThreads = static_cast<unsigned int>(sf::base::ThreadPool::getHardwareWorkerCount());
         return (numThreads == 0u) ? 3u : numThreads - 1u;
     }
 

@@ -27,17 +27,18 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include <cstdlib>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 #include <latch>
-#include <new>
-#include <thread>
 #include <vector>
+#include <string>
 
 #include <cstddef>
 #include <cstdio>
@@ -187,8 +188,8 @@ int main()
     //
     //
     // Get hardware constants
-    const auto     nMaxWorkers   = static_cast<sf::base::U64>(std::thread::hardware_concurrency());
-    constexpr auto cacheLineSize = static_cast<std::size_t>(std::hardware_destructive_interference_size);
+    const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
+    constexpr auto cacheLineSize = static_cast<std::size_t>(sf::base::hardwareDestructiveInterferenceSize);
 
     //
     //
