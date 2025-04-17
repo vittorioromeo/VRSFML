@@ -210,4 +210,11 @@ SizeT ThreadPool::getWorkerCount() const noexcept
     return m_impl->workers.size();
 }
 
+
+////////////////////////////////////////////////////////////
+SizeT ThreadPool::getHardwareWorkerCount() noexcept
+{
+    return static_cast<SizeT>(std::thread::hardware_concurrency());
+}
+
 } // namespace sf::base
