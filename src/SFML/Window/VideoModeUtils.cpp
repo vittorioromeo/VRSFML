@@ -44,10 +44,10 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-float VideoModeUtils::getDisplayContentScale()
+float VideoModeUtils::getPrimaryDisplayContentScale()
 {
     // TODO P0: per display?
-    return priv::getSDLLayerSingleton().getDisplayContentScale();
+    return priv::getSDLLayerSingleton().getPrimaryDisplayContentScale();
 }
 
 

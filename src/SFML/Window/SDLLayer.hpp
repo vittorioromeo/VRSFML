@@ -250,7 +250,10 @@ public:
     [[nodiscard]] bool setClipboardString(const String& string) const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getDisplayContentScale() const;
+    [[nodiscard]] float getDisplayContentScale(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getPrimaryDisplayContentScale() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const;
@@ -278,6 +281,12 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool areGUIDsEqual(const SDL_GUID& a, const SDL_GUID& b);
+
+    ////////////////////////////////////////////////////////////
+    void setWindowSize(SDL_Window& window, Vector2u size) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2u getWindowSize(SDL_Window& window) const;
 };
 
 ////////////////////////////////////////////////////////////
