@@ -16,6 +16,8 @@
 
 #include "SFML/Base/Optional.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <string>
 #include <vector>
 
@@ -181,21 +183,21 @@ public:
         // A callable taking a concrete event type is provided per event type you want to handle
         m_window.pollAndHandleEvents([&](sf::Event::Closed) { m_mustClose = true; },
                                      [&](const sf::Event::KeyPressed& keyPress)
-                                     {
-                                         m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
+        {
+            m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
 
-                                         // When the enter key is pressed, switch to the next handler type
-                                         if (keyPress.code == sf::Keyboard::Key::Enter)
-                                         {
-                                             m_handlerType = HandlerType::Generic;
-                                             m_handlerText.setString("Current Handler: Generic");
-                                         }
-                                     },
+            // When the enter key is pressed, switch to the next handler type
+            if (keyPress.code == sf::Keyboard::Key::Enter)
+            {
+                m_handlerType = HandlerType::Generic;
+                m_handlerText.setString("Current Handler: Generic");
+            }
+        },
                                      [&](const sf::Event::MouseMoved& mouseMoved)
-                                     { m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
+        { m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
                                      [&](const sf::Event::MouseButtonPressed&) { m_log.emplace_back("Mouse Pressed"); },
                                      [&](const sf::Event::TouchBegan& touchBegan)
-                                     { m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position)); });
+        { m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position)); });
 
         // To handle unhandled events, just add the following lambda to the set of handlers
         // [&](const auto&) { m_log.emplace_back("Other Event"); }
@@ -206,45 +208,44 @@ public:
     {
         // Generic visitation
         // A generic callable is provided that can differentiate by deduced event type
-        m_window.pollAndHandleEvents(
-            [&](auto&& event)
+        m_window.pollAndHandleEvents([&](auto&& event)
+        {
+            // Remove reference and cv-qualifiers
+            using T = std::decay_t<decltype(event)>;
+
+            if constexpr (std::is_same_v<T, sf::Event::Closed>)
             {
-                // Remove reference and cv-qualifiers
-                using T = std::decay_t<decltype(event)>;
+                m_mustClose = true;
+            }
+            else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
+            {
+                m_log.emplace_back("Key Pressed: " + scancodeToString(event.scancode));
 
-                if constexpr (std::is_same_v<T, sf::Event::Closed>)
+                // When the enter key is pressed, switch to the next handler type
+                if (event.code == sf::Keyboard::Key::Enter)
                 {
-                    m_mustClose = true;
+                    m_handlerType = HandlerType::Forward;
+                    m_handlerText.setString("Current Handler: Forward");
                 }
-                else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
-                {
-                    m_log.emplace_back("Key Pressed: " + scancodeToString(event.scancode));
-
-                    // When the enter key is pressed, switch to the next handler type
-                    if (event.code == sf::Keyboard::Key::Enter)
-                    {
-                        m_handlerType = HandlerType::Forward;
-                        m_handlerText.setString("Current Handler: Forward");
-                    }
-                }
-                else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
-                {
-                    m_log.emplace_back("Mouse Moved: " + vec2ToString(event.position));
-                }
-                else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
-                {
-                    m_log.emplace_back("Mouse Pressed");
-                }
-                else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
-                {
-                    m_log.emplace_back("Touch Began: " + vec2ToString(event.position));
-                }
-                else
-                {
-                    // All unhandled events will end up here
-                    // m_log.emplace_back("Other Event");
-                }
-            });
+            }
+            else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
+            {
+                m_log.emplace_back("Mouse Moved: " + vec2ToString(event.position));
+            }
+            else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
+            {
+                m_log.emplace_back("Mouse Pressed");
+            }
+            else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
+            {
+                m_log.emplace_back("Touch Began: " + vec2ToString(event.position));
+            }
+            else
+            {
+                // All unhandled events will end up here
+                // m_log.emplace_back("Other Event");
+            }
+        });
     }
 
     ////////////////////////////////////////////////////////////
@@ -361,7 +362,12 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow m_window{{.size{800u, 600u}, .title = "SFML Event Handling", .resizable = false, .vsync = true}};
+    sf::RenderWindow m_window = makeDPIScaledRenderWindow({
+        .size      = {800u, 600u},
+        .title     = "SFML Event Handling",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     const sf::Font m_font{sf::Font::openFromFile("resources/tuffy.ttf").value()};
 

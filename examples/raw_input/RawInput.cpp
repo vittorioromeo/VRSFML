@@ -13,6 +13,8 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <string>
 #include <vector>
 
@@ -29,7 +31,14 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Raw Mouse Input", .resizable = false, .vsync = true});
+    constexpr sf::Vector2f windowSize{800.f, 600.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "SFML Raw Mouse Input",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Open the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
@@ -46,6 +55,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             static const auto vec2ToString = [](const sf::Vector2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
