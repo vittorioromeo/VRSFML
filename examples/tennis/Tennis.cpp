@@ -31,6 +31,8 @@
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/TrivialVector.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <random>
 #include <string>
 
@@ -132,17 +134,13 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
-    sf::RenderWindow window({
+    auto window = makeDPIScaledRenderWindow({
         .size         = gameSize.toVector2u(),
         .bitsPerPixel = 32u,
         .title        = "SFML Tennis",
-        .resizable    = false,
+        .resizable    = true,
         .vsync        = true,
     });
-
-    // DPI scaling (TODO P0: review)
-    // window.setSize((gameSize * window.getWindowDisplayScale()).toVector2u());
-    // window.setView({.center = gameSize / 2.f, .size = gameSize});
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
@@ -215,6 +213,9 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
 
+            if (handleAspectRatioAwareResize(*event, gameSize, window))
+                continue;
+
             // Space key pressed: play
             if ((event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space) ||
@@ -239,10 +240,6 @@ int main()
                     } while (std::abs(std::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
-
-            // Window size changed, adjust view appropriately
-            if (event->is<sf::Event::Resized>())
-                window.setView({/* center */ gameSize / 2.f, /* size */ gameSize});
         }
 
         const float deltaTime = clock.restart().asSeconds();

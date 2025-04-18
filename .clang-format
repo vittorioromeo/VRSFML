@@ -115,15 +115,17 @@ IncludeCategories:
     Regex: '^\"SFML\/System'
   - Priority: 11
     Regex: '^\"SFML\/Base'
+  - Priority: 12
+    Regex: '^\"ExampleUtils'
   - Priority: 1
     Regex: '^\"(.+)\"$'
-  - Priority: 12
+  - Priority: 22
     Regex: '^<(imgui|glad|gl|X11|jni|android|stb_|GLES2|vorbis|miniaudio|doctest|Doctest|blockingconcurrentqueue|concurrentqueue|SDL3)'
-  - Priority: 13
+  - Priority: 23
     Regex: '^<(CommonTraits|AudioUtil|SystemUtil|GraphicsUtil|WindowUtil|StringifyVectorUtil|StringifyOptionalUtil|StringifyPathUtil|StringifyStringUtil|StringifyStringViewUtil|StringifyArrayUtil|StringifyIpAddressUtil|LoadIntoMemoryUtil)'
-  - Priority: 14
+  - Priority: 24
     Regex: '^<([^c](.+)|coroutine|charconv|chrono|complex|concepts|condition_variable)>$'
-  - Priority: 15
+  - Priority: 25
     Regex: '^<c(.+)>$'
 SortIncludes: true
 SortUsingDeclarations: true
