@@ -278,7 +278,6 @@ struct [[nodiscard]] StatesCache
     Transform lastViewTransform;  //!< Cached transform of latest view
 
     Transform lastRenderStatesTransform; //!< Cached renderstates transform
-    Transform lastFinalDrawTransform;    //!< Cached last draw transform  (view * renderstates transform)
 
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
@@ -1210,7 +1209,6 @@ void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
 
     // Update the cached transform
     m_impl->cache.lastRenderStatesTransform = renderStatesTransform;
-    m_impl->cache.lastFinalDrawTransform    = trsfm;
 
     // clang-format off
     const float transformMatrixBuffer[]{trsfm.a00, trsfm.a10, 0.f, 0.f,

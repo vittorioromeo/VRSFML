@@ -19,6 +19,7 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/IO.hpp"
@@ -27,6 +28,8 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+
+#include "ExampleUtils.hpp"
 
 #include <cstddef>
 #include <cstdio>
@@ -1045,8 +1048,15 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    sf::RenderWindow window({.size = {1280u, 720u}, .title = "Keyboard", .resizable = false, .vsync = true});
-    window.setFramerateLimit(25);
+    constexpr sf::Vector2f windowSize{1280.f, 720.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size           = windowSize.toVector2u(),
+        .title          = "Keyboard",
+        .resizable      = true,
+        .vsync          = true,
+        .frametimeLimit = 25u,
+    });
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
@@ -1080,6 +1090,9 @@ int main()
             // Window closed: exit
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             // Window size changed: adjust view appropriately
             if (const auto* resized = event->getIf<sf::Event::Resized>())
