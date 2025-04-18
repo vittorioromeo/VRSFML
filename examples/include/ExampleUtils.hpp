@@ -15,18 +15,39 @@
 
 
 ////////////////////////////////////////////////////////////
-// DPI scaling (TODO P0: review)
-inline void scaleWithDPI(sf::RenderWindow& renderWindow)
+[[nodiscard]] inline sf::FloatRect getAspectRatioAwareViewport(const sf::Vector2f newSize, const sf::Vector2f originalSize)
 {
-    const auto size = renderWindow.getSize().toVector2f();
+    SFML_BASE_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
+    SFML_BASE_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
 
-    renderWindow.setSize((size * renderWindow.getWindowDisplayScale()).toVector2u());
-    renderWindow.setView({.center = size / 2.f, .size = size});
+    const float contentAspectRatio = originalSize.x / originalSize.y; // Assume old size has correct ratio
+    const float windowAspectRatio  = newSize.x / newSize.y;
+
+    if (SFML_BASE_MATH_FABSF(windowAspectRatio - contentAspectRatio) < 0.01f)
+    {
+        // Aspect ratios match, viewport covers the whole window
+        return {{0.f, 0.f}, {1.f, 1.f}};
+    }
+
+    if (windowAspectRatio > contentAspectRatio)
+    {
+        // Window is wider than content (pillarboxing)
+        // Viewport height is 100%, width is scaled
+        const float width = contentAspectRatio / windowAspectRatio;
+        return {{(1.f - width) / 2.f, 0.f}, {width, 1.f}}; // Center horizontally
+    }
+
+    // Window is taller than content (letterboxing)
+    // Viewport width is 100%, height is scaled
+    const float height = windowAspectRatio / contentAspectRatio;
+    return {{0.f, (1.f - height) / 2.f}, {1.f, height}}; // Center vertically
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event& event, const sf::Vector2f originalSize, sf::RenderWindow& renderWindow)
+[[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event&   event,
+                                                       const sf::Vector2f originalSize,
+                                                       sf::RenderWindow&  renderWindow)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
@@ -37,34 +58,10 @@ inline void scaleWithDPI(sf::RenderWindow& renderWindow)
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
 
-    const float contentAspectRatio = originalSize.x / originalSize.y; // Assume old size has correct ratio
-    const float windowAspectRatio  = newSize.x / newSize.y;
-
-    auto view = renderWindow.getView();
-
-    if (SFML_BASE_MATH_FABSF(windowAspectRatio - contentAspectRatio) < 0.01f)
-    {
-        // Aspect ratios match, viewport covers the whole window
-        view.viewport = {{0.f, 0.f}, {1.f, 1.f}};
-    }
-    else if (windowAspectRatio > contentAspectRatio)
-    {
-        // Window is wider than content (pillarboxing)
-        // Viewport height is 100%, width is scaled
-
-        view.viewport.size     = {contentAspectRatio / windowAspectRatio, 1.f};
-        view.viewport.position = {(1.f - view.viewport.size.x) / 2.f, 0.f}; // Center horizontally
-    }
-    else
-    {
-        // Window is taller than content (letterboxing)
-        // Viewport width is 100%, height is scaled
-
-        view.viewport.size     = {1.f, windowAspectRatio / contentAspectRatio};
-        view.viewport.position = {0.f, (1.f - view.viewport.size.y) / 2.f}; // Center vertically
-    }
-
+    auto view     = renderWindow.getView();
+    view.viewport = getAspectRatioAwareViewport(newSize, originalSize);
     renderWindow.setView(view);
+
     return true;
 }
 
