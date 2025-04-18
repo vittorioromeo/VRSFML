@@ -18,6 +18,8 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <algorithm>
 #include <array>
 #include <string>
@@ -117,8 +119,15 @@ int main()
         texts.at("Threshold").value.setString(oss.to<sf::String>());
     };
 
+    constexpr sf::Vector2f windowSize{400.f, 775.f};
+
     // Create the window of the application
-    sf::RenderWindow window({.size{400, 775}, .title = "Joystick", .resizable = false, .vsync = true});
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "Joystick",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Set up our string conversion parameters
     oss.setPrecision(2);
@@ -181,6 +190,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
                 updateValues(joystickButtonPressed->joystickId);

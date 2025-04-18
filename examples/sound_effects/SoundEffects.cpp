@@ -35,6 +35,8 @@
 
 #include "SFML/Base/Clamp.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <array>
 #include <limits>
 #include <string>
@@ -1014,8 +1016,14 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    sf::RenderWindow window(
-        {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
+    constexpr sf::Vector2f windowSize{windowWidth, windowHeight};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "SFML Sound Effects",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
@@ -1124,6 +1132,9 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
 
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
+
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
@@ -1216,7 +1227,8 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(window.getSize().toVector2f());
+        const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(
+            window.getSize().toVector2f()); // TODO P2: wrong when resizing
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window
