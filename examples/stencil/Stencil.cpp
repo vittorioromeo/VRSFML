@@ -9,6 +9,9 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Vector2.hpp"
+
+#include "ExampleUtils.hpp"
 
 #include <cstdlib>
 
@@ -23,15 +26,18 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create({.depthBits = 0u, .stencilBits = 8u}).value();
 
     // Create the window of the application with a stencil buffer
-    sf::RenderWindow window(
-        {.size{600u, 600u},
-         .title     = "SFML Stencil",
-         .resizable = false,
-         .vsync     = true,
-         .contextSettings{.depthBits = 0, .stencilBits = 8}});
+    constexpr sf::Vector2f windowSize{600.f, 600.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size            = windowSize.toVector2u(),
+        .title           = "SFML Stencil",
+        .resizable       = true,
+        .vsync           = true,
+        .contextSettings = {.depthBits = 0u, .stencilBits = 8u},
+    });
 
     const sf::RectangleShape red(
-        {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::Color::Red, .size = {500.f, 50.f}});
+        {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::\Color::Red, .size = {500.f, 50.f}});
 
     const sf::RectangleShape green(
         {.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green, .size = {500.f, 50.f}});
@@ -46,6 +52,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
         }
 
         // When drawing using a 2D API, we normally resort to what is known as the "painter's algorithm".

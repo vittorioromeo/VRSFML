@@ -27,6 +27,8 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <array>
 #include <random>
 #include <string>
@@ -477,7 +479,14 @@ int main()
                            .outlineThickness = 1.5f});
 
     // Create the main window
-    sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
+    constexpr sf::Vector2f windowSize{800.f, 600.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "SFML Shader",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Start the game loop
     const sf::Clock clock;
@@ -489,6 +498,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
