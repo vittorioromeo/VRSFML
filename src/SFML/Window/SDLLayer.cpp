@@ -705,18 +705,9 @@ bool SDLLayer::setClipboardString(const String& string) const noexcept
 
 
 ////////////////////////////////////////////////////////////
-float SDLLayer::getDisplayContentScale() const
+float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
 {
-    auto displays = getDisplays();
-    if (!displays.valid())
-    {
-        err() << "`getDisplayContentScale` failed: could not get displays";
-        return 1.f;
-    }
-
-    const SDL_DisplayID primaryDisplayID = displays[0];
-
-    const float result = SDL_GetDisplayContentScale(primaryDisplayID);
+    const float result = SDL_GetDisplayContentScale(displayID);
     if (result == 0.f)
     {
         err() << "`SDL_GetDisplayContentScale` failed:" << SDL_GetError();
@@ -724,6 +715,27 @@ float SDLLayer::getDisplayContentScale() const
     }
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+float SDLLayer::getPrimaryDisplayContentScale() const
+{
+    const auto displays = getDisplays();
+
+    if (!displays.valid())
+    {
+        err() << "`getDisplayContentScale` failed: could not get displays";
+        return 1.f;
+    }
+
+    if (displays.size() == 0)
+    {
+        err() << "`getDisplayContentScale` failed: no displays found";
+        return 1.f;
+    }
+
+    return getDisplayContentScale(displays[0]);
 }
 
 
@@ -855,6 +867,26 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 [[nodiscard]] bool SDLLayer::areGUIDsEqual(const SDL_GUID& a, const SDL_GUID& b)
 {
     return SFML_BASE_MEMCMP(&a, &b, sizeof(SDL_GUID)) == 0;
+}
+
+
+////////////////////////////////////////////////////////////
+void SDLLayer::setWindowSize(SDL_Window& window, const Vector2u size) const
+{
+    if (!SDL_SetWindowSize(&window, static_cast<int>(size.x), static_cast<int>(size.y)))
+        err() << "`SDL_SetWindowSize` failed: " << SDL_GetError();
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] Vector2u SDLLayer::getWindowSize(SDL_Window& window) const
+{
+    Vector2i result;
+
+    if (!SDL_GetWindowSize(&window, &result.x, &result.y))
+        err() << "`SDL_GetWindowSize` failed: " << SDL_GetError();
+
+    return result.toVector2u();
 }
 
 
