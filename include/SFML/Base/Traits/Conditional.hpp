@@ -8,7 +8,7 @@ namespace sf::base
 template <bool, typename TTrue, typename TFalse>
 struct ConditionalImpl
 {
-    using type = TFalse;;
+    using type = TFalse;
 };
 
 
