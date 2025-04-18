@@ -27,6 +27,8 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 
+#include "ExampleUtils.hpp"
+
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
@@ -382,7 +384,12 @@ int main()
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window({.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize,
+        .title     = "SFML Island",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Create all of our graphics resources
     sf::Text hudText(font,
@@ -447,6 +454,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize.toVector2f(), window))
+                continue;
 
             // Arrow key pressed:
             if (event->is<sf::Event::KeyPressed>())
