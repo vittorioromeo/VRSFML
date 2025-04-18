@@ -10,6 +10,8 @@
 
 #include "SFML/System/RectUtils.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <utility>
 #include <vector>
 
@@ -226,10 +228,10 @@ int main()
     //
     //
     // Set up window
-    sf::RenderWindow window(
+    auto window = makeDPIScaledRenderWindow(
         {.size            = resolution.toVector2u(),
          .title           = "Arkanoid",
-         .resizable       = false,
+         .resizable       = true,
          .vsync           = true,
          .frametimeLimit  = 144u,
          .contextSettings = {.antiAliasingLevel = 8u}});
@@ -245,6 +247,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (handleAspectRatioAwareResize(*event, resolution, window))
+                continue;
         }
 
         game.update();
