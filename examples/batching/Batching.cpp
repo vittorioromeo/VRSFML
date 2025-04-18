@@ -31,17 +31,17 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
-#include <cstdlib>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 #include <latch>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////

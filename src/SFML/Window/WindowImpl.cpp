@@ -28,6 +28,7 @@
 #include "SFML/System/Utf.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
@@ -137,9 +138,12 @@ struct WindowImpl::Impl
 
     bool isExternal = false; //!< Is the window created externally?
 
-    explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal) :
+    Vector2u lastSize; //!< Last known size of the window
+
+    explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal, const Vector2u theLastSize) :
     sdlWindow{theSDLWindow},
-    isExternal{theIsExternal}
+    isExternal{theIsExternal},
+    lastSize{theLastSize}
     {
         if (!sdlWindow)
         {
@@ -194,7 +198,9 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_WINDOW_RESIZED:
         {
-            pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
+            const auto newSize = Vector2i{e.window.data1, e.window.data2}.toVector2u();
+            pushEvent(Event::Resized{.size = newSize, .oldSize = m_impl->lastSize});
+            m_impl->lastSize = newSize;
             break;
         }
 
@@ -501,9 +507,16 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
                                                 static_cast<int>(windowSettings.size.y),
                                                 makeSDLWindowFlagsFromWindowSettings(windowSettings));
 
+    if (sdlWindowPtr == nullptr)
+    {
+        err() << "Failed to create window: " << SDL_GetError();
+        return nullptr;
+    }
+
     auto* windowImplPtr = new WindowImpl{"window settings",
                                          static_cast<void*>(sdlWindowPtr),
-                                         /* isExternal */ false};
+                                         /* isExternal */ false,
+                                         /* lastSize */ windowSettings.size};
 
 #ifdef SFML_SYSTEM_WINDOWS
     {
@@ -531,10 +544,20 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 ////////////////////////////////////////////////////////////
 base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
 {
-    auto* windowImplPtr = new WindowImpl{"handle",
-                                         static_cast<void*>(
-                                             SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle))),
-                                         /* isExternal */ true};
+    auto* sdlWindow = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle));
+
+    if (sdlWindow == nullptr)
+    {
+        err() << "Failed to create window from handle: " << SDL_GetError();
+        return nullptr;
+    }
+
+    auto* windowImplPtr = new WindowImpl{
+        "handle",
+        static_cast<void*>(sdlWindow),
+        /* isExternal */ true,
+        /* lastSize */ getSDLLayerSingleton().getWindowSize(*sdlWindow),
+    };
 
     return base::UniquePtr<WindowImpl>{windowImplPtr};
 }
@@ -642,8 +665,8 @@ base::Optional<Event> WindowImpl::popEvent()
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal) :
-m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
+WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal, const Vector2u lastSize) :
+m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal, lastSize}
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 
@@ -824,20 +847,17 @@ void WindowImpl::setPosition(Vector2i position)
 ////////////////////////////////////////////////////////////
 Vector2u WindowImpl::getSize() const
 {
-    Vector2i result;
-
-    if (!SDL_GetWindowSize(m_impl->sdlWindow, &result.x, &result.y))
-        err() << "Failed to get window size: " << SDL_GetError();
-
-    return result.toVector2u();
+    SFML_BASE_ASSERT(m_impl->sdlWindow);
+    return getSDLLayerSingleton().getWindowSize(*m_impl->sdlWindow);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setSize(Vector2u size)
+void WindowImpl::setSize(const Vector2u size)
 {
-    if (!SDL_SetWindowSize(m_impl->sdlWindow, static_cast<int>(size.x), static_cast<int>(size.y)))
-        err() << "Failed to set window size: " << SDL_GetError();
+    SFML_BASE_ASSERT(m_impl->sdlWindow);
+    getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
+    m_impl->lastSize = size;
 }
 
 

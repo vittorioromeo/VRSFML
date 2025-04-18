@@ -332,9 +332,10 @@ private:
     /// \param context   Creation context for error messages
     /// \param sdlWindow SDL window handle
     /// \param isExternal `true` if the window was created externally
+    /// \param lastSize Last known size of the window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow, bool isExternal);
+    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow, bool isExternal, Vector2u lastSize);
 
     ////////////////////////////////////////////////////////////
     /// \return First event of the queue if available, `base::nullOpt` otherwise

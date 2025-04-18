@@ -358,6 +358,9 @@ macro(sfml_add_example target)
         add_executable(${target} ${target_input})
     endif()
 
+    # add shared include directory
+    target_include_directories(${target} PRIVATE ${PROJECT_SOURCE_DIR}/examples/include)
+
     # enable precompiled headers
     if (SFML_ENABLE_PCH)
         message(VERBOSE "enabling PCH for SFML example '${target}'")
