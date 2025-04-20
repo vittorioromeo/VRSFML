@@ -189,15 +189,15 @@ struct SoundStream::Impl
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
-    SoundStream*                   owner;                //!< Owning `SoundStream` object
+    SoundStream*            owner;                //!< Owning `SoundStream` object
     base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
-    base::SizeT                    sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
-    base::U64                      samplesProcessed{};   //!< Number of samples processed since beginning of the stream
-    unsigned int                   channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int                   sampleRate{};         //!< Frequency (samples / second)
-    ChannelMap                     channelMap;           //!< The map of position in sample frame to sound channel
-    bool                           streaming{true};      //!< `true` if we are still streaming samples from the source
-    SoundSource::Status            status{SoundSource::Status::Stopped}; //!< The status
+    base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
+    base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
+    unsigned int            channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int            sampleRate{};         //!< Frequency (samples / second)
+    ChannelMap              channelMap;           //!< The map of position in sample frame to sound channel
+    bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
+    SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
 };
 
 

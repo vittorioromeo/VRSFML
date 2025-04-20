@@ -18,8 +18,8 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
     #include "SFML/System/Android/ResourceStream.hpp"
@@ -150,15 +150,15 @@ template <typename T, typename U>
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] sf::Glyph loadGlyph(
-    const FT_Library&                      library,
-    const FT_Face&                         face,
-    const FT_Stroker&                      stroker,
-    sf::TextureAtlas&                      textureAtlas,
+    const FT_Library&               library,
+    const FT_Face&                  face,
+    const FT_Stroker&               stroker,
+    sf::TextureAtlas&               textureAtlas,
     sf::base::Vector<sf::base::U8>& pixelBuffer,
-    const char32_t                         codePoint,
-    const unsigned int                     characterSize,
-    const bool                             bold,
-    const float                            outlineThickness)
+    const char32_t                  codePoint,
+    const unsigned int              characterSize,
+    const bool                      bold,
+    const float                     outlineThickness)
 {
     sf::Glyph glyph; // Use a single local variable for NRVO
 

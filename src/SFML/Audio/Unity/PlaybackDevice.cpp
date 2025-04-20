@@ -18,8 +18,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -91,7 +91,7 @@ struct PlaybackDevice::Impl
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
     base::Vector<ResourceEntry> resources;      //!< Registered resources
-    std::mutex                         resourcesMutex; //!< The mutex guarding the registered resources
+    std::mutex                  resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
     ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)

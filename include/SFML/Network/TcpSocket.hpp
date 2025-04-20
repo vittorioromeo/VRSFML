@@ -199,15 +199,15 @@ private:
     ////////////////////////////////////////////////////////////
     struct PendingPacket
     {
-        base::U32                          size{};         //!< Data of packet size
-        base::SizeT                        sizeReceived{}; //!< Number of size bytes received so far
+        base::U32                   size{};         //!< Data of packet size
+        base::SizeT                 sizeReceived{}; //!< Number of size bytes received so far
         base::Vector<unsigned char> data;           //!< Data of the packet
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    PendingPacket                      m_pendingPacket;     //!< Temporary data of the packet currently being received
+    PendingPacket               m_pendingPacket;     //!< Temporary data of the packet currently being received
     base::Vector<unsigned char> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 

@@ -328,8 +328,8 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    base::Vector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
-    base::SizeT m_verticesEndIndex = 0u;    //!< Index where the fill vertices end and outline vertices begin
+    base::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
+    base::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
 
     FloatRect m_textureRect{};        //!< Area of the source texture to display for the fill
     FloatRect m_outlineTextureRect{}; //!< Area of the source texture to display for the outline

@@ -209,7 +209,6 @@ template <typename Vector, typename Predicate>
 }
 
 
-
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Comparer>
 [[nodiscard]] constexpr bool isSorted(Iter first, Iter last, Comparer comp)

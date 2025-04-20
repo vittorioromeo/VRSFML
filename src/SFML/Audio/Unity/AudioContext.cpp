@@ -10,8 +10,8 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
