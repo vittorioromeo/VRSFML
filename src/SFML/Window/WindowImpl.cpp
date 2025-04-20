@@ -138,12 +138,9 @@ struct WindowImpl::Impl
 
     bool isExternal = false; //!< Is the window created externally?
 
-    Vector2u lastSize; //!< Last known size of the window
-
-    explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal, const Vector2u theLastSize) :
+    explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal) :
     sdlWindow{theSDLWindow},
-    isExternal{theIsExternal},
-    lastSize{theLastSize}
+    isExternal{theIsExternal}
     {
         if (!sdlWindow)
         {
@@ -198,9 +195,7 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_WINDOW_RESIZED:
         {
-            const auto newSize = Vector2i{e.window.data1, e.window.data2}.toVector2u();
-            pushEvent(Event::Resized{.size = newSize, .oldSize = m_impl->lastSize});
-            m_impl->lastSize = newSize;
+            pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
             break;
         }
 
@@ -515,8 +510,7 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 
     auto* windowImplPtr = new WindowImpl{"window settings",
                                          static_cast<void*>(sdlWindowPtr),
-                                         /* isExternal */ false,
-                                         /* lastSize */ windowSettings.size};
+                                         /* isExternal */ false};
 
 #ifdef SFML_SYSTEM_WINDOWS
     {
@@ -552,12 +546,9 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
         return nullptr;
     }
 
-    auto* windowImplPtr = new WindowImpl{
-        "handle",
-        static_cast<void*>(sdlWindow),
-        /* isExternal */ true,
-        /* lastSize */ getSDLLayerSingleton().getWindowSize(*sdlWindow),
-    };
+    auto* windowImplPtr = new WindowImpl{"handle",
+                                         static_cast<void*>(sdlWindow),
+                                         /* isExternal */ true};
 
     return base::UniquePtr<WindowImpl>{windowImplPtr};
 }
@@ -665,8 +656,8 @@ base::Optional<Event> WindowImpl::popEvent()
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal, const Vector2u lastSize) :
-m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal, lastSize}
+WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal) :
+m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 
@@ -857,7 +848,6 @@ void WindowImpl::setSize(const Vector2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
-    m_impl->lastSize = size;
 }
 
 

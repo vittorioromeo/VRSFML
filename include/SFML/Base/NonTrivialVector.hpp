@@ -9,7 +9,9 @@
 #include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 
@@ -28,8 +30,7 @@ private:
 
 
     ////////////////////////////////////////////////////////////
-    static_assert(!SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem));
-    static_assert(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem));
+    static_assert(!(SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem) && SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem)));
 
 
     ////////////////////////////////////////////////////////////
@@ -125,6 +126,18 @@ private:
     }
 
 public:
+    ////////////////////////////////////////////////////////////
+    using value_type      = TItem;
+    using pointer         = TItem*;
+    using const_pointer   = const TItem*;
+    using reference       = TItem&;
+    using const_reference = const TItem&;
+    using size_type       = SizeT;
+    using difference_type = PtrDiffT;
+    using iterator        = TItem*;
+    using const_iterator  = const TItem*;
+
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit NonTrivialVector() = default;
 
@@ -594,6 +607,25 @@ public:
     [[nodiscard]] bool operator!=(const NonTrivialVector& rhs) const
     {
         return !(*this == rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void swap(NonTrivialVector& rhs) noexcept
+    {
+        if (this == &rhs)
+            return;
+
+        base::swap(m_data, rhs.m_data);
+        base::swap(m_endSize, rhs.m_endSize);
+        base::swap(m_endCapacity, rhs.m_endCapacity);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend void swap(NonTrivialVector& lhs, NonTrivialVector& rhs) noexcept
+    {
+        lhs.swap(rhs);
     }
 };
 
