@@ -27,8 +27,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -107,7 +107,7 @@ struct WindowContextImpl
         WindowContext::UnsharedDeleteFn deleteFn;
     };
 
-    std::mutex                               unsharedFrameBuffersMutex;
+    std::mutex                        unsharedFrameBuffersMutex;
     base::Vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////

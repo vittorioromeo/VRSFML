@@ -27,12 +27,12 @@ namespace
 ////////////////////////////////////////////////////////////
 struct FlacClientData
 {
-    sf::InputStream*                       stream{};
-    sf::SoundFileReader::Info              info;
-    sf::base::I16*                         buffer{};
-    sf::base::U64                          remaining{};
+    sf::InputStream*                stream{};
+    sf::SoundFileReader::Info       info;
+    sf::base::I16*                  buffer{};
+    sf::base::U64                   remaining{};
     sf::base::Vector<sf::base::I16> leftovers;
-    bool                                   error{};
+    bool                            error{};
 };
 
 
@@ -401,7 +401,7 @@ base::U64 SoundFileReaderFlac::read(base::I16* samples, base::U64 maxCount)
                 samples[i] = m_impl->clientData.leftovers[i];
 
             m_impl->clientData.leftovers = base::Vector<base::I16>(m_impl->clientData.leftovers.begin(),
-                                                                          m_impl->clientData.leftovers.begin() + maxCount);
+                                                                   m_impl->clientData.leftovers.begin() + maxCount);
             return maxCount;
         }
 

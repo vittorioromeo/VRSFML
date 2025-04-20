@@ -22,8 +22,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SoundBufferRecorder::Impl
 {
-    base::Vector<base::I16> samples; //!< Temporary sample buffer to hold the recorded data
-    base::Optional<SoundBuffer>    buffer;  //!< Sound buffer that will contain the recorded data
+    base::Vector<base::I16>     samples; //!< Temporary sample buffer to hold the recorded data
+    base::Optional<SoundBuffer> buffer;  //!< Sound buffer that will contain the recorded data
 };
 
 

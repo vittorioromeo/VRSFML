@@ -20,8 +20,8 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
     #include "SFML/System/Android/Activity.hpp"
