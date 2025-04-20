@@ -1,3 +1,6 @@
+// Small fork of ankerl::unordered_dense to use SFML's base library.
+// Removes allocator support.
+
 ///////////////////////// ankerl::unordered_dense::{map, set} /////////////////////////
 
 // A fast & densely stored hashmap and hashset based on robin-hood backward shift deletion.
@@ -31,6 +34,7 @@
 #ifndef ANKERL_UNORDERED_DENSE_H
 #define ANKERL_UNORDERED_DENSE_H
 
+
 #pragma GCC system_header
 
 // see https://semver.org/spec/v2.0.0.html
@@ -62,23 +66,6 @@
 #    define ANKERL_UNORDERED_DENSE_PACK(decl) __pragma(pack(push, 1)) decl __pragma(pack(pop))
 #endif
 
-// exceptions
-/*
-#if defined(__cpp_exceptions) || defined(__EXCEPTIONS) || defined(_CPPUNWIND)
-#    define ANKERL_UNORDERED_DENSE_HAS_EXCEPTIONS() 1 // NOLINT(cppcoreguidelines-macro-usage)
-#else
-#    define ANKERL_UNORDERED_DENSE_HAS_EXCEPTIONS() 0 // NOLINT(cppcoreguidelines-macro-usage)
-#endif
-#ifdef _MSC_VER
-#    define ANKERL_UNORDERED_DENSE_NOINLINE __declspec(noinline)
-#else
-#    define ANKERL_UNORDERED_DENSE_NOINLINE __attribute__((noinline))
-#endif
-*/
-
-#define ANKERL_UNORDERED_DENSE_HAS_EXCEPTIONS() 0
-#define ANKERL_UNORDERED_DENSE_DISABLE_PMR 1
-
 // defined in unordered_dense.cpp
 #if !defined(ANKERL_UNORDERED_DENSE_EXPORT)
 #    define ANKERL_UNORDERED_DENSE_EXPORT
@@ -95,13 +82,15 @@
 #include "SFML/Base/Builtins/Memset.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/IndexSequence.hpp"
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/MakeIndexSequence.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MakeIndexSequence.hpp"
+#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/Conditional.hpp"
 #include "SFML/Base/Traits/EnableIf.hpp"
 #include "SFML/Base/Traits/IsConstructible.hpp"
@@ -115,22 +104,12 @@
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsVoid.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
+#include "SFML/Base/TrivialVector.hpp"
 
 #include <cstdint> // uintptr_t
 
 #    include <tuple>            // for forward_as_tuple
 #    include <utility>          // for pair, as_const, piece...
-#    include <vector>           // for vector
-
-#    if defined(__has_include) && !defined(ANKERL_UNORDERED_DENSE_DISABLE_PMR)
-#        if __has_include(<memory_resource>)
-#            define ANKERL_UNORDERED_DENSE_PMR std::pmr // NOLINT(cppcoreguidelines-macro-usage)
-#            include <memory_resource>                  // for polymorphic_allocator
-#        elif __has_include(<experimental/memory_resource>)
-#            define ANKERL_UNORDERED_DENSE_PMR std::experimental::pmr // NOLINT(cppcoreguidelines-macro-usage)
-#            include <experimental/memory_resource>                   // for polymorphic_allocator
-#        endif
-#    endif
 
 #    if defined(_MSC_VER) && defined(_M_X64)
 #        include <intrin.h>
@@ -145,46 +124,31 @@
 #        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) (x) // NOLINT(cppcoreguidelines-macro-usage)
 #    endif
 
+namespace std
+{
+    template <typename> struct hash;
+}
+
 namespace ankerl::unordered_dense {
 inline namespace ANKERL_UNORDERED_DENSE_NAMESPACE {
 
 namespace detail {
 
-template <typename I>
-concept EqualityComparable_my = requires(const I& a, const I& b) {
-    { a == b };
-    { a != b };
-};
+    template <typename T>
+    using vector = sf::base::Conditional<
+        sf::base::isTriviallyCopyable<T> && sf::base::isTriviallyDestructible<T>,
+        sf::base::TrivialVector<T>,
+        sf::base::NonTrivialVector<T>>;
 
 template <typename I>
-concept Incrementable_my = requires(I i) {
-    { ++i };
-};
-
-template <typename I>
-concept Decrementable_my = requires(I i) {
-    { --i };
-};
-
-template <typename I>
-concept Subtractable_my = requires(const I& a, const I& b) {
+concept subtractable = requires(const I& a, const I& b) {
     { b - a };
 };
 
-template <typename I>
-concept InputIterator_my = Incrementable_my<I> && EqualityComparable_my<I>;
-
-template <typename I>
-concept BidirectionalIterator_my = InputIterator_my<I> && Decrementable_my<I>;
-
-template <typename I>
-concept RandomAccessIterator_my = EqualityComparable_my<I> && Subtractable_my<I>;
-
 template <typename Iter>
-    requires InputIterator_my<Iter>
 constexpr sf::base::PtrDiffT my_distance(Iter first, Iter last)
 {
-    if constexpr (RandomAccessIterator_my<Iter>)
+    if constexpr (subtractable<Iter>)
     {
         return static_cast<sf::base::PtrDiffT>(last - first);
     }
@@ -312,34 +276,6 @@ struct EqualTo
 {
   constexpr bool operator()(const T& x, const T& y) const { return x == y; }
 };
-
-#    if ANKERL_UNORDERED_DENSE_HAS_EXCEPTIONS()
-
-// make sure this is not inlined as it is slow and dramatically enlarges code, thus making other
-// inlinings more difficult. Throws are also generally the slow path.
-[[noreturn]] inline ANKERL_UNORDERED_DENSE_NOINLINE void on_error_key_not_found() {
-    throw std::out_of_range("ankerl::unordered_dense::map::at(): key not found");
-}
-[[noreturn]] inline ANKERL_UNORDERED_DENSE_NOINLINE void on_error_bucket_overflow() {
-    throw std::overflow_error("ankerl::unordered_dense: reached max bucket size, cannot increase size");
-}
-[[noreturn]] inline ANKERL_UNORDERED_DENSE_NOINLINE void on_error_too_many_elements() {
-    throw std::out_of_range("ankerl::unordered_dense::map::replace(): too many elements");
-}
-
-#    else
-
-[[noreturn]] inline void on_error_key_not_found() {
-    sf::base::abort();
-}
-[[noreturn]] inline void on_error_bucket_overflow() {
-    sf::base::abort();
-}
-[[noreturn]] inline void on_error_too_many_elements() {
-    sf::base::abort();
-}
-
-#    endif
 
 } // namespace detail
 
@@ -688,21 +624,17 @@ struct base_table_type_set {};
 
 } // namespace detail
 
-// Very much like std::deque, but faster for indexing (in most cases). As of now this doesn't implement the full std::vector
+// Very much like std::deque, but faster for indexing (in most cases). As of now this doesn't implement the full detail::vector
 // API, but merely what's necessary to work as an underlying container for ankerl::unordered_dense::{map, set}.
 // It allocates blocks of equal size and puts them into the m_blocks vector. That means it can grow simply by adding a new
-// block to the back of m_blocks, and doesn't double its size like an std::vector. The disadvantage is that memory is not
+// block to the back of m_blocks, and doesn't double its size like an detail::vector. The disadvantage is that memory is not
 // linear and thus there is one more indirection necessary for indexing.
-template <typename T, typename Allocator = std::allocator<T>, sf::base::SizeT MaxSegmentSizeBytes = 4096>
+template <typename T, sf::base::SizeT MaxSegmentSizeBytes = 4096>
 class segmented_vector {
     template <bool IsConst>
     class iter_t;
 
 public:
-    using allocator_type = Allocator;
-    // using pointer = typename std::allocator_traits<allocator_type>::pointer;
-    // using const_pointer = typename std::allocator_traits<allocator_type>::const_pointer;
-    // using difference_type = typename std::allocator_traits<allocator_type>::difference_type;
     using pointer = T*;
     using const_pointer = const T*;
     using difference_type = sf::base::PtrDiffT;
@@ -714,9 +646,7 @@ public:
     using const_iterator = iter_t<true>;
 
 private:
-    // using vec_alloc = typename std::allocator_traits<Allocator>::template rebind_alloc<pointer>;
-    using vec_alloc = std::allocator<pointer>;
-    std::vector<pointer, vec_alloc> m_blocks{};
+    detail::vector<pointer> m_blocks{};
     sf::base::SizeT m_size{};
 
     // Calculates the maximum number for x in  (s << x) <= max_val
@@ -728,7 +658,7 @@ private:
         return f;
     }
 
-    using self_t = segmented_vector<T, Allocator, MaxSegmentSizeBytes>;
+    using self_t = segmented_vector<T, MaxSegmentSizeBytes>;
     static constexpr auto num_bits = num_bits_closest(MaxSegmentSizeBytes, sizeof(T));
     static constexpr auto num_elements_in_block = 1U << num_bits;
     static constexpr auto mask = num_elements_in_block - 1U;
@@ -812,7 +742,7 @@ private:
 
     // slow path: need to allocate a new segment every once in a while
     void increase_capacity() {
-        auto ba = Allocator(m_blocks.get_allocator());
+        auto ba = detail::my_allocator<pointer>{};
         pointer block = ba.allocate(num_elements_in_block);
         m_blocks.push_back(block);
     }
@@ -834,7 +764,7 @@ private:
     }
 
     void dealloc() {
-        auto ba = Allocator(m_blocks.get_allocator());
+        auto ba = detail::my_allocator<pointer>{};
         for (auto ptr : m_blocks) {
             ba.deallocate(ptr, num_elements_in_block);
         }
@@ -847,22 +777,7 @@ private:
 public:
     segmented_vector() = default;
 
-    // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
-    segmented_vector(Allocator alloc)
-        : m_blocks(vec_alloc(alloc)) {}
-
-    segmented_vector(segmented_vector&& other, Allocator alloc)
-        : segmented_vector(alloc) {
-        *this = SFML_BASE_MOVE(other);
-    }
-
-    segmented_vector(segmented_vector const& other, Allocator alloc)
-        : m_blocks(vec_alloc(alloc)) {
-        append_everything_from(other);
-    }
-
-    segmented_vector(segmented_vector&& other) noexcept
-        : segmented_vector(SFML_BASE_MOVE(other), get_allocator()) {}
+    segmented_vector(segmented_vector&& other) noexcept = default;
 
     segmented_vector(segmented_vector const& other) {
         append_everything_from(other);
@@ -880,14 +795,10 @@ public:
     auto operator=(segmented_vector&& other) noexcept -> segmented_vector& {
         clear();
         dealloc();
-        if (other.get_allocator() == get_allocator()) {
-            m_blocks = SFML_BASE_MOVE(other.m_blocks);
-            m_size = sf::base::exchange(other.m_size, {});
-        } else {
-            // make sure to construct with other's allocator!
-            m_blocks = std::vector<pointer, vec_alloc>(vec_alloc(other.get_allocator()));
-            append_everything_from(SFML_BASE_MOVE(other));
-        }
+
+        m_blocks = SFML_BASE_MOVE(other.m_blocks);
+        m_size = sf::base::exchange(other.m_size, {});
+
         return *this;
     }
 
@@ -956,10 +867,6 @@ public:
         }
     }
 
-    [[nodiscard]] auto get_allocator() const -> allocator_type {
-        return allocator_type{m_blocks.get_allocator()};
-    }
-
     template <class... Args>
     auto emplace_back(Args&&... args) -> reference {
         if (m_size == capacity()) {
@@ -981,13 +888,13 @@ public:
     }
 
     void shrink_to_fit() {
-        auto ba = Allocator(m_blocks.get_allocator());
+        auto ba = detail::my_allocator<pointer>{};
         auto num_blocks_required = calc_num_blocks_for_capacity(m_size);
         while (m_blocks.size() > num_blocks_required) {
             ba.deallocate(m_blocks.back(), num_elements_in_block);
-            m_blocks.pop_back();
+            m_blocks.popBack();
         }
-        m_blocks.shrink_to_fit();
+        m_blocks.shrinkToFit();
     }
 };
 
@@ -998,25 +905,21 @@ template <class Key,
           class T, // when void, treat it as a set.
           class Hash,
           class KeyEqual,
-          class AllocatorOrContainer,
           class Bucket,
           class BucketContainer,
           bool IsSegmented>
 class table : public sf::base::Conditional<is_map_v<T>, base_table_type_map<T>, base_table_type_set> {
     using underlying_value_type = typename sf::base::Conditional<is_map_v<T>, std::pair<Key, T>, Key>;
     using underlying_container_type = sf::base::Conditional<IsSegmented,
-                                                         segmented_vector<underlying_value_type, AllocatorOrContainer>,
-                                                         std::vector<underlying_value_type, AllocatorOrContainer>>;
+                                                         segmented_vector<underlying_value_type>,
+                                                         detail::vector<underlying_value_type>>;
 
 public:
-    using value_container_type = std::
-        conditional_t<is_detected_v<detect_iterator, AllocatorOrContainer>, AllocatorOrContainer, underlying_container_type>;
+    using value_container_type = underlying_container_type;
 
 private:
-        // using bucket_alloc = typename value_container_type::allocator_type::template rebind<Bucket>::other;
-        using bucket_alloc =  typename std::allocator_traits<typename value_container_type::allocator_type>::template rebind_alloc<Bucket>;
     using default_bucket_container_type =
-        sf::base::Conditional<IsSegmented, segmented_vector<Bucket, bucket_alloc>, std::vector<Bucket, bucket_alloc>>;
+        sf::base::Conditional<IsSegmented, segmented_vector<Bucket>, detail::vector<Bucket>>;
 
     using bucket_container_type = sf::base::Conditional<SFML_BASE_IS_SAME(BucketContainer, detail::default_container_t),
                                                      default_bucket_container_type,
@@ -1032,7 +935,6 @@ public:
     using difference_type = typename value_container_type::difference_type;
     using hasher = Hash;
     using key_equal = KeyEqual;
-    using allocator_type = typename value_container_type::allocator_type;
     using reference = typename value_container_type::reference;
     using const_reference = typename value_container_type::const_reference;
     using pointer = typename value_container_type::pointer;
@@ -1137,7 +1039,7 @@ private:
     }
 
     [[nodiscard]] static constexpr auto calc_num_buckets(sf::base::U8 shifts) -> sf::base::SizeT {
-        return (std::min)(max_bucket_count(), sf::base::SizeT{1} << (64U - shifts));
+        return (sf::base::min)(max_bucket_count(), sf::base::SizeT{1} << (64U - shifts));
     }
 
     [[nodiscard]] constexpr auto calc_shifts_for_size(sf::base::SizeT s) const -> sf::base::U8 {
@@ -1177,7 +1079,7 @@ private:
 
     void deallocate_buckets() {
         m_buckets.clear();
-        m_buckets.shrink_to_fit();
+        m_buckets.shrinkToFit();
         m_max_bucket_capacity = 0;
     }
 
@@ -1188,7 +1090,7 @@ private:
                 m_buckets.reserve(num_buckets);
             }
             for (sf::base::SizeT i = m_buckets.size(); i < num_buckets; ++i) {
-                m_buckets.emplace_back();
+                m_buckets.emplaceBack();
             }
         } else {
             m_buckets.resize(num_buckets);
@@ -1226,8 +1128,8 @@ private:
     void increase_size() {
         if (m_max_bucket_capacity == max_bucket_count()) {
             // remove the value again, we can't add it!
-            m_values.pop_back();
-            on_error_bucket_overflow();
+            m_values.popBack();
+            sf::base::abort(); // on_error_bucket_overflow();
         }
         --m_shifts;
         if constexpr (!IsSegmented || SFML_BASE_IS_SAME(BucketContainer, default_container_t)) {
@@ -1267,7 +1169,7 @@ private:
             }
             at(m_buckets, bucket_idx).m_value_idx = value_idx_to_remove;
         }
-        m_values.pop_back();
+        m_values.popBack();
     }
 
     template <typename K, typename Op>
@@ -1305,7 +1207,7 @@ private:
         -> std::pair<iterator, bool> {
 
         // emplace the new value. If that throws an exception, no harm done; index is still in a valid state
-        m_values.emplace_back(SFML_BASE_FORWARD(args)...);
+        m_values.emplaceBack(SFML_BASE_FORWARD(args)...);
 
         auto value_idx = static_cast<value_idx_type>(m_values.size() - 1);
         if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full())) {
@@ -1392,7 +1294,7 @@ private:
         if (auto it = find(key); ANKERL_UNORDERED_DENSE_LIKELY(end() != it)) {
             return it->second;
         }
-        on_error_key_not_found();
+        sf::base::abort(); // on_error_key_not_found();
     }
 
     template <typename K, typename Q = T>
@@ -1401,12 +1303,11 @@ private:
     }
 
 public:
-    explicit table(sf::base::SizeT bucket_count,
+    explicit table(sf::base::SizeT bucket_count = 0,
                    Hash const& hash = Hash(),
-                   KeyEqual const& equal = KeyEqual(),
-                   allocator_type const& alloc_or_container = allocator_type())
-        : m_values(alloc_or_container)
-        , m_buckets(alloc_or_container)
+                   KeyEqual const& equal = KeyEqual())
+        : m_values()
+        , m_buckets()
         , m_hash(hash)
         , m_equal(equal) {
         if (0 != bucket_count) {
@@ -1417,76 +1318,37 @@ public:
         }
     }
 
-    table()
-        : table(0) {}
-
-    table(sf::base::SizeT bucket_count, allocator_type const& alloc)
-        : table(bucket_count, Hash(), KeyEqual(), alloc) {}
-
-    table(sf::base::SizeT bucket_count, Hash const& hash, allocator_type const& alloc)
-        : table(bucket_count, hash, KeyEqual(), alloc) {}
-
-    explicit table(allocator_type const& alloc)
-        : table(0, Hash(), KeyEqual(), alloc) {}
-
     template <class InputIt>
     table(InputIt first,
           InputIt last,
           size_type bucket_count = 0,
           Hash const& hash = Hash(),
-          KeyEqual const& equal = KeyEqual(),
-          allocator_type const& alloc = allocator_type())
-        : table(bucket_count, hash, equal, alloc) {
+          KeyEqual const& equal = KeyEqual())
+        : table(bucket_count, hash, equal) {
         insert(first, last);
     }
 
-    template <class InputIt>
-    table(InputIt first, InputIt last, size_type bucket_count, allocator_type const& alloc)
-        : table(first, last, bucket_count, Hash(), KeyEqual(), alloc) {}
-
-    template <class InputIt>
-    table(InputIt first, InputIt last, size_type bucket_count, Hash const& hash, allocator_type const& alloc)
-        : table(first, last, bucket_count, hash, KeyEqual(), alloc) {}
-
-    table(table const& other)
-        : table(other, other.m_values.get_allocator()) {}
-
-    table(table const& other, allocator_type const& alloc)
-        : m_values(other.m_values, alloc)
-        , m_max_load_factor(other.m_max_load_factor)
-        , m_hash(other.m_hash)
-        , m_equal(other.m_equal) {
-        copy_buckets(other);
-    }
-
-    table(table&& other) noexcept
-        : table(SFML_BASE_MOVE(other), other.m_values.get_allocator()) {}
-
-    table(table&& other, allocator_type const& alloc) noexcept
-        : m_values(alloc) {
-        *this = SFML_BASE_MOVE(other);
-    }
+    table(table const& other)= default;
+    table(table&& other) noexcept = default;
 
     table(std::initializer_list<value_type> ilist,
           sf::base::SizeT bucket_count = 0,
           Hash const& hash = Hash(),
-          KeyEqual const& equal = KeyEqual(),
-          allocator_type const& alloc = allocator_type())
-        : table(bucket_count, hash, equal, alloc) {
+          KeyEqual const& equal = KeyEqual())
+        : table(bucket_count, hash, equal) {
         insert(ilist);
     }
 
-    table(std::initializer_list<value_type> ilist, size_type bucket_count, allocator_type const& alloc)
-        : table(ilist, bucket_count, Hash(), KeyEqual(), alloc) {}
+    table(std::initializer_list<value_type> ilist, size_type bucket_count)
+        : table(ilist, bucket_count, Hash(), KeyEqual()) {}
 
-    table(std::initializer_list<value_type> init, size_type bucket_count, Hash const& hash, allocator_type const& alloc)
-        : table(init, bucket_count, hash, KeyEqual(), alloc) {}
+    table(std::initializer_list<value_type> init, size_type bucket_count, Hash const& hash)
+        : table(init, bucket_count, hash, KeyEqual()) {}
 
     ~table() = default;
 
     auto operator=(table const& other) -> table& {
         if (&other != this) {
-            deallocate_buckets(); // deallocate before m_values is set (might have another allocator)
             m_values = other.m_values;
             m_max_load_factor = other.m_max_load_factor;
             m_hash = other.m_hash;
@@ -1501,33 +1363,14 @@ public:
                                                     SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(Hash) &&
                                                     SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(KeyEqual))) -> table& {
         if (&other != this) {
-            deallocate_buckets(); // deallocate before m_values is set (might have another allocator)
             m_values = SFML_BASE_MOVE(other.m_values);
-            other.m_values.clear();
+            m_buckets = SFML_BASE_MOVE(other.m_buckets);
+            m_max_bucket_capacity = sf::base::exchange(other.m_max_bucket_capacity, sf::base::SizeT{0});
+            m_shifts = sf::base::exchange(other.m_shifts, initial_shifts);
+            m_max_load_factor = sf::base::exchange(other.m_max_load_factor, default_max_load_factor);
+            m_hash = sf::base::exchange(other.m_hash, {});
+            m_equal = sf::base::exchange(other.m_equal, {});
 
-            // we can only reuse m_buckets when both maps have the same allocator!
-            if (get_allocator() == other.get_allocator()) {
-                m_buckets = SFML_BASE_MOVE(other.m_buckets);
-                other.m_buckets.clear();
-                m_max_bucket_capacity = sf::base::exchange(other.m_max_bucket_capacity, sf::base::SizeT{0});
-                m_shifts = sf::base::exchange(other.m_shifts, initial_shifts);
-                m_max_load_factor = sf::base::exchange(other.m_max_load_factor, default_max_load_factor);
-                m_hash = sf::base::exchange(other.m_hash, {});
-                m_equal = sf::base::exchange(other.m_equal, {});
-                other.allocate_buckets_from_shift();
-                other.clear_buckets();
-            } else {
-                // set max_load_factor *before* copying the other's buckets, so we have the same
-                // behavior
-                m_max_load_factor = other.m_max_load_factor;
-
-                // copy_buckets sets m_buckets, m_num_buckets, m_max_bucket_capacity, m_shifts
-                copy_buckets(other);
-                // clear's the other's buckets so other is now already usable.
-                other.clear_buckets();
-                m_hash = other.m_hash;
-                m_equal = other.m_equal;
-            }
             // map "other" is now already usable, it's empty.
         }
         return *this;
@@ -1537,10 +1380,6 @@ public:
         clear();
         insert(ilist);
         return *this;
-    }
-
-    auto get_allocator() const noexcept -> allocator_type {
-        return m_values.get_allocator();
     }
 
     // iterators //////////////////////////////////////////////////////////////
@@ -1642,7 +1481,7 @@ public:
     // Discards the internally held container and replaces it with the one passed. Erases non-unique elements.
     auto replace(value_container_type&& container) {
         if (ANKERL_UNORDERED_DENSE_UNLIKELY(container.size() > max_size())) {
-            on_error_too_many_elements();
+            sf::base::abort(); // on_error_too_many_elements();
         }
         auto shifts = calc_shifts_for_size(container.size());
         if (0 == bucket_count() || shifts < m_shifts || container.get_allocator() != m_values.get_allocator()) {
@@ -1684,7 +1523,7 @@ public:
                 if (value_idx != static_cast<value_idx_type>(m_values.size() - 1)) {
                     m_values[value_idx] = SFML_BASE_MOVE(m_values.back());
                 }
-                m_values.pop_back();
+                m_values.popBack();
             } else {
                 place_and_shift_up({dist_and_fingerprint, value_idx}, bucket_idx);
                 ++value_idx;
@@ -1758,7 +1597,7 @@ public:
     auto emplace(Args&&... args) -> std::pair<iterator, bool> {
         // we have to instantiate the value_type to be able to access the key.
         // 1. emplace_back the object so it is constructed. 2. If the key is already there, pop it later in the loop.
-        auto& key = get_key(m_values.emplace_back(SFML_BASE_FORWARD(args)...));
+        auto& key = get_key(m_values.emplaceBack(SFML_BASE_FORWARD(args)...));
         auto hash = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
         auto bucket_idx = bucket_idx_from_hash(hash);
@@ -1766,7 +1605,7 @@ public:
         while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint) {
             if (dist_and_fingerprint == at(m_buckets, bucket_idx).m_dist_and_fingerprint &&
                 m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx]))) {
-                m_values.pop_back(); // value was already there, so get rid of it
+                m_values.popBack(); // value was already there, so get rid of it
                 return {begin() + static_cast<difference_type>(at(m_buckets, bucket_idx).m_value_idx), false};
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
@@ -1877,7 +1716,7 @@ public:
         auto const last_to_end = detail::my_distance(last, cend());
 
         // remove elements from left to right which moves elements from the end back
-        auto const mid = idx_first + (std::min)(first_to_last, last_to_end);
+        auto const mid = idx_first + (sf::base::min)(first_to_last, last_to_end);
         auto idx = idx_first;
         while (idx != mid) {
             erase(begin() + idx);
@@ -1925,7 +1764,18 @@ public:
     void swap(table& other) noexcept(noexcept(SFML_BASE_IS_NOTHROW_SWAPPABLE(value_container_type) &&
                                               SFML_BASE_IS_NOTHROW_SWAPPABLE(Hash) && SFML_BASE_IS_NOTHROW_SWAPPABLE(KeyEqual))) {
         using std::swap;
-        swap(other, *this);
+
+        swap(m_values, other.m_values);
+        swap(m_buckets, other.m_buckets);
+        swap(m_max_bucket_capacity, other.m_max_bucket_capacity);
+        swap(m_max_load_factor, other.m_max_load_factor);
+        swap(m_hash, other.m_hash);
+        swap(m_equal, other.m_equal);
+        swap(m_shifts, other.m_shifts);
+    }
+
+    friend void swap(table& lhs, table& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+        lhs.swap(rhs);
     }
 
     // lookup /////////////////////////////////////////////////////////////////
@@ -2060,24 +1910,24 @@ public:
     }
 
     void rehash(sf::base::SizeT count) {
-        count = (std::min)(count, max_size());
-        auto shifts = calc_shifts_for_size((std::max)(count, size()));
+        count = (sf::base::min)(count, max_size());
+        auto shifts = calc_shifts_for_size((sf::base::max)(count, size()));
         if (shifts != m_shifts) {
             m_shifts = shifts;
             deallocate_buckets();
-            m_values.shrink_to_fit();
+            m_values.shrinkToFit();
             allocate_buckets_from_shift();
             clear_and_fill_buckets_from_values();
         }
     }
 
     void reserve(sf::base::SizeT capa) {
-        capa = (std::min)(capa, max_size());
+        capa = (sf::base::min)(capa, max_size());
         if constexpr (has_reserve<value_container_type>) {
             // std::deque doesn't have reserve(). Make sure we only call when available
             m_values.reserve(capa);
         }
-        auto shifts = calc_shifts_for_size((std::max)(capa, size()));
+        auto shifts = calc_shifts_for_size((sf::base::max)(capa, size()));
         if (0 == bucket_count() || shifts < m_shifts) {
             m_shifts = shifts;
             deallocate_buckets();
@@ -2138,97 +1988,31 @@ ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class T,
                                         class Hash = hash<Key>,
                                         class KeyEqual = detail::EqualTo<Key>,
-                                        class AllocatorOrContainer = std::allocator<std::pair<Key, T>>,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
-using map = detail::table<Key, T, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, false>;
+using map = detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, false>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class T,
                                         class Hash = hash<Key>,
                                         class KeyEqual = detail::EqualTo<Key>,
-                                        class AllocatorOrContainer = std::allocator<std::pair<Key, T>>,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
-using segmented_map = detail::table<Key, T, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, true>;
+using segmented_map = detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, true>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class Hash = hash<Key>,
                                         class KeyEqual = detail::EqualTo<Key>,
-                                        class AllocatorOrContainer = std::allocator<Key>,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
-using set = detail::table<Key, void, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, false>;
+using set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, false>;
 
 ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class Hash = hash<Key>,
                                         class KeyEqual = detail::EqualTo<Key>,
-                                        class AllocatorOrContainer = std::allocator<Key>,
                                         class Bucket = bucket_type::standard,
                                         class BucketContainer = detail::default_container_t>
-using segmented_set = detail::table<Key, void, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, true>;
-
-#    if defined(ANKERL_UNORDERED_DENSE_PMR)
-
-namespace pmr {
-
-ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class T,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard>
-using map = detail::table<Key,
-                          T,
-                          Hash,
-                          KeyEqual,
-                          ANKERL_UNORDERED_DENSE_PMR::polymorphic_allocator<std::pair<Key, T>>,
-                          Bucket,
-                          detail::default_container_t,
-                          false>;
-
-ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class T,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard>
-using segmented_map = detail::table<Key,
-                                    T,
-                                    Hash,
-                                    KeyEqual,
-                                    ANKERL_UNORDERED_DENSE_PMR::polymorphic_allocator<std::pair<Key, T>>,
-                                    Bucket,
-                                    detail::default_container_t,
-                                    true>;
-
-ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard>
-using set = detail::table<Key,
-                          void,
-                          Hash,
-                          KeyEqual,
-                          ANKERL_UNORDERED_DENSE_PMR::polymorphic_allocator<Key>,
-                          Bucket,
-                          detail::default_container_t,
-                          false>;
-
-ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class Hash = hash<Key>,
-                                        class KeyEqual = detail::EqualTo<Key>,
-                                        class Bucket = bucket_type::standard>
-using segmented_set = detail::table<Key,
-                                    void,
-                                    Hash,
-                                    KeyEqual,
-                                    ANKERL_UNORDERED_DENSE_PMR::polymorphic_allocator<Key>,
-                                    Bucket,
-                                    detail::default_container_t,
-                                    true>;
-
-} // namespace pmr
-
-#    endif
+using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketContainer, true>;
 
 // deduction guides ///////////////////////////////////////////////////////////
 
@@ -2246,18 +2030,17 @@ ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
                                         class T,
                                         class Hash,
                                         class KeyEqual,
-                                        class AllocatorOrContainer,
                                         class Bucket,
                                         class Pred,
                                         class BucketContainer,
                                         bool IsSegmented>
 // NOLINTNEXTLINE(cert-dcl58-cpp)
 auto erase_if(
-    ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, IsSegmented>&
+    ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>&
         map,
     Pred pred) -> sf::base::SizeT {
     using map_t = ankerl::unordered_dense::detail::
-        table<Key, T, Hash, KeyEqual, AllocatorOrContainer, Bucket, BucketContainer, IsSegmented>;
+        table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>;
 
     // going back to front because erase() invalidates the end iterator
     auto const old_size = map.size();

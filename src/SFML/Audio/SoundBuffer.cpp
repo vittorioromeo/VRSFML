@@ -210,11 +210,13 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 {
     SoundBuffer temp(right);
 
-    std::swap(m_impl->samples, temp.m_impl->samples);
-    std::swap(m_impl->sampleRate, temp.m_impl->sampleRate);
-    std::swap(m_impl->channelMap, temp.m_impl->channelMap);
-    std::swap(m_impl->duration, temp.m_impl->duration);
-    std::swap(m_impl->sounds, temp.m_impl->sounds); // swap sounds too, so that they are detached when temp is destroyed
+    using std::swap;
+
+    swap(m_impl->samples, temp.m_impl->samples);
+    swap(m_impl->sampleRate, temp.m_impl->sampleRate);
+    swap(m_impl->channelMap, temp.m_impl->channelMap);
+    swap(m_impl->duration, temp.m_impl->duration);
+    swap(m_impl->sounds, temp.m_impl->sounds); // swap sounds too, so that they are detached when temp is destroyed
 
     return *this;
 }
