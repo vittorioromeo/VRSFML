@@ -1,4 +1,4 @@
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -93,7 +93,7 @@ struct Obj
     }
 };
 
-TEST_CASE("[Base] Base/NonTrivialVector.hpp")
+TEST_CASE("[Base] Base/Vector.hpp")
 {
     const auto asConst = [](auto& x) -> const auto& { return x; };
 
@@ -107,18 +107,18 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
         STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(Obj));
         STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(Obj));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::NonTrivialVector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Vector<Obj>));
 
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::NonTrivialVector<Obj>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::NonTrivialVector<Obj>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::Vector<Obj>));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::Vector<Obj>));
     }
 
     SECTION("Empty")
@@ -137,7 +137,7 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
 
         resetCounters();
 
-        sf::base::NonTrivialVector<Obj> tv;
+        sf::base::Vector<Obj> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -145,20 +145,20 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
-        sf::base::NonTrivialVector<Obj> tv2 = tv;
+        sf::base::Vector<Obj> tv2 = tv;
         DO_EMPTY_CHECKS(tv2);
         CHECK(tv2.capacity() == 0u);
 
-        sf::base::NonTrivialVector<Obj> tv3 = SFML_BASE_MOVE(tv);
+        sf::base::Vector<Obj> tv3 = SFML_BASE_MOVE(tv);
         DO_EMPTY_CHECKS(tv3);
         CHECK(tv3.capacity() == 0u);
 
-        sf::base::NonTrivialVector<Obj> tv4;
+        sf::base::Vector<Obj> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS(tv4);
         CHECK(tv4.capacity() == 0u);
 
-        sf::base::NonTrivialVector<Obj> tv5;
+        sf::base::Vector<Obj> tv5;
         tv5 = SFML_BASE_MOVE(tv4);
         DO_EMPTY_CHECKS(tv5);
         CHECK(tv5.capacity() == 0u);
@@ -177,7 +177,7 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
         resetCounters();
 
         {
-            sf::base::NonTrivialVector<Obj> tv;
+            sf::base::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -272,7 +272,7 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
         resetCounters();
 
         {
-            sf::base::NonTrivialVector<Obj> tv;
+            sf::base::Vector<Obj> tv;
             DO_EMPTY_CHECKS(tv);
             CHECK(tv.capacity() == 0u);
 
@@ -335,7 +335,7 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
     SECTION("erase")
     {
         resetCounters();
-        sf::base::NonTrivialVector<Obj> tv;
+        sf::base::Vector<Obj> tv;
 
         // Populate the vector: 10, 20, 30, 40, 50
         tv.emplaceBack(10);
@@ -437,7 +437,7 @@ TEST_CASE("[Base] Base/NonTrivialVector.hpp")
 
         // --- Edge case: Erase from single-element vector ---
         resetCounters();
-        sf::base::NonTrivialVector<Obj> tvSingle;
+        sf::base::Vector<Obj> tvSingle;
         tvSingle.emplaceBack(100); // int:1, move:0 (initially no alloc)
         REQUIRE(tvSingle.size() == 1);
         resetCounters();

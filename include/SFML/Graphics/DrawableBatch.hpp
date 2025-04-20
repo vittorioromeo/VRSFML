@@ -15,7 +15,7 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -102,8 +102,8 @@ struct CPUStorage
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<Vertex>    vertices; //!< CPU buffer for vertices
-    base::TrivialVector<IndexType> indices;  //!< CPU buffer for indices
+    base::Vector<Vertex>    vertices; //!< CPU buffer for vertices
+    base::Vector<IndexType> indices;  //!< CPU buffer for indices
 };
 
 ////////////////////////////////////////////////////////////
