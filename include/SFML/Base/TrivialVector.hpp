@@ -18,6 +18,38 @@
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 
 
+namespace sf::base::priv
+{
+////////////////////////////////////////////////////////////
+template <bool Trivial, typename TItem>
+union [[nodiscard]] ItemUnion
+{
+    TItem item;
+
+    [[gnu::always_inline]] ItemUnion()
+    {
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+template <typename TItem>
+union [[nodiscard]] ItemUnion<false, TItem>
+{
+    TItem item;
+
+    [[gnu::always_inline]] ItemUnion()
+    {
+    }
+
+    [[gnu::always_inline]] ~ItemUnion()
+    {
+    }
+};
+
+} // namespace sf::base::priv
+
+
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -26,25 +58,22 @@ class [[nodiscard]] TrivialVector
 {
 private:
     ////////////////////////////////////////////////////////////
-    union [[nodiscard]] ItemUnion
+    enum : bool
     {
-        TItem item;
-
-        [[gnu::always_inline]] ItemUnion()
-        {
-        }
+        triviallyDestructible = SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem),
+        triviallyCopyable     = SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem),
     };
 
 
     ////////////////////////////////////////////////////////////
-    static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(TItem));
-    static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem));
+    using ItemUnion = priv::ItemUnion<triviallyDestructible, TItem>;
 
+
+    ////////////////////////////////////////////////////////////
     static_assert(sizeof(ItemUnion) == sizeof(TItem));
     static_assert(alignof(ItemUnion) == alignof(TItem));
-
-    static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(ItemUnion));
-    static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(ItemUnion));
+    static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(ItemUnion) == triviallyCopyable);
+    static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(ItemUnion) == triviallyDestructible);
 
 
     ////////////////////////////////////////////////////////////
@@ -54,14 +83,107 @@ private:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static TItem* asItemPtr(ItemUnion* p) noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(TItem*, p);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static TItem* asItemPtr(TItem* p) noexcept
+    {
+        return p;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static const TItem* asItemPtr(const ItemUnion* p) noexcept
+    {
+        return SFML_BASE_LAUNDER_CAST(const TItem*, p);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static const TItem* asItemPtr(const TItem* p) noexcept
+    {
+        return p;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] static void moveRangeImpl(TItem* target, TItem* const srcBegin, TItem* const srcEnd)
+    {
+        if constexpr (triviallyCopyable)
+        {
+            SFML_BASE_MEMCPY(target, srcBegin, sizeof(TItem) * static_cast<SizeT>(srcEnd - srcBegin));
+        }
+        else
+        {
+            for (auto* p = srcBegin; p != srcEnd; ++p, ++target)
+                SFML_BASE_PLACEMENT_NEW(target) TItem(SFML_BASE_MOVE(*p));
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] static void moveRange(auto* target, auto* const srcBegin, auto* const srcEnd)
+    {
+        moveRangeImpl(asItemPtr(target), asItemPtr(srcBegin), asItemPtr(srcEnd));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] static void copyRangeImpl(TItem* target, const TItem* const srcBegin, const TItem* const srcEnd)
+    {
+        if constexpr (triviallyCopyable)
+        {
+            SFML_BASE_MEMCPY(target, srcBegin, sizeof(TItem) * static_cast<SizeT>(srcEnd - srcBegin));
+        }
+        else
+        {
+            for (auto* p = srcBegin; p != srcEnd; ++p, ++target)
+                SFML_BASE_PLACEMENT_NEW(target) TItem(*p);
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] static void copyRange(auto* target, const auto* const srcBegin, const auto* const srcEnd)
+    {
+        copyRangeImpl(asItemPtr(target), asItemPtr(srcBegin), asItemPtr(srcEnd));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] static void destroyRangeImpl(TItem* const srcBegin, TItem* const srcEnd)
+    {
+        if constexpr (!triviallyDestructible)
+        {
+            for (auto* p = srcBegin; p != srcEnd; ++p)
+                p->~TItem();
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] static void destroyRange(auto* const srcBegin, auto* const srcEnd)
+    {
+        destroyRangeImpl(asItemPtr(srcBegin), asItemPtr(srcEnd));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl(const SizeT targetCapacity)
     {
+        SFML_BASE_ASSERT(targetCapacity > capacity()); // Should only be called to grow
+
         auto*      newData = new ItemUnion[targetCapacity];
         const auto oldSize = size();
 
         if (m_data != nullptr)
         {
-            SFML_BASE_MEMCPY(newData, m_data, sizeof(ItemUnion) * oldSize);
+            moveRange(newData, m_data, m_endSize);
+            destroyRange(m_data, m_endSize);
             delete[] m_data;
         }
         else
@@ -95,6 +217,7 @@ public:
     ////////////////////////////////////////////////////////////
     ~TrivialVector()
     {
+        destroyRange(m_data, m_endSize);
         delete[] m_data;
     }
 
@@ -139,7 +262,7 @@ public:
         m_data    = new ItemUnion[srcCount];
         m_endSize = m_endCapacity = data() + srcCount;
 
-        SFML_BASE_MEMCPY(m_data, srcBegin, sizeof(TItem) * srcCount);
+        copyRange(m_data, srcBegin, srcEnd);
     }
 
 
@@ -156,7 +279,7 @@ public:
     m_endSize{data() + rhs.size()},
     m_endCapacity{data() + rhs.size()}
     {
-        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * rhs.size());
+        copyRange(m_data, rhs.m_data, rhs.m_endSize);
     }
 
 
@@ -166,10 +289,11 @@ public:
         if (this == &rhs)
             return *this;
 
+        clear();
         reserve(rhs.size());
-        m_endSize = data() + rhs.size();
+        copyRange(m_data, rhs.data(), rhs.m_endSize);
 
-        SFML_BASE_MEMCPY(m_data, rhs.m_data, sizeof(TItem) * rhs.size());
+        m_endSize = data() + rhs.size();
 
         return *this;
     }
@@ -181,7 +305,8 @@ public:
     m_endSize{rhs.m_endSize},
     m_endCapacity{rhs.m_endCapacity}
     {
-        rhs.m_data = nullptr;
+        rhs.m_data    = nullptr;
+        rhs.m_endSize = rhs.m_endCapacity = nullptr;
     }
 
 
@@ -191,48 +316,92 @@ public:
         if (this == &rhs)
             return *this;
 
+        destroyRange(m_data, m_endSize);
         delete[] m_data;
 
         m_data        = rhs.m_data;
         m_endSize     = rhs.m_endSize;
         m_endCapacity = rhs.m_endCapacity;
 
-        rhs.m_data = nullptr;
+        rhs.m_data    = nullptr;
+        rhs.m_endSize = rhs.m_endCapacity = nullptr;
 
         return *this;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const SizeT n)
+    [[gnu::always_inline]] void resize(const SizeT newSize)
     {
         const auto oldSize = size();
 
-        reserve(n);
-        m_endSize = data() + n;
+        if (newSize > oldSize)
+        {
+            reserve(newSize);
 
-        for (auto* p = data() + oldSize; p < m_endSize; ++p)
-            SFML_BASE_PLACEMENT_NEW(p) TItem();
+            for (auto* p = data() + oldSize; p != data() + newSize; ++p)
+                SFML_BASE_PLACEMENT_NEW(p) TItem();
+        }
+        else
+        {
+            destroyRange(data() + newSize, m_endSize);
+        }
+
+        m_endSize = data() + newSize;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const SizeT n, const TItem& item)
+    [[gnu::always_inline]] void resize(const SizeT newSize, const TItem& item)
     {
+        // TODO P0: repetition with above
+
         const auto oldSize = size();
 
-        reserve(n);
-        m_endSize = data() + n;
+        if (newSize > oldSize)
+        {
+            reserve(newSize);
 
-        for (auto* p = data() + oldSize; p < m_endSize; ++p)
-            SFML_BASE_PLACEMENT_NEW(p) TItem(item);
+            for (auto* p = data() + oldSize; p != data() + newSize; ++p)
+                SFML_BASE_PLACEMENT_NEW(p) TItem(item);
+        }
+        else
+        {
+            destroyRange(data() + newSize, m_endSize);
+            m_endSize = data() + newSize;
+        }
     }
 
 
     ////////////////////////////////////////////////////////////
     void shrinkToFit()
     {
-        reserveImpl(size());
+        const SizeT currentSize = size();
+
+        if (capacity() <= currentSize)
+            return;
+
+        if (currentSize == 0u)
+        {
+            destroyRange(m_data, m_endSize);
+            delete[] m_data;
+
+            m_data    = nullptr;
+            m_endSize = m_endCapacity = nullptr;
+
+            return;
+        }
+
+        auto* newData = new ItemUnion[currentSize];
+
+        // TODO P0: optimize into single one
+        moveRange(newData, m_data, m_endSize);
+        destroyRange(m_data, m_endSize);
+
+        delete[] m_data;
+
+        m_data    = newData;
+        m_endSize = m_endCapacity = data() + currentSize;
     }
 
 
@@ -259,7 +428,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void assignRange(const TItem* const b, const TItem* const e) noexcept
+    [[gnu::always_inline]] void assignRange(const TItem* const b, const TItem* const e)
     {
         SFML_BASE_ASSERT(b != nullptr);
         SFML_BASE_ASSERT(e != nullptr);
@@ -267,10 +436,11 @@ public:
 
         const auto count = static_cast<SizeT>(e - b);
 
+        clear();
         reserve(count);
+        copyRange(m_data, b, e);
 
-        SFML_BASE_MEMCPY(m_data, b, sizeof(TItem) * count);
-        unsafeSetSize(count);
+        m_endSize = data() + count;
     }
 
 
@@ -281,14 +451,14 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        SFML_BASE_MEMCPY(m_endSize, ptr, sizeof(TItem) * count);
+        copyRange(m_endSize, ptr, ptr + count);
 
         m_endSize += count;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void emplaceRange(const TItem* const ptr, const SizeT count) noexcept
+    [[gnu::always_inline]] void emplaceRange(const TItem* const ptr, const SizeT count)
     {
         reserveMore(count);
         unsafeEmplaceRange(ptr, count);
@@ -305,6 +475,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear() noexcept
     {
+        destroyRange(m_data, m_endSize);
         m_endSize = data();
     }
 
@@ -344,7 +515,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... Ts>
-    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
+    [[gnu::always_inline]] TItem& emplaceBack(Ts&&... xs)
     {
         reserveMore(1);
         return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
@@ -353,7 +524,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename T>
-    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
+    [[gnu::always_inline]] TItem& pushBack(T&& x)
     {
         reserveMore(1);
         return unsafeEmplaceBack(static_cast<T&&>(x));
@@ -366,18 +537,42 @@ public:
         SFML_BASE_ASSERT(it >= begin());
         SFML_BASE_ASSERT(it < end());
 
-        const TItem* const elementAfter      = it + 1;
-        const auto         numElementsToMove = static_cast<SizeT>(end() - elementAfter);
+        TItem* const nextElement = it + 1;
 
-        if (numElementsToMove > 0)
+        if constexpr (triviallyCopyable)
         {
-            // Move elements from [it + 1, end()) to [it, end() - 1)
-            SFML_BASE_MEMMOVE(it,                                 // Destination
-                              elementAfter,                       // Source
-                              numElementsToMove * sizeof(TItem)); // Number of bytes
+            const auto numElementsToMove = static_cast<SizeT>(end() - nextElement);
+
+            if (numElementsToMove > 0u)
+            {
+                // Move elements from `[it + 1, end())` to `[it, end() - 1)`
+                SFML_BASE_MEMMOVE(it,                                 // Destination
+                                  nextElement,                        // Source
+                                  numElementsToMove * sizeof(TItem)); // Number of bytes
+            }
+        }
+        else
+        {
+            if (nextElement != m_endSize)
+            {
+                TItem* currentWrite = it;
+                TItem* currentRead  = nextElement;
+
+                while (currentRead != m_endSize)
+                {
+                    *currentWrite = SFML_BASE_MOVE(*currentRead);
+                    ++currentWrite;
+                    ++currentRead;
+                }
+            }
         }
 
         --m_endSize;
+
+        if constexpr (!triviallyDestructible)
+        {
+            m_endSize->~TItem();
+        }
 
         return it;
     }
@@ -397,7 +592,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename... TItems>
-    [[gnu::always_inline, gnu::flatten]] void pushBackMultiple(TItems&&... items)
+    [[gnu::always_inline]] void pushBackMultiple(TItems&&... items)
     {
         reserveMore(sizeof...(items));
         unsafePushBackMultiple(static_cast<TItems&&>(items)...);
@@ -513,6 +708,11 @@ public:
     {
         SFML_BASE_ASSERT(!empty());
         --m_endSize;
+
+        if constexpr (!triviallyDestructible)
+        {
+            m_endSize->~TItem();
+        }
     }
 
 
