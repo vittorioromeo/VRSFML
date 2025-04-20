@@ -11,7 +11,9 @@
 #include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/PlacementNew.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 
@@ -74,6 +76,18 @@ private:
     }
 
 public:
+    ////////////////////////////////////////////////////////////
+    using value_type      = TItem;
+    using pointer         = TItem*;
+    using const_pointer   = const TItem*;
+    using reference       = TItem&;
+    using const_reference = const TItem&;
+    using size_type       = SizeT;
+    using difference_type = PtrDiffT;
+    using iterator        = TItem*;
+    using const_iterator  = const TItem*;
+
+
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TrivialVector() = default;
 
@@ -495,6 +509,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void popBack() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        --m_endSize;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
     {
         m_endSize = SFML_BASE_LAUNDER_CAST(TItem*, m_data) + newSize;
@@ -524,6 +546,25 @@ public:
     [[nodiscard]] bool operator!=(const TrivialVector& rhs) const
     {
         return !(*this == rhs);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void swap(TrivialVector& rhs) noexcept
+    {
+        if (this == &rhs)
+            return;
+
+        base::swap(m_data, rhs.m_data);
+        base::swap(m_endSize, rhs.m_endSize);
+        base::swap(m_endCapacity, rhs.m_endCapacity);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend void swap(TrivialVector& lhs, TrivialVector& rhs) noexcept
+    {
+        lhs.swap(rhs);
     }
 };
 
