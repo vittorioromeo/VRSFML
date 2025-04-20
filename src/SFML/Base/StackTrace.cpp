@@ -13,7 +13,7 @@
     #ifdef SFML_SYSTEM_EMSCRIPTEN
         #include <emscripten.h>
     #else
-        #include <cpptrace/cpptrace.hpp>
+        #include <cpptrace/basic.hpp>
     #endif
 
     #include <cstdio>

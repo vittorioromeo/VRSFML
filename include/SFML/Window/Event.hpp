@@ -38,8 +38,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct Resized
     {
-        Vector2u size;    //!< New size, in pixels
-        Vector2u oldSize; //!< Old size, in pixels
+        Vector2u size; //!< New size, in pixels
     };
 
     ////////////////////////////////////////////////////////////
