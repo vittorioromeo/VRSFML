@@ -146,9 +146,9 @@ private:
 ////////////////////////////////////////////////////////////
 struct ThreadPool::Impl
 {
-    TaskQueue                      queue;
+    TaskQueue            queue;
     base::Vector<Worker> workers;
-    std::atomic<SizeT>             remainingInits;
+    std::atomic<SizeT>   remainingInits;
 };
 
 
