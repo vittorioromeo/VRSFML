@@ -6,7 +6,7 @@
 #include <LoadIntoMemoryUtil.hpp>
 
 
-sf::base::TrivialVector<unsigned char> loadIntoMemory(const char* path)
+sf::base::Vector<unsigned char> loadIntoMemory(const char* path)
 {
     sf::InFileStream file(sf::Path{path}, sf::FileOpenMode::bin | sf::FileOpenMode::ate);
     SFML_BASE_ASSERT(file);
@@ -14,7 +14,7 @@ sf::base::TrivialVector<unsigned char> loadIntoMemory(const char* path)
     const auto size = file.tellg();
     file.seekg(0, sf::SeekDir::beg);
 
-    sf::base::TrivialVector<unsigned char> buffer(static_cast<sf::base::SizeT>(size));
+    sf::base::Vector<unsigned char> buffer(static_cast<sf::base::SizeT>(size));
 
     [[maybe_unused]] const auto& result = file.read(reinterpret_cast<char*>(buffer.data()),
                                                     static_cast<sf::base::PtrDiffT>(size));

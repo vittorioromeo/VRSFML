@@ -15,7 +15,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <algorithm> // std::sort, std::adjacent_find
 
@@ -144,7 +144,7 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
             SoundChannel channel;
         };
 
-        base::TrivialVector<SupportedChannel>
+        base::Vector<SupportedChannel>
             targetChannelMap{{speakerFrontLeft, SoundChannel::FrontLeft},
                              SupportedChannel{speakerFrontRight, SoundChannel::FrontRight},
                              SupportedChannel{speakerFrontCenter, SoundChannel::FrontCenter},

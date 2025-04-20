@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::TrivialVector<base::U8> saveToMemory(const Image& image, SaveFormat format);
+    [[nodiscard]] static base::Vector<base::U8> saveToMemory(const Image& image, SaveFormat format);
 };
 
 } // namespace sf

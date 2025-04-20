@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/Optional.hpp"
 
 
@@ -45,7 +45,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::NonTrivialVector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles(
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles(
         AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::NonTrivialVector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles(
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles(
         AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////

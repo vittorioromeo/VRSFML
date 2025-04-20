@@ -18,7 +18,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
@@ -154,7 +154,7 @@ template <typename T, typename U>
     const FT_Face&                         face,
     const FT_Stroker&                      stroker,
     sf::TextureAtlas&                      textureAtlas,
-    sf::base::TrivialVector<sf::base::U8>& pixelBuffer,
+    sf::base::Vector<sf::base::U8>& pixelBuffer,
     const char32_t                         codePoint,
     const unsigned int                     characterSize,
     const bool                             bold,
@@ -363,7 +363,7 @@ struct Font::Impl
 
     mutable GlyphTable glyphs; //!< Table mapping code points to their corresponding glyph
 
-    mutable base::TrivialVector<base::U8> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
+    mutable base::Vector<base::U8> pixelBuffer; //!< Pixel buffer holding a glyph's pixels before being written to the texture
 
     // Key for the outer map: combines character size and bold flag
     // Key for the inner map: combines the two char32_t code points

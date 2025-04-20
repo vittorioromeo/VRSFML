@@ -5,7 +5,7 @@
 
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ public:
     }
 
 private:
-    sf::base::TrivialVector<sf::Vector2f> m_oldVertexPositions;
+    sf::base::Vector<sf::Vector2f> m_oldVertexPositions;
     float                                 m_time = 0.f;
     float                                 m_frequency;
     float                                 m_amplitude;
