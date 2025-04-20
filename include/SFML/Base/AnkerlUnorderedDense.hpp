@@ -87,7 +87,7 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -104,7 +104,7 @@
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsVoid.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <cstdint> // uintptr_t
 
@@ -137,8 +137,8 @@ namespace detail {
     template <typename T>
     using vector = sf::base::Conditional<
         sf::base::isTriviallyCopyable<T> && sf::base::isTriviallyDestructible<T>,
-        sf::base::TrivialVector<T>,
-        sf::base::NonTrivialVector<T>>;
+        sf::base::Vector<T>,
+        sf::base::Vector<T>>;
 
 template <typename I>
 concept subtractable = requires(const I& a, const I& b) {

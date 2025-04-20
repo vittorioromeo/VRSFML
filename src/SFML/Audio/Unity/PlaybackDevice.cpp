@@ -18,7 +18,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>
@@ -90,7 +90,7 @@ struct PlaybackDevice::Impl
     AudioContext*        audioContext; //!< The audio context (used to get the MA context and for lifetime tracking)
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
-    base::TrivialVector<ResourceEntry> resources;      //!< Registered resources
+    base::Vector<ResourceEntry> resources;      //!< Registered resources
     std::mutex                         resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)

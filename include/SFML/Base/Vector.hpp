@@ -54,7 +54,7 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename TItem>
-class [[nodiscard]] TrivialVector
+class [[nodiscard]] Vector
 {
 private:
     ////////////////////////////////////////////////////////////
@@ -211,11 +211,11 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] TrivialVector() = default;
+    [[nodiscard]] Vector() = default;
 
 
     ////////////////////////////////////////////////////////////
-    ~TrivialVector()
+    ~Vector()
     {
         destroyRange(m_data, m_endSize);
         delete[] m_data;
@@ -223,7 +223,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const SizeT initialSize)
+    [[nodiscard]] explicit Vector(const SizeT initialSize)
     {
         if (initialSize == 0u)
             return;
@@ -237,7 +237,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const SizeT initialSize, const TItem& value)
+    [[nodiscard]] explicit Vector(const SizeT initialSize, const TItem& value)
     {
         if (initialSize == 0u)
             return;
@@ -251,7 +251,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const TItem* const srcBegin, const TItem* const srcEnd)
+    [[nodiscard]] explicit Vector(const TItem* const srcBegin, const TItem* const srcEnd)
     {
         SFML_BASE_ASSERT(srcBegin <= srcEnd);
         const auto srcCount = static_cast<SizeT>(srcEnd - srcBegin);
@@ -267,14 +267,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit TrivialVector(const std::initializer_list<TItem> iList) :
-    TrivialVector(iList.begin(), iList.end())
+    [[nodiscard]] explicit Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TrivialVector(const TrivialVector& rhs) :
+    [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs) :
     m_data{rhs.m_data == nullptr ? nullptr : new ItemUnion[rhs.size()]},
     m_endSize{data() + rhs.size()},
     m_endCapacity{data() + rhs.size()}
@@ -284,7 +283,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    TrivialVector& operator=(const TrivialVector& rhs)
+    Vector& operator=(const Vector& rhs)
     {
         if (this == &rhs)
             return *this;
@@ -300,7 +299,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] TrivialVector(TrivialVector&& rhs) noexcept :
+    [[nodiscard, gnu::always_inline]] Vector(Vector&& rhs) noexcept :
     m_data{rhs.m_data},
     m_endSize{rhs.m_endSize},
     m_endCapacity{rhs.m_endCapacity}
@@ -311,7 +310,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    TrivialVector& operator=(TrivialVector&& rhs) noexcept
+    Vector& operator=(Vector&& rhs) noexcept
     {
         if (this == &rhs)
             return *this;
@@ -466,7 +465,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const TrivialVector& rhs) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const Vector& rhs) noexcept
     {
         unsafeEmplaceRange(rhs.data(), rhs.size());
     }
@@ -724,7 +723,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool operator==(const TrivialVector& rhs) const
+    [[nodiscard]] bool operator==(const Vector& rhs) const
     {
         if (this == &rhs)
             return true;
@@ -743,14 +742,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool operator!=(const TrivialVector& rhs) const
+    [[nodiscard]] bool operator!=(const Vector& rhs) const
     {
         return !(*this == rhs);
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void swap(TrivialVector& rhs) noexcept
+    [[gnu::always_inline]] void swap(Vector& rhs) noexcept
     {
         if (this == &rhs)
             return;
@@ -762,7 +761,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] friend void swap(TrivialVector& lhs, TrivialVector& rhs) noexcept
+    [[gnu::always_inline]] friend void swap(Vector& lhs, Vector& rhs) noexcept
     {
         lhs.swap(rhs);
     }

@@ -17,7 +17,7 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Span.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
+    base::Vector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
     base::SizeT m_verticesEndIndex = 0u;    //!< Index where the fill vertices end and outline vertices begin
 
     FloatRect m_textureRect{};        //!< Area of the source texture to display for the fill

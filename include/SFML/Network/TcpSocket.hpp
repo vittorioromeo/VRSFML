@@ -13,7 +13,7 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -201,14 +201,14 @@ private:
     {
         base::U32                          size{};         //!< Data of packet size
         base::SizeT                        sizeReceived{}; //!< Number of size bytes received so far
-        base::TrivialVector<unsigned char> data;           //!< Data of the packet
+        base::Vector<unsigned char> data;           //!< Data of the packet
     };
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     PendingPacket                      m_pendingPacket;     //!< Temporary data of the packet currently being received
-    base::TrivialVector<unsigned char> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
+    base::Vector<unsigned char> m_blockToSendBuffer; //!< Buffer used to prepare data being sent from the socket
 };
 
 } // namespace sf

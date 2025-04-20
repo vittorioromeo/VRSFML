@@ -12,7 +12,7 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -177,7 +177,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
+    base::Vector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace sf

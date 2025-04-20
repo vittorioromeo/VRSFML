@@ -10,7 +10,7 @@
 #include "SFML/Base/FwdStdString.hpp" // used
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -408,7 +408,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<unsigned char> m_data;      //!< Data stored in the packet
+    base::Vector<unsigned char> m_data;      //!< Data stored in the packet
     base::SizeT                        m_readPos{}; //!< Current reading position in the packet
     base::SizeT m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
     bool        m_isValid{true}; //!< Reading state of the packet
