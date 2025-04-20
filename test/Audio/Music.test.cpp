@@ -10,7 +10,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Builtins/Memset.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -85,7 +85,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("openFromMemory()")
     {
-        sf::base::TrivialVector<unsigned char> memory(10);
+        sf::base::Vector<unsigned char> memory(10);
         SFML_BASE_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")

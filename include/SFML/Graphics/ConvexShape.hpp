@@ -11,7 +11,7 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -119,7 +119,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<Vector2f> m_points; //!< Points composing the convex polygon
+    base::Vector<Vector2f> m_points; //!< Points composing the convex polygon
 };
 
 } // namespace sf

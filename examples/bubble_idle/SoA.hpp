@@ -4,7 +4,7 @@
 #include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 
 
@@ -19,7 +19,7 @@ struct SoABase
     };
 
     ////////////////////////////////////////////////////////////
-    [[no_unique_address]] sf::base::TrivialVector<T> data;
+    [[no_unique_address]] sf::base::Vector<T> data;
 };
 
 ////////////////////////////////////////////////////////////

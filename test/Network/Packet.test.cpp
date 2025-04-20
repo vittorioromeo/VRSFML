@@ -5,7 +5,7 @@
 
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -114,8 +114,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << sf::base::U16{12'345};
             const auto*                              dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::TrivialVector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::TrivialVector<std::byte> expectedBytes{std::byte{0x30}, std::byte{0x39}};
+            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const sf::base::Vector<std::byte> expectedBytes{std::byte{0x30}, std::byte{0x39}};
             CHECK((bytes == expectedBytes));
         }
 
@@ -123,8 +123,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << sf::base::U32{1'234'567'890};
             const auto*                              dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::TrivialVector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::TrivialVector<std::byte>
+            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const sf::base::Vector<std::byte>
                 expectedBytes{std::byte{0x49}, std::byte{0x96}, std::byte{0x02}, std::byte{0xD2}};
             CHECK((bytes == expectedBytes));
         }
@@ -133,8 +133,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << 123.456f;
             const auto*                              dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::TrivialVector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::TrivialVector<std::byte>
+            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const sf::base::Vector<std::byte>
                 expectedBytes{std::byte{0x79}, std::byte{0xe9}, std::byte{0xf6}, std::byte{0x42}};
             CHECK((bytes == expectedBytes));
         }
@@ -143,8 +143,8 @@ TEST_CASE("[Network] sf::Packet")
         {
             packet << 789.123;
             const auto*                              dataPtr = static_cast<const std::byte*>(packet.getData());
-            const sf::base::TrivialVector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
-            const sf::base::TrivialVector<std::byte>
+            const sf::base::Vector<std::byte> bytes(dataPtr, dataPtr + packet.getDataSize());
+            const sf::base::Vector<std::byte>
                 expectedBytes{std::byte{0x44},
                               std::byte{0x8b},
                               std::byte{0x6c},

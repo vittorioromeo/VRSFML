@@ -1,6 +1,6 @@
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -164,7 +164,7 @@ TEST_CASE("[Graphics] sf::Color")
         STATIC_CHECK(sizeof(sf::Color) == 4);
         STATIC_CHECK(alignof(sf::Color) == 1);
 
-        sf::base::TrivialVector<sf::Color> pixels(3);
+        sf::base::Vector<sf::Color> pixels(3);
         pixels[0] = {10, 11, 12, 13};
         pixels[1] = {14, 15, 16, 17};
         pixels[2] = {18, 19, 20, 21};
