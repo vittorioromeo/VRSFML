@@ -121,7 +121,7 @@ template <typename T, typename U>
     if (currentSize == characterSize)
         return true;
 
-    const FT_Error result = FT_Set_Pixel_Sizes(face, 0, characterSize);
+    const FT_Error result = FT_Set_Pixel_Sizes(face, 0u, characterSize);
 
     if (result != FT_Err_Invalid_Pixel_Size)
         return result == FT_Err_Ok;
@@ -134,30 +134,31 @@ template <typename T, typename U>
 
     // In the case of bitmap fonts, resizing can fail if the requested size is not available
 
-    sf::priv::err(true /* multiLine */) << "Failed to set bitmap font size to " << characterSize << '\n'
-                                        << "Available sizes are: ";
+    auto& multilineErr = sf::priv::err(true /* multiLine */);
+    multilineErr << "Failed to set bitmap font size to " << characterSize << '\n' << "Available sizes are: ";
 
     for (int i = 0; i < face->num_fixed_sizes; ++i)
     {
         const long size = (face->available_sizes[i].y_ppem + 32) >> 6;
-        sf::priv::err(true /* multiLine */) << size << " ";
+        multilineErr << size << " ";
     }
 
-    sf::priv::err() << '\n';
+    multilineErr << '\n';
     return false;
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::Glyph loadGlyph(const FT_Library&                      library,
-                    const FT_Face&                         face,
-                    const FT_Stroker&                      stroker,
-                    sf::TextureAtlas&                      textureAtlas,
-                    sf::base::TrivialVector<sf::base::U8>& pixelBuffer,
-                    char32_t                               codePoint,
-                    unsigned int                           characterSize,
-                    bool                                   bold,
-                    float                                  outlineThickness)
+[[nodiscard]] sf::Glyph loadGlyph(
+    const FT_Library&                      library,
+    const FT_Face&                         face,
+    const FT_Stroker&                      stroker,
+    sf::TextureAtlas&                      textureAtlas,
+    sf::base::TrivialVector<sf::base::U8>& pixelBuffer,
+    const char32_t                         codePoint,
+    const unsigned int                     characterSize,
+    const bool                             bold,
+    const float                            outlineThickness)
 {
     sf::Glyph glyph; // Use a single local variable for NRVO
 
@@ -170,9 +171,8 @@ sf::Glyph loadGlyph(const FT_Library&                      library,
         return glyph; // Empty glyph
 
     // Load the glyph corresponding to the code point
-    FT_Int32 flags = FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT;
-    if (outlineThickness != 0.f)
-        flags |= FT_LOAD_NO_BITMAP;
+    const FT_Int32 flags = outlineThickness == 0.f ? FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT
+                                                   : FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_NO_BITMAP;
 
     if (FT_Load_Char(face, codePoint, flags) != 0)
         return glyph; // Empty glyph
@@ -183,9 +183,9 @@ sf::Glyph loadGlyph(const FT_Library&                      library,
         return glyph; // Empty glyph
 
     // Apply bold and outline (there is no fallback for outline) if necessary -- first technique using outline (highest quality)
-    const FT_Pos weight  = 1 << 6;
-    const bool   outline = (glyphDesc->format == FT_GLYPH_FORMAT_OUTLINE);
-    if (outline)
+    const FT_Pos weight          = 1 << 6;
+    const bool   supportsOutline = (glyphDesc->format == FT_GLYPH_FORMAT_OUTLINE);
+    if (supportsOutline)
     {
         if (bold)
         {
@@ -206,113 +206,110 @@ sf::Glyph loadGlyph(const FT_Library&                      library,
     }
 
     // Convert the glyph to a bitmap (i.e. rasterize it)
-    // Warning! After this line, do not read any data from glyphDesc directly, use
-    // bitmapGlyph.root to access the FT_Glyph data.
+    // Warning! After this line, do not read any data from `glyphDesc` directly, use
+    // `bitmapGlyph.root` to access the `FT_Glyph` data.
     FT_Glyph_To_Bitmap(&glyphDesc, FT_RENDER_MODE_NORMAL, nullptr, 1);
     auto*      bitmapGlyph = reinterpret_cast<FT_BitmapGlyph>(glyphDesc);
     FT_Bitmap& bitmap      = bitmapGlyph->bitmap;
 
     // Apply bold if necessary -- fallback technique using bitmap (lower quality)
-    if (!outline)
+    if (!supportsOutline)
     {
         if (bold)
             FT_Bitmap_Embolden(library, &bitmap, weight, weight);
 
-        if (outlineThickness != 0)
+        if (outlineThickness != 0.f)
             sf::priv::err() << "Failed to outline glyph (no fallback available)";
     }
 
-
     // Compute the glyph's advance offset
-    glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16);
-    if (bold)
-        glyph.advance += static_cast<float>(weight) / float{1 << 6};
+    glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16) +
+                    (bold ? static_cast<float>(weight) / float{1 << 6} : 0.f);
 
     glyph.lsbDelta = static_cast<int>(face->glyph->lsb_delta);
     glyph.rsbDelta = static_cast<int>(face->glyph->rsb_delta);
 
-    sf::Vector2u size(bitmap.width, bitmap.rows);
-
-    if ((size.x > 0) && (size.y > 0))
+    if (bitmap.width == 0u || bitmap.rows == 0u)
     {
-        // Leave a small padding around characters, so that filtering doesn't
-        // pollute them with pixels from neighbors
-        constexpr unsigned int padding = 2u;
-
-        size += 2u * sf::Vector2u{padding, padding};
-
-        // Find a good position for the new glyph into the texture
-        {
-            const auto pos = textureAtlas.getRectPacker().pack(size).value().toVector2f(); // TODO P0: what if there is no room?
-            glyph.textureRect = {pos, size.toVector2f()};
-        }
-
-        // Make sure the texture data is positioned in the center
-        // of the allocated texture rectangle
-        glyph.textureRect.position += sf::Vector2f{padding, padding};
-        glyph.textureRect.size -= 2.f * sf::Vector2f{padding, padding};
-
-        // Compute the glyph's bounding box
-        glyph.bounds.position = sf::Vector2i(bitmapGlyph->left, -bitmapGlyph->top).toVector2f();
-        glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).toVector2f();
-
-        // Resize the pixel buffer to the new size and fill it with transparent white pixels
-        pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4);
-
-        sf::base::U8* current = pixelBuffer.data();
-        sf::base::U8* end     = current + size.x * size.y * 4;
-
-        while (current != end)
-        {
-            (*current++) = 255;
-            (*current++) = 255;
-            (*current++) = 255;
-            (*current++) = 0;
-        }
-
-        // Extract the glyph's pixels from the bitmap
-        const sf::base::U8* pixels = bitmap.buffer;
-        if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
-        {
-            // Pixels are 1 bit monochrome values
-            for (unsigned int y = padding; y < size.y - padding; ++y)
-            {
-                for (unsigned int x = padding; x < size.x - padding; ++x)
-                {
-                    // The color channels remain white, just fill the alpha channel
-                    const sf::base::SizeT index = x + y * size.x;
-                    pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8)))) ? 255 : 0;
-                }
-
-                pixels += bitmap.pitch;
-            }
-        }
-        else
-        {
-            // Pixels are 8 bit gray levels
-            for (unsigned int y = padding; y < size.y - padding; ++y)
-            {
-                for (unsigned int x = padding; x < size.x - padding; ++x)
-                {
-                    // The color channels remain white, just fill the alpha channel
-                    const sf::base::SizeT index = x + y * size.x;
-                    pixelBuffer[index * 4 + 3]  = pixels[x - padding];
-                }
-
-                pixels += bitmap.pitch;
-            }
-        }
-
-        // Write the pixels to the texture
-        const auto dest       = glyph.textureRect.position.toVector2u() - sf::Vector2u{padding, padding};
-        const auto updateSize = glyph.textureRect.size.toVector2u() + 2u * sf::Vector2u{padding, padding};
-        textureAtlas.getTexture().update(pixelBuffer.data(), updateSize, dest);
+        FT_Done_Glyph(glyphDesc);
+        return glyph;
     }
+
+    // Leave a small padding around characters, so that filtering doesn't
+    // pollute them with pixels from neighbors
+    constexpr unsigned int padding = 2u;
+
+    const sf::Vector2u size{bitmap.width + 2u * padding, bitmap.rows + 2u * padding};
+
+    // Find a good position for the new glyph into the texture
+    {
+        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVector2f(); // TODO P0: what if there is no room?
+        glyph.textureRect = {pos, size.toVector2f()};
+    }
+
+    // Make sure the texture data is positioned in the center
+    // of the allocated texture rectangle
+    glyph.textureRect.position += sf::Vector2f{padding, padding};
+    glyph.textureRect.size -= 2.f * sf::Vector2f{padding, padding};
+
+    // Compute the glyph's bounding box
+    glyph.bounds.position = sf::Vector2i(bitmapGlyph->left, -bitmapGlyph->top).toVector2f();
+    glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).toVector2f();
+
+    // Resize the pixel buffer to the new size and fill it with transparent white pixels
+    pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4u);
+
+    sf::base::U8* current = pixelBuffer.data();
+    sf::base::U8* end     = current + size.x * size.y * 4u;
+
+    while (current != end)
+    {
+        (*current++) = 255u;
+        (*current++) = 255u;
+        (*current++) = 255u;
+        (*current++) = 0u;
+    }
+
+    // Extract the glyph's pixels from the bitmap
+    const sf::base::U8* pixels = bitmap.buffer;
+    if (bitmap.pixel_mode == FT_PIXEL_MODE_MONO)
+    {
+        // Pixels are 1 bit monochrome values
+        for (unsigned int y = padding; y < size.y - padding; ++y)
+        {
+            for (unsigned int x = padding; x < size.x - padding; ++x)
+            {
+                // The color channels remain white, just fill the alpha channel
+                const sf::base::SizeT index = x + y * size.x;
+                pixelBuffer[index * 4 + 3] = ((pixels[(x - padding) / 8]) & (1 << (7 - ((x - padding) % 8)))) ? 255 : 0;
+            }
+
+            pixels += bitmap.pitch;
+        }
+    }
+    else
+    {
+        // Pixels are 8 bit gray levels
+        for (unsigned int y = padding; y < size.y - padding; ++y)
+        {
+            for (unsigned int x = padding; x < size.x - padding; ++x)
+            {
+                // The color channels remain white, just fill the alpha channel
+                const sf::base::SizeT index = x + y * size.x;
+                pixelBuffer[index * 4 + 3]  = pixels[x - padding];
+            }
+
+            pixels += bitmap.pitch;
+        }
+    }
+
+    // Write the pixels to the texture
+    const auto dest       = glyph.textureRect.position.toVector2u() - sf::Vector2u{padding, padding};
+    const auto updateSize = glyph.textureRect.size.toVector2u() + 2u * sf::Vector2u{padding, padding};
+    textureAtlas.getTexture().update(pixelBuffer.data(), updateSize, dest);
 
     // Delete the FT glyph
     FT_Done_Glyph(glyphDesc);
-
-    // Done :)
     return glyph;
 }
 
@@ -548,7 +545,7 @@ const FontInfo& Font::getInfo() const
 ////////////////////////////////////////////////////////////
 unsigned int Font::getCharIndex(const char32_t codePoint) const
 {
-    if (const auto it = m_impl->charIndexCache.find(codePoint); it != m_impl->charIndexCache.end())
+    if (const auto* it = m_impl->charIndexCache.find(codePoint); it != m_impl->charIndexCache.end())
         return it->second;
 
     const auto result                 = FT_Get_Char_Index(m_impl->ftFace, codePoint);
@@ -570,7 +567,7 @@ const Glyph& Font::getGlyph(const char32_t     codePoint,
     const base::U64 key = combineGlyphTableKey(outlineThickness, bold, getCharIndex(codePoint));
 
     // Glyph cached: just return it
-    if (const auto it = glyphs.find(key); it != glyphs.end())
+    if (const auto* it = glyphs.find(key); it != glyphs.end())
         return it->second;
 
     // Glyph not cached: we have to load it
@@ -609,11 +606,11 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
     const base::U64 pairKey     = combineKerningCharPair(first, second);
 
     // Find the map for the given size and bold state
-    if (const auto sizeBoldIt = m_impl->kerningCache.find(sizeBoldKey); sizeBoldIt != m_impl->kerningCache.end())
+    if (const auto* sizeBoldIt = m_impl->kerningCache.find(sizeBoldKey); sizeBoldIt != m_impl->kerningCache.end())
     {
         // Find the kerning value for the specific character pair
         const auto& pairMap = sizeBoldIt->second;
-        if (const auto pairIt = pairMap.find(pairKey); pairIt != pairMap.end())
+        if (const auto* pairIt = pairMap.find(pairKey); pairIt != pairMap.end())
             return pairIt->second;
     }
 

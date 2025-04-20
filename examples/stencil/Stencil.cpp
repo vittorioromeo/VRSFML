@@ -36,14 +36,26 @@ int main()
         .contextSettings = {.depthBits = 0u, .stencilBits = 8u},
     });
 
-    const sf::RectangleShape red(
-        {.position{270.f, 70.f}, .rotation = sf::degrees(60.f), .fillColor = sf::\Color::Red, .size = {500.f, 50.f}});
+    const sf::RectangleShape red({
+        .position{270.f, 70.f},
+        .rotation  = sf::degrees(60.f),
+        .fillColor = sf::Color::Red,
+        .size      = {500.f, 50.f},
+    });
 
-    const sf::RectangleShape green(
-        {.position{370.f, 100.f}, .rotation = sf::degrees(120.f), .fillColor = sf::Color::Green, .size = {500.f, 50.f}});
+    const sf::RectangleShape green({
+        .position{370.f, 100.f},
+        .rotation  = sf::degrees(120.f),
+        .fillColor = sf::Color::Green,
+        .size      = {500.f, 50.f},
+    });
 
-    const sf::RectangleShape blue(
-        {.position{550.f, 470.f}, .rotation = sf::degrees(180.f), .fillColor = sf::Color::Blue, .size = {500.f, 50.f}});
+    const sf::RectangleShape blue({
+        .position{550.f, 470.f},
+        .rotation  = sf::degrees(180.f),
+        .fillColor = sf::Color::Blue,
+        .size      = {500.f, 50.f},
+    });
 
     while (true)
     {
