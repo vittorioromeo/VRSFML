@@ -34,7 +34,7 @@
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -1066,7 +1066,7 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 struct ImGuiContext::Impl
 {
-    base::NonTrivialVector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
+    base::Vector<base::UniquePtr<ImGuiPerWindowContext>> perWindowContexts;
 
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
