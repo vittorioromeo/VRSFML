@@ -21,11 +21,10 @@ namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
-sf::base::Vector<THandle> getAvailableDeviceHandles(
-    sf::base::PassKey<sf::AudioContextUtils>&& passKey,
-    ma_context&                                maContext,
-    const char*                                type,
-    F&&                                        fMAContextGetDevices)
+sf::base::Vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContextUtils>&& passKey,
+                                                    ma_context&                                maContext,
+                                                    const char*                                type,
+                                                    F&&                                        fMAContextGetDevices)
 {
     sf::base::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
 

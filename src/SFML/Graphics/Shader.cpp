@@ -81,8 +81,7 @@ struct [[nodiscard]] BufferSlice
 
 ////////////////////////////////////////////////////////////
 // Read the contents of a file into an array of char
-[[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path&                filename,
-                                                                         sf::base::Vector<char>& buffer)
+[[nodiscard]] sf::base::Optional<BufferSlice> appendFileContentsToVector(const sf::Path& filename, sf::base::Vector<char>& buffer)
 {
     sf::InFileStream file(filename.c_str(), sf::FileOpenMode::bin);
 
@@ -111,7 +110,7 @@ struct [[nodiscard]] BufferSlice
 
 ////////////////////////////////////////////////////////////
 // Read the contents of a stream into an array of char
-[[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream&               stream,
+[[nodiscard]] sf::base::Optional<BufferSlice> appendStreamContentsToVector(sf::InputStream&        stream,
                                                                            sf::base::Vector<char>& buffer)
 {
     const sf::base::Optional<sf::base::SizeT> size = stream.getSize();
@@ -685,7 +684,7 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length)
 {
     base::Vector<float> contiguous = flatten(vectorArray, length);
-    const UniformBinder        binder{m_impl->shaderProgram};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -694,7 +693,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorA
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length)
 {
     base::Vector<float> contiguous = flatten(vectorArray, length);
-    const UniformBinder        binder{m_impl->shaderProgram};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
@@ -703,7 +702,7 @@ void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorA
 void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length)
 {
     base::Vector<float> contiguous = flatten(vectorArray, length);
-    const UniformBinder        binder{m_impl->shaderProgram};
+    const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 

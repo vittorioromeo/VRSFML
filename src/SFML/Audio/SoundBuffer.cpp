@@ -34,11 +34,11 @@ struct SoundBuffer::Impl
     {
     }
 
-    base::Vector<base::I16> samples;            //!< Samples buffer
-    unsigned int                   sampleRate{44'100}; //!< Number of samples per second
-    ChannelMap        channelMap{SoundChannel::Mono};  //!< The map of position in sample frame to sound channel
-    Time              duration;                        //!< Sound duration
-    mutable SoundList sounds;                          //!< List of sounds that are using this buffer
+    base::Vector<base::I16> samples;                        //!< Samples buffer
+    unsigned int            sampleRate{44'100};             //!< Number of samples per second
+    ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    Time                    duration;                       //!< Sound duration
+    mutable SoundList       sounds;                         //!< List of sounds that are using this buffer
 };
 
 
@@ -233,7 +233,7 @@ m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)))
 base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
-    const base::U64                sampleCount = file.getSampleCount();
+    const base::U64         sampleCount = file.getSampleCount();
     base::Vector<base::I16> samples(static_cast<base::SizeT>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
