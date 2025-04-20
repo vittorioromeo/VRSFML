@@ -20,7 +20,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID

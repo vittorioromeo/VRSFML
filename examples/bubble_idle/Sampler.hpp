@@ -2,7 +2,7 @@
 
 
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ public:
     }
 
 private:
-    sf::base::TrivialVector<float> m_data;
+    sf::base::Vector<float> m_data;
     const sf::base::SizeT          m_capacity;
 
     sf::base::SizeT m_size  = 0;   // Number of valid samples currently in the buffer.

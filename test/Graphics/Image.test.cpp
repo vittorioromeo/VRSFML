@@ -6,7 +6,7 @@
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -173,7 +173,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Failed load")
         {
-            sf::base::TrivialVector<sf::base::U8> memory;
+            sf::base::Vector<sf::base::U8> memory;
 
             SECTION("Empty")
             {
@@ -328,7 +328,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful save")
         {
-            sf::base::TrivialVector<sf::base::U8> output;
+            sf::base::Vector<sf::base::U8> output;
 
             SECTION("To bmp")
             {

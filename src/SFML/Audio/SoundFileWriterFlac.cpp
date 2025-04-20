@@ -14,7 +14,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <FLAC/stream_encoder.h>
@@ -43,7 +43,7 @@ struct SoundFileWriterFlac::Impl
     base::UniquePtr<FLAC__StreamEncoder, FlacStreamEncoderDeleter> encoder;        //!< FLAC stream encoder
     unsigned int                                                   channelCount{}; //!< Number of channels
     base::SizeT                    remapTable[8]{}; //!< Table we use to remap source to target channel order
-    base::TrivialVector<base::I32> samples32;       //!< Conversion buffer
+    base::Vector<base::I32> samples32;       //!< Conversion buffer
 };
 
 

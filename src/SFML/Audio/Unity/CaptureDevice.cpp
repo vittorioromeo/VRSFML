@@ -16,7 +16,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -92,7 +92,7 @@ struct CaptureDevice::Impl
     CaptureDeviceHandle            captureDeviceHandle; //!< Capture device handle
     ma_uint32                      channelCount{1u};    //!< Number of recording channels
     ma_uint32                      sampleRate{44'100u}; //!< Sample rate
-    base::TrivialVector<base::I16> samples;             //!< Buffer to store captured samples
+    base::Vector<base::I16> samples;             //!< Buffer to store captured samples
     ChannelMap channelMap{SoundChannel::Mono};          //!< The map of position in sample frame to sound channel
 
     SoundRecorder*     soundRecorder{nullptr}; //!< Used in the miniaudio device callback

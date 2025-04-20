@@ -14,7 +14,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <mutex>
@@ -51,7 +51,7 @@ namespace sf
 struct Music::Impl
 {
     InputSoundFile                 file;     //!< Input sound file
-    base::TrivialVector<base::I16> samples;  //!< Temporary buffer of samples
+    base::Vector<base::I16> samples;  //!< Temporary buffer of samples
     std::recursive_mutex           mutex;    //!< Mutex protecting the data
     Span<base::U64>                loopSpan; //!< Loop Range Specifier
 

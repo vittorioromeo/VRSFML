@@ -22,7 +22,7 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -512,7 +512,7 @@ private:
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
     String                              m_string;     //!< String to display
-    mutable base::TrivialVector<Vertex> m_vertices;   //!< Vertex array containing the outline and fill geometry
+    mutable base::Vector<Vertex> m_vertices;   //!< Vertex array containing the outline and fill geometry
     mutable FloatRect                   m_bounds;     //!< Bounding rectangle of the text (in local coordinates)
     const Font*                         m_font{};     //!< Font used to display the string
     mutable base::SizeT m_fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start

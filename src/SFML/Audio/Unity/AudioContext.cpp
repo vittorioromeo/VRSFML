@@ -10,7 +10,7 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>
@@ -92,7 +92,7 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
 template <typename F>
 [[nodiscard]] bool forAllMADeviceInfos(ma_context& maContext, F&& func)
 {
-    sf::base::TrivialVector<ma_device_info> maDeviceInfoVector; // Use a single local variable for NRVO
+    sf::base::Vector<ma_device_info> maDeviceInfoVector; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};

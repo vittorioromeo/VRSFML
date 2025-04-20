@@ -7,7 +7,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/Touch.hpp"
 
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf::Touch
@@ -39,7 +39,7 @@ Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo)
 ////////////////////////////////////////////////////////////
 base::Span<Device> getDevices()
 {
-    static thread_local base::TrivialVector<Device> devices;
+    static thread_local base::Vector<Device> devices;
     devices.clear();
 
     {
