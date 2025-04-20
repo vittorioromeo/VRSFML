@@ -42,11 +42,11 @@ struct MiniaudioUtils::SoundBase::Impl
 
     PlaybackDevice* playbackDevice;
 
-    ma_node_vtable effectNodeVTable{};               //!< Vtable of the effect node
-    EffectNode     effectNode;                       //!< The engine node that performs effect processing
+    ma_node_vtable effectNodeVTable{};        //!< Vtable of the effect node
+    EffectNode     effectNode;                //!< The engine node that performs effect processing
     base::Vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
-    ma_sound        sound{};                         //!< The sound
-    EffectProcessor effectProcessor;                 //!< The effect processor
+    ma_sound        sound{};                  //!< The sound
+    EffectProcessor effectProcessor;          //!< The effect processor
 
     PlaybackDevice::ResourceEntryIndex resourceEntryIndex{static_cast<PlaybackDevice::ResourceEntryIndex>(
         -1)}; //!< Index of the resource entry registered with the PlaybackDevice

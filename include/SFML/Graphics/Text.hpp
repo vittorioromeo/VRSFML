@@ -511,10 +511,10 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     /* Ordered to minimize padding */
-    String                              m_string;     //!< String to display
-    mutable base::Vector<Vertex> m_vertices;   //!< Vertex array containing the outline and fill geometry
-    mutable FloatRect                   m_bounds;     //!< Bounding rectangle of the text (in local coordinates)
-    const Font*                         m_font{};     //!< Font used to display the string
+    String                       m_string;            //!< String to display
+    mutable base::Vector<Vertex> m_vertices;          //!< Vertex array containing the outline and fill geometry
+    mutable FloatRect            m_bounds;            //!< Bounding rectangle of the text (in local coordinates)
+    const Font*                  m_font{};            //!< Font used to display the string
     mutable base::SizeT m_fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
     unsigned int        m_characterSize{30u};         //!< Base size of characters, in pixels
     float               m_letterSpacing{1.f};         //!< Spacing factor between letters

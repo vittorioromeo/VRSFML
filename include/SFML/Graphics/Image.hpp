@@ -245,7 +245,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u                      m_size;   //!< Image size
+    Vector2u               m_size;   //!< Image size
     base::Vector<base::U8> m_pixels; //!< Pixels of the image
 };
 
