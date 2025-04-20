@@ -408,10 +408,10 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<unsigned char> m_data;      //!< Data stored in the packet
-    base::SizeT                        m_readPos{}; //!< Current reading position in the packet
-    base::SizeT m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
-    bool        m_isValid{true}; //!< Reading state of the packet
+    base::Vector<unsigned char> m_data;          //!< Data stored in the packet
+    base::SizeT                 m_readPos{};     //!< Current reading position in the packet
+    base::SizeT                 m_sendPos{};     //!< Current send position in the packet (for handling partial sends)
+    bool                        m_isValid{true}; //!< Reading state of the packet
 };
 
 } // namespace sf
