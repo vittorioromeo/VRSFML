@@ -181,10 +181,16 @@ void Shape::updateTexCoords()
 ////////////////////////////////////////////////////////////
 void Shape::updateOutlineTexCoords()
 {
-    // TODO P0:
+    // Make sure not to divide by zero when the points are aligned on a vertical or horizontal line
+    if (m_bounds.size.x == 0 || m_bounds.size.y == 0)
+        return;
+
     const auto* end = m_vertices.data() + m_vertices.size();
     for (Vertex* vertex = m_vertices.data() + m_verticesEndIndex; vertex != end; ++vertex)
-        vertex->texCoords = m_outlineTextureRect.position;
+    {
+        const Vector2f ratio = (vertex->position - m_bounds.position).componentWiseDiv(m_bounds.size);
+        vertex->texCoords    = m_outlineTextureRect.position + m_outlineTextureRect.size.componentWiseMul(ratio);
+    }
 }
 
 
