@@ -2,7 +2,7 @@
 
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <algorithm>
 #include <latch>
@@ -20,7 +20,7 @@ private:
         sf::base::SizeT objIdx;
     };
 
-    sf::base::TrivialVector<AABB> m_aabbs;
+    sf::base::Vector<AABB> m_aabbs;
 
 public:
     ////////////////////////////////////////////////////////////

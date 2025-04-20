@@ -19,7 +19,7 @@
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -190,7 +190,7 @@ struct SoundStream::Impl
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
     SoundStream*                   owner;                //!< Owning `SoundStream` object
-    base::TrivialVector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
+    base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
     base::SizeT                    sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64                      samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     unsigned int                   channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)

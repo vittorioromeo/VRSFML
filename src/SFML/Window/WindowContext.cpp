@@ -27,7 +27,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <atomic>
@@ -44,9 +44,9 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::TrivialVector<sf::base::StringView> loadExtensions(DerivedGlContextType& glContext)
+[[nodiscard]] sf::base::Vector<sf::base::StringView> loadExtensions(DerivedGlContextType& glContext)
 {
-    sf::base::TrivialVector<sf::base::StringView> result; // Use a single local variable for NRVO
+    sf::base::Vector<sf::base::StringView> result; // Use a single local variable for NRVO
 
     auto glGetErrorFunc    = reinterpret_cast<glGetErrorFuncType>(glContext.getFunction("glGetError"));
     auto glGetIntegervFunc = reinterpret_cast<glGetIntegervFuncType>(glContext.getFunction("glGetIntegerv"));
@@ -97,7 +97,7 @@ struct WindowContextImpl
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
+    base::Vector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
 
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
@@ -108,7 +108,7 @@ struct WindowContextImpl
     };
 
     std::mutex                               unsharedFrameBuffersMutex;
-    base::TrivialVector<UnsharedFrameBuffer> unsharedFrameBuffers;
+    base::Vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
     base::Optional<priv::JoystickManager> joystickManager;

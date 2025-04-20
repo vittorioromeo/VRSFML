@@ -25,7 +25,7 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <atomic>
 #include <utility>
@@ -333,7 +333,7 @@ Image Texture::copyToImage() const
     const priv::TextureSaver save;
 
     // Create an array of pixels
-    base::TrivialVector<base::U8> pixels(m_size.x * m_size.y * 4);
+    base::Vector<base::U8> pixels(m_size.x * m_size.y * 4);
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels

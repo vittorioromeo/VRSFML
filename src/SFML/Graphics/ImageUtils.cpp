@@ -32,7 +32,7 @@ namespace
 void bufferFromCallback(void* context, void* data, int size)
 {
     const auto* source = static_cast<sf::base::U8*>(data);
-    auto*       dest   = static_cast<sf::base::TrivialVector<sf::base::U8>*>(context);
+    auto*       dest   = static_cast<sf::base::Vector<sf::base::U8>*>(context);
 
     dest->emplaceRange(source, static_cast<sf::base::SizeT>(size));
 }
@@ -101,12 +101,12 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::TrivialVector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
+base::Vector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
 {
     // Choose function based on format
     const auto convertedSize = image.getSize().toVector2i();
 
-    base::TrivialVector<base::U8> buffer; // Use a single local variable for NRVO
+    base::Vector<base::U8> buffer; // Use a single local variable for NRVO
 
     if (format == SaveFormat::BMP)
     {

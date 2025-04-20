@@ -11,7 +11,7 @@
 
 #include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -99,7 +99,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<SoundChannel> m_channels;
+    base::Vector<SoundChannel> m_channels;
 };
 
 } // namespace sf

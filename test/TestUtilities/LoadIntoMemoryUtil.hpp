@@ -5,6 +5,6 @@
 
 #pragma once
 
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
-[[nodiscard]] sf::base::TrivialVector<unsigned char> loadIntoMemory(const char* path);
+[[nodiscard]] sf::base::Vector<unsigned char> loadIntoMemory(const char* path);

@@ -16,7 +16,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -44,7 +44,7 @@ struct MiniaudioUtils::SoundBase::Impl
 
     ma_node_vtable effectNodeVTable{};               //!< Vtable of the effect node
     EffectNode     effectNode;                       //!< The engine node that performs effect processing
-    base::TrivialVector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
+    base::Vector<ma_channel> soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
     ma_sound        sound{};                         //!< The sound
     EffectProcessor effectProcessor;                 //!< The effect processor
 
