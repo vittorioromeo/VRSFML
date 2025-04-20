@@ -14,7 +14,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 
@@ -149,7 +149,7 @@ const Path& Ftp::DirectoryResponse::getDirectory() const
 ////////////////////////////////////////////////////////////
 struct Ftp::ListingResponse::Impl
 {
-    base::NonTrivialVector<std::string> listing; //!< Directory/file names extracted from the data
+    base::Vector<std::string> listing; //!< Directory/file names extracted from the data
 };
 
 

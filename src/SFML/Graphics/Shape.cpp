@@ -16,7 +16,7 @@
 
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf

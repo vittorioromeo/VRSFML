@@ -6,7 +6,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/NonTrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"
@@ -147,7 +147,7 @@ private:
 struct ThreadPool::Impl
 {
     TaskQueue                      queue;
-    base::NonTrivialVector<Worker> workers;
+    base::Vector<Worker> workers;
     std::atomic<SizeT>             remainingInits;
 };
 
