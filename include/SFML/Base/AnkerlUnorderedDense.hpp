@@ -135,10 +135,7 @@ inline namespace ANKERL_UNORDERED_DENSE_NAMESPACE {
 namespace detail {
 
     template <typename T>
-    using vector = sf::base::Conditional<
-        sf::base::isTriviallyCopyable<T> && sf::base::isTriviallyDestructible<T>,
-        sf::base::Vector<T>,
-        sf::base::Vector<T>>;
+    using vector = sf::base::Vector<T>;
 
 template <typename I>
 concept subtractable = requires(const I& a, const I& b) {
