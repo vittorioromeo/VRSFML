@@ -293,7 +293,7 @@ if(SFML_ENABLE_HARDENING_FLAGS AND NOT MSVC)
         -fstack-protector-strong
         -fstack-clash-protection
         -fstrict-flex-arrays=3
-        -fno-delete-null-pointer-checks
+        # -fno-delete-null-pointer-checks (broken on GCC)
         -ftrapv
     )
 endif()
