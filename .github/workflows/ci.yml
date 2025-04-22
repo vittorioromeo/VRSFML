@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DISPLAY: ":99" # Display number to use for the X server
+  # DISPLAY: ":99" # No longer needed globally, xvfb-run handles it
   GALLIUM_DRIVER: llvmpipe # Use Mesa 3D software OpenGL renderer
   ANDROID_NDK_VERSION: "26.1.10909125" # Android NDK version to use
   # Define desired compiler versions for Linux
@@ -25,7 +25,7 @@ jobs:
 
     env:
       CMAKE_CXX_COMPILER_LAUNCHER: ccache # Use ccache to cache C++ compiler output
-      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1" # Work around Homebrew errors within coverallsapp/github-action@v2
+      HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1" # Work around Homebrew errors
 
     strategy:
       fail-fast: false
@@ -34,14 +34,14 @@ jobs:
         - { name: Windows VS2022 x86,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
         - { name: Windows VS2022 x64,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
         - { name: Windows VS2022 arm64,           os: windows-2022, flags: -DSFML_USE_MESA3D=OFF -GNinja -DSFML_BUILD_TEST_SUITE=OFF }
-        - { name: Windows VS2022 ClangCL MSBuild, os: windows-2022, flags: -DSFML_USE_MESA3D=ON -T ClangCL } # ninja doesn't support specifying the toolset, so use the ClangCL toolset to test building with MSBuild as well
+        - { name: Windows VS2022 ClangCL MSBuild, os: windows-2022, flags: -DSFML_USE_MESA3D=ON -T ClangCL }
         - { name: Windows VS2022 OpenGL ES,       os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DSFML_OPENGL_ES=ON -GNinja }
         - { name: Windows VS2022 Unity,           os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_UNITY_BUILD=ON -GNinja }
         - { name: Windows LLVM/Clang,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -GNinja }
         - { name: Windows MinGW,                  os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -GNinja }
         # --- Updated Linux entries ---
         - { name: Linux GCC,                      os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
-        - { name: Linux Clang,                    os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
+        - { name: Linux Clang,                    os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' } # Removed gcovr_options
         - { name: Linux GCC DRM,                  os: ubuntu-24.04, flags: '-DSFML_USE_DRM=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
         - { name: Linux GCC OpenGL ES,            os: ubuntu-24.04, flags: '-DSFML_OPENGL_ES=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
         # --- End Updated Linux entries ---
@@ -55,7 +55,8 @@ jobs:
         - { name: Static, flags: -DBUILD_SHARED_LIBS=OFF }
         type:
         - { name: Release, flags: -DSFML_ENABLE_LIFETIME_TRACKING=TRUE }
-        - { name: Debug, flags: -DCMAKE_BUILD_TYPE=Debug -DSFML_ENABLE_COVERAGE=ON -DSFML_FATAL_OPENGL_ERRORS=ON }
+        # --- Updated Debug type (removed coverage flag) ---
+        - { name: Debug, flags: -DCMAKE_BUILD_TYPE=Debug -DSFML_FATAL_OPENGL_ERRORS=ON }
 
         include:
         - platform: { name: Windows VS2022 x64, os: windows-2022 }
@@ -126,7 +127,7 @@ jobs:
     - name: Get CMake and Ninja
       uses: lukka/get-cmake@latest
       with:
-        cmakeVersion: latest # Ensure this provides a recent enough version for your needs
+        cmakeVersion: latest
         ninjaVersion: latest
 
     # --- Add step to cache apt downloads ---
@@ -135,7 +136,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: /var/cache/apt/archives
-        key: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/ci.yml') }} # Re-download if ci.yml changes
+        key: apt-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('**/ci.yml') }}
         restore-keys: |
           apt-${{ runner.os }}-${{ runner.arch }}-
 
@@ -144,12 +145,12 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        # Install GCC 14 (should be default on 24.04 but install explicitly)
+        # Install GCC 14
         sudo apt-get install -y --no-install-recommends gcc-$GCC_VERSION g++-$GCC_VERSION
-        # Install LLVM/Clang 20 from official LLVM repo
+        # Install LLVM/Clang 20
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh $CLANG_VERSION all # 'all' installs clangd, lld, etc. Adjust if needed.
+        sudo ./llvm.sh $CLANG_VERSION all # Keep 'all' for clang-tidy, sanitizers etc.
         rm llvm.sh
         # Verify versions
         gcc-$GCC_VERSION --version
@@ -157,34 +158,33 @@ jobs:
         clang-$CLANG_VERSION --version
         clang++-$CLANG_VERSION --version
 
+    # --- Updated Linux Dependencies (Removed gcovr, llvm-tools, fluxbox) ---
     - name: Install Linux Dependencies and Tools
       if: runner.os == 'Linux'
       run: |
-        # Dependencies are now installed after compilers
         sudo apt-get update && sudo apt-get install -y --no-install-recommends \
           xorg-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
           libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev \
-          libdrm-dev libgbm-dev xvfb fluxbox ccache \
-          llvm-${CLANG_VERSION}-tools # For llvm-cov
+          libdrm-dev libgbm-dev \
+          xvfb ccache # Need xvfb for xvfb-run
 
     - name: Remove ALSA Library
       if: runner.os == 'Linux' && matrix.platform.name != 'Android'
-      run: sudo apt-get remove -y libasound2 || echo "ALSA already removed or not installed." # Avoid error if not installed
+      run: sudo apt-get remove -y libasound2 || echo "ALSA already removed or not installed."
 
     - name: Install Android Components
       if: matrix.platform.name == 'Android'
       run: |
         echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "build-tools;33.0.2"
         echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;${ANDROID_NDK_VERSION}"
-        # Set ANDROID_NDK_ROOT explicitly for use in matrix flags
         ANDROID_NDK_ROOT_PATH=$(realpath $ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION)
         echo "ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT_PATH}" >> $GITHUB_ENV
         echo "Using Android NDK at: ${ANDROID_NDK_ROOT_PATH}"
 
+    # --- Updated macOS Tools (Removed gcovr) ---
     - name: Install macOS Tools
       if: runner.os == 'macOS'
       run: |
-        # Use retry logic similar to OpenCppCoverage for brew robustness
         for i in 1 2 3; do brew update && brew install ccache && break || sleep 15; done
 
     - name: Install macOS System Deps
@@ -196,7 +196,6 @@ jobs:
       uses: hendrikmuhs/ccache-action@v1.2.12
       with:
         verbose: 2
-        # Key includes compiler versions for Linux to ensure cache compatibility
         key: ${{ matrix.platform.name }}-${{ matrix.config.name }}-${{ matrix.type.name }}${{ runner.os == 'Linux' && format('-gcc{0}-clang{1}', env.GCC_VERSION, env.CLANG_VERSION) || '' }}
 
     - name: Cache MinGW
@@ -204,31 +203,27 @@ jobs:
       id: mingw-cache
       uses: actions/cache@v4
       with:
-        path: "C:\\mingw64" # Cache the parent directory to avoid issues with junctions/links if present
+        path: "C:\\mingw64"
         key: winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-19.1.7-mingw-w64msvcrt-12.0.0-r3
 
     - name: Install MinGW
       if: matrix.platform.name == 'Windows MinGW' && steps.mingw-cache.outputs.cache-hit != 'true'
       run: |
         curl -Lo mingw64.zip https://github.com/brechtsanders/winlibs_mingw/releases/download/14.2.0posix-19.1.7-12.0.0-msvcrt-r3/winlibs-x86_64-posix-seh-gcc-14.2.0-llvm-19.1.7-mingw-w64msvcrt-12.0.0-r3.zip
-        # Ensure target directory exists before extracting
         mkdir -p "C:\\mingw64"
         unzip -qq -d "C:\\mingw64" mingw64.zip
-        # The zip might contain a nested directory like 'mingw64', move contents up if needed
         if [ -d "C:\\mingw64\\mingw64" ]; then
           echo "Moving MinGW contents up one level..."
           mv C:\\mingw64\\mingw64\\* C:\\mingw64\\
           rmdir C:\\mingw64\\mingw64
         fi
 
-    - name: Add OpenCppCoverage and MinGW to PATH and remove MinGW-supplied CCache
-      if: runner.os == 'Windows'
+    # --- Updated PATH setup (Removed OpenCppCoverage) ---
+    - name: Add MinGW to PATH and remove MinGW-supplied CCache
+      if: runner.os == 'Windows' && matrix.platform.name == 'Windows MinGW'
       run: |
-        echo "C:\Program Files\OpenCppCoverage" >> $GITHUB_PATH
-        # Ensure the MinGW path exists before adding
         if [ -d "C:\\mingw64\\bin" ]; then
           echo "C:\\mingw64\\bin" >> $GITHUB_PATH
-          # Remove MinGW ccache only if it exists
           if [ -f "C:\\mingw64\\bin\\ccache.exe" ]; then
             rm -f "C:\\mingw64\\bin\\ccache.exe"
             echo "Removed MinGW ccache.exe"
@@ -247,93 +242,71 @@ jobs:
         echo "Type Flags: ${{ matrix.type.flags }}"
         echo "Android NDK Root (if applicable): $ANDROID_NDK_ROOT"
         echo "---------------------------"
-        # Use bash -eo pipefail to ensure errors in pipes are caught
         bash -eo pipefail << SCRIPT
         cmake --preset vrdev_ci -DCMAKE_TLS_VERIFY=0 -DCMAKE_VERBOSE_MAKEFILE=ON ${{ matrix.platform.flags }} ${{ matrix.config.flags }} ${{ matrix.type.flags }}
         SCRIPT
 
     - name: Build
-      run: cmake --build build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install --parallel # Add parallel build
+      run: cmake --build build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --target install --parallel
 
     - name: Build Android example
       if: matrix.platform.name == 'Android'
       run: examples/android/gradlew ${{ matrix.type.name == 'Debug' && 'assembleDebug' || 'assembleRelease' }} -p examples/android -P ARCH_ABI=${{matrix.config.arch}} -P MIN_SDK=${{matrix.config.api}}
 
-    - name: Prepare Test
+    # --- Updated Prepare Test step (Removed Xvfb/Fluxbox/GL Check) ---
+    - name: Prepare Test Environment
       run: |
         set -e
-        # Start up Xvfb and fluxbox to host display tests
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          echo "Starting Xvfb on display ${DISPLAY}..."
-          Xvfb ${DISPLAY} -screen 0 1920x1080x24 &
-          XVFB_PID=$!
-          echo "Xvfb PID: ${XVFB_PID}. Waiting for server to be ready..."
-
-          # Wait for Xvfb to be ready with retries
-          MAX_RETRIES=15 # Try for up to 15 * 2 = 30 seconds extra
-          RETRY_COUNT=0
-          SERVER_READY=0
-          # Initial sleep allows Xvfb to start its initialization
-          sleep 5
-          while [ ${RETRY_COUNT} -lt ${MAX_RETRIES} ]; do
-            # Check if Xvfb process still exists
-            if ! kill -0 ${XVFB_PID} > /dev/null 2>&1; then
-              echo "Error: Xvfb process (PID ${XVFB_PID}) terminated unexpectedly."
-              exit 1
-            fi
-            # Check if display is ready
-            if xdpyinfo -display ${DISPLAY} > /dev/null 2>&1; then
-              SERVER_READY=1
-              echo "X server on ${DISPLAY} is ready."
-              break
-            fi
-            RETRY_COUNT=$((RETRY_COUNT + 1))
-            echo "Waiting for X server... Attempt ${RETRY_COUNT}/${MAX_RETRIES}"
-            sleep 2
-          done
-
-          if [ ${SERVER_READY} -eq 0 ]; then
-            echo "Error: X server failed to become ready on ${DISPLAY} after ${MAX_RETRIES} attempts."
-            # Attempt to kill lingering Xvfb process if it didn't terminate itself
-            kill ${XVFB_PID} > /dev/null 2>&1 || true
-            exit 1
-          fi
-
-          echo "Starting Fluxbox..."
-          fluxbox > /dev/null 2>&1 &
-          # Give fluxbox a moment to start, less critical than Xvfb
-          sleep 3
-          echo "Xvfb and Fluxbox setup complete."
-        fi
-
-        # Make sure the build/bin directory exists so that the find command does not fail if no executables are built
-        mkdir -p build/bin
-
-        # Make use of a test to print OpenGL vendor/renderer/version info to the console
-        # Use simpler find command first to check existence, then execute
-        echo "Checking for test-sfml-window executable..."
-        TEST_EXEC=$(find "$(echo $GITHUB_WORKSPACE | sed 's/\\\\/\\//g')/build/bin" -name "test-sfml-window*" -print -quit)
-        if [ -n "$TEST_EXEC" ]; then
-          echo "Found executable: $TEST_EXEC"
-          echo "Attempting to get OpenGL info..."
-          "$TEST_EXEC" --test-case="[Window] sf::Context" --subcase="Version String" 2>&1 | grep -i "OpenGL" || echo "Warning: Failed to get OpenGL info from test or pattern not found."
-        else
-          echo "Warning: Could not find test-sfml-window executable in build/bin."
-        fi
+        echo "Ensuring build directories exist..."
+        mkdir -p build/bin build/lib
+        echo "Prepare Test Environment step finished."
 
     - name: Test (Windows)
       if: runner.os == 'Windows' && !contains(matrix.platform.name, 'MinGW') && !contains(matrix.platform.name, 'arm64')
       run: cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
 
+    # --- Updated Test Step (Using xvfb-run for Linux) ---
     - name: Test (Linux/macOS/MinGW)
       if: (runner.os != 'Windows' || contains(matrix.platform.name, 'MinGW')) && !contains(matrix.platform.name, 'iOS') && !contains(matrix.platform.name, 'Android')
       run: |
-        # Set environment for Linux display tests
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          export DISPLAY=$DISPLAY
-          export GALLIUM_DRIVER=$GALLIUM_DRIVER
+        # Set environment vars needed by tests
+        export GALLIUM_DRIVER=$GALLIUM_DRIVER
+
+        # Define the core test command
+        TEST_CMD="ctest --test-dir build --output-on-failure -C ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --repeat until-pass:3"
+
+        # Prepare OpenGL info check command (to be run within X env if applicable)
+        GET_GL_INFO_CMD=""
+        TEST_EXEC=$(find "$(echo $GITHUB_WORKSPACE | sed 's/\\\\/\\//g')/build/bin" -name "test-sfml-window*" -print -quit)
+        if [ -n "$TEST_EXEC" ]; then
+          GET_GL_INFO_CMD="echo '--- Getting OpenGL Info ---'; '$TEST_EXEC' --test-case='[Window] sf::Context' --subcase='Version String' 2>&1 | grep -Ei '(OpenGL|Vendor|Renderer|Version)' || echo 'Warning: Failed to get OpenGL info.' ; echo '--- OpenGL Info End ---'"
+        else
+          GET_GL_INFO_CMD="echo 'Warning: test-sfml-window executable not found.'"
         fi
-        ctest --test-dir build --output-on-failure -C ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --repeat until-pass:3
+
+        # Execute tests: Use xvfb-run wrapper only on Linux
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          echo "Running tests within xvfb-run on Linux..."
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+            sh -c "
+              set -eo pipefail # Ensure errors fail the script
+              echo 'Inside xvfb-run environment. Display is: \$DISPLAY'
+              $GET_GL_INFO_CMD
+              echo '--- Running CTest ---'
+              $TEST_CMD
+              echo '--- CTest Finished ---'
+            "
+          XVFB_RUN_EXIT_CODE=$?
+          echo "xvfb-run finished with exit code $XVFB_RUN_EXIT_CODE"
+          exit $XVFB_RUN_EXIT_CODE
+        else
+          echo "Running tests directly (macOS/MinGW)..."
+          sh -c "$GET_GL_INFO_CMD" # Run GL info check directly
+          $TEST_CMD # Run ctest directly
+        fi
+      env:
+         # Allow xvfb-run to set DISPLAY on Linux
+         DISPLAY: ""
 
     - name: Test Install Interface
       if: matrix.platform.name != 'Android'
@@ -343,13 +316,12 @@ jobs:
         echo "Install Prefix: $INSTALL_PREFIX"
         echo "CMake Args: -S test/install -B test/install/build -DCMAKE_PREFIX_PATH=$INSTALL_PREFIX -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}"
         echo "-------------------------------"
-        # Explicitly use bash -eo pipefail for the cmake commands
         bash -eo pipefail << SCRIPT
         cmake -S test/install -B test/install/build -DCMAKE_PREFIX_PATH="$INSTALL_PREFIX" -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} ${{matrix.platform.flags}} ${{matrix.config.flags}} ${{matrix.type.flags}}
         cmake --build test/install/build --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --parallel
         SCRIPT
 
-  # --- Tidy Job Updates ---
+  # --- Tidy Job (No changes related to xvfb-run needed) ---
   tidy:
     name: Analyzing on ${{ matrix.platform.name }}
     runs-on: ${{ matrix.platform.os }}
@@ -364,10 +336,9 @@ jobs:
         - { name: Linux DRM,       os: ubuntu-24.04, flags: '-DSFML_USE_DRM=ON -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
         - { name: Linux OpenGL ES, os: ubuntu-24.04, flags: '-DSFML_OPENGL_ES=ON -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
         # --- End Updated Linux tidy entries ---
-        - { name: macOS,           os: macos-14 } # Using system Clang or Homebrew LLVM
-        - { name: iOS,             os: macos-14,     flags: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 } # Uses Xcode Clang
-        # --- Updated Android tidy entry ---
-        - { name: Android,         os: ubuntu-24.04, flags: '-DCMAKE_ANDROID_ARCH_ABI=x86_64 -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK=$ANDROID_NDK_ROOT -DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++' } # Uses NDK Clang
+        - { name: macOS,           os: macos-14 }
+        - { name: iOS,             os: macos-14,     flags: -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_OSX_ARCHITECTURES=arm64 }
+        - { name: Android,         os: ubuntu-24.04, flags: '-DCMAKE_ANDROID_ARCH_ABI=x86_64 -DCMAKE_SYSTEM_NAME=Android -DCMAKE_SYSTEM_VERSION=21 -DCMAKE_ANDROID_NDK=$ANDROID_NDK_ROOT -DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++' }
 
     steps:
     - name: Checkout Code
@@ -379,7 +350,6 @@ jobs:
         cmakeVersion: latest
         ninjaVersion: latest
 
-    # --- Add apt cache for Linux ---
     - name: Cache apt packages
       if: runner.os == 'Linux'
       uses: actions/cache@v4
@@ -389,26 +359,22 @@ jobs:
         restore-keys: |
           apt-${{ runner.os }}-${{ runner.arch }}-
 
-    # --- Add Clang 20 install for Linux ---
     - name: Install Clang Compiler (Linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh $CLANG_VERSION clang clang-tidy # Only install clang and clang-tidy
+        sudo ./llvm.sh $CLANG_VERSION clang clang-tidy
         rm llvm.sh
-        # Verify versions
         clang-$CLANG_VERSION --version
         clang-tidy-$CLANG_VERSION --version
-        # Set path for CMake find_program(clang-tidy) if needed, or rely on CMAKE_CXX_COMPILER
         echo "CLANG_TIDY_EXE=$(which clang-tidy-${CLANG_VERSION})" >> $GITHUB_ENV
 
     - name: Install Windows Dependencies
       if: runner.os == 'Windows'
       run: |
-        # Ensure LLVM is installed via choco or comes with VS
-        choco install llvm --version 18.1.8 # Example: Install LLVM 18 for tidy on Windows
+        choco install llvm --version 18.1.8 # Pin version
         echo "C:\Program Files\LLVM\bin" >> $GITHUB_PATH
         curl.exe -o run-clang-tidy.py https://raw.githubusercontent.com/llvm/llvm-project/main/clang-tools-extra/clang-tidy/tool/run-clang-tidy.py
 
@@ -418,22 +384,18 @@ jobs:
          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
            libfreetype-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
            libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev \
-           libdrm-dev libgbm-dev python3 # run-clang-tidy might need python
+           libdrm-dev libgbm-dev python3
 
     - name: Install macOS Dependencies
       if: runner.os == 'macOS'
       run: |
-        # Retry logic for brew
-        for i in 1 2 3; do brew update && brew install llvm && break || sleep 15; done # Install latest stable LLVM from brew
+        for i in 1 2 3; do brew update && brew install llvm && break || sleep 15; done
         echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
-        # Verify clang-tidy path
         which clang-tidy
 
-    # --- Update Android NDK setup for tidy ---
     - name: Set Android NDK Root for Tidy
       if: matrix.platform.name == 'Android'
       run: |
-        # Need NDK for its Clang toolchain
         echo "y" | ${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager --install "ndk;${ANDROID_NDK_VERSION}"
         ANDROID_NDK_ROOT_PATH=$(realpath $ANDROID_SDK_ROOT/ndk/$ANDROID_NDK_VERSION)
         echo "ANDROID_NDK_ROOT=${ANDROID_NDK_ROOT_PATH}" >> $GITHUB_ENV
@@ -444,28 +406,28 @@ jobs:
         echo "--- Tidy CMake Configuration ---"
         echo "Platform Flags: ${{ matrix.platform.flags }}"
         echo "Android NDK Root (if applicable): $ANDROID_NDK_ROOT"
-        echo "Using clang-tidy: $(which clang-tidy || echo 'Not found in PATH, relying on CMake finding it via CXX compiler')"
+        echo "Using clang-tidy: $(which clang-tidy || which clang-tidy-${{ env.CLANG_VERSION }} || echo 'Not found')"
         echo "--------------------------------"
-        # Ensure the correct clang++ is used, which helps find the matching clang-tidy
-        # For Windows, rely on LLVM install setting path or VS providing it.
-        # For Linux, use explicit path.
-        # For macOS, rely on brew install setting path.
-        # For Android, rely on NDK toolchain file.
         CMAKE_EXTRA_ARGS=""
         if [ "$RUNNER_OS" == "Linux" ]; then
-          # Point to the specific clang-tidy version
-          CMAKE_EXTRA_ARGS="-DCMAKE_CXX_CLANG_TIDY=$(which clang-tidy-${CLANG_VERSION})"
+           CMAKE_EXTRA_ARGS="-DCMAKE_CXX_CLANG_TIDY=$(which clang-tidy-${CLANG_VERSION})"
+        elif [ "$RUNNER_OS" == "macOS" ]; then
+           CMAKE_EXTRA_ARGS="-DCMAKE_CXX_CLANG_TIDY=$(which clang-tidy)"
+        elif [ "$RUNNER_OS" == "Windows" ]; then
+           CLANG_TIDY_PATH=$(where.exe clang-tidy.exe | head -n 1)
+           if [ -n "$CLANG_TIDY_PATH" ]; then
+             CMAKE_EXTRA_ARGS="-DCMAKE_CXX_CLANG_TIDY=$CLANG_TIDY_PATH"
+           fi
         fi
         bash -eo pipefail << SCRIPT
         cmake --preset vrdev_ci -DCMAKE_TLS_VERIFY=0 \
-          ${{ runner.os != 'Windows' && '-DCMAKE_C_COMPILER=clang' }} \
-          ${{ runner.os != 'Windows' && '-DCMAKE_CXX_COMPILER=clang++' }} \
+          ${{ runner.os != 'Windows' && matrix.platform.name != 'Android' && '-DCMAKE_C_COMPILER=clang' }} \
+          ${{ runner.os != 'Windows' && matrix.platform.name != 'Android' && '-DCMAKE_CXX_COMPILER=clang++' }} \
           ${{ runner.os == 'Linux' && format('-DCMAKE_C_COMPILER=clang-{0} -DCMAKE_CXX_COMPILER=clang++-{0}', env.CLANG_VERSION) || ''}} \
           -DCMAKE_UNITY_BUILD=ON \
           ${{ matrix.platform.flags }} \
           $CMAKE_EXTRA_ARGS
         SCRIPT
-
 
     - name: Analyze Code
       run: cmake --build build --target tidy
@@ -482,7 +444,7 @@ jobs:
         # --- Updated Linux sanitize entries ---
         - { name: Linux,               os: ubuntu-24.04, flags: '-DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
         - { name: Linux DRM,           os: ubuntu-24.04, flags: '-DSFML_RUN_DISPLAY_TESTS=OFF -DSFML_USE_DRM=ON -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
-        - { name: Linux GCC OpenGL ES, os: ubuntu-24.04, flags: '-DSFML_RUN_DISPLAY_TESTS=OFF -DSFML_OPENGL_ES=ON -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' } # Renamed as Clang is used
+        - { name: Linux Clang OpenGL ES, os: ubuntu-24.04, flags: '-DSFML_RUN_DISPLAY_TESTS=OFF -DSFML_OPENGL_ES=ON -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' } # Renamed job slightly
         # --- End Updated Linux sanitize entries ---
 
     steps:
@@ -495,7 +457,6 @@ jobs:
         cmakeVersion: latest
         ninjaVersion: latest
 
-    # --- Add apt cache ---
     - name: Cache apt packages
       if: runner.os == 'Linux'
       uses: actions/cache@v4
@@ -505,28 +466,26 @@ jobs:
         restore-keys: |
           apt-${{ runner.os }}-${{ runner.arch }}-
 
-    # --- Add Clang 20 install ---
     - name: Install Clang Compiler (Linux)
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
-        sudo ./llvm.sh $CLANG_VERSION all # Install full LLVM suite for sanitizers
+        sudo ./llvm.sh $CLANG_VERSION all
         rm llvm.sh
-        # Verify versions
         clang-$CLANG_VERSION --version
         clang++-$CLANG_VERSION --version
 
+    # --- Updated Linux Dependencies (Removed fluxbox) ---
     - name: Install Linux Dependencies
       if: runner.os == 'Linux'
       run: |
          sudo apt-get update && sudo apt-get install -y --no-install-recommends \
            xorg-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev \
            libflac-dev libvorbis-dev libgl1-mesa-dev libegl1-mesa-dev \
-           libdrm-dev libgbm-dev xvfb fluxbox && \
+           libdrm-dev libgbm-dev xvfb && \
            (sudo apt-get remove -y libasound2 || echo "ALSA already removed or not installed.")
-
 
     - name: Configure
       run: |
@@ -542,33 +501,48 @@ jobs:
     - name: Build
       run: cmake --build build --parallel
 
-    - name: Prepare Test
+    # --- Updated Prepare Test Step (Removed Xvfb/Fluxbox) ---
+    - name: Prepare Sanitize Test Environment
       run: |
         set -e
-        # Start up Xvfb and fluxbox to host display tests
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          Xvfb $DISPLAY -screen 0 1920x1080x24 &
-          sleep 10 # More time for Xvfb
-          fluxbox > /dev/null 2>&1 &
-          sleep 5 # Time for fluxbox
-          xdpyinfo -display $DISPLAY > /dev/null 2>&1 || (echo "X server failed to start"; exit 1)
-          echo "Xvfb and fluxbox started for sanitize tests."
-        fi
+        echo "Ensuring build directories exist..."
+        mkdir -p build/bin build/lib
+        echo "Prepare Sanitize Test Environment step finished."
 
-    - name: Test
+    # --- Updated Test Step (Using xvfb-run) ---
+    - name: Test with Sanitizers
       run: |
-        # Set environment for Linux display tests and sanitizers
-        if [ "${{ runner.os }}" == "Linux" ]; then
-          export DISPLAY=$DISPLAY
-          export GALLIUM_DRIVER=$GALLIUM_DRIVER
-          # Set sanitizer options if needed, e.g., to exit on error
-          export ASAN_OPTIONS=halt_on_error=1
-          export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
-          export LSAN_OPTIONS=halt_on_error=1
-        fi
-        ctest --test-dir build --output-on-failure -C Debug # Sanitizers usually need Debug build type
+        # Set environment vars
+        export GALLIUM_DRIVER=$GALLIUM_DRIVER
+        export ASAN_OPTIONS=halt_on_error=1:detect_leaks=1
+        export UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1
+        export LSAN_OPTIONS=halt_on_error=1
 
-  # --- Docs Job (No changes needed here unless Doxygen depends on specific Clang for parsing) ---
+        # Define the core test command
+        TEST_CMD="ctest --test-dir build --output-on-failure -C Debug"
+
+        # Execute tests: Use xvfb-run wrapper only on Linux
+        if [ "${{ runner.os }}" == "Linux" ]; then
+          echo "Running sanitizer tests within xvfb-run on Linux..."
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
+            sh -c "
+              set -eo pipefail # Ensure errors fail the script
+              echo 'Inside xvfb-run environment. Display is: \$DISPLAY'
+              echo '--- Running CTest (Sanitizers Enabled) ---'
+              $TEST_CMD
+              echo '--- CTest Finished ---'
+            "
+          XVFB_RUN_EXIT_CODE=$?
+          echo "xvfb-run finished with exit code $XVFB_RUN_EXIT_CODE"
+          exit $XVFB_RUN_EXIT_CODE
+        else
+          echo "Sanitizer tests are configured only for Linux in this workflow."
+        fi
+      env:
+         # Allow xvfb-run to set DISPLAY on Linux
+         DISPLAY: ""
+
+  # --- Docs Job (No changes needed) ---
   docs:
     name: Documentation
     runs-on: macos-14
@@ -576,7 +550,6 @@ jobs:
     steps:
     - name: Install Doxygen
       run: |
-        # Retry logic for brew
         for i in 1 2 3; do brew update && brew install doxygen && break || sleep 15; done
 
     - name: Checkout
