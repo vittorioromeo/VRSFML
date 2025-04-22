@@ -40,10 +40,10 @@ jobs:
         - { name: Windows LLVM/Clang,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -GNinja }
         - { name: Windows MinGW,                  os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -GNinja }
         # --- Updated Linux entries ---
-        - { name: Linux GCC,                      os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
+        - { name: Linux GCC,                      os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
         - { name: Linux Clang,                    os: ubuntu-24.04, flags: '-GNinja -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20' }
-        - { name: Linux GCC DRM,                  os: ubuntu-24.04, flags: '-DSFML_USE_DRM=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
-        - { name: Linux GCC OpenGL ES,            os: ubuntu-24.04, flags: '-DSFML_OPENGL_ES=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
+        - { name: Linux GCC DRM,                  os: ubuntu-24.04, flags: '-DSFML_USE_DRM=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
+        - { name: Linux GCC OpenGL ES,            os: ubuntu-24.04, flags: '-DSFML_OPENGL_ES=ON -DSFML_RUN_DISPLAY_TESTS=OFF -GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14' }
         # --- End Updated Linux entries ---
         - { name: macOS x64,                      os: macos-13, flags: -GNinja }
         - { name: macOS x64 Xcode,                os: macos-13, flags: -GXcode }
@@ -62,14 +62,14 @@ jobs:
           config: { name: Static with PCH (MSVC), flags: -DSFML_USE_MESA3D=ON -GNinja -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON }
         # --- Updated Linux PCH entries ---
         - platform: { name: Linux GCC, os: ubuntu-24.04 }
-          config: { name: Static with PCH (GCC), flags: '-GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON' }
+          config: { name: Static with PCH (GCC), flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON' }
         - platform: { name: Linux Clang, os: ubuntu-24.04 }
           config: { name: Static with PCH (Clang), flags: '-GNinja -DCMAKE_C_COMPILER=clang-20 -DCMAKE_CXX_COMPILER=clang++-20 -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON' }
         # --- Updated Linux Bundled Deps entries ---
         - platform: { name: Linux GCC, os: ubuntu-24.04 }
-          config: { name: Bundled Deps Static, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=OFF -DSFML_USE_SYSTEM_DEPS=OFF' }
+          config: { name: Bundled Deps Static, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=OFF -DSFML_USE_SYSTEM_DEPS=OFF' }
         - platform: { name: Linux GCC, os: ubuntu-24.04 }
-          config: { name: Bundled Deps Shared, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=ON -DSFML_USE_SYSTEM_DEPS=OFF' }
+          config: { name: Bundled Deps Shared, flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=ON -DSFML_USE_SYSTEM_DEPS=OFF' }
         # --- End Updated Linux entries ---
         - platform: { name: Windows MinGW, os: windows-2022 }
           config: { name: Static Standard Libraries, flags: -GNinja -DSFML_USE_MESA3D=ON -DCMAKE_CXX_COMPILER=g++ -DSFML_USE_STATIC_STD_LIBS=ON }
