@@ -11,13 +11,19 @@
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
-constexpr auto sinTableData{[]
+constexpr Array<float, sinCount> sinTableData{[]
 {
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wimplicit-float-conversion"
+
+#if defined(__clang__)
+    #pragma GCC diagnostic ignored "-Wimplicit-float-conversion"
+#elif defined(__GNUC__)
+    #pragma GCC diagnostic ignored "-Wfloat-conversion"
+#endif
     Array<float, sinCount> data{
 #include "SFML/Base/Priv/FastSinCosTable.inl"
     };
+
 #pragma GCC diagnostic pop
 
     data[fastSinIdx(halfPi * 0.f) & sinMask]   = 0.f;          // sin(0)
