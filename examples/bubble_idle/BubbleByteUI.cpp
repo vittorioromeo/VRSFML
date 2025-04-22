@@ -813,6 +813,15 @@ void Main::uiCenteredText(const char* str, const float offsetX, const float offs
 }
 
 ////////////////////////////////////////////////////////////
+void Main::uiCenteredTextColored(const sf::Color color, const char* str, const float offsetX, const float offsetY)
+{
+    ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize(str).x) * 0.5f + offsetX);
+    ImGui::SetCursorPosY(ImGui::GetCursorPosY() + offsetY);
+
+    ImGui::TextColored(color.toVec4<ImVec4>(), "%s", str);
+}
+
+////////////////////////////////////////////////////////////
 sf::Vector2f Main::uiGetWindowPos() const
 {
     const float ratio = getAspectRatioScalingFactor(gameScreenSize, getResolution());
@@ -1843,6 +1852,14 @@ void Main::uiTabBarShop()
     {
         uiImgsep(txrMenuSeparator1, "exploration");
 
+        if constexpr (isDemoVersion)
+        {
+            ImGui::Columns(1);
+            uiSetFontScale(uiNormalFontScale);
+            uiCenteredTextColored({229u, 63u, 63u, 255u}, "(!) Limited to 2 shrines in demo (!)");
+            uiBeginColumns();
+        }
+
         uiSetUnlockLabelY(1u);
         std::sprintf(uiTooltipBuffer,
                      "Extend the map and enable scrolling.\n\nExtending the map will increase the total number "
@@ -2385,8 +2402,12 @@ void Main::uiTabBarPrestige()
 
     uiImgsep(txrPrestigeSeparator0, "prestige", /* first */ true);
     ImGui::Columns(1);
-
     uiSetFontScale(uiNormalFontScale);
+
+    if constexpr (isDemoVersion)
+    {
+        uiCenteredTextColored({229u, 63u, 63u, 255u}, "(!) Limited to 1 prestige in demo (!)");
+    }
 
     std::sprintf(uiTooltipBuffer,
                  "WARNING: this will reset your progress!\n\nPrestige to increase bubble value permanently and "
@@ -4383,7 +4404,10 @@ void Main::uiTabBarSettings()
         ImGui::Separator();
 
         if (ImGui::Button("Save game"))
+        {
+            ptMain.demoMode = isDemoVersion;
             savePlaythroughToFile(ptMain, "userdata/playthrough.json");
+        }
 
         ImGui::SameLine();
 
@@ -4476,7 +4500,10 @@ void Main::uiTabBarSettings()
         ImGui::InputText("##Filename", filenameBuf, sizeof(filenameBuf));
 
         if (ImGui::Button("Custom save"))
+        {
+            pt->demoMode = isDemoVersion;
             savePlaythroughToFile(*pt, filenameBuf);
+        }
 
         ImGui::SameLine();
 

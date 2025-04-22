@@ -806,7 +806,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                       p.disableAstrocatFlight,
 
                       p.speedrunStartTime,
-                      p.speedrunSplits);
+                      p.speedrunSplits,
+
+                      p.demoMode);
 }
 
 ////////////////////////////////////////////////////////////
@@ -941,6 +943,22 @@ try
 
     const auto parsed = nlohmann::json::parse(contents);
     parsed.get_to(playthrough);
+
+    if constexpr (isDemoVersion)
+    {
+        if (!playthrough.demoMode)
+        {
+            playthrough = {};
+            return "Cannot load non-demo playthrough in demo version!";
+        }
+    }
+    else
+    {
+        if (playthrough.demoMode)
+        {
+            return "Thank you for purchasing BubbleByte!\nDemo limitations have been lifted.";
+        }
+    }
 
     const Version parsedVersion{.major = parsed[0][0], .minor = parsed[0][1], .patch = parsed[0][2]};
     return backwardsCompatibilityLoadChecks(parsedVersion, playthrough);
