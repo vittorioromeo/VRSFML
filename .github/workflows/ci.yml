@@ -265,28 +265,39 @@ jobs:
       if: runner.os == 'Windows' && !contains(matrix.platform.name, 'MinGW') && !contains(matrix.platform.name, 'arm64')
       run: cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
 
-    # --- Updated Test Step (Using xvfb-run for Linux) ---
+    # --- Updated Test Step (Using xvfb-run for Linux, Simplified Path) ---
     - name: Test (Linux/macOS/MinGW)
       if: (runner.os != 'Windows' || contains(matrix.platform.name, 'MinGW')) && !contains(matrix.platform.name, 'iOS') && !contains(matrix.platform.name, 'Android')
       run: |
         # Set environment vars needed by tests
         export GALLIUM_DRIVER=$GALLIUM_DRIVER
 
+        # --- Define base build directory ---
+        BASE_BUILD_DIR="$GITHUB_WORKSPACE/build/bin"
+
         # Define the core test command
         TEST_CMD="ctest --test-dir build --output-on-failure -C ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }} --repeat until-pass:3"
 
         # Prepare OpenGL info check command (to be run within X env if applicable)
         GET_GL_INFO_CMD=""
-        TEST_EXEC=$(find "$(echo $GITHUB_WORKSPACE | sed 's/\\\\/\\//g')/build/bin" -name "test-sfml-window*" -print -quit)
+        # --- Use simplified path for find ---
+        TEST_EXEC=$(find "$BASE_BUILD_DIR" -name "test-sfml-window*" -print -quit 2>/dev/null) # Redirect find errors if dir doesn't exist yet
+
         if [ -n "$TEST_EXEC" ]; then
+          # --- Construct command using the found executable path ---
           GET_GL_INFO_CMD="echo '--- Getting OpenGL Info ---'; '$TEST_EXEC' --test-case='[Window] sf::Context' --subcase='Version String' 2>&1 | grep -Ei '(OpenGL|Vendor|Renderer|Version)' || echo 'Warning: Failed to get OpenGL info.' ; echo '--- OpenGL Info End ---'"
         else
-          GET_GL_INFO_CMD="echo 'Warning: test-sfml-window executable not found.'"
+          GET_GL_INFO_CMD="echo 'Warning: test-sfml-window executable not found in $BASE_BUILD_DIR.'"
         fi
 
         # Execute tests: Use xvfb-run wrapper only on Linux
         if [ "${{ runner.os }}" == "Linux" ]; then
           echo "Running tests within xvfb-run on Linux..."
+          # Check if xvfb-run is available
+          if ! command -v xvfb-run &> /dev/null; then
+              echo "Error: xvfb-run command not found. Please ensure 'xvfb' package is installed."
+              exit 1
+          fi
           xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" \
             sh -c "
               set -eo pipefail # Ensure errors fail the script
@@ -301,8 +312,10 @@ jobs:
           exit $XVFB_RUN_EXIT_CODE
         else
           echo "Running tests directly (macOS/MinGW)..."
-          sh -c "$GET_GL_INFO_CMD" # Run GL info check directly
-          $TEST_CMD # Run ctest directly
+          # Need sh -c to handle potential special characters in GET_GL_INFO_CMD
+          sh -c "$GET_GL_INFO_CMD"
+          # Run ctest directly
+          $TEST_CMD
         fi
       env:
          # Allow xvfb-run to set DISPLAY on Linux
