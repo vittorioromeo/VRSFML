@@ -23,23 +23,11 @@
     #define GLAPI
 #endif
 
+////////////////////////////////////////////////////////////
+#define protected public
+#include "../src/SFML/GLUtils/GlContext.hpp"
+#undef protected
 
-namespace sf::priv
-{
-class GlContext
-{
-public:
-    [[nodiscard]] const ContextSettings& getSettings() const;
-    [[nodiscard]] unsigned int           getId() const;
-
-    virtual ~GlContext() = default;
-
-private:
-    ContextSettings    m_settings;
-    const unsigned int m_id{};
-};
-
-}; // namespace sf::priv
 
 struct TestContext
 {

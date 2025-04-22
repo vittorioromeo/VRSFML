@@ -69,7 +69,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API BlendMode
         const Factor   destinationFactor,
         const Equation blendEquation = Equation::Add)
     {
-        return {
+        return BlendMode{
             .colorSrcFactor = sourceFactor,
             .colorDstFactor = destinationFactor,
             .colorEquation  = blendEquation,
