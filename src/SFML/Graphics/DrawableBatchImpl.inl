@@ -315,7 +315,6 @@ void DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData
     Vertex* vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
     createTextGeometryAndGetBounds</* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
-                                                                vertexPtr,
                                                                 font,
                                                                 textData.string,
                                                                 textData.style,
@@ -326,9 +325,9 @@ void DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData
                                                                 textData.fillColor,
                                                                 textData.outlineColor,
                                                                 [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addLinePreTransformed(transform, SFML_BASE_FORWARD(xs)...); },
+    { return addLinePreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); },
                                                                 [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addGlyphQuadPreTransformed(transform, SFML_BASE_FORWARD(xs)...); });
+    { return addGlyphQuadPreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); });
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
