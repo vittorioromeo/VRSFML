@@ -134,26 +134,26 @@ int main()
         // We draw the first rectangle with comparison set to always so that it will definitely draw and update
         // (Replace) the stencil buffer values of its pixels to the specified reference value.
         window.draw(red,
-                    {.stencilMode{
-                        .stencilComparison      = sf::StencilComparison::Always,
-                        .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
-                        .stencilOnly            = false,
-                        .stencilReference       = sf::StencilValue{3u},
-                        .stencilMask            = sf::StencilValue{~0u},
-                    }});
+                    sf::RenderStates{.stencilMode = {
+                                         .stencilComparison      = sf::StencilComparison::Always,
+                                         .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                         .stencilOnly            = false,
+                                         .stencilReference       = sf::StencilValue{3u},
+                                         .stencilMask            = sf::StencilValue{~0u},
+                                     }});
 
         // Just like the first, we draw the second rectangle with comparison set to always so that it will definitely
         // draw and update (Replace) the stencil buffer values of its pixels to the specified reference value.
         // In the case of pixels overlapping the first rectangle, because we specify Always as the comparison, it is
         // as if we are drawing using the painter's algorithm, i.e. newer pixels overwrite older pixels.
         window.draw(green,
-                    {.stencilMode{
-                        .stencilComparison      = sf::StencilComparison::Always,
-                        .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
-                        .stencilOnly            = false,
-                        .stencilReference       = sf::StencilValue{1u},
-                        .stencilMask            = sf::StencilValue{~0u},
-                    }});
+                    sf::RenderStates{.stencilMode = {
+                                         .stencilComparison      = sf::StencilComparison::Always,
+                                         .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                         .stencilOnly            = false,
+                                         .stencilReference       = sf::StencilValue{1u},
+                                         .stencilMask            = sf::StencilValue{~0u},
+                                     }});
 
         // Now comes the magic. We want to draw the third rectangle so it is behind i.e. does not overwrite pixels
         // of the first rectangle but in front of i.e. overwrites pixels of the second rectangle. We already set the
@@ -163,13 +163,13 @@ int main()
         // of this rectangle will overwrite pixels of the second rectangle. The stencil update operation for this
         // draw operation is not significant in any way since this is the last draw call in the frame.
         window.draw(blue,
-                    {.stencilMode{
-                        .stencilComparison      = sf::StencilComparison::Greater,
-                        .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
-                        .stencilOnly            = false,
-                        .stencilReference       = sf::StencilValue{2u},
-                        .stencilMask            = sf::StencilValue{~0u},
-                    }});
+                    sf::RenderStates{.stencilMode = {
+                                         .stencilComparison      = sf::StencilComparison::Greater,
+                                         .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                                         .stencilOnly            = false,
+                                         .stencilReference       = sf::StencilValue{2u},
+                                         .stencilMask            = sf::StencilValue{~0u},
+                                     }});
 
         // Display things on screen
         window.display();
