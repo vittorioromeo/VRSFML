@@ -472,20 +472,25 @@ base::Optional<Font> Font::openFromMemory(const void* data, base::SizeT sizeInBy
 ////////////////////////////////////////////////////////////
 base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas* const textureAtlas, const char* const type)
 {
+    base::Optional<Font> result; // Use a single local variable for NRVO
+
     const auto fail = [&](const char* what)
     {
         priv::err() << "Failed to load font from stream (type:" << type << "): " << what;
-        return base::nullOpt;
+        result.reset();
     };
 
-    auto  result = base::makeOptional<Font>(base::PassKey<Font>{}, textureAtlas);
-    auto& impl   = *result->m_impl;
+    result.emplace(base::PassKey<Font>{}, textureAtlas);
+    auto& impl = *result->m_impl;
 
     // Initialize FreeType
     // Note: we initialize FreeType for every font instance in order to avoid having a single
     // global manager that would create a lot of issues regarding creation and destruction order.
     if (FT_Init_FreeType(&impl.ftLibrary) != 0)
-        return fail("failed to initialize FreeType");
+    {
+        fail("failed to initialize FreeType");
+        return result;
+    }
 
     // Prepare a wrapper for our stream, that we'll pass to FreeType callbacks
     impl.ftStreamRec.base               = nullptr;
@@ -503,15 +508,24 @@ base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas*
 
     // Load the new font face from the specified stream
     if (FT_Open_Face(impl.ftLibrary, &args, 0, &impl.ftFace) != 0)
-        return fail("failed to create the font face");
+    {
+        fail("failed to create the font face");
+        return result;
+    }
 
     // Load the stroker that will be used to outline the font
     if (FT_Stroker_New(impl.ftLibrary, &impl.ftStroker) != 0)
-        return fail("failed to create the stroker");
+    {
+        fail("failed to create the stroker");
+        return result;
+    }
 
     // Select the Unicode character map
     if (FT_Select_Charmap(impl.ftFace, FT_ENCODING_UNICODE) != 0)
-        return fail("failed to set the Unicode character set");
+    {
+        fail("failed to set the Unicode character set");
+        return result;
+    }
 
     // Set family name
     result->m_impl->info.family = impl.ftFace->family_name;
