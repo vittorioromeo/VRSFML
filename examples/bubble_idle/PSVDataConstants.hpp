@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PSVData.hpp"
+#include "Version.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -13,10 +14,12 @@ inline constexpr PSVData comboStartTime //
      .value         = {.initial = 0.55f, .linear = 0.04f, .exponential = 1.02f}};
 
 inline constexpr PSVData mapExtension //
-    {.nMaxPurchases = 7u, .cost = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f}, .value = {}};
+    {.nMaxPurchases = isDemoVersion ? 1u : 7u,
+     .cost          = {.initial = 15000.f, .exponential = 8.f, .flat = -5000.f},
+     .value         = {}};
 
 inline constexpr PSVData shrineActivation //
-    {.nMaxPurchases = 8u,
+    {.nMaxPurchases = isDemoVersion ? 2u : 8u,
      .cost          = {.initial = 15000.f, .linear = -56'500.f, .exponential = 7.5f, .flat = -13'500.f},
      .value         = {}};
 
@@ -26,7 +29,7 @@ inline constexpr PSVData bubbleCount //
      .value         = {.initial = 500.f, .linear = 325.f, .exponential = 1.01f}};
 
 inline constexpr PSVData bubbleValue //
-    {.nMaxPurchases = 19u,
+    {.nMaxPurchases = isDemoVersion ? 1u : 19u,
      .cost  = {.initial = 19000.f, .linear = -620.f, .multiplicative = -800.f, .exponential = 4.1f, .flat = -14000.f},
      .value = {.initial = 0.f, .linear = 1.f}};
 
