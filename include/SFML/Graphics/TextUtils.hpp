@@ -1,6 +1,4 @@
 #pragma once
-#include "Transform.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -11,6 +9,7 @@
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/System/String.hpp"
 
@@ -229,19 +228,18 @@ inline void addGlyphQuadPreTransformed(
 ////////////////////////////////////////////////////////////
 template <bool CalculateBounds>
 inline auto createTextGeometryAndGetBounds(
-    const base::SizeT          outlineVertexCount,
-    Vertex* SFML_BASE_RESTRICT vertices,
-    const Font&                font,
-    const String&              string,
-    const TextStyle            style,
-    const unsigned int         characterSize,
-    const float                letterSpacing,
-    const float                lineSpacing,
-    const float                outlineThickness,
-    const Color                fillColor,
-    const Color                outlineColor,
-    auto&&                     fAddLine,
-    auto&&                     fAddGlyphQuad)
+    const base::SizeT  outlineVertexCount,
+    const Font&        font,
+    const String&      string,
+    const TextStyle    style,
+    const unsigned int characterSize,
+    const float        letterSpacing,
+    const float        lineSpacing,
+    const float        outlineThickness,
+    const Color        fillColor,    // TODO P1: remove?
+    const Color        outlineColor, // TODO P1: remove?
+    auto&&             fAddLine,
+    auto&&             fAddGlyphQuad)
 {
     // Compute values related to the text style
     const bool  isBold             = !!(style & TextStyle::Bold);
@@ -277,10 +275,10 @@ inline auto createTextGeometryAndGetBounds(
 
     const auto addLines = [&](float offset)
     {
-        fAddLine(vertices, currFillIndex, x, y, fillColor, offset, underlineThickness, /*outlineThickness */ 0.f);
+        fAddLine(currFillIndex, x, y, fillColor, offset, underlineThickness, /*outlineThickness */ 0.f);
 
         if (outlineThickness != 0.f)
-            fAddLine(vertices, currOutlineIndex, x, y, outlineColor, offset, underlineThickness, outlineThickness);
+            fAddLine(currOutlineIndex, x, y, outlineColor, offset, underlineThickness, outlineThickness);
     };
 
     for (const char32_t curChar : string)
@@ -346,14 +344,14 @@ inline auto createTextGeometryAndGetBounds(
             const Glyph& glyph = font.getGlyph(curChar, characterSize, isBold, outlineThickness);
 
             // Add the outline glyph to the vertices
-            fAddGlyphQuad(vertices, currOutlineIndex, Vector2f{x, y}, outlineColor, glyph, italicShear);
+            fAddGlyphQuad(currOutlineIndex, Vector2f{x, y}, outlineColor, glyph, italicShear);
         }
 
         // Extract the current glyph's description
         const Glyph& glyph = font.getGlyph(curChar, characterSize, isBold);
 
         // Add the glyph to the vertices
-        fAddGlyphQuad(vertices, currFillIndex, Vector2f{x, y}, fillColor, glyph, italicShear);
+        fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, glyph, italicShear);
 
         // Update the current bounds
         if constexpr (CalculateBounds)
@@ -402,6 +400,46 @@ inline auto createTextGeometryAndGetBounds(
         return FloatRect{{minX, minY}, {maxX - minX, maxY - minY}};
     }
 }
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline FloatRect precomputeTextLocalBounds(const Font& font, const TextData& textData)
+{
+    return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
+        /* outlineVertexCount */ 0u,
+        font,
+        textData.string,
+        textData.style,
+        textData.characterSize,
+        textData.letterSpacing,
+        textData.lineSpacing,
+        textData.outlineThickness,
+        textData.fillColor,
+        textData.outlineColor,
+        /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
+        /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline FloatRect precomputeTextLocalBounds(const Font& font, const Text& text)
+{
+    return createTextGeometryAndGetBounds</* CalculateBounds */ true>(
+        /* outlineVertexCount */ 0u,
+        font,
+        text.getString(),
+        text.getStyle(),
+        text.getCharacterSize(),
+        text.getLetterSpacing(),
+        text.getLineSpacing(),
+        text.getOutlineThickness(),
+        text.getFillColor(),
+        text.getOutlineColor(),
+        /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
+        /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
+}
+
+// TODO P1: precompute globalbounds as well?
 
 } // namespace sf
 

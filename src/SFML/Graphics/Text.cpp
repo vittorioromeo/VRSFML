@@ -1,6 +1,8 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
+// TODO P0: multi-line alignment?
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -400,7 +402,6 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
     m_bounds = createTextGeometryAndGetBounds<
         /* CalculateBounds */ true>(outlineVertexCount,
-                                    m_vertices.data(),
                                     font,
                                     m_string,
                                     m_style,
@@ -410,10 +411,10 @@ void Text::ensureGeometryUpdate(const Font& font) const
                                     m_outlineThickness,
                                     m_fillColor,
                                     m_outlineColor,
-                                    [](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addLine(SFML_BASE_FORWARD(xs)...); },
-                                    [](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addGlyphQuad(SFML_BASE_FORWARD(xs)...); });
+                                    [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return addLine(m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
+                                    [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return addGlyphQuad(m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
 }
 
 } // namespace sf

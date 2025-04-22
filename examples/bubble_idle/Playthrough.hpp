@@ -16,6 +16,7 @@
 #include "Shrine.hpp"
 #include "ShrineType.hpp"
 #include "Stats.hpp"
+#include "Version.hpp"
 
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -259,6 +260,10 @@ struct Playthrough
     // Speedrunning
     sf::base::Optional<sf::Time> speedrunStartTime;
     SpeedrunningSplits           speedrunSplits;
+
+    //
+    // Demo mode
+    bool demoMode = isDemoVersion;
 
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()
