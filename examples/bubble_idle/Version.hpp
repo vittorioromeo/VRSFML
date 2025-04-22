@@ -2,6 +2,15 @@
 
 
 ////////////////////////////////////////////////////////////
+#ifdef BUBBLEBYTE_DEMO
+    #define BUBBLEBYTE_DEMO_STR " (DEMO)"
+inline constexpr bool isDemoVersion = true;
+#else
+    #define BUBBLEBYTE_DEMO_STR ""
+inline constexpr bool isDemoVersion = false;
+#endif
+
+////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_STRINGIFY_IMPL(...) #__VA_ARGS__
 
 ////////////////////////////////////////////////////////////
@@ -14,12 +23,12 @@
 #define BUBBLEBYTE_VERSION_MINOR 8
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 0
+#define BUBBLEBYTE_VERSION_PATCH 1
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
     "v" BUBBLEBYTE_STRINGIFY(BUBBLEBYTE_VERSION_MAJOR) "." BUBBLEBYTE_STRINGIFY( \
-        BUBBLEBYTE_VERSION_MINOR) "." BUBBLEBYTE_STRINGIFY(BUBBLEBYTE_VERSION_PATCH)
+        BUBBLEBYTE_VERSION_MINOR) "." BUBBLEBYTE_STRINGIFY(BUBBLEBYTE_VERSION_PATCH) BUBBLEBYTE_DEMO_STR
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Version
@@ -33,11 +42,3 @@ struct [[nodiscard]] Version
 
 ////////////////////////////////////////////////////////////
 inline constexpr Version currentVersion{BUBBLEBYTE_VERSION_MAJOR, BUBBLEBYTE_VERSION_MINOR, BUBBLEBYTE_VERSION_PATCH};
-
-
-// TODO P0: CHANGELOG:
-// - Fixed engi cat global mult and mouse cat global mult tooltip not showing (MAX)
-// - Added speedrun mode
-// - Fixed borderless fullscreen actually being exclusive
-// - Fixed background/music not switching after unlocking a shrine after 1st prestige
-// - Added speedrunning achievements (8 of them)
