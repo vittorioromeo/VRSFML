@@ -287,7 +287,7 @@ if(SFML_ENABLE_STDLIB_ASSERTIONS)
 endif()
 
 option(SFML_ENABLE_HARDENING_FLAGS "Enable hardening flags" OFF)
-if(SFML_ENABLE_HARDENING_FLAGS)
+if(SFML_ENABLE_HARDENING_FLAGS AND NOT MSVC)
     add_compile_options(
         -ftrivial-auto-var-init=pattern
         -fstack-protector-strong
