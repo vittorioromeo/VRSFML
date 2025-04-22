@@ -31,12 +31,12 @@ jobs:
       fail-fast: false
       matrix:
         platform:
-        - { name: Windows VS2022 x86,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
-        - { name: Windows VS2022 x64,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -GNinja }
-        - { name: Windows VS2022 arm64,           os: windows-2022, flags: -DSFML_USE_MESA3D=OFF -GNinja -DSFML_BUILD_TEST_SUITE=OFF }
+        - { name: Windows VS2022 x86,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -G"Visual Studio 17 2022" }
+        - { name: Windows VS2022 x64,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -G"Visual Studio 17 2022" }
+        - { name: Windows VS2022 arm64,           os: windows-2022, flags: -DSFML_USE_MESA3D=OFF -G"Visual Studio 17 2022" -DSFML_BUILD_TEST_SUITE=OFF }
         - { name: Windows VS2022 ClangCL MSBuild, os: windows-2022, flags: -DSFML_USE_MESA3D=ON -T ClangCL }
-        - { name: Windows VS2022 OpenGL ES,       os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DSFML_OPENGL_ES=ON -GNinja }
-        - { name: Windows VS2022 Unity,           os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_UNITY_BUILD=ON -GNinja }
+        - { name: Windows VS2022 OpenGL ES,       os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DSFML_OPENGL_ES=ON -G"Visual Studio 17 2022" }
+        - { name: Windows VS2022 Unity,           os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_UNITY_BUILD=ON -G"Visual Studio 17 2022" }
         - { name: Windows LLVM/Clang,             os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -GNinja }
         - { name: Windows MinGW,                  os: windows-2022, flags: -DSFML_USE_MESA3D=ON -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ -GNinja }
         # --- Updated Linux entries ---
@@ -60,7 +60,7 @@ jobs:
 
         include:
         - platform: { name: Windows VS2022 x64, os: windows-2022 }
-          config: { name: Static with PCH (MSVC), flags: -DSFML_USE_MESA3D=ON -GNinja -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON }
+          config: { name: Static with PCH (MSVC), flags: -DSFML_USE_MESA3D=ON -G"Visual Studio 17 2022" -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON }
         # --- Updated Linux PCH entries ---
         - platform: { name: Linux GCC, os: ubuntu-24.04 }
           config: { name: Static with PCH (GCC), flags: '-GNinja -DCMAKE_C_COMPILER=gcc-14 -DCMAKE_CXX_COMPILER=g++-14 -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON' }
