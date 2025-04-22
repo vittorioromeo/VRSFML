@@ -22,6 +22,7 @@
 #include "InputHelper.hpp"
 #include "MathUtils.hpp"
 #include "MemberGuard.hpp"
+#include "PSVDataConstants.hpp"
 #include "Particle.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
@@ -61,6 +62,7 @@
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
+#include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
@@ -109,6 +111,7 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
+#include <iostream>
 #include <random>
 #include <string>
 #include <utility>
@@ -831,6 +834,8 @@ struct Main
     Playthrough ptSpeedrun;
     MEMBER_SCOPE_GUARD(Main, {
         sf::cOut() << "Saving playthrough to file on exit\n";
+
+        self.ptMain.demoMode = isDemoVersion;
         savePlaythroughToFile(self.ptMain, "userdata/playthrough.json");
     });
 
@@ -897,6 +902,16 @@ struct Main
     sf::Text buffText{fontSuperBakery,
                       {.position         = comboText.position.addY(35.f),
                        .string           = "",
+                       .characterSize    = 48u,
+                       .fillColor        = sf::Color::White,
+                       .outlineColor     = colorBlueOutline,
+                       .outlineThickness = 3.f}};
+
+    ////////////////////////////////////////////////////////////
+    // HUD demo text
+    sf::Text demoText{fontSuperBakery,
+                      {.position         = {},
+                       .string           = "DEMO VERSION",
                        .characterSize    = 48u,
                        .fillColor        = sf::Color::White,
                        .outlineColor     = colorBlueOutline,
@@ -1959,8 +1974,9 @@ struct Main
     int                lastUiSelectedTabIdx = 1;
 
     ////////////////////////////////////////////////////////////
-    void                       uiBeginColumns() const;
-    void                       uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
+    void uiBeginColumns() const;
+    void uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
+    void uiCenteredTextColored(sf::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
     [[nodiscard]] sf::Vector2f uiGetWindowPos() const;
     void                       uiDrawExitPopup(float newScalingFactor);
     void                       uiDrawQuickbarCopyCat(sf::Vector2f quickBarPos, Cat& copyCat);
@@ -8316,6 +8332,8 @@ struct Main
             autosaveUsAccumulator = 0;
 
             sf::cOut() << "Autosaving...\n";
+
+            ptMain.demoMode = isDemoVersion;
             savePlaythroughToFile(ptMain, "userdata/playthrough.json");
         }
     }
@@ -8834,6 +8852,21 @@ struct Main
 
         gameLoopCheats();
 
+        // Demo limitations clamping
+        if constexpr (isDemoVersion)
+        {
+            const auto clampNPurchases = [](auto& psv)
+            { psv.nPurchases = sf::base::min(psv.nPurchases, psv.data->nMaxPurchases); };
+
+            clampNPurchases(pt->psvMapExtension);
+            clampNPurchases(pt->psvShrineActivation);
+            clampNPurchases(pt->psvBubbleValue);
+
+            sf::base::vectorEraseIf(pt->cats,
+                                    [](const Cat& cat)
+            { return cat.type >= CatType::Mouse && cat.type <= CatType::Duck; });
+        }
+
         //
         // TODO PO laser cursor
         if (pt->laserPopEnabled)
@@ -9211,6 +9244,40 @@ struct Main
         const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
 
         //
+        // Demo text (TODO P0: cleanup)
+        if constexpr (isDemoVersion)
+        {
+            const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) *
+                                        gameScreenSize.x / profile.hudScale;
+
+            demoText.setTopRight({xStartOverlay - 15.f, 15.f});
+            demoText.setOutlineColor(outlineHueColor);
+            rtGame->draw(demoText);
+
+            sf::TextData demoInfoTextData{.position         = {},
+                                          .string           = "",
+                                          .characterSize    = 24u,
+                                          .fillColor        = sf::Color::White,
+                                          .outlineColor     = outlineHueColor,
+                                          .outlineThickness = 2.f};
+
+            const float lineSpacing = fontSuperBakery.getLineSpacing(demoInfoTextData.characterSize);
+
+            sf::base::StringView lines[3] = {"Only one prestige and two shrines",
+                                             "Full version available on Steam",
+                                             "Your progress will carry over!"};
+
+            for (sf::base::SizeT i = 0u; i < 3u; ++i)
+            {
+                demoInfoTextData.string   = lines[i].data();
+                demoInfoTextData.origin.x = precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
+                demoInfoTextData.position = demoText.getBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
+
+                rtGame->draw(fontSuperBakery, demoInfoTextData);
+            }
+        }
+
+        //
         // Money text & spent money effect
         gameLoopUpdateMoneyText(deltaTimeMs, yBelowMinimap);
         gameLoopUpdateSpentMoneyEffect(deltaTimeMs); // handles both text smoothly doing down and particles
@@ -9432,7 +9499,7 @@ struct Main
         const sf::base::StringView loadMessage = loadPlaythroughFromFile(ptMain, "userdata/playthrough.json");
 
         if (!loadMessage.empty())
-            pushNotification("Playthrough version updated", "%s", loadMessage.data());
+            pushNotification("Playthrough loading info", "%s", loadMessage.data());
 
         rng.reseed(pt->seed);
         shuffledCatNamesPerType = makeShuffledCatNames(rng);
