@@ -4405,7 +4405,7 @@ void Main::uiTabBarSettings()
 
         if (ImGui::Button("Save game"))
         {
-            ptMain.demoMode = isDemoVersion;
+            ptMain.fullVersion = !isDemoVersion;
             savePlaythroughToFile(ptMain, "userdata/playthrough.json");
         }
 
@@ -4501,7 +4501,7 @@ void Main::uiTabBarSettings()
 
         if (ImGui::Button("Custom save"))
         {
-            pt->demoMode = isDemoVersion;
+            pt->fullVersion = !isDemoVersion;
             savePlaythroughToFile(*pt, filenameBuf);
         }
 
