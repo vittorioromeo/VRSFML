@@ -9,6 +9,8 @@
 
 #include "SFML/System/Rect.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
+
 
 namespace sf
 {
@@ -19,10 +21,10 @@ namespace sf
 struct [[nodiscard]] SFML_GRAPHICS_API Glyph
 {
     float     advance{};   //!< Offset to move horizontally to the next character
-    int       lsbDelta{};  //!< Left offset after forced autohint. Internally used by `getKerning()`
-    int       rsbDelta{};  //!< Right offset after forced autohint. Internally used by `getKerning()`
     FloatRect bounds;      //!< Bounding rectangle of the glyph, in coordinates relative to the baseline
     FloatRect textureRect; //!< Texture coordinates of the glyph inside the font's texture
+    base::I16 lsbDelta{};  //!< Left offset after forced autohint. Internally used by `getKerning()`
+    base::I16 rsbDelta{};  //!< Right offset after forced autohint. Internally used by `getKerning()`
 };
 
 } // namespace sf
