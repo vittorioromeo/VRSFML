@@ -414,3 +414,9 @@ TODO P0:
 ## High DPI Support
 
 TODO P0:
+
+
+
+## Windows are not closable anymore
+
+TODO P0: isOpen is gone, use an optional
