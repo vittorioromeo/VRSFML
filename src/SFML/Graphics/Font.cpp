@@ -149,7 +149,7 @@ template <typename T, typename U>
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::Glyph loadGlyph(
+[[nodiscard, gnu::cold]] sf::Glyph loadGlyph(
     const FT_Library&               library,
     const FT_Face&                  face,
     const FT_Stroker&               stroker,
@@ -226,8 +226,8 @@ template <typename T, typename U>
     glyph.advance = static_cast<float>(bitmapGlyph->root.advance.x >> 16) +
                     (bold ? static_cast<float>(weight) / float{1 << 6} : 0.f);
 
-    glyph.lsbDelta = static_cast<int>(face->glyph->lsb_delta);
-    glyph.rsbDelta = static_cast<int>(face->glyph->rsb_delta);
+    glyph.lsbDelta = static_cast<sf::base::I16>(face->glyph->lsb_delta);
+    glyph.rsbDelta = static_cast<sf::base::I16>(face->glyph->rsb_delta);
 
     if (bitmap.width == 0u || bitmap.rows == 0u)
     {
@@ -372,9 +372,37 @@ struct Font::Impl
 
     base::UniquePtr<InputStream> stream; //!< Stream for `openFromFile` and `openFromMemory`
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] TextureAtlas& getTextureAtlas() const
     {
         return textureAtlasPtr == nullptr ? *fallbackTextureAtlas : *textureAtlasPtr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] const Glyph& getGlyphImpl(
+        auto&              glyphsByCharacterSize,
+        const base::U64    key,
+        const char32_t     codePoint,
+        const unsigned int characterSize,
+        const bool         bold,
+        const float        outlineThickness) const
+    {
+        // Glyph cached: just return it
+        if (const auto* it = glyphsByCharacterSize.find(key); it != glyphsByCharacterSize.end()) [[likely]]
+            return it->second;
+
+        // Glyph not cached: we have to load it
+        const Glyph loadedGlyph = loadGlyph(ftLibrary,
+                                            ftFace,
+                                            ftStroker,
+                                            getTextureAtlas(),
+                                            pixelBuffer,
+                                            codePoint,
+                                            characterSize,
+                                            bold,
+                                            outlineThickness);
+
+        return glyphsByCharacterSize.try_emplace(key, loadedGlyph).first->second;
     }
 };
 
@@ -574,28 +602,49 @@ const Glyph& Font::getGlyph(const char32_t     codePoint,
                             const bool         bold,
                             const float        outlineThickness) const
 {
+    return m_impl->getGlyphImpl(
+        // Get the page corresponding to the character size
+        m_impl->glyphs[characterSize],
+
+        // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
+        combineGlyphTableKey(outlineThickness, bold, getCharIndex(codePoint)),
+
+        codePoint,
+        characterSize,
+        bold,
+        outlineThickness);
+}
+
+
+////////////////////////////////////////////////////////////
+Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
+                                             const unsigned int characterSize,
+                                             const bool         bold,
+                                             const float        outlineThickness) const
+{
+    SFML_BASE_ASSERT(outlineThickness != 0.f);
+
     // Get the page corresponding to the character size
-    auto& glyphs = m_impl->glyphs[characterSize];
+    auto& glyphsByCharacterSize = m_impl->glyphs[characterSize];
 
-    // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-    const base::U64 key = combineGlyphTableKey(outlineThickness, bold, getCharIndex(codePoint));
+    // Get the glyph index (based on code point)
+    const auto charIndex = getCharIndex(codePoint);
 
-    // Glyph cached: just return it
-    if (const auto* it = glyphs.find(key); it != glyphs.end())
-        return it->second;
+    return {
+        .fillGlyph = m_impl->getGlyphImpl(glyphsByCharacterSize,
+                                          combineGlyphTableKey(/* outlineThickness */ 0.f, bold, charIndex),
+                                          codePoint,
+                                          characterSize,
+                                          bold,
+                                          /* outlineThickness */ 0.f),
 
-    // Glyph not cached: we have to load it
-    const Glyph loadedGlyph = loadGlyph(m_impl->ftLibrary,
-                                        m_impl->ftFace,
-                                        m_impl->ftStroker,
-                                        m_impl->getTextureAtlas(),
-                                        m_impl->pixelBuffer,
-                                        codePoint,
-                                        characterSize,
-                                        bold,
-                                        outlineThickness);
-
-    return glyphs.try_emplace(key, loadedGlyph).first->second;
+        .outlineGlyph = m_impl->getGlyphImpl(glyphsByCharacterSize,
+                                             combineGlyphTableKey(outlineThickness, bold, charIndex),
+                                             codePoint,
+                                             characterSize,
+                                             bold,
+                                             outlineThickness),
+    };
 }
 
 
@@ -642,8 +691,9 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
     const FT_UInt index2 = FT_Get_Char_Index(face, second);
 
     // Retrieve position compensation deltas generated by FT_LOAD_FORCE_AUTOHINT flag
-    const auto firstRsbDelta  = static_cast<float>(getGlyph(first, characterSize, bold).rsbDelta);
-    const auto secondLsbDelta = static_cast<float>(getGlyph(second, characterSize, bold).lsbDelta);
+    const auto firstRsbDelta = static_cast<float>(getGlyph(first, characterSize, bold, /* outlineThickness */ 0.f).rsbDelta);
+    const auto secondLsbDelta = static_cast<float>(
+        getGlyph(second, characterSize, bold, /* outlineThickness */ 0.f).lsbDelta);
 
     float calculatedKerning = 0.f;
 

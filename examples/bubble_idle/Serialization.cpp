@@ -808,7 +808,7 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Play
                       p.speedrunStartTime,
                       p.speedrunSplits,
 
-                      p.demoMode);
+                      p.fullVersion);
 }
 
 ////////////////////////////////////////////////////////////
@@ -946,15 +946,16 @@ try
 
     if constexpr (isDemoVersion)
     {
-        if (!playthrough.demoMode)
+        if (playthrough.fullVersion)
         {
-            playthrough = {};
+            playthrough             = {};
+            playthrough.fullVersion = true;
             return "Cannot load non-demo playthrough in demo version!";
         }
     }
     else
     {
-        if (playthrough.demoMode)
+        if (!playthrough.fullVersion)
         {
             return "Thank you for purchasing BubbleByte!\nDemo limitations have been lifted.";
         }
