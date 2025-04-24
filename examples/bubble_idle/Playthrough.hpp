@@ -263,7 +263,7 @@ struct Playthrough
 
     //
     // Demo mode
-    bool demoMode = isDemoVersion;
+    bool fullVersion = !isDemoVersion;
 
     ////////////////////////////////////////////////////////////
     void spawnAllShrinesIfNeeded()

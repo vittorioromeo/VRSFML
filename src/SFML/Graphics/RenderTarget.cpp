@@ -86,13 +86,13 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                  \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(sfEnumType sfEnumValue) \
-    {                                                                                                           \
-        constexpr GLenum glValues[] __VA_ARGS__;                                                                \
-                                                                                                                \
-        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));          \
-        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                \
+#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(const sfEnumType sfEnumValue) \
+    {                                                                                                                 \
+        constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
+                                                                                                                      \
+        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));                \
+        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 
 
@@ -147,7 +147,7 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
-    sf::Vector2u         renderTargetSize,
+    const sf::Vector2u   renderTargetSize,
     const sf::FloatRect& inputRect)
 {
     const auto [width, height] = renderTargetSize.toVector2f();
@@ -172,7 +172,9 @@ enum : bool
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(unsigned int bufferId, const void* data, sf::base::SizeT dataByteCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(const unsigned int    bufferId,
+                                                             const void* const     data,
+                                                             const sf::base::SizeT dataByteCount)
 {
     if constexpr (isOpenGLES)
     {
@@ -207,18 +209,18 @@ enum : bool
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU([[maybe_unused]] unsigned int bufferId,
-                                                                     const sf::Vertex*             vertexData,
-                                                                     sf::base::SizeT               vertexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU([[maybe_unused]] const unsigned int bufferId,
+                                                                     const sf::Vertex*                   vertexData,
+                                                                     const sf::base::SizeT               vertexCount)
 {
     streamToGPU(isOpenGLES ? GL_ARRAY_BUFFER : bufferId, vertexData, sizeof(sf::Vertex) * vertexCount);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU([[maybe_unused]] unsigned int bufferId,
-                                                                    const sf::IndexType*          indexData,
-                                                                    sf::base::SizeT               indexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU([[maybe_unused]] const unsigned int bufferId,
+                                                                    const sf::IndexType*                indexData,
+                                                                    const sf::base::SizeT               indexCount)
 {
     streamToGPU(isOpenGLES ? GL_ELEMENT_ARRAY_BUFFER : bufferId, indexData, sizeof(sf::IndexType) * indexCount);
 }
@@ -258,6 +260,11 @@ void setupVertexAttribPointers()
 
 #undef SFML_PRIV_OFFSETOF
 }
+
+////////////////////////////////////////////////////////////
+constexpr unsigned int precomputedQuadIndices[]{
+#include "SFML/Graphics/PrecomputedQuadIndices.inl"
+};
 
 } // namespace RenderTargetImpl
 } // namespace
@@ -481,14 +488,14 @@ IntRect RenderTarget::getScissor(const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(Vector2i point) const
+Vector2f RenderTarget::mapPixelToCoords(const Vector2i point) const
 {
     return mapPixelToCoords(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
+Vector2f RenderTarget::mapPixelToCoords(const Vector2i point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
     const auto     viewport   = getViewport(view).to<FloatRect>();
@@ -502,14 +509,14 @@ Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(Vector2f point) const
+Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point) const
 {
     return mapCoordsToPixel(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
+Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point, const View& view) const
 {
     // First, transform the point by the view matrix
     const Vector2f normalized = view.getTransform().transformPoint(point);
@@ -663,10 +670,10 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
     const Vertex*       vertexData,
-    base::SizeT         vertexCount,
+    const base::SizeT   vertexCount,
     const IndexType*    indexData,
-    base::SizeT         indexCount,
-    PrimitiveType       type,
+    const base::SizeT   indexCount,
+    const PrimitiveType type,
     const RenderStates& states)
 {
     // Nothing to draw or inactive target
@@ -681,6 +688,16 @@ void RenderTarget::drawIndexedVertices(
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawIndexedQuads(const Vertex*       vertexData,
+                                    const base::SizeT   vertexCount,
+                                    const PrimitiveType type,
+                                    const RenderStates& states)
+{
+    drawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
 }
 
 
@@ -705,7 +722,7 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
                                                        const base::SizeT                 indexCount,
-                                                       PrimitiveType                     type,
+                                                       const PrimitiveType               type,
                                                        const RenderStates&               states)
 {
     // Nothing to draw or inactive target
@@ -756,7 +773,10 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states)
+void RenderTarget::draw(const VertexBuffer& vertexBuffer,
+                        const base::SizeT   firstVertex,
+                        base::SizeT         vertexCount,
+                        const RenderStates& states)
 {
     if (m_impl->autoBatch)
         flush();
@@ -1252,7 +1272,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
+void RenderTarget::drawPrimitives(const PrimitiveType type, const base::SizeT firstVertex, const base::SizeT vertexCount)
 {
     ++m_impl->currentDrawStats.drawCalls;
 
@@ -1263,7 +1283,7 @@ void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, b
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
+void RenderTarget::drawIndexedPrimitives(const PrimitiveType type, const base::SizeT indexCount)
 {
     ++m_impl->currentDrawStats.drawCalls;
 

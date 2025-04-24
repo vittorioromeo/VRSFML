@@ -453,6 +453,15 @@ public:
                              const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedQuads(const Vertex*       vertexData,
+                          base::SizeT         vertexCount,
+                          PrimitiveType       type,
+                          const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
     ///
     /// \brief TODO P1: docs
