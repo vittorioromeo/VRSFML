@@ -302,7 +302,7 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
     // Compute the position
     Vector2f characterPos;
     char32_t prevChar = 0;
-    for (base::SizeT i = 0; i < index; ++i)
+    for (base::SizeT i = 0u; i < index; ++i)
     {
         const char32_t curChar = m_string[i];
 
@@ -326,7 +326,8 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
         }
 
         // For regular characters, add the advance offset of the glyph
-        characterPos.x += m_font->getGlyph(curChar, m_characterSize, isBold).advance + letterSpacing;
+        characterPos.x += m_font->getGlyph(curChar, m_characterSize, isBold, /* outlineThickness */ 0.f).advance +
+                          letterSpacing;
     }
 
     // Transform the characterPos to global coordinates
@@ -358,16 +359,7 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
     ensureGeometryUpdate(*m_font);
 
-    static constexpr unsigned int precomputedIndices[]{
-#include "SFML/Graphics/PrecomputedQuadIndices.inl"
-    };
-
-    target.drawIndexedVertices(m_vertices.data(),
-                               m_vertices.size(),
-                               precomputedIndices,
-                               m_vertices.size() / 4u * 6u,
-                               PrimitiveType::Triangles,
-                               states);
+    target.drawIndexedQuads(m_vertices.data(), m_vertices.size(), PrimitiveType::Triangles, states);
 }
 
 

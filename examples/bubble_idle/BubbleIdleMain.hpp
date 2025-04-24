@@ -834,9 +834,7 @@ struct Main
     Playthrough ptSpeedrun;
     MEMBER_SCOPE_GUARD(Main, {
         sf::cOut() << "Saving playthrough to file on exit\n";
-
-        self.ptMain.demoMode = isDemoVersion;
-        savePlaythroughToFile(self.ptMain, "userdata/playthrough.json");
+        self.saveMainPlaythroughToFile();
     });
 
     ////////////////////////////////////////////////////////////
@@ -1208,6 +1206,22 @@ struct Main
     // PP purchase undo
     std::vector<sf::base::FixedFunction<void(), 128>> undoPPPurchase;
     Countdown                                         undoPPPurchaseTimer;
+
+    ////////////////////////////////////////////////////////////
+    void saveMainPlaythroughToFile()
+    {
+        if constexpr (isDemoVersion)
+        {
+            if (ptMain.fullVersion)
+            {
+                sf::cOut() << "Cannot save non-demo playthrough in demo version!\n";
+                return;
+            }
+        }
+
+        ptMain.fullVersion = !isDemoVersion;
+        savePlaythroughToFile(ptMain, "userdata/playthrough.json");
+    }
 
     ////////////////////////////////////////////////////////////
     void log(const char* format, ...)
@@ -8330,11 +8344,8 @@ struct Main
         if (autosaveUsAccumulator >= 180'000'000) // 3 min
         {
             autosaveUsAccumulator = 0;
-
             sf::cOut() << "Autosaving...\n";
-
-            ptMain.demoMode = isDemoVersion;
-            savePlaythroughToFile(ptMain, "userdata/playthrough.json");
+            saveMainPlaythroughToFile();
         }
     }
 
