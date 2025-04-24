@@ -55,6 +55,7 @@ Path::Path(const T& source) : m_impl(source, std::string{})
 template Path::Path(const std::string&);
 template Path::Path(const std::basic_string<wchar_t>&);
 template Path::Path(const std::u32string&);
+template Path::Path(const std::filesystem::path&);
 
 ////////////////////////////////////////////////////////////
 template <typename T>
