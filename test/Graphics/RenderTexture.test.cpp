@@ -241,4 +241,15 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(finalImage.getPixel({58u, 6u}) == sf::Color::Green);
         CHECK(finalImage.getPixel({61u, 61u}) == sf::Color::Green);
     }
+
+    SECTION("Move assignment")
+    {
+        auto rt0 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        CHECK(rt0.hasValue());
+
+        auto rt1 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        CHECK(rt1.hasValue());
+
+        *rt0 = SFML_BASE_MOVE(*rt1);
+    }
 }
