@@ -170,7 +170,28 @@ public:
     /// \return The glyph corresponding to `codePoint` and `characterSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
+    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Groups a fill and outline glyph together
+    ///
+    ////////////////////////////////////////////////////////////
+    struct GlyphPair
+    {
+        const Glyph& fillGlyph;    //!< The fill glyph
+        const Glyph& outlineGlyph; //!< The outline glyph
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Retrieve a pair of fill and outline glyphs of the font
+    ///
+    /// \see `getGlyph`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphPair getFillAndOutlineGlyph(char32_t     codePoint,
+                                                   unsigned int characterSize,
+                                                   bool         bold,
+                                                   float        outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Determine if this font has a glyph representing the requested code point

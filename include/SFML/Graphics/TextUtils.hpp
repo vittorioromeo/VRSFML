@@ -42,7 +42,8 @@ struct TextSpacingConstants
 {
     const bool isBold = !!(style & TextStyle::Bold);
 
-    float       whitespaceWidth    = font.getGlyph(U' ', characterSize, isBold).advance;
+    float whitespaceWidth = font.getGlyph(U' ', characterSize, isBold, /* outlineThickness */ 0.f).advance;
+
     const float finalLetterSpacing = (whitespaceWidth / 3.f) * (letterSpacing - 1.f);
     whitespaceWidth += finalLetterSpacing;
 
@@ -159,10 +160,10 @@ inline void addGlyphQuad(Vertex* const SFML_BASE_RESTRICT vertices,
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {position + Vector2f(p1.x - italicShear * p1.y, p1.y), color, {uv1.x, uv1.y}};
-    *ptr++ = {position + Vector2f(p2.x - italicShear * p1.y, p1.y), color, {uv2.x, uv1.y}};
-    *ptr++ = {position + Vector2f(p1.x - italicShear * p2.y, p2.y), color, {uv1.x, uv2.y}};
-    *ptr++ = {position + Vector2f(p2.x - italicShear * p2.y, p2.y), color, {uv2.x, uv2.y}};
+    *ptr++ = {position + Vector2f{p1.x - italicShear * p1.y, p1.y}, color, {uv1.x, uv1.y}};
+    *ptr++ = {position + Vector2f{p2.x - italicShear * p1.y, p1.y}, color, {uv2.x, uv1.y}};
+    *ptr++ = {position + Vector2f{p1.x - italicShear * p2.y, p2.y}, color, {uv1.x, uv2.y}};
+    *ptr++ = {position + Vector2f{p2.x - italicShear * p2.y, p2.y}, color, {uv2.x, uv2.y}};
 
     index += 4u;
 }
@@ -216,10 +217,10 @@ inline void addGlyphQuadPreTransformed(
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {transform.transformPoint(position + Vector2f(p1.x - italicShear * p1.y, p1.y)), color, {uv1.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f(p2.x - italicShear * p1.y, p1.y)), color, {uv2.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f(p1.x - italicShear * p2.y, p2.y)), color, {uv1.x, uv2.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f(p2.x - italicShear * p2.y, p2.y)), color, {uv2.x, uv2.y}};
+    *ptr++ = {transform.transformPoint(position + Vector2f{p1.x - italicShear * p1.y, p1.y}), color, {uv1.x, uv1.y}};
+    *ptr++ = {transform.transformPoint(position + Vector2f{p2.x - italicShear * p1.y, p1.y}), color, {uv2.x, uv1.y}};
+    *ptr++ = {transform.transformPoint(position + Vector2f{p1.x - italicShear * p2.y, p2.y}), color, {uv1.x, uv2.y}};
+    *ptr++ = {transform.transformPoint(position + Vector2f{p2.x - italicShear * p2.y, p2.y}), color, {uv2.x, uv2.y}};
 
     index += 4u;
 }
@@ -252,7 +253,11 @@ inline auto createTextGeometryAndGetBounds(
     // Compute the location of the strike through dynamically
     // We use the center point of the lowercase 'x' glyph as the reference
     // We reuse the underline thickness as the thickness of the strike through as well
-    const float strikeThroughOffset = isStrikeThrough ? font.getGlyph(U'x', characterSize, isBold).bounds.getCenter().y : 0.f;
+    const float strikeThroughOffset = isStrikeThrough
+                                          ? font.getGlyph(U'x', characterSize, isBold, /* outlineThickness */ 0.f)
+                                                .bounds.getCenter()
+                                                .y
+                                          : 0.f;
 
     // Precompute the variables needed by the algorithm
     const auto [whitespaceWidth,
@@ -265,7 +270,7 @@ inline auto createTextGeometryAndGetBounds(
     float x = 0.f;
     auto  y = static_cast<float>(characterSize);
 
-    // Create one quad for each character
+    // Bounds state (only updated if `CalculateBounds` is `true`)
     [[maybe_unused]] auto  minX = static_cast<float>(characterSize);
     [[maybe_unused]] auto  minY = static_cast<float>(characterSize);
     [[maybe_unused]] float maxX = 0.f;
@@ -275,10 +280,31 @@ inline auto createTextGeometryAndGetBounds(
 
     const auto addLines = [&](float offset)
     {
-        fAddLine(currFillIndex, x, y, fillColor, offset, underlineThickness, /*outlineThickness */ 0.f);
+        fAddLine(currFillIndex, x, y, fillColor, offset, underlineThickness, /* outlineThickness */ 0.f);
 
         if (outlineThickness != 0.f)
             fAddLine(currOutlineIndex, x, y, outlineColor, offset, underlineThickness, outlineThickness);
+    };
+
+    const auto updateBoundsAndAdvance = [&](const Glyph& fillGlyph) SFML_BASE_LAMBDA_ALWAYS_INLINE
+    {
+        if constexpr (CalculateBounds)
+        {
+            const Vector2f p1 = fillGlyph.bounds.position;
+            const Vector2f p2 = fillGlyph.bounds.position + fillGlyph.bounds.size;
+
+            const float newMinX = x + p1.x - italicShear * p2.y;
+            const float newMaxX = x + p2.x - italicShear * p1.y;
+            const float newMinY = y + p1.y;
+            const float newMaxY = y + p2.y;
+
+            minX = SFML_BASE_MIN(minX, newMinX);
+            maxX = SFML_BASE_MAX(maxX, newMaxX);
+            minY = SFML_BASE_MIN(minY, newMinY);
+            maxY = SFML_BASE_MAX(maxY, newMaxY);
+        }
+
+        x += fillGlyph.advance + finalLetterSpacing;
     };
 
     for (const char32_t curChar : string)
@@ -323,7 +349,7 @@ inline auto createTextGeometryAndGetBounds(
                     break;
                 case U'\n':
                     y += finalLineSpacing;
-                    x = 0;
+                    x = 0.f;
                     break;
             }
 
@@ -338,40 +364,23 @@ inline auto createTextGeometryAndGetBounds(
             continue;
         }
 
-        // Apply the outline
-        if (outlineThickness != 0.f)
+        if (outlineThickness == 0.f)
         {
-            const Glyph& glyph = font.getGlyph(curChar, characterSize, isBold, outlineThickness);
+            const Glyph& fillGlyph = font.getGlyph(curChar, characterSize, isBold, /* outlineThickness */ 0.f);
+            fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, fillGlyph, italicShear);
 
-            // Add the outline glyph to the vertices
-            fAddGlyphQuad(currOutlineIndex, Vector2f{x, y}, outlineColor, glyph, italicShear);
+            updateBoundsAndAdvance(fillGlyph);
         }
-
-        // Extract the current glyph's description
-        const Glyph& glyph = font.getGlyph(curChar, characterSize, isBold);
-
-        // Add the glyph to the vertices
-        fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, glyph, italicShear);
-
-        // Update the current bounds
-        if constexpr (CalculateBounds)
+        else
         {
-            const Vector2f p1 = glyph.bounds.position;
-            const Vector2f p2 = glyph.bounds.position + glyph.bounds.size;
+            const auto& [fillGlyph,
+                         outlineGlyph] = font.getFillAndOutlineGlyph(curChar, characterSize, isBold, outlineThickness);
 
-            const float newMinX = x + p1.x - italicShear * p2.y;
-            const float newMaxX = x + p2.x - italicShear * p1.y;
-            const float newMinY = y + p1.y;
-            const float newMaxY = y + p2.y;
+            fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, fillGlyph, italicShear);
+            fAddGlyphQuad(currOutlineIndex, Vector2f{x, y}, outlineColor, outlineGlyph, italicShear);
 
-            minX = SFML_BASE_MIN(minX, newMinX);
-            maxX = SFML_BASE_MAX(maxX, newMaxX);
-            minY = SFML_BASE_MIN(minY, newMinY);
-            maxY = SFML_BASE_MAX(maxY, newMaxY);
+            updateBoundsAndAdvance(fillGlyph);
         }
-
-        // Advance to the next character
-        x += glyph.advance + finalLetterSpacing;
     }
 
     // If we're using outline, update the current bounds
