@@ -95,6 +95,36 @@ void linkStencilDepthBuffer(const GLuint stencilDepthBuffer, const bool stencil,
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+struct RenderBufferRAII
+{
+    GLuint id{};
+
+    RenderBufferRAII() = default;
+
+    RenderBufferRAII(const RenderBufferRAII&)            = delete;
+    RenderBufferRAII& operator=(const RenderBufferRAII&) = delete;
+
+    RenderBufferRAII(RenderBufferRAII&& rhs) noexcept : id(rhs.id)
+    {
+        rhs.id = 0u;
+    }
+
+    RenderBufferRAII& operator=(RenderBufferRAII&& rhs) noexcept
+    {
+        if (this == &rhs)
+            return *this;
+
+        if (id != 0u)
+            glCheck(glDeleteRenderbuffers(1, &id));
+
+        id     = rhs.id;
+        rhs.id = 0u;
+
+        return *this;
+    }
+};
+
+////////////////////////////////////////////////////////////
 struct RenderTexture::Impl
 {
     using FramebufferIdMap = ankerl::unordered_dense::map<unsigned int, unsigned int>;
@@ -105,8 +135,8 @@ struct RenderTexture::Impl
     FramebufferIdMap framebuffers;    //!< Per-context OpenGL FBOs
     FramebufferIdMap auxFramebuffers; //!< Per-context auxiliary OpenGL FBOs (either multisample or temp for Y-flipping)
 
-    GLuint stencilDepthBuffer{}; //!< Optional depth/stencil buffer attached to the framebuffer
-    GLuint colorBuffer{};        //!< Optional multisample color buffer attached to the framebuffer
+    RenderBufferRAII stencilDepthBuffer; //!< Optional depth/stencil buffer attached to the framebuffer
+    RenderBufferRAII colorBuffer;        //!< Optional multisample color buffer attached to the framebuffer
 
     bool multisample{}; //!< Must create a multisample framebuffer as well
     bool stencil{};     //!< Has stencil attachment
@@ -118,6 +148,47 @@ struct RenderTexture::Impl
     texture(SFML_BASE_MOVE(theTexture)),
     tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
     {
+    }
+
+    Impl(const Impl&)            = delete;
+    Impl& operator=(const Impl&) = delete;
+
+    Impl(Impl&&) noexcept            = default;
+    Impl& operator=(Impl&&) noexcept = default;
+
+    ////////////////////////////////////////////////////////////
+    void cleanup()
+    {
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+
+        // Destroy the color buffer
+        if (colorBuffer.id)
+        {
+            glCheck(glDeleteRenderbuffers(1, &colorBuffer.id));
+            colorBuffer.id = 0u;
+        }
+
+        // Destroy the depth/stencil buffer
+        if (stencilDepthBuffer.id)
+        {
+            glCheck(glDeleteRenderbuffers(1, &stencilDepthBuffer.id));
+            stencilDepthBuffer.id = 0u;
+        }
+
+        // Unregister FBOs with the contexts if they haven't already been destroyed
+        {
+            for (const auto& [glContextId, framebufferId] : framebuffers)
+                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
+
+            framebuffers.clear();
+        }
+
+        {
+            for (const auto& [glContextId, multisampleFramebufferId] : auxFramebuffers)
+                GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, multisampleFramebufferId);
+
+            auxFramebuffers.clear();
+        }
     }
 
 
@@ -133,7 +204,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool completeAuxFramebufferCreation(GLuint auxFramebufferId)
     {
-        linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
+        linkStencilDepthBuffer(stencilDepthBuffer.id, stencil, depth);
 
         if (!isBoundFramebufferComplete())
             return createFail("failed to link the render buffers to the auxiliary framebuffer");
@@ -157,8 +228,8 @@ private:
             return createFail("failed to create the multisample framebuffer object");
 
         // Link the multisample color buffer to the framebuffer
-        glCheck(glBindRenderbuffer(GL_RENDERBUFFER, colorBuffer));
-        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBuffer));
+        glCheck(glBindRenderbuffer(GL_RENDERBUFFER, colorBuffer.id));
+        glCheck(glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, colorBuffer.id));
 
         return completeAuxFramebufferCreation(multisampleFramebufferId);
     }
@@ -193,7 +264,7 @@ private:
 
         // Link the depth/stencil renderbuffer to the framebuffer
         if (!multisample)
-            linkStencilDepthBuffer(stencilDepthBuffer, stencil, depth);
+            linkStencilDepthBuffer(stencilDepthBuffer.id, stencil, depth);
 
         if (!isBoundFramebufferComplete())
             return createFail("failed to link the target texture to the framebuffer");
@@ -250,9 +321,9 @@ public:
         // Create the (possibly multisample) depth/stencil buffer if requested
         if (stencil || depth)
         {
-            glCheck(glGenRenderbuffers(1, &stencilDepthBuffer));
-            if (!stencilDepthBuffer)
-                return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
+            glCheck(glGenRenderbuffers(1, &stencilDepthBuffer.id));
+                if (!stencilDepthBuffer.id)
+                    return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
 
             bindRenderbufferAndSetFormat(stencilDepthBuffer,
                                          contextSettings.antiAliasingLevel,
@@ -262,9 +333,9 @@ public:
         // Create the multisample color buffer if needed
         if (multisample)
         {
-            glCheck(glGenRenderbuffers(1, &colorBuffer));
-            if (!colorBuffer)
-                return fail("failed to create the attached multisample color buffer");
+                glCheck(glGenRenderbuffers(1, &colorBuffer.id));
+                if (!colorBuffer.id)
+                    return fail("failed to create the attached multisample color buffer");
 
             bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
@@ -288,7 +359,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool activate(bool active)
+    [[nodiscard]] bool activate(const bool active)
     {
         // Unbind the FBO if requested
         if (!active)
@@ -304,7 +375,7 @@ public:
         // If none is found, there is no FBO corresponding to the
         // currently active context so we will have to create a new FBO
 
-        if (const auto it = auxFramebuffers.find(glContextId); it != auxFramebuffers.end())
+        if (const auto* it = auxFramebuffers.find(glContextId); it != auxFramebuffers.end())
         {
             glCheck(glBindFramebuffer(GL_FRAMEBUFFER, it->second));
             return true;
@@ -328,11 +399,11 @@ public:
 
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
-        const auto framebufferIt = framebuffers.find(glContextId);
+        const auto* framebufferIt = framebuffers.find(glContextId);
         if (framebufferIt == framebuffers.end())
             return;
 
-        const auto auxFramebufferIt = auxFramebuffers.find(glContextId);
+        const auto* auxFramebufferIt = auxFramebuffers.find(glContextId);
         if (auxFramebufferIt == auxFramebuffers.end())
             return;
 
@@ -349,22 +420,7 @@ public:
 ////////////////////////////////////////////////////////////
 RenderTexture::~RenderTexture()
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
-
-    // Destroy the color buffer
-    if (m_impl->colorBuffer)
-        glCheck(glDeleteRenderbuffers(1, &m_impl->colorBuffer));
-
-    // Destroy the depth/stencil buffer
-    if (m_impl->stencilDepthBuffer)
-        glCheck(glDeleteRenderbuffers(1, &m_impl->stencilDepthBuffer));
-
-    // Unregister FBOs with the contexts if they haven't already been destroyed
-    for (const auto& [glContextId, framebufferId] : m_impl->framebuffers)
-        GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, framebufferId);
-
-    for (const auto& [glContextId, multisampleFramebufferId] : m_impl->auxFramebuffers)
-        GraphicsContext::unregisterUnsharedFrameBuffer(glContextId, multisampleFramebufferId);
+    m_impl->cleanup();
 }
 
 
@@ -373,7 +429,16 @@ RenderTexture::RenderTexture(RenderTexture&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-RenderTexture& RenderTexture::operator=(RenderTexture&&) noexcept = default;
+RenderTexture& RenderTexture::operator=(RenderTexture&& rhs) noexcept
+{
+    if (this == &rhs)
+        return *this;
+
+    m_impl->cleanup();
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////
