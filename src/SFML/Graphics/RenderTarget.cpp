@@ -261,6 +261,7 @@ void setupVertexAttribPointers()
 #undef SFML_PRIV_OFFSETOF
 }
 
+
 ////////////////////////////////////////////////////////////
 constexpr unsigned int precomputedQuadIndices[]{
 #include "SFML/Graphics/PrecomputedQuadIndices.inl"
@@ -309,10 +310,10 @@ struct RenderTarget::Impl
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
 
     ////////////////////////////////////////////////////////////
-    CPUDrawableBatch cpuDrawableBatch;                  //!< Internal CPU drawable batch (autobatching)
-    bool             autoBatch = true;                  //!< Enable automatic batching of draw calls
-    RenderStates     lastRenderStates;                  //!< Cached render states (autobatching)
-    DrawStatistics   currentDrawStats{};                //!< Statistics for current draw calls
+    CPUDrawableBatch cpuDrawableBatch;   //!< Internal CPU drawable batch (autobatching) (TODO P0: use GPU?)
+    bool             autoBatch = true;   //!< Enable automatic batching of draw calls
+    RenderStates     lastRenderStates;   //!< Cached render states (autobatching)
+    DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
     base::SizeT      autoBatchVertexThreshold{32'768u}; //!< Threshold for batch vertex count
 
     ////////////////////////////////////////////////////////////
@@ -327,7 +328,6 @@ struct RenderTarget::Impl
     id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed)),
     vaoGroup{}
     {
-        vaoGroup.bind();
     }
 
     ////////////////////////////////////////////////////////////
@@ -1170,10 +1170,7 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
     // Bind GL objects
     if (!m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroup.getId())
-    {
-        m_impl->cache.lastVaoGroup = vaoGroup.getId();
         m_impl->bindGLObjects(vaoGroup);
-    }
 
     // Select shader to be used
     const Shader& usedShader = states.shader != nullptr ? *states.shader : GraphicsContext::getInstalledBuiltInShader();
