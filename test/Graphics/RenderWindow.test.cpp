@@ -108,6 +108,15 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
 // Creating multiple windows in Emscripten is not supported
 #ifndef SFML_SYSTEM_EMSCRIPTEN
+    SECTION("Move assignment")
+    {
+        sf::RenderWindow window0({.size{128u, 128u}, .title = "A"});
+        sf::RenderWindow window1({.size{256u, 256u}, .title = "B"});
+
+        window1 = SFML_BASE_MOVE(window0);
+        CHECK(window1.getSize() == sf::Vector2u{128u, 128u});
+    }
+
     SECTION("Multiple windows 1")
     {
         sf::RenderWindow window({.size{256u, 256u}, .title = "A"});

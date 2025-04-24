@@ -9,6 +9,7 @@
 #include <GraphicsUtil.hpp>
 #include <SystemUtil.hpp>
 
+
 class TestRenderTarget : public sf::RenderTarget
 {
 public:
@@ -45,6 +46,14 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK(renderTarget.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
         CHECK(renderTarget.getView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1));
         CHECK(!renderTarget.isSrgb());
+    }
+
+    SECTION("Move assignment")
+    {
+        TestRenderTarget renderTarget0;
+        TestRenderTarget renderTarget1;
+
+        renderTarget1 = SFML_BASE_MOVE(renderTarget0);
     }
 
     SECTION("Set/get view")
