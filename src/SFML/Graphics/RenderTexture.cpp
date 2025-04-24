@@ -322,10 +322,10 @@ public:
         if (stencil || depth)
         {
             glCheck(glGenRenderbuffers(1, &stencilDepthBuffer.id));
-                if (!stencilDepthBuffer.id)
-                    return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
+            if (!stencilDepthBuffer.id)
+                return fail("failed to create the attached ", getBufferTypeStr(multisample, stencil, depth));
 
-            bindRenderbufferAndSetFormat(stencilDepthBuffer,
+            bindRenderbufferAndSetFormat(stencilDepthBuffer.id,
                                          contextSettings.antiAliasingLevel,
                                          getGLInternalFormat(stencil, depth));
         }
@@ -333,11 +333,11 @@ public:
         // Create the multisample color buffer if needed
         if (multisample)
         {
-                glCheck(glGenRenderbuffers(1, &colorBuffer.id));
-                if (!colorBuffer.id)
-                    return fail("failed to create the attached multisample color buffer");
+            glCheck(glGenRenderbuffers(1, &colorBuffer.id));
+            if (!colorBuffer.id)
+                return fail("failed to create the attached multisample color buffer");
 
-            bindRenderbufferAndSetFormat(colorBuffer, contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
+            bindRenderbufferAndSetFormat(colorBuffer.id , contextSettings.antiAliasingLevel, sRgb ? GL_SRGB8_ALPHA8 : GL_RGBA8);
         }
 
         // We can't create an FBO now if there is no active context
