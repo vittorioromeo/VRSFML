@@ -50,7 +50,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
                 const auto font = sf::Font::openFromFile(filename).value();
 
                 CHECK(font.getInfo().family == "Tuffy");
-                const auto& glyph = font.getGlyph(0x45, 16, false);
+                const auto& glyph = font.getGlyph(0x45, 16, false, /* outlineThickness */ 0.f);
                 CHECK(glyph.advance == 9);
                 CHECK(glyph.lsbDelta == 9);
                 CHECK(glyph.rsbDelta == 16);
@@ -88,7 +88,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             const auto memory = loadIntoMemory("Graphics/tuffy.ttf");
             const auto font   = sf::Font::openFromMemory(memory.data(), memory.size()).value();
             CHECK(font.getInfo().family == "Tuffy");
-            const auto& glyph = font.getGlyph(0x45, 16, false);
+            const auto& glyph = font.getGlyph(0x45, 16, false, /* outlineThickness */ 0.f);
             CHECK(glyph.advance == 9);
             CHECK(glyph.lsbDelta == 9);
             CHECK(glyph.rsbDelta == 16);
@@ -116,7 +116,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         auto       stream = sf::FileInputStream::open("Graphics/tuffy.ttf").value();
         const auto font   = sf::Font::openFromStream(stream).value();
         CHECK(font.getInfo().family == "Tuffy");
-        const auto& glyph = font.getGlyph(0x45, 16, false);
+        const auto& glyph = font.getGlyph(0x45, 16, false, /* outlineThickness */ 0.f);
         CHECK(glyph.advance == 9);
         CHECK(glyph.lsbDelta == 9);
         CHECK(glyph.rsbDelta == 16);
