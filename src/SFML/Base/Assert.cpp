@@ -6,11 +6,11 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
-#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 
 #ifdef SFML_DEBUG
 
+    #include "SFML/Base/Abort.hpp"
     #include "SFML/Base/StackTrace.hpp"
 
     #include <cstdio>
