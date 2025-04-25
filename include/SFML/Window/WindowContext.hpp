@@ -113,17 +113,17 @@ private:
     friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
     friend priv::WindowImpl;           // for `getJoystickManager`
 
-    friend GraphicsContext;   // for `setActiveThreadLocalGlContext`
-    friend Joystick;          // for `getJoystickManager`
-    friend RenderTarget;      // for `getActiveThreadLocalGlContextId`
-    friend RenderTexture;     // for `[un]registerUnsharedFrameBuffer`
-    friend Sensor;            // for `getSensorManager`
-    friend Shader;            // for `hasActiveThreadLocalGlContext`
-    friend TestContext;       // for `createGlContext`
-    friend Texture;           // for `hasActiveThreadLocalGlContext`
-    friend VertexBuffer;      // for `hasActiveThreadLocalGlContext`
-    friend Window;            // for `createGlContext`
-    friend WindowContextImpl; // for `UnsharedDeleteFn`
+    friend GraphicsContext; // for `setActiveThreadLocalGlContext`
+    friend Joystick;        // for `getJoystickManager`
+    friend RenderTarget;    // for `getActiveThreadLocalGlContextId`
+    friend RenderTexture;   // for `[un]registerUnsharedFrameBuffer`
+    friend Sensor;          // for `getSensorManager`
+    friend Shader;          // for `hasActiveThreadLocalGlContext`
+    friend TestContext;     // for `createGlContext`
+    friend Texture;         // for `hasActiveThreadLocalGlContext`
+    friend VertexBuffer;    // for `hasActiveThreadLocalGlContext`
+    friend Window;          // for `createGlContext`
+    friend WindowContextImpl;
 
     friend bool sf::priv::glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
 
@@ -169,12 +169,6 @@ private:
                                                                           unsigned int            bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    using UnsharedDeleteFn = void (*)(unsigned int);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Notify unshared resources of context destruction
     ///
     ////////////////////////////////////////////////////////////
@@ -198,24 +192,28 @@ private:
     [[nodiscard]] static bool hasActiveThreadLocalGlContext();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared between
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregister
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void registerUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

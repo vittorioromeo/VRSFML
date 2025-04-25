@@ -165,7 +165,7 @@ struct PersistentGPUStorage
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 64> impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
