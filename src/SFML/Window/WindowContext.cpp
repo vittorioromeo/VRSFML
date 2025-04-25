@@ -88,35 +88,37 @@ thread_local constinit struct
 
 
 ////////////////////////////////////////////////////////////
+struct UnsharedContextIds // TODO P1: replace with set?
+{
+    ////////////////////////////////////////////////////////////
+    base::Vector<unsigned int> ids;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool has(const unsigned int id) const
+    {
+        return base::find(ids.begin(), ids.end(), id) != ids.end();
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 struct UnsharedContextResources
 {
     ////////////////////////////////////////////////////////////
-    base::Vector<unsigned int> frameBufferIds;
-    base::Vector<unsigned int> vaoIds;
+    UnsharedContextIds frameBufferIds;
+    UnsharedContextIds vaoIds;
 
     ////////////////////////////////////////////////////////////
     void clear()
     {
-        frameBufferIds.clear();
-        vaoIds.clear();
+        frameBufferIds.ids.clear();
+        vaoIds.ids.clear();
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allEmpty() const
     {
-        return frameBufferIds.empty() && vaoIds.empty();
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasFrameBuffer(const unsigned int frameBufferId) const
-    {
-        return base::find(frameBufferIds.begin(), frameBufferIds.end(), frameBufferId) != frameBufferIds.end();
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool hasVAO(const unsigned int vaoId) const
-    {
-        return base::find(vaoIds.begin(), vaoIds.end(), vaoId) != vaoIds.end();
+        return frameBufferIds.ids.empty() && vaoIds.ids.empty();
     }
 };
 
@@ -127,6 +129,35 @@ class UnsharedContextResourcesManager
 private:
     mutable std::mutex                                                   m_mutex;
     ankerl::unordered_dense::map<unsigned int, UnsharedContextResources> m_mapping;
+
+    ////////////////////////////////////////////////////////////
+    void registerImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        auto& idsVec    = (resources.*idsPmr);
+
+        if ((idsVec).has(id))
+            return;
+
+        (idsVec).ids.emplaceBack(id);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void unregisterImpl(auto idsPmr, const unsigned int glContextId, const unsigned int id)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        auto& idsVec    = (resources.*idsPmr);
+
+        if (!idsVec.has(id))
+            return;
+
+        glCheck(glDeleteFramebuffers(1, &id));
+        idsVec.ids.erase(base::find(idsVec.ids.begin(), idsVec.ids.end(), id));
+    }
 
 public:
     ////////////////////////////////////////////////////////////
@@ -162,8 +193,11 @@ public:
         if (resources.allEmpty())
             return;
 
-        for (const unsigned int frameBufferId : resources.frameBufferIds)
+        for (const unsigned int frameBufferId : resources.frameBufferIds.ids)
             glCheck(glDeleteFramebuffers(1, &frameBufferId));
+
+        for (const unsigned int vaoId : resources.vaoIds.ids)
+            glCheck(glDeleteVertexArrays(1, &vaoId));
 
         resources.clear();
     }
@@ -171,57 +205,27 @@ public:
     ////////////////////////////////////////////////////////////
     void registerFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
     {
-        std::lock_guard lock(m_mutex);
-
-        auto& resources = m_mapping[glContextId];
-        if (resources.hasFrameBuffer(frameBufferId))
-            return;
-
-        resources.frameBufferIds.emplaceBack(frameBufferId);
+        registerImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId);
     }
 
     ////////////////////////////////////////////////////////////
     void unregisterFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
     {
-        std::lock_guard lock(m_mutex);
-
-        auto& resources = m_mapping[glContextId];
-        if (!resources.hasFrameBuffer(frameBufferId))
-            return;
-
-        glCheck(glDeleteFramebuffers(1, &frameBufferId));
-
-        resources.frameBufferIds.erase(
-            base::find(resources.frameBufferIds.begin(), resources.frameBufferIds.end(), frameBufferId));
+        unregisterImpl(&UnsharedContextResources::frameBufferIds, glContextId, frameBufferId);
     }
 
     ////////////////////////////////////////////////////////////
     void registerVAO(const unsigned int glContextId, const unsigned int vaoId)
     {
-        std::lock_guard lock(m_mutex);
-
-        auto& resources = m_mapping[glContextId];
-        if (resources.hasVAO(vaoId))
-            return;
-
-        resources.vaoIds.emplaceBack(vaoId);
+        registerImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId);
     }
 
     ////////////////////////////////////////////////////////////
     void unregisterVAO(const unsigned int glContextId, const unsigned int vaoId)
     {
-        std::lock_guard lock(m_mutex);
-
-        auto& resources = m_mapping[glContextId];
-        if (!resources.hasVAO(vaoId))
-            return;
-
-        glCheck(glDeleteVertexArrays(1, &vaoId));
-
-        resources.vaoIds.erase(base::find(resources.vaoIds.begin(), resources.vaoIds.end(), vaoId));
+        unregisterImpl(&UnsharedContextResources::vaoIds, glContextId, vaoId);
     }
 };
-
 
 } // namespace
 
