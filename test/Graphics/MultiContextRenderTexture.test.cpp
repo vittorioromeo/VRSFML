@@ -19,8 +19,6 @@
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
-#include <iostream>
-
 
 TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
 {
