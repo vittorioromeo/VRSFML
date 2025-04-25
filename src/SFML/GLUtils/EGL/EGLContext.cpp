@@ -319,7 +319,7 @@ GlContext(id, contextSettings)
 EglContext::~EglContext()
 {
     // Notify unshared OpenGL resources of context destruction
-    cleanupUnsharedFrameBuffers();
+    WindowContext::cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the current context
     const EGLContext currentContext = eglCheck(eglGetCurrentContext());
