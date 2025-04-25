@@ -27,7 +27,7 @@ unsigned int glGetErrorImpl()
 ////////////////////////////////////////////////////////////
 bool glCheckError(const unsigned int openGlError, const char* const file, const unsigned int line, const char* const expression)
 {
-    if (!WindowContext::hasActiveThreadLocalOrSharedGlContext())
+    if (!WindowContext::hasActiveThreadLocalGlContext())
     {
         err() << "An internal OpenGL call failed in " << Path{file}.filename() << "(" << line << ")."
               << "\nExpression:\n   " << expression << "\nNo active OpenGL context on calling thread.\n";

@@ -27,11 +27,19 @@ public:
     ////////////////////////////////////////////////////////////
     ~ShaderSaver();
 
+    ////////////////////////////////////////////////////////////
+    ShaderSaver(const ShaderSaver&)            = delete;
+    ShaderSaver& operator=(const ShaderSaver&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    ShaderSaver(ShaderSaver&&)            = delete;
+    ShaderSaver& operator=(ShaderSaver&&) = delete;
+
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int m_shaderBinding{}; //!< Shader binding to restore
+    int m_shaderBinding; //!< Shader binding to restore
 };
 
 } // namespace sf::priv
