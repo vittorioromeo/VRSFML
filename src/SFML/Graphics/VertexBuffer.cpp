@@ -87,7 +87,7 @@ VertexBuffer::~VertexBuffer()
 {
     if (m_buffer)
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
         SFML_BASE_ASSERT(GraphicsContext::isInstalled());
 
         glCheck(glDeleteBuffers(1, &m_buffer));
@@ -98,7 +98,7 @@ VertexBuffer::~VertexBuffer()
 ////////////////////////////////////////////////////////////
 bool VertexBuffer::create(base::SizeT vertexCount)
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(GraphicsContext::isInstalled());
 
     if (!m_buffer)
@@ -150,7 +150,7 @@ bool VertexBuffer::update(const Vertex* vertices, base::SizeT vertexCount, unsig
     if (offset && (offset + vertexCount > m_size))
         return false;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(GraphicsContext::isInstalled());
 
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
@@ -183,7 +183,7 @@ bool VertexBuffer::update(const VertexBuffer& vertexBuffer) const
     if (!m_buffer || !vertexBuffer.m_buffer)
         return false;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(GraphicsContext::isInstalled());
 
     glCheck(glBindBuffer(GL_COPY_READ_BUFFER, vertexBuffer.m_buffer));
@@ -233,7 +233,7 @@ unsigned int VertexBuffer::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void VertexBuffer::bind() const
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(GraphicsContext::isInstalled());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, m_buffer));
 }
@@ -242,7 +242,7 @@ void VertexBuffer::bind() const
 ////////////////////////////////////////////////////////////
 void VertexBuffer::unbind()
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(GraphicsContext::isInstalled());
     glCheck(glBindBuffer(GL_ARRAY_BUFFER, 0u));
 }

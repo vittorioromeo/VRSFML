@@ -162,13 +162,6 @@ bool GraphicsContext::hasActiveThreadLocalGlContext()
 
 
 ////////////////////////////////////////////////////////////
-bool GraphicsContext::hasActiveThreadLocalOrSharedGlContext()
-{
-    return WindowContext::hasActiveThreadLocalOrSharedGlContext();
-}
-
-
-////////////////////////////////////////////////////////////
 void GraphicsContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
 {
     WindowContext::registerUnsharedFrameBuffer(glContextId, frameBufferId, deleteFn);

@@ -30,6 +30,7 @@ namespace sf::base::priv
 
 } // namespace sf::base::priv
 
+
 namespace sf::base
 {
 // clang-format off
@@ -41,7 +42,6 @@ struct BadOptionalAccess { };
 inline constexpr struct InPlace  { } inPlace;
 inline constexpr struct NullOpt  { } nullOpt;
 inline constexpr struct FromFunc { } fromFunc;
-
 // clang-format on
 
 
@@ -263,6 +263,30 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    template <typename... Args>
+    [[gnu::always_inline]] constexpr T& emplaceIfNeeded(Args&&... args)
+    {
+        if (m_engaged) [[likely]]
+            return m_buffer.obj;
+
+        m_engaged = true;
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(args)...));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline]] constexpr T& emplaceFromFuncIfNeeded(F&& func)
+    {
+        if (m_engaged) [[likely]]
+            return m_buffer.obj;
+
+        m_engaged = true;
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(func)()));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void reset() noexcept
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
@@ -320,17 +344,20 @@ public:
         return SFML_BASE_MOVE(m_engaged ? m_buffer.obj : defaultValue);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool hasValue() const noexcept
     {
         return m_engaged;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_engaged;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
@@ -339,12 +366,14 @@ public:
         return &m_buffer.obj;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
         return &m_buffer.obj;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
@@ -353,12 +382,14 @@ public:
         return m_buffer.obj;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
         return m_buffer.obj;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
