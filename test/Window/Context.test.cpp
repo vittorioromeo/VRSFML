@@ -73,11 +73,6 @@ struct TestContext
         return sf::WindowContext::hasActiveThreadLocalGlContext();
     }
 
-    [[nodiscard]] static bool hasActiveThreadLocalOrSharedGlContext()
-    {
-        return sf::WindowContext::hasActiveThreadLocalOrSharedGlContext();
-    }
-
     [[nodiscard]] static bool isExtensionAvailable(const char* name)
     {
         return sf::WindowContext::isExtensionAvailable(name);
