@@ -107,27 +107,25 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    using UnsharedDeleteFn = void (*)(unsigned int);
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared between
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
-    ///
-    ////////////////////////////////////////////////////////////
-    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregister
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void registerUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
 
 private:
     friend Shader;

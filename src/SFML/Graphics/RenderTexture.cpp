@@ -29,13 +29,6 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-void deleteFramebuffer(unsigned int id)
-{
-    glCheck(glDeleteFramebuffers(1, &id));
-}
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline]] inline constexpr GLenum getGLInternalFormat(const bool stencil, const bool depth)
 {
     if (stencil && depth)
@@ -177,7 +170,7 @@ private:
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
         auxFramebuffers.try_emplace(glContextId, auxFramebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, auxFramebufferId, &deleteFramebuffer);
+        GraphicsContext::registerUnsharedFrameBuffer(glContextId, auxFramebufferId);
 
         return true;
     }
@@ -237,7 +230,7 @@ private:
         // Register the FBO in our map and with the current context so it is automatically destroyed
         const unsigned int glContextId = GraphicsContext::getActiveThreadLocalGlContextId();
         framebuffers.try_emplace(glContextId, framebufferId);
-        GraphicsContext::registerUnsharedFrameBuffer(glContextId, framebufferId, &deleteFramebuffer);
+        GraphicsContext::registerUnsharedFrameBuffer(glContextId, framebufferId);
 
         return multisample ? createAuxMultisampleFramebuffer() : createAuxTempFramebuffer();
     }
