@@ -1,6 +1,7 @@
 #include "SDLGlContext.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -152,7 +153,7 @@ m_ownsWindow(false)
 ////////////////////////////////////////////////////////////
 SDLGlContext::~SDLGlContext()
 {
-    cleanupUnsharedFrameBuffers();
+    WindowContext::cleanupUnsharedFrameBuffers(*this);
 
     // Deactivate the context if it's current
     if (m_context && SDL_GL_GetCurrentContext() == m_context)
