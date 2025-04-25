@@ -52,13 +52,6 @@ GlContext::GlContext(unsigned int id, const ContextSettings& contextSettings) : 
 
 
 ////////////////////////////////////////////////////////////
-void GlContext::cleanupUnsharedFrameBuffers()
-{
-    WindowContext::cleanupUnsharedFrameBuffers(*this);
-}
-
-
-////////////////////////////////////////////////////////////
 bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettings& requestedSettings)
 {
     SFML_BASE_ASSERT(WindowContext::getActiveThreadLocalGlContextPtr() == this);
@@ -82,7 +75,7 @@ bool GlContext::initialize(const GlContext& sharedGlContext, const ContextSettin
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
 
     // Hardcoded for WebGL 2.0
-    m_settings.majorVersion   = 2;
+    m_settings.majorVersion   = 3;
     m_settings.minorVersion   = 0;
     m_settings.attributeFlags = requestedSettings.attributeFlags;
 
