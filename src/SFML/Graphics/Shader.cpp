@@ -12,6 +12,7 @@
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLSharedContextGuard.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
@@ -365,7 +366,10 @@ Shader::~Shader()
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+        // Always delete programs and shaders on the shared context
+        priv::GLSharedContextGuard guard;
+
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
         SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -386,7 +390,10 @@ Shader& Shader::operator=(Shader&& right) noexcept
     // Destroy effect program
     if (m_impl->shaderProgram)
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+        // Always delete programs and shaders on the shared context
+        priv::GLSharedContextGuard guard;
+
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
         SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
         glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
     }
@@ -637,10 +644,10 @@ void Shader::setUniform(UniformLocation location, const Glsl::Mat4& matrix) cons
 bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Store the location -> texture mapping
-    if (const auto it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
+    if (auto* const it = m_impl->textures.find(location.m_value); it != m_impl->textures.end())
     {
         // Location already used, just replace the texture
         it->second = &texture;
@@ -665,7 +672,7 @@ bool Shader::setUniform(UniformLocation location, const Texture& texture) const
 void Shader::setUniform(UniformLocation location, CurrentTextureType)
 {
     SFML_BASE_ASSERT(m_impl->shaderProgram);
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Find the location of the variable in the shader
     m_impl->currentTexture = location.m_value;
@@ -747,7 +754,7 @@ unsigned int Shader::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 void Shader::bind() const
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(m_impl->shaderProgram != 0u);
 
     // Enable the program
@@ -766,7 +773,7 @@ void Shader::bind() const
 ////////////////////////////////////////////////////////////
 void Shader::unbind()
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     glCheck(glUseProgram({}));
 }
 
@@ -777,7 +784,7 @@ bool Shader::isGeometryAvailable()
 #ifdef SFML_OPENGL_ES
     return false;
 #else
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     return GL_VERSION_3_2;
 #endif
 }
@@ -794,7 +801,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
                                        base::StringView geometryShaderCode,
                                        base::StringView fragmentShaderCode)
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure we can use geometry shaders
     if (geometryShaderCode.data() != nullptr && !isGeometryAvailable())
@@ -804,6 +811,9 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 
         return base::nullOpt;
     }
+
+    // Always create programs and shaders on the shared context
+    priv::GLSharedContextGuard guard;
 
     // Create the program
     const GLhandle shaderProgram = glCheck(glCreateProgram());
@@ -900,7 +910,7 @@ base::Optional<Shader> Shader::compile(base::StringView vertexShaderCode,
 ////////////////////////////////////////////////////////////
 void Shader::bindTextures() const
 {
-    auto it = m_impl->textures.begin();
+    auto* it = m_impl->textures.begin();
     for (base::SizeT i = 0u; i < m_impl->textures.size(); ++i)
     {
         const auto index = static_cast<GLsizei>(i + 1);

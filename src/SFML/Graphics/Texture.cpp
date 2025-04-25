@@ -12,6 +12,7 @@
 #include "SFML/Window/Window.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLSharedContextGuard.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 #include "SFML/GLUtils/TextureSaver.hpp"
@@ -100,7 +101,9 @@ Texture::~Texture()
     if (!m_texture)
         return;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    // Always destroy the texture on the shared context
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    priv::GLSharedContextGuard guard;
 
     const GLuint texture = m_texture;
     glCheck(glDeleteTextures(1, &texture));
@@ -131,7 +134,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
     // Destroy the OpenGL texture
     if (m_texture)
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         const GLuint texture = m_texture;
         glCheck(glDeleteTextures(1, &texture));
@@ -163,7 +166,9 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
         return result; // Empty optional
     }
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    // Always create textures on the shared context
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
+    priv::GLSharedContextGuard guard;
 
     // Check the maximum texture size
     const unsigned int maxSize = getMaximumSize();
@@ -287,7 +292,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     if ((result = sf::Texture::create(rectangle.size.toVector2u(),
                                       {.sRgb = settings.sRgb, .smooth = settings.smooth, .wrapMode = settings.wrapMode})))
     {
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
         // Make sure that the current texture binding will be preserved
         const priv::TextureSaver save;
@@ -327,7 +332,7 @@ Image Texture::copyToImage() const
     // Easy case: empty texture
     SFML_BASE_ASSERT(m_texture && "Texture::copyToImage Cannot copy empty texture to image");
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -382,7 +387,7 @@ void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
     SFML_BASE_ASSERT(m_texture);
     SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -420,7 +425,7 @@ bool Texture::update(const Texture& texture, Vector2u dest)
     SFML_BASE_ASSERT(texture.m_texture);
     SFML_BASE_ASSERT(glCheck(glIsTexture(texture.m_texture)));
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Save the current bindings so we can restore them after we are done
     const auto readFramebuffer = priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING);
@@ -516,7 +521,7 @@ bool Texture::update(const Window& window, Vector2u dest)
         return false;
     }
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Save the current bindings so we can restore them after we are done
     const auto readFramebuffer = priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING);
@@ -604,7 +609,7 @@ void Texture::setSmooth(bool smooth)
 
     m_isSmooth = smooth;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -649,7 +654,7 @@ void Texture::setWrapMode(TextureWrapMode wrapMode)
 
     m_wrapMode = wrapMode;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -674,7 +679,7 @@ bool Texture::generateMipmap()
     SFML_BASE_ASSERT(m_texture);
     SFML_BASE_ASSERT(glCheck(glIsTexture(m_texture)));
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -697,7 +702,7 @@ void Texture::invalidateMipmap()
     if (!m_hasMipmap)
         return;
 
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
@@ -712,7 +717,7 @@ void Texture::invalidateMipmap()
 ////////////////////////////////////////////////////////////
 void Texture::bind() const
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     SFML_BASE_ASSERT(m_texture);
 
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
@@ -722,7 +727,7 @@ void Texture::bind() const
 ////////////////////////////////////////////////////////////
 void Texture::unbind()
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
     glCheck(glBindTexture(GL_TEXTURE_2D, 0));
 }
 
@@ -730,7 +735,7 @@ void Texture::unbind()
 ////////////////////////////////////////////////////////////
 unsigned int Texture::getMaximumSize()
 {
-    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
 
     static const auto size = static_cast<unsigned int>(priv::getGLInteger(GL_MAX_TEXTURE_SIZE));
     return size;
