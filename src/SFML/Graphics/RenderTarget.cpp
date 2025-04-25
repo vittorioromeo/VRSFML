@@ -290,7 +290,8 @@ struct [[nodiscard]] StatesCache
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    unsigned int lastVaoGroup{0u}; //!< Last bound vertex array object id
+    unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
+    unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
 
     BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
     StencilMode lastStencilMode{};         //!< Cached stencil
@@ -325,8 +326,7 @@ struct RenderTarget::Impl
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
     view(theView),
-    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed)),
-    vaoGroup{}
+    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
     {
     }
 
@@ -334,7 +334,9 @@ struct RenderTarget::Impl
     void bindGLObjects(const GLVAOGroup& theVAOGroup)
     {
         theVAOGroup.bind();
-        cache.lastVaoGroup = theVAOGroup.getId();
+
+        cache.lastVaoGroup          = theVAOGroup.getId();
+        cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
 
         RenderTargetImpl::setupVertexAttribPointers();
     }
@@ -1169,8 +1171,14 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
         resetGLStatesImpl();
 
     // Bind GL objects
-    if (!m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroup.getId())
-        m_impl->bindGLObjects(vaoGroup);
+    {
+        const bool mustRebindVAO = m_impl->cache.lastVaoGroup == 0u || m_impl->cache.lastVaoGroup != vaoGroup.getId() ||
+                                   m_impl->cache.lastVaoGroupContextId == 0u ||
+                                   m_impl->cache.lastVaoGroupContextId != GraphicsContext::getActiveThreadLocalGlContextId();
+
+        if (!m_impl->cache.enable || mustRebindVAO)
+            m_impl->bindGLObjects(vaoGroup);
+    }
 
     // Select shader to be used
     const Shader& usedShader = states.shader != nullptr ? *states.shader : GraphicsContext::getInstalledBuiltInShader();

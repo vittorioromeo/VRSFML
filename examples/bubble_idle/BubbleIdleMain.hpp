@@ -7904,9 +7904,9 @@ struct Main
 
         const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
 
-        rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
-        rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
-        rtGame.reset();       // TODO P2: (lib) workaround to unregister framebuffers
+        // rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
+        // rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
+        // rtGame.reset();       // TODO P2: (lib) workaround to unregister framebuffers
 
         optWindow.emplace(
             sf::WindowSettings{.size            = newResolution,
