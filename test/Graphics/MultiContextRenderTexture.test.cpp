@@ -47,15 +47,18 @@ TEST_CASE("[Graphics] MultiContext" * doctest::skip(skipDisplayTests))
         sf::base::Optional<sf::RenderWindow>  optWnd;
         sf::base::Optional<sf::RenderTexture> optRT0;
 
-        optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-        optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+        for (int i = 0; i < 2; ++i)
+        {
+            optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
+            optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
-        optRT0.reset();
-        optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
-        optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
+            optRT0.reset();
+            optRT0.emplace(sf::RenderTexture::create({1024u, 1024u}).value());
+            optWnd.emplace(sf::WindowSettings{.size = {1024u, 1024u}, .title = "Window B"});
 
-        optRT0->drawIndexedVertices(vertices, 1, indices, 1, sf::PrimitiveType::Points);
-        optRT0->display();
+            optRT0->drawIndexedVertices(vertices, 1, indices, 1, sf::PrimitiveType::Points);
+            optRT0->display();
+        }
     }
 
     SECTION("Test3")
