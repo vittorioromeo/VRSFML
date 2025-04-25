@@ -2,44 +2,54 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::priv
+{
+class GlContext;
+
+} // namespace sf::priv
+
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Automatic wrapper for saving and restoring the current texture binding
+/// \brief Automatic wrapper for saving and restoring the current GL context
 ///
 ////////////////////////////////////////////////////////////
-class TextureSaver
+class GLContextSaver
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// The current texture binding is saved.
+    /// The current GL context is saved.
     ///
     ////////////////////////////////////////////////////////////
-    TextureSaver();
+    GLContextSaver();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
-    /// The previous texture binding is restored.
+    /// The previous GL context is restored.
     ///
     ////////////////////////////////////////////////////////////
-    ~TextureSaver();
+    ~GLContextSaver();
 
     ////////////////////////////////////////////////////////////
-    TextureSaver(const TextureSaver&)            = delete;
-    TextureSaver& operator=(const TextureSaver&) = delete;
+    GLContextSaver(const GLContextSaver&)            = delete;
+    GLContextSaver& operator=(const GLContextSaver&) = delete;
 
     ////////////////////////////////////////////////////////////
-    TextureSaver(TextureSaver&&)            = delete;
-    TextureSaver& operator=(TextureSaver&&) = delete;
+    GLContextSaver(GLContextSaver&&)            = delete;
+    GLContextSaver& operator=(GLContextSaver&&) = delete;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    int m_textureBinding; //!< Texture binding to restore
+    priv::GlContext* m_glContext; //!< GL context to restore
 };
 
 } // namespace sf::priv
