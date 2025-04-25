@@ -11,6 +11,7 @@
 #include "SFML/Window/SDLLayer.hpp" // TODO P0:
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLContextSaver.hpp"
@@ -46,7 +47,7 @@ namespace
 /// \brief Load our extensions vector with the supported extensions
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] sf::base::Vector<sf::base::StringView> loadExtensions(DerivedGlContextType& glContext)
+[[nodiscard]] sf::base::Vector<sf::base::StringView> loadExtensions(priv::DerivedGlContextType& glContext)
 {
     sf::base::Vector<sf::base::StringView> result; // Use a single local variable for NRVO
 
@@ -88,37 +89,23 @@ thread_local constinit struct
 
 
 ////////////////////////////////////////////////////////////
-struct UnsharedContextIds // TODO P1: replace with set?
-{
-    ////////////////////////////////////////////////////////////
-    base::Vector<unsigned int> ids;
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool has(const unsigned int id) const
-    {
-        return base::find(ids.begin(), ids.end(), id) != ids.end();
-    }
-};
-
-
-////////////////////////////////////////////////////////////
 struct UnsharedContextResources
 {
     ////////////////////////////////////////////////////////////
-    UnsharedContextIds frameBufferIds;
-    UnsharedContextIds vaoIds;
+    ankerl::unordered_dense::set<unsigned int> frameBufferIds;
+    ankerl::unordered_dense::set<unsigned int> vaoIds;
 
     ////////////////////////////////////////////////////////////
     void clear()
     {
-        frameBufferIds.ids.clear();
-        vaoIds.ids.clear();
+        frameBufferIds.clear();
+        vaoIds.clear();
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool allEmpty() const
     {
-        return frameBufferIds.ids.empty() && vaoIds.ids.empty();
+        return frameBufferIds.empty() && vaoIds.empty();
     }
 };
 
@@ -136,12 +123,12 @@ private:
         std::lock_guard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
-        auto& idsVec    = (resources.*idsPmr);
+        auto& idsSet    = (resources.*idsPmr);
 
-        if ((idsVec).has(id))
+        if (idsSet.contains(id))
             return;
 
-        (idsVec).ids.emplaceBack(id);
+        idsSet.emplace(id);
     }
 
     ////////////////////////////////////////////////////////////
@@ -150,13 +137,13 @@ private:
         std::lock_guard lock(m_mutex);
 
         auto& resources = m_mapping[glContextId];
-        auto& idsVec    = (resources.*idsPmr);
+        auto& idsSet    = (resources.*idsPmr);
 
-        if (!idsVec.has(id))
+        if (!idsSet.contains(id))
             return;
 
         glCheck(glDeleteFramebuffers(1, &id));
-        idsVec.ids.erase(base::find(idsVec.ids.begin(), idsVec.ids.end(), id));
+        idsSet.erase(id);
     }
 
 public:
@@ -193,10 +180,10 @@ public:
         if (resources.allEmpty())
             return;
 
-        for (const unsigned int frameBufferId : resources.frameBufferIds.ids)
+        for (const unsigned int frameBufferId : resources.frameBufferIds)
             glCheck(glDeleteFramebuffers(1, &frameBufferId));
 
-        for (const unsigned int vaoId : resources.vaoIds.ids)
+        for (const unsigned int vaoId : resources.vaoIds)
             glCheck(glDeleteVertexArrays(1, &vaoId));
 
         resources.clear();
@@ -239,7 +226,7 @@ struct WindowContextImpl
     UnsharedContextResourcesManager unsharedContextResourcesManager;
 
     ////////////////////////////////////////////////////////////
-    DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
+    priv::DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
@@ -590,10 +577,10 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
     if (!setActiveThreadLocalGlContextToSharedContext(true))
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
-    auto glContext = base::makeUnique<DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
-                                                            &wc.sharedGlContext,
-                                                            contextSettings,
-                                                            SFML_BASE_FORWARD(args)...);
+    auto glContext = base::makeUnique<priv::DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
+                                                                  &wc.sharedGlContext,
+                                                                  contextSettings,
+                                                                  SFML_BASE_FORWARD(args)...);
 
     if (!setActiveThreadLocalGlContextToSharedContext(false))
         priv::err() << "Error disabling shared GL context in WindowContext::createGlContext()";
