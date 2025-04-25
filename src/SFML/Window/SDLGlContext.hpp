@@ -15,11 +15,14 @@ struct SDL_Window;
 struct SDL_GLContextState;
 using SDL_GLContext = SDL_GLContextState*;
 
-
 namespace sf::priv
 {
 class WindowImpl;
+}
 
+
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
 class SDLGlContext : public GlContext
 {
@@ -36,6 +39,14 @@ public:
 
     ////////////////////////////////////////////////////////////
     ~SDLGlContext() override;
+
+    ////////////////////////////////////////////////////////////
+    SDLGlContext(const SDLGlContext&)            = delete;
+    SDLGlContext& operator=(const SDLGlContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    SDLGlContext(SDLGlContext&&)            = delete;
+    SDLGlContext& operator=(SDLGlContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
     GlFunctionPointer getFunction(const char* name) const;

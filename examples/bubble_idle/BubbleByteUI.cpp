@@ -1185,7 +1185,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vector2f quickBarPos)
         ImGui::Separator();
 
         if (uiCheckbox("VSync", &profile.vsync))
-            optWindow->setVerticalSyncEnabled(profile.vsync);
+            window.setVerticalSyncEnabled(profile.vsync);
 
         ImGui::EndPopup();
     }
@@ -4272,20 +4272,20 @@ void Main::uiTabBarSettings()
             profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
             profile.windowed = false;
 
-            mustRecreateWindow = true;
+                mustRecreateWindow = true;
         }
 
         ImGui::Separator();
 
         if (uiCheckbox("VSync", &profile.vsync))
-            optWindow->setVerticalSyncEnabled(profile.vsync);
+            window.setVerticalSyncEnabled(profile.vsync);
 
         static auto fpsLimit = static_cast<float>(profile.frametimeLimit);
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         if (ImGui::DragFloat("FPS Limit", &fpsLimit, 1.f, 60.f, 144.f, "%.f", ImGuiSliderFlags_AlwaysClamp))
         {
             profile.frametimeLimit = static_cast<unsigned int>(fpsLimit);
-            optWindow->setFramerateLimit(profile.frametimeLimit);
+            window.setFramerateLimit(profile.frametimeLimit);
         }
 
         uiSetFontScale(uiNormalFontScale);
@@ -4442,7 +4442,7 @@ void Main::uiTabBarSettings()
 
             if (isUniqueCatType(catType))
             {
-                const auto pos = getWindow().mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
+                const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
                 spawnSpecialCat(pos, catType);
             }
             else
