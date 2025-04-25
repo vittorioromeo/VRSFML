@@ -7,6 +7,7 @@
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
@@ -98,7 +99,18 @@ Window::Window(Window&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Window& Window::operator=(Window&&) noexcept = default;
+Window& Window::operator=(Window&& rhs) noexcept
+{
+    if (this == &rhs)
+        return *this;
+
+    // Make sure the window is destroyed after the context,
+    //  as SDL context activation requires the window to be alive
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+    WindowBase::operator=(SFML_BASE_MOVE(rhs));
+
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////

@@ -22,7 +22,6 @@
 #include "InputHelper.hpp"
 #include "MathUtils.hpp"
 #include "MemberGuard.hpp"
-#include "PSVDataConstants.hpp"
 #include "Particle.hpp"
 #include "ParticleType.hpp"
 #include "Playthrough.hpp"
@@ -88,6 +87,7 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
@@ -111,7 +111,6 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include <iostream>
 #include <random>
 #include <string>
 #include <utility>
@@ -350,7 +349,6 @@ inline void drawSplashScreen(sf::RenderTarget&        rt,
             {.texture = &txLogo});
 }
 
-
 ////////////////////////////////////////////////////////////
 /// Main struct
 ///
@@ -418,15 +416,67 @@ struct Main
     const unsigned int        aaLevel = sf::base::min(16u, sf::RenderTexture::getMaximumAntiAliasingLevel());
     const sf::ContextSettings contextSettings{.antiAliasingLevel = aaLevel};
 
+    ///////////////////////////////////////////////////////////
+    // Profile (stores settings)
+    Profile profile{[&]
+    {
+        Profile out;
+
+        if (sf::Path{"userdata/profile.json"}.exists())
+        {
+            loadProfileFromFile(out);
+            sf::cOut() << "Loaded profile from file on startup\n";
+        }
+
+        return out;
+    }()};
+
+    MEMBER_SCOPE_GUARD(Main, {
+        sf::cOut() << "Saving profile to file on exit\n";
+        saveProfileToFile(self.profile);
+    });
+
+    ////////////////////////////////////////////////////////////
+    // SFML fonts
+    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/mouldycheese.ttf").value()};
+
     ////////////////////////////////////////////////////////////
     // Render window
-    sf::base::Optional<sf::RenderWindow> optWindow;
-    bool                                 mustRecreateWindow = true;
-    float                                dpiScalingFactor   = 1.f;
+    sf::RenderWindow window{makeWindow()};
+    bool             mustRecreateWindow = false;
+    float            dpiScalingFactor   = 1.f;
+
+    bool loadingGuard{[&]
+    {
+        window.clear(sf::Color::Black);
+
+        sf::TextData loadingTextData{.position         = window.getSize() / 2.f,
+                                     .string           = "Loading...",
+                                     .characterSize    = 48u,
+                                     .fillColor        = sf::Color::White,
+                                     .outlineColor     = colorBlueOutline,
+                                     .outlineThickness = 2.f};
+
+        loadingTextData.origin = precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size;
+        window.draw(fontMouldyCheese, loadingTextData);
+
+        window.display();
+        return true;
+    }()};
 
     ////////////////////////////////////////////////////////////
     // ImGui context
     sf::ImGui::ImGuiContext imGuiContext;
+    bool                    imGuiInit{[&]
+    {
+        if (!imGuiContext.init(window))
+        {
+            sf::cOut() << "Error: ImGui context initialization failed\n";
+            return false;
+        }
+
+        return true;
+    }()};
 
     ////////////////////////////////////////////////////////////
     // Exiting status
@@ -440,12 +490,11 @@ struct Main
     ////////////////////////////////////////////////////////////
     // SFML fonts
     sf::Font fontSuperBakery{sf::Font::openFromFile("resources/superbakery.ttf", &textureAtlas).value()};
-    sf::Font fontMouldyCheese{sf::Font::openFromFile("resources/mouldycheese.ttf").value()};
 
     ////////////////////////////////////////////////////////////
     // ImGui fonts
-    ImFont* fontImGuiSuperBakery{nullptr};
-    ImFont* fontImGuiMouldyCheese{nullptr};
+    ImFont* fontImGuiSuperBakery{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/superbakery.ttf", 26.f)};
+    ImFont* fontImGuiMouldyCheese{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/mouldycheese.ttf", 26.f)};
 
     ////////////////////////////////////////////////////////////
     // Music
@@ -479,12 +528,15 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
-    sf::base::Optional<sf::RenderTexture> rtBackground;
-    sf::base::Optional<sf::RenderTexture> rtImGui;
+    sf::RenderTexture rtBackground{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+    sf::RenderTexture rtImGui{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
 
     ////////////////////////////////////////////////////////////
     // Game render texture (before post-processing)
-    sf::base::Optional<sf::RenderTexture> rtGame;
+    sf::RenderTexture rtGame{
+        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
 
     ////////////////////////////////////////////////////////////
     // Textures (not in atlas)
@@ -819,14 +871,6 @@ struct Main
         txrExplosionParticle,
         txrTrailParticle,
     };
-
-    ///////////////////////////////////////////////////////////
-    // Profile (stores settings)
-    Profile profile;
-    MEMBER_SCOPE_GUARD(Main, {
-        sf::cOut() << "Saving profile to file on exit\n";
-        saveProfileToFile(self.profile);
-    });
 
     ////////////////////////////////////////////////////////////
     // Playthrough (game state)
@@ -1515,19 +1559,6 @@ struct Main
         withAllStats([&](Stats& stats) { stats.highestDPS = sf::base::max(stats.highestDPS, value); });
     }
 
-    ////////////////////////////////////////////////////////////
-    sf::RenderWindow& getWindow()
-    {
-        SFML_BASE_ASSERT(optWindow.hasValue());
-        return *optWindow;
-    }
-
-    ////////////////////////////////////////////////////////////
-    const sf::RenderWindow& getWindow() const
-    {
-        SFML_BASE_ASSERT(optWindow.hasValue());
-        return *optWindow;
-    }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool keyDown(const sf::Keyboard::Key key) const
@@ -1614,7 +1645,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f getResolution() const
     {
-        return getWindow().getSize().toVector2f();
+        return window.getSize().toVector2f();
     }
 
     ////////////////////////////////////////////////////////////
@@ -1654,7 +1685,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnCatCentered(const CatType catType, const float hue, const bool placeInHand = true)
     {
-        const auto pos = getWindow().mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
+        const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
 
         Cat& newCat = spawnCat(pos, catType, hue);
 
@@ -1777,7 +1808,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::Vector2f getHUDMousePos() const
     {
-        return getWindow().mapPixelToCoords(sf::Mouse::getPosition(getWindow()), nonScaledHUDView);
+        return window.mapPixelToCoords(sf::Mouse::getPosition(window), nonScaledHUDView);
     }
 
     ////////////////////////////////////////////////////////////
@@ -2796,10 +2827,10 @@ struct Main
     [[nodiscard]] sf::Vector2f fromWorldToHud(const sf::Vector2f point) const
     {
         // From game coordinates to screen coordinates
-        const sf::Vector2i screenPos = getWindow().mapCoordsToPixel(point, gameView);
+        const sf::Vector2i screenPos = window.mapCoordsToPixel(point, gameView);
 
         // From screen coordinates to HUD view coordinates
-        return getWindow().mapPixelToCoords(screenPos, scaledHUDView);
+        return window.mapPixelToCoords(screenPos, scaledHUDView);
     }
 
     ////////////////////////////////////////////////////////////
@@ -3343,7 +3374,7 @@ struct Main
         if (!clickPosition.hasValue())
             return false;
 
-        const auto clickPos = optWindow->mapPixelToCoords(clickPosition->toVector2i(), gameView);
+        const auto clickPos = window.mapPixelToCoords(clickPosition->toVector2i(), gameView);
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {
@@ -6263,9 +6294,9 @@ struct Main
     {
         shader.setUniform(suBubbleEffect, false);
 
-        rtGame->draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame->draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame->draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -6380,7 +6411,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDisplayBubblesWithShader()
     {
-        if (rtBackground.hasValue() && !shader.setUniform(suBackgroundTexture, rtBackground->getTexture()))
+        if (!shader.setUniform(suBackgroundTexture, rtBackground.getTexture()))
         {
             profile.useBubbleShader = false;
             gameLoopDisplayBubblesWithoutShader();
@@ -6417,18 +6448,18 @@ struct Main
         shader.setUniform(suSubTexOrigin, txrBubble.position);
         shader.setUniform(suSubTexSize, txrBubble.size);
 
-        rtGame->draw(bubbleDrawableBatch, bubbleStates);
+        rtGame.draw(bubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
         shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
         shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
         shader.setUniform(suSubTexSize, txrBubbleStar.size);
 
-        rtGame->draw(starBubbleDrawableBatch, bubbleStates);
+        rtGame.draw(starBubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleEffect, false);
 
-        rtGame->draw(bombBubbleDrawableBatch, bubbleStates);
+        rtGame.draw(bombBubbleDrawableBatch, bubbleStates);
     }
 
     ////////////////////////////////////////////////////////////
@@ -7469,15 +7500,15 @@ struct Main
                                        sf::base::remainder(scrollArrowCountdown.value / 350.f, sf::base::tau)))) *
                                    255.f;
 
-        rtGame->draw(txArrow,
-                     {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
-                      .origin   = txArrow.getRect().getCenterRight(),
-                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+        rtGame.draw(txArrow,
+                    {.position = {gameScreenSize.x - 15.f, 15.f + (gameScreenSize.y / 5.f) * 1.f},
+                     .origin   = txArrow.getRect().getCenterRight(),
+                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
 
-        rtGame->draw(txArrow,
-                     {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
-                      .origin   = txArrow.getRect().getCenterRight(),
-                      .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
+        rtGame.draw(txArrow,
+                    {.position = {gameScreenSize.x - 15.f, gameScreenSize.y - 15.f - (gameScreenSize.y / 5.f) * 1.f},
+                     .origin   = txArrow.getRect().getCenterRight(),
+                     .color    = sf::Color::whiteMask(static_cast<U8>(blinkOpacity))});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7496,20 +7527,17 @@ struct Main
                 ImGui::PopFont();
             });
 
-        if (rtImGui.hasValue())
-        {
-            imGuiContext.setCurrentWindow(*optWindow);
+        imGuiContext.setCurrentWindow(window);
 
-            rtImGui->setView(scaledHUDView);
-            rtImGui->clear(sf::Color::Transparent);
-            imGuiContext.render(*rtImGui);
-            rtImGui->display();
+        rtImGui.setView(scaledHUDView);
+        rtImGui.clear(sf::Color::Transparent);
+        imGuiContext.render(rtImGui);
+        rtImGui.display();
 
-            rtGame->draw(rtImGui->getTexture(),
-                         {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                          .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
-                         {.shader = &shader});
-        }
+        rtGame.draw(rtImGui.getTexture(),
+                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
+                     .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
+                    {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7551,12 +7579,12 @@ struct Main
 
                 const auto& tx = type == 0 ? txUnlock : txPurchasable;
 
-                rtGame->draw(tx,
-                             {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
-                              .scale = sf::Vector2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
-                              .origin = tx.getRect().getCenterRight(),
-                              .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
-                             {.shader = &shader});
+                rtGame.draw(tx,
+                            {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
+                             .scale = sf::Vector2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
+                             .origin = tx.getRect().getCenterRight(),
+                             .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
+                            {.shader = &shader});
             }
         }
 
@@ -7572,8 +7600,6 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
     {
-        auto& window = *optWindow;
-
         const sf::Vector2i windowSpaceMousePos = sf::Mouse::getPosition(window);
 
         const bool mouseNearWindowEdges = windowSpaceMousePos.x < 4 || windowSpaceMousePos.y < 4 ||
@@ -7590,17 +7616,17 @@ struct Main
 
         profile.cursorHue = wrapHue(profile.cursorHue);
 
-        rtGame->draw(shouldDrawGrabbingCursor() ? txCursorGrab
-                     : pt->laserPopEnabled      ? txCursorLaser
-                     : pt->multiPopEnabled      ? txCursorMultipop
-                                                : txCursor,
-                     {.position = sf::Mouse::getPosition(window).toVector2f(),
-                      .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
-                               ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
-                                dpiScalingFactor),
-                      .origin = {5.f, 5.f},
-                      .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
-                     {.shader = &shader});
+        rtGame.draw(shouldDrawGrabbingCursor() ? txCursorGrab
+                    : pt->laserPopEnabled      ? txCursorLaser
+                    : pt->multiPopEnabled      ? txCursorMultipop
+                                               : txCursor,
+                    {.position = sf::Mouse::getPosition(window).toVector2f(),
+                     .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
+                              ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
+                               dpiScalingFactor),
+                     .origin = {5.f, 5.f},
+                     .color  = hueColor(profile.cursorHue + currentBackgroundHue.asDegrees(), 255u)},
+                    {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7611,7 +7637,6 @@ struct Main
 
         static float alpha = 0.f;
 
-        auto&       window    = *optWindow;
         const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
         if (combo >= 1)
@@ -7647,7 +7672,7 @@ struct Main
             cursorComboText.setFillColor(sf::Color::Red.withAlpha(alphaU8));
         }
 
-        rtGame->draw(cursorComboText, {.shader = &shader});
+        rtGame.draw(cursorComboText, {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -7656,12 +7681,11 @@ struct Main
         if (!pt->comboPurchased || !profile.showCursorComboBar || comboCountdown.value == 0.f || shouldDrawGrabbingCursor())
             return;
 
-        auto&       window    = *optWindow;
         const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
         const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{52.f, 14.f} * scaleMult;
 
-        rtGame->draw(sf::RectangleShapeData{
+        rtGame.draw(sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackMask(80u),
@@ -7670,7 +7694,7 @@ struct Main
             .size = {64.f * scaleMult * pt->psvComboStartTime.currentValue() * 1000.f / 700.f, 24.f * scaleMult},
         });
 
-        rtGame->draw(sf::RectangleShapeData{
+        rtGame.draw(sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
             .outlineTextureRect = txrWhiteDot,
             .fillColor          = sf::Color::blackMask(164u),
@@ -7787,7 +7811,7 @@ struct Main
         tipBackgroundSprite.setBottomCenter(
             {getResolution().x / 2.f / profile.hudScale, getResolution().y / profile.hudScale - 50.f});
 
-        rtGame->draw(tipBackgroundSprite, {.texture = &txTipBg});
+        rtGame.draw(tipBackgroundSprite, {.texture = &txTipBg});
 
         sf::Sprite tipByteSprite{.position    = {},
                                  .scale       = sf::Vector2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
@@ -7797,7 +7821,7 @@ struct Main
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
 
         tipByteSprite.setCenter(tipBackgroundSprite.getCenterRight().addY(-40.f));
-        rtGame->draw(tipByteSprite, {.texture = &txTipByte});
+        rtGame.draw(tipByteSprite, {.texture = &txTipByte});
 
         if (mustSpawnByteParticles)
         {
@@ -7870,7 +7894,7 @@ struct Main
         tipStringWiggle.advance(deltaTimeMs);
         tipStringWiggle.apply(tipText);
 
-        rtGame->draw(tipText);
+        rtGame.draw(tipText);
 
         tipStringWiggle.unapply(tipText);
     }
@@ -7878,69 +7902,58 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateImGuiRenderTexture(const sf::Vector2u newResolution)
     {
-        rtImGui.emplace(
-            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
+        rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
     }
 
     ////////////////////////////////////////////////////////////
     void recreateGameRenderTexture(const sf::Vector2u newResolution)
     {
-        rtGame.emplace(
-            sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
+        rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::Vector2u getNewResolution() const
+    {
+        return profile.resWidth == sf::Vector2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::RenderWindow makeWindow()
+    {
+        const sf::Vector2u newResolution = getNewResolution();
+
+        const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
+
+        return sf::RenderWindow{
+            {.size            = newResolution,
+             .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
+             .fullscreen      = !profile.windowed,
+             .resizable       = !takesAllScreen,
+             .closable        = !takesAllScreen,
+             .hasTitlebar     = !takesAllScreen,
+             .vsync           = profile.vsync,
+             .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
+             .contextSettings = contextSettings}};
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoopRecreateWindowIfNeeded()
     {
         // TODO P2: (lib) all this stuff shouldn't be needed, also it creates a brand new opengl context every time
-        // TODO P2: (lib) need test where glcontext 1 is active, rendertexture is created, then glcontext 1 is destroyed, and variations
 
         if (!mustRecreateWindow)
             return true;
 
         mustRecreateWindow = false;
 
-        const sf::Vector2u newResolution = profile.resWidth == sf::Vector2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
+        const sf::Vector2u newResolution = getNewResolution();
 
-        const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
-
-        // rtBackground.reset(); // TODO P2: (lib) workaround to unregister framebuffers
-        // rtImGui.reset();      // TODO P2: (lib) workaround to unregister framebuffers
-        // rtGame.reset();       // TODO P2: (lib) workaround to unregister framebuffers
-
-        optWindow.emplace(
-            sf::WindowSettings{.size            = newResolution,
-                               .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
-                               .fullscreen      = !profile.windowed,
-                               .resizable       = !takesAllScreen,
-                               .closable        = !takesAllScreen,
-                               .hasTitlebar     = !takesAllScreen,
-                               .vsync           = profile.vsync,
-                               .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
-                               .contextSettings = contextSettings});
-
-        rtBackground.emplace(
-            sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value());
+        window = makeWindow();
 
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);
 
-        dpiScalingFactor = optWindow->getWindowDisplayScale();
-
-        static bool imguiInit = false;
-        if (!imguiInit)
-        {
-            imguiInit = true;
-
-            if (!imGuiContext.init(*optWindow))
-            {
-                sf::cOut() << "Error: ImGui context initialization failed\n";
-                return false;
-            }
-
-            fontImGuiSuperBakery  = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/superbakery.ttf", 26.f);
-            fontImGuiMouldyCheese = ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/mouldycheese.ttf", 26.f);
-        }
+        dpiScalingFactor = window.getWindowDisplayScale();
 
         return true;
     }
@@ -8260,7 +8273,7 @@ struct Main
     void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vector2f mousePos)
     {
 #ifndef BUBBLEBYTE_NO_AUDIO
-        const float volumeMult = profile.playAudioInBackground || getWindow().hasFocus() ? 1.f : 0.f;
+        const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
 
         listener.position = {sf::base::clamp(mousePos.x, 0.f, pt->getMapLimit()),
                              sf::base::clamp(mousePos.y, 0.f, boundaries.y),
@@ -8381,15 +8394,15 @@ struct Main
         // Result of linear regression and trial-and-error >:3
         const float fixedBgOffsetX = 1648.f * ratio - 3216.62f;
 
-        rtGame->draw(txFixedBg,
-                     {
-                         .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
-                         .scale       = {ratio, ratio},
-                         .origin      = {sz.x / 2.f, sz.y / 1.5f},
-                         .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
-                         .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
-                     },
-                     {.shader = &shader});
+        rtGame.draw(txFixedBg,
+                    {
+                        .position = {sz.x + resolution.x / 2.f - actualScroll / 20.f - fixedBgX + fixedBgOffsetX, sz.y},
+                        .scale    = {ratio, ratio},
+                        .origin   = {sz.x / 2.f, sz.y / 1.5f},
+                        .textureRect = {{sz.x * -2.f, sz.y * -2.f}, {sz.x * 4.f, sz.y * 4.f}},
+                        .color       = hueColor(currentBackgroundHue.asDegrees(), 255u),
+                    },
+                    {.shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8398,13 +8411,10 @@ struct Main
         static float backgroundScroll = 0.f;
         backgroundScroll += deltaTimeMs * 0.01f;
 
-        if (!rtBackground.hasValue())
-            return;
+        rtBackground.clear(outlineHueColor);
 
-        rtBackground->clear(outlineHueColor);
-
-        rtBackground->setView(gameBackgroundView);
-        rtBackground->setWrapMode(sf::TextureWrapMode::Repeat); // TODO P2: (lib) add RenderTextureCreateSettings
+        rtBackground.setView(gameBackgroundView);
+        rtBackground.setWrapMode(sf::TextureWrapMode::Repeat); // TODO P2: (lib) add RenderTextureCreateSettings
 
         const auto getAlpha = [&](const float mult)
         { return static_cast<sf::base::U8>(profile.backgroundOpacity / 100.f * mult); };
@@ -8446,45 +8456,45 @@ struct Main
         currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
         outlineHueColor = colorBlueOutline.withHueMod(currentBackgroundHue.asDegrees());
 
-        rtBackground->draw(*chunkTx[idx],
-                           {
-                               .scale       = {0.5f, 0.5f},
-                               .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
-                                               txBackgroundChunk.getSize().toVector2f() * 2.f},
-                               .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
-                           },
-                           {.shader = &shader});
+        rtBackground.draw(*chunkTx[idx],
+                          {
+                              .scale       = {0.5f, 0.5f},
+                              .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
+                                              txBackgroundChunk.getSize().toVector2f() * 2.f},
+                              .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
+                          },
+                          {.shader = &shader});
 
         if (idx == 0u || profile.alwaysShowDrawings)
-            rtBackground->draw(txDrawings,
-                               {
-                                   .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVector2f() * 2.f},
-                                   .color = sf::Color::whiteMask(getAlpha(200.f)),
-                               });
+            rtBackground.draw(txDrawings,
+                              {
+                                  .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVector2f() * 2.f},
+                                  .color = sf::Color::whiteMask(getAlpha(200.f)),
+                              });
 
-        rtBackground->draw(*detailTx[idx],
-                           {
-                               .scale       = {0.75f, 0.75f},
-                               .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
-                                               txBackgroundChunk.getSize().toVector2f() * 1.5f},
-                               .color       = sf::Color::whiteMask(getAlpha(175.f)),
-                           });
+        rtBackground.draw(*detailTx[idx],
+                          {
+                              .scale       = {0.75f, 0.75f},
+                              .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
+                                              txBackgroundChunk.getSize().toVector2f() * 1.5f},
+                              .color       = sf::Color::whiteMask(getAlpha(175.f)),
+                          });
 
-        rtBackground->draw(txClouds,
-                           {
-                               .scale       = {1.25f, 1.25f},
-                               .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
-                                               txBackgroundChunk.getSize().toVector2f()},
-                               .color       = sf::Color::whiteMask(getAlpha(128.f)),
-                           });
+        rtBackground.draw(txClouds,
+                          {
+                              .scale       = {1.25f, 1.25f},
+                              .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
+                                              txBackgroundChunk.getSize().toVector2f()},
+                              .color       = sf::Color::whiteMask(getAlpha(128.f)),
+                          });
 
-        rtBackground->display();
+        rtBackground.display();
 
         auto gameViewNoScroll   = gameView;
         gameViewNoScroll.center = getViewCenterWithoutScroll();
 
-        rtGame->setView(gameViewNoScroll);
-        rtGame->draw(rtBackground->getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
+        rtGame.setView(gameViewNoScroll);
+        rtGame.draw(rtBackground.getTexture(), {.textureRect{{0.f, 0.f}, gameScreenSize}});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8758,8 +8768,6 @@ struct Main
 
         if (!gameLoopRecreateWindowIfNeeded())
             return false;
-
-        auto& window = *optWindow;
 
         fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         fpsClock.restart();
@@ -9138,11 +9146,11 @@ struct Main
 
         //
         // Clear window
-        rtGame->clear(outlineHueColor);
+        rtGame.clear(outlineHueColor);
 
         //
         // Underlying menu background
-        rtGame->setView(nonScaledHUDView);
+        rtGame.setView(nonScaledHUDView);
         gameLoopUpdateAndDrawFixedMenuBackground(deltaTimeMs, elapsedUs);
 
         //
@@ -9151,7 +9159,7 @@ struct Main
 
         //
         // Draw bubbles (separate batch to avoid showing in minimap and for shader support)
-        rtGame->setView(gameView);
+        rtGame.setView(gameView);
         bubbleDrawableBatch.clear();
         starBubbleDrawableBatch.clear();
         bombBubbleDrawableBatch.clear();
@@ -9202,8 +9210,8 @@ struct Main
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
-        rtGame->draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame->draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Scroll arrow hint
@@ -9212,32 +9220,32 @@ struct Main
         //
         // AoE Dragging Reticle
         if (const auto dragRect = getAoEDragRect(mousePos); dragRect.hasValue())
-            rtGame->draw(sf::RectangleShapeData{.position         = dragRect->position,
-                                                .origin           = {0.f, 0.f},
-                                                .fillColor        = sf::Color::whiteMask(64u),
-                                                .outlineColor     = sf::Color::whiteMask(176u),
-                                                .outlineThickness = 4.f,
-                                                .size             = dragRect->size});
+            rtGame.draw(sf::RectangleShapeData{.position         = dragRect->position,
+                                               .origin           = {0.f, 0.f},
+                                               .fillColor        = sf::Color::whiteMask(64u),
+                                               .outlineColor     = sf::Color::whiteMask(176u),
+                                               .outlineThickness = 4.f,
+                                               .size             = dragRect->size});
 
         //
         // Draw border around gameview
-        rtGame->setView(nonScaledHUDView);
+        rtGame.setView(nonScaledHUDView);
 
         // Bottom-level hud particles
         if (shouldDrawUI)
         {
             hudBottomDrawableBatch.clear();
             gameLoopDrawHUDBottomParticles();
-            rtGame->draw(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            rtGame.draw(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
-        rtGame->draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
-                                            .fillColor        = sf::Color::Transparent,
-                                            .outlineColor     = outlineHueColor,
-                                            .outlineThickness = 4.f,
-                                            .size             = gameView.viewport.size.componentWiseMul(resolution)});
+        rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
+                                           .fillColor        = sf::Color::Transparent,
+                                           .outlineColor     = outlineHueColor,
+                                           .outlineThickness = 4.f,
+                                           .size             = gameView.viewport.size.componentWiseMul(resolution)});
 
-        rtGame->setView(scaledHUDView);
+        rtGame.setView(scaledHUDView);
 
         if (shouldDrawUI)
         {
@@ -9247,7 +9255,7 @@ struct Main
                 gameLoopDrawHUDParticles();
 
             gameLoopDrawEarnedCoinParticles();
-            rtGame->draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            rtGame.draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
@@ -9263,7 +9271,7 @@ struct Main
 
             demoText.setTopRight({xStartOverlay - 15.f, 15.f});
             demoText.setOutlineColor(outlineHueColor);
-            rtGame->draw(demoText);
+            rtGame.draw(demoText);
 
             sf::TextData demoInfoTextData{.position         = {},
                                           .string           = "",
@@ -9284,7 +9292,7 @@ struct Main
                 demoInfoTextData.origin.x = precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
                 demoInfoTextData.position = demoText.getBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
-                rtGame->draw(fontSuperBakery, demoInfoTextData);
+                rtGame.draw(fontSuperBakery, demoInfoTextData);
             }
         }
 
@@ -9296,7 +9304,7 @@ struct Main
         {
             moneyText.setFillColorAlpha(shouldDrawUIAlpha);
             moneyText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame->draw(moneyText);
+            rtGame.draw(moneyText);
         }
 
         //
@@ -9306,7 +9314,7 @@ struct Main
         {
             comboText.setFillColorAlpha(shouldDrawUIAlpha);
             comboText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame->draw(comboText);
+            rtGame.draw(comboText);
         }
 
         //
@@ -9337,15 +9345,15 @@ struct Main
         {
             buffText.setFillColorAlpha(shouldDrawUIAlpha);
             buffText.setOutlineColorAlpha(shouldDrawUIAlpha);
-            rtGame->draw(buffText);
+            rtGame.draw(buffText);
         }
 
         //
         // Combo bar
         if (shouldDrawUI && !debugHideUI)
-            rtGame->draw(sf::RectangleShapeData{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
-                                                .fillColor = sf::Color{255, 255, 255, 75},
-                                                .size      = {100.f * comboCountdown.value / 700.f, 20.f}});
+            rtGame.draw(sf::RectangleShapeData{.position  = {comboText.getCenterRight().x + 3.f, yBelowMinimap + 56.f},
+                                               .fillColor = sf::Color{255, 255, 255, 75},
+                                               .size      = {100.f * comboCountdown.value / 700.f, 20.f}});
 
         //
         // Minimap
@@ -9356,7 +9364,7 @@ struct Main
                         pt->getMapLimit(),
                         gameView,
                         scaledHUDView,
-                        *rtGame,
+                        rtGame,
                         txBackgroundChunk,
                         txDrawings,
                         minimapDrawableBatch,
@@ -9368,7 +9376,7 @@ struct Main
                         minimapRect);
 
             // Jump to minimap position on click
-            const auto p = getWindow().mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
+            const auto p = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, scaledHUDView);
             if (minimapRect.contains(p) && mBtnDown(sf::Mouse::Button::Left, /* penetrateUI */ true))
             {
                 const auto minimapPos = p - minimapRect.position;
@@ -9382,13 +9390,13 @@ struct Main
 
         //
         // Draw cats on top of UI
-        rtGame->setView(scaledTopGameView);
-        rtGame->draw(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame->draw(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.setView(scaledTopGameView);
+        rtGame.draw(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        rtGame.draw(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Purchase unlocked/available effects
-        rtGame->setView(nonScaledHUDView);
+        rtGame.setView(nonScaledHUDView);
 
         if (shouldDrawUI)
             gameLoopUpdatePurchaseUnlockedEffects(deltaTimeMs);
@@ -9398,21 +9406,21 @@ struct Main
         {
             hudTopDrawableBatch.clear();
             gameLoopDrawHUDTopParticles();
-            rtGame->draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            rtGame.draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
         // High visibility cursor
-        rtGame->setView(nonScaledHUDView);
+        rtGame.setView(nonScaledHUDView);
         gameLoopDrawCursor(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboText(deltaTimeMs, cursorGrow);
         gameLoopDrawCursorComboBar();
 
         //
         // Splash screen
-        rtGame->setView(scaledHUDView);
+        rtGame.setView(scaledHUDView);
         if (splashCountdown.value > 0.f)
-            drawSplashScreen(*rtGame, txLogo, splashCountdown, resolution, profile.hudScale);
+            drawSplashScreen(rtGame, txLogo, splashCountdown, resolution, profile.hudScale);
 
         //
         // Letter
@@ -9431,13 +9439,13 @@ struct Main
 
                 const float progress = cdLetterAppear.getProgressBounced(4000.f);
 
-                rtGame->draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
-                                        .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
-                                                 profile.hudScale * 2.f,
-                                        .origin      = txLetter.getSize().toVector2f() / 2.f,
-                                        .textureRect = txLetter.getRect(),
-                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
-                             {.texture = &txLetter});
+                rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
+                                       .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
+                                                profile.hudScale * 2.f,
+                                       .origin      = txLetter.getSize().toVector2f() / 2.f,
+                                       .textureRect = txLetter.getRect(),
+                                       .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
+                            {.texture = &txLetter});
             }
 
             (void)cdLetterText.updateAndStop(deltaTimeMs);
@@ -9446,13 +9454,13 @@ struct Main
                                        : cdLetterText.value < 1000.f ? cdLetterText.value / 1000.f
                                                                      : 1.f;
 
-            rtGame->draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
-                                    .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
-                                             profile.hudScale * 1.45f,
-                                    .origin      = txLetterText.getSize().toVector2f() / 2.f,
-                                    .textureRect = txLetterText.getRect(),
-                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
-                         {.texture = &txLetterText});
+            rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
+                                   .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
+                                            profile.hudScale * 1.45f,
+                                   .origin      = txLetterText.getSize().toVector2f() / 2.f,
+                                   .textureRect = txLetterText.getRect(),
+                                   .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
+                        {.texture = &txLetterText});
         }
 
         //
@@ -9484,7 +9492,7 @@ struct Main
 
         //
         // Display window
-        rtGame->display();
+        rtGame.display();
 
         shaderPostProcess.setUniform(suPPVibrance, profile.ppSVibrance);
         shaderPostProcess.setUniform(suPPSaturation, profile.ppSSaturation);
@@ -9494,7 +9502,7 @@ struct Main
         window.setView({window.getSize().toVector2f() / 2.f, window.getSize().toVector2f()});
 
         window.clear();
-        window.draw(rtGame->getTexture(), {.shader = &shaderPostProcess});
+        window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});
         window.display();
 
         //
@@ -9523,14 +9531,6 @@ struct Main
     Main() : onSteamDeck(false)
 #endif
     {
-        //
-        // Profile
-        if (sf::Path{"userdata/profile.json"}.exists())
-        {
-            loadProfileFromFile(profile);
-            sf::cOut() << "Loaded profile from file on startup\n";
-        }
-
         sounds.setupSounds(/* volumeOnly */ true, profile.sfxVolume / 100.f);
 
         if (onSteamDeck)

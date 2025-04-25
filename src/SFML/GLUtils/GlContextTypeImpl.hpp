@@ -7,16 +7,20 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#ifdef SFML_SYSTEM_EMSCRIPTEN
+    #include "SFML/GLUtils/EGL/EGLContext.hpp"
+#else
+    #include "SFML/Window/SDLGlContext.hpp"
+#endif
 
+
+namespace sf::priv
+{
 ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-
-    #include "SFML/GLUtils/EGL/EGLContext.hpp"
-using DerivedGlContextType = sf::priv::EglContext;
-
+using DerivedGlContextType = EglContext;
 #else
-
-    #include "SFML/Window/SDLGlContext.hpp"
-using DerivedGlContextType = sf::priv::SDLGlContext;
-
+using DerivedGlContextType = SDLGlContext;
 #endif
+
+} // namespace sf::priv
