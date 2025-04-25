@@ -27,12 +27,8 @@ struct PersistentGPUStorage::Impl
     GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< GPU persistent buffer for vertices
     GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< GPU persistent buffer for indices
 
-    Impl() :
-    persistentVaoGroup(),
-    vboPersistentBuffer(persistentVaoGroup.vbo),
-    eboPersistentBuffer(persistentVaoGroup.ebo)
+    Impl() : vboPersistentBuffer(persistentVaoGroup.vbo), eboPersistentBuffer(persistentVaoGroup.ebo)
     {
-        persistentVaoGroup.bind();
     }
 };
 

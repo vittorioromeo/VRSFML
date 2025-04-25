@@ -154,6 +154,15 @@ public:
         static_cast<TDeleter*>(this)->operator()(m_ptr);
         m_ptr = ptr;
     }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] constexpr T* release() noexcept
+    {
+        T* const ptr = m_ptr;
+        m_ptr        = nullptr;
+        return ptr;
+    }
 };
 
 

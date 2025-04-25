@@ -311,10 +311,10 @@ struct RenderTarget::Impl
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
 
     ////////////////////////////////////////////////////////////
-    CPUDrawableBatch cpuDrawableBatch;   //!< Internal CPU drawable batch (autobatching) (TODO P0: use GPU?)
-    bool             autoBatch = true;   //!< Enable automatic batching of draw calls
-    RenderStates     lastRenderStates;   //!< Cached render states (autobatching)
-    DrawStatistics   currentDrawStats{}; //!< Statistics for current draw calls
+    CPUDrawableBatch drawableBatch;                     //!< Internal drawable batch (autobatching)
+    bool             autoBatch = true;                  //!< Enable automatic batching of draw calls
+    RenderStates     lastRenderStates;                  //!< Cached render states (autobatching)
+    DrawStatistics   currentDrawStats{};                //!< Statistics for current draw calls
     base::SizeT      autoBatchVertexThreshold{32'768u}; //!< Threshold for batch vertex count
 
     ////////////////////////////////////////////////////////////
@@ -541,7 +541,7 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(Sprite{.textureRect = texture.getRect()});
+        m_impl->drawableBatch.add(Sprite{.textureRect = texture.getRect()});
     }
     else
     {
@@ -568,7 +568,7 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
     {
         flushIfNeeded(states);
 
-        m_impl->cpuDrawableBatch.add(Sprite{
+        m_impl->drawableBatch.add(Sprite{
             .position    = params.position,
             .scale       = params.scale,
             .origin      = params.origin,
@@ -601,7 +601,7 @@ void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(sprite);
+        m_impl->drawableBatch.add(sprite);
     }
     else
     {
@@ -618,7 +618,7 @@ void RenderTarget::draw(const Shape& shape, RenderStates states)
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(shape);
+        m_impl->drawableBatch.add(shape);
     }
     else
     {
@@ -643,7 +643,7 @@ void RenderTarget::draw(const Text& text, RenderStates states)
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(text);
+        m_impl->drawableBatch.add(text);
     }
     else
     {
@@ -742,7 +742,7 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
-    if (m_impl->autoBatch && &drawableBatch != &m_impl->cpuDrawableBatch)
+    if (m_impl->autoBatch)
         flush();
 
     states.transform *= drawableBatch.getTransform();
@@ -822,15 +822,15 @@ void RenderTarget::drawShapeData(const auto& shapeData, const RenderStates& stat
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(shapeData);
+        m_impl->drawableBatch.add(shapeData);
         return;
     }
 
-    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.isEmpty());
+    SFML_BASE_ASSERT(m_impl->drawableBatch.isEmpty());
 
-    m_impl->cpuDrawableBatch.add(shapeData);
-    draw(m_impl->cpuDrawableBatch, states);
-    m_impl->cpuDrawableBatch.clear();
+    m_impl->drawableBatch.add(shapeData);
+    draw(m_impl->drawableBatch, states);
+    m_impl->drawableBatch.clear();
 }
 
 
@@ -870,15 +870,15 @@ void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates
     if (m_impl->autoBatch)
     {
         flushIfNeeded(states);
-        m_impl->cpuDrawableBatch.add(font, textData);
+        m_impl->drawableBatch.add(font, textData);
         return;
     }
 
-    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.isEmpty());
+    SFML_BASE_ASSERT(m_impl->drawableBatch.isEmpty());
 
-    m_impl->cpuDrawableBatch.add(font, textData);
-    draw(m_impl->cpuDrawableBatch, states);
-    m_impl->cpuDrawableBatch.clear();
+    m_impl->drawableBatch.add(font, textData);
+    draw(m_impl->drawableBatch, states);
+    m_impl->drawableBatch.clear();
 }
 
 
@@ -1004,8 +1004,13 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    draw(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
-    m_impl->cpuDrawableBatch.clear();
+    // Save autobatch state and disable it to avoid recursion
+    const bool isAutoBatchEnabled = m_impl->autoBatch;
+    m_impl->autoBatch             = false;
+    draw(m_impl->drawableBatch, m_impl->lastRenderStates);
+    m_impl->autoBatch = isAutoBatchEnabled;
+
+    m_impl->drawableBatch.clear();
 
     return m_impl->currentDrawStats;
 }
@@ -1043,7 +1048,7 @@ void RenderTarget::syncGPUEndFrame()
 ////////////////////////////////////////////////////////////
 void RenderTarget::flushIfNeeded(const RenderStates& states)
 {
-    if (m_impl->cpuDrawableBatch.getNumVertices() >= m_impl->autoBatchVertexThreshold || m_impl->lastRenderStates != states)
+    if (m_impl->drawableBatch.getNumVertices() >= m_impl->autoBatchVertexThreshold || m_impl->lastRenderStates != states)
     {
         flush();
         m_impl->lastRenderStates = states;
