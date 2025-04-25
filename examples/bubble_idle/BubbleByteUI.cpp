@@ -4272,7 +4272,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
             profile.windowed = false;
 
-                mustRecreateWindow = true;
+            mustRecreateWindow = true;
         }
 
         ImGui::Separator();
