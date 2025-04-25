@@ -13,6 +13,7 @@
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLContextSaver.hpp"
 #include "SFML/GLUtils/GLDebugCallback.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/GlContext.hpp"
@@ -102,7 +103,7 @@ struct WindowContextImpl
     ////////////////////////////////////////////////////////////
     struct UnsharedFrameBuffer
     {
-        unsigned int                    glContextId{};
+        unsigned int                    glContextId;
         unsigned int                    frameBufferId;
         WindowContext::UnsharedDeleteFn deleteFn;
     };
@@ -171,7 +172,7 @@ base::Optional<WindowContext> WindowContext::create(const ContextSettings& share
 
     //
     // Enable shader GL context
-    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     if (!setActiveThreadLocalGlContextToSharedContext(true))
         return fail("could not enable shared context");
@@ -236,14 +237,25 @@ WindowContext::~WindowContext()
     if (windowContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
         return;
 
-    SFML_BASE_ASSERT(ensureInstalled().unsharedFrameBuffers.empty());
+    // SFML_BASE_ASSERT(ensureInstalled().unsharedFrameBuffers.empty());
 
-    // SFML_BASE_ASSERT(hasActiveThreadLocalOrSharedGlContext());
+    const bool anyNonSharedContextFramebufferRemaining = [&]
+    {
+        for (const auto& unsharedFrameBuffer : ensureInstalled().unsharedFrameBuffers)
+            if (unsharedFrameBuffer.glContextId != 1u)
+                return true;
 
-    activeGlContext.id  = 0u;
-    activeGlContext.ptr = nullptr;
+        return false;
+    }();
 
-    SFML_BASE_ASSERT(!hasActiveThreadLocalOrSharedGlContext());
+    SFML_BASE_ASSERT(!anyNonSharedContextFramebufferRemaining);
+
+    // All the FBOs on shared context should be destroyed later
+
+    // SFML_BASE_ASSERT(hasActiveThreadLocalGlContext());
+
+    disableGlContext();
+    SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     installedWindowContext.reset();
 }
@@ -262,7 +274,7 @@ void WindowContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsign
 
 
 ////////////////////////////////////////////////////////////
-void WindowContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId)
+void WindowContext::unregisterUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
 {
     auto& wc = ensureInstalled();
 
@@ -293,7 +305,7 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     auto& wc = ensureInstalled();
 
     // Save the current context so we can restore it later
-    priv::GlContext* glContextToRestore = activeGlContext.ptr;
+    priv::GLContextSaver glContextSaver;
 
     // Make this context active so resources can be freed
     if (!setActiveThreadLocalGlContext(glContext, true))
@@ -306,34 +318,24 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
         // Destroy the unshared objects contained in this context
         for (auto* iter = wc.unsharedFrameBuffers.begin(); iter != wc.unsharedFrameBuffers.end();)
         {
-            if (iter->glContextId == glContext.m_id)
-            {
-                iter->deleteFn(iter->frameBufferId);
-                iter = wc.unsharedFrameBuffers.erase(iter);
-            }
-            else
+            if (iter->glContextId != glContext.m_id)
             {
                 ++iter;
+                continue;
             }
+
+            iter->deleteFn(iter->frameBufferId);
+            iter = wc.unsharedFrameBuffers.erase(iter);
         }
     }
 
-    // Make the originally active context active again
-    if (glContextToRestore != nullptr)
-    {
-        if (!setActiveThreadLocalGlContext(*glContextToRestore, true))
-            priv::err() << "Could not restore context in GlContext::cleanupUnsharedFrameBuffers()";
-    }
-    else
-    {
-        activeGlContext.id  = 0u;
-        activeGlContext.ptr = nullptr;
-    }
+    if (&glContext == &wc.sharedGlContext)
+        SFML_BASE_ASSERT(wc.unsharedFrameBuffers.empty());
 }
 
 
 ////////////////////////////////////////////////////////////
-const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr()
+priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr()
 {
     ensureInstalled();
     return activeGlContext.ptr;
@@ -343,24 +345,14 @@ const priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr()
 ////////////////////////////////////////////////////////////
 priv::JoystickManager& WindowContext::getJoystickManager()
 {
-    auto& wc = ensureInstalled();
-
-    if (!wc.joystickManager.hasValue())
-        wc.joystickManager.emplace();
-
-    return *wc.joystickManager;
+    return ensureInstalled().joystickManager.emplaceIfNeeded();
 }
 
 
 ////////////////////////////////////////////////////////////
 priv::SensorManager& WindowContext::getSensorManager()
 {
-    auto& wc = ensureInstalled();
-
-    if (!wc.sensorManager.hasValue())
-        wc.sensorManager.emplace();
-
-    return *wc.sensorManager;
+    return ensureInstalled().sensorManager.emplaceIfNeeded();
 }
 
 
@@ -376,12 +368,12 @@ unsigned int WindowContext::getActiveThreadLocalGlContextId()
 bool WindowContext::hasActiveThreadLocalGlContext()
 {
     ensureInstalled();
-    return activeGlContext.id != 0;
+    return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bool active)
+bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, const bool active)
 {
     ensureInstalled();
 
@@ -414,7 +406,7 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, bo
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::setActiveThreadLocalGlContextToSharedContext(bool active)
+bool WindowContext::setActiveThreadLocalGlContextToSharedContext(const bool active)
 {
     auto& wc = ensureInstalled();
     return setActiveThreadLocalGlContext(wc.sharedGlContext, active);
@@ -437,20 +429,19 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
     }
 }
 
-
-////////////////////////////////////////////////////////////
-bool WindowContext::hasActiveThreadLocalOrSharedGlContext()
-{
-    ensureInstalled();
-    return activeGlContext.id != 0u && activeGlContext.ptr != nullptr;
-}
-
-
 ////////////////////////////////////////////////////////////
 bool WindowContext::isActiveGlContextSharedContext()
 {
     auto& wc = ensureInstalled();
     return activeGlContext.id == 1u && activeGlContext.ptr == &wc.sharedGlContext;
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowContext::disableGlContext()
+{
+    activeGlContext.id  = 0u;
+    activeGlContext.ptr = nullptr;
 }
 
 
@@ -522,14 +513,14 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
 ////////////////////////////////////////////////////////////
 base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&  contextSettings,
                                                                 const priv::WindowImpl& owner,
-                                                                unsigned int            bitsPerPixel)
+                                                                const unsigned int      bitsPerPixel)
 {
     return createGlContextImpl(contextSettings, owner, bitsPerPixel);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::isExtensionAvailable(const char* name)
+bool WindowContext::isExtensionAvailable(const char* const name)
 {
     auto& wc = ensureInstalled();
     return base::find(wc.extensions.begin(), wc.extensions.end(), name) != wc.extensions.end();
@@ -537,7 +528,7 @@ bool WindowContext::isExtensionAvailable(const char* name)
 
 
 ////////////////////////////////////////////////////////////
-GlFunctionPointer WindowContext::getFunction(const char* name)
+GlFunctionPointer WindowContext::getFunction(const char* const name)
 {
     return ensureInstalled().sharedGlContext.getFunction(name);
 }
