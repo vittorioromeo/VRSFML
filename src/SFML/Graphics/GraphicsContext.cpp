@@ -162,16 +162,30 @@ bool GraphicsContext::hasActiveThreadLocalGlContext()
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
+void GraphicsContext::registerUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
 {
-    WindowContext::registerUnsharedFrameBuffer(glContextId, frameBufferId, deleteFn);
+    WindowContext::registerUnsharedFrameBuffer(glContextId, frameBufferId);
 }
 
 
 ////////////////////////////////////////////////////////////
-void GraphicsContext::unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId)
+void GraphicsContext::unregisterUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
 {
     WindowContext::unregisterUnsharedFrameBuffer(glContextId, frameBufferId);
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::registerUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    WindowContext::registerUnsharedVAO(glContextId, vaoId);
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::unregisterUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    WindowContext::unregisterUnsharedVAO(glContextId, vaoId);
 }
 
 

@@ -25,6 +25,7 @@
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -85,6 +86,143 @@ thread_local constinit struct
     priv::GlContext* ptr{nullptr};
 } activeGlContext;
 
+
+////////////////////////////////////////////////////////////
+struct UnsharedContextResources
+{
+    ////////////////////////////////////////////////////////////
+    base::Vector<unsigned int> frameBufferIds;
+    base::Vector<unsigned int> vaoIds;
+
+    ////////////////////////////////////////////////////////////
+    void clear()
+    {
+        frameBufferIds.clear();
+        vaoIds.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool allEmpty() const
+    {
+        return frameBufferIds.empty() && vaoIds.empty();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool hasFrameBuffer(const unsigned int frameBufferId) const
+    {
+        return base::find(frameBufferIds.begin(), frameBufferIds.end(), frameBufferId) != frameBufferIds.end();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool hasVAO(const unsigned int vaoId) const
+    {
+        return base::find(vaoIds.begin(), vaoIds.end(), vaoId) != vaoIds.end();
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+class UnsharedContextResourcesManager
+{
+private:
+    mutable std::mutex                                                   m_mutex;
+    ankerl::unordered_dense::map<unsigned int, UnsharedContextResources> m_mapping;
+
+public:
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool allEmpty() const
+    {
+        std::lock_guard lock(m_mutex);
+
+        for (const auto& [glContextId, resources] : m_mapping)
+            if (!resources.allEmpty())
+                return false;
+
+        return true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool allNonSharedEmpty() const
+    {
+        std::lock_guard lock(m_mutex);
+
+        for (const auto& [glContextId, resources] : m_mapping)
+            if (glContextId != 1u && !resources.allEmpty())
+                return true;
+
+        return false;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void unregisterAllResources(const unsigned int glContextId)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        if (resources.allEmpty())
+            return;
+
+        for (const unsigned int frameBufferId : resources.frameBufferIds)
+            glCheck(glDeleteFramebuffers(1, &frameBufferId));
+
+        resources.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void registerFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        if (resources.hasFrameBuffer(frameBufferId))
+            return;
+
+        resources.frameBufferIds.emplaceBack(frameBufferId);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void unregisterFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        if (!resources.hasFrameBuffer(frameBufferId))
+            return;
+
+        glCheck(glDeleteFramebuffers(1, &frameBufferId));
+
+        resources.frameBufferIds.erase(
+            base::find(resources.frameBufferIds.begin(), resources.frameBufferIds.end(), frameBufferId));
+    }
+
+    ////////////////////////////////////////////////////////////
+    void registerVAO(const unsigned int glContextId, const unsigned int vaoId)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        if (resources.hasVAO(vaoId))
+            return;
+
+        resources.vaoIds.emplaceBack(vaoId);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void unregisterVAO(const unsigned int glContextId, const unsigned int vaoId)
+    {
+        std::lock_guard lock(m_mutex);
+
+        auto& resources = m_mapping[glContextId];
+        if (!resources.hasVAO(vaoId))
+            return;
+
+        glCheck(glDeleteVertexArrays(1, &vaoId));
+
+        resources.vaoIds.erase(base::find(resources.vaoIds.begin(), resources.vaoIds.end(), vaoId));
+    }
+};
+
+
 } // namespace
 
 ////////////////////////////////////////////////////////////
@@ -94,22 +232,14 @@ struct WindowContextImpl
     std::atomic<unsigned int> nextThreadLocalGlContextId{2u}; // 1 is reserved for shared context
 
     ////////////////////////////////////////////////////////////
+    UnsharedContextResourcesManager unsharedContextResourcesManager;
+
+    ////////////////////////////////////////////////////////////
     DerivedGlContextType sharedGlContext; //!< The hidden, inactive context that will be shared with all other contexts
     std::recursive_mutex sharedGlContextMutex;
 
     ////////////////////////////////////////////////////////////
     base::Vector<sf::base::StringView> extensions; //!< Supported OpenGL extensions
-
-    ////////////////////////////////////////////////////////////
-    struct UnsharedFrameBuffer
-    {
-        unsigned int                    glContextId;
-        unsigned int                    frameBufferId;
-        WindowContext::UnsharedDeleteFn deleteFn;
-    };
-
-    std::mutex                        unsharedFrameBuffersMutex;
-    base::Vector<UnsharedFrameBuffer> unsharedFrameBuffers;
 
     ////////////////////////////////////////////////////////////
     base::Optional<priv::JoystickManager> joystickManager;
@@ -237,18 +367,7 @@ WindowContext::~WindowContext()
     if (windowContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
         return;
 
-    // SFML_BASE_ASSERT(ensureInstalled().unsharedFrameBuffers.empty());
-
-    const bool anyNonSharedContextFramebufferRemaining = [&]
-    {
-        for (const auto& unsharedFrameBuffer : ensureInstalled().unsharedFrameBuffers)
-            if (unsharedFrameBuffer.glContextId != 1u)
-                return true;
-
-        return false;
-    }();
-
-    SFML_BASE_ASSERT(!anyNonSharedContextFramebufferRemaining);
+    SFML_BASE_ASSERT(!ensureInstalled().unsharedContextResourcesManager.allNonSharedEmpty());
 
     // All the FBOs on shared context should be destroyed later
 
@@ -262,14 +381,12 @@ WindowContext::~WindowContext()
 
 
 ////////////////////////////////////////////////////////////
-void WindowContext::registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn)
+void WindowContext::registerUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
 {
     auto& wc = ensureInstalled();
 
     SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
-
-    const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
-    wc.unsharedFrameBuffers.emplaceBack(glContextId, frameBufferId, deleteFn);
+    wc.unsharedContextResourcesManager.registerFrameBuffer(glContextId, frameBufferId);
 }
 
 
@@ -282,20 +399,30 @@ void WindowContext::unregisterUnsharedFrameBuffer(const unsigned int glContextId
     if (getActiveThreadLocalGlContextId() != glContextId)
         return;
 
-    const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
+    wc.unsharedContextResourcesManager.unregisterFrameBuffer(glContextId, frameBufferId);
+}
 
-    // Find the object in unshared objects and remove it if its associated context is currently active
-    // Assume that the object has already been deleted with the right OpenGL delete call
-    auto* const iter = base::findIf(wc.unsharedFrameBuffers.begin(),
-                                    wc.unsharedFrameBuffers.end(),
-                                    [&](const WindowContextImpl::UnsharedFrameBuffer& obj)
-    { return obj.glContextId == glContextId && obj.frameBufferId == frameBufferId; });
 
-    if (iter != wc.unsharedFrameBuffers.end())
-    {
-        iter->deleteFn(iter->frameBufferId);
-        wc.unsharedFrameBuffers.erase(iter);
-    }
+////////////////////////////////////////////////////////////
+void WindowContext::registerUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    auto& wc = ensureInstalled();
+
+    SFML_BASE_ASSERT(getActiveThreadLocalGlContextId() == glContextId);
+    wc.unsharedContextResourcesManager.registerVAO(glContextId, vaoId);
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowContext::unregisterUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    auto& wc = ensureInstalled();
+
+    // If we're not on the right context, wait for the cleanup later on
+    if (getActiveThreadLocalGlContextId() != glContextId)
+        return;
+
+    wc.unsharedContextResourcesManager.unregisterVAO(glContextId, vaoId);
 }
 
 
@@ -311,26 +438,10 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     if (!setActiveThreadLocalGlContext(glContext, true))
         priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
 
-    // Scope for lock guard
-    {
-        const std::lock_guard lock(wc.unsharedFrameBuffersMutex);
-
-        // Destroy the unshared objects contained in this context
-        for (auto* iter = wc.unsharedFrameBuffers.begin(); iter != wc.unsharedFrameBuffers.end();)
-        {
-            if (iter->glContextId != glContext.m_id)
-            {
-                ++iter;
-                continue;
-            }
-
-            iter->deleteFn(iter->frameBufferId);
-            iter = wc.unsharedFrameBuffers.erase(iter);
-        }
-    }
+    wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
 
     if (&glContext == &wc.sharedGlContext)
-        SFML_BASE_ASSERT(wc.unsharedFrameBuffers.empty());
+        SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
 }
 
 
