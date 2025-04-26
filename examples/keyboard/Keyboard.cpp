@@ -601,7 +601,7 @@ public:
     {
         // Check all the scancodes are in the matrix exactly once
         {
-            bool scancodesInMatrix[sf::Keyboard::ScancodeCount]{};
+            [[maybe_unused]] bool scancodesInMatrix[sf::Keyboard::ScancodeCount]{};
 
             for (const auto& [cells, marginBottom] : m_matrix)
             {
