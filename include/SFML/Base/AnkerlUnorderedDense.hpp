@@ -124,10 +124,21 @@
 #        define ANKERL_UNORDERED_DENSE_UNLIKELY(x) (x) // NOLINT(cppcoreguidelines-macro-usage)
 #    endif
 
-namespace std
-{
+#ifdef _LIBCPP_BEGIN_NAMESPACE_STD
+
+_LIBCPP_BEGIN_NAMESPACE_STD
+
     template <typename> struct hash;
-}
+
+_LIBCPP_END_NAMESPACE_STD
+
+#else
+
+namespace std {
+    template <typename> struct hash;
+} // namespace std
+
+#endif
 
 namespace ankerl::unordered_dense {
 inline namespace ANKERL_UNORDERED_DENSE_NAMESPACE {
@@ -677,7 +688,7 @@ private:
         using value_type = T;
         using reference = typename sf::base::Conditional<IsConst, value_type const&, value_type&>;
         using pointer = typename sf::base::Conditional<IsConst, segmented_vector::const_pointer, segmented_vector::pointer>;
-        using iterator_category = std::forward_iterator_tag;
+        // using iterator_category = std::forward_iterator_tag;
 
         iter_t() noexcept = default;
 
