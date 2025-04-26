@@ -291,7 +291,7 @@ if(SFML_ENABLE_HARDENING_FLAGS AND NOT MSVC)
     add_compile_options(
         -ftrivial-auto-var-init=pattern
         -fstack-protector-strong
-        -fstack-clash-protection
+        # -fstack-clash-protection (doesn't work on libc++)
         -fstrict-flex-arrays=3
         # -fno-delete-null-pointer-checks (broken on GCC)
         -ftrapv
