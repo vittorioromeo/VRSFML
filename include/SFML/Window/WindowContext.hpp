@@ -266,7 +266,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static void disableGlContext();
+    static void disableGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load OpenGL or OpenGL ES entry points using GLAD
