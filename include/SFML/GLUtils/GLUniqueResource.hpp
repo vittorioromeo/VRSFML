@@ -126,7 +126,7 @@ private:
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten]] static base::Optional<T> tryCreateGLUniqueResource()
+[[nodiscard, gnu::always_inline, gnu::flatten]] static inline base::Optional<T> tryCreateGLUniqueResource()
 {
     unsigned int id{};
     T::FuncsType::create(id);

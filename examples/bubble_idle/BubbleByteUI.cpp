@@ -377,9 +377,9 @@ It's a duck.)",
 ////////////////////////////////////////////////////////////
 Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVec2& btnSize, const float fontScale, const float fontScaleMult)
 {
-    ImGuiWindow* window = ImGui::GetCurrentWindow();
+    ImGuiWindow* imGuiWindow = ImGui::GetCurrentWindow();
 
-    if (window->SkipItems)
+    if (imGuiWindow->SkipItems)
         return AnimatedButtonOutcome::None;
 
     const char* labelEnd = ImGui::FindRenderedTextEnd(label);
@@ -392,7 +392,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
                                             labelSize.x + ImGui::GetStyle().FramePadding.x * 2.f,
                                             labelSize.y + ImGui::GetStyle().FramePadding.y * 2.f);
 
-    const ImRect bb(window->DC.CursorPos, window->DC.CursorPos + size);
+    const ImRect bb(imGuiWindow->DC.CursorPos, imGuiWindow->DC.CursorPos + size);
     ImGui::ItemSize(bb);
 
     if (!ImGui::ItemAdd(bb, id))
@@ -407,7 +407,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     };
 
     // Get or create animation state
-    ImGuiStorage* storage     = window->DC.StateStorage;
+    ImGuiStorage* storage     = imGuiWindow->DC.StateStorage;
     const ImGuiID animStateId = id + 1; // Use a different ID for the state
 
     auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
@@ -441,8 +441,8 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     animState->clickAnim     = sf::base::clamp(animState->clickAnim + deltaTime * 4.5f * clickAnimDir, 0.f, 1.f);
 
     // Save current cursor pos
-    const ImVec2 originalPos = window->DC.CursorPos;
-    ImDrawList*  drawList    = window->DrawList;
+    const ImVec2 originalPos = imGuiWindow->DC.CursorPos;
+    ImDrawList*  drawList    = imGuiWindow->DrawList;
 
     // Calculate center point for transformations
     const ImVec2 center = bb.Min + size * 0.5f;
@@ -522,7 +522,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
 
     // Restore the previous clip rect and cursor position.
     drawList->PopClipRect();
-    window->DC.CursorPos = originalPos;
+    imGuiWindow->DC.CursorPos = originalPos;
 
     return clicked                ? AnimatedButtonOutcome::Clicked
            : clickedWhileDisabled ? AnimatedButtonOutcome::ClickedWhileDisabled
@@ -2585,7 +2585,7 @@ void Main::uiTabBarPrestige()
         uiSetFontScale(uiToolTipFontScale);
 
         if (undoPPPurchase.empty())
-            ImGui::Text("");
+            ImGui::Text("%s", "");
         else
             ImGui::Text("Undo time left: %.2fs", static_cast<double>(undoPPPurchaseTimer.value / 1000.f));
 
