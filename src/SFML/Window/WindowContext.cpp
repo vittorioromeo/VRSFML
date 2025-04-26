@@ -432,7 +432,9 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
     wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
 
     if (&glContext == &wc.sharedGlContext)
+    {
         SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
+    }
 }
 
 
