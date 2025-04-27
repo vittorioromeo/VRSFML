@@ -56,6 +56,20 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
             CHECK(texture.getNativeHandle() != 0);
         }
+
+        SECTION("Move assignment")
+        {
+            auto rt0 = sf::Texture::create({100, 100});
+            CHECK(rt0.hasValue());
+            rt0->setSmooth(true);
+
+            auto rt1 = sf::Texture::create({100, 100});
+            CHECK(rt1.hasValue());
+            rt1->setSmooth(true);
+
+            *rt0 = SFML_BASE_MOVE(*rt1);
+            rt0->setSmooth(true);
+        }
     }
 
     SECTION("create()")
