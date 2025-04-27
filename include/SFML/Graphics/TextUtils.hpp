@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -423,8 +424,8 @@ inline auto createTextGeometryAndGetBounds(
         textData.letterSpacing,
         textData.lineSpacing,
         textData.outlineThickness,
-        textData.fillColor,
-        textData.outlineColor,
+        /* fillColor */ {},    // doesn't matter
+        /* outlineColor */ {}, // doesn't matter
         /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
         /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
 }
@@ -442,8 +443,8 @@ inline auto createTextGeometryAndGetBounds(
         text.getLetterSpacing(),
         text.getLineSpacing(),
         text.getOutlineThickness(),
-        text.getFillColor(),
-        text.getOutlineColor(),
+        /* fillColor */ {},    // doesn't matter
+        /* outlineColor */ {}, // doesn't matter
         /* fAddLine */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {},
         /* fAddGlyphQuad */ [](auto&&...) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {});
 }
