@@ -126,7 +126,7 @@ GraphicsContext::~GraphicsContext()
         return;
 
     // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader
-    [[maybe_unused]] const bool rc = WindowContext::setActiveThreadLocalGlContextToSharedContext(true);
+    [[maybe_unused]] const bool rc = WindowContext::setActiveThreadLocalGlContextToSharedContext();
     SFML_BASE_ASSERT(rc);
 
     installedGraphicsContext.reset();
