@@ -3,9 +3,12 @@
 
 
 ////////////////////////////////////////////////////////////
-// Headers
+// Forward declarations
 ////////////////////////////////////////////////////////////
-#include "SFML/GLUtils/GLContextSaver.hpp"
+namespace sf::priv
+{
+class GlContext;
+} // namespace sf::priv
 
 
 namespace sf::priv
@@ -45,7 +48,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GLContextSaver m_glContextSaver; //!< GL context saver
+    priv::GlContext* m_glContext; //!< GL context to restore
 };
 
 } // namespace sf::priv
