@@ -13,7 +13,13 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Generic RAII base class for managing OpenGL resources.
+/// \ingroup glutils
+///
+/// This template class provides basic RAII (Resource Acquisition Is Initialization)
+/// functionality for OpenGL objects identified by an unsigned integer ID.
+/// It requires a policy struct `TFuncs` that defines static `create`, `destroy`,
+/// `bind`, and `get` functions specific to the type of OpenGL resource being managed.
 ///
 ////////////////////////////////////////////////////////////
 template <typename TFuncs>
@@ -71,6 +77,11 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the ID of the currently bound object of this type.
+    ///
+    /// \return The OpenGL ID of the currently bound resource.
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] static unsigned int getBoundId()
     {
         unsigned int out{};
@@ -79,17 +90,32 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the OpenGL ID of this resource.
+    ///
+    /// \return The unique OpenGL identifier for this resource.
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] unsigned int getId() const
     {
         return m_id;
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check if this specific resource instance is currently bound.
+    ///
+    /// \return True if `getId()` matches `getBoundId()`, false otherwise.
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] bool isBound() const
     {
         return getBoundId() == m_id;
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Bind this resource to the current OpenGL context.
+    ///
+    /// Asserts that the resource ID is valid and that the binding was successful.
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void bind() const
     {
@@ -100,12 +126,23 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    /// \brief Unbind this resource type from the current OpenGL context.
+    ///
+    /// Binds the default object (ID `0`) for this resource type.
+    ///
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unbind() const
     {
         TFuncs::bind(0u);
         SFML_BASE_ASSERT(!isBound());
     }
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Reallocate the underlying OpenGL resource.
+    ///
+    /// Destroys the current OpenGL object (if any) and creates a new one,
+    /// assigning the new ID to this wrapper instance.
+    ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void reallocate()
     {

@@ -14,7 +14,14 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Internal helper struct defining OpenGL functions for a specific buffer type.
+///
+/// This template acts as a policy class for `GLUniqueResource`, providing
+/// the necessary static functions (`create`, `destroy`, `bind`, `get`)
+/// tailored to a specific type of OpenGL buffer object (like VBO or EBO)
+/// defined by the `BufferType` and `BindingType` template parameters.
+///
+/// Creation and destruction of buffers is always done on the shared context.
 ///
 ////////////////////////////////////////////////////////////
 template <GLenum BufferType, GLenum BindingType>
@@ -50,7 +57,14 @@ struct GLBufferObjectFuncs
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief RAII wrapper for a generic OpenGL buffer object (e.g., VBO, EBO).
+///
+/// Manages the lifecycle (creation, destruction) and binding of an
+/// OpenGL buffer object specified by the `BufferType` (e.g., `GL_ARRAY_BUFFER`)
+/// and its corresponding binding point `BindingType` (e.g., `GL_ARRAY_BUFFER_BINDING`).
+/// Inherits from `GLUniqueResource` to handle the underlying OpenGL ID.
+///
+/// \see `GLUniqueResource`, `GLVertexBufferObject`, `GLElementBufferObject`
 ///
 ////////////////////////////////////////////////////////////
 template <GLenum BufferType, GLenum BindingType>
@@ -71,7 +85,9 @@ struct GLBufferObject : GLUniqueResource<GLBufferObjectFuncs<BufferType, Binding
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Specialization of GLBufferObject for Vertex Buffer Objects (VBOs).
+///
+/// Provides RAII management for buffers typically used to store vertex data (`GL_ARRAY_BUFFER`).
 ///
 ////////////////////////////////////////////////////////////
 struct GLVertexBufferObject : priv::GLBufferObject<GL_ARRAY_BUFFER, GL_ARRAY_BUFFER_BINDING>
@@ -80,7 +96,9 @@ struct GLVertexBufferObject : priv::GLBufferObject<GL_ARRAY_BUFFER, GL_ARRAY_BUF
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Specialization of GLBufferObject for Element/Index Buffer Objects (EBOs/IBOs).
+///
+/// Provides RAII management for buffers typically used to store vertex indices (`GL_ELEMENT_ARRAY_BUFFER`).
 ///
 ////////////////////////////////////////////////////////////
 struct GLElementBufferObject : priv::GLBufferObject<GL_ELEMENT_ARRAY_BUFFER, GL_ELEMENT_ARRAY_BUFFER_BINDING>
