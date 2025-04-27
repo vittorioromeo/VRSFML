@@ -25,7 +25,20 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Manages a persistently mapped OpenGL buffer.
+/// \ingroup glutils
+///
+/// This class provides a convenient way to work with OpenGL buffer objects
+/// that are persistently mapped for writing. This allows direct memory access
+/// to the buffer's storage from the CPU, potentially improving performance
+/// for frequently updated buffers by avoiding explicit `glBufferSubData` calls.
+///
+/// It handles the creation, mapping, resizing (reallocation), and unmapping
+/// of the buffer. The buffer memory is mapped with write access and persistent
+/// mapping flags. Synchronization is typically required externally using fences
+/// or barriers before the GPU reads from the updated buffer regions.
+///
+/// \tparam TBufferObject The type of the underlying buffer object (e.g., `GLVertexBufferObject`).
 ///
 ////////////////////////////////////////////////////////////
 template <typename TBufferObject>

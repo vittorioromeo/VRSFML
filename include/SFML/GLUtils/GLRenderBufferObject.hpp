@@ -14,7 +14,12 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Internal helper struct defining OpenGL functions for Renderbuffer Objects (RBOs).
+///
+/// This template acts as a policy class for `GLUniqueResource`, providing
+/// the necessary static functions tailored to OpenGL Renderbuffer Objects.
+///
+/// Creation and destruction of renderbuffers is always done on the shared context.
 ///
 ////////////////////////////////////////////////////////////
 struct GLRenderBufferObjectFuncs
@@ -54,7 +59,10 @@ struct GLRenderBufferObjectFuncs
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief RAII wrapper for an OpenGL Renderbuffer Object (RBO).
+/// \ingroup glutils
+///
+/// Manages the lifecycle (creation, destruction) and binding of an OpenGL Renderbuffer Object.
 ///
 ////////////////////////////////////////////////////////////
 struct GLRenderBufferObject : GLUniqueResource<priv::GLRenderBufferObjectFuncs>

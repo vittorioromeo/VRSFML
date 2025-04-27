@@ -90,6 +90,23 @@ macro(sfml_add_library module)
     # target_compile_options(${target} PUBLIC -include Tracy.hpp)
     # target_compile_definitions(${target} PUBLIC -DTRACY_ENABLE)
 
+    # propagate macros to dependent targets (`add_definitions` does not propagate to parent)
+    if(SFML_ENABLE_LIFETIME_TRACKING)
+        target_compile_definitions(${target} PUBLIC -DSFML_ENABLE_LIFETIME_TRACKING)
+    endif()
+
+    if(SFML_ENABLE_PCH)
+        target_compile_definitions(${target} PUBLIC -DSFML_ENABLE_PCH)
+    endif()
+
+    if(SFML_ENABLE_STACK_TRACES)
+        target_compile_definitions(${target} PUBLIC -DSFML_ENABLE_STACK_TRACES)
+    endif()
+
+    if(SFML_OPENGL_ES)
+        target_compile_definitions(${target} PUBLIC -DSFML_OPENGL_ES)
+    endif()
+
     # enable C++20 support
     target_compile_features(${target} PUBLIC cxx_std_20)
 
