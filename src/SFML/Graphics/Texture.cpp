@@ -101,12 +101,21 @@ Texture::~Texture()
     if (!m_texture)
         return;
 
-    // Always destroy the texture on the shared context
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    priv::GLSharedContextGuard guard;
 
-    const GLuint texture = m_texture;
-    glCheck(glDeleteTextures(1, &texture));
+    {
+        // Always destroy the texture on the shared context
+        priv::GLSharedContextGuard guard;
+
+        const GLuint texture = m_texture;
+        glCheck(glDeleteTextures(1, &texture));
+    }
+
+    if (priv::getGLInteger(GL_TEXTURE_BINDING_2D) == static_cast<GLint>(m_texture))
+    {
+        // Unbind the texture if it was bound
+        glCheck(glBindTexture(GL_TEXTURE_2D, 0u));
+    }
 }
 
 
@@ -166,9 +175,7 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
         return result; // Empty optional
     }
 
-    // Always create textures on the shared context
     SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-    priv::GLSharedContextGuard guard;
 
     // Check the maximum texture size
     const unsigned int maxSize = getMaximumSize();
@@ -182,9 +189,15 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
     }
 
     // Create the OpenGL texture
-    GLuint glTexture = 0;
-    glCheck(glGenTextures(1, &glTexture));
-    SFML_BASE_ASSERT(glTexture);
+    GLuint glTexture = 0u;
+
+    {
+        // Always create textures on the shared context
+        priv::GLSharedContextGuard guard;
+
+        glCheck(glGenTextures(1, &glTexture));
+        SFML_BASE_ASSERT(glTexture);
+    }
 
     // All the validity checks passed, we can store the new texture settings
     result.emplace(base::PassKey<Texture>{}, size, glTexture, settings.sRgb);
@@ -194,6 +207,15 @@ base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettin
     const priv::TextureSaver save;
 
     const GLint textureWrapParam = TextureImpl::wrapModeToGl(settings.wrapMode);
+
+    {
+        // I have no idea why this is needed, but it seems to be the only way to
+        // avoid a failure in `sf::RenderWindow` tests with texture update and
+        // copy to image. It seems like the context needs to be deactivated and
+        // reactivated to ensure that the texture is created correctly or seen
+        // by other contexts.
+        priv::GLSharedContextGuard guard;
+    }
 
     // Initialize the texture
     glCheck(glBindTexture(GL_TEXTURE_2D, texture.m_texture));
@@ -342,7 +364,7 @@ Image Texture::copyToImage() const
 
     // OpenGL ES doesn't have the glGetTexImage function, the only way to read
     // from a texture is to bind it to a FBO and use glReadPixels
-    GLuint frameBuffer = 0;
+    GLuint frameBuffer = 0u;
     glCheck(glGenFramebuffers(1, &frameBuffer));
     if (frameBuffer)
     {
@@ -528,10 +550,10 @@ bool Texture::update(const Window& window, Vector2u dest)
     const auto drawFramebuffer = priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING);
 
     // Create the destination framebuffers
-    GLuint destFrameBuffer = 0;
+    GLuint destFrameBuffer = 0u;
     glCheck(glGenFramebuffers(1, &destFrameBuffer));
 
-    GLuint sourceFrameBuffer = 0; // default fbo
+    GLuint sourceFrameBuffer = 0u; // default fbo
 
     if (!destFrameBuffer)
     {
