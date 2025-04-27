@@ -4221,7 +4221,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = getReasonableWindowSize(1.f);
             profile.windowed = true;
 
-            mustRecreateWindow = true;
+            recreateWindow();
         }
 
         ImGui::SameLine();
@@ -4233,7 +4233,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = getReasonableWindowSize(0.9f);
             profile.windowed = true;
 
-            mustRecreateWindow = true;
+            recreateWindow();
         }
 
         ImGui::SameLine();
@@ -4245,7 +4245,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = getReasonableWindowSize(0.8f);
             profile.windowed = true;
 
-            mustRecreateWindow = true;
+            recreateWindow();
         }
 
         ImGui::AlignTextToFramePadding();
@@ -4260,7 +4260,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
             profile.windowed = true;
 
-            mustRecreateWindow = true;
+            recreateWindow();
         }
 
         ImGui::SameLine();
@@ -4272,7 +4272,7 @@ void Main::uiTabBarSettings()
             profile.resWidth = sf::VideoModeUtils::getDesktopMode().size;
             profile.windowed = false;
 
-            mustRecreateWindow = true;
+            recreateWindow();
         }
 
         ImGui::Separator();
