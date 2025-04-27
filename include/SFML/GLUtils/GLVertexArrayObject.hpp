@@ -13,7 +13,10 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Internal helper struct defining OpenGL functions for Vertex Array Objects (VAOs).
+///
+/// This template acts as a policy class for `GLUniqueResource`, providing
+/// the necessary static functions tailored to OpenGL Vertex Array Objects.
 ///
 ////////////////////////////////////////////////////////////
 struct GLVertexArrayObjectFuncs
@@ -49,7 +52,10 @@ struct GLVertexArrayObjectFuncs
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief RAII wrapper for an OpenGL Vertex Array Object (VAO).
+/// \ingroup glutils
+///
+/// Manages the lifecycle (creation, destruction) and binding of an OpenGL Vertex Array Object.
 ///
 ////////////////////////////////////////////////////////////
 struct GLVertexArrayObject : GLUniqueResource<priv::GLVertexArrayObjectFuncs>
