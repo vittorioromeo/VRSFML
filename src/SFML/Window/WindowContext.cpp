@@ -295,7 +295,7 @@ base::Optional<WindowContext> WindowContext::create(const ContextSettings& share
     // Enable shader GL context
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
-    if (!setActiveThreadLocalGlContextToSharedContext(true))
+    if (!setActiveThreadLocalGlContextToSharedContext())
         return fail("could not enable shared context");
 
     SFML_BASE_ASSERT(isActiveGlContextSharedContext());
@@ -362,9 +362,10 @@ WindowContext::~WindowContext()
 
     // All the FBOs on shared context should be destroyed later
 
-    // SFML_BASE_ASSERT(hasActiveThreadLocalGlContext());
+    SFML_BASE_ASSERT(hasActiveThreadLocalGlContext());
+    SFML_BASE_ASSERT(isActiveGlContextSharedContext());
 
-    disableGlContext();
+    disableSharedGlContext();
     SFML_BASE_ASSERT(!hasActiveThreadLocalGlContext());
 
     installedWindowContext.reset();
@@ -422,6 +423,18 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
 {
     auto& wc = ensureInstalled();
 
+    if (&glContext == &wc.sharedGlContext)
+    {
+        if (!setActiveThreadLocalGlContext(glContext, true))
+            priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
+
+        wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
+        SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
+
+        disableSharedGlContext();
+        return;
+    }
+
     // Save the current context so we can restore it later
     priv::GLContextSaver glContextSaver;
 
@@ -430,11 +443,6 @@ void WindowContext::cleanupUnsharedFrameBuffers(priv::GlContext& glContext)
         priv::err() << "Could not enable GL context in GlContext::cleanupUnsharedFrameBuffers()";
 
     wc.unsharedContextResourcesManager.unregisterAllResources(glContext.getId());
-
-    if (&glContext == &wc.sharedGlContext)
-    {
-        SFML_BASE_ASSERT(wc.unsharedContextResourcesManager.allEmpty());
-    }
 }
 
 
@@ -479,7 +487,7 @@ bool WindowContext::hasActiveThreadLocalGlContext()
 ////////////////////////////////////////////////////////////
 bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, const bool active)
 {
-    ensureInstalled();
+    auto& wc = ensureInstalled();
 
     // If `glContext` is already the active one on this thread, don't do anything
     if (active && glContext.m_id == activeGlContext.id)
@@ -502,18 +510,30 @@ bool WindowContext::setActiveThreadLocalGlContext(priv::GlContext& glContext, co
         return false;
     }
 
-    activeGlContext.id  = active ? glContext.m_id : 0u;
-    activeGlContext.ptr = active ? &glContext : nullptr;
+    if (&glContext == &wc.sharedGlContext)
+    {
+        SFML_BASE_ASSERT(active);
+
+        activeGlContext.id  = glContext.m_id;
+        activeGlContext.ptr = &glContext;
+    }
+    else
+    {
+        // Revert to shared context if `glContext` is disabled
+
+        activeGlContext.id  = active ? glContext.m_id : 1u;
+        activeGlContext.ptr = active ? &glContext : &wc.sharedGlContext;
+    }
 
     return true;
 }
 
 
 ////////////////////////////////////////////////////////////
-bool WindowContext::setActiveThreadLocalGlContextToSharedContext(const bool active)
+bool WindowContext::setActiveThreadLocalGlContextToSharedContext()
 {
     auto& wc = ensureInstalled();
-    return setActiveThreadLocalGlContext(wc.sharedGlContext, active);
+    return setActiveThreadLocalGlContext(wc.sharedGlContext, true);
 }
 
 
@@ -526,12 +546,21 @@ void WindowContext::onGlContextDestroyed(priv::GlContext& glContext)
     if (glContext.m_id != activeGlContext.id)
         return;
 
-    if (!setActiveThreadLocalGlContextToSharedContext(true))
+    if (!setActiveThreadLocalGlContextToSharedContext())
     {
         priv::err() << "Failed to enable shared GL context in `WindowContext::onGlContextDestroyed`";
         SFML_BASE_ASSERT(false);
     }
 }
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool WindowContext::isSharedContext(priv::GlContext& glContext)
+{
+    auto& wc = ensureInstalled();
+    return &glContext == &wc.sharedGlContext;
+}
+
 
 ////////////////////////////////////////////////////////////
 bool WindowContext::isActiveGlContextSharedContext()
@@ -542,8 +571,19 @@ bool WindowContext::isActiveGlContextSharedContext()
 
 
 ////////////////////////////////////////////////////////////
-void WindowContext::disableGlContext()
+void WindowContext::disableSharedGlContext()
 {
+    auto& wc = ensureInstalled();
+
+    SFML_BASE_ASSERT(hasActiveThreadLocalGlContext());
+    SFML_BASE_ASSERT(isActiveGlContextSharedContext());
+
+    if (!wc.sharedGlContext.makeCurrent(false))
+    {
+        priv::err() << "Could not disable shared GL context in `WindowContext::disableSharedGlContext()`";
+        return;
+    }
+
     activeGlContext.id  = 0u;
     activeGlContext.ptr = nullptr;
 }
@@ -576,16 +616,13 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContextImpl(const Contex
 
     const std::lock_guard lock(wc.sharedGlContextMutex);
 
-    if (!setActiveThreadLocalGlContextToSharedContext(true))
+    if (!setActiveThreadLocalGlContextToSharedContext())
         priv::err() << "Error enabling shared GL context in WindowContext::createGlContext()";
 
     auto glContext = base::makeUnique<priv::DerivedGlContextType>(wc.nextThreadLocalGlContextId.fetch_add(1u),
                                                                   &wc.sharedGlContext,
                                                                   contextSettings,
                                                                   SFML_BASE_FORWARD(args)...);
-
-    if (!setActiveThreadLocalGlContextToSharedContext(false))
-        priv::err() << "Error disabling shared GL context in WindowContext::createGlContext()";
 
     if (!setActiveThreadLocalGlContext(*glContext, true))
     {
