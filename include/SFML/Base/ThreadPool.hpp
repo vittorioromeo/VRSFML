@@ -62,7 +62,9 @@ public:
     void post(Task&& f);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the number of workers in the pool.
+    ///
+    /// \return The number of workers.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SizeT getWorkerCount() const noexcept;

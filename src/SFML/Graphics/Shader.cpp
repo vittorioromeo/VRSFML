@@ -277,6 +277,21 @@ void printLinesWithNumbers(auto& os, sf::base::StringView text)
     }
 }
 
+
+////////////////////////////////////////////////////////////
+void destroyProgramIfNeeded(const unsigned int program)
+{
+    if (!program)
+        return;
+
+    // Always delete programs and shaders on the shared context
+    sf::priv::GLSharedContextGuard guard;
+
+    SFML_BASE_ASSERT(sf::GraphicsContext::hasActiveThreadLocalGlContext());
+    SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(program))));
+    glCheck(glDeleteProgram(castToGlHandle(program)));
+}
+
 } // namespace
 
 
@@ -363,16 +378,7 @@ private:
 ////////////////////////////////////////////////////////////
 Shader::~Shader()
 {
-    // Destroy effect program
-    if (m_impl->shaderProgram)
-    {
-        // Always delete programs and shaders on the shared context
-        priv::GLSharedContextGuard guard;
-
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
-        glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
-    }
+    destroyProgramIfNeeded(m_impl->shaderProgram);
 }
 
 
@@ -387,16 +393,7 @@ Shader& Shader::operator=(Shader&& right) noexcept
     if (&right == this)
         return *this;
 
-    // Destroy effect program
-    if (m_impl->shaderProgram)
-    {
-        // Always delete programs and shaders on the shared context
-        priv::GLSharedContextGuard guard;
-
-        SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
-        SFML_BASE_ASSERT(glCheck(glIsProgram(castToGlHandle(m_impl->shaderProgram))));
-        glCheck(glDeleteProgram(castToGlHandle(m_impl->shaderProgram)));
-    }
+    destroyProgramIfNeeded(m_impl->shaderProgram);
 
     // Move the contents of right.
     m_impl->shaderProgram  = base::exchange(right.m_impl->shaderProgram, 0u);
