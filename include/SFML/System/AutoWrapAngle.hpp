@@ -11,20 +11,31 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief A wrapper around `sf::Angle` that automatically wraps the angle value
+///
+/// This class behaves similarly to `sf::Angle` but automatically wraps
+/// the angle to the range `[0, 360)` degrees (or `[0, 2*Pi)` radians)
+/// whenever its value is accessed or used in comparisons/operations.
+///
+/// This is useful for representing properties like rotation where only
+/// the final orientation matters, regardless of the number of full turns.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] AutoWrapAngle
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Default constructor
+    ///
+    /// Initializes the angle to 0 degrees.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] constexpr AutoWrapAngle() = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Construct from an `sf::Angle`
+    ///
+    /// \param angle Angle to initialize from.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr explicit(false) AutoWrapAngle(Angle angle) :
@@ -33,7 +44,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Assign an `sf::Angle`
+    ///
+    /// \param angle Angle to assign.
+    /// \return Reference to `*this`.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator=(Angle angle) noexcept
@@ -43,7 +57,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Implicit conversion to `sf::Angle`
+    ///
+    /// Returns the angle value, wrapped to the range `[0, 360)`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr operator Angle() const noexcept
@@ -78,7 +94,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Rotate towards another angle by a maximum step.
+    ///
+    /// Wraps the current angle before performing the rotation.
+    /// See `sf::Angle::rotatedTowards` for details.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(Angle other, float speed) const
@@ -87,13 +106,17 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Equality comparison operator
+    ///
+    /// Compares the underlying radian values without wrapping.
     ///
     ////////////////////////////////////////////////////////////
     friend constexpr bool operator==(AutoWrapAngle lhs, AutoWrapAngle rhs) = default;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Addition assignment operator
+    ///
+    /// Adds `rhs` to the current angle value.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(Angle rhs)
@@ -103,7 +126,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Subtraction assignment operator
+    ///
+    /// Subtracts `rhs` from the current angle value.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(Angle rhs)
@@ -113,7 +138,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Multiplication assignment operator
+    ///
+    /// Multiplies the current angle value by `rhs`.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator*=(float rhs)
@@ -123,7 +150,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Division assignment operator
+    ///
+    /// Divides the current angle value by `rhs`. Asserts if `rhs` is 0.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator/=(float rhs)
@@ -133,7 +162,10 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Modulo assignment operator
+    ///
+    /// Assigns the result of `*this % rhs` to `*this`. Wraps the current angle
+    /// before performing the modulo operation. See `sf::Angle::operator%`.
     ///
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator%=(Angle rhs)
@@ -152,6 +184,15 @@ private:
 /// \class sf::AutoWrapAngle
 /// \ingroup system
 ///
-/// TODO P1: docs
+/// `sf::AutoWrapAngle` is a wrapper around `sf::Angle` that automatically
+/// normalizes the angle to the range `[0, 360)` degrees (or `[0, 2*Pi)` radians)
+/// upon access or use in operations.
+///
+/// This is particularly useful for representing properties like rotation
+/// where angles outside the standard range are equivalent (e.g., 450 degrees
+/// is the same orientation as 90 degrees). Using `AutoWrapAngle` ensures
+/// that comparisons and operations work intuitively in such cases.
+///
+/// \see `sf::Angle`
 ///
 ////////////////////////////////////////////////////////////
