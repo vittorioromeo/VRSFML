@@ -140,7 +140,20 @@ public:
     }
 
 
-    /// TODO P1: docs
+    ////////////////////////////////////////////////////////////
+    /// \brief Rotate towards another angle by a maximum step.
+    ///
+    /// Calculates the shortest difference between `*this` and `other` (handling wrapping)
+    /// and returns a new angle by rotating `*this` towards `other` by at most `speed` radians.
+    /// If the shortest difference is less than or equal to `speed`, `other` is returned.
+    /// The result is normalized to the range `[0, 2*Pi)`.
+    ///
+    /// \param other Target angle to rotate towards.
+    /// \param speed Maximum rotation step in radians. Must be non-negative.
+    ///
+    /// \return Angle rotated towards `other`, clamped by `speed`.
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
                                                                                                      const float speed) const
     {
