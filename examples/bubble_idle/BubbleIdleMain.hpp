@@ -443,8 +443,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Render window
     sf::RenderWindow window{makeWindow()};
-    bool             mustRecreateWindow = false;
-    float            dpiScalingFactor   = 1.f;
+    float            dpiScalingFactor = 1.f;
 
     bool loadingGuard{[&]
     {
@@ -7937,15 +7936,8 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool gameLoopRecreateWindowIfNeeded()
+    void recreateWindow()
     {
-        // TODO P2: (lib) all this stuff shouldn't be needed, also it creates a brand new opengl context every time
-
-        if (!mustRecreateWindow)
-            return true;
-
-        mustRecreateWindow = false;
-
         const sf::Vector2u newResolution = getNewResolution();
 
         window = makeWindow();
@@ -7954,8 +7946,6 @@ struct Main
         recreateGameRenderTexture(newResolution);
 
         dpiScalingFactor = window.getWindowDisplayScale();
-
-        return true;
     }
 
     ////////////////////////////////////////////////////////////
@@ -8765,9 +8755,6 @@ struct Main
 #ifdef BUBBLEBYTE_USE_STEAMWORKS
         steamMgr.runCallbacks();
 #endif
-
-        if (!gameLoopRecreateWindowIfNeeded())
-            return false;
 
         fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         fpsClock.restart();
