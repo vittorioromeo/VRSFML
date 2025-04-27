@@ -272,7 +272,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    static void disableSharep();
+    static void disableSharedGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load OpenGL or OpenGL ES entry points using GLAD
