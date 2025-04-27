@@ -13,7 +13,11 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Manages a pool of worker threads to execute tasks concurrently.
+///
+/// This class provides a simple way to offload work to a fixed number
+/// of background threads. Tasks are submitted using the `post` method
+/// and are executed by the next available worker thread.
 ///
 ////////////////////////////////////////////////////////////
 class ThreadPool
