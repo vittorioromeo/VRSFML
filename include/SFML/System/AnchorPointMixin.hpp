@@ -26,7 +26,7 @@ template <typename T>
 struct AnchorPointMixin
 {
     ////////////////////////////////////////////////////////////
-    /// \brief Get the position of a specific anchor point
+    /// \brief Get the world position of a specific anchor point
     ///
     /// Calculates the world coordinates of a point based on normalized
     /// factors within the object's bounding box (or size for windows).
