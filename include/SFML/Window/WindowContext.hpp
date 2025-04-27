@@ -108,7 +108,7 @@ private:
     ////////////////////////////////////////////////////////////
     friend priv::EglContext; // for `setActiveThreadLocalGlContext` and `cleanupUnsharedFrameBuffers`
     friend priv::GlContext;  // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
-    friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableGlContext`
+    friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableSharedGlContext`
     friend priv::GLSharedContextGuard; // for `setActiveThreadLocalGlContextToSharedContext`
     friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
     friend priv::WindowImpl;           // for `getJoystickManager`
@@ -222,6 +222,12 @@ private:
     static void onGlContextDestroyed(priv::GlContext& glContext);
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool isSharedContext(priv::GlContext& glContext);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
     ///
     /// \param name Name of the extension to check for
@@ -254,7 +260,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext(bool active);
+    [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -266,7 +272,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    static void disableGlContext();
+    static void disableSharep();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load OpenGL or OpenGL ES entry points using GLAD
