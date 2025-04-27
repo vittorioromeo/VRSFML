@@ -659,7 +659,6 @@ void Texture::setWrapMode(TextureWrapMode wrapMode)
     // Make sure that the current texture binding will be preserved
     const priv::TextureSaver save;
 
-
     glCheck(glBindTexture(GL_TEXTURE_2D, m_texture));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, TextureImpl::wrapModeToGl(wrapMode)));
     glCheck(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, TextureImpl::wrapModeToGl(wrapMode)));
