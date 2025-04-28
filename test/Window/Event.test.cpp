@@ -50,14 +50,17 @@ TEST_CASE("[Window] sf::Event")
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::Event));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(
-            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(
-            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(
-            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(
-            sf::Event)); // TODO P2: should be trivially copyable, needs to be implemented in my variant
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Event));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Event)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Event));
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Event, sf::Event));
     }
 
     SECTION("Construction")
@@ -92,11 +95,11 @@ TEST_CASE("[Window] sf::Event")
         CHECK(event.is<sf::Event::FocusGained>());
         CHECK(event.getIf<sf::Event::FocusGained>());
 
-        event = sf::Event::TextEntered{123456};
+        event = sf::Event::TextEntered{123'456};
         CHECK(event.is<sf::Event::TextEntered>());
         CHECK(event.getIf<sf::Event::TextEntered>());
         const auto& textEntered = *event.getIf<sf::Event::TextEntered>();
-        CHECK(textEntered.unicode == 123456);
+        CHECK(textEntered.unicode == 123'456);
 
         event = sf::Event::KeyPressed{sf::Keyboard::Key::C, sf::Keyboard::Scan::C, true, true, true, true};
         CHECK(event.is<sf::Event::KeyPressed>());
