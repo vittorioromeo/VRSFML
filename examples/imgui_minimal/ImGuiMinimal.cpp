@@ -72,7 +72,8 @@ int main()
     // TODO P0:
     const auto modes = sf::VideoModeUtils::getFullscreenModes();
     for (const auto& mode : modes)
-        sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << '\n';
+        sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << "; " << mode.bitsPerPixel << "bpp; "
+                   << mode.pixelDensity << "x pixel density; " << mode.refreshRate << "Hz\n";
 
     while (true)
     {

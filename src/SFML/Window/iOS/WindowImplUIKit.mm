@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 #include "SFML/Window/iOS/SFAppDelegate.hpp"
 #include "SFML/Window/iOS/SFView.hpp"
