@@ -16,31 +16,6 @@
 #include <algorithm> // std::sort
 
 
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard]] sf::VideoMode sdlModeToVideoMode(const SDL_DisplayMode* mode)
-{
-    if (mode == nullptr)
-        return {};
-
-    const auto* info = sf::priv::getSDLLayerSingleton().getPixelFormatDetails(mode->format);
-
-    if (info == nullptr)
-    {
-        sf::priv::err() << "Failed to get pixel format details for display mode";
-        return {};
-    }
-
-    return {
-        .size         = sf::Vector2i(mode->w, mode->h).toVector2u(),
-        .bitsPerPixel = static_cast<unsigned int>(info->bits_per_pixel),
-    };
-}
-
-} // namespace
-
-
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -55,7 +30,15 @@ float VideoModeUtils::getPrimaryDisplayContentScale()
 VideoMode VideoModeUtils::getDesktopMode()
 {
     auto& sdlLayer = priv::getSDLLayerSingleton();
-    return sdlModeToVideoMode(sdlLayer.getDesktopDisplayMode(sdlLayer.getDisplays()[0]));
+
+    const auto* desktopDisplayMode = sdlLayer.getPrimaryDisplayDesktopDisplayMode();
+    if (desktopDisplayMode == nullptr)
+    {
+        priv::err() << "`getDesktopMode` failed, returning default video mode";
+        return {};
+    }
+
+    return sdlLayer.getVideoModeFromSDLDisplayMode(*desktopDisplayMode);
 }
 
 
@@ -80,7 +63,9 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 
         for (const auto* mode : modes)
         {
-            const sf::VideoMode res = sdlModeToVideoMode(mode);
+            SFML_BASE_ASSERT(mode != nullptr);
+
+            const sf::VideoMode res = sdlLayer.getVideoModeFromSDLDisplayMode(*mode);
 
             if (base::find(result.begin(), result.end(), res) == result.end())
                 result.pushBack(res);
