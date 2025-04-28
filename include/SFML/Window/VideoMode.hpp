@@ -46,6 +46,8 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
     ////////////////////////////////////////////////////////////
     Vector2u     size;              //!< Video mode width and height, in pixels
     unsigned int bitsPerPixel{32u}; //!< Video mode pixel depth, in bits per pixels
+    float        pixelDensity{1.f}; //!< Video mode pixel density multiplier
+    float        refreshRate{60.f}; //!< Video mode refresh rate, in Hz
 };
 
 ////////////////////////////////////////////////////////////

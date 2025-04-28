@@ -35,6 +35,8 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
             const sf::VideoMode videoMode{.size{800u, 600u}};
             CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 32);
+            CHECK(videoMode.pixelDensity == 1.f);
+            CHECK(videoMode.refreshRate == 60.f);
         }
 
         SECTION("Width, height, bit depth constructor")
@@ -42,6 +44,8 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
             const sf::VideoMode videoMode{.size{800u, 600u}, .bitsPerPixel = 24u};
             CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 24);
+            CHECK(videoMode.pixelDensity == 1.f);
+            CHECK(videoMode.refreshRate == 60.f);
         }
     }
 
