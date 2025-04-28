@@ -14,10 +14,10 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -26,12 +26,15 @@
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 struct SoundStream::Impl
 {
+    ////////////////////////////////////////////////////////////
     explicit Impl(SoundStream* theOwner) : owner(theOwner)
     {
     }
 
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
         SFML_BASE_ASSERT(soundBase.hasValue());
@@ -54,6 +57,7 @@ struct SoundStream::Impl
         soundBase->refreshSoundChannelMap();
     }
 
+    ////////////////////////////////////////////////////////////
     static void onEnd(void* userData, ma_sound* soundPtr)
     {
         // Seek back to the start of the sound when it finishes playing
@@ -65,7 +69,8 @@ struct SoundStream::Impl
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
-    static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -128,7 +133,8 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -145,12 +151,14 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getFormat(ma_data_source* dataSource,
-                               ma_format*      format,
-                               ma_uint32*      channels,
-                               ma_uint32*      sampleRate,
-                               ma_channel*,
-                               base::SizeT)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getFormat(
+        ma_data_source* dataSource,
+        ma_format*      format,
+        ma_uint32*      channels,
+        ma_uint32*      sampleRate,
+        ma_channel*,
+        base::SizeT)
     {
         const auto& impl = *static_cast<const Impl*>(dataSource);
 
@@ -162,7 +170,8 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
         *cursor    = impl.channelCount ? impl.samplesProcessed / impl.channelCount : 0;
@@ -170,14 +179,16 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getLength(ma_data_source*, ma_uint64* length)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getLength(ma_data_source*, ma_uint64* length)
     {
         *length = 0;
 
         return MA_NOT_IMPLEMENTED;
     }
 
-    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }

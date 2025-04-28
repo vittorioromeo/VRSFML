@@ -256,7 +256,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const SizeT newSize)
+    [[gnu::always_inline]] void resize(const SizeT newSize, auto&&... args)
     {
         const auto oldSize = size();
 
@@ -265,30 +265,7 @@ public:
             reserve(newSize);
 
             for (auto* p = m_data + oldSize; p != m_data + newSize; ++p)
-                SFML_BASE_PLACEMENT_NEW(p) TItem();
-        }
-        else
-        {
-            destroyRange(m_data + newSize, m_endSize);
-        }
-
-        m_endSize = m_data + newSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(const SizeT newSize, const TItem& item)
-    {
-        // TODO P0: repetition with above
-
-        const auto oldSize = size();
-
-        if (newSize > oldSize)
-        {
-            reserve(newSize);
-
-            for (auto* p = m_data + oldSize; p != m_data + newSize; ++p)
-                SFML_BASE_PLACEMENT_NEW(p) TItem(item);
+                SFML_BASE_PLACEMENT_NEW(p) TItem(args...); // intentionally not forwarding
         }
         else
         {
@@ -320,7 +297,6 @@ public:
 
         auto* newData = allocate(currentSize);
 
-        // TODO P0: optimize into single one
         moveRange(newData, m_data, m_endSize);
         destroyRange(m_data, m_endSize);
 
