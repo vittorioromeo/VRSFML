@@ -15,6 +15,12 @@
 #include "SFML/Base/Traits/AddLvalueReference.hpp"
 #include "SFML/Base/Traits/IsReference.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 
@@ -94,6 +100,13 @@ private:
         max_alignment = impl::variadic_max(alignof(Alternatives)...),
         max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
+
+    static inline constexpr bool triviallyCopyable     = (sf::base::isTriviallyCopyable<Alternatives> && ...);
+    static inline constexpr bool triviallyDestructible = (sf::base::isTriviallyDestructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyAssignable = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveAssignable = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...);
 
     using index_type = unsigned char; // Support up to 255 alternatives
 
@@ -245,8 +258,9 @@ public:
     }
 
     template <typename T>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept :
-    tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
+        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
+    : tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
     {
     }
 
@@ -254,7 +268,9 @@ public:
     {
     }
 
-    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs) : _index{rhs._index}
+    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+        requires(!triviallyCopyConstructible)
+    : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)
@@ -262,7 +278,13 @@ public:
                                                   *SFML_BASE_LAUNDER_CAST(const TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
-    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept : _index{rhs._index}
+    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+        requires(triviallyCopyConstructible)
+    = default;
+
+    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+        requires(!triviallyMoveConstructible)
+    : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)
@@ -270,23 +292,22 @@ public:
                                                   *SFML_BASE_LAUNDER_CAST(TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
-    // Avoid forwarding constructor hijack.
-    [[gnu::always_inline]] tinyvariant(const tinyvariant&& rhs) noexcept :
-    tinyvariant{static_cast<const tinyvariant&>(rhs)}
-    {
-    }
-
-    // Avoid forwarding constructor hijack.
-    [[gnu::always_inline]] tinyvariant(tinyvariant& rhs) : tinyvariant{static_cast<const tinyvariant&>(rhs)}
-    {
-    }
+    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+        requires(triviallyMoveConstructible)
+    = default;
 
     [[gnu::always_inline]] ~tinyvariant()
+        requires(!triviallyDestructible)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
     }
 
+    [[gnu::always_inline]] ~tinyvariant()
+        requires(triviallyDestructible)
+    = default;
+
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+        requires(!triviallyCopyAssignable)
     {
         if (this == &rhs)
             return *this;
@@ -302,12 +323,12 @@ public:
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant& rhs)
-    {
-        return ((*this) = static_cast<const tinyvariant&>(rhs));
-    }
+    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+        requires(triviallyCopyAssignable)
+    = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+        requires(!triviallyMoveAssignable)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -321,13 +342,13 @@ public:
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant&& rhs)
-    {
-        return ((*this) = static_cast<const tinyvariant&>(rhs));
-    }
+    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+        requires(triviallyMoveAssignable)
+    = default;
 
     template <typename T>
     [[gnu::always_inline]] tinyvariant& operator=(T&& x)
+        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
