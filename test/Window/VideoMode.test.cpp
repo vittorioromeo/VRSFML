@@ -15,6 +15,7 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
+        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::VideoMode));
