@@ -26,12 +26,15 @@
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 struct Sound::Impl
 {
+    ////////////////////////////////////////////////////////////
     explicit Impl(Sound* theOwner) : owner(theOwner)
     {
     }
 
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
         SFML_BASE_ASSERT(soundBase.hasValue());
@@ -54,6 +57,7 @@ struct Sound::Impl
         soundBase->refreshSoundChannelMap();
     }
 
+    ////////////////////////////////////////////////////////////
     static void onEnd(void* userData, ma_sound* soundPtr)
     {
         auto& impl  = *static_cast<Impl*>(userData);
@@ -64,7 +68,8 @@ struct Sound::Impl
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
-    static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -92,7 +97,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -105,12 +111,14 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getFormat(ma_data_source* dataSource,
-                               ma_format*      format,
-                               ma_uint32*      channels,
-                               ma_uint32*      sampleRate,
-                               ma_channel*,
-                               base::SizeT)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getFormat(
+        ma_data_source* dataSource,
+        ma_format*      format,
+        ma_uint32*      channels,
+        ma_uint32*      sampleRate,
+        ma_channel*,
+        base::SizeT)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -123,7 +131,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -136,7 +145,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getLength(ma_data_source* dataSource, ma_uint64* length)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getLength(ma_data_source* dataSource, ma_uint64* length)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -149,7 +159,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }
@@ -245,23 +256,23 @@ Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
 ////////////////////////////////////////////////////////////
 Sound& Sound::operator=(Sound&& rhs) noexcept
 {
-    if (this != &rhs)
+    if (this == &rhs)
+        return *this;
+
+    // TODO P0: add test for all this kind of stuff (e.g. sound manager) and fix existing tests
+    if (m_impl != nullptr && m_impl->buffer != nullptr)
+        m_impl->buffer->detachSound(this);
+
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+
+    if (m_impl->buffer != nullptr)
     {
-        // TODO P0: add test for all this kind of stuff (e.g. sound manager) and fix existing tests
-        if (m_impl != nullptr && m_impl->buffer != nullptr)
-            m_impl->buffer->detachSound(this);
-
-        m_impl = SFML_BASE_MOVE(rhs.m_impl);
-
-        if (m_impl->buffer != nullptr)
-        {
-            m_impl->buffer->detachSound(&rhs);
-            m_impl->buffer->attachSound(this);
-        }
-
-        // Update self-referential owner pointer.
-        m_impl->owner = this;
+        m_impl->buffer->detachSound(&rhs);
+        m_impl->buffer->attachSound(this);
     }
+
+    // Update self-referential owner pointer.
+    m_impl->owner = this;
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
     return *this;

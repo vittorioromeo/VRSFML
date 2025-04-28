@@ -6,11 +6,13 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Cursor.hpp"
+#include "SFML/Window/DisplayOrientation.hpp"
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
+#include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -29,6 +31,11 @@
 ////////////////////////////////////////////////////////////
 struct SDL_Joystick;
 struct SDL_GUID;
+
+namespace sf
+{
+struct VideoMode;
+} // namespace sf
 
 
 namespace sf::priv
@@ -59,6 +66,9 @@ namespace sf::priv
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::const]] base::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(const SDL_DisplayOrientation displayOrientation);
 
 ////////////////////////////////////////////////////////////
 struct SFML_BASE_TRIVIAL_ABI UniquePtrSDLDeleter
@@ -163,6 +173,13 @@ struct SDLAllocatedArray
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return count == 0u;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] T* begin() noexcept
     {
         return ptr.get();
@@ -208,10 +225,13 @@ public:
     [[nodiscard]] SDLAllocatedArray<SDL_DisplayMode*> getFullscreenDisplayModesForDisplay(SDL_DisplayID displayId);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const SDL_PixelFormatDetails* getPixelFormatDetails(SDL_PixelFormat format);
+    [[nodiscard]] const SDL_PixelFormatDetails* getPixelFormatDetails(SDL_PixelFormat format) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const SDL_DisplayMode* getDesktopDisplayMode(SDL_DisplayID displayId);
+    [[nodiscard]] const SDL_DisplayMode* getDesktopDisplayMode(SDL_DisplayID displayId) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const SDL_DisplayMode* getPrimaryDisplayDesktopDisplayMode() const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] SDLAllocatedArray<SDL_TouchID> getTouchDevices();
@@ -253,6 +273,21 @@ public:
     [[nodiscard]] float getDisplayContentScale(SDL_DisplayID displayID) const;
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] String getDisplayName(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] IntRect getDisplayBounds(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] IntRect getDisplayUsableBounds(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] DisplayOrientation getNaturalDisplayOrientation(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] DisplayOrientation getCurrentDisplayOrientation(SDL_DisplayID displayID) const;
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] float getPrimaryDisplayContentScale() const;
 
     ////////////////////////////////////////////////////////////
@@ -287,6 +322,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Vector2u getWindowSize(SDL_Window& window) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] VideoMode getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) const;
 };
 
 ////////////////////////////////////////////////////////////

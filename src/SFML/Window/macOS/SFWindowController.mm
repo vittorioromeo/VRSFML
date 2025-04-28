@@ -6,7 +6,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
