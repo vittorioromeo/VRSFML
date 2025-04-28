@@ -8,6 +8,7 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
@@ -463,6 +464,13 @@ namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
+DisplayOrientation mapSDLDisplayOrientationToSFML(const SDL_DisplayOrientation displayOrientation)
+{
+    return static_cast<DisplayOrientation>(displayOrientation);
+}
+
+
+////////////////////////////////////////////////////////////
 SDLLayer::SDLLayer()
 {
 // Ensures window position is synced with DOM position on Emscripten.
@@ -505,6 +513,8 @@ SDLAllocatedArray<SDL_DisplayID> SDLLayer::getDisplays() const
 ////////////////////////////////////////////////////////////
 SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDisplay(const SDL_DisplayID displayId)
 {
+    SFML_BASE_ASSERT(displayId != 0u);
+
     int               modeCount = 0;
     SDL_DisplayMode** modes     = SDL_GetFullscreenDisplayModes(displayId, &modeCount);
 
@@ -519,8 +529,10 @@ SDLAllocatedArray<SDL_DisplayMode*> SDLLayer::getFullscreenDisplayModesForDispla
 
 
 ////////////////////////////////////////////////////////////
-const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFormat format)
+const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFormat format) const
 {
+    SFML_BASE_ASSERT(format != 0);
+
     const auto* result = SDL_GetPixelFormatDetails(format);
 
     if (result == nullptr)
@@ -534,8 +546,10 @@ const SDL_PixelFormatDetails* SDLLayer::getPixelFormatDetails(const SDL_PixelFor
 
 
 ////////////////////////////////////////////////////////////
-const SDL_DisplayMode* SDLLayer::getDesktopDisplayMode(const SDL_DisplayID displayId)
+const SDL_DisplayMode* SDLLayer::getDesktopDisplayMode(const SDL_DisplayID displayId) const
 {
+    SFML_BASE_ASSERT(displayId != 0u);
+
     const auto* result = SDL_GetDesktopDisplayMode(displayId);
 
     if (result == nullptr)
@@ -545,6 +559,27 @@ const SDL_DisplayMode* SDLLayer::getDesktopDisplayMode(const SDL_DisplayID displ
     }
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+const SDL_DisplayMode* SDLLayer::getPrimaryDisplayDesktopDisplayMode() const
+{
+    const auto displays = getDisplays();
+
+    if (displays.empty())
+    {
+        err() << "`getPrimaryDisplayDesktopDisplayMode` failed: no displays";
+        return nullptr;
+    }
+
+    if (!displays.valid())
+    {
+        err() << "`getPrimaryDisplayDesktopDisplayMode` failed: invalid displays";
+        return nullptr;
+    }
+
+    return getDesktopDisplayMode(displays[0]);
 }
 
 
@@ -567,11 +602,7 @@ SDLAllocatedArray<SDL_TouchID> SDLLayer::getTouchDevices()
 ////////////////////////////////////////////////////////////
 SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touchDeviceId)
 {
-    if (touchDeviceId == 0)
-    {
-        err() << "`getTouchFingers` failed: invalid touch device ID";
-        return nullptr;
-    }
+    SFML_BASE_ASSERT(touchDeviceId != 0u);
 
     int          fingerCount = 0;
     SDL_Finger** fingers     = SDL_GetTouchFingers(touchDeviceId, &fingerCount);
@@ -589,11 +620,7 @@ SDLAllocatedArray<SDL_Finger*> SDLLayer::getTouchFingers(const SDL_TouchID touch
 ////////////////////////////////////////////////////////////
 SDL_TouchDeviceType SDLLayer::getTouchDeviceType(const SDL_TouchID touchDeviceId)
 {
-    if (touchDeviceId == 0)
-    {
-        err() << "`getTouchDeviceType` failed: invalid touch device ID";
-        return SDL_TOUCH_DEVICE_INVALID;
-    }
+    SFML_BASE_ASSERT(touchDeviceId != 0u);
 
     return SDL_GetTouchDeviceType(touchDeviceId);
 }
@@ -602,11 +629,7 @@ SDL_TouchDeviceType SDLLayer::getTouchDeviceType(const SDL_TouchID touchDeviceId
 ////////////////////////////////////////////////////////////
 const char* SDLLayer::getTouchDeviceName(const SDL_TouchID touchDeviceId)
 {
-    if (touchDeviceId == 0)
-    {
-        err() << "`getTouchDeviceName` failed: invalid touch device ID";
-        return "INVALID TOUCH DEVICE";
-    }
+    SFML_BASE_ASSERT(touchDeviceId != 0u);
 
     return SDL_GetTouchDeviceName(touchDeviceId);
 }
@@ -707,6 +730,8 @@ bool SDLLayer::setClipboardString(const String& string) const noexcept
 ////////////////////////////////////////////////////////////
 float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
 {
+    SFML_BASE_ASSERT(displayID != 0u);
+
     const float result = SDL_GetDisplayContentScale(displayID);
     if (result == 0.f)
     {
@@ -715,6 +740,70 @@ float SDLLayer::getDisplayContentScale(const SDL_DisplayID displayID) const
     }
 
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+String SDLLayer::getDisplayName(const SDL_DisplayID displayID) const
+{
+    SFML_BASE_ASSERT(displayID != 0u);
+
+    const char* const name = SDL_GetDisplayName(displayID);
+    if (name == nullptr)
+    {
+        err() << "`SDL_GetDisplayName` failed: " << SDL_GetError();
+        return String{};
+    }
+
+    return StringUtfUtils::fromUtf8(name, name + SFML_BASE_STRLEN(name));
+}
+
+
+////////////////////////////////////////////////////////////
+IntRect SDLLayer::getDisplayBounds(const SDL_DisplayID displayID) const
+{
+    SFML_BASE_ASSERT(displayID != 0u);
+
+    SDL_Rect out{};
+    if (!SDL_GetDisplayBounds(displayID, &out))
+    {
+        err() << "`SDL_GetDisplayBounds` failed: " << SDL_GetError();
+        return IntRect{};
+    }
+
+    return IntRect{{out.x, out.y}, {out.w, out.h}};
+}
+
+
+////////////////////////////////////////////////////////////
+IntRect SDLLayer::getDisplayUsableBounds(const SDL_DisplayID displayID) const
+{
+    SFML_BASE_ASSERT(displayID != 0u);
+
+    SDL_Rect out{};
+    if (!SDL_GetDisplayUsableBounds(displayID, &out))
+    {
+        err() << "`SDL_GetDisplayUsableBounds` failed: " << SDL_GetError();
+        return IntRect{};
+    }
+
+    return IntRect{{out.x, out.y}, {out.w, out.h}};
+}
+
+
+////////////////////////////////////////////////////////////
+DisplayOrientation SDLLayer::getNaturalDisplayOrientation(const SDL_DisplayID displayID) const
+{
+    SFML_BASE_ASSERT(displayID != 0u);
+    return mapSDLDisplayOrientationToSFML(SDL_GetNaturalDisplayOrientation(displayID));
+}
+
+
+////////////////////////////////////////////////////////////
+DisplayOrientation SDLLayer::getCurrentDisplayOrientation(const SDL_DisplayID displayID) const
+{
+    SFML_BASE_ASSERT(displayID != 0u);
+    return mapSDLDisplayOrientationToSFML(SDL_GetCurrentDisplayOrientation(displayID));
 }
 
 
@@ -757,6 +846,8 @@ float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
 ////////////////////////////////////////////////////////////
 SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vector2u size, const base::U8* pixels) const
 {
+    SFML_BASE_ASSERT(pixels != nullptr);
+
     SDL_Surface* surface = SDL_CreateSurfaceFrom(static_cast<int>(size.x),
                                                  static_cast<int>(size.y),
                                                  SDL_PIXELFORMAT_RGBA32,
@@ -765,7 +856,7 @@ SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vector2u size, const base::U8* 
 
     if (surface == nullptr)
     {
-        err() << "`SDL_CreateSurfaceFrom` faile: " << SDL_GetError();
+        err() << "`SDL_CreateSurfaceFrom` failed: " << SDL_GetError();
         return nullptr;
     }
 
@@ -887,6 +978,26 @@ void SDLLayer::setWindowSize(SDL_Window& window, const Vector2u size) const
         err() << "`SDL_GetWindowSize` failed: " << SDL_GetError();
 
     return result.toVector2u();
+}
+
+
+////////////////////////////////////////////////////////////
+VideoMode SDLLayer::getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) const
+{
+    const auto* info = getPixelFormatDetails(mode.format);
+
+    if (info == nullptr)
+    {
+        sf::priv::err() << "Failed to get pixel format details for display mode";
+        return {};
+    }
+
+    return {
+        .size         = sf::Vector2i(mode.w, mode.h).toVector2u(),
+        .bitsPerPixel = static_cast<unsigned int>(info->bits_per_pixel),
+        .pixelDensity = mode.pixel_density,
+        .refreshRate  = mode.refresh_rate,
+    };
 }
 
 
