@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 
 #import <SFML/Window/macOS/WindowImplDelegateProtocol.h>
 
