@@ -456,7 +456,7 @@ struct Main
                                      .outlineColor     = colorBlueOutline,
                                      .outlineThickness = 2.f};
 
-        loadingTextData.origin = precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size;
+        loadingTextData.origin = precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
         window.draw(fontMouldyCheese, loadingTextData);
 
         window.display();
