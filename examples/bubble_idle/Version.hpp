@@ -23,7 +23,7 @@ inline constexpr bool isDemoVersion = false;
 #define BUBBLEBYTE_VERSION_MINOR 8
 
 ////////////////////////////////////////////////////////////
-#define BUBBLEBYTE_VERSION_PATCH 1
+#define BUBBLEBYTE_VERSION_PATCH 2
 
 ////////////////////////////////////////////////////////////
 #define BUBBLEBYTE_VERSION_STR                                                   \
