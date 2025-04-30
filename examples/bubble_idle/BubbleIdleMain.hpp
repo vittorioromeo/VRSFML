@@ -5666,7 +5666,7 @@ struct Main
         {
             const auto achievementId = nextId++;
 
-#ifdef BUBBLEBYTE_USE_STEAMWORKS
+#if defined(BUBBLEBYTE_USE_STEAMWORKS) && !defined(BUBBLEBYTE_DEMO)
             if (steamMgr.isInitialized())
             {
                 if (condition)
