@@ -48,17 +48,6 @@
       }
     },
     {
-      "name": "build_base_release",
-      "hidden": true,
-      "inherits": "build_base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELEASE",
-        "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
-        "SFML_ENABLE_STACK_TRACES": "OFF",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
-      }
-    },
-    {
       "name": "vrdev_clang",
       "inherits": "build_base_debug",
       "binaryDir": "build_vrdev_clang",
@@ -103,6 +92,17 @@
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
         "SFML_OPENGL_ES": "ON"
+      }
+    },
+    {
+      "name": "build_base_release",
+      "hidden": true,
+      "inherits": "build_base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
+        "SFML_ENABLE_STACK_TRACES": "OFF",
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
       }
     },
     {

@@ -68,6 +68,9 @@ void copyFramebuffer(const bool         invertYAxis,
     glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO));
     glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO));
 
+    SFML_BASE_ASSERT(glCheck(glCheckFramebufferStatus(GL_READ_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE);
+    SFML_BASE_ASSERT(glCheck(glCheckFramebufferStatus(GL_DRAW_FRAMEBUFFER)) == GL_FRAMEBUFFER_COMPLETE);
+
     blitFramebuffer(invertYAxis, size, srcPos, dstPos);
 }
 
