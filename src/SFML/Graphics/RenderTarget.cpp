@@ -161,68 +161,21 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(const unsigned int    bufferId,
-                                                             const void* const     data,
-                                                             const sf::base::SizeT dataByteCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const sf::Vertex* vertexData, const sf::base::SizeT vertexCount)
 {
-#ifdef SFML_OPENGL_ES
-    // On OpenGL ES, the "naive" method seems faster, also named buffers are not supported
-    glCheck(glBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
-#else
-    // For small batches, the "naive" method also seems faster
-    if (dataByteCount < sizeof(sf::Vertex) * 64u)
-    {
-        glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW)); // Must orphan first
-        glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
-        return;
-    }
-
-    // For larger batches, memcpying into a transient mapped buffer seems faster
-    glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW));
-
-    void* const ptr = glCheck(
-        glMapNamedBufferRange(bufferId,
-                              0u,
-                              static_cast<GLsizeiptr>(dataByteCount),
-                              GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
-
-    SFML_BASE_MEMCPY(ptr, data, dataByteCount);
-
-    [[maybe_unused]] const auto rc = glCheck(glUnmapNamedBuffer(bufferId));
-    SFML_BASE_ASSERT(rc == GL_TRUE);
-#endif
+    glCheck(
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(sf::Vertex) * vertexCount), vertexData, GL_STREAM_DRAW));
 }
 
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU([[maybe_unused]] const unsigned int bufferId,
-                                                                     const sf::Vertex*                   vertexData,
-                                                                     const sf::base::SizeT               vertexCount)
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(const sf::IndexType*  indexData,
+                                                                    const sf::base::SizeT indexCount)
 {
-    streamToGPU(
-#ifdef SFML_OPENGL_ES
-        GL_ARRAY_BUFFER,
-#else
-        bufferId,
-#endif
-        vertexData,
-        sizeof(sf::Vertex) * vertexCount);
-}
-
-
-////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU([[maybe_unused]] const unsigned int bufferId,
-                                                                    const sf::IndexType*                indexData,
-                                                                    const sf::base::SizeT               indexCount)
-{
-    streamToGPU(
-#ifdef SFML_OPENGL_ES
-        GL_ELEMENT_ARRAY_BUFFER,
-#else
-        bufferId,
-#endif
-        indexData,
-        sizeof(sf::IndexType) * indexCount);
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(sizeof(sf::IndexType) * indexCount),
+                         indexData,
+                         GL_STREAM_DRAW));
 }
 
 
@@ -662,7 +615,7 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
     setupDraw(m_impl->vaoGroup, states);
     m_impl->lastRenderStates = states;
 
-    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -685,8 +638,8 @@ void RenderTarget::drawIndexedVertices(
     setupDraw(m_impl->vaoGroup, states);
     m_impl->lastRenderStates = states;
 
-    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
-    RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
+    RenderTargetImpl::streamIndicesToGPU(indexData, indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
@@ -740,10 +693,9 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates states)
+void RenderTarget::drawDrawableBatchImpl(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
-    if (m_impl->autoBatch)
-        flush();
+    SFML_BASE_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
 
     states.transform *= drawableBatch.getTransform();
 
@@ -753,6 +705,16 @@ void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates stat
                         drawableBatch.m_storage.indices.size(),
                         PrimitiveType::Triangles,
                         states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states)
+{
+    if (m_impl->autoBatch)
+        flush();
+
+    drawDrawableBatchImpl(drawableBatch, states);
 }
 
 
@@ -1004,12 +966,8 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    // Save autobatch state and disable it to avoid recursion
-    const bool isAutoBatchEnabled = m_impl->autoBatch;
-    m_impl->autoBatch             = false;
-    draw(m_impl->drawableBatch, m_impl->lastRenderStates);
-    m_impl->autoBatch = isAutoBatchEnabled;
-
+    // Avoid autobatch recursion
+    drawDrawableBatchImpl(m_impl->drawableBatch, m_impl->lastRenderStates);
     m_impl->drawableBatch.clear();
 
     return m_impl->currentDrawStats;
