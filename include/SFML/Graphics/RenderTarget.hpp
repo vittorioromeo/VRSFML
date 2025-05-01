@@ -489,7 +489,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const CPUDrawableBatch& drawableBatch, RenderStates states = {});
+    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -674,6 +674,12 @@ protected:
     void syncGPUEndFrame();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawDrawableBatchImpl(const CPUDrawableBatch& drawableBatch, RenderStates states);
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
