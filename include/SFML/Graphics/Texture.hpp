@@ -310,6 +310,8 @@ public:
     /// Passing an invalid combination of window size and destination
     /// will lead to an undefined behavior.
     ///
+    /// Must be called before `window.display()`.
+    ///
     /// This function does nothing if either the texture or the window
     /// was not previously created.
     ///

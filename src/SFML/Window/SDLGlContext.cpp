@@ -52,6 +52,8 @@ void applyContextSettings(const sf::ContextSettings& settings)
 
 namespace sf::priv
 {
+// TODO P1: cleanup repetition here
+
 ////////////////////////////////////////////////////////////
 SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, const ContextSettings& settings) :
 GlContext(id, settings),
@@ -72,7 +74,7 @@ m_ownsWindow(false)
     m_ownsWindow = true;
 
     // Set context sharing attributes if a shared context is provided
-    if (shared)
+    if (shared != nullptr)
     {
         if (!SDL_GL_MakeCurrent(shared->m_window, shared->m_context))
         {
@@ -126,7 +128,7 @@ m_ownsWindow(false)
     applyContextSettings(m_settings);
 
     // Set context sharing attributes if a shared context is provided
-    if (shared)
+    if (shared != nullptr)
     {
         if (!SDL_GL_MakeCurrent(shared->m_window, shared->m_context))
         {
