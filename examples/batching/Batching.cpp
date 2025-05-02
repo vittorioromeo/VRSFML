@@ -152,7 +152,7 @@ int main()
             const std::size_t    type        = i % 6u;
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
-            std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1)) + 1);
+            std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 
             auto& [text, circleShape, sprite, velocity, torque] = entities.emplace_back(
                 sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
@@ -202,8 +202,16 @@ int main()
         GPUStorage = 2
     };
 
+    const auto defaultBatchType =
+#ifdef SFML_OPENGL_ES
+        BatchType::CPUStorage
+#else
+        BatchType::GPUStorage
+#endif
+        ;
+
     auto          batchType                = BatchType::Disabled;
-    auto          autobatchType            = BatchType::GPUStorage;
+    auto          autobatchType            = defaultBatchType;
     sf::base::U64 autoBatchVertexThreshold = 32'768u;
     bool          drawSprites              = true;
     bool          drawText                 = true;

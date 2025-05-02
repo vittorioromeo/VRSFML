@@ -10,6 +10,7 @@
 #include "SFML/Base/Builtins/Memmove.hpp"
 #include "SFML/Base/FwdStdAlignedNewDelete.hpp"
 #include "SFML/Base/InitializerList.hpp" // used
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -100,26 +101,30 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::cold, gnu::noinline]] void reserveImpl(const SizeT targetCapacity)
     {
-        SFML_BASE_ASSERT(targetCapacity > capacity()); // Should only be called to grow
+        const auto currentCapacity       = capacity();
+        const auto geometricGrowthTarget = currentCapacity + (currentCapacity / 2u); // Equivalent to `capacity * 1.5`
+        const auto finalNewCapacity      = SFML_BASE_MAX(targetCapacity, geometricGrowthTarget);
 
-        auto*      newData = allocate(targetCapacity);
+        SFML_BASE_ASSERT(finalNewCapacity > capacity()); // Should only be called to grow
+
+        auto*      newData = allocate(finalNewCapacity);
         const auto oldSize = size();
 
         if (m_data != nullptr)
         {
             moveRange(newData, m_data, m_endSize);
             destroyRange(m_data, m_endSize);
-            deallocate(m_data, capacity());
+            deallocate(m_data, currentCapacity);
         }
         else
         {
             SFML_BASE_ASSERT(size() == 0u);
-            SFML_BASE_ASSERT(capacity() == 0u);
+            SFML_BASE_ASSERT(currentCapacity == 0u);
         }
 
         m_data        = newData;
         m_endSize     = m_data + oldSize;
-        m_endCapacity = m_data + targetCapacity;
+        m_endCapacity = m_data + finalNewCapacity;
     }
 
 
@@ -308,24 +313,19 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TItem*& reserveMore(const SizeT n)
-    {
-        const SizeT targetCapacity = size() + n;
-
-        if (capacity() < targetCapacity) [[unlikely]]
-            reserveImpl((targetCapacity * 3u / 2u) + n);
-
-        return m_endSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] TItem*& reserve(const SizeT targetCapacity)
     {
         if (capacity() < targetCapacity) [[unlikely]]
             reserveImpl(targetCapacity);
 
         return m_endSize;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] TItem*& reserveMore(const SizeT n)
+    {
+        return reserve(size() + n);
     }
 
 
