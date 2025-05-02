@@ -24,11 +24,12 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
+struct SDL_Window;
+
 namespace sf
 {
 class Cursor;
 } // namespace sf
-
 
 namespace sf::priv
 {
@@ -39,6 +40,7 @@ namespace sf::Vulkan
 {
 struct VulkanSurfaceData;
 } // namespace sf::Vulkan
+
 
 namespace sf
 {
@@ -467,6 +469,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] WindowHandle getNativeHandle() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the SDL-specific handle of the window
+    ///
+    /// \return SDL handle of the window
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] SDL_Window* getSDLHandle() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a Vulkan rendering surface
