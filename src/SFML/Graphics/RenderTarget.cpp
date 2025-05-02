@@ -220,6 +220,25 @@ constexpr unsigned int precomputedQuadIndices[]{
 #include "SFML/Graphics/PrecomputedQuadIndices.inl"
 };
 
+
+#ifndef SFML_OPENGL_ES
+////////////////////////////////////////////////////////////
+struct [[nodiscard]] PersistentGPUAutoBatchState
+{
+    enum : sf::base::SizeT
+    {
+        maxFramesInFlight = 3u //!< Number of frames in flight for GPU autobatching
+    };
+
+    sf::base::SizeT indexOffset{0u};  //!< Index offset for GPU autobatching
+    sf::base::SizeT vertexOffset{0u}; //!< Vertex offset for GPU autobatching
+    sf::base::SizeT numVertices{0u};  //!< Vertex count for GPU autobatching
+
+    GLsync          fences[maxFramesInFlight]{}; //!< Fences for GPU autobatching
+    sf::base::SizeT currentFenceIndex{0u};       //!< Cycles `0`, `1`, ..., `maxFramesInFlight - 1`
+};
+#endif
+
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -255,7 +274,7 @@ struct [[nodiscard]] StatesCache
 
 
 ////////////////////////////////////////////////////////////
-struct RenderTarget::Impl
+struct [[nodiscard]] RenderTarget::Impl
 {
     ////////////////////////////////////////////////////////////
     View                     view;     //!< Current view
@@ -264,12 +283,21 @@ struct RenderTarget::Impl
     GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
 
     ////////////////////////////////////////////////////////////
-    CPUDrawableBatch           cpuDrawableBatch; //!< Internal CPU drawable batch (autobatching)
-    PersistentGPUDrawableBatch gpuDrawableBatch; //!< Internal GPU drawable batch (autobatching)
-    AutoBatchMode              autoBatchMode = AutoBatchMode::GPUStorage; //!< Enable automatic batching of draw calls
-    RenderStates               lastRenderStates;                          //!< Cached render states (autobatching)
-    DrawStatistics             currentDrawStats{};                        //!< Statistics for current draw calls
-    base::SizeT                autoBatchVertexThreshold{32'768u};         //!< Threshold for batch vertex count
+    DrawStatistics currentDrawStats{}; //!< Statistics for current draw calls
+
+    ////////////////////////////////////////////////////////////
+    AutoBatchMode autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
+    base::SizeT   autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
+    RenderStates  lastRenderStates;                         //!< Cached render states (autobatching)
+
+    ////////////////////////////////////////////////////////////
+    CPUDrawableBatch cpuDrawableBatch; //!< Internal CPU drawable batch (autobatching)
+
+    ////////////////////////////////////////////////////////////
+#ifndef SFML_OPENGL_ES
+    PersistentGPUDrawableBatch                    gpuDrawableBatch;    //!< Internal GPU drawable batch (autobatching)
+    RenderTargetImpl::PersistentGPUAutoBatchState gpuAutoBatchState{}; //!< State for GPU autobatching
+#endif
 
     ////////////////////////////////////////////////////////////
     void addToDrawableBatch(auto&&... xs)
@@ -280,9 +308,16 @@ struct RenderTarget::Impl
         cpuDrawableBatch.add(SFML_BASE_FORWARD(xs)...);
 #else
         if (autoBatchMode == AutoBatchMode::CPUStorage)
+        {
             cpuDrawableBatch.add(SFML_BASE_FORWARD(xs)...);
-        else
-            gpuDrawableBatch.add(SFML_BASE_FORWARD(xs)...);
+            return;
+        }
+
+        SFML_BASE_ASSERT(autoBatchMode == AutoBatchMode::GPUStorage);
+
+        const auto prevVertices = gpuDrawableBatch.getNumVertices();
+        gpuDrawableBatch.add(SFML_BASE_FORWARD(xs)...);
+        gpuAutoBatchState.numVertices += gpuDrawableBatch.getNumVertices() - prevVertices;
 #endif
     }
 
@@ -291,18 +326,17 @@ struct RenderTarget::Impl
     {
         SFML_BASE_ASSERT(autoBatchMode != AutoBatchMode::Disabled);
 
+#ifdef SFML_OPENGL_ES
+        return cpuDrawableBatch.getNumVertices();
+#else
         if (autoBatchMode == AutoBatchMode::CPUStorage)
             return cpuDrawableBatch.getNumVertices();
 
         SFML_BASE_ASSERT(autoBatchMode == AutoBatchMode::GPUStorage);
-        return gpuDrawableBatch.getNumVertices();
+        return gpuAutoBatchState.numVertices;
+#endif
     }
 
-    ////////////////////////////////////////////////////////////
-#ifndef SFML_OPENGL_ES
-    GLsync persistentBufferFence{};   //!< Fence for persistent buffer synchronization
-    bool   persistentWaitDone{false}; //!< Indicates if a sync is needed for persistent buffer
-#endif
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
@@ -669,7 +703,7 @@ void RenderTarget::drawIndexedVertices(
     RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
     RenderTargetImpl::streamIndicesToGPU(indexData, indexCount);
 
-    drawIndexedPrimitives(type, indexCount);
+    drawIndexedPrimitives(type, indexCount, /* indexOffset */ 0u);
     cleanupDraw(states);
 }
 
@@ -703,11 +737,18 @@ void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
-                                                       const base::SizeT                 indexCount,
-                                                       const PrimitiveType               type,
-                                                       const RenderStates&               states)
+void RenderTarget::drawPersistentMappedIndexedVertices(
+    [[maybe_unused]] const PersistentGPUDrawableBatch& batch,
+    [[maybe_unused]] const base::SizeT                 indexCount,
+    [[maybe_unused]] const base::SizeT                 indexOffset,
+    [[maybe_unused]] const base::SizeT                 vertexOffset,
+    [[maybe_unused]] const PrimitiveType               type,
+    [[maybe_unused]] const RenderStates&               states)
 {
+#ifdef SFML_OPENGL_ES
+    priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+    base::abort();
+#else
     // Nothing to draw or inactive target
     if (indexCount == 0u || !setActive(true))
         return;
@@ -715,8 +756,9 @@ void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawab
     setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
     m_impl->lastRenderStates = states;
 
-    drawIndexedPrimitives(type, indexCount);
+    drawIndexedPrimitivesBaseVertex(type, indexCount, indexOffset, vertexOffset);
     cleanupDraw(states);
+#endif
 }
 
 
@@ -737,14 +779,6 @@ void RenderTarget::drawDrawableBatchImpl(const CPUDrawableBatch& drawableBatch, 
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawDrawableBatchImpl(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
-{
-    states.transform *= drawableBatch.getTransform();
-    drawPersistentMappedIndexedVertices(drawableBatch, drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states)
 {
     if (m_impl->autoBatchMode != AutoBatchMode::Disabled)
@@ -755,12 +789,19 @@ void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, const RenderState
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, const RenderStates& states)
+void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
 {
     if (m_impl->autoBatchMode != AutoBatchMode::Disabled)
         flush();
 
-    drawDrawableBatchImpl(drawableBatch, states);
+    states.transform *= drawableBatch.getTransform();
+
+    drawPersistentMappedIndexedVertices(drawableBatch,
+                                        /* indexCount */ drawableBatch.m_storage.nIndices,
+                                        /* indexOffset */ 0u,
+                                        /* vertexOffset */ 0u,
+                                        PrimitiveType::Triangles,
+                                        states);
 }
 
 
@@ -777,6 +818,8 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer,
                         base::SizeT         vertexCount,
                         const RenderStates& states)
 {
+    m_impl->cache.lastVaoGroup = 0u; // Force VAO rebind (TODO P0: why is this needed?)
+
     if (m_impl->autoBatchMode != AutoBatchMode::Disabled)
         flush();
 
@@ -823,20 +866,11 @@ void RenderTarget::drawShapeData(const auto& shapeData, const RenderStates& stat
         return;
     }
 
-    SFML_BASE_ASSERT(m_impl->getDrawableBatchNumVertices() == 0u);
+    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.getNumVertices() == 0u);
 
-    m_impl->addToDrawableBatch(shapeData);
-
-    if (m_impl->autoBatchMode == AutoBatchMode::CPUStorage)
-    {
-        draw(m_impl->cpuDrawableBatch, states);
-        m_impl->cpuDrawableBatch.clear();
-    }
-    else
-    {
-        draw(m_impl->gpuDrawableBatch, states);
-        m_impl->gpuDrawableBatch.clear();
-    }
+    m_impl->cpuDrawableBatch.add(shapeData);
+    draw(m_impl->cpuDrawableBatch, states);
+    m_impl->cpuDrawableBatch.clear();
 }
 
 
@@ -880,20 +914,11 @@ void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates
         return;
     }
 
-    SFML_BASE_ASSERT(m_impl->getDrawableBatchNumVertices() == 0u);
+    SFML_BASE_ASSERT(m_impl->cpuDrawableBatch.getNumVertices() == 0u);
 
-    m_impl->addToDrawableBatch(font, textData);
-
-    if (m_impl->autoBatchMode == AutoBatchMode::CPUStorage)
-    {
-        draw(m_impl->cpuDrawableBatch, states);
-        m_impl->cpuDrawableBatch.clear();
-    }
-    else
-    {
-        draw(m_impl->gpuDrawableBatch, states);
-        m_impl->gpuDrawableBatch.clear();
-    }
+    m_impl->cpuDrawableBatch.add(font, textData);
+    draw(m_impl->cpuDrawableBatch, states);
+    m_impl->cpuDrawableBatch.clear();
 }
 
 
@@ -1019,30 +1044,49 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    SFML_BASE_ASSERT(m_impl->autoBatchMode != AutoBatchMode::Disabled);
+    if (m_impl->autoBatchMode == AutoBatchMode::Disabled)
+        return m_impl->currentDrawStats;
+
+#ifdef SFML_OPENGL_ES
+    drawDrawableBatchImpl(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
+    m_impl->cpuDrawableBatch.clear();
+    return m_impl->currentDrawStats;
+#else
 
     if (m_impl->autoBatchMode == AutoBatchMode::CPUStorage)
     {
         drawDrawableBatchImpl(m_impl->cpuDrawableBatch, m_impl->lastRenderStates);
         m_impl->cpuDrawableBatch.clear();
-    }
-    else
-    {
-        SFML_BASE_ASSERT(m_impl->autoBatchMode == AutoBatchMode::GPUStorage);
-
-        glCheck(glMemoryBarrier(GL_CLIENT_MAPPED_BUFFER_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT |
-                                GL_ELEMENT_ARRAY_BARRIER_BIT | GL_COMMAND_BARRIER_BIT));
-
-        drawDrawableBatchImpl(m_impl->gpuDrawableBatch, m_impl->lastRenderStates);
-
-        // syncGPUEndFrame();
-        // syncGPUStartFrame();
-
-        m_impl->gpuDrawableBatch.clear();
+        return m_impl->currentDrawStats;
     }
 
+    SFML_BASE_ASSERT(m_impl->autoBatchMode == AutoBatchMode::GPUStorage);
+
+    const auto vertexOffset = m_impl->gpuAutoBatchState.vertexOffset;
+    const auto vertexCount  = m_impl->gpuDrawableBatch.getNumVertices() - vertexOffset;
+
+    const auto indexOffset = m_impl->gpuAutoBatchState.indexOffset;
+    const auto indexCount  = m_impl->gpuDrawableBatch.getNumIndices() - indexOffset;
+
+    if (vertexCount == 0u || indexCount == 0u)
+        return m_impl->currentDrawStats;
+
+    m_impl->gpuDrawableBatch.flushVertexWritesToGPU(vertexCount, vertexOffset);
+    m_impl->gpuDrawableBatch.flushIndexWritesToGPU(indexCount, indexOffset);
+
+    drawPersistentMappedIndexedVertices(m_impl->gpuDrawableBatch,
+                                        indexCount,
+                                        indexOffset,
+                                        /* vertexOffset */ 0u, // Vertex offset is always `0` for GPU autobatching
+                                        PrimitiveType::Triangles,
+                                        m_impl->lastRenderStates);
+
+    m_impl->gpuAutoBatchState.indexOffset  = m_impl->gpuDrawableBatch.getNumIndices();
+    m_impl->gpuAutoBatchState.vertexOffset = m_impl->gpuDrawableBatch.getNumVertices();
+    m_impl->gpuAutoBatchState.numVertices  = 0u;
 
     return m_impl->currentDrawStats;
+#endif
 }
 
 
@@ -1050,14 +1094,30 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
-    if (m_impl->persistentWaitDone || m_impl->persistentBufferFence == GLsync{})
+    auto& fenceToWaitOn = m_impl->gpuAutoBatchState.fences[m_impl->gpuAutoBatchState.currentFenceIndex];
+
+    if (!fenceToWaitOn) // No need to wait
         return;
 
-    glCheck(glClientWaitSync(m_impl->persistentBufferFence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
-    glCheck(glDeleteSync(m_impl->persistentBufferFence));
+    // Wait potentially indefinitely...
+    // The N-buffering makes stalls *less likely*, but the wait must be blocking for correctness
+    const GLenum waitResult = glCheck(glClientWaitSync(fenceToWaitOn, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
 
-    m_impl->persistentBufferFence = GLsync{};
-    m_impl->persistentWaitDone    = true;
+    if (waitResult == GL_WAIT_FAILED) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Error waiting on GPU fence";
+        base::abort();
+    }
+
+    if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Fence wait timed out";
+        base::abort();
+    }
+
+    // Delete the fence now that we're done with it
+    glCheck(glDeleteSync(fenceToWaitOn));
+    fenceToWaitOn = nullptr;
 #endif
 }
 
@@ -1066,11 +1126,25 @@ void RenderTarget::syncGPUStartFrame()
 void RenderTarget::syncGPUEndFrame()
 {
 #ifndef SFML_OPENGL_ES
-    if (m_impl->persistentBufferFence != GLsync{})
-        glCheck(glDeleteSync(m_impl->persistentBufferFence));
+    auto& fenceToCreate = m_impl->gpuAutoBatchState.fences[m_impl->gpuAutoBatchState.currentFenceIndex];
+    SFML_BASE_ASSERT(fenceToCreate == nullptr);
 
-    m_impl->persistentBufferFence = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
-    m_impl->persistentWaitDone    = false;
+    fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+    if (fenceToCreate == nullptr) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Error creating fence sync object";
+        base::abort();
+    }
+
+    // Advance to the next fence index for the *next* frame
+    m_impl->gpuAutoBatchState.currentFenceIndex = (m_impl->gpuAutoBatchState.currentFenceIndex + 1u) %
+                                                  RenderTargetImpl::PersistentGPUAutoBatchState::maxFramesInFlight;
+
+    m_impl->gpuDrawableBatch.clear();
+
+    m_impl->gpuAutoBatchState.indexOffset  = 0u;
+    m_impl->gpuAutoBatchState.vertexOffset = 0u;
+    m_impl->gpuAutoBatchState.numVertices  = 0u;
 #endif
 }
 
@@ -1213,6 +1287,11 @@ void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& sta
 
         if (!m_impl->cache.enable || mustRebindVAO)
             m_impl->bindGLObjects(vaoGroup);
+        else
+        {
+            // TODO P0: why is this needed??? prevents crash in Render Tests
+            RenderTargetImpl::setupVertexAttribPointers();
+        }
     }
 
     // Select shader to be used
@@ -1323,7 +1402,7 @@ void RenderTarget::drawPrimitives(const PrimitiveType type, const base::SizeT fi
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedPrimitives(const PrimitiveType type, const base::SizeT indexCount)
+void RenderTarget::drawIndexedPrimitives(const PrimitiveType type, const base::SizeT indexCount, const base::SizeT indexOffset)
 {
     ++m_impl->currentDrawStats.drawCalls;
 
@@ -1332,7 +1411,30 @@ void RenderTarget::drawIndexedPrimitives(const PrimitiveType type, const base::S
     glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                            /*    index count */ static_cast<GLsizei>(indexCount),
                            /*     index type */ GL_UNSIGNED_INT,
-                           /*   index offset */ nullptr));
+                           /*   index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType))));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawIndexedPrimitivesBaseVertex([[maybe_unused]] const PrimitiveType type,
+                                                   [[maybe_unused]] const base::SizeT   indexCount,
+                                                   [[maybe_unused]] const base::SizeT   indexOffset,
+                                                   [[maybe_unused]] const base::SizeT   vertexOffset)
+{
+#ifdef SFML_OPENGL_ES
+    priv::err() << "FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)";
+    base::abort();
+#else
+    ++m_impl->currentDrawStats.drawCalls;
+
+    static_assert(SFML_BASE_IS_SAME(IndexType, unsigned int));
+
+    glCheck(glDrawElementsBaseVertex(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                                     /*    index count */ static_cast<GLsizei>(indexCount),
+                                     /*     index type */ GL_UNSIGNED_INT,
+                                     /*   index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType)),
+                                     /*    base vertex */ static_cast<GLint>(vertexOffset)));
+#endif
 }
 
 

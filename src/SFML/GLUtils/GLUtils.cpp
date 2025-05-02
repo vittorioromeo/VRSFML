@@ -6,11 +6,14 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
-#include "SFML/System/Err.hpp"
+#ifdef SFML_OPENGL_ES
+    #include "SFML/System/Err.hpp"
+#endif
 
 #include "SFML/Base/Swap.hpp"
 
@@ -83,6 +86,8 @@ bool copyFlippedFramebuffer([[maybe_unused]] const unsigned int tmpTextureNative
                             const Vector2u                      srcPos,
                             const Vector2u                      dstPos)
 {
+    const FramebufferSaver framebufferSaver;
+
 #ifndef SFML_OPENGL_ES
 
     priv::copyFramebuffer(/* invertYAxis */ true, size, srcFBO, dstFBO, srcPos, dstPos);

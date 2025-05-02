@@ -19,29 +19,6 @@
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <climits>
-#include <cstdlib>
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard]] sf::WindowBase::Settings nullifyContextSettings(sf::WindowBase::Settings windowSettings)
-{
-    windowSettings.contextSettings = sf::ContextSettings{.depthBits         = 0,
-                                                         .stencilBits       = 0,
-                                                         .antiAliasingLevel = 0,
-                                                         .majorVersion      = 0,
-                                                         .minorVersion      = 0,
-                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFF'FF'FF'FFu},
-                                                         .sRgbCapable = false};
-
-    return windowSettings;
-}
-
-
-} // namespace
-
 
 namespace sf
 {
@@ -66,8 +43,7 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(const Settings& windowSettings) :
-WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
+WindowBase::WindowBase(const Settings& windowSettings) : WindowBase(priv::WindowImpl::create(windowSettings))
 {
 }
 
@@ -120,9 +96,14 @@ Vector2u WindowBase::getSize() const
 ////////////////////////////////////////////////////////////
 void WindowBase::setSize(Vector2u size)
 {
+    enum : unsigned int
+    {
+        uIntMax = static_cast<unsigned int>(-1)
+    };
+
     // Constrain requested size within minimum and maximum bounds
     const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u{});
-    const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
+    const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{uIntMax, uIntMax});
 
     // Do nothing if requested size matches current size
     const auto clampedSize = size.componentWiseClamp(minimumSize, maximumSize);
@@ -279,6 +260,13 @@ float WindowBase::getWindowDisplayScale() const
 WindowHandle WindowBase::getNativeHandle() const
 {
     return m_impl->getNativeHandle();
+}
+
+
+////////////////////////////////////////////////////////////
+SDL_Window* WindowBase::getSDLHandle() const
+{
+    return m_impl->getSDLHandle();
 }
 
 

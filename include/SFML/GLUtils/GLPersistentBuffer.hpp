@@ -13,6 +13,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #ifdef SFML_OPENGL_ES
@@ -53,7 +54,9 @@ public:
     ////////////////////////////////////////////////////////////
     ~GLPersistentBuffer()
     {
+#ifndef SFML_OPENGL_ES
         unmapIfNeeded();
+#endif
     }
 
     ////////////////////////////////////////////////////////////
@@ -76,7 +79,9 @@ public:
         if (&rhs == this)
             return *this;
 
+#ifndef SFML_OPENGL_ES
         unmapIfNeeded();
+#endif
 
         m_obj       = rhs.m_obj;
         m_mappedPtr = rhs.m_mappedPtr;
@@ -118,6 +123,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unmapIfNeeded()
     {
+#ifdef SFML_OPENGL_ES
+        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+        base::abort();
+#else
         if (m_mappedPtr == nullptr)
             return;
 
@@ -128,21 +137,50 @@ public:
 
         [[maybe_unused]] const bool rc = glCheck(glUnmapNamedBuffer(m_obj->getId()));
         SFML_BASE_ASSERT(rc);
+#endif
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void adjustObjPointer(TBufferObject& obj)
+    {
+        // This is needed to avoid dangling pointers when the object is moved as part
+        // of persistent GPU batch.
+        m_obj = &obj;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void flushWritesToGPU([[maybe_unused]] const base::SizeT unitSize,
+                                                               [[maybe_unused]] const base::SizeT count,
+                                                               [[maybe_unused]] const base::SizeT offset)
+    {
+#ifdef SFML_OPENGL_ES
+        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
+        base::abort();
+#else
+        const auto objId = m_obj->getId();
+
+        SFML_BASE_ASSERT(objId != 0u);
+        SFML_BASE_ASSERT(m_mappedPtr != nullptr);
+
+        glCheck(glFlushMappedNamedBufferRange(objId,
+                                              static_cast<GLintptr>(unitSize * offset),
+                                              static_cast<GLsizeiptr>(unitSize * count)));
+#endif
     }
 
 private:
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void reserveImpl(const base::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] const base::SizeT byteCount)
     {
 #ifdef SFML_OPENGL_ES
-        priv::err() << "Persistent OpenGL buffers are not available in OpenGL ES";
+        priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
         base::abort();
-#endif
-
+#else
         SFML_BASE_ASSERT(m_capacity < byteCount);
         SFML_BASE_ASSERT(m_obj != nullptr);
 
-        const auto newCapacity = (m_capacity * 3u / 2u) + byteCount;
+        const auto geometricGrowthTarget = m_capacity + (m_capacity / 2u); // Equivalent to `capacity * 1.5`
+        const auto newCapacity           = SFML_BASE_MAX(byteCount, geometricGrowthTarget);
 
         m_obj->bind();
 
@@ -151,19 +189,22 @@ private:
         m_obj->reallocate();
         m_obj->bind();
 
-        glCheck(glNamedBufferStorage(m_obj->getId(),
-                                     static_cast<GLsizeiptr>(newCapacity),
-                                     nullptr,
-                                     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
+        const auto objId = m_obj->getId();
+        SFML_BASE_ASSERT(objId != 0u);
+
+        glCheck(
+            glNamedBufferStorage(objId, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
         m_mappedPtr = glCheck(
-            glMapNamedBufferRange(m_obj->getId(),
+            glMapNamedBufferRange(objId,
                                   0u,
                                   static_cast<GLsizeiptr>(newCapacity),
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
-                                      GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT));
+                                      GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
+                                      GL_MAP_FLUSH_EXPLICIT_BIT));
 
         m_capacity = newCapacity;
+#endif
     }
 
     ////////////////////////////////////////////////////////////

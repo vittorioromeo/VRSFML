@@ -491,10 +491,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
-                                             base::SizeT                       indexCount,
-                                             PrimitiveType                     type,
-                                             const RenderStates&               states = {});
+    void drawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -506,7 +509,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const PersistentGPUDrawableBatch& drawableBatch, const RenderStates& states = {});
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a contiguous container of vertices
@@ -695,12 +698,6 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawDrawableBatchImpl(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
     void flushIfNeeded(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
@@ -789,11 +786,23 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Draw indexed primitives
     ///
-    /// \param type        Type of primitives to draw
-    /// \param indexCount  Number of indices to use when drawing
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount);
+    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw indexed primitives with base vertex (not supported on OpenGL ES)
+    ///
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedPrimitivesBaseVertex(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset, base::SizeT vertexOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing
