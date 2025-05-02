@@ -7,6 +7,17 @@
     ////////////////////////////////////////////////////////////
     #define SFML_BASE_REMOVE_CVREF(...) __remove_cvref(__VA_ARGS__)
 
+namespace sf::base::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+struct RemoveCVRefImpl
+{
+    using type = SFML_BASE_REMOVE_CVREF(T);
+};
+
+} // namespace sf::base::priv
+
 #else
 
 namespace sf::base::priv
@@ -40,5 +51,9 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 template <typename T>
 using RemoveCVRef = SFML_BASE_REMOVE_CVREF(T);
+
+////////////////////////////////////////////////////////////
+template <typename T>
+using RemoveCVRefIndirect = typename priv::RemoveCVRefImpl<T>::type; // requires` constraints cannot use builtins
 
 } // namespace sf::base
