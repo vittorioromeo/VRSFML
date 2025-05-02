@@ -379,7 +379,28 @@ struct Font::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] const Glyph& getGlyphImpl(
+    [[nodiscard]] auto loadGlyphImpl(auto&              glyphsByCharacterSize,
+                                     const base::U64    key,
+                                     const char32_t     codePoint,
+                                     const unsigned int characterSize,
+                                     const bool         bold,
+                                     const float        outlineThickness) const
+    {
+        const Glyph loadedGlyph = loadGlyph(ftLibrary,
+                                            ftFace,
+                                            ftStroker,
+                                            getTextureAtlas(),
+                                            pixelBuffer,
+                                            codePoint,
+                                            characterSize,
+                                            bold,
+                                            outlineThickness);
+
+        return glyphsByCharacterSize.try_emplace(key, loadedGlyph);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] const Glyph& getGlyphImpl(
         auto&              glyphsByCharacterSize,
         const base::U64    key,
         const char32_t     codePoint,
@@ -392,17 +413,7 @@ struct Font::Impl
             return it->second;
 
         // Glyph not cached: we have to load it
-        const Glyph loadedGlyph = loadGlyph(ftLibrary,
-                                            ftFace,
-                                            ftStroker,
-                                            getTextureAtlas(),
-                                            pixelBuffer,
-                                            codePoint,
-                                            characterSize,
-                                            bold,
-                                            outlineThickness);
-
-        return glyphsByCharacterSize.try_emplace(key, loadedGlyph).first->second;
+        return loadGlyphImpl(glyphsByCharacterSize, key, codePoint, characterSize, bold, outlineThickness).first->second;
     }
 };
 
@@ -630,21 +641,36 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
     // Get the glyph index (based on code point)
     const auto charIndex = getCharIndex(codePoint);
 
-    return {
-        .fillGlyph = m_impl->getGlyphImpl(glyphsByCharacterSize,
-                                          combineGlyphTableKey(/* outlineThickness */ 0.f, bold, charIndex),
-                                          codePoint,
-                                          characterSize,
-                                          bold,
-                                          /* outlineThickness */ 0.f),
+    // Precompute the keys for the fill and outline glyphs
+    const auto fillGlyphKey    = combineGlyphTableKey(0.f, bold, charIndex);
+    const auto outlineGlyphKey = combineGlyphTableKey(outlineThickness, bold, charIndex);
 
-        .outlineGlyph = m_impl->getGlyphImpl(glyphsByCharacterSize,
-                                             combineGlyphTableKey(outlineThickness, bold, charIndex),
-                                             codePoint,
-                                             characterSize,
-                                             bold,
-                                             outlineThickness),
-    };
+    // Check if the fill glyph is already cached
+    const auto* fillGlyphIt = glyphsByCharacterSize.find(fillGlyphKey);
+    if (fillGlyphIt == glyphsByCharacterSize.end()) [[unlikely]]
+    {
+        // Fill glyph not cached: we have to load it
+        fillGlyphIt = m_impl
+                          ->loadGlyphImpl(glyphsByCharacterSize, fillGlyphKey, codePoint, characterSize, bold, /* outlineThickness */ 0.f)
+                          .first;
+    }
+
+    // Check if the outline glyph is already cached
+    const auto* outlineGlyphIt = glyphsByCharacterSize.find(outlineGlyphKey);
+    if (outlineGlyphIt == glyphsByCharacterSize.end()) [[unlikely]]
+    {
+        // Outline glyph not cached: we have to load it
+        outlineGlyphIt = m_impl
+                             ->loadGlyphImpl(glyphsByCharacterSize, outlineGlyphKey, codePoint, characterSize, bold, outlineThickness)
+                             .first;
+
+        // We also need to load the fill glyph again, as its location in memory may have changed
+        // (We are using a flat unordered map, so the iterator may be invalidated)
+        fillGlyphIt = glyphsByCharacterSize.find(fillGlyphKey);
+        SFML_BASE_ASSERT(fillGlyphIt != glyphsByCharacterSize.end());
+    }
+
+    return {.fillGlyph = fillGlyphIt->second, .outlineGlyph = outlineGlyphIt->second};
 }
 
 

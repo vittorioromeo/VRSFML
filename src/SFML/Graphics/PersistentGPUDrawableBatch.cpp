@@ -30,6 +30,39 @@ struct PersistentGPUStorage::Impl
     Impl() : vboPersistentBuffer(persistentVaoGroup.vbo), eboPersistentBuffer(persistentVaoGroup.ebo)
     {
     }
+
+    Impl(const Impl&)            = delete;
+    Impl& operator=(const Impl&) = delete;
+
+    Impl(Impl&& rhs) noexcept :
+    persistentVaoGroup{SFML_BASE_MOVE(rhs.persistentVaoGroup)},
+    vboPersistentBuffer{SFML_BASE_MOVE(rhs.vboPersistentBuffer)},
+    eboPersistentBuffer{SFML_BASE_MOVE(rhs.eboPersistentBuffer)}
+    {
+        // Adjust the persistent buffers to point to the new VAO group (self-referential pointers)
+        vboPersistentBuffer.adjustObjPointer(persistentVaoGroup.vbo);
+        eboPersistentBuffer.adjustObjPointer(persistentVaoGroup.ebo);
+    }
+
+    Impl& operator=(Impl&& rhs) noexcept
+    {
+        if (this == &rhs)
+            return *this;
+
+        // Must unmap the buffers before moving them
+        vboPersistentBuffer.unmapIfNeeded();
+        eboPersistentBuffer.unmapIfNeeded();
+
+        persistentVaoGroup  = SFML_BASE_MOVE(rhs.persistentVaoGroup);
+        vboPersistentBuffer = SFML_BASE_MOVE(rhs.vboPersistentBuffer);
+        eboPersistentBuffer = SFML_BASE_MOVE(rhs.eboPersistentBuffer);
+
+        // Adjust the persistent buffers to point to the new VAO group (self-referential pointers)
+        vboPersistentBuffer.adjustObjPointer(persistentVaoGroup.vbo);
+        eboPersistentBuffer.adjustObjPointer(persistentVaoGroup.ebo);
+
+        return *this;
+    }
 };
 
 
@@ -69,6 +102,20 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 [[nodiscard]] const void* PersistentGPUStorage::getVAOGroup() const
 {
     return &impl->persistentVaoGroup;
+}
+
+
+////////////////////////////////////////////////////////////
+void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+{
+    impl->vboPersistentBuffer.flushWritesToGPU(sizeof(Vertex), count, offset);
+}
+
+
+////////////////////////////////////////////////////////////
+void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+{
+    impl->eboPersistentBuffer.flushWritesToGPU(sizeof(IndexType), count, offset);
 }
 
 

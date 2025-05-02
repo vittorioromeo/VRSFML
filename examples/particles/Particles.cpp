@@ -159,16 +159,26 @@ int main()
         GPUStorage = 2
     };
 
-    auto          batchType            = BatchType::CPUStorage;
-    bool          multithreadedUpdate  = false;
-    bool          multithreadedDraw    = false;
-    bool          useSoA               = false;
-    bool          unifiedSoAProcessing = false;
-    bool          destroyParticles     = true;
-    bool          destroyBySwapping    = true;
-    sf::base::U64 nWorkers             = nMaxWorkers;
-    int           numEntities          = 50'000;
-    bool          drawStep             = true;
+    const auto defaultBatchType =
+#ifdef SFML_OPENGL_ES
+        BatchType::CPUStorage
+#else
+        BatchType::GPUStorage
+#endif
+        ;
+
+    auto          batchType                = BatchType::Disabled;
+    auto          autobatchType            = defaultBatchType;
+    sf::base::U64 autoBatchVertexThreshold = 32'768u;
+    bool          multithreadedUpdate      = false;
+    bool          multithreadedDraw        = false;
+    bool          useSoA                   = false;
+    bool          unifiedSoAProcessing     = false;
+    bool          destroyParticles         = true;
+    bool          destroyBySwapping        = true;
+    sf::base::U64 nWorkers                 = nMaxWorkers;
+    int           numEntities              = 50'000;
+    bool          drawStep                 = true;
 
     //
     //
@@ -501,7 +511,7 @@ int main()
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             ImGui::Begin("Vittorio's SFML fork: particles example", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize({340.f, 480.f});
+            ImGui::SetWindowSize({380.f, 510.f});
 
             const auto clearSamples = [&]
             {
@@ -524,6 +534,25 @@ int main()
                              sf::base::getArraySize(batchTypeItems)))
                 clearSamples();
 
+            ImGui::BeginDisabled(batchType != BatchType::Disabled);
+            if (ImGui::Combo("Autobatch type",
+                             reinterpret_cast<int*>(&autobatchType),
+                             batchTypeItems,
+                             sf::base::getArraySize(batchTypeItems)))
+            {
+                clearSamples();
+                window.setAutoBatchMode(static_cast<sf::RenderTarget::AutoBatchMode>(autobatchType));
+            }
+
+            {
+                const sf::base::U64 step = 1u;
+                ImGui::SetNextItemWidth(172.f);
+                if (ImGui::InputScalar("Autobatch Vertex Threshold", ImGuiDataType_U64, &autoBatchVertexThreshold, &step))
+                    window.setAutoBatchVertexThreshold(
+                        static_cast<sf::base::SizeT>(sf::base::max(autoBatchVertexThreshold, sf::base::U64{1024u})));
+            }
+            ImGui::EndDisabled();
+
             ImGui::Checkbox("Multithreaded Update", &multithreadedUpdate);
 
             ImGui::BeginDisabled(batchType == BatchType::Disabled);
@@ -538,8 +567,10 @@ int main()
             ImGui::Checkbox("Destroy via swapping", &destroyBySwapping);
             ImGui::Checkbox("Draw step", &drawStep);
 
-            const sf::base::U64 step = 1u;
-            ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
+            {
+                const sf::base::U64 step = 1u;
+                ImGui::InputScalar("Workers", ImGuiDataType_U64, &nWorkers, &step);
+            }
             nWorkers = sf::base::clamp(nWorkers, sf::base::U64{2u}, nMaxWorkers);
 
             ImGui::NewLine();
@@ -660,7 +691,7 @@ int main()
             {
                 // Must reserve in advance as reserving is not thread-safe
                 for (std::size_t iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
-                    gpuDrawableBatches[iBatch].reserveQuads(static_cast<std::size_t>(numEntities) / nWorkers * 32u);
+                    gpuDrawableBatches[iBatch].reserveQuads(static_cast<std::size_t>(numEntities) / nWorkers * 2u);
 
                 doMultithreadedDraw(gpuDrawableBatches);
             }
