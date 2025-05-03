@@ -37,10 +37,10 @@ struct VulkanSurfaceData;
 namespace priv
 {
 ////////////////////////////////////////////////////////////
-/// \brief Window implementation (used SDL3)
+/// \brief Window implementation (uses SDL3)
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] WindowImpl
+class [[nodiscard]] SDLWindowImpl
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -55,7 +55,7 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowSettings windowSettings);
+    [[nodiscard]] static base::UniquePtr<SDLWindowImpl> create(WindowSettings windowSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on to the current OS
@@ -65,37 +65,37 @@ public:
     /// \return Pointer to the created window
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<WindowImpl> create(WindowHandle handle);
+    [[nodiscard]] static base::UniquePtr<SDLWindowImpl> create(WindowHandle handle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~WindowImpl();
+    ~SDLWindowImpl();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl(const WindowImpl&) = delete;
+    SDLWindowImpl(const SDLWindowImpl&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl& operator=(const WindowImpl&) = delete;
+    SDLWindowImpl& operator=(const SDLWindowImpl&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl(WindowImpl&&) = delete;
+    SDLWindowImpl(SDLWindowImpl&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move assignment
     ///
     ////////////////////////////////////////////////////////////
-    WindowImpl& operator=(WindowImpl&&) = delete;
+    SDLWindowImpl& operator=(SDLWindowImpl&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the joystick threshold, i.e. the value below which
@@ -334,7 +334,7 @@ private:
     /// \param isExternal `true` if the window was created externally
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowImpl(const char* context, void* sdlWindow, bool isExternal);
+    [[nodiscard]] explicit SDLWindowImpl(const char* context, void* sdlWindow, bool isExternal);
 
     ////////////////////////////////////////////////////////////
     /// \return First event of the queue if available, `base::nullOpt` otherwise

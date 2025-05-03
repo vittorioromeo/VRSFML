@@ -61,7 +61,7 @@ class WindowImplCocoa;
 - (CGFloat)displayScaleFactor;
 
 ////////////////////////////////////////////////////////////
-/// \brief Set the WindowImpl who requested this delegate
+/// \brief Set the WindowImplCocoa who requested this delegate
 ///
 ////////////////////////////////////////////////////////////
 - (void)setRequesterTo:(sf::priv::WindowImplCocoa*)requester;

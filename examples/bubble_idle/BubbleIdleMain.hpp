@@ -985,7 +985,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    std::vector<std::vector<std::string>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
+    sf::base::Vector<sf::base::Vector<std::string>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
     ////////////////////////////////////////////////////////////
     // Prestige transition
@@ -1306,9 +1306,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<std::vector<std::string>> makeShuffledCatNames(RNG& rng)
+    [[nodiscard]] static sf::base::Vector<sf::base::Vector<std::string>> makeShuffledCatNames(RNG& rng)
     {
-        std::vector<std::vector<std::string>> result(nCatTypes);
+        sf::base::Vector<sf::base::Vector<std::string>> result(nCatTypes);
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
             result[i] = getShuffledCatNames(static_cast<CatType>(i), rng.getEngine());

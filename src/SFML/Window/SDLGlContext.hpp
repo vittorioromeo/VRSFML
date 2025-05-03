@@ -17,7 +17,7 @@ using SDL_GLContext = SDL_GLContextState*;
 
 namespace sf::priv
 {
-class WindowImpl;
+class SDLWindowImpl;
 }
 
 
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] explicit SDLGlContext(unsigned int           id,
                                         SDLGlContext*          shared,
                                         const ContextSettings& settings,
-                                        const WindowImpl&      owner,
+                                        const SDLWindowImpl&   owner,
                                         unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
@@ -49,10 +49,10 @@ public:
     SDLGlContext& operator=(SDLGlContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    GlFunctionPointer getFunction(const char* name) const;
+    [[nodiscard]] GlFunctionPointer getFunction(const char* name) const;
 
     ////////////////////////////////////////////////////////////
-    bool makeCurrent(bool current) override;
+    [[nodiscard]] bool makeCurrent(bool activate) override;
 
     ////////////////////////////////////////////////////////////
     void display() override;
@@ -61,6 +61,18 @@ public:
     void setVerticalSyncEnabled(bool enabled) override;
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void initContext(SDLGlContext* shared);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void destroyWindowIfNeeded();
+
     ////////////////////////////////////////////////////////////
     SDL_Window*   m_window;     // SDL window associated with the context
     SDL_GLContext m_context;    // SDL OpenGL context handle

@@ -1,13 +1,14 @@
+#include <EGL/egl.h>
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/GLUtils/EGL/EGLCheck.hpp"
 #include "SFML/GLUtils/EGL/EGLContext.hpp"
@@ -16,8 +17,8 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Vector.hpp"
 
-#include <memory>
 
 #ifdef SFML_SYSTEM_ANDROID
     #include "SFML/System/Android/Activity.hpp"
@@ -129,9 +130,9 @@ EGLConfig getBestConfig(EGLDisplay display, unsigned int bitsPerPixel, const sf:
         sf::priv::err() << "Failed to get EGL configs (1st call)";
 
     // Retrieve the list of available configs
-    const auto configs = std::make_unique<EGLConfig[]>(static_cast<sf::base::SizeT>(configCount));
+    sf::base::Vector<EGLConfig> configs(static_cast<sf::base::SizeT>(configCount));
 
-    if (const auto rc = eglCheck(eglGetConfigs(display, configs.get(), configCount, &configCount)); rc == EGL_FALSE)
+    if (const auto rc = eglCheck(eglGetConfigs(display, configs.data(), configCount, &configCount)); rc == EGL_FALSE)
         sf::priv::err() << "Failed to get EGL configs (2nd call)";
 
     // Evaluate all the returned configs, and pick the best one
@@ -275,11 +276,11 @@ GlContext(id, contextSettings)
 
 
 ////////////////////////////////////////////////////////////
-EglContext::EglContext(unsigned int                       id,
-                       EglContext*                        shared,
-                       const ContextSettings&             contextSettings,
-                       [[maybe_unused]] const WindowImpl& owner,
-                       unsigned int                       bitsPerPixel) :
+EglContext::EglContext(unsigned int                          id,
+                       EglContext*                           shared,
+                       const ContextSettings&                contextSettings,
+                       [[maybe_unused]] const SDLWindowImpl& owner,
+                       unsigned int                          bitsPerPixel) :
 GlContext(id, contextSettings)
 {
     EglContextImpl::ensureInit();
@@ -309,7 +310,7 @@ GlContext(id, contextSettings)
     // Create EGL surface (except on Android because the window is created
     // asynchronously, its activity manager will call it for us)
     WindowHandle nativeHandle = owner.getNativeHandle();
-    createSurface(&nativeHandle);
+    createSurface(static_cast<void*>(&nativeHandle));
 
 #endif
 }
@@ -349,12 +350,12 @@ GlFunctionPointer EglContext::getFunction(const char* name) const
 
 
 ////////////////////////////////////////////////////////////
-bool EglContext::makeCurrent(bool current)
+bool EglContext::makeCurrent(const bool activate)
 {
     if (m_impl->surface == EGL_NO_SURFACE)
         return false;
 
-    return current
+    return activate
                ? eglCheck(eglMakeCurrent(m_impl->display, m_impl->surface, m_impl->surface, m_impl->context)) != EGL_FALSE
                : eglCheck(eglMakeCurrent(m_impl->display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)) != EGL_FALSE;
 }
@@ -410,7 +411,7 @@ void EglContext::createSurface(void* windowPtr)
 ////////////////////////////////////////////////////////////
 void EglContext::destroySurface()
 {
-    // Seems to only be called by `WindowImplAndroid`
+    // Seems to only be called by `SDLWindowImplAndroid`
 
     if (!WindowContext::setActiveThreadLocalGlContext(*this, false))
         err() << "Failure to disable EGL context in `EglContext::destroySurface`";

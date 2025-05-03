@@ -15,16 +15,19 @@
 #pragma once
 #pragma GCC system_header
 
-#include <vector>			// Vector for storing notifications list
-#include <cstdint>			// Vector for storing notifications list
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui_internal.h"
 
 #include "IconsFontAwesome6.h"
+
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Time.hpp"
+
+#include "SFML/Base/Vector.hpp"
+
+#include <cstdint>
 
 
 
@@ -428,7 +431,7 @@ public:
 
 namespace ImGui
 {
-    inline std::vector<ImGuiToast> notifications;
+    inline sf::base::Vector<ImGuiToast> notifications;
 
     /**
      * Inserts a new notification into the notification queue.
@@ -436,7 +439,7 @@ namespace ImGui
      */
     inline void InsertNotification(const ImGuiToast& toast)
     {
-        notifications.push_back(toast);
+        notifications.pushBack(toast);
     }
 
     /**
