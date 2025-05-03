@@ -13,6 +13,7 @@
 #include <sstream>
 #include <string>
 
+
 namespace
 {
 // Return either argument depending on whether wchar_t is 16 or 32 bits
@@ -249,7 +250,7 @@ TEST_CASE("[System] sf::String")
 
     SECTION("fromUtf32()")
     {
-        constexpr char32_t characters[4]{'w', 0x104321, 'y', 'z'};
+        constexpr char32_t characters[4]{'w', 0x10'43'21, 'y', 'z'};
         const sf::String   string = sf::StringUtfUtils::fromUtf32(characters, characters + 4);
         CHECK(string.toAnsiString<std::string>() == "w\0yz"s);
         CHECK(string.toWideString<std::wstring>() == select(L"wyz"s, L"w\U00104321yz"s));
@@ -265,7 +266,7 @@ TEST_CASE("[System] sf::String")
     {
         sf::String string("you'll never guess what happens when you call clear()");
         string.clear();
-        CHECK(string == sf::String());
+        CHECK(string.isEmpty());
         CHECK(string.getSize() == 0);
     }
 
@@ -291,7 +292,7 @@ TEST_CASE("[System] sf::String")
         const sf::String string("a little bit of this and a little bit of that");
         CHECK(string.find("a little bit") == 0);
         CHECK(string.find("a little bit", 15) == 25);
-        CHECK(string.find("a little bit", 1'000) == sf::String::InvalidPos);
+        CHECK(string.find("a little bit", 1000) == sf::String::InvalidPos);
         CHECK(string.find("no way you find this") == sf::String::InvalidPos);
     }
 
@@ -313,7 +314,7 @@ TEST_CASE("[System] sf::String")
 
 // Exceptions not supported on Emscripten
 #ifndef SFML_SYSTEM_EMSCRIPTEN
-        CHECK_THROWS_AS((void)string.substring(1'000), std::out_of_range);
+        CHECK_THROWS_AS((void)string.substring(1000), std::out_of_range);
         CHECK_THROWS_AS((void)string.substring(420, 69), std::out_of_range);
 #endif
     }

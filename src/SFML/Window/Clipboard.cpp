@@ -1,10 +1,11 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Clipboard.hpp"
-#include "SFML/Window/ClipboardImpl.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/String.hpp"
 
@@ -14,14 +15,14 @@ namespace sf
 ////////////////////////////////////////////////////////////
 String Clipboard::getString()
 {
-    return priv::ClipboardImpl::getString();
+    return priv::getSDLLayerSingleton().getClipboardString();
 }
 
 
 ////////////////////////////////////////////////////////////
-void Clipboard::setString(const String& text)
+bool Clipboard::setString(const String& text)
 {
-    priv::ClipboardImpl::setString(text);
+    return priv::getSDLLayerSingleton().setClipboardString(text);
 }
 
 } // namespace sf

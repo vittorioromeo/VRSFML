@@ -4,15 +4,15 @@
 
 #if __has_builtin(__is_assignable)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_COPY_ASSIGNABLE(...) __is_assignable(__VA_ARGS__&, const __VA_ARGS__&)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_COPY_ASSIGNABLE(...) __is_assignable(__VA_ARGS__&, const __VA_ARGS__&)
 
 #else
 
-#include <type_traits>
+    #include <type_traits>
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_COPY_ASSIGNABLE(...) ::std::is_copy_assignable_v<__VA_ARGS__>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_COPY_ASSIGNABLE(...) ::std::is_copy_assignable_v<__VA_ARGS__>
 
 #endif
 

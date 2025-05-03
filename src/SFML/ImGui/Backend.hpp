@@ -1,11 +1,11 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
 struct ImDrawData;
-
 
 namespace sf::ImGui::priv
 {

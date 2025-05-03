@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -10,7 +11,6 @@
 ////////////////////////////////////////////////////////////
 @implementation SFApplicationDelegate
 
-
 ////////////////////////////////////////////////////////////
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication*)sender
 {
@@ -20,13 +20,11 @@
     return NSTerminateCancel;
 }
 
-
 ////////////////////////////////////////////////////////////
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication
 {
     (void)theApplication;
     return YES;
 }
-
 
 @end

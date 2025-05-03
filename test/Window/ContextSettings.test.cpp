@@ -8,10 +8,10 @@ TEST_CASE("[Window] sf::ContextSettings")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::ContextSettings));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::ContextSettings));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::ContextSettings));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::ContextSettings));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::ContextSettings));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::ContextSettings));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::ContextSettings));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::ContextSettings));
     }
 
     SECTION("Construction")

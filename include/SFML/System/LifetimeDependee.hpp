@@ -3,10 +3,10 @@
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/System/Export.hpp"
+    ////////////////////////////////////////////////////////////
+    // Headers
+    ////////////////////////////////////////////////////////////
+    #include "SFML/System/Export.hpp"
 
 
 namespace sf::priv
@@ -49,16 +49,16 @@ private:
 
 } // namespace sf::priv
 
-// NOLINTBEGIN(bugprone-macro-parentheses)
-#define SFML_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)                                               \
-    friend dependantType;                                                                                        \
-    mutable ::sf::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType{#dependeeType, #dependantType}; \
-    using sfPrivSwallowSemicolon##dependantType##dependeeType = void
+    // NOLINTBEGIN(bugprone-macro-parentheses)
+    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)                                               \
+        friend dependantType;                                                                                        \
+        mutable ::sf::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType{#dependeeType, #dependantType}; \
+        using sfPrivSwallowSemicolon##dependantType##dependeeType = void
 // NOLINTEND(bugprone-macro-parentheses)
 
 #else // SFML_ENABLE_LIFETIME_TRACKING
 
-#define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType) \
-    using sfPrivSwallowSemicolon##dependantType##dependeeType = void
+    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType) \
+        using sfPrivSwallowSemicolon##dependantType##dependeeType = void
 
 #endif // SFML_ENABLE_LIFETIME_TRACKING

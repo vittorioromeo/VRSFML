@@ -7,14 +7,15 @@
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::View")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::View));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::View));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::View));
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::View));
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::View));
@@ -30,7 +31,7 @@ TEST_CASE("[Graphics] sf::View")
         {
             const sf::View view;
             CHECK(view.center == sf::Vector2f{500, 500});
-            CHECK(view.size == sf::Vector2f{1000, 1000});
+            CHECK(view.size == sf::Vector2f{1'000, 1'000});
             CHECK(view.rotation == sf::Angle::Zero);
             CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));

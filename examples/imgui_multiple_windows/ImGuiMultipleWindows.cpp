@@ -11,6 +11,7 @@
 
 #include "SFML/Base/Optional.hpp"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 int main()
@@ -57,7 +58,7 @@ int main()
         const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
         window.clear();
-        window.draw(shape, /* texture */ nullptr);
+        window.draw(shape);
         imGuiContext.render(window);
         window.display();
 
@@ -85,7 +86,7 @@ int main()
             const sf::CircleShape shape2{{.fillColor = sf::Color::Red, .radius = 50.f}};
 
             childWindowRef.clear();
-            childWindowRef.draw(shape2, /* texture */ nullptr);
+            childWindowRef.draw(shape2);
             imGuiContext.render(childWindowRef);
             childWindowRef.display();
         };

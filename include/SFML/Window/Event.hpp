@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -237,8 +238,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchBegan
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Start position of the touch, relative to the top left of the owner window
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Start position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -247,8 +249,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchMoved
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Current position of the touch, relative to the top left of the owner window
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Current position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -257,8 +260,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TouchEnded
     {
-        unsigned int finger{}; //!< Index of the finger in case of multi-touch events
-        Vector2i     position; //!< Final position of the touch, relative to the top left of the owner window
+        unsigned int finger{};   //!< Index of the finger in case of multi-touch events
+        Vector2i     position;   //!< Final position of the touch, relative to the top left of the owner window
+        float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
     ////////////////////////////////////////////////////////////
@@ -328,7 +332,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
-    decltype(auto) visit(Visitor&& visitor);
+    decltype(auto) visit(Visitor&& visitor)
+    {
+        return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Applies the specified `visitor` to the event
@@ -337,7 +345,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename Visitor>
-    decltype(auto) visit(Visitor&& visitor) const;
+    decltype(auto) visit(Visitor&& visitor) const
+    {
+        return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Invokes `visit` with an overload created from `handlers...`
@@ -346,7 +358,11 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Handlers>
-    decltype(auto) match(Handlers&&... handlers);
+    decltype(auto) match(Handlers&&... handlers)
+    {
+        return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Invokes `visit` with an overload created from `handlers...`
@@ -355,7 +371,10 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename... Handlers>
-    decltype(auto) match(Handlers&&... handlers) const;
+    decltype(auto) match(Handlers&&... handlers) const
+    {
+        return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
+    }
 
 private:
     // clang-format off
@@ -416,9 +435,6 @@ extern template class SFML_PRIV_EVENT_VARIANT_TYPE;
 #define SFML_PRIV_EVENT_X_SEMICOLON() ;
 
 SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVENT_X_SEMICOLON);
-
-
-#include "SFML/Window/Event.inl"
 
 
 ////////////////////////////////////////////////////////////

@@ -1,5 +1,8 @@
 #pragma once
+#include "TextData.hpp"
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -9,9 +12,10 @@
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -19,15 +23,16 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-template <typename TBufferObject>
-class GLPersistentBuffer;
-
+class Font;
 class RenderTarget;
 class Shape;
 class Text;
-struct GLElementBufferObject;
-struct GLVertexBufferObject;
+struct CircleShapeData;
+struct EllipseShapeData;
+struct RectangleShapeData;
+struct RoundedRectangleShapeData;
 struct Sprite;
+struct TextData;
 struct Transform;
 } // namespace sf
 
@@ -59,37 +64,37 @@ struct CPUStorage
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(base::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] Vertex* reserveMoreVertices(const base::SizeT count)
     {
         return vertices.reserveMore(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(base::SizeT count)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] IndexType* reserveMoreIndices(const base::SizeT count)
     {
         return indices.reserveMore(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreVertices(const base::SizeT count) noexcept
     {
         vertices.unsafeSetSize(vertices.size() + count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(base::SizeT count)
+    [[gnu::always_inline, gnu::flatten]] void commitMoreIndices(const base::SizeT count) noexcept
     {
         indices.unsafeSetSize(indices.size() + count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
     {
         return static_cast<IndexType>(vertices.size());
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
     {
         return static_cast<IndexType>(indices.size());
     }
@@ -97,8 +102,8 @@ struct CPUStorage
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<Vertex>    vertices; //!< CPU buffer for vertices
-    base::TrivialVector<IndexType> indices;  //!< CPU buffer for indices
+    base::Vector<Vertex>    vertices; //!< CPU buffer for vertices
+    base::Vector<IndexType> indices;  //!< CPU buffer for indices
 };
 
 ////////////////////////////////////////////////////////////
@@ -108,7 +113,16 @@ struct CPUStorage
 struct PersistentGPUStorage
 {
     ////////////////////////////////////////////////////////////
-    explicit PersistentGPUStorage(RenderTarget& renderTarget);
+    explicit PersistentGPUStorage();
+    ~PersistentGPUStorage();
+
+    ////////////////////////////////////////////////////////////
+    PersistentGPUStorage(const PersistentGPUStorage&)            = delete;
+    PersistentGPUStorage& operator=(const PersistentGPUStorage&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    PersistentGPUStorage(PersistentGPUStorage&&) noexcept;
+    PersistentGPUStorage& operator=(PersistentGPUStorage&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()
@@ -121,34 +135,37 @@ struct PersistentGPUStorage
     [[nodiscard]] IndexType* reserveMoreIndices(base::SizeT count);
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreVertices(base::SizeT count)
+    [[gnu::always_inline]] void commitMoreVertices(const base::SizeT count) noexcept
     {
         nVertices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void commitMoreIndices(base::SizeT count)
+    [[gnu::always_inline]] void commitMoreIndices(const base::SizeT count) noexcept
     {
         nIndices += static_cast<IndexType>(count);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
     {
         return nVertices;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
     {
         return nIndices;
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] const void* getVAOGroup() const;
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    GLPersistentBuffer<GLVertexBufferObject>&  vboPersistentBuffer; //!< GPU persistent buffer for vertices
-    GLPersistentBuffer<GLElementBufferObject>& eboPersistentBuffer; //!< GPU persistent buffer for indices
+    struct Impl;
+    base::InPlacePImpl<Impl, 128> impl; //!< Implementation details
 
     IndexType nVertices{}; //!< Number of "active" vertices in the buffer
     IndexType nIndices{};  //!< Number of "active" indices in the buffer
@@ -169,6 +186,26 @@ public:
     template <typename... TStorageArgs>
     explicit DrawableBatchImpl(TStorageArgs&&... storageArgs) : m_storage(SFML_BASE_FORWARD(storageArgs)...)
     {
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveTriangles(const base::SizeT triangleCount)
+    {
+        (void)m_storage.reserveMoreIndices(3u * triangleCount);
+        (void)m_storage.reserveMoreVertices(3u * triangleCount);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] void reserveQuads(const base::SizeT quadCount)
+    {
+        (void)m_storage.reserveMoreIndices(6u * quadCount);
+        (void)m_storage.reserveMoreVertices(4u * quadCount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -199,10 +236,88 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void clear();
+    void add(const CircleShapeData& sdCircle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const EllipseShapeData& sdEllipse);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RectangleShapeData& sdRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RoundedRectangleShapeData& sdRoundedRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const Font& font, const TextData& textData);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void clear()
+    {
+        m_storage.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] bool isEmpty() const noexcept
+    {
+        return m_storage.getNumVertices() == 0u && m_storage.getNumIndices() == 0u;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumVertices() const noexcept
+    {
+        return m_storage.getNumVertices();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] IndexType getNumIndices() const noexcept
+    {
+        return m_storage.getNumIndices();
+    }
 
 private:
     friend RenderTarget;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawShapeFromPoints(base::SizeT nPoints, const auto& descriptor, auto&& pointFn);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addShapeFill(const Transform& transform, const Vertex* data, base::SizeT size);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addShapeOutline(const Transform& transform, const Vertex* data, base::SizeT size);
 
     ////////////////////////////////////////////////////////////
     // Member data

@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -11,21 +12,14 @@
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& min(const T& a, const T& b) noexcept
-{
-    return b < a ? b : a;
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& max(const T& a, const T& b) noexcept
-{
-    return a < b ? b : a;
-}
-
-
+/// \brief Copy elements from one range to another
+///
+/// \param rangeBegin Iterator to the beginning of the source range
+/// \param rangeEnd   Iterator to the end of the source range
+/// \param targetIter Iterator to the beginning of the destination range
+///
+/// \return Iterator to the element past the last element copied
+///
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename TargetIter>
 [[gnu::always_inline]] constexpr TargetIter copy(Iter rangeBegin, Iter rangeEnd, TargetIter targetIter)
@@ -37,6 +31,15 @@ template <typename Iter, typename TargetIter>
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Find the first element equal to a target value in a range
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param target     Value to search for
+///
+/// \return Iterator to the first element equal to target, or `rangeEnd` if not found
+///
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename T>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter find(Iter rangeBegin, Iter rangeEnd, const T& target) noexcept
@@ -50,6 +53,15 @@ template <typename Iter, typename T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Find the first element satisfying a predicate in a range
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param predicate  Unary predicate function
+///
+/// \return Iterator to the first element for which predicate returns true, or `rangeEnd` if not found
+///
+////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Iter findIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
 {
@@ -61,6 +73,15 @@ template <typename Iter, typename Predicate>
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Check if any element in a range satisfies a predicate
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param predicate  Unary predicate function
+///
+/// \return `true` if predicate returns true for at least one element, `false` otherwise
+///
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
 [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool anyOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
@@ -74,19 +95,104 @@ template <typename Iter, typename Predicate>
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-[[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& clamp(const T& value, const T& minValue, const T& maxValue) noexcept
+/// \brief Count the number of elements in a range that evaluate to true
+///
+/// Iterates through the range and increments a counter for each element
+/// that, when converted to bool, is true.
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+///
+/// \return The number of elements evaluating to true
+///
+////////////////////////////////////////////////////////////
+template <typename Iter>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countTruthy(Iter rangeBegin, Iter rangeEnd)
 {
-    if (value < minValue)
-        return minValue;
+    SizeT result = 0u;
 
-    if (value > maxValue)
-        return maxValue;
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (static_cast<bool>(*rangeBegin))
+            ++result;
 
-    return value;
+    return result;
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Count the number of elements in a range equal to a specific value
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param value      Value to compare elements against
+///
+/// \return The number of elements equal to value
+///
+////////////////////////////////////////////////////////////
+template <typename Iter, typename T>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT count(Iter rangeBegin, Iter rangeEnd, const T& value)
+{
+    SizeT result = 0u;
+
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (*rangeBegin == value)
+            ++result;
+
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Count the number of elements in a range satisfying a predicate
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param predicate  Unary predicate function
+///
+/// \return The number of elements for which predicate returns true
+///
+////////////////////////////////////////////////////////////
+template <typename Iter, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT countIf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate)
+{
+    SizeT result = 0u;
+
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (predicate(*rangeBegin))
+            ++result;
+
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Check if all elements in a range satisfy a predicate
+///
+/// \param rangeBegin Iterator to the beginning of the range
+/// \param rangeEnd   Iterator to the end of the range
+/// \param predicate  Unary predicate function
+///
+/// \return `true` if predicate returns true for all elements, `false` otherwise
+///
+////////////////////////////////////////////////////////////
+template <typename Iter, typename Predicate>
+[[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool allOf(Iter rangeBegin, Iter rangeEnd, Predicate&& predicate) noexcept
+{
+    for (; rangeBegin != rangeEnd; ++rangeBegin)
+        if (!predicate(*rangeBegin))
+            return false;
+
+    return true;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Get the size of a C-style array at compile time
+///
+/// \param Array reference
+///
+/// \return Size of the array (number of elements)
+///
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
 [[nodiscard, gnu::always_inline, gnu::const]] consteval SizeT getArraySize(const T (&)[N]) noexcept
@@ -95,6 +201,26 @@ template <typename T, auto N>
 }
 
 
+////////////////////////////////////////////////////////////
+/// \brief Get the size of a C-style array member at compile time
+///
+/// \param Pointer to array member
+///
+/// \return Size of the array member (number of elements)
+///
+////////////////////////////////////////////////////////////
+template <typename S, typename T, auto N>
+[[nodiscard, gnu::always_inline, gnu::const]] consteval auto getArraySize(const T (S::*)[N]) noexcept
+{
+    return N;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief Output iterator that inserts elements using `push_back`
+///
+/// Acts like `std::back_insert_iterator`.
+///
 ////////////////////////////////////////////////////////////
 template <typename T>
 class BackInserter
@@ -140,6 +266,17 @@ public:
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Exchange the value of an object with a new value
+///
+/// Assigns `newVal` to `obj` and returns the old value of `obj`.
+/// Equivalent to `std::exchange`.
+///
+/// \param obj    Object whose value to exchange
+/// \param newVal New value to assign to `obj`
+///
+/// \return The old value of `obj`
+///
+////////////////////////////////////////////////////////////
 template <typename T, typename U = T>
 [[nodiscard, gnu::always_inline]] inline constexpr T exchange(T& obj, U&& newVal)
 {
@@ -150,8 +287,23 @@ template <typename T, typename U = T>
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Remove elements satisfying a predicate from a range
+///
+/// Moves elements for which the predicate is false to the beginning
+/// of the range `[first, last)`. Returns an iterator to the new logical
+/// end of the range. The elements after the returned iterator are in
+/// a valid but unspecified state.
+/// Equivalent to `std::remove_if`.
+///
+/// \param first     Iterator to the beginning of the range
+/// \param last      Iterator to the end of the range
+/// \param predicate Unary predicate function
+///
+/// \return Iterator to the new logical end of the range
+///
+////////////////////////////////////////////////////////////
 template <typename Iter, typename Predicate>
-Iter removeIf(Iter first, Iter last, Predicate&& predicate)
+[[nodiscard, gnu::always_inline]] inline constexpr Iter removeIf(Iter first, Iter last, Predicate&& predicate)
 {
     first = findIf(first, last, predicate);
 
@@ -165,35 +317,38 @@ Iter removeIf(Iter first, Iter last, Predicate&& predicate)
 
 
 ////////////////////////////////////////////////////////////
-template <typename T>
-[[gnu::always_inline]] constexpr void swap(T& a, T& b) noexcept
+/// \brief Erase elements satisfying a predicate from a vector
+///
+/// Removes all elements from the vector for which the predicate
+/// returns `true`. This function modifies the vector in-place.
+/// Equivalent to `std::erase_if` for vectors.
+///
+/// \param vector    Vector to modify
+/// \param predicate Unary predicate function
+///
+/// \return The number of elements removed
+///
+////////////////////////////////////////////////////////////
+template <typename Vector, typename Predicate>
+[[gnu::always_inline]] inline constexpr SizeT vectorEraseIf(Vector& vector, Predicate&& predicate)
 {
-    T tempA = SFML_BASE_MOVE(a);
-    a       = SFML_BASE_MOVE(b);
-    b       = SFML_BASE_MOVE(tempA);
+    const auto it       = removeIf(vector.begin(), vector.end(), predicate);
+    const auto nRemoved = static_cast<SizeT>(vector.end() - it);
+
+    vector.erase(it, vector.end());
+    return nRemoved;
 }
 
 
 ////////////////////////////////////////////////////////////
-template <typename Iter1, typename Iter2>
-[[gnu::always_inline]] constexpr void iterSwap(Iter1 a, Iter2 b)
-{
-    using base::swap;
-    swap(*a, *b);
-}
-
-
-////////////////////////////////////////////////////////////
-template <typename Iter1, typename Iter2>
-[[gnu::always_inline]] constexpr Iter2 swapRanges(Iter1 first1, Iter1 last1, Iter2 first2)
-{
-    for (; first1 != last1; ++first1, ++first2)
-        iterSwap(first1, first2);
-
-    return first2;
-}
-
-
+/// \brief Check if a range is sorted according to a comparison function
+///
+/// \param first Iterator to the beginning of the range
+/// \param last  Iterator to the end of the range
+/// \param comp  Binary comparison function object
+///
+/// \return `true` if the range is sorted, `false` otherwise
+///
 ////////////////////////////////////////////////////////////
 template <typename Iter, typename Comparer>
 [[nodiscard]] constexpr bool isSorted(Iter first, Iter last, Comparer comp)

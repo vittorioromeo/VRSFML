@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -17,19 +18,19 @@
 
 #else
 
-#include "SFML/Base/SizeT.hpp"
+    #include "SFML/Base/SizeT.hpp"
 
-#include <sys/socket.h>
-#include <sys/types.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
 
 #endif
 
 #ifdef htons
-#undef htons
+    #undef htons
 #endif
 
 #ifdef htonl
-#undef htonl
+    #undef htonl
 #endif
 
 

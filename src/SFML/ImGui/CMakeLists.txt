@@ -13,6 +13,10 @@ target_include_directories(sfml-imgui SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extl
 # setup dependencies
 target_link_libraries(sfml-imgui PUBLIC SFML::Graphics)
 
+# add imgui config
+add_definitions(-DIMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/SFML/ImGui/ImConfigSFML.hpp")
+
+
 if(SFML_OS_IOS)
     target_link_libraries(sfml-imgui PRIVATE "-framework OpenGLES")
 elseif(SFML_OS_ANDROID OR SFML_OS_EMSCRIPTEN OR SFML_OPENGL_ES)
@@ -41,8 +45,8 @@ else()
 
         CPMAddPackage(
             NAME imgui
-            GITHUB_REPOSITORY ocornut/imgui
-            GIT_TAG v1.91.0
+            GITHUB_REPOSITORY vittorioromeo/imgui
+            GIT_TAG 4c7b90eb54b1c594c4db964494e9af29bf55934b
             SYSTEM TRUE
         )
 
@@ -78,6 +82,8 @@ else()
                                    SYSTEM PUBLIC $<BUILD_INTERFACE:${IMGUI_INCLUDE_DIRS}>
                                                  $<INSTALL_INTERFACE:include>)
 
+        target_link_libraries(imgui PUBLIC SFML::Graphics)
+
         # add flags required for emscripten support (e.g. pthread)
         if(SFML_OS_EMSCRIPTEN)
             target_compile_options(imgui PRIVATE ${SFML_EMSCRIPTEN_TARGET_COMPILE_OPTIONS})
@@ -101,3 +107,4 @@ else()
 endif()
 
 target_link_libraries(sfml-imgui PRIVATE ImGui::ImGui)
+target_compile_definitions(sfml-imgui PUBLIC IMGUI_USER_CONFIG="${PROJECT_SOURCE_DIR}/include/SFML/ImGui/ImConfigSFML.hpp")

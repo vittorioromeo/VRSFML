@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -60,6 +61,7 @@ ma_result onSeek(ma_decoder* decoder, ma_int64 byteOffset, ma_seek_origin origin
     }
 }
 } // namespace
+
 
 namespace sf::priv
 {

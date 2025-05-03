@@ -6,6 +6,8 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
+#include "SFML/Window/ContextSettings.hpp"
+
 #include <Doctest.hpp>
 
 #include <CommonTraits.hpp>
@@ -39,14 +41,14 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
         CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
         CHECK(!renderTexture.isSmooth());
-        CHECK(!renderTexture.isRepeated());
+        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(!renderTexture.isSrgb());
 
         const auto& texture = renderTexture.getTexture();
         CHECK(texture.getSize() == sf::Vector2u{360, 480});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
@@ -65,8 +67,8 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("Set/get repeated")
     {
         auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        renderTexture.setRepeated(true);
-        CHECK(renderTexture.isRepeated());
+        renderTexture.setWrapMode(sf::TextureWrapMode::Repeat);
+        CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Repeat);
     }
 
     SECTION("generateMipmap()")
@@ -238,5 +240,16 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(finalImage.getPixel({6u, 58u}) == sf::Color::Green);
         CHECK(finalImage.getPixel({58u, 6u}) == sf::Color::Green);
         CHECK(finalImage.getPixel({61u, 61u}) == sf::Color::Green);
+    }
+
+    SECTION("Move assignment")
+    {
+        auto rt0 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        CHECK(rt0.hasValue());
+
+        auto rt1 = sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 8, .stencilBits = 8});
+        CHECK(rt1.hasValue());
+
+        *rt0 = SFML_BASE_MOVE(*rt1);
     }
 }

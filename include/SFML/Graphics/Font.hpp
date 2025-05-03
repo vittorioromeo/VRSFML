@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -8,10 +9,10 @@
 
 #include "SFML/System/LifetimeDependee.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -169,7 +170,28 @@ public:
     /// \return The glyph corresponding to `codePoint` and `characterSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness = 0) const;
+    [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Groups a fill and outline glyph together
+    ///
+    ////////////////////////////////////////////////////////////
+    struct GlyphPair
+    {
+        const Glyph& fillGlyph;    //!< The fill glyph
+        const Glyph& outlineGlyph; //!< The outline glyph
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Retrieve a pair of fill and outline glyphs of the font
+    ///
+    /// \see `getGlyph`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphPair getFillAndOutlineGlyph(char32_t     codePoint,
+                                                   unsigned int characterSize,
+                                                   bool         bold,
+                                                   float        outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Determine if this font has a glyph representing the requested code point
@@ -290,6 +312,12 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Open from stream and print errors with custom message
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static base::Optional<Font> openFromStreamImpl(InputStream& stream, TextureAtlas* textureAtlas, const char* type);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Return the index of the internal representation a character
     ///
     /// \param codePoint Unicode code point of the character to load
@@ -314,18 +342,14 @@ public:
     /// \brief Create a font from font handles and a family name
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Font(base::PassKey<Font>&&,
-
-                                TextureAtlas* textureAtlas,
-                                void*         fontHandlesSharedPtr,
-                                const char*   familyName);
+    [[nodiscard]] explicit Font(base::PassKey<Font>&&, TextureAtlas* textureAtlas);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 256> m_impl; //!< Implementation details
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,19 +10,19 @@
 
 #ifdef SFML_SYSTEM_WINDOWS
 
-#include "SFML/Window/VulkanImpl.hpp"
+    #include "SFML/Window/VulkanImpl.hpp"
 
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
-#ifdef SFML_USE_DRM
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
-#else
-#include "SFML/Window/VulkanImpl.hpp"
-#endif
+    #ifdef SFML_USE_DRM
+        #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+    #else
+        #include "SFML/Window/VulkanImpl.hpp"
+    #endif
 
 #else // not Windows nor Unix
 
-#define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
+    #define SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
 #endif
 

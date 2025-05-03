@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -413,7 +414,7 @@ public:
     /// Warning: this function waits for the server's response and may
     /// not return instantly; use a thread if you don't want to block your
     /// application, or use a timeout to limit the time to wait. A value
-    /// of `Time::Zero` means that the client will use the system default timeout
+    /// of `Time{}` means that the client will use the system default timeout
     /// (which is usually pretty long).
     ///
     /// \param request Request to send
@@ -422,7 +423,7 @@ public:
     /// \return Server's response
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Response sendRequest(const Request& request, Time timeout = Time::Zero);
+    [[nodiscard]] Response sendRequest(const Request& request, Time timeout = {});
 
 private:
     ////////////////////////////////////////////////////////////

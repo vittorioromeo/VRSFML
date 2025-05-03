@@ -9,10 +9,10 @@ TEST_CASE("[System] sf::Angle")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Angle));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Angle));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Angle));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Angle));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Angle));
 
         STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::Angle));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Angle));
@@ -59,14 +59,105 @@ TEST_CASE("[System] sf::Angle")
         CHECK(sf::degrees(-720).wrapUnsigned() == Approx(sf::degrees(0)));
     }
 
+    SECTION("rotatedTowards()")
+    {
+        constexpr float pi  = sf::base::pi;
+        constexpr float tau = sf::base::tau;
+
+        SECTION("Current angle already equals target")
+        {
+            sf::Angle current = sf::radians(2.5f);
+            sf::Angle target  = sf::radians(2.5f);
+            REQUIRE(current.rotatedTowards(target, 0.1f).asRadians() == Approx(2.5f));
+        }
+
+        SECTION("Exact rotation by speed amount")
+        {
+            sf::Angle current = sf::radians(0.f);
+            sf::Angle target  = sf::radians(pi / 2.f);
+            REQUIRE(current.rotatedTowards(target, pi / 2).asRadians() == Approx(pi / 2));
+        }
+
+        SECTION("Speed larger than needed clamps to target")
+        {
+            sf::Angle current = sf::radians(pi / 4.f);
+            sf::Angle target  = sf::radians(3 * pi / 4.f);
+            REQUIRE(current.rotatedTowards(target, pi).asRadians() == Approx(3 * pi / 4));
+        }
+
+        SECTION("Clockwise rotation")
+        {
+            sf::Angle current = sf::radians(pi / 2.f);
+            sf::Angle target  = sf::radians(0.f);
+            sf::Angle result  = current.rotatedTowards(target, pi / 4);
+            REQUIRE(result.asRadians() == Approx(pi / 4));
+        }
+
+        SECTION("Counter-clockwise rotation")
+        {
+            sf::Angle current = sf::radians(0.f);
+            sf::Angle target  = sf::radians(pi / 2.f);
+            sf::Angle result  = current.rotatedTowards(target, pi / 4);
+            REQUIRE(result.asRadians() == Approx(pi / 4));
+        }
+
+        SECTION("Crossing tau boundary clockwise")
+        {
+            sf::Angle current = sf::radians(tau - 0.1f);
+            sf::Angle target  = sf::radians(0.1f);
+            sf::Angle result  = current.rotatedTowards(target, 0.2f);
+            REQUIRE(result.asRadians() == Approx(target.asRadians()));
+        }
+
+        SECTION("Crossing tau boundary counter-clockwise")
+        {
+            sf::Angle current = sf::radians(0.1f);
+            sf::Angle target  = sf::radians(tau - 0.1f);
+            sf::Angle result  = current.rotatedTowards(target, 0.2f);
+            REQUIRE(result.asRadians() == Approx(target.asRadians()));
+        }
+
+        SECTION("Half-circle rotation (pi difference)")
+        {
+            sf::Angle current = sf::radians(0.f);
+            sf::Angle target  = sf::radians(pi);
+            sf::Angle result  = current.rotatedTowards(target, pi / 2);
+            REQUIRE(result.asRadians() == Approx(pi / 2));
+        }
+
+        SECTION("Full circle wrap with negative intermediate")
+        {
+            sf::Angle current = sf::radians(0.1f);
+            sf::Angle target  = sf::radians(tau - 0.1f);
+            sf::Angle result  = current.rotatedTowards(target, 0.05f);
+            REQUIRE(result.asRadians() == Approx(0.05f));
+        }
+
+        SECTION("Rotation with large speed across boundary")
+        {
+            sf::Angle current = sf::radians(3 * pi / 2.f);
+            sf::Angle target  = sf::radians(pi / 2.f);
+            sf::Angle result  = current.rotatedTowards(target, pi);
+            REQUIRE(result.asRadians() == Approx(pi / 2));
+        }
+
+        SECTION("Normalization check")
+        {
+            sf::Angle current = sf::radians(tau + 0.5f); // Should be normalized to 0.5
+            sf::Angle target  = sf::radians(0.7f);
+            sf::Angle result  = current.rotatedTowards(target, 0.3f);
+            REQUIRE(result.asRadians() == Approx(0.7f));
+        }
+    }
+
     SECTION("degrees()")
     {
         constexpr sf::Angle angle = sf::degrees(15);
         STATIC_CHECK(angle == sf::degrees(15));
         CHECK(angle.asRadians() == Approx(0.26179939f));
 
-        constexpr sf::Angle bigAngle = sf::degrees(1000);
-        STATIC_CHECK(bigAngle == sf::degrees(1000));
+        constexpr sf::Angle bigAngle = sf::degrees(1'000);
+        STATIC_CHECK(bigAngle == sf::degrees(1'000));
         CHECK(bigAngle.asRadians() == Approx(17.453293f));
 
         constexpr sf::Angle bigNegativeAngle = sf::degrees(-4321);
@@ -220,11 +311,11 @@ TEST_CASE("[System] sf::Angle")
         {
             STATIC_CHECK(sf::radians(0) * 10 == sf::Angle::Zero);
             CHECK(sf::degrees(10) * 2.5f == Approx(sf::degrees(25)));
-            CHECK(sf::degrees(100) * 10.0f == Approx(sf::degrees(1000)));
+            CHECK(sf::degrees(100) * 10.f == Approx(sf::degrees(1'000)));
 
             STATIC_CHECK(10 * sf::radians(0) == sf::Angle::Zero);
             CHECK(2.5f * sf::degrees(10) == Approx(sf::degrees(25)));
-            CHECK(10.0f * sf::degrees(100) == Approx(sf::degrees(1000)));
+            CHECK(10.f * sf::degrees(100) == Approx(sf::degrees(1'000)));
         }
 
         SECTION("operator*=")

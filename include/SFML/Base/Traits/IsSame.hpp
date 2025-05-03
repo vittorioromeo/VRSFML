@@ -4,8 +4,8 @@
 
 #if __has_builtin(__is_same)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_SAME(a, b) __is_same(a, b)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_SAME(a, b) __is_same(a, b)
 
 #else
 
@@ -15,13 +15,15 @@ namespace sf::base::priv
 template <typename, typename>
 inline constexpr bool isSameImpl = false;
 
+
+////////////////////////////////////////////////////////////
 template <typename T>
 inline constexpr bool isSameImpl<T, T> = true;
 
 } // namespace sf::base::priv
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_SAME(a, b) ::sf::base::priv::isSameImpl<a, b>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_SAME(a, b) ::sf::base::priv::isSameImpl<a, b>
 
 #endif
 

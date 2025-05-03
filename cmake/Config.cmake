@@ -143,12 +143,6 @@ elseif(${EMSCRIPTEN})
         -sJSPI=1                            # Use VM support for the JavaScript Promise Integration proposal
     )
 
-    if(DEFINED SFML_EMSCRIPTEN_SOURCE_MAP)
-        # Using `--post-js` here instead of `--pre-js` as the latter seem to cause issues in examples with threading
-        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
-        list(APPEND SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELWITHDEBINFO "--post-js=${SFML_EMSCRIPTEN_SOURCE_MAP}")
-    endif()
-
     set(SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS
         $<$<CONFIG:Debug>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_DEBUG}>
         $<$<CONFIG:Release>:${SFML_EMSCRIPTEN_TARGET_LINK_OPTIONS_RELEASE}>
@@ -171,6 +165,7 @@ elseif(${EMSCRIPTEN})
         -sMAX_WEBGL_VERSION=2               # Specifies the highest WebGL version to target
         -sMIN_WEBGL_VERSION=2               # Specifies the lowest WebGL version to target
         -sSTACK_SIZE=4mb                    # Set the total stack size
+        -sTOTAL_MEMORY=64mb                 # Set the total memory size (needed for `bubble_idle` example)
         -sUSE_PTHREADS=1                    # Enable threading support
         -sWASM=1                            # Compile code to WebAssembly
 

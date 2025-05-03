@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -91,7 +92,8 @@ public:
 ///         // return true if the writer can handle the format
 ///     }
 ///
-///     [[nodiscard]] bool open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const ChannelMap& channelMap) override
+///     [[nodiscard]] bool open(const Path& filename, unsigned int sampleRate, unsigned int channelCount, const
+///     ChannelMap& channelMap) override
 ///     {
 ///         // open the file 'filename' for writing,
 ///         // write the given sample rate and channel count to the file header

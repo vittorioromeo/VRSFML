@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -11,14 +12,14 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <iosfwd>
-
 
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class IOStreamInput;
+class IOStreamOutput;
 class IpAddressUtils;
 } // namespace sf
 
@@ -116,7 +117,7 @@ public:
     /// \see `getLocalAddress`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = Time::Zero);
+    [[nodiscard]] static base::Optional<IpAddress> getPublicAddress(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of `operator==` to compare two IP addresses
@@ -191,28 +192,6 @@ private:
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_NETWORK_API bool operator>=(IpAddress lhs, IpAddress rhs);
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator>>` to extract an IP address from an input stream
-///
-/// \param stream  Input stream
-/// \param address IP address to extract
-///
-/// \return Reference to the input stream
-///
-////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& address);
-
-////////////////////////////////////////////////////////////
-/// \brief Overload of `operator<<` to print an IP address to an output stream
-///
-/// \param stream  Output stream
-/// \param address IP address to print
-///
-/// \return Reference to the output stream
-///
-////////////////////////////////////////////////////////////
-SFML_NETWORK_API std::ostream& operator<<(std::ostream& stream, IpAddress address);
 
 } // namespace sf
 

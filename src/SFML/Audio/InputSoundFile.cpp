@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -16,10 +17,10 @@
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 
 namespace sf
@@ -198,7 +199,7 @@ Time InputSoundFile::getDuration() const
 {
     // Make sure we don't divide by 0
     if (m_channelMap.isEmpty() || m_sampleRate == 0u)
-        return Time::Zero;
+        return Time{};
 
     SFML_BASE_ASSERT(m_sampleCount % m_channelMap.getSize() == 0u);
     const auto samplesPerChannel = m_sampleCount / m_channelMap.getSize();
@@ -212,7 +213,7 @@ Time InputSoundFile::getTimeOffset() const
 {
     // Make sure we don't divide by 0
     if (m_channelMap.isEmpty() || m_sampleRate == 0u)
-        return Time::Zero;
+        return Time{};
 
     SFML_BASE_ASSERT(m_sampleOffset % m_channelMap.getSize() == 0u);
     const auto sampleOffsetPerChannel = m_sampleOffset / m_channelMap.getSize();

@@ -1,5 +1,6 @@
 #include "SFML/System/FileInputStream.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -12,9 +13,8 @@
 #include <StringifyOptionalUtil.hpp>
 #include <StringifyStringViewUtil.hpp>
 
-#include <fstream>
-#include <sstream>
 #include <string>
+
 
 namespace
 {
@@ -22,10 +22,10 @@ sf::Path getTemporaryFilePath()
 {
     static int counter = 0;
 
-    std::ostringstream oss;
+    sf::OutStringStream oss;
     oss << "sfmltemp" << counter++ << ".tmp";
 
-    return sf::Path::tempDirectoryPath() / oss.str();
+    return sf::Path::tempDirectoryPath() / oss.to<std::string>();
 }
 
 class TemporaryFile
@@ -34,7 +34,7 @@ public:
     // Create a temporary file with a randomly generated path, containing 'contents'.
     explicit TemporaryFile(const std::string& contents) : m_path(getTemporaryFilePath())
     {
-        std::ofstream ofs(m_path.to<std::string>());
+        sf::OutFileStream ofs(m_path);
         SFML_BASE_ASSERT(ofs && "Stream encountered an error");
 
         ofs << contents;
@@ -115,4 +115,24 @@ TEST_CASE("[System] sf::FileInputStream")
         CHECK(fileInputStream.seek(6).value() == 6);
         CHECK(fileInputStream.tell().value() == 6);
     }
+
+#ifndef SFML_SYSTEM_EMSCRIPTEN // TODO P1: throws an exception on Emscripten
+    SECTION("open()")
+    {
+        const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+        for (const auto& filenameSuffix : filenameSuffixes)
+        {
+            const sf::Path filename = U"System/test" + filenameSuffix + U".txt";
+            INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+            auto fileInputStream = sf::FileInputStream::open(filename).value();
+            CHECK(fileInputStream.read(buffer, 5).value() == 5);
+            CHECK(fileInputStream.tell().value() == 5);
+            CHECK(fileInputStream.getSize().value() == 12);
+            CHECK(sf::base::StringView(buffer, 5) == "Hello"_sv);
+            CHECK(fileInputStream.seek(6).value() == 6);
+            CHECK(fileInputStream.tell().value() == 6);
+        }
+    }
+#endif
 }

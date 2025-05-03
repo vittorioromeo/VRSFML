@@ -1,14 +1,14 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
 #include "SFML/Base/Optional.hpp"
-
-#include <vector>
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -45,7 +45,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API std::vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles(
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles(
         AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API std::vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles(
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles(
         AudioContext& audioContext);
 
     ////////////////////////////////////////////////////////////

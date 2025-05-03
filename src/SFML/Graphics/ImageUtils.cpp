@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -7,15 +8,22 @@
 #include "SFML/Graphics/ImageUtils.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
+#pragma GCC diagnostic pop
 
 
 namespace
@@ -24,9 +32,9 @@ namespace
 void bufferFromCallback(void* context, void* data, int size)
 {
     const auto* source = static_cast<sf::base::U8*>(data);
-    auto*       dest   = static_cast<std::vector<sf::base::U8>*>(context);
+    auto*       dest   = static_cast<sf::base::Vector<sf::base::U8>*>(context);
 
-    dest->insert(dest->end(), source, source + size);
+    dest->emplaceRange(source, static_cast<sf::base::SizeT>(size));
 }
 
 } // namespace
@@ -41,29 +49,45 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
     const Path extension     = filename.extension();
     const auto convertedSize = image.getSize().toVector2i();
 
+    // Callback to write to output stream
+    auto writeStdOfstream = [](void* context, void* data, int size)
+    {
+        auto& file = *static_cast<OutFileStream*>(context);
+        if (file)
+            file.write(static_cast<const char*>(data), static_cast<base::PtrDiffT>(size));
+    };
+
     // Deduce the image type from its extension
     if (extension == ".bmp")
     {
         // BMP format
-        if (stbi_write_bmp(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_bmp_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()) &&
+            file)
             return true;
     }
     else if (extension == ".tga")
     {
         // TGA format
-        if (stbi_write_tga(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()))
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_tga_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr()) &&
+            file)
             return true;
     }
     else if (extension == ".png")
     {
         // PNG format
-        if (stbi_write_png(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 0))
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_png_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 0) &&
+            file)
             return true;
     }
     else if (extension == ".jpg" || extension == ".jpeg")
     {
         // JPG format
-        if (stbi_write_jpg(filename.toCharPtr(), convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 90))
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_jpg_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, image.getPixelsPtr(), 90) &&
+            file)
             return true;
     }
     else
@@ -77,12 +101,12 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-std::vector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
+base::Vector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
 {
     // Choose function based on format
     const auto convertedSize = image.getSize().toVector2i();
 
-    std::vector<base::U8> buffer; // Use a single local variable for NRVO
+    base::Vector<base::U8> buffer; // Use a single local variable for NRVO
 
     if (format == SaveFormat::BMP)
     {

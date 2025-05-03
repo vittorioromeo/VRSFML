@@ -1,6 +1,8 @@
 add_subdirectory(install)
 set_target_warnings(test-sfml-install)
 
+set(CMAKE_POLICY_VERSION_MINIMUM "3.5")
+
 set(DOCTEST_NO_INSTALL ON CACHE BOOL "")
 
 CPMAddPackage(
@@ -69,11 +71,13 @@ sfml_set_stdlib(sfml-test-main)
 
 sfml_set_option(SFML_RUN_DISPLAY_TESTS ON BOOL "ON to run tests that require a display, OFF to ignore it")
 if(SFML_RUN_DISPLAY_TESTS)
+    add_definitions(-DSFML_RUN_DISPLAY_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_DISPLAY_TESTS)
 endif()
 
 sfml_set_option(SFML_RUN_AUDIO_DEVICE_TESTS ON BOOL "ON to run tests that require an audio device, OFF to ignore it")
 if(SFML_RUN_AUDIO_DEVICE_TESTS)
+    add_definitions(-DSFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
@@ -89,8 +93,11 @@ target_compile_definitions(test-sfml-system PRIVATE
     EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
 )
 
+file(GLOB GLUTILS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/GLUtils/*.cpp" "${TEST_SRCROOT}/GLUtils/*.hpp" "${TEST_SRCROOT}/GLUtils/*.inl")
+sfml_add_test(test-sfml-glutils "${GLUTILS_SRC}" SFML::GLUtils) # TODO P1: cleanup these circular deps
+
 file(GLOB WINDOW_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Window/*.cpp" "${TEST_SRCROOT}/Window/*.hpp" "${TEST_SRCROOT}/Window/*.inl")
-sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window)
+sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window) # TODO P1: cleanup these circular deps
 
 file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Graphics/*.cpp" "${TEST_SRCROOT}/Graphics/*.hpp" "${TEST_SRCROOT}/Graphics/*.inl")
 sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
@@ -135,6 +142,7 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
         adb push $<TARGET_FILE:test-sfml-graphics> ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-network>  ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-system>   ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-glutils>  ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:test-sfml-window>   ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Audio>        ${TARGET_DIR}\n\
         adb push $<TARGET_FILE:SFML::Graphics>     ${TARGET_DIR}\n\
@@ -205,7 +213,7 @@ else()
 endif()
 
 # Convenience for building and running tests in a single command
-add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
+add_custom_target(runtests DEPENDS test-sfml-base test-sfml-system test-sfml-glutils test-sfml-window test-sfml-graphics test-sfml-network test-sfml-audio)
 add_custom_command(TARGET runtests
                    COMMENT "Run tests"
                    POST_BUILD

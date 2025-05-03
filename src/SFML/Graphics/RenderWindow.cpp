@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,9 +10,10 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Window/Event.hpp"
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/WindowBase.hpp"
+
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Macros.hpp"
 
@@ -54,6 +56,9 @@ RenderWindow& RenderWindow::operator=(RenderWindow&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 RenderWindow::~RenderWindow()
 {
+    if (isMovedFrom())
+        return;
+
     // Need to activate window context during destruction to avoid GL errors
     [[maybe_unused]] const bool rc = setActive(true);
     SFML_BASE_ASSERT(rc);
@@ -123,6 +128,16 @@ base::Optional<Event> RenderWindow::pollEvent()
 base::Optional<Event> RenderWindow::waitEvent(Time timeout)
 {
     return filterEvent(WindowBase::waitEvent(timeout));
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::DrawStatistics RenderWindow::display()
+{
+    const auto result = RenderTarget::flush();
+    RenderTarget::syncGPUEndFrame();
+    Window::display();
+    return result;
 }
 
 

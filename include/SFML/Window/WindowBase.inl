@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -21,7 +22,21 @@ struct DelayOverloadResolution
 #endif
 };
 
+////////////////////////////////////////////////////////////
+template <typename T>
+auto&& functionPointerToFunctionObject(T&& f)
+{
+    return static_cast<T&&>(f);
+}
+
+template <typename R, typename... Args>
+auto functionPointerToFunctionObject(R (*f)(Args...))
+{
+    return [f](Args... args) -> R { return f(args...); };
+}
+
 } // namespace sf::priv
+
 
 namespace sf
 {
@@ -31,8 +46,15 @@ void WindowBase::pollAndHandleEvents(Handlers&&... handlers)
 {
     static_assert(sizeof...(Handlers) > 0, "Must provide at least one handler");
 
+    auto visitor = sf::base::OverloadSet{priv::functionPointerToFunctionObject(static_cast<Handlers&&>(handlers))...,
+                                         [](const priv::DelayOverloadResolution&) { /* ignore */ }};
+
+    // Disable misc-const-correctness for this line since clang-tidy
+    // complains about it even though the code would become incorrect
+
+    // NOLINTNEXTLINE(misc-const-correctness)
     while (base::Optional event = (this->*PollEventFn)())
-        event->match(static_cast<Handlers&&>(handlers)..., [](const priv::DelayOverloadResolution&) { /* ignore */ });
+        event->visit(visitor);
 }
 
 } // namespace sf

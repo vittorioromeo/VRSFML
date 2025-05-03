@@ -10,6 +10,8 @@
 
 #include "SFML/System/RectUtils.hpp"
 
+#include "ExampleUtils.hpp"
+
 #include <utility>
 #include <vector>
 
@@ -35,26 +37,26 @@ private:
 
     void createBrickGrid()
     {
-        const sf::Vector2f offset{50.f, 50.f};
+        constexpr sf::Vector2f offset{50.f, 50.f};
 
-        const std::size_t nBricksPerRow = 12;
-        const std::size_t nRows         = 4;
+        constexpr std::size_t nBricksPerRow = 13;
+        constexpr std::size_t nRows         = 4;
 
-        const float spacing = 120.f / 14.f;
+        constexpr float spacing = 120.f / 14.f;
 
         sf::Vector2f next{0.f, 0.f};
 
         for (std::size_t y = 0; y < nRows; ++y)
         {
-            for (std::size_t x = 0; x <= nBricksPerRow; ++x)
+            for (std::size_t x = 0; x < nBricksPerRow; ++x)
             {
                 m_bricks.emplace_back(
-                    sf::RectangleShape::Settings{.position         = offset + next,
-                                                 .origin           = brickSize / 2.f,
-                                                 .fillColor        = sf::Color::DarkGreen,
-                                                 .outlineColor     = sf::Color::Green,
-                                                 .outlineThickness = 2.f,
-                                                 .size             = brickSize});
+                    sf::RectangleShapeData{.position         = offset + next,
+                                           .origin           = brickSize / 2.f,
+                                           .fillColor        = sf::Color::DarkGreen,
+                                           .outlineColor     = sf::Color::Green,
+                                           .outlineThickness = 2.f,
+                                           .size             = brickSize});
 
                 next.x += spacing + brickSize.x;
             }
@@ -66,19 +68,16 @@ private:
 
     bool performBallBrickCollisionResolution(const sf::RectangleShape& brick)
     {
-        if (!sf::findIntersection(brick.getGlobalBounds(), m_ball.getGlobalBounds()).hasValue())
+        const auto ballBounds  = m_ball.getGlobalBounds();
+        const auto brickBounds = brick.getGlobalBounds();
+
+        if (!sf::findIntersection(brickBounds, ballBounds).hasValue())
             return false;
 
-        const auto [ballLeft, ballTop]     = m_ball.getTopLeft();
-        const auto [ballRight, ballBottom] = m_ball.getBottomRight();
-
-        const auto [brickLeft, brickTop]     = brick.getTopLeft();
-        const auto [brickRight, brickBottom] = brick.getBottomRight();
-
-        const float overlapLeft{ballRight - brickLeft};
-        const float overlapRight{brickRight - ballLeft};
-        const float overlapTop{ballBottom - brickTop};
-        const float overlapBottom{brickBottom - ballTop};
+        const float overlapLeft{ballBounds.getRight() - brickBounds.getLeft()};
+        const float overlapRight{brickBounds.getRight() - ballBounds.getLeft()};
+        const float overlapTop{ballBounds.getBottom() - brickBounds.getTop()};
+        const float overlapBottom{brickBounds.getBottom() - ballBounds.getTop()};
 
         const bool ballFromLeft(std::abs(overlapLeft) < std::abs(overlapRight));
         const bool ballFromTop(std::abs(overlapTop) < std::abs(overlapBottom));
@@ -107,23 +106,23 @@ private:
         if (ballLeft < boundaryLeft)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setCenterLeft({boundaryLeft, m_ball.position.y});
+            m_ball.setLeft(boundaryLeft);
         }
         else if (ballRight > boundaryRight)
         {
             m_ballVelocity.x *= -1.f;
-            m_ball.setCenterRight({boundaryRight, m_ball.position.y});
+            m_ball.setRight(boundaryRight);
         }
 
         if (ballTop < boundaryTop)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setTopCenter({m_ball.position.x, boundaryTop});
+            m_ball.setTop(boundaryTop);
         }
         else if (ballBottom > boundaryBottom)
         {
             m_ballVelocity.y *= -1.f;
-            m_ball.setBottomCenter({m_ball.position.x, boundaryBottom});
+            m_ball.setBottom(boundaryBottom);
         }
     }
 
@@ -200,26 +199,22 @@ public:
 
         //
         // Player collision versus boundaries
-        const float playerHalfWidth = m_player.getSize().x / 2.f;
-        const float playerLeft      = m_player.position.x - playerHalfWidth;
-        const float playerRight     = m_player.position.x + playerHalfWidth;
-
         const float boundaryLeft  = 0.f;
         const float boundaryRight = resolution.x;
 
-        if (playerLeft < boundaryLeft)
-            m_player.position.x = boundaryLeft + playerHalfWidth;
-        else if (playerRight > boundaryRight)
-            m_player.position.x = boundaryRight - playerHalfWidth;
+        if (m_player.getLeft() < boundaryLeft)
+            m_player.setLeft(boundaryLeft);
+        else if (m_player.getRight() > boundaryRight)
+            m_player.setRight(boundaryRight);
     }
 
     void drawOnto(sf::RenderTarget& renderTarget)
     {
-        renderTarget.draw(m_ball, /* texture */ nullptr);
-        renderTarget.draw(m_player, /* texture */ nullptr);
+        renderTarget.draw(m_ball);
+        renderTarget.draw(m_player);
 
         for (const sf::RectangleShape& brick : m_bricks)
-            renderTarget.draw(brick, /* texture */ nullptr);
+            renderTarget.draw(brick);
     }
 };
 
@@ -233,10 +228,10 @@ int main()
     //
     //
     // Set up window
-    sf::RenderWindow window(
+    auto window = makeDPIScaledRenderWindow(
         {.size            = resolution.toVector2u(),
          .title           = "Arkanoid",
-         .resizable       = false,
+         .resizable       = true,
          .vsync           = true,
          .frametimeLimit  = 144u,
          .contextSettings = {.antiAliasingLevel = 8u}});
@@ -252,6 +247,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (handleAspectRatioAwareResize(*event, resolution, window))
+                continue;
         }
 
         game.update();

@@ -9,7 +9,6 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -28,15 +27,19 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <algorithm>
+#include "SFML/Base/Clamp.hpp"
+
+#include "ExampleUtils.hpp"
+
 #include <array>
-#include <iostream>
 #include <limits>
+#include <string>
 #include <vector>
 
 #include <cmath>
@@ -49,7 +52,7 @@ namespace
 constexpr auto windowWidth  = 800u;
 constexpr auto windowHeight = 600u;
 constexpr auto pi           = 3.14159265359f;
-constexpr auto sqrt2        = 2.0f * 0.707106781186547524401f;
+constexpr auto sqrt2        = 2.f * 0.707106781186547524401f;
 
 sf::Path resourcesDir()
 {
@@ -122,12 +125,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listenerShape, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, /* texture */ nullptr, states);
+        target.draw(m_soundShape, states);
     }
 
     void start(sf::PlaybackDevice& playbackDevice) override
@@ -136,7 +139,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -178,16 +181,16 @@ public:
         m_music.setPitch(m_pitch);
 
         // Set initial volume
-        m_music.setVolume(m_volume);
+        m_music.setVolume(m_volume / 100.f);
     }
 
     void update(float /*time*/, float x, float y) override
     {
-        m_pitch  = std::clamp(2.f * x, 0.f, 2.f);
-        m_volume = std::clamp(100.f * (1.f - y), 0.f, 100.f);
+        m_pitch  = sf::base::clamp(2.f * x, 0.f, 2.f);
+        m_volume = sf::base::clamp(100.f * (1.f - y), 0.f, 100.f);
 
         m_music.setPitch(m_pitch);
-        m_music.setVolume(m_volume);
+        m_music.setVolume(m_volume / 100.f);
 
         m_pitchText.setString("Pitch: " + std::to_string(m_pitch));
         m_volumeText.setString("Volume: " + std::to_string(m_volume));
@@ -206,7 +209,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -291,10 +294,10 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position);
 
-        target.draw(m_soundConeOuter, /* texture */ nullptr, statesCopy);
-        target.draw(m_soundConeInner, /* texture */ nullptr, statesCopy);
-        target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
-        target.draw(m_listenerShape, /* texture */ nullptr, states);
+        target.draw(m_soundConeOuter, statesCopy);
+        target.draw(m_soundConeInner, statesCopy);
+        target.draw(m_soundShape, statesCopy);
+        target.draw(m_listenerShape, states);
         target.draw(m_text, states);
     }
 
@@ -304,7 +307,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -351,8 +354,8 @@ public:
 
     void update(float /*time*/, float x, float y) override
     {
-        m_amplitude = std::clamp(0.2f * (1.f - y), 0.f, 0.2f);
-        m_frequency = std::clamp(500.f * x, 0.f, 500.f);
+        m_amplitude = sf::base::clamp(0.2f * (1.f - y), 0.f, 0.2f);
+        m_frequency = sf::base::clamp(500.f * x, 0.f, 500.f);
 
         m_currentAmplitude.setString("Amplitude: " + std::to_string(m_amplitude));
         m_currentFrequency.setString("Frequency: " + std::to_string(m_frequency) + " Hz");
@@ -376,7 +379,7 @@ public:
         m_listener.position = {0.f, 0.f, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         play(playbackDevice);
     }
@@ -454,7 +457,7 @@ private:
         Sawtooth
     };
 
-    static constexpr unsigned int sampleRate{44100};
+    static constexpr unsigned int sampleRate{44'100};
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
@@ -495,8 +498,8 @@ public:
 
     void update(float time, float x, float y) override
     {
-        m_velocity = std::clamp(150.f * (1.f - y), 0.f, 150.f);
-        m_factor   = std::clamp(x, 0.f, 1.f);
+        m_velocity = sf::base::clamp(150.f * (1.f - y), 0.f, 150.f);
+        m_factor   = sf::base::clamp(x, 0.f, 1.f);
 
         m_currentVelocity.setString("Velocity: " + std::to_string(m_velocity));
         m_currentFactor.setString("Doppler Factor: " + std::to_string(m_factor));
@@ -514,8 +517,8 @@ public:
         statesCopy.transform = sf::Transform::Identity;
         statesCopy.transform.translate(m_position - sf::Vector2f({20.f, 0.f}));
 
-        target.draw(m_listenerShape, /* texture */ nullptr, states);
-        target.draw(m_soundShape, /* texture */ nullptr, statesCopy);
+        target.draw(m_listenerShape, states);
+        target.draw(m_soundShape, statesCopy);
         target.draw(m_currentVelocity, states);
         target.draw(m_currentFactor, states);
     }
@@ -526,7 +529,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         play(playbackDevice);
     }
@@ -560,7 +563,7 @@ private:
         // It doesn't make sense to seek in a tone generator
     }
 
-    static constexpr unsigned int sampleRate{44100};
+    static constexpr unsigned int sampleRate{44'100};
     static constexpr std::size_t  chunkSize{sampleRate / 100};
     static constexpr float        timePerSample{1.f / float{sampleRate}};
 
@@ -596,12 +599,12 @@ public:
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
     {
-        target.draw(m_listenerShape, /* texture */ nullptr, states);
+        target.draw(m_listenerShape, states);
 
         states.transform = sf::Transform::Identity;
         states.transform.translate(m_position);
 
-        target.draw(m_soundShape, /* texture */ nullptr, states);
+        target.draw(m_soundShape, states);
         target.draw(m_enabledText);
         target.draw(m_instructions);
     }
@@ -612,7 +615,7 @@ public:
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
 
         if (!playbackDevice.updateListener(m_listener))
-            std::cerr << "Failed to update listener\n";
+            sf::cErr() << "Failed to update listener\n";
 
         m_music.play(playbackDevice);
     }
@@ -639,7 +642,7 @@ protected:
         m_music.setLooping(true);
 
         // Set attenuation to a nice value
-        m_music.setAttenuation(0.0f);
+        m_music.setAttenuation(0.f);
     }
 
 
@@ -707,40 +710,40 @@ protected:
                                                                                float*        outputFrames,
                                                                                unsigned int& outputFrameCount,
                                                                                unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have as many state objects as the audio engine has channels
+            if (state.size() < frameChannelCount)
+                state.resize(frameChannelCount - state.size());
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have as many state objects as the audio engine has channels
-                if (state.size() < frameChannelCount)
-                    state.resize(frameChannelCount - state.size());
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        auto& channelState = state[channel];
+                    auto& channelState = state[channel];
 
-                        const auto xn = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        const auto yn = coefficients.a0 * xn + coefficients.a1 * channelState.xnz1 +
-                                        coefficients.a2 * channelState.xnz2 - coefficients.b1 * channelState.ynz1 -
-                                        coefficients.b2 * channelState.ynz2;
+                    const auto xn = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    const auto yn = coefficients.a0 * xn + coefficients.a1 * channelState.xnz1 +
+                                    coefficients.a2 * channelState.xnz2 - coefficients.b1 * channelState.ynz1 -
+                                    coefficients.b2 * channelState.ynz2;
 
-                        channelState.xnz2 = channelState.xnz1;
-                        channelState.xnz1 = xn;
-                        channelState.ynz2 = channelState.ynz1;
-                        channelState.ynz1 = yn;
+                    channelState.xnz2 = channelState.xnz1;
+                    channelState.xnz1 = xn;
+                    channelState.ynz2 = channelState.ynz1;
+                    channelState.ynz1 = yn;
 
-                        outputFrames[channel] = enabled ? yn : xn;
-                    }
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    outputFrames[channel] = enabled ? yn : xn;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 };
 
@@ -821,33 +824,33 @@ struct Echo : Processing
                           float*        outputFrames,
                           unsigned int& outputFrameCount,
                           unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have enough space to store the delayed frames for all of the audio engine's channels
+            if (buffer.size() < delayInFrames * frameChannelCount)
+                buffer.resize(delayInFrames * frameChannelCount - buffer.size(), 0.f);
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have enough space to store the delayed frames for all of the audio engine's channels
-                if (buffer.size() < delayInFrames * frameChannelCount)
-                    buffer.resize(delayInFrames * frameChannelCount - buffer.size(), 0.f);
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        const auto bufferIndex = (cursor * frameChannelCount) + channel;
-                        buffer[bufferIndex]    = (buffer[bufferIndex] * decay) + (input * dry);
-                        outputFrames[channel]  = enabled ? buffer[bufferIndex] * wet : input;
-                    }
-
-                    cursor = (cursor + 1) % delayInFrames;
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    const auto bufferIndex = (cursor * frameChannelCount) + channel;
+                    buffer[bufferIndex]    = (buffer[bufferIndex] * decay) + (input * dry);
+                    outputFrames[channel]  = enabled ? buffer[bufferIndex] * wet : input;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                cursor = (cursor + 1) % delayInFrames;
+
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 };
 
@@ -876,29 +879,29 @@ public:
                                    float*        outputFrames,
                                    unsigned int& outputFrameCount,
                                    unsigned int  frameChannelCount) mutable
+        {
+            // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
+            // will always be provided in frameChannelCount, this can be different from the channel count
+            // of the audio source so make sure to size your buffers according to the engine and not the source
+            // Ensure we have as many filter objects as the audio engine has channels
+            while (filters.size() < frameChannelCount)
+                filters.emplace_back(sampleRate, sustain);
+
+            for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
-                // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
-                // will always be provided in frameChannelCount, this can be different from the channel count
-                // of the audio source so make sure to size your buffers according to the engine and not the source
-                // Ensure we have as many filter objects as the audio engine has channels
-                while (filters.size() < frameChannelCount)
-                    filters.emplace_back(sampleRate, sustain);
-
-                for (auto frame = 0u; frame < outputFrameCount; ++frame)
+                for (auto channel = 0u; channel < frameChannelCount; ++channel)
                 {
-                    for (auto channel = 0u; channel < frameChannelCount; ++channel)
-                    {
-                        const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
-                        outputFrames[channel] = enabled ? filters[channel](input) : input;
-                    }
-
-                    inputFrames += (inputFrames ? frameChannelCount : 0u);
-                    outputFrames += frameChannelCount;
+                    const auto input = inputFrames ? inputFrames[channel] : 0.f; // Read silence if no input data available
+                    outputFrames[channel] = enabled ? filters[channel](input) : input;
                 }
 
-                // We processed data 1:1
-                inputFrameCount = outputFrameCount;
-            });
+                inputFrames += (inputFrames ? frameChannelCount : 0u);
+                outputFrames += frameChannelCount;
+            }
+
+            // We processed data 1:1
+            inputFrameCount = outputFrameCount;
+        });
     }
 
 private:
@@ -1013,8 +1016,14 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    sf::RenderWindow window(
-        {.size{windowWidth, windowHeight}, .title = "SFML Sound Effects", .resizable = false, .vsync = true});
+    constexpr sf::Vector2f windowSize{windowWidth, windowHeight};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "SFML Sound Effects",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Load the application font and pass it to the Effect class
     const auto font = sf::Font::openFromFile(resourcesDir() / "tuffy.ttf").value();
@@ -1023,7 +1032,7 @@ int main()
     const auto musicPath = resourcesDir() / "doodle_pop.ogg";
     if (!musicPath.exists())
     {
-        std::cerr << "Music file '" << musicPath << "' not found, aborting" << std::endl;
+        sf::cErr() << "Music file '" << musicPath << "' not found, aborting" << sf::endL;
         return EXIT_FAILURE;
     }
 
@@ -1123,6 +1132,9 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
 
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
+
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {
                 switch (keyPressed->code)
@@ -1215,7 +1227,8 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(window.getSize().toVector2f());
+        const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(
+            window.getSize().toVector2f()); // TODO P2: wrong when resizing
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window

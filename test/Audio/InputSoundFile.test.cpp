@@ -14,6 +14,7 @@
 #include <SystemUtil.hpp>
 
 #include <StringifyArrayUtil.hpp>
+#include <string>
 
 
 TEST_CASE("[Audio] sf::InputSoundFile")
@@ -36,48 +37,65 @@ TEST_CASE("[Audio] sf::InputSoundFile")
 
         SECTION("Valid file")
         {
-            SECTION("flac")
+            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
+            for (const auto& filenameSuffix : filenameSuffixes)
             {
-                const auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.flac").value();
-                CHECK(inputSoundFile.getSampleCount() == 87'798);
-                CHECK(inputSoundFile.getChannelCount() == 1);
-                CHECK(inputSoundFile.getSampleRate() == 44'100);
-                CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-                CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
-                CHECK(inputSoundFile.getSampleOffset() == 0);
-            }
 
-            SECTION("mp3")
-            {
-                const auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.mp3").value();
-                CHECK(inputSoundFile.getSampleCount() == 87'798);
-                CHECK(inputSoundFile.getChannelCount() == 1);
-                CHECK(inputSoundFile.getSampleRate() == 44'100);
-                CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-                CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
-                CHECK(inputSoundFile.getSampleOffset() == 0);
-            }
+                SECTION("flac")
+                {
+                    const sf::Path filename = U"Audio/ding" + filenameSuffix + U".flac";
+                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
-            SECTION("ogg")
-            {
-                const auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/doodle_pop.ogg").value();
-                CHECK(inputSoundFile.getSampleCount() == 2'116'992);
-                CHECK(inputSoundFile.getChannelCount() == 2);
-                CHECK(inputSoundFile.getSampleRate() == 44'100);
-                CHECK(inputSoundFile.getDuration() == sf::microseconds(24'002'176));
-                CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
-                CHECK(inputSoundFile.getSampleOffset() == 0);
-            }
+                    const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
+                    CHECK(inputSoundFile.getSampleCount() == 87'798);
+                    CHECK(inputSoundFile.getChannelCount() == 1);
+                    CHECK(inputSoundFile.getSampleRate() == 44'100);
+                    CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
+                    CHECK(inputSoundFile.getSampleOffset() == 0);
+                }
 
-            SECTION("wav")
-            {
-                const auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/killdeer.wav").value();
-                CHECK(inputSoundFile.getSampleCount() == 112'941);
-                CHECK(inputSoundFile.getChannelCount() == 1);
-                CHECK(inputSoundFile.getSampleRate() == 22'050);
-                CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-                CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
-                CHECK(inputSoundFile.getSampleOffset() == 0);
+                SECTION("mp3")
+                {
+                    const sf::Path filename = U"Audio/ding" + filenameSuffix + U".mp3";
+                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                    const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
+                    CHECK(inputSoundFile.getSampleCount() == 87'798);
+                    CHECK(inputSoundFile.getChannelCount() == 1);
+                    CHECK(inputSoundFile.getSampleRate() == 44'100);
+                    CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
+                    CHECK(inputSoundFile.getSampleOffset() == 0);
+                }
+
+                SECTION("ogg")
+                {
+                    const sf::Path filename = U"Audio/doodle_pop" + filenameSuffix + U".ogg";
+                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                    const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
+                    CHECK(inputSoundFile.getSampleCount() == 2'116'992);
+                    CHECK(inputSoundFile.getChannelCount() == 2);
+                    CHECK(inputSoundFile.getSampleRate() == 44'100);
+                    CHECK(inputSoundFile.getDuration() == sf::microseconds(24'002'176));
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
+                    CHECK(inputSoundFile.getSampleOffset() == 0);
+                }
+
+                SECTION("wav")
+                {
+                    const sf::Path filename = U"Audio/killdeer" + filenameSuffix + U".wav";
+                    INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                    const auto inputSoundFile = sf::InputSoundFile::openFromFile(filename).value();
+                    CHECK(inputSoundFile.getSampleCount() == 112'941);
+                    CHECK(inputSoundFile.getChannelCount() == 1);
+                    CHECK(inputSoundFile.getSampleRate() == 22'050);
+                    CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
+                    CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
+                    CHECK(inputSoundFile.getSampleOffset() == 0);
+                }
             }
         }
     }
@@ -90,7 +108,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
         CHECK(inputSoundFile.getChannelCount() == 1);
         CHECK(inputSoundFile.getSampleRate() == 22'050);
         CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-        CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+        CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
         CHECK(inputSoundFile.getSampleOffset() == 0);
     }
 
@@ -104,7 +122,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -116,7 +134,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -128,7 +146,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 2);
             CHECK(inputSoundFile.getSampleRate() == 44'100);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(24'002'176));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
 
@@ -140,7 +158,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
             CHECK(inputSoundFile.getChannelCount() == 1);
             CHECK(inputSoundFile.getSampleRate() == 22'050);
             CHECK(inputSoundFile.getDuration() == sf::microseconds(5'122'040));
-            CHECK(inputSoundFile.getTimeOffset() == sf::Time::Zero);
+            CHECK(inputSoundFile.getTimeOffset() == sf::Time{});
             CHECK(inputSoundFile.getSampleOffset() == 0);
         }
     }

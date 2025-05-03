@@ -8,7 +8,8 @@ namespace sf::base
 template <typename... Fs>
 struct [[nodiscard]] OverloadSet : Fs...
 {
-    [[nodiscard, gnu::always_inline]] explicit OverloadSet(Fs&&... fs) noexcept : Fs{static_cast<Fs&&>(fs)}...
+    template <typename... FFwds>
+    [[nodiscard, gnu::always_inline]] explicit OverloadSet(FFwds&&... fs) noexcept : Fs{static_cast<FFwds&&>(fs)}...
     {
     }
 

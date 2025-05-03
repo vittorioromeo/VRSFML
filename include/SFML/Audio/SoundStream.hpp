@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -237,7 +238,7 @@ protected:
     ///
     /// This function can be overridden by derived classes to
     /// allow implementation of custom loop points. Otherwise,
-    /// it just calls `onSeek(Time::Zero)` and returns 0.
+    /// it just calls `onSeek(Time{})` and returns 0.
     ///
     /// \return The seek position after looping (or `base::nullOpt` if there's no loop)
     ///
