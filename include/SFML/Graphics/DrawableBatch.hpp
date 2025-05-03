@@ -1,6 +1,4 @@
 #pragma once
-#include "TextData.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -162,6 +160,12 @@ struct PersistentGPUStorage
     [[nodiscard]] const void* getVAOGroup() const;
 
     ////////////////////////////////////////////////////////////
+    void flushVertexWritesToGPU(base::SizeT count, base::SizeT offset);
+
+    ////////////////////////////////////////////////////////////
+    void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset);
+
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
@@ -319,6 +323,7 @@ private:
     ////////////////////////////////////////////////////////////
     void addShapeOutline(const Transform& transform, const Vertex* data, base::SizeT size);
 
+protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -352,6 +357,19 @@ class CPUDrawableBatch : public priv::DrawableBatchImpl<priv::CPUStorage>
 class PersistentGPUDrawableBatch : public priv::DrawableBatchImpl<priv::PersistentGPUStorage>
 {
     using DrawableBatchImpl<priv::PersistentGPUStorage>::DrawableBatchImpl;
+
+public:
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+    {
+        m_storage.flushVertexWritesToGPU(count, offset);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+    {
+        m_storage.flushIndexWritesToGPU(count, offset);
+    }
 };
 
 } // namespace sf
