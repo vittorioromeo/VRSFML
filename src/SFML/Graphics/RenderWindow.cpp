@@ -4,7 +4,6 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/View.hpp"
@@ -99,6 +98,7 @@ bool RenderWindow::setActive(bool active)
     // try to draw to the default framebuffer of the RenderWindow
     if (active && result)
     {
+        // TODO P2: many redundant calls, but this is needed when using rendertextures
         glCheck(glBindFramebuffer(GL_FRAMEBUFFER, m_defaultFrameBuffer));
         return true;
     }

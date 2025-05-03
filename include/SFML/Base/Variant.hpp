@@ -259,7 +259,7 @@ public:
 
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
-        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
+        requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
     : tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
     {
     }
@@ -348,7 +348,7 @@ public:
 
     template <typename T>
     [[gnu::always_inline]] tinyvariant& operator=(T&& x)
-        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
+        requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 

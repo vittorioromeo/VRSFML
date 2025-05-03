@@ -10,6 +10,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
@@ -151,7 +152,7 @@ int main()
             const std::size_t    type        = i % 6u;
             const sf::FloatRect& textureRect = spriteTextureRects[type];
 
-            std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1)) + 1);
+            std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 
             auto& [text, circleShape, sprite, velocity, torque] = entities.emplace_back(
                 sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
@@ -201,8 +202,16 @@ int main()
         GPUStorage = 2
     };
 
+    const auto defaultBatchType =
+#ifdef SFML_OPENGL_ES
+        BatchType::CPUStorage
+#else
+        BatchType::GPUStorage
+#endif
+        ;
+
     auto          batchType                = BatchType::Disabled;
-    bool          autobatch                = true;
+    auto          autobatchType            = defaultBatchType;
     sf::base::U64 autoBatchVertexThreshold = 32'768u;
     bool          drawSprites              = true;
     bool          drawText                 = true;
@@ -375,10 +384,13 @@ int main()
                 clearSamples();
 
             ImGui::BeginDisabled(batchType != BatchType::Disabled);
-            if (ImGui::Checkbox("Autobatch", &autobatch))
+            if (ImGui::Combo("Autobatch type",
+                             reinterpret_cast<int*>(&autobatchType),
+                             batchTypeItems,
+                             sf::base::getArraySize(batchTypeItems)))
             {
                 clearSamples();
-                window.setAutoBatchEnabled(autobatch);
+                window.setAutoBatchMode(static_cast<sf::RenderTarget::AutoBatchMode>(autobatchType));
             }
 
             const sf::base::U64 step = 1u;
