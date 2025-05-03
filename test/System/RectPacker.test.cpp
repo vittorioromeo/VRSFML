@@ -7,6 +7,7 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////

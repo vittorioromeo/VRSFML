@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -30,7 +31,6 @@ namespace sf::EventUtils
 [[nodiscard]] SFML_WINDOW_API bool isClosedOrEscapeKeyPressed(const Event& event);
 
 } // namespace sf::EventUtils
-
 
 ////////////////////////////////////////////////////////////
 /// \namespace sf::EventUtils

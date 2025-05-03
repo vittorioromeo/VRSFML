@@ -1,58 +1,92 @@
+#if 1
 
-#include "SFML/ImGui/ImGui.hpp"
+    #include "SFML/Graphics/Color.hpp"
+    #include "SFML/Graphics/DrawableBatch.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/Image.hpp"
+    #include "SFML/Graphics/PrimitiveType.hpp"
+    #include "SFML/Graphics/RenderStates.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/RenderWindow.hpp"
+    #include "SFML/Graphics/Shader.hpp"
+    #include "SFML/Graphics/Sprite.hpp"
+    #include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Texture.hpp"
+    #include "SFML/Graphics/TextureAtlas.hpp"
+    #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Graphics/CircleShape.hpp"
-#include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RectangleShape.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/RenderWindow.hpp"
-#include "SFML/Graphics/Shader.hpp"
-#include "SFML/Graphics/Sprite.hpp"
-#include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/Texture.hpp"
-#include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/Vertex.hpp"
+    #include "SFML/Window/EventUtils.hpp"
+    #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Window/ContextSettings.hpp"
-#include "SFML/Window/Event.hpp"
-#include "SFML/Window/EventUtils.hpp"
+int main()
+{
+    auto windowContext = sf::WindowContext::create().value();
 
-#include "SFML/System/AnchorPointMixin.hpp"
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Path.hpp"
-#include "SFML/System/Rect.hpp"
-#include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+    sf::RenderWindow rw{
+        {.size            = {3440u, 1440u},
+         .title           = "sus",
+         .fullscreen      = false,
+         .resizable       = false,
+         .closable        = false,
+         .hasTitlebar     = false,
+         .vsync           = false,
+         .frametimeLimit  = 60u,
+         .contextSettings = {}}};
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Optional.hpp"
+    while (true)
+    {
+        while (sf::base::Optional event = rw.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return 0;
+        }
 
-#include <imgui.h>
+        rw.clear(sf::Color::Black);
+        rw.display();
+    }
+}
 
-#include <array>
-#include <iostream>
-#include <random>
-#include <sstream>
-#include <string>
-#include <vector>
 
-#include <cstddef>
+#else
+
+
+    #include "SFML/ImGui/ImGui.hpp"
+
+    #include "SFML/Graphics/Color.hpp"
+    #include "SFML/Graphics/DrawableBatch.hpp"
+    #include "SFML/Graphics/Font.hpp"
+    #include "SFML/Graphics/GraphicsContext.hpp"
+    #include "SFML/Graphics/Image.hpp"
+    #include "SFML/Graphics/PrimitiveType.hpp"
+    #include "SFML/Graphics/RenderStates.hpp"
+    #include "SFML/Graphics/RenderTexture.hpp"
+    #include "SFML/Graphics/RenderWindow.hpp"
+    #include "SFML/Graphics/Shader.hpp"
+    #include "SFML/Graphics/Sprite.hpp"
+    #include "SFML/Graphics/Text.hpp"
+    #include "SFML/Graphics/Texture.hpp"
+    #include "SFML/Graphics/TextureAtlas.hpp"
+    #include "SFML/Graphics/Vertex.hpp"
+
+    #include "SFML/Window/EventUtils.hpp"
+
+    #include "SFML/System/Path.hpp"
+    #include "SFML/System/Vector2.hpp"
+
+    #include "SFML/Base/Optional.hpp"
+
+    #define IMGUI_DEFINE_MATH_OPERATORS
+    #include <imgui.h>
 
 
 ////////////////////////////////////////////////////////////
 
-#if 1
+    #if 1
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto             graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -90,14 +124,14 @@ int main()
 
     auto winRT = sf::Texture::create(window.getSize()).value();
 
-    // auto finalImage = baseRenderTexture.getTexture().copyToImage();
-    // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
+        // auto finalImage = baseRenderTexture.getTexture().copyToImage();
+        // auto finalTx    = sf::Texture::loadFromImage(finalImage).value();
 
-#define CHECK(...)                                 \
-    if (!(__VA_ARGS__))                            \
-    {                                              \
-        std::cout << "fail " #__VA_ARGS__ << '\n'; \
-    }
+        #define CHECK(...)                                  \
+            if (!(__VA_ARGS__))                             \
+            {                                               \
+                sf::cOut() << "fail " #__VA_ARGS__ << '\n'; \
+            }
 
     sf::Sprite rtSprite{.textureRect = baseRenderTexture.getTexture().getRect()};
     sf::Sprite rtAASprite{.textureRect = baseRenderTextureAA.getTexture().getRect()};
@@ -107,7 +141,7 @@ int main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         window.clear();
@@ -119,14 +153,14 @@ int main()
             rt.display();
 
             rts.position = {xBias, 0};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
 
             rt.clear();
             rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
             rt.display();
 
             rts.position = {xBias + 128, 0};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
 
             rt.clear();
             rt.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
@@ -134,7 +168,7 @@ int main()
             rt.display();
 
             rts.position = {xBias, 128};
-            window.draw(rts, rt.getTexture());
+            window.draw(rts, {.texture = &rt.getTexture()});
         };
 
         doit(baseRenderTexture, rtSprite, 0);
@@ -149,11 +183,11 @@ int main()
     }
 }
 
-#elif 0
+    #elif 0
 
 int main()
 {
-    auto graphicsContext = sf::GraphicsContext::create().value();
+    auto             graphicsContext = sf::GraphicsContext::create().value();
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
@@ -173,7 +207,7 @@ int main()
     const char* shaderSrc = R"glsl(
 // This shader draws texture on the left using RB channels and
 // texture2 on the right using G channel
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 uniform sampler2D texture2;
 
 in vec4 sf_v_color;
@@ -183,15 +217,13 @@ layout(location = 0) out vec4 sf_fragColor;
 
 void main()
 {
-    vec2 normalizedTexCoord = sf_v_texCoord / vec2(textureSize(sf_u_texture, 0));
-
-	vec4 color1 = texture( sf_u_texture, normalizedTexCoord * vec2( 2.0, 1.0 ) + vec2( 0.0, 0.0 ));
-	vec4 color2 = texture( texture2, normalizedTexCoord * vec2( 2.0, 1.0 ) + vec2( -1.0, 0.0 ));
+	vec4 color1 = texture( sf_u_texture, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( 0.0, 0.0 ));
+	vec4 color2 = texture( texture2, sf_v_texCoord * vec2( 2.0, 1.0 ) + vec2( -1.0, 0.0 ));
 	sf_fragColor = sf_v_color * ( vec4(color2.x, color1.y, color2.z, 1.0 ));
 }
 )glsl";
 
-    auto shader     = sf::Shader::loadFromMemory(shaderSrc, sf::Shader::Type::Fragment).value();
+    auto shader     = sf::Shader::loadFromMemory({.fragmentCode = shaderSrc}).value();
     auto ulTexture2 = shader.getUniformLocation("texture2").value();
     (void)shader.setUniform(ulTexture2, texture);
 
@@ -216,7 +248,7 @@ void main()
     return 0;
 }
 
-#elif 1
+    #elif 1
 
 int main()
 {
@@ -251,8 +283,8 @@ int main()
 
         window.clear();
 
-        window.draw(rs0, /* texture */ nullptr);
-        window.draw(cs0, /* texture */ nullptr);
+        window.draw(rs0);
+        window.draw(cs0);
 
         cs0.rotation += sf::radians(0.0005f);
         cs0.setCenter(rs0.getBottomLeft());
@@ -261,7 +293,7 @@ int main()
     }
 }
 
-#elif 0
+    #elif 0
 
 int main()
 {
@@ -322,7 +354,7 @@ int main()
 
             drawableBatch.add(text1);
             sfmlLogo.position = {100.f, 50.f};
-            sfmlLogo.scale    = {1.0f, 1.0f};
+            sfmlLogo.scale    = {1.f, 1.f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text2);
@@ -332,7 +364,7 @@ int main()
 
             drawableBatch.add(text3);
             sfmlLogo.position = {250.f, 250.f};
-            sfmlLogo.scale    = {1.0f, 1.0f};
+            sfmlLogo.scale    = {1.f, 1.f};
             drawableBatch.add(sfmlLogo);
 
             drawableBatch.add(text4);
@@ -343,7 +375,7 @@ int main()
             window.draw(drawableBatch, {.texture = &textureAtlas.getTexture()});
         }
 
-        // window.draw(circle0, /* texture */ nullptr);
+        // window.draw(circle0);
 
         window.display();
     }
@@ -351,18 +383,18 @@ int main()
     return -100;
 }
 
-#elif defined(FOOOO)
+    #elif defined(FOOOO)
 
 int main()
 {
-    const float screenWidth  = 800.0f;
-    const float screenHeight = 600.0f;
+    const float screenWidth  = 800.f;
+    const float screenHeight = 600.f;
 
     const sf::Vector2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
 
     auto graphicsContext = sf::GraphicsContext::create().value();
 
-    std::cout << sf::Texture::getMaximumSize() << '\n';
+    sf::cOut() << sf::Texture::getMaximumSize() << '\n';
     return 0;
 
     // TODO P0: aa level of 4 causes glcheck assert fail on opengl
@@ -427,14 +459,10 @@ int main()
 
 
         renderTextures[0].display();
-        baseRenderTexture.draw(vertexArrays[0],
-                               sf::PrimitiveType::Triangles,
-                               sf::RenderStates{&renderTextures[0].getTexture()});
+        baseRenderTexture.draw(vertexArrays[0], sf::PrimitiveType::Triangles, {.texture = &renderTextures[0].getTexture()});
 
         renderTextures[1].display();
-        baseRenderTexture.draw(vertexArrays[1],
-                               sf::PrimitiveType::Triangles,
-                               sf::RenderStates{&renderTextures[1].getTexture()});
+        baseRenderTexture.draw(vertexArrays[1], sf::PrimitiveType::Triangles, {.texture = &renderTextures[1].getTexture()});
 
         baseRenderTexture.display();
 
@@ -445,17 +473,15 @@ int main()
     return 0;
 }
 
-#elif defined(BARABARAR)
+    #elif defined(BARABARAR)
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Text.hpp"
+        #include "SFML/Graphics/Font.hpp"
+        #include "SFML/Graphics/GraphicsContext.hpp"
+        #include "SFML/Graphics/RenderTexture.hpp"
+        #include "SFML/Graphics/Text.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
-
-#include <sstream>
+        #include "SFML/System/Path.hpp"
+        #include "SFML/System/String.hpp"
 
 int main()
 {
@@ -481,7 +507,7 @@ int main()
     ;
 
     sf::Clock          clock;
-    std::ostringstream sstr;
+    std::ostringstream oss;
 
     while (true)
     {
@@ -514,26 +540,26 @@ int main()
 
         window.display();
 
-        sstr.str("");
-        sstr << "Test -- Frame: " << clock.restart().asSeconds() << " sec";
+        oss.str("");
+        oss << "Test -- Frame: " << clock.restart().asSeconds() << " sec";
 
-        window.setTitle(sstr.str());
+        window.setTitle(oss.str());
     }
 
     return EXIT_SUCCESS;
 }
 
-#else
+    #else
 
-#include "SFML/Graphics/Font.hpp"
-#include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RenderTexture.hpp"
-#include "SFML/Graphics/Text.hpp"
+        #include "SFML/Graphics/Font.hpp"
+        #include "SFML/Graphics/GraphicsContext.hpp"
+        #include "SFML/Graphics/RenderTexture.hpp"
+        #include "SFML/Graphics/Text.hpp"
 
-#include "SFML/System/Path.hpp"
-#include "SFML/System/String.hpp"
+        #include "SFML/System/Path.hpp"
+        #include "SFML/System/String.hpp"
 
-#include <cstdlib>
+        #include <cstdlib>
 
 int main()
 {
@@ -555,5 +581,7 @@ int main()
 
     renderTexture.display();
 }
+
+    #endif
 
 #endif

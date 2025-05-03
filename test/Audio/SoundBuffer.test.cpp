@@ -12,6 +12,8 @@
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
 
+#include <string>
+
 
 TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 {
@@ -61,12 +63,22 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid file")
         {
-            const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-            CHECK(soundBuffer.getSamples() != nullptr);
-            CHECK(soundBuffer.getSampleCount() == 87798);
-            CHECK(soundBuffer.getSampleRate() == 44100);
-            CHECK(soundBuffer.getChannelCount() == 1);
-            CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+            const std::u32string filenameSuffixes[]{U"", U"-ń", U"-🐌"};
+
+            for (const auto& filenameSuffix : filenameSuffixes)
+            {
+                const sf::Path filename = U"Audio/ding" + filenameSuffix + U".flac";
+
+                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+                CHECK(soundBuffer.getSamples() != nullptr);
+                CHECK(soundBuffer.getSampleCount() == 87798);
+                CHECK(soundBuffer.getSampleRate() == 44100);
+                CHECK(soundBuffer.getChannelCount() == 1);
+                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+            }
         }
     }
 
@@ -103,20 +115,31 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("saveToFile()")
     {
-        const auto filename = sf::Path::tempDirectoryPath() / "ding.flac";
+        const std::u32string stems[]{U"tmp", U"tmp-ń", U"tmp-🐌"};
+        const std::u32string extensions[]{U".wav", U".ogg", U".flac"};
 
+        for (const auto& stem : stems)
         {
-            const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-            REQUIRE(soundBuffer.saveToFile(filename));
+            for (const auto& extension : extensions)
+            {
+                const auto filename = sf::Path::tempDirectoryPath() / sf::Path(stem + extension);
+
+                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                {
+                    const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+                    REQUIRE(soundBuffer.saveToFile(filename));
+                }
+
+                const auto soundBuffer = sf::SoundBuffer::loadFromFile(filename).value();
+                CHECK(soundBuffer.getSamples() != nullptr);
+                CHECK(soundBuffer.getSampleCount() == 87798);
+                CHECK(soundBuffer.getSampleRate() == 44100);
+                CHECK(soundBuffer.getChannelCount() == 1);
+                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+
+                CHECK(filename.remove());
+            }
         }
-
-        const auto soundBuffer = sf::SoundBuffer::loadFromFile(filename).value();
-        CHECK(soundBuffer.getSamples() != nullptr);
-        CHECK(soundBuffer.getSampleCount() == 87798);
-        CHECK(soundBuffer.getSampleRate() == 44100);
-        CHECK(soundBuffer.getChannelCount() == 1);
-        CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
-
-        CHECK(filename.remove());
     }
 }

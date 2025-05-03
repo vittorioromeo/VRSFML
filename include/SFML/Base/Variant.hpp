@@ -5,15 +5,25 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
+#include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/OverloadSet.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/AddConst.hpp"
+#include "SFML/Base/Traits/AddLvalueReference.hpp"
 #include "SFML/Base/Traits/IsReference.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 #include "SFML/Base/TypePackElement.hpp"
+
 
 namespace sfvr::impl
 {
@@ -53,7 +63,7 @@ template <typename T, typename... Ts>
             return i;
 
     return bad_index;
-};
+}
 
 template <typename>
 struct inplace_type_t
@@ -91,6 +101,13 @@ private:
         max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
 
+    static inline constexpr bool triviallyCopyable     = (sf::base::isTriviallyCopyable<Alternatives> && ...);
+    static inline constexpr bool triviallyDestructible = (sf::base::isTriviallyDestructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyAssignable = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveAssignable = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...);
+
     using index_type = unsigned char; // Support up to 255 alternatives
 
 
@@ -109,35 +126,32 @@ private:
                                                                                         \
     static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                                \
-    do                                                                                                     \
-    {                                                                                                      \
-        if constexpr (sizeof...(Alternatives) == 1)                                                        \
-        {                                                                                                  \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
-            {                                                                                              \
-                __VA_ARGS__;                                                                               \
-            }                                                                                              \
-        }                                                                                                  \
-        else if constexpr (sizeof...(Alternatives) == 2)                                                   \
-        {                                                                                                  \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                          \
-            {                                                                                              \
-                __VA_ARGS__;                                                                               \
-            }                                                                                              \
-            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                                     \
-            {                                                                                              \
-                __VA_ARGS__;                                                                               \
-            }                                                                                              \
-        }                                                                                                  \
-        else                                                                                               \
-        {                                                                                                  \
-            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) __attribute__((always_inline, flatten)) \
-            {                                                                                              \
-                ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...);                                    \
-            }                                                                                              \
-            (alternative_index_sequence);                                                                  \
-        }                                                                                                  \
+#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                               \
+    do                                                                                                    \
+    {                                                                                                     \
+        if constexpr (sizeof...(Alternatives) == 1)                                                       \
+        {                                                                                                 \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                         \
+            {                                                                                             \
+                __VA_ARGS__;                                                                              \
+            }                                                                                             \
+        }                                                                                                 \
+        else if constexpr (sizeof...(Alternatives) == 2)                                                  \
+        {                                                                                                 \
+            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                         \
+            {                                                                                             \
+                __VA_ARGS__;                                                                              \
+            }                                                                                             \
+            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                                    \
+            {                                                                                             \
+                __VA_ARGS__;                                                                              \
+            }                                                                                             \
+        }                                                                                                 \
+        else                                                                                              \
+        {                                                                                                 \
+            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN \
+            { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence);      \
+        }                                                                                                 \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
@@ -244,8 +258,9 @@ public:
     }
 
     template <typename T>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept :
-    tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
+        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
+    : tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
     {
     }
 
@@ -253,15 +268,23 @@ public:
     {
     }
 
-    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs) : _index{rhs._index}
+    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+        requires(!triviallyCopyConstructible)
+    : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)
-                                              TINYVARIANT_NTH_TYPE(I)(static_cast<const TINYVARIANT_NTH_TYPE(I)&>(
+                                              TINYVARIANT_NTH_TYPE(I)(static_cast<const TINYVARIANT_NTH_TYPE(I) &>(
                                                   *SFML_BASE_LAUNDER_CAST(const TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
-    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept : _index{rhs._index}
+    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+        requires(triviallyCopyConstructible)
+    = default;
+
+    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+        requires(!triviallyMoveConstructible)
+    : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)
@@ -269,23 +292,22 @@ public:
                                                   *SFML_BASE_LAUNDER_CAST(TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
     }
 
-    // Avoid forwarding constructor hijack.
-    [[gnu::always_inline]] tinyvariant(const tinyvariant&& rhs) noexcept :
-    tinyvariant{static_cast<const tinyvariant&>(rhs)}
-    {
-    }
-
-    // Avoid forwarding constructor hijack.
-    [[gnu::always_inline]] tinyvariant(tinyvariant& rhs) : tinyvariant{static_cast<const tinyvariant&>(rhs)}
-    {
-    }
+    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+        requires(triviallyMoveConstructible)
+    = default;
 
     [[gnu::always_inline]] ~tinyvariant()
+        requires(!triviallyDestructible)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
     }
 
+    [[gnu::always_inline]] ~tinyvariant()
+        requires(triviallyDestructible)
+    = default;
+
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+        requires(!triviallyCopyAssignable)
     {
         if (this == &rhs)
             return *this;
@@ -301,12 +323,12 @@ public:
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant& rhs)
-    {
-        return ((*this) = static_cast<const tinyvariant&>(rhs));
-    }
+    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+        requires(triviallyCopyAssignable)
+    = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+        requires(!triviallyMoveAssignable)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -320,13 +342,13 @@ public:
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant&& rhs)
-    {
-        return ((*this) = static_cast<const tinyvariant&>(rhs));
-    }
+    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+        requires(triviallyMoveAssignable)
+    = default;
 
     template <typename T>
     [[gnu::always_inline]] tinyvariant& operator=(T&& x)
+        requires(!sf::base::isSame<sf::base::RemoveCVRef<T>, tinyvariant>)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -388,7 +410,9 @@ public:
         return static_cast<TINYVARIANT_NTH_TYPE(I) &&>(as<TINYVARIANT_NTH_TYPE(I)>());
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -405,7 +429,9 @@ public:
         }
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -423,8 +449,8 @@ public:
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursive_match(
-        Fs&&... fs) & -> decltype(recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto recursive_match(Fs&&... fs) & -> decltype(recursive_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
@@ -436,7 +462,9 @@ public:
         return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -462,8 +490,9 @@ public:
         }
     }
 
-
-    template <typename Visitor, typename R = decltype(impl::declval<Visitor>()(impl::declval<TINYVARIANT_NTH_TYPE(0)>()))>
+    template <typename Visitor,
+              typename R = decltype(impl::declval<Visitor&&>()(
+                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -490,15 +519,15 @@ public:
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(
-        Fs&&... fs) & -> decltype(linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) & -> decltype(linear_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(
-        Fs&&... fs) const& -> decltype(linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) const& -> decltype(linear_visit(sf::base::OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
         return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
     }

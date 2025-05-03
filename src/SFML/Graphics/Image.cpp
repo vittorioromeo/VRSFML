@@ -1,11 +1,13 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Image.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
@@ -14,15 +16,16 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/Activity.hpp"
-#include "SFML/System/Android/ResourceStream.hpp"
+    #include "SFML/System/Android/Activity.hpp"
+    #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
 #define STB_IMAGE_STATIC
@@ -42,6 +45,7 @@ int read(void* user, char* data, int size)
     return count.hasValue() ? static_cast<int>(*count) : -1;
 }
 
+
 ////////////////////////////////////////////////////////////
 void skip(void* user, int size)
 {
@@ -50,12 +54,14 @@ void skip(void* user, int size)
         sf::priv::err() << "Failed to seek image loader input stream";
 }
 
+
 ////////////////////////////////////////////////////////////
 int eof(void* user)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     return stream.tell().value() >= stream.getSize().value();
 }
+
 
 ////////////////////////////////////////////////////////////
 // Deleter for STB pointers
@@ -66,6 +72,7 @@ struct StbDeleter
         stbi_image_free(image);
     }
 };
+
 
 ////////////////////////////////////////////////////////////
 using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
@@ -134,7 +141,7 @@ Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_
 ////////////////////////////////////////////////////////////
 Image::Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd) :
 m_size(size),
-m_pixels(itBegin, static_cast<base::SizeT>(itEnd - itBegin))
+m_pixels(itBegin, itEnd)
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
@@ -148,26 +155,61 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
 
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        priv::ResourceStream stream(filename);
+        priv::ResourceStream stream;
+        if (!stream.open(filename))
+            return false;
         return loadFromStream(stream);
     }
 
 #endif
 
-    // Load the image and get a pointer to the pixels in memory
-    int width    = 0;
-    int height   = 0;
-    int channels = 0;
-
-    if (const auto ptr = StbPtr(stbi_load(filename.toCharPtr(), &width, &height, &channels, STBI_rgb_alpha)))
+    // Set up the stb_image callbacks for the input stream
+    const auto readStdIfStream = [](void* user, char* data, int size)
     {
-        SFML_BASE_ASSERT(width > 0 && "Loaded image from file with width == 0");
-        SFML_BASE_ASSERT(height > 0 && "Loaded image from file with height == 0");
+        auto& file = *static_cast<InFileStream*>(user);
+        file.read(data, size);
+        return static_cast<int>(file.gcount());
+    };
+
+    const auto skipStdIfStream = [](void* user, int size)
+    {
+        auto& file = *static_cast<InFileStream*>(user);
+        if (!file.seekg(size, SeekDir::cur))
+            priv::err() << "Failed to seek image loader InFileStream";
+    };
+
+    const auto eofStdIfStream = [](void* user)
+    {
+        auto& file = *static_cast<InFileStream*>(user);
+        return static_cast<int>(file.isEOF());
+    };
+
+    const stbi_io_callbacks callbacks{readStdIfStream, skipStdIfStream, eofStdIfStream};
+
+    // Open file
+    InFileStream file(filename.c_str(), FileOpenMode::bin);
+    if (!file.isOpen())
+    {
+        // Error, failed to open the file
+        priv::err() << "Failed to load image\n"
+                    << priv::PathDebugFormatter{filename} << "\nReason: Failed to open the file";
+        return base::nullOpt;
+    }
+
+    // Load the image and get a pointer to the pixels in memory
+    sf::Vector2i imageSize;
+    int          channels = 0;
+
+    if (const auto ptr = StbPtr(
+            stbi_load_from_callbacks(&callbacks, &file, &imageSize.x, &imageSize.y, &channels, STBI_rgb_alpha)))
+    {
+        SFML_BASE_ASSERT(imageSize.x > 0 && "Loaded image from file with width == 0");
+        SFML_BASE_ASSERT(imageSize.y > 0 && "Loaded image from file with height == 0");
 
         return base::makeOptional<Image>(base::PassKey<Image>{},
-                                         Vector2i{width, height}.toVector2u(),
+                                         Vector2i{imageSize.x, imageSize.y}.toVector2u(),
                                          ptr.get(),
-                                         ptr.get() + width * height * 4);
+                                         ptr.get() + imageSize.x * imageSize.y * 4);
     }
 
     // Error, failed to load the image

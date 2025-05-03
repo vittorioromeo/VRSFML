@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -83,7 +84,7 @@ public:
     /// \see `stop`, `getAvailableDevices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool start(CaptureDevice& captureDevice, unsigned int sampleRate = 44100);
+    [[nodiscard]] bool start(CaptureDevice& captureDevice, unsigned int sampleRate = 44'100);
 
     ////////////////////////////////////////////////////////////
     /// \brief Stop the capture

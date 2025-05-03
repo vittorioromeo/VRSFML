@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -8,6 +9,7 @@
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
 #include <mmsystem.h>
+
 
 namespace sf::priv
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -32,14 +33,22 @@ struct ContextSettings
         CoreAndDebug    = Core | Debug,
     };
 
-#ifdef SFML_DEBUG
-    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+#ifdef SFML_OPENGL_ES
+    #ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::DefaultAndDebug;
+    #else
+    static inline constexpr auto defaultAttributeFlags = Attribute::Default;
+    #endif
 #else
+    #ifdef SFML_DEBUG
+    static inline constexpr auto defaultAttributeFlags = Attribute::CoreAndDebug;
+    #else
     static inline constexpr auto defaultAttributeFlags = Attribute::Core;
+    #endif
 #endif
 
 #if defined(SFML_SYSTEM_EMSCRIPTEN)
-    static inline constexpr auto defaultMajorVersion = 2u;
+    static inline constexpr auto defaultMajorVersion = 3u; // `3` is WebGL 2
     static inline constexpr auto defaultMinorVersion = 0u;
 #elif defined(SFML_OPENGL_ES)
     static inline constexpr auto defaultMajorVersion = 3u;
@@ -48,6 +57,18 @@ struct ContextSettings
     static inline constexpr auto defaultMajorVersion = 4u;
     static inline constexpr auto defaultMinorVersion = 1u;
 #endif
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if the context is a core context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool isCore() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Check if the context is a debug context
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool isDebug() const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -61,7 +82,23 @@ struct ContextSettings
     bool         sRgbCapable{};                         //!< Whether the context framebuffer is sRGB capable
 };
 
+
+////////////////////////////////////////////////////////////
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(ContextSettings::Attribute);
+
+
+////////////////////////////////////////////////////////////
+inline bool ContextSettings::isCore() const
+{
+    return (attributeFlags & Attribute::Core) != Attribute{0u};
+}
+
+
+////////////////////////////////////////////////////////////
+inline bool ContextSettings::isDebug() const
+{
+    return (attributeFlags & Attribute::Debug) != Attribute{0u};
+}
 
 } // namespace sf
 

@@ -15,11 +15,11 @@
 #include "SFML/Config.hpp"
 
 #ifndef WINAPI
-#if defined(_ARM_)
-#define WINAPI
-#else
-#define WINAPI __stdcall
-#endif
+    #if defined(_ARM_)
+        #define WINAPI
+    #else
+        #define WINAPI __stdcall
+    #endif
 #endif
 
 #undef DECLARE_HANDLE

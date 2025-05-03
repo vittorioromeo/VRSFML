@@ -1,13 +1,14 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
 #if defined(SFML_SYSTEM_WINDOWS)
-#include <basetsd.h>
+    #include <basetsd.h>
 #endif
 
 

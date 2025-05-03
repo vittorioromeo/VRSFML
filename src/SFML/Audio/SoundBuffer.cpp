@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -12,17 +13,16 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
-
-#include <unordered_set>
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-using SoundList = std::unordered_set<Sound*>; //!< Set of unique sound instances
+using SoundList = ankerl::unordered_dense::set<Sound*>; //!< Set of unique sound instances
 
 
 ////////////////////////////////////////////////////////////
@@ -30,15 +30,15 @@ struct SoundBuffer::Impl
 {
     explicit Impl() = default;
 
-    explicit Impl(base::TrivialVector<base::I16>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
+    explicit Impl(base::Vector<base::I16>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
     {
     }
 
-    base::TrivialVector<base::I16> samples;           //!< Samples buffer
-    unsigned int                   sampleRate{44100}; //!< Number of samples per second
-    ChannelMap        channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
-    Time              duration;                       //!< Sound duration
-    mutable SoundList sounds;                         //!< List of sounds that are using this buffer
+    base::Vector<base::I16> samples;                        //!< Samples buffer
+    unsigned int            sampleRate{44'100};             //!< Number of samples per second
+    ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    Time                    duration;                       //!< Sound duration
+    mutable SoundList       sounds;                         //!< List of sounds that are using this buffer
 };
 
 
@@ -59,7 +59,7 @@ SoundBuffer::SoundBuffer(const SoundBuffer& copy)
 SoundBuffer::~SoundBuffer()
 {
     // To prevent the iterator from becoming invalid, move the entire buffer to another
-    // container. Otherwise calling resetBuffer would result in detachSound being
+    // container. Otherwise calling `detachBuffer` would result in `detachSound` being
     // called which removes the sound from the internal list.
     SoundList sounds;
     sounds.swap(m_impl->sounds);
@@ -143,10 +143,7 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
     unsigned int      sampleRate,
     const ChannelMap& channelMap)
 {
-    return loadFromSamplesImpl(base::TrivialVector<base::I16>(samples, static_cast<base::SizeT>(sampleCount)),
-                               channelCount,
-                               sampleRate,
-                               channelMap);
+    return loadFromSamplesImpl(base::Vector<base::I16>(samples, samples + sampleCount), channelCount, sampleRate, channelMap);
 }
 
 
@@ -213,19 +210,21 @@ SoundBuffer& SoundBuffer::operator=(const SoundBuffer& right)
 {
     SoundBuffer temp(right);
 
-    std::swap(m_impl->samples, temp.m_impl->samples);
-    std::swap(m_impl->sampleRate, temp.m_impl->sampleRate);
-    std::swap(m_impl->channelMap, temp.m_impl->channelMap);
-    std::swap(m_impl->duration, temp.m_impl->duration);
-    std::swap(m_impl->sounds, temp.m_impl->sounds); // swap sounds too, so that they are detached when temp is destroyed
+    using std::swap;
+
+    swap(m_impl->samples, temp.m_impl->samples);
+    swap(m_impl->sampleRate, temp.m_impl->sampleRate);
+    swap(m_impl->channelMap, temp.m_impl->channelMap);
+    swap(m_impl->duration, temp.m_impl->duration);
+    swap(m_impl->sounds, temp.m_impl->sounds); // swap sounds too, so that they are detached when temp is destroyed
 
     return *this;
 }
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesTrivialVectorPtr) :
-m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<base::I16>*>(samplesTrivialVectorPtr)))
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr) :
+m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)))
 {
 }
 
@@ -234,8 +233,8 @@ m_impl(SFML_BASE_MOVE(*static_cast<base::TrivialVector<base::I16>*>(samplesTrivi
 base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
 {
     // Read the samples from the provided file
-    const base::U64                sampleCount = file.getSampleCount();
-    base::TrivialVector<base::I16> samples(static_cast<base::SizeT>(sampleCount));
+    const base::U64         sampleCount = file.getSampleCount();
+    base::Vector<base::I16> samples(static_cast<base::SizeT>(sampleCount));
 
     if (file.read(samples.data(), sampleCount) != sampleCount)
         return base::nullOpt;

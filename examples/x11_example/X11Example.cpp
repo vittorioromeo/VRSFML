@@ -20,10 +20,11 @@ int main()
 #include <gl.h>
 
 #include <array>
-#include <iostream>
+#include "SFML/System/IO.hpp"
 
 #include <cmath>
 #include <cstdlib>
+
 
 ////////////////////////////////////////////////////////////
 /// Initialize OpenGL states into the specified view
@@ -38,7 +39,7 @@ int main()
     // Activate the window
     if (!window.setActive())
     {
-        std::cerr << "Failed to set the window as active" << std::endl;
+        sf::cErr() << "Failed to set the window as active" << sf::endL;
         return false;
     }
 
@@ -62,7 +63,7 @@ int main()
     glLoadIdentity();
     const float extent = std::tan(sf::degrees(45).asRadians());
 
-    glFrustum(-extent, extent, -extent, extent, 1.0f, 500.0f);
+    glFrustum(-extent, extent, -extent, extent, 1.f, 500.f);
 
     // Enable position and texture coordinates vertex components
     glEnableClientState(GL_VERTEX_ARRAY);
@@ -70,6 +71,7 @@ int main()
 
     return true;
 }
+
 
 ////////////////////////////////////////////////////////////
 /// Draw the OpenGL scene (a rotating cube) into
@@ -86,7 +88,7 @@ int main()
     // Activate the window
     if (!window.setActive())
     {
-        std::cerr << "Failed to set the window as active" << std::endl;
+        sf::cErr() << "Failed to set the window as active" << sf::endL;
         return false;
     }
 
@@ -238,7 +240,7 @@ int main()
         // Load OpenGL or OpenGL ES entry points using glad
         if (!sfmlView1.setActive())
         {
-            std::cerr << "Failed to set view 1 as active" << std::endl;
+            sf::cErr() << "Failed to set view 1 as active" << sf::endL;
             return EXIT_FAILURE;
         }
 
@@ -248,13 +250,13 @@ int main()
         // Initialize our views
         if (!initialize(sfmlView1))
         {
-            std::cerr << "Failed to initialize view 1" << std::endl;
+            sf::cErr() << "Failed to initialize view 1" << sf::endL;
             return EXIT_FAILURE;
         }
 
         if (!initialize(sfmlView2))
         {
-            std::cerr << "Failed to initialize view 2" << std::endl;
+            sf::cErr() << "Failed to initialize view 2" << sf::endL;
             return EXIT_FAILURE;
         }
 
@@ -281,13 +283,13 @@ int main()
             // Draw something into our views
             if (!draw(sfmlView1, clock.getElapsedTime().asSeconds()))
             {
-                std::cerr << "Failed to draw on view 1" << std::endl;
+                sf::cErr() << "Failed to draw on view 1" << sf::endL;
                 return EXIT_FAILURE;
             }
 
             if (!draw(sfmlView2, clock.getElapsedTime().asSeconds() * 0.3f))
             {
-                std::cerr << "Failed to draw on view 2" << std::endl;
+                sf::cErr() << "Failed to draw on view 2" << sf::endL;
                 return EXIT_FAILURE;
             }
 

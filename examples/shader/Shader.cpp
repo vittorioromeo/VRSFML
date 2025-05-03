@@ -24,7 +24,10 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
+
+#include "ExampleUtils.hpp"
 
 #include <array>
 #include <random>
@@ -180,7 +183,7 @@ public:
         std::uniform_int_distribution<std::uint16_t> colorDistribution(0, 255);
 
         // Create the points
-        for (int i = 0; i < 40000; ++i)
+        for (int i = 0; i < 40'000; ++i)
         {
             const auto x = xDistribution(rng);
             const auto y = yDistribution(rng);
@@ -228,7 +231,7 @@ public:
                 {std::cos(0.25f * (time * static_cast<float>(i) + static_cast<float>(numEntities - i))) * 300 + 350,
                  std::sin(0.25f * (time * static_cast<float>(numEntities - i) + static_cast<float>(i))) * 200 + 250};
 
-            m_surface.draw(entity, m_entityTexture);
+            m_surface.draw(entity, {.texture = &m_entityTexture});
         }
 
         m_surface.display();
@@ -299,10 +302,10 @@ public:
     m_logoTexture(std::move(logoTexture)),
     m_shader(std::move(shader)),
     m_ulSize(m_shader.getUniformLocation("size").value()),
-    m_pointCloud(10000)
+    m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
-        for (std::size_t i = 0; i < 10000; ++i)
+        for (std::size_t i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
             std::uniform_real_distribution<float> positionDistribution(-480.f, 480.f);
@@ -328,7 +331,8 @@ sf::base::Optional<Pixelate> tryLoadPixelate()
     if (!texture.hasValue())
         return sf::base::nullOpt;
 
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/pixelate.frag");
+    auto shader = sf::Shader::loadFromFile(
+        {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/pixelate.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -337,7 +341,7 @@ sf::base::Optional<Pixelate> tryLoadPixelate()
 
 sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
 {
-    auto shader = sf::Shader::loadFromFile("resources/wave.vert", "resources/blur.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/wave.vert", .fragmentPath = "resources/blur.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -346,7 +350,7 @@ sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
 
 sf::base::Optional<StormBlink> tryLoadStormBlink()
 {
-    auto shader = sf::Shader::loadFromFile("resources/storm.vert", "resources/blink.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath = "resources/storm.vert", .fragmentPath = "resources/blink.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -377,7 +381,8 @@ sf::base::Optional<Edge> tryLoadEdge()
     entityTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert", "resources/edge.frag");
+    auto shader = sf::Shader::loadFromFile(
+        {.vertexPath = "resources/billboard.vert", .fragmentPath = "resources/edge.frag"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -403,9 +408,9 @@ sf::base::Optional<Geometry> tryLoadGeometry()
     logoTexture->setSmooth(true);
 
     // Load the shader
-    auto shader = sf::Shader::loadFromFile("resources/billboard.vert",
-                                           "resources/billboard.geom",
-                                           "resources/billboard.frag");
+    auto shader = sf::Shader::loadFromFile({.vertexPath   = "resources/billboard.vert",
+                                            .fragmentPath = "resources/billboard.frag",
+                                            .geometryPath = "resources/billboard.geom"});
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
@@ -474,7 +479,14 @@ int main()
                            .outlineThickness = 1.5f});
 
     // Create the main window
-    sf::RenderWindow window({.size{800u, 600u}, .title = "SFML Shader", .resizable = false, .vsync = true});
+    constexpr sf::Vector2f windowSize{800.f, 600.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize.toVector2u(),
+        .title     = "SFML Shader",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Start the game loop
     const sf::Clock clock;
@@ -486,6 +498,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())
             {

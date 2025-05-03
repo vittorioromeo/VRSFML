@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -10,9 +11,8 @@
 
 #if __has_builtin(__integer_pack)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)...>
-
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::IndexSequence<__integer_pack(N)...>
 
 namespace sf::base
 {
@@ -35,7 +35,6 @@ struct MakeIndexSequenceHelper
 
 } // namespace sf::base::priv
 
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
@@ -44,13 +43,12 @@ using MakeIndexSequence = typename __make_integer_seq<priv::MakeIndexSequenceHel
 
 } // namespace sf::base
 
-
-////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #else
 
-#include <utility>
+    #include <utility>
 
 
 namespace sf::base
@@ -61,8 +59,7 @@ using MakeIndexSequence = std::make_index_sequence<N>;
 
 } // namespace sf::base
 
-
-////////////////////////////////////////////////////////////
-#define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #endif

@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -90,7 +91,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 1280> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

@@ -5,6 +5,7 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////
@@ -53,6 +54,13 @@ TEST_CASE("[Window] sf::Event")
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Event));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Event));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Event));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Event)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Event));
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::Event));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::Event, sf::Event));
     }
 
     SECTION("Construction")
@@ -87,11 +95,11 @@ TEST_CASE("[Window] sf::Event")
         CHECK(event.is<sf::Event::FocusGained>());
         CHECK(event.getIf<sf::Event::FocusGained>());
 
-        event = sf::Event::TextEntered{123456};
+        event = sf::Event::TextEntered{123'456};
         CHECK(event.is<sf::Event::TextEntered>());
         CHECK(event.getIf<sf::Event::TextEntered>());
         const auto& textEntered = *event.getIf<sf::Event::TextEntered>();
-        CHECK(textEntered.unicode == 123456);
+        CHECK(textEntered.unicode == 123'456);
 
         event = sf::Event::KeyPressed{sf::Keyboard::Key::C, sf::Keyboard::Scan::C, true, true, true, true};
         CHECK(event.is<sf::Event::KeyPressed>());
@@ -191,21 +199,21 @@ TEST_CASE("[Window] sf::Event")
         const auto& joystickDisconnected = *event.getIf<sf::Event::JoystickDisconnected>();
         CHECK(joystickDisconnected.joystickId == 43);
 
-        event = sf::Event::TouchBegan{99, {98, 97}};
+        event = sf::Event::TouchBegan{99, {98, 97}, 0.f};
         CHECK(event.is<sf::Event::TouchBegan>());
         CHECK(event.getIf<sf::Event::TouchBegan>());
         const auto& touchBegan = *event.getIf<sf::Event::TouchBegan>();
         CHECK(touchBegan.finger == 99);
         CHECK(touchBegan.position == sf::Vector2i{98, 97});
 
-        event = sf::Event::TouchMoved{96, {95, 94}};
+        event = sf::Event::TouchMoved{96, {95, 94}, 0.f};
         CHECK(event.is<sf::Event::TouchMoved>());
         CHECK(event.getIf<sf::Event::TouchMoved>());
         const auto& touchMoved = *event.getIf<sf::Event::TouchMoved>();
         CHECK(touchMoved.finger == 96);
         CHECK(touchMoved.position == sf::Vector2i{95, 94});
 
-        event = sf::Event::TouchEnded{93, {92, 91}};
+        event = sf::Event::TouchEnded{93, {92, 91}, 0.f};
         CHECK(event.is<sf::Event::TouchEnded>());
         CHECK(event.getIf<sf::Event::TouchEnded>());
         const auto& touchEnded = *event.getIf<sf::Event::TouchEnded>();
@@ -346,6 +354,25 @@ TEST_CASE("[Window] sf::Event")
 
             const sf::Event focusLost = sf::Event::FocusLost{};
             CHECK(focusLost.visit(visitor) == 5);
+        }
+
+        SECTION("Move-only visitor")
+        {
+            struct MoveOnly
+            {
+                MoveOnly()                = default;
+                MoveOnly(const MoveOnly&) = delete;
+                MoveOnly(MoveOnly&&)      = default;
+            };
+
+            auto moveOnlyVisitor = [p = MoveOnly{}](const auto&)
+            {
+                (void)p;
+                return 100;
+            };
+
+            const sf::Event closed = sf::Event::Closed{};
+            CHECK(closed.visit(moveOnlyVisitor) == 100);
         }
     }
 }

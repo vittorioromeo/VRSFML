@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -11,7 +12,7 @@
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -30,7 +31,7 @@ public:
     ////////////////////////////////////////////////////////////
     enum : base::SizeT
     {
-        MaxDatagramSize = 65507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
+        MaxDatagramSize = 65'507ul //!< The maximum number of bytes that can be sent in a single UDP datagram
     };
 
     ////////////////////////////////////////////////////////////
@@ -176,7 +177,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
+    base::Vector<unsigned char> m_buffer; //!< Temporary buffer holding the received data in Receive(Packet)
 };
 
 } // namespace sf

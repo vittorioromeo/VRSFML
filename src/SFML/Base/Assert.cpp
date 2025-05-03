@@ -1,18 +1,19 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
-#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Assert.hpp"
 
 #ifdef SFML_DEBUG
 
-#include "SFML/Base/StackTrace.hpp"
+    #include "SFML/Base/Abort.hpp"
+    #include "SFML/Base/StackTrace.hpp"
 
-#include <cstdio>
+    #include <cstdio>
 
 
 namespace sf::base::priv

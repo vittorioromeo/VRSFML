@@ -4,8 +4,8 @@
 
 #if __has_builtin(__remove_cvref)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_REMOVE_CVREF(...) __remove_cvref(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_REMOVE_CVREF(...) __remove_cvref(__VA_ARGS__)
 
 #else
 
@@ -24,13 +24,13 @@ template <typename T> struct RemoveCVRefImpl<volatile T&>        { using type = 
 template <typename T> struct RemoveCVRefImpl<volatile T&&>       { using type = T; };
 template <typename T> struct RemoveCVRefImpl<const volatile T>   { using type = T; };
 template <typename T> struct RemoveCVRefImpl<const volatile T&>  { using type = T; };
-template <typename T> struct RemoveCVRefImpl<const volatile T&&> { using type = T; };
+template <typename T> struct RemoveCVRefImpl<const volatile T&&> { using type = T; };ì
 // clang-format on
 
 } // namespace sf::base::priv
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_REMOVE_CVREF(...) typename ::sf::base::priv::RemoveCVRefImpl<__VA_ARGS__>::type
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_REMOVE_CVREF(...) typename ::sf::base::priv::RemoveCVRefImpl<__VA_ARGS__>::type
 
 #endif
 

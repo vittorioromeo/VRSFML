@@ -1,17 +1,17 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
 
+#include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -26,67 +26,6 @@
 
 namespace sf
 {
-namespace
-{
-////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderVertexSrc = R"glsl(
-
-layout(location = 0) uniform mat4 sf_u_mvpMatrix;
-
-layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color;
-layout(location = 2) in vec2 sf_a_texCoord;
-
-out vec4 sf_v_color;
-out vec2 sf_v_texCoord;
-
-void main()
-{
-    gl_Position = sf_u_mvpMatrix * vec4(sf_a_position, 0.0, 1.0);
-    sf_v_color = sf_a_color;
-    sf_v_texCoord = sf_a_texCoord;
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-constexpr const char* builtInShaderFragmentSrc = R"glsl(
-
-layout(location = 2) uniform sampler2D sf_u_texture;
-
-in vec4 sf_v_color;
-in vec2 sf_v_texCoord;
-
-layout(location = 0) out vec4 sf_fragColor;
-
-void main()
-{
-    sf_fragColor = sf_v_color * texture(sf_u_texture, sf_v_texCoord / vec2(textureSize(sf_u_texture, 0)));
-}
-
-)glsl";
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] base::Optional<Shader> createBuiltInShader(const char* vertexSrc, const char* fragmentSrc)
-{
-    auto result = Shader::loadFromMemory(vertexSrc, fragmentSrc);
-
-    if (result)
-    {
-        SFML_BASE_ASSERT(glCheck(glIsProgram(result->getNativeHandle())));
-
-        if (const base::Optional ulTexture = result->getUniformLocation("sf_u_texture"))
-            result->setUniform(*ulTexture, Shader::CurrentTexture);
-    }
-
-    return result;
-}
-
-} // namespace
-
-
 ///////////////////////////////////////////////////////////
 struct GraphicsContextImpl
 {
@@ -94,12 +33,11 @@ struct GraphicsContextImpl
     Texture builtInWhiteDotTexture;
 };
 
-
 namespace
 {
 ///////////////////////////////////////////////////////////
 constinit sf::base::Optional<GraphicsContextImpl> installedGraphicsContext;
-constinit std::atomic<unsigned int> graphicsContextRC{0u};
+constinit std::atomic<unsigned int>               graphicsContextRC{0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -116,9 +54,18 @@ GraphicsContextImpl& ensureInstalled()
 
 } // namespace
 
+////////////////////////////////////////////////////////////
+struct GraphicsContext::Impl
+{
+    explicit Impl(WindowContext&& theWindowContext) : windowContext(SFML_BASE_MOVE(theWindowContext))
+    {
+    }
+
+    WindowContext windowContext;
+};
 
 ////////////////////////////////////////////////////////////
-base::Optional<GraphicsContext> GraphicsContext::create()
+base::Optional<GraphicsContext> GraphicsContext::create(const ContextSettings& sharedContextSettings)
 {
     const auto fail = [](const char* what)
     {
@@ -134,11 +81,11 @@ base::Optional<GraphicsContext> GraphicsContext::create()
     //
     // Install window context if necessary
     auto windowContext = WindowContext::isInstalled() ? WindowContext{base::PassKey<GraphicsContext>{}}
-                                                      : WindowContext::create().value();
+                                                      : WindowContext::create(sharedContextSettings).value();
 
     //
     // Initialize built-in shader
-    auto shader = createBuiltInShader(builtInShaderVertexSrc, builtInShaderFragmentSrc);
+    auto shader = DefaultShader::create();
     if (!shader.hasValue())
         return fail("built-in shader initialization failure");
 
@@ -158,27 +105,28 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
-WindowContext(SFML_BASE_MOVE(windowContext))
+m_impl(SFML_BASE_MOVE(windowContext))
 {
-    graphicsContextRC.fetch_add(1u, std::memory_order_relaxed);
+    graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
 
 
 ////////////////////////////////////////////////////////////
-GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept : WindowContext(static_cast<WindowContext&&>(rhs))
+GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept :
+m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
 {
-    graphicsContextRC.fetch_add(1u, std::memory_order_relaxed);
+    graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
 
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::~GraphicsContext()
 {
-    if (graphicsContextRC.fetch_sub(1u, std::memory_order_relaxed) > 1u)
+    if (graphicsContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
         return;
 
     // Need to activate shared context during destruction to avoid GL errors when destroying texture and shader
-    [[maybe_unused]] const bool rc = WindowContext::setActiveThreadLocalGlContextToSharedContext(true);
+    [[maybe_unused]] const bool rc = WindowContext::setActiveThreadLocalGlContextToSharedContext();
     SFML_BASE_ASSERT(rc);
 
     installedGraphicsContext.reset();
@@ -186,30 +134,58 @@ GraphicsContext::~GraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Shader& GraphicsContext::getBuiltInShader() const
+Shader& GraphicsContext::getBuiltInShader() const
 {
     return ensureInstalled().builtInShader;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Texture& GraphicsContext::getBuiltInWhiteDotTexture() const
+Texture& GraphicsContext::getBuiltInWhiteDotTexture() const
 {
     return ensureInstalled().builtInWhiteDotTexture;
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* GraphicsContext::getBuiltInShaderVertexSrc()
+unsigned int GraphicsContext::getActiveThreadLocalGlContextId()
 {
-    return builtInShaderVertexSrc;
+    return WindowContext::getActiveThreadLocalGlContextId();
 }
 
 
 ////////////////////////////////////////////////////////////
-const char* GraphicsContext::getBuiltInShaderFragmentSrc()
+bool GraphicsContext::hasActiveThreadLocalGlContext()
 {
-    return builtInShaderFragmentSrc;
+    return WindowContext::hasActiveThreadLocalGlContext();
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::registerUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
+{
+    WindowContext::registerUnsharedFrameBuffer(glContextId, frameBufferId);
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::unregisterUnsharedFrameBuffer(const unsigned int glContextId, const unsigned int frameBufferId)
+{
+    WindowContext::unregisterUnsharedFrameBuffer(glContextId, frameBufferId);
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::registerUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    WindowContext::registerUnsharedVAO(glContextId, vaoId);
+}
+
+
+////////////////////////////////////////////////////////////
+void GraphicsContext::unregisterUnsharedVAO(const unsigned int glContextId, const unsigned int vaoId)
+{
+    WindowContext::unregisterUnsharedVAO(glContextId, vaoId);
 }
 
 

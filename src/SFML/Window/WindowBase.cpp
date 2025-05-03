@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -14,7 +15,6 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -33,14 +33,15 @@ namespace
                                                          .antiAliasingLevel = 0,
                                                          .majorVersion      = 0,
                                                          .minorVersion      = 0,
-                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFFFFFFFFu},
-                                                         .sRgbCapable    = false};
+                                                         .attributeFlags = sf::ContextSettings::Attribute{0xFF'FF'FF'FFu},
+                                                         .sRgbCapable = false};
 
     return windowSettings;
 }
 
 
 } // namespace
+
 
 namespace sf
 {
@@ -69,6 +70,7 @@ WindowBase::WindowBase(const Settings& windowSettings) :
 WindowBase(priv::WindowImpl::create(nullifyContextSettings(windowSettings)))
 {
 }
+
 
 ////////////////////////////////////////////////////////////
 WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))
@@ -122,11 +124,8 @@ void WindowBase::setSize(Vector2u size)
     const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u{});
     const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{UINT_MAX, UINT_MAX});
 
-    const auto width  = base::clamp(size.x, minimumSize.x, maximumSize.x);
-    const auto height = base::clamp(size.y, minimumSize.y, maximumSize.y);
-
     // Do nothing if requested size matches current size
-    const Vector2u clampedSize(width, height);
+    const auto clampedSize = size.componentWiseClamp(minimumSize, maximumSize);
     if (clampedSize == m_size)
         return;
 
@@ -173,7 +172,7 @@ void WindowBase::setMaximumSize(const Vector2u& maximumSize)
 {
     [[maybe_unused]] const auto validateMaximumSize = [&]
     {
-        if (!!m_impl->getMinimumSize().hasValue())
+        if (!m_impl->getMinimumSize().hasValue())
             return true;
 
         return maximumSize.x >= m_impl->getMinimumSize()->x && maximumSize.y >= m_impl->getMinimumSize()->y;
@@ -266,6 +265,13 @@ void WindowBase::requestFocus()
 bool WindowBase::hasFocus() const
 {
     return m_impl->hasFocus();
+}
+
+
+////////////////////////////////////////////////////////////
+float WindowBase::getWindowDisplayScale() const
+{
+    return m_impl->getWindowDisplayScale();
 }
 
 

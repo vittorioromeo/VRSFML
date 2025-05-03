@@ -12,10 +12,10 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Rect<TestType>));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::Rect<TestType>));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::Rect<TestType>));
 
         STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::Rect<TestType>)); // because of member initializers
         STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::Rect<TestType>));
@@ -46,7 +46,7 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
 
         SECTION("Conversion constructor")
         {
-            constexpr sf::FloatRect sourceRectangle{{1.0f, 2.0f}, {3.0f, 4.0f}};
+            constexpr sf::FloatRect sourceRectangle{{1.f, 2.f}, {3.f, 4.f}};
             constexpr auto          rectangle = sourceRectangle.to<sf::IntRect>();
 
             STATIC_CHECK(rectangle.position == sf::Vector2i{1, 2});
@@ -129,26 +129,26 @@ TEMPLATE_TEST_CASE("[System] sf::Rect", "", int, float)
 
     SECTION("Get anchor point offset")
     {
-        constexpr sf::Rect<TestType> r({0, 0}, {1000, 1000});
+        constexpr sf::Rect<TestType> r({0, 0}, {1'000, 1'000});
 
         STATIC_CHECK(r.getAnchorPointOffset({0.f, 0.f}) == sf::Vector2<TestType>{0, 0});
         STATIC_CHECK(r.getAnchorPointOffset({0.5f, 0.f}) == sf::Vector2<TestType>{-500, 0});
-        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.f}) == sf::Vector2<TestType>{-1000, 0});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.f}) == sf::Vector2<TestType>{-1'000, 0});
 
         STATIC_CHECK(r.getAnchorPointOffset({0.f, 0.5f}) == sf::Vector2<TestType>{0, -500});
         STATIC_CHECK(r.getAnchorPointOffset({0.5f, 0.5f}) == sf::Vector2<TestType>{-500, -500});
-        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.5f}) == sf::Vector2<TestType>{-1000, -500});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 0.5f}) == sf::Vector2<TestType>{-1'000, -500});
 
-        STATIC_CHECK(r.getAnchorPointOffset({0.f, 1.f}) == sf::Vector2<TestType>{0, -1000});
-        STATIC_CHECK(r.getAnchorPointOffset({0.5f, 1.f}) == sf::Vector2<TestType>{-500, -1000});
-        STATIC_CHECK(r.getAnchorPointOffset({1.f, 1.f}) == sf::Vector2<TestType>{-1000, -1000});
+        STATIC_CHECK(r.getAnchorPointOffset({0.f, 1.f}) == sf::Vector2<TestType>{0, -1'000});
+        STATIC_CHECK(r.getAnchorPointOffset({0.5f, 1.f}) == sf::Vector2<TestType>{-500, -1'000});
+        STATIC_CHECK(r.getAnchorPointOffset({1.f, 1.f}) == sf::Vector2<TestType>{-1'000, -1'000});
     }
 
     SECTION("Set anchor point")
     {
         const auto doTest = [](sf::Vector2f factors, sf::Vector2<TestType> expected)
         {
-            sf::Rect<TestType> r({0, 0}, {1000, 1000});
+            sf::Rect<TestType> r({0, 0}, {1'000, 1'000});
             r.setAnchorPoint(factors, {500, 500});
             CHECK(r.position == expected);
         };

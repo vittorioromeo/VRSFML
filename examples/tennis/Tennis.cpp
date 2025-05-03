@@ -6,7 +6,6 @@
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShape.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
@@ -30,7 +29,9 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
+
+#include "ExampleUtils.hpp"
 
 #include <random>
 #include <string>
@@ -39,7 +40,7 @@
 #include <cstdlib>
 
 #ifdef SFML_SYSTEM_IOS
-#include "SFML/Main.hpp"
+    #include "SFML/Main.hpp"
 #endif
 
 namespace
@@ -75,7 +76,7 @@ public:
         auto textVertices = text.getVerticesMut();
 
         m_oldVertexPositions.clear();
-        m_oldVertexPositions.reserve(textVertices.size());
+        m_oldVertexPositions.reserve(textVertices.size);
 
         for (const sf::Vertex& v : textVertices)
             m_oldVertexPositions.pushBack(v.position);
@@ -88,11 +89,11 @@ public:
 
         for (sf::base::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data()[i * 4u + j].position.y += func(t, i);
+                textVertices.data[i * 4u + j].position.y += func(t, i);
 
-        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size() / 4u; ++i)
+        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data()[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
+                textVertices.data[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
     }
 
     void unapply(sf::Text& text)
@@ -104,7 +105,7 @@ public:
     }
 
 private:
-    sf::base::TrivialVector<sf::Vector2f> m_oldVertexPositions;
+    sf::base::Vector<sf::Vector2f> m_oldVertexPositions;
     float                                 m_time = 0.f;
     float                                 m_frequency;
     float                                 m_amplitude;
@@ -120,6 +121,7 @@ private:
 ////////////////////////////////////////////////////////////
 int main()
 {
+    // TODO P0: provide a way of easily scaling with DPI
     std::random_device rd;
     std::mt19937       rng(rd());
 
@@ -132,8 +134,13 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
-    sf::RenderWindow window(
-        {.size = gameSize.toVector2u(), .bitsPerPixel = 32u, .title = "SFML Tennis", .resizable = false, .vsync = true});
+    auto window = makeDPIScaledRenderWindow({
+        .size         = gameSize.toVector2u(),
+        .bitsPerPixel = 32u,
+        .title        = "SFML Tennis",
+        .resizable    = true,
+        .vsync        = true,
+    });
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
@@ -206,6 +213,9 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
 
+            if (handleAspectRatioAwareResize(*event, gameSize, window))
+                continue;
+
             // Space key pressed: play
             if ((event->is<sf::Event::KeyPressed>() &&
                  event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Space) ||
@@ -230,10 +240,6 @@ int main()
                     } while (std::abs(std::cos(ballAngle.asRadians())) < 0.7f);
                 }
             }
-
-            // Window size changed, adjust view appropriately
-            if (event->is<sf::Event::Resized>())
-                window.setView({/* center */ gameSize / 2.f, /* size */ gameSize});
         }
 
         const float deltaTime = clock.restart().asSeconds();
@@ -351,9 +357,9 @@ int main()
         if (isPlaying)
         {
             // Draw the paddles and the ball
-            window.draw(leftPaddle, /* texture */ nullptr);
-            window.draw(rightPaddle, /* texture */ nullptr);
-            window.draw(ball, /* texture */ nullptr);
+            window.draw(leftPaddle);
+            window.draw(rightPaddle);
+            window.draw(ball);
         }
         else
         {

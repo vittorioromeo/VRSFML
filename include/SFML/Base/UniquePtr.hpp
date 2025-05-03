@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -12,15 +13,22 @@
 
 namespace sf::base
 {
+// clang-format off
 ////////////////////////////////////////////////////////////
 struct SFML_BASE_TRIVIAL_ABI UniquePtrDefaultDeleter
 {
     template <typename T>
-    [[gnu::always_inline]] void operator()(T* const ptr) const noexcept
+    [[gnu::always_inline]] constexpr void operator()(T* const ptr) const noexcept
     {
+        static_assert(!SFML_BASE_IS_SAME(T, void), "can't delete pointer to incomplete type");
+
+        // NOLINTNEXTLINE(bugprone-sizeof-expression)
+        static_assert(sizeof(T) > 0u, "can't delete pointer to incomplete type");
+
         delete ptr;
     }
 };
+// clang-format on
 
 
 ////////////////////////////////////////////////////////////
@@ -35,25 +43,25 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniquePtr() noexcept : m_ptr{nullptr}
+    [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr() noexcept : m_ptr{nullptr}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit(false) UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) UniquePtr(decltype(nullptr)) noexcept : m_ptr{nullptr}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr) noexcept : m_ptr{ptr}
+    [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr) noexcept : m_ptr{ptr}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
+    [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
     TDeleter{deleter},
     m_ptr{ptr}
     {
@@ -61,7 +69,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] ~UniquePtr() noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr ~UniquePtr() noexcept
     {
         static_cast<TDeleter*>(this)->operator()(m_ptr);
     }
@@ -74,10 +82,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
-    [[nodiscard, gnu::always_inline]] UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
-        requires(base::isSame<T, U> || base::isBaseOf<T, U>) :
-    TDeleter{static_cast<UDeleter&&>(rhs)},
-    m_ptr{rhs.m_ptr}
+    [[nodiscard, gnu::always_inline]] constexpr UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
+        requires(base::isSame<T, U> || base::isBaseOf<T, U>)
+    : TDeleter{static_cast<UDeleter&&>(rhs)}, m_ptr{rhs.m_ptr}
     {
         rhs.m_ptr = nullptr;
     }
@@ -85,7 +92,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <typename U, typename UDeleter>
-    [[gnu::always_inline, gnu::flatten]] UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr UniquePtr& operator=(UniquePtr<U, UDeleter>&& rhs) noexcept
         requires(base::isSame<T, U> || base::isBaseOf<T, U>)
     {
         (*static_cast<TDeleter*>(this)) = static_cast<UDeleter&&>(rhs);
@@ -98,14 +105,14 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] T* get() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* get() const noexcept
     {
         return m_ptr;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] T& operator*() const noexcept
+    [[nodiscard, gnu::always_inline]] constexpr T& operator*() const noexcept
     {
         SFML_BASE_ASSERT(m_ptr != nullptr);
         return *m_ptr;
@@ -113,7 +120,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] T* operator->() const noexcept
+    [[nodiscard, gnu::always_inline]] constexpr T* operator->() const noexcept
     {
         SFML_BASE_ASSERT(m_ptr != nullptr);
         return m_ptr;
@@ -121,38 +128,47 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] explicit operator bool() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_ptr != nullptr;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator==(decltype(nullptr)) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator==(decltype(nullptr)) const noexcept
     {
         return m_ptr == nullptr;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool operator!=(decltype(nullptr)) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool operator!=(decltype(nullptr)) const noexcept
     {
         return m_ptr != nullptr;
     }
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reset(T* const ptr = nullptr) noexcept
+    [[gnu::always_inline, gnu::flatten]] constexpr void reset(T* const ptr = nullptr) noexcept
     {
         static_cast<TDeleter*>(this)->operator()(m_ptr);
         m_ptr = ptr;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] constexpr T* release() noexcept
+    {
+        T* const ptr = m_ptr;
+        m_ptr        = nullptr;
+        return ptr;
     }
 };
 
 
 ////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline UniquePtr<T> makeUnique(Ts&&... xs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr UniquePtr<T> makeUnique(Ts&&... xs)
 {
     return UniquePtr<T>{new T{static_cast<Ts&&>(xs)...}};
 }

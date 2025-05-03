@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -12,10 +13,10 @@
 ////////////////////////////////////////////////////////////
 #if defined(SFML_IMGUI_EXPORTS)
 
-#define SFML_IMGUI_API SFML_API_EXPORT
+    #define SFML_IMGUI_API SFML_API_EXPORT
 
 #else
 
-#define SFML_IMGUI_API SFML_API_IMPORT
+    #define SFML_IMGUI_API SFML_API_IMPORT
 
 #endif

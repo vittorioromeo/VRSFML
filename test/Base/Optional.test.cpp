@@ -12,6 +12,7 @@
 
 #include <Doctest.hpp>
 
+
 namespace
 {
 namespace OptionalTest // to support unity builds

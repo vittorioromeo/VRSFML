@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -32,7 +33,6 @@ std::vector<sf::Vector2i> touchPositions;
 @synthesize sfWindow;
 @synthesize backingScaleFactor;
 
-
 ////////////////////////////////////////////////////////////
 + (SFAppDelegate*)getInstance
 {
@@ -43,14 +43,12 @@ std::vector<sf::Vector2i> touchPositions;
     return delegateInstance;
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)runUserMain
 {
     // Arguments intentionally dropped, see comments in main in sfml-main
     sfmlMain(0, nullptr);
 }
-
 
 ////////////////////////////////////////////////////////////
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
@@ -102,13 +100,11 @@ std::vector<sf::Vector2i> touchPositions;
         sfWindow->forwardEvent(sf::Event::FocusLost{});
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
     // Called when the application is sent to background (home button pressed)
 }
-
 
 ////////////////////////////////////////////////////////////
 - (void)applicationDidBecomeActive:(UIApplication*)application
@@ -122,13 +118,11 @@ std::vector<sf::Vector2i> touchPositions;
         sfWindow->forwardEvent(sf::Event::FocusGained{});
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
     // Called when the application is sent to foreground (app icon pressed)
 }
-
 
 ////////////////////////////////////////////////////////////
 - (void)applicationWillTerminate:(UIApplication*)application
@@ -207,7 +201,6 @@ std::vector<sf::Vector2i> touchPositions;
         self.sfWindow->setVirtualKeyboardVisible(visible);
 }
 
-
 ////////////////////////////////////////////////////////////
 - (sf::Vector2i)getTouchPosition:(unsigned int)index
 {
@@ -216,7 +209,6 @@ std::vector<sf::Vector2i> touchPositions;
 
     return sf::Vector2i(-1, -1);
 }
-
 
 ////////////////////////////////////////////////////////////
 - (void)notifyTouchBegin:(unsigned int)index atPosition:(sf::Vector2i)position
@@ -234,7 +226,6 @@ std::vector<sf::Vector2i> touchPositions;
         sfWindow->forwardEvent(sf::Event::TouchBegan{index, position});
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)notifyTouchMove:(unsigned int)index atPosition:(sf::Vector2i)position
 {
@@ -251,7 +242,6 @@ std::vector<sf::Vector2i> touchPositions;
         sfWindow->forwardEvent(sf::Event::TouchMoved{index, position});
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)notifyTouchEnd:(unsigned int)index atPosition:(sf::Vector2i)position
 {
@@ -264,13 +254,11 @@ std::vector<sf::Vector2i> touchPositions;
         sfWindow->forwardEvent(sf::Event::TouchEnded{index, position * static_cast<int>(backingScaleFactor)});
 }
 
-
 ////////////////////////////////////////////////////////////
 - (void)notifyCharacter:(char32_t)character
 {
     if (self.sfWindow)
         sfWindow->forwardEvent(sf::Event::TextEntered{character});
 }
-
 
 @end

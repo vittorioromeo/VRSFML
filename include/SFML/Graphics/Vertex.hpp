@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -54,12 +55,12 @@ struct [[nodiscard]] Vertex
 /// // define a 100x100 square, red, with a 10x10 texture mapped on it
 /// sf::Vertex vertices[]
 /// {
-///     {{  0.0f,   0.0f}, sf::Color::Red, { 0.0f,  0.0f}},
-///     {{  0.0f, 100.0f}, sf::Color::Red, { 0.0f, 10.0f}},
-///     {{100.0f, 100.0f}, sf::Color::Red, {10.0f, 10.0f}},
-///     {{  0.0f,   0.0f}, sf::Color::Red, { 0.0f,  0.0f}},
-///     {{100.0f, 100.0f}, sf::Color::Red, {10.0f, 10.0f}},
-///     {{100.0f,   0.0f}, sf::Color::Red, {10.0f,  0.0f}}
+///     {{  0.f,   0.f}, sf::Color::Red, { 0.f,  0.f}},
+///     {{  0.f, 100.f}, sf::Color::Red, { 0.f, 10.f}},
+///     {{100.f, 100.f}, sf::Color::Red, {10.f, 10.f}},
+///     {{  0.f,   0.f}, sf::Color::Red, { 0.f,  0.f}},
+///     {{100.f, 100.f}, sf::Color::Red, {10.f, 10.f}},
+///     {{100.f,   0.f}, sf::Color::Red, {10.f,  0.f}}
 /// };
 ///
 /// // draw it
@@ -78,17 +79,16 @@ struct [[nodiscard]] Vertex
 /// Example:
 /// \code
 /// // C++17 and above
-/// sf::Vertex v0{{5.0f, 5.0f}};                               // explicit 'position', implicit 'color' and 'texCoords'
-/// sf::Vertex v1{{5.0f, 5.0f}, sf::Color::Red};               // explicit 'position' and 'color', implicit 'texCoords'
-/// sf::Vertex v2{{5.0f, 5.0f}, sf::Color::Red, {1.0f, 1.0f}}; // everything is explicitly specified
+/// sf::Vertex v0{{5.f, 5.f}};                             // explicit 'position', implicit 'color' and 'texCoords'
+/// sf::Vertex v1{{5.f, 5.f}, sf::Color::Red};             // explicit 'position' and 'color', implicit 'texCoords'
+/// sf::Vertex v2{{5.f, 5.f}, sf::Color::Red, {1.f, 1.f}}; // everything is explicitly specified
 ///
 /// // C++20 and above (or compilers supporting "designated initializers" as an extension)
 /// sf::Vertex v3{
-///    .position{5.0f, 5.0f},
-///    .texCoords{1.0f, 1.0f}
+///    .position{5.f, 5.f},
+///    .texCoords{1.f, 1.f}
 /// };
 /// \endcode
-///
 ///
 /// Note: Although texture coordinates are supposed to be an integer
 /// amount of pixels, their type is float because of some buggy graphics
@@ -97,3 +97,5 @@ struct [[nodiscard]] Vertex
 /// \see `sf::VertexBuffer`
 ///
 ////////////////////////////////////////////////////////////
+
+// TODO P0: investigate what it would take to make `sf::Vertex` customizable!

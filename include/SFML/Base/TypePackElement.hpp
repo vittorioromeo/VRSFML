@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,9 +10,8 @@
 
 #if __has_builtin(__type_pack_element)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) __type_pack_element<N, __VA_ARGS__>
-
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) __type_pack_element<N, __VA_ARGS__>
 
 namespace sf::base
 {
@@ -70,11 +70,11 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <SizeT N, typename... Ts>
-using TypePackElement = typename decltype(typePackElementImpl<N, Ts...>())::type;
+using TypePackElement = typename decltype(priv::typePackElementImpl<N, Ts...>())::type;
 
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::TypePackElement<N, __VA_ARGS__>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_TYPE_PACK_ELEMENT(N, ...) ::sf::base::TypePackElement<N, __VA_ARGS__>
 
 } // namespace sf::base
 

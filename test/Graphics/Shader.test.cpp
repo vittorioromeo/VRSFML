@@ -12,11 +12,13 @@
 
 #include <CommonTraits.hpp>
 
+
 namespace
 {
 constexpr auto vertexSource = R"glsl(
 
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
+layout(location = 1) uniform sampler2D sf_u_texture;
 
 layout(location = 3) uniform vec2 storm_position;
 layout(location = 4) uniform float storm_total_radius;
@@ -43,7 +45,7 @@ void main()
     }
 
     gl_Position   = sf_u_mvpMatrix * vec4(newPosition, 0.0, 1.0);
-    sf_v_texCoord = sf_a_texCoord;
+    sf_v_texCoord = sf_a_texCoord / vec2(textureSize(sf_u_texture, 0));
     sf_v_color    = sf_a_color;
 }
 
@@ -65,8 +67,6 @@ layout(triangle_strip, max_vertices = 4) out;
 
 // Output texture coordinates
 out vec2 sf_v_texCoord;
-
-layout(location = 1) uniform vec3 sf_u_texParams;
 
 out vec4 sf_v_color; // Pass through to fragment
 
@@ -114,7 +114,7 @@ void main()
 
 constexpr auto fragmentSource = R"glsl(
 
-layout(location = 2) uniform sampler2D sf_u_texture;
+layout(location = 1) uniform sampler2D sf_u_texture;
 layout(location = 6) uniform float     blink_alpha;
 
 in vec4 sf_v_color;
@@ -157,15 +157,15 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     {
         SECTION("Construction")
         {
-            auto       movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
+            auto       movedShader = sf::Shader::loadFromFile({.vertexPath = "Graphics/shader.vert"}).value();
             const auto shader      = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
 
         SECTION("Assignment")
         {
-            auto movedShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex).value();
-            auto shader      = sf::Shader::loadFromFile("Graphics/shader.frag", sf::Shader::Type::Fragment).value();
+            auto movedShader = sf::Shader::loadFromFile({.vertexPath = "Graphics/shader.vert"}).value();
+            auto shader      = sf::Shader::loadFromFile({.fragmentPath = "Graphics/shader.frag"}).value();
             shader           = SFML_BASE_MOVE(movedShader);
             CHECK(shader.getNativeHandle() != 0);
         }
@@ -175,14 +175,14 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
     {
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", sf::Shader::Type::Vertex).hasValue());
+            CHECK(!sf::Shader::loadFromFile({.vertexPath = "does-not-exist.vert"}).hasValue());
 
-            const auto vertexShader = sf::Shader::loadFromFile("Graphics/shader.vert", sf::Shader::Type::Vertex);
+            const auto vertexShader = sf::Shader::loadFromFile({.vertexPath = "Graphics/shader.vert"});
             CHECK(vertexShader.hasValue());
             if (vertexShader.hasValue())
                 CHECK(static_cast<bool>(vertexShader->getNativeHandle()));
 
-            const auto fragmentShader = sf::Shader::loadFromFile("Graphics/shader.frag", sf::Shader::Type::Fragment);
+            const auto fragmentShader = sf::Shader::loadFromFile({.fragmentPath = "Graphics/shader.frag"});
             CHECK(fragmentShader.hasValue());
             if (fragmentShader.hasValue())
                 CHECK(static_cast<bool>(fragmentShader->getNativeHandle()));
@@ -190,10 +190,15 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", "Graphics/shader.frag").hasValue());
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "does-not-exist.frag").hasValue());
+            CHECK(!sf::Shader::loadFromFile({.vertexPath = "does-not-exist.vert", .fragmentPath = "Graphics/shader.frag"})
+                       .hasValue());
 
-            const auto shader = sf::Shader::loadFromFile("Graphics/shader.vert", "Graphics/shader.frag");
+            CHECK(!sf::Shader::loadFromFile({.vertexPath = "Graphics/shader.vert", .fragmentPath = "does-not-exist.frag"})
+                       .hasValue());
+
+            const auto shader = sf::Shader::loadFromFile(
+                {.vertexPath = "Graphics/shader.vert", .fragmentPath = "Graphics/shader.frag"});
+
             CHECK(shader.hasValue());
             if (shader.hasValue())
                 CHECK(static_cast<bool>(shader->getNativeHandle()));
@@ -201,31 +206,47 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromFile("does-not-exist.vert", "Graphics/shader.geom", "Graphics/shader.frag").hasValue());
+            CHECK(!sf::Shader::loadFromFile({.vertexPath   = "does-not-exist.vert",
+                                             .fragmentPath = "Graphics/shader.frag",
+                                             .geometryPath = "Graphics/shader.geom"})
+                       .hasValue());
 
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "does-not-exist.geom", "Graphics/shader.frag").hasValue());
+            CHECK(!sf::Shader::loadFromFile({.vertexPath   = "Graphics/shader.vert",
+                                             .fragmentPath = "Graphics/shader.frag",
+                                             .geometryPath = "does-not-exist.geom"})
+                       .hasValue());
 
-            CHECK(!sf::Shader::loadFromFile("Graphics/shader.vert", "Graphics/shader.geom", "does-not-exist.frag").hasValue());
+            CHECK(!sf::Shader::loadFromFile({.vertexPath   = "Graphics/shader.vert",
+                                             .fragmentPath = "does-not-exist.frag",
+                                             .geometryPath = "Graphics/shader.geom"})
+                       .hasValue());
 
-            const auto shader = sf::Shader::loadFromFile("Graphics/shader.vert",
-                                                         "Graphics/shader.geom",
-                                                         "Graphics/shader.frag");
+            const auto shader = sf::Shader::loadFromFile(
+                {.vertexPath   = "Graphics/shader.vert",
+                 .fragmentPath = "Graphics/shader.frag",
+                 .geometryPath = "Graphics/shader.geom"});
 
             CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
             if (shader.hasValue())
                 CHECK(static_cast<bool>(shader->getNativeHandle()) == sf::Shader::isGeometryAvailable());
         }
+
+        SECTION("One shader with non-ASCII filename")
+        {
+            CHECK(sf::Shader::loadFromFile({.vertexPath = U"Graphics/shader-ń.vert"}).hasValue());
+            CHECK(sf::Shader::loadFromFile({.vertexPath = U"Graphics/shader-🐌.vert"}).hasValue());
+        }
     }
 
     SECTION("loadFromMemory()")
     {
-        CHECK(sf::Shader::loadFromMemory(vertexSource, sf::Shader::Type::Vertex).hasValue());
-        CHECK(sf::Shader::loadFromMemory(geometrySource, sf::Shader::Type::Geometry).hasValue() ==
-              sf::Shader::isGeometryAvailable());
-        CHECK(sf::Shader::loadFromMemory(fragmentSource, sf::Shader::Type::Fragment).hasValue());
-        CHECK(sf::Shader::loadFromMemory(vertexSource, fragmentSource).hasValue());
+        CHECK(sf::Shader::loadFromMemory({.vertexCode = vertexSource}).hasValue());
+        CHECK(sf::Shader::loadFromMemory({.geometryCode = geometrySource}).hasValue() == sf::Shader::isGeometryAvailable());
+        CHECK(sf::Shader::loadFromMemory({.fragmentCode = fragmentSource}).hasValue());
+        CHECK(sf::Shader::loadFromMemory({.vertexCode = vertexSource, .fragmentCode = fragmentSource}).hasValue());
 
-        const auto shader = sf::Shader::loadFromMemory(vertexSource, geometrySource, fragmentSource);
+        const auto shader = sf::Shader::loadFromMemory(
+            {.vertexCode = vertexSource, .fragmentCode = fragmentSource, .geometryCode = geometrySource});
         CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
         if (shader.hasValue())
             CHECK(static_cast<bool>(shader->getNativeHandle()));
@@ -241,25 +262,39 @@ TEST_CASE("[Graphics] sf::Shader" * doctest::skip(skipShaderFullTest))
 
         SECTION("One shader")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, sf::Shader::Type::Vertex).hasValue());
-            CHECK(sf::Shader::loadFromStream(vertexShaderStream, sf::Shader::Type::Vertex).hasValue());
-            CHECK(sf::Shader::loadFromStream(fragmentShaderStream, sf::Shader::Type::Fragment).hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream = &emptyStream}).hasValue());
+            CHECK(sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream}).hasValue());
+            CHECK(sf::Shader::loadFromStream({.fragmentStream = &fragmentShaderStream}).hasValue());
         }
 
         SECTION("Two shaders")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, fragmentShaderStream).hasValue());
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, emptyStream).hasValue());
-            CHECK(sf::Shader::loadFromStream(vertexShaderStream, fragmentShaderStream).hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream = &emptyStream, .fragmentStream = &fragmentShaderStream})
+                       .hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &emptyStream}).hasValue());
+            CHECK(sf::Shader::loadFromStream({.vertexStream = &vertexShaderStream, .fragmentStream = &fragmentShaderStream})
+                      .hasValue());
         }
 
         SECTION("Three shaders")
         {
-            CHECK(!sf::Shader::loadFromStream(emptyStream, geometryShaderStream, fragmentShaderStream).hasValue());
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, emptyStream, fragmentShaderStream).hasValue());
-            CHECK(!sf::Shader::loadFromStream(vertexShaderStream, geometryShaderStream, emptyStream).hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &emptyStream,
+                                               .fragmentStream = &fragmentShaderStream,
+                                               .geometryStream = &geometryShaderStream})
+                       .hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
+                                               .fragmentStream = &fragmentShaderStream,
+                                               .geometryStream = &emptyStream})
+                       .hasValue());
+            CHECK(!sf::Shader::loadFromStream({.vertexStream   = &vertexShaderStream,
+                                               .fragmentStream = &emptyStream,
+                                               .geometryStream = &geometryShaderStream})
+                       .hasValue());
 
-            const auto shader = sf::Shader::loadFromStream(vertexShaderStream, geometryShaderStream, fragmentShaderStream);
+            const auto shader = sf::Shader::loadFromStream(
+                {.vertexStream   = &vertexShaderStream,
+                 .fragmentStream = &fragmentShaderStream,
+                 .geometryStream = &geometryShaderStream});
 
             CHECK(shader.hasValue() == sf::Shader::isGeometryAvailable());
             if (shader.hasValue())

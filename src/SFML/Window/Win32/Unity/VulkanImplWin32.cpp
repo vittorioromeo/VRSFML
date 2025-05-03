@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,8 +10,7 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/StringView.hpp"
-
-#include <vector>
+#include "SFML/Base/Vector.hpp"
 
 #define VK_USE_PLATFORM_WIN32_KHR
 #define VK_NO_PROTOTYPES
@@ -103,7 +103,7 @@ bool VulkanImpl::isAvailable(bool requireGraphics)
         if (graphicsAvailable)
         {
             // Retrieve the available instance extensions
-            std::vector<VkExtensionProperties> extensionProperties;
+            sf::base::Vector<VkExtensionProperties> extensionProperties;
 
             base::U32 extensionCount = 0;
 

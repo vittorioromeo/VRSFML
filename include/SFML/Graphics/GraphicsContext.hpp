@@ -1,13 +1,15 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Window/WindowContext.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
@@ -15,16 +17,12 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-namespace sf::priv
-{
-class GlContext;
-} // namespace sf::priv
-
 namespace sf
 {
 class RenderTarget;
 class Shader;
 class Texture;
+class WindowContext;
 } // namespace sf
 
 
@@ -34,14 +32,14 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext : public WindowContext
+class [[nodiscard]] SFML_GRAPHICS_API GraphicsContext
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a new graphics context TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<GraphicsContext> create();
+    [[nodiscard]] static base::Optional<GraphicsContext> create(const ContextSettings& sharedContextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -89,16 +87,45 @@ public:
     [[nodiscard]] static bool isInstalled();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in vertex shader source code
+    /// \brief Get the currently active context's ID
+    ///
+    /// The context ID is used to identify contexts when
+    /// managing unshareable OpenGL resources.
+    ///
+    /// \return The active context's ID or 0 if no context is currently active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* getBuiltInShaderVertexSrc();
+    [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Returns the built-in fragment shader source code
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const char* getBuiltInShaderFragmentSrc();
+    [[nodiscard]] static bool hasActiveThreadLocalGlContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void registerUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
 
 private:
     friend Shader;
@@ -115,6 +142,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static Texture& getInstalledBuiltInWhiteDotTexture();
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    base::InPlacePImpl<Impl, 64> m_impl; //!< Implementation details
 };
 
 } // namespace sf

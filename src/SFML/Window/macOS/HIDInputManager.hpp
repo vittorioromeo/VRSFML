@@ -1,10 +1,10 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/JoystickImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
 
 #include <IOKit/hid/IOHIDDevice.h>
@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <Carbon/Carbon.h>
+
 
 namespace sf::priv
 {
@@ -219,7 +220,7 @@ private:
     ///
     /// \param page  HID page like kHIDPage_GenericDesktop
     /// \param usage HID usage page like kHIDUsage_GD_Keyboard or kHIDUsage_GD_Mouse
-    /// \return a retained, non-empty CFSetRef of IOHIDDeviceRef or a null pointer
+    /// \return a retained, non-empty CFSetRef of IOHIDDeviceRef or `nullptr`
     ///
     ////////////////////////////////////////////////////////////
     CFSetRef copyDevices(base::U32 page, base::U32 usage);

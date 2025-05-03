@@ -1,14 +1,14 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
-
-#include <vector>
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -76,7 +76,7 @@ public:
     /// \see create, loadFromFile, loadFromMemory, saveToFile
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::vector<base::U8> saveToMemory(const Image& image, SaveFormat format);
+    [[nodiscard]] static base::Vector<base::U8> saveToMemory(const Image& image, SaveFormat format);
 };
 
 } // namespace sf

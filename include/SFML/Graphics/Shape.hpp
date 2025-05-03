@@ -1,33 +1,23 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
+#include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Span.hpp"
-#include "SFML/Base/TrivialVector.hpp"
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE                                                                \
-    ::sf::FloatRect textureRect{};                    /*!< Area of the source texture to display for the fill */    \
-    ::sf::FloatRect outlineTextureRect{};             /*!< Area of the source texture to display for the outline */ \
-    ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
-    ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
-    float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
-    using sfPrivSwallowSemicolon1 = void
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -35,6 +25,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class CPUDrawableBatch;
 class RenderTarget;
 class Texture;
 struct Color;
@@ -42,13 +33,19 @@ struct RenderStates;
 } // namespace sf
 
 
+namespace sf::priv
+{
+template <typename TStorage>
+class DrawableBatchImpl;
+}
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
 /// \brief Base class for textured shapes with outline
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Shape : public Transformable, public AnchorPointMixin<Shape>
+class SFML_GRAPHICS_API Shape : public TransformableMixin<Shape>, public AnchorPointMixin<Shape>
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -228,13 +225,19 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getFillVertices() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getFillVertices() const
+    {
+        return {m_vertices.data(), m_verticesEndIndex};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getOutlineVertices() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getOutlineVertices() const
+    {
+        return {m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex};
+    }
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -245,28 +248,51 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Vector2f* points, base::SizeT pointCount);
+    void update(const sf::Vector2f* points, base::SizeT pointCount); // TODO P1: make public?
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Recompute the internal geometry of the shape
+    ///
+    /// This function must be called by the derived class every time
+    /// the shape's points change (i.e. the result of either
+    /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool updateImplResizeVerticesVector(base::SizeT pointCount);
+    void updateFromFunc(auto&& getPointFunc, const base::SizeT pointCount) // TODO P1: make public?
+    {
+        if (pointCount < 3u)
+        {
+            m_vertices.clear();
+            m_verticesEndIndex = 0;
+            return;
+        }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void updateImplFromVerticesPositions(base::SizeT pointCount);
+        m_vertices.resize(pointCount + 2u); // +2 for center and repeated first point
+        m_verticesEndIndex = pointCount + 2u;
+
+        for (base::SizeT i = 0u; i < pointCount; ++i)
+            m_vertices[i + 1u].position = getPointFunc(i);
+
+        m_vertices[pointCount + 1u].position = m_vertices[1].position; // repeated first point
+
+        // Update the bounding rectangle
+        m_insideBounds = getVertexRangeBounds(m_vertices.data() + 1u, m_verticesEndIndex - 1u); // skip center
+
+        // Compute the center and make it the first vertex
+        m_vertices[0].position = m_insideBounds.getCenter();
+
+        // Updates
+        updateFillColors();
+        updateTexCoords();
+        updateOutline();
+        updateOutlineTexCoords();
+    }
 
 private:
     friend RenderTarget;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Draws the shape on `renderTarget` with the given `texture` and `states`
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawOnto(RenderTarget& renderTarget, const Texture* texture, RenderStates states) const;
+    template <typename TStorage>
+    friend class priv::DrawableBatchImpl;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the fill vertices' color
@@ -301,19 +327,22 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    FloatRect m_textureRect{};              //!< Area of the source texture to display for the fill
-    FloatRect m_outlineTextureRect{};       //!< Area of the source texture to display for the outline
-    Color     m_fillColor{Color::White};    //!< Fill color
-    Color     m_outlineColor{Color::White}; //!< Outline color
-    float     m_outlineThickness{};         //!< Thickness of the shape's outline
+    /* Ordered to minimize padding */
+    base::Vector<Vertex> m_vertices;              //!< Vertex array containing the fill and outline geometry
+    base::SizeT          m_verticesEndIndex = 0u; //!< Index where the fill vertices end and outline vertices begin
 
-protected:
-    base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the fill and outline geometry
+    FloatRect m_textureRect{};        //!< Area of the source texture to display for the fill
+    FloatRect m_outlineTextureRect{}; //!< Area of the source texture to display for the outline
+    FloatRect m_insideBounds;         //!< Bounding rectangle of the inside (fill)
+    FloatRect m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
 
-private:
-    base::SizeT m_verticesEndIndex = 0; //!< Index where the fill vertices end and outline vertices begin
-    FloatRect   m_insideBounds;         //!< Bounding rectangle of the inside (fill)
-    FloatRect   m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
+    float m_outlineThickness{}; //!< Thickness of the shape's outline
+
+    Color m_fillColor{Color::White};    //!< Fill color
+    Color m_outlineColor{Color::White}; //!< Outline color
+
+public:
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
 };
 
 } // namespace sf

@@ -8,6 +8,7 @@
 
 #include <X11/Xlib.h>
 
+
 namespace sf::priv
 {
 template <typename T>

@@ -2,11 +2,11 @@
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/System/LifetimeDependant.hpp"
-#include "SFML/System/LifetimeDependee.hpp"
+    ////////////////////////////////////////////////////////////
+    // Headers
+    ////////////////////////////////////////////////////////////
+    #include "SFML/System/LifetimeDependant.hpp"
+    #include "SFML/System/LifetimeDependee.hpp"
 
 
 namespace sf::priv
@@ -54,9 +54,7 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
 ////////////////////////////////////////////////////////////
 LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcept
 {
-    m_dependee     = rhs.m_dependee;
-    rhs.m_dependee = nullptr;
-
+    m_dependee = rhs.m_dependee;
     return *this;
 }
 

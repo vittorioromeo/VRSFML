@@ -9,6 +9,7 @@
         "CMAKE_COLOR_DIAGNOSTICS": "ON",
         "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
         "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_CXX_SCAN_FOR_MODULES": "OFF",
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "SFML_BUILD_EXAMPLES": "ON",
         "SFML_BUILD_TEST_SUITE": "ON",
@@ -28,18 +29,22 @@
         "CMAKE_BUILD_TYPE": "DEBUG",
         "SFML_ENABLE_LIFETIME_TRACKING": "ON",
         "SFML_ENABLE_STACK_TRACES": "ON",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON"
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
+        "SFML_ENABLE_HARDENING_FLAGS": "ON"
       }
     },
     {
-      "name": "build_base_release",
-      "hidden": true,
-      "inherits": "build_base",
+      "name": "vrdev_ci",
+      "inherits": "build_base_debug",
+      "binaryDir": "build",
+      "installDir": "${sourceDir}/build/install",
       "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "RELEASE",
-        "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
-        "SFML_ENABLE_STACK_TRACES": "OFF",
-        "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "SFML_BUILD_EXAMPLES": "ON",
+        "SFML_BUILD_TEST_SUITE": "ON",
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "ON",
+        "SFML_WARNINGS_AS_ERRORS": "OFF"
       }
     },
     {
@@ -49,9 +54,10 @@
       "installDir": "${sourceDir}/build_vrdev_clang/install",
       "cacheVariables": {
         "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++",
         "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
-        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}"
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace $env{CXX_WARNINGS}",
+        "SFML_FATAL_OPENGL_ERRORS": "ON"
       }
     },
     {
@@ -85,8 +91,18 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
+      }
+    },
+    {
+      "name": "build_base_release",
+      "hidden": true,
+      "inherits": "build_base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RELEASE",
+        "SFML_ENABLE_LIFETIME_TRACKING": "OFF",
+        "SFML_ENABLE_STACK_TRACES": "OFF",
+        "SFML_ENABLE_STDLIB_ASSERTIONS": "OFF"
       }
     },
     {
@@ -132,7 +148,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "C:/msys64/clang64/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "C:/msys64/clang64/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -146,7 +161,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "$env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     },
@@ -160,7 +174,6 @@
         "CMAKE_CXX_COMPILER_LAUNCHER": "",
         "CMAKE_CXX_FLAGS": "-Ofast $env{CXX_WARNINGS}",
         "CMAKE_TOOLCHAIN_FILE": "/usr/lib/emscripten/cmake/Modules/Platform/Emscripten.cmake",
-        "SFML_EMSCRIPTEN_SOURCE_MAP": "/usr/lib/emscripten/src/emscripten-source-map.min.js",
         "SFML_OPENGL_ES": "ON"
       }
     }

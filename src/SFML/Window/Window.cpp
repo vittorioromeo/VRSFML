@@ -1,15 +1,18 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/GlContext.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/Window.hpp"
+#include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/GLUtils/GlContext.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Err.hpp"
@@ -19,8 +22,8 @@
 #include "SFML/Base/Macros.hpp"
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
-#include <emscripten.h>
-#include <emscripten/html5.h>
+    #include <emscripten.h>
+    #include <emscripten/html5.h>
 #endif
 
 
@@ -73,8 +76,18 @@ Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUti
 
 
 ////////////////////////////////////////////////////////////
+bool Window::isMovedFrom() const
+{
+    return m_impl->glContext == nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
 Window::~Window()
 {
+    if (isMovedFrom())
+        return;
+
     // Need to activate window context during destruction to avoid GL errors
     [[maybe_unused]] const bool rc = setActive(true);
     SFML_BASE_ASSERT(rc);
@@ -86,7 +99,18 @@ Window::Window(Window&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Window& Window::operator=(Window&&) noexcept = default;
+Window& Window::operator=(Window&& rhs) noexcept
+{
+    if (this == &rhs)
+        return *this;
+
+    // Make sure the window is destroyed after the context,
+    //  as SDL context activation requires the window to be alive
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+    WindowBase::operator=(SFML_BASE_MOVE(rhs));
+
+    return *this;
+}
 
 
 ////////////////////////////////////////////////////////////
@@ -108,7 +132,7 @@ void Window::setVerticalSyncEnabled(bool enabled)
 ////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
-    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time::Zero;
+    m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time{};
 }
 
 
@@ -133,7 +157,7 @@ void Window::display()
         m_impl->glContext->display();
 
     // Limit the framerate if needed
-    if (m_impl->frameTimeLimit != Time::Zero)
+    if (m_impl->frameTimeLimit != Time{})
     {
         sleep(m_impl->frameTimeLimit - m_impl->clock.getElapsedTime());
         m_impl->clock.restart();

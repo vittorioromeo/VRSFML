@@ -11,7 +11,6 @@
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
 
-#include <vector>
 
 namespace
 {
@@ -60,7 +59,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         CHECK(testSoundStream.getChannelCount() == 0);
         CHECK(testSoundStream.getSampleRate() == 0);
         CHECK(testSoundStream.getStatus() == sf::SoundStream::Status::Stopped);
-        CHECK(testSoundStream.getPlayingOffset() == sf::Time::Zero);
+        CHECK(testSoundStream.getPlayingOffset() == sf::Time{});
         CHECK(!testSoundStream.isLooping());
     }
 
@@ -78,21 +77,6 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         CHECK(testSoundStream.isLooping());
     }
 
-    /*
-    SECTION("initialize")
-    {
-        const std::vector channelMap{sf::SoundChannel::FrontLeft, sf::SoundChannel::FrontRight};
-        TestSoundStream   soundStream;
-        soundStream.initialize(2, 44100, channelMap);
-        CHECK(soundStream.getChannelCount() == 2);
-        CHECK(soundStream.getSampleRate() == 44100);
-        CHECK(soundStream.getChannelMap() == channelMap);
-        CHECK(soundStream.getStatus() == sf::SoundStream::Status::Stopped);
-        CHECK(soundStream.getPlayingOffset() == sf::Time::Zero);
-        CHECK(!soundStream.isLooping());
-    }
-    */
-
     SECTION("Set/get pitch")
     {
         TestSoundStream soundStream;
@@ -103,19 +87,26 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
     SECTION("Set/get pan")
     {
         TestSoundStream soundStream;
-        soundStream.setPan(1);
-        CHECK(soundStream.getPan() == 1);
-        soundStream.setPan(2);
-        CHECK(soundStream.getPan() == 1);
-        soundStream.setPan(-2);
-        CHECK(soundStream.getPan() == -1);
+        soundStream.setPan(1.f);
+        CHECK(soundStream.getPan() == 1.f);
+        soundStream.setPan(2.f);
+        CHECK(soundStream.getPan() == 2.f);
+        soundStream.setPan(-2.f);
+        CHECK(soundStream.getPan() == -2.f);
     }
 
     SECTION("Set/get volume")
     {
         TestSoundStream soundStream;
-        soundStream.setVolume(50);
-        CHECK(soundStream.getVolume() == 50);
+
+        soundStream.setVolume(0.f);
+        CHECK(soundStream.getVolume() == 0.f);
+
+        soundStream.setVolume(0.5f);
+        CHECK(soundStream.getVolume() == 0.5f);
+
+        soundStream.setVolume(1.f);
+        CHECK(soundStream.getVolume() == 1.f);
     }
 
     SECTION("Set/get spatialization enabled")
