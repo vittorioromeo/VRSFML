@@ -401,9 +401,9 @@ void Text::ensureGeometryUpdate(const Font& font) const
                                     m_outlineThickness,
                                     m_fillColor,
                                     m_outlineColor,
-                                    [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                    [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return addLine(m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
-                                    [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                                    [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return addGlyphQuad(m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
 }
 

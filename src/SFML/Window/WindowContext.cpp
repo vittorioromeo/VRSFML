@@ -455,6 +455,13 @@ priv::GlContext* WindowContext::getActiveThreadLocalGlContextPtr()
 
 
 ////////////////////////////////////////////////////////////
+priv::GlContext& WindowContext::getSharedGlContext()
+{
+    return ensureInstalled().sharedGlContext;
+}
+
+
+////////////////////////////////////////////////////////////
 priv::JoystickManager& WindowContext::getJoystickManager()
 {
     return ensureInstalled().joystickManager.emplaceIfNeeded();

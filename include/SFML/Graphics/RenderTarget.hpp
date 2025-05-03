@@ -166,7 +166,18 @@ public:
     [[nodiscard]] const View& getView() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Enable or disable auto-batching
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class [[nodiscard]] AutoBatchMode : unsigned char
+    {
+        Disabled,   //!< Auto-batching is disabled
+        CPUStorage, //!< Auto-batching is enabled with CPU storage
+        GPUStorage, //!< Auto-batching is enabled with GPU storage (fallback to CPU if GPU storage is not available)
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the current auto-batching mode
     ///
     /// Auto-batching is a performance optimization that groups
     /// draw calls together to reduce the number of state changes
@@ -175,22 +186,22 @@ public:
     /// together when possible, reducing the overhead of
     /// individual draw calls.
     ///
-    /// \param enabled `true` to enable auto-batching, `false` to disable it
+    /// \param mode The auto-batching mode to set
     ///
-    /// \see `isAutoBatchEnabled`
+    /// \see `getAutoBatchMode`
     ///
     ////////////////////////////////////////////////////////////
-    void setAutoBatchEnabled(bool enabled);
+    void setAutoBatchMode(AutoBatchMode mode);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if auto-batching is enabled
+    /// \brief Get the current auto-batching mode
     ///
-    /// \return `true` if auto-batching is enabled, `false` otherwise
+    /// \return The current auto-batching mode
     ///
-    /// \see `setAutoBatchEnabled`
+    /// \see `setAutoBatchMode`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isAutoBatchEnabled() const;
+    [[nodiscard]] AutoBatchMode getAutoBatchMode() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the vertex threshold for auto-batching
@@ -480,10 +491,13 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
-                                             base::SizeT                       indexCount,
-                                             PrimitiveType                     type,
-                                             const RenderStates&               states = {});
+    void drawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -772,11 +786,23 @@ private:
     ////////////////////////////////////////////////////////////
     /// \brief Draw indexed primitives
     ///
-    /// \param type        Type of primitives to draw
-    /// \param indexCount  Number of indices to use when drawing
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount);
+    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw indexed primitives with base vertex (not supported on OpenGL ES)
+    ///
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedPrimitivesBaseVertex(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset, base::SizeT vertexOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing

@@ -528,7 +528,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
     sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
     sf::RenderTexture rtImGui{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
 
