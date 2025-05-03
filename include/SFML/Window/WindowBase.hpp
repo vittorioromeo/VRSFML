@@ -33,7 +33,7 @@ class Cursor;
 
 namespace sf::priv
 {
-class WindowImpl;
+class SDLWindowImpl;
 } // namespace sf::priv
 
 namespace sf::Vulkan
@@ -104,13 +104,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase(WindowBase&&) noexcept = default;
+    WindowBase(WindowBase&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    WindowBase& operator=(WindowBase&&) noexcept = default;
+    WindowBase& operator=(WindowBase&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Pop the next event from the front of the FIFO event queue, if any, and return it
@@ -497,13 +497,13 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    priv::WindowImpl& getWindowImpl();
+    priv::SDLWindowImpl& getWindowImpl();
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct a window base from the inner implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::WindowImpl>&& impl);
+    [[nodiscard]] explicit WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl);
 
     ////////////////////////////////////////////////////////////
     /// \brief Processes an event before it is sent to the user
@@ -522,8 +522,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::UniquePtr<priv::WindowImpl> m_impl; //!< Platform-specific implementation of the window
-    Vector2u                          m_size; //!< Current size of the window
+    base::UniquePtr<priv::SDLWindowImpl> m_impl; //!< Platform-specific implementation of the window
+    Vector2u                             m_size; //!< Current size of the window
 };
 
 } // namespace sf

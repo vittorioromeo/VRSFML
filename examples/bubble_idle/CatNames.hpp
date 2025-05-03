@@ -5,10 +5,10 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Span.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <algorithm>
 #include <string>
-#include <vector>
 
 
 ////////////////////////////////////////////////////////////
@@ -193,11 +193,16 @@ inline constexpr EXACT_ARRAY(
     });
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::vector<std::string> getShuffledCatNames(const CatType catType, auto&& randomEngine)
+[[nodiscard]] sf::base::Vector<std::string> getShuffledCatNames(const CatType catType, auto&& randomEngine)
 {
     const auto span = catNamesPerType[asIdx(catType)];
 
-    std::vector<std::string> names{span.begin(), span.end()};
+    sf::base::Vector<std::string> names;
+    names.reserve(span.size);
+
+    for (const char* str : span)
+        names.emplaceBack(str);
+
     std::shuffle(names.begin(), names.end(), randomEngine);
 
     return names;

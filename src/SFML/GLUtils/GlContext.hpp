@@ -96,12 +96,12 @@ protected:
     /// \brief Activate the context as the current target
     ///        for rendering
     ///
-    /// \param current Whether to make the context current or no longer current
+    /// \param activate Whether to make the context current or no longer current
     ///
     /// \return `true` on success, `false` if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool makeCurrent(bool current) = 0;
+    [[nodiscard]] virtual bool makeCurrent(bool activate) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OpenGL context ID for this context

@@ -11,7 +11,6 @@
 #include "SFML/Window/SDLLayer.hpp" // TODO P0:
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLContextSaver.hpp"
@@ -659,9 +658,9 @@ base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSet
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&  contextSettings,
-                                                                const priv::WindowImpl& owner,
-                                                                const unsigned int      bitsPerPixel)
+base::UniquePtr<priv::GlContext> WindowContext::createGlContext(const ContextSettings&     contextSettings,
+                                                                const priv::SDLWindowImpl& owner,
+                                                                const unsigned int         bitsPerPixel)
 {
     return createGlContextImpl(contextSettings, owner, bitsPerPixel);
 }

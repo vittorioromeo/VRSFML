@@ -12,13 +12,13 @@
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/SDLLayer.hpp"
+#include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
@@ -28,7 +28,6 @@
 #include "SFML/System/Utf.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/EnumArray.hpp"
@@ -70,7 +69,7 @@ namespace
 {
 // A nested named namespace is used here to allow unity builds of SFML.
 // Yes, this is a rather weird namespace.
-namespace WindowImplImpl
+namespace SDLWindowImplImpl
 {
 ////////////////////////////////////////////////////////////
 struct TouchInfo
@@ -102,20 +101,20 @@ ankerl::unordered_dense::map<SDL_FingerID, TouchInfo> touchMap;
 
 
 ////////////////////////////////////////////////////////////
-const sf::priv::WindowImpl* fullscreenWindow = nullptr;
+const sf::priv::SDLWindowImpl* fullscreenWindow = nullptr; // TODO P1: not sure why we're tracking this
 
 
 ////////////////////////////////////////////////////////////
-ankerl::unordered_dense::map<SDL_WindowID, sf::priv::WindowImpl*> windowImplMap;
+ankerl::unordered_dense::map<SDL_WindowID, sf::priv::SDLWindowImpl*> windowImplMap;
 
-} // namespace WindowImplImpl
+} // namespace SDLWindowImplImpl
 } // namespace
 
 
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-struct WindowImpl::Impl
+struct SDLWindowImpl::Impl
 {
     std::queue<Event> events; //!< Queue of available events
 
@@ -181,7 +180,7 @@ struct WindowImpl::Impl
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::processSDLEvent(const SDL_Event& e)
+void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 {
     const auto et = static_cast<SDL_EventType>(e.type);
 
@@ -306,16 +305,16 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
             const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
 
-            SFML_BASE_ASSERT(!WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            SFML_BASE_ASSERT(!SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
 
-            const int normalizedIndex = WindowImplImpl::findFirstNormalizedTouchIndex();
+            const int normalizedIndex = SDLWindowImplImpl::findFirstNormalizedTouchIndex();
             if (normalizedIndex == -1)
                 break;
 
-            const auto fingerIdx                      = static_cast<unsigned int>(normalizedIndex);
-            WindowImplImpl::touchIndexPool[fingerIdx] = true;
-            WindowImplImpl::touchMap.emplace(fingerEvent.fingerID,
-                                             WindowImplImpl::TouchInfo{fingerIdx, touchPos, getNativeHandle()});
+            const auto fingerIdx                         = static_cast<unsigned int>(normalizedIndex);
+            SDLWindowImplImpl::touchIndexPool[fingerIdx] = true;
+            SDLWindowImplImpl::touchMap.emplace(fingerEvent.fingerID,
+                                                SDLWindowImplImpl::TouchInfo{fingerIdx, touchPos, getNativeHandle()});
 
             pushEvent(sf::Event::TouchBegan{fingerIdx, touchPos, fingerEvent.pressure});
             break;
@@ -326,11 +325,11 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
             const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
 
-            SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-            const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
+            SFML_BASE_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
 
-            WindowImplImpl::touchIndexPool[fingerIdx] = false;
-            WindowImplImpl::touchMap.erase(fingerEvent.fingerID);
+            SDLWindowImplImpl::touchIndexPool[fingerIdx] = false;
+            SDLWindowImplImpl::touchMap.erase(fingerEvent.fingerID);
 
             pushEvent(sf::Event::TouchEnded{fingerIdx, touchPos, fingerEvent.pressure});
             break;
@@ -341,8 +340,8 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
             const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
 
-            SFML_BASE_ASSERT(WindowImplImpl::touchMap.contains(fingerEvent.fingerID));
-            const auto [fingerIdx, pos, handle] = WindowImplImpl::touchMap[fingerEvent.fingerID];
+            SFML_BASE_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
+            const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
 
             pushEvent(sf::Event::TouchMoved{fingerIdx, touchPos, fingerEvent.pressure});
             break;
@@ -457,13 +456,13 @@ void WindowImpl::processSDLEvent(const SDL_Event& e)
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
+base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
     // Fullscreen style requires some tests
     if (windowSettings.fullscreen)
     {
         // Make sure there's not already a fullscreen window (only one is allowed)
-        if (WindowImplImpl::fullscreenWindow != nullptr)
+        if (SDLWindowImplImpl::fullscreenWindow != nullptr)
         {
             err() << "Creating two fullscreen windows is not allowed, switching to windowed mode";
             windowSettings.fullscreen = false;
@@ -508,9 +507,9 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
         return nullptr;
     }
 
-    auto* windowImplPtr = new WindowImpl{"window settings",
-                                         static_cast<void*>(sdlWindowPtr),
-                                         /* isExternal */ false};
+    auto* windowImplPtr = new SDLWindowImpl{"window settings",
+                                            static_cast<void*>(sdlWindowPtr),
+                                            /* isExternal */ false};
 
 #ifdef SFML_SYSTEM_WINDOWS
     {
@@ -529,14 +528,14 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowSettings windowSettings)
 #endif
 
     if (windowSettings.fullscreen)
-        WindowImplImpl::fullscreenWindow = windowImplPtr;
+        SDLWindowImplImpl::fullscreenWindow = windowImplPtr;
 
-    return base::UniquePtr<WindowImpl>{windowImplPtr};
+    return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
 
 
 ////////////////////////////////////////////////////////////
-base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
+base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
     auto* sdlWindow = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle));
 
@@ -546,64 +545,64 @@ base::UniquePtr<WindowImpl> WindowImpl::create(WindowHandle handle)
         return nullptr;
     }
 
-    auto* windowImplPtr = new WindowImpl{"handle",
-                                         static_cast<void*>(sdlWindow),
-                                         /* isExternal */ true};
+    auto* windowImplPtr = new SDLWindowImpl{"handle",
+                                            static_cast<void*>(sdlWindow),
+                                            /* isExternal */ true};
 
-    return base::UniquePtr<WindowImpl>{windowImplPtr};
+    return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::~WindowImpl()
+SDLWindowImpl::~SDLWindowImpl()
 {
-    if (WindowImplImpl::fullscreenWindow == this)
-        WindowImplImpl::fullscreenWindow = nullptr;
+    if (SDLWindowImplImpl::fullscreenWindow == this)
+        SDLWindowImplImpl::fullscreenWindow = nullptr;
 
     // Unregister the window from the global map
     const auto windowId = m_impl->getWindowID();
-    SFML_BASE_ASSERT(WindowImplImpl::windowImplMap.contains(windowId));
-    WindowImplImpl::windowImplMap.erase(windowId);
+    SFML_BASE_ASSERT(SDLWindowImplImpl::windowImplMap.contains(windowId));
+    SDLWindowImplImpl::windowImplMap.erase(windowId);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2u> WindowImpl::getMinimumSize() const
+base::Optional<Vector2u> SDLWindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2u> WindowImpl::getMaximumSize() const
+base::Optional<Vector2u> SDLWindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setJoystickThreshold(float threshold)
+void SDLWindowImpl::setJoystickThreshold(const float threshold)
 {
     m_impl->joystickThreshold = threshold;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
+void SDLWindowImpl::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
+void SDLWindowImpl::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowImpl::waitEvent(Time timeout)
+base::Optional<Event> SDLWindowImpl::waitEvent(const Time timeout)
 {
     sf::Clock clock;
 
@@ -630,7 +629,7 @@ base::Optional<Event> WindowImpl::waitEvent(Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowImpl::pollEvent()
+base::Optional<Event> SDLWindowImpl::pollEvent()
 {
     // If the event queue is empty, let's first check if new events are available from the OS
     if (m_impl->events.empty())
@@ -641,7 +640,7 @@ base::Optional<Event> WindowImpl::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowImpl::popEvent()
+base::Optional<Event> SDLWindowImpl::popEvent()
 {
     base::Optional<Event> event; // Use a single local variable for NRVO
 
@@ -656,7 +655,7 @@ base::Optional<Event> WindowImpl::popEvent()
 
 
 ////////////////////////////////////////////////////////////
-WindowImpl::WindowImpl(const char* context, void* sdlWindow, const bool isExternal) :
+SDLWindowImpl::SDLWindowImpl(const char* const context, void* const sdlWindow, const bool isExternal) :
 m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
 {
     auto& joystickManager = WindowContext::getJoystickManager();
@@ -673,24 +672,24 @@ m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
 
     // Get the initial sensor states
     for (Vector3f& vec : m_impl->sensorValue.data)
-        vec = Vector3f{0.f, 0.f, 0.f};
+        vec = {0.f, 0.f, 0.f};
 
     // Register the window in the global map
     const auto windowId = m_impl->getWindowID();
-    SFML_BASE_ASSERT(!WindowImplImpl::windowImplMap.contains(windowId));
-    WindowImplImpl::windowImplMap.emplace(windowId, this); // Needs address stability
+    SFML_BASE_ASSERT(!SDLWindowImplImpl::windowImplMap.contains(windowId));
+    SDLWindowImplImpl::windowImplMap.emplace(windowId, this); // Needs address stability
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::pushEvent(const Event& event)
+void SDLWindowImpl::pushEvent(const Event& event)
 {
     m_impl->events.push(event);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::processJoystickEvents()
+void SDLWindowImpl::processJoystickEvents()
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 
@@ -760,7 +759,7 @@ void WindowImpl::processJoystickEvents()
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::processSensorEvents()
+void SDLWindowImpl::processSensorEvents()
 {
     // First update the sensor states
     auto& sensorManager = WindowContext::getSensorManager();
@@ -786,11 +785,11 @@ void WindowImpl::processSensorEvents()
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::populateEventQueue()
+void SDLWindowImpl::populateEventQueue()
 {
     processJoystickEvents();
     processSensorEvents();
-    WindowImpl::processEvents();
+    SDLWindowImpl::processEvents();
 
 #ifdef SFML_SYSTEM_EMSCRIPTEN
     SDL_SyncWindow(m_impl->sdlWindow);
@@ -799,7 +798,7 @@ void WindowImpl::populateEventQueue()
 
 
 ////////////////////////////////////////////////////////////
-bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const
+bool SDLWindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfaceData& vulkanSurfaceData) const
 {
 #ifdef SFML_VULKAN_IMPLEMENTATION_NOT_AVAILABLE
 
@@ -817,7 +816,7 @@ bool WindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSurfac
 
 
 ////////////////////////////////////////////////////////////
-Vector2i WindowImpl::getPosition() const
+Vector2i SDLWindowImpl::getPosition() const
 {
     Vector2i result;
 
@@ -829,14 +828,14 @@ Vector2i WindowImpl::getPosition() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setPosition(Vector2i position)
+void SDLWindowImpl::setPosition(const Vector2i position)
 {
     SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u WindowImpl::getSize() const
+Vector2u SDLWindowImpl::getSize() const
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     return getSDLLayerSingleton().getWindowSize(*m_impl->sdlWindow);
@@ -844,7 +843,7 @@ Vector2u WindowImpl::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setSize(const Vector2u size)
+void SDLWindowImpl::setSize(const Vector2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
@@ -852,7 +851,7 @@ void WindowImpl::setSize(const Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setTitle(const String& title)
+void SDLWindowImpl::setTitle(const String& title)
 {
     if (!SDL_SetWindowTitle(m_impl->sdlWindow, title.toAnsiString<std::string>().data()))
         err() << "Failed to set window title: " << SDL_GetError();
@@ -860,7 +859,7 @@ void WindowImpl::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setIcon(Vector2u size, const base::U8* pixels)
+void SDLWindowImpl::setIcon(const Vector2u size, const base::U8* pixels)
 {
     auto surface = getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
     if (surface == nullptr)
@@ -875,7 +874,7 @@ void WindowImpl::setIcon(Vector2u size, const base::U8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setVisible(const bool visible)
+void SDLWindowImpl::setVisible(const bool visible)
 {
     if (visible)
     {
@@ -891,7 +890,7 @@ void WindowImpl::setVisible(const bool visible)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMouseCursorVisible(const bool visible)
+void SDLWindowImpl::setMouseCursorVisible(const bool visible)
 {
     if (visible)
     {
@@ -907,7 +906,7 @@ void WindowImpl::setMouseCursorVisible(const bool visible)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMouseCursorGrabbed(const bool grabbed)
+void SDLWindowImpl::setMouseCursorGrabbed(const bool grabbed)
 {
     if (!SDL_SetWindowMouseGrab(m_impl->sdlWindow, grabbed))
         err() << "Failed to set window mouse grab: " << SDL_GetError();
@@ -915,21 +914,21 @@ void WindowImpl::setMouseCursorGrabbed(const bool grabbed)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setMouseCursor(void* cursor)
+void SDLWindowImpl::setMouseCursor(void* const cursor)
 {
     SDL_SetCursor(static_cast<SDL_Cursor*>(cursor));
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::setKeyRepeatEnabled(bool enabled)
+void SDLWindowImpl::setKeyRepeatEnabled(const bool enabled)
 {
     m_impl->keyRepeatEnabled = enabled;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::requestFocus()
+void SDLWindowImpl::requestFocus()
 {
     if (!SDL_RaiseWindow(m_impl->sdlWindow))
         err() << "Failed to raise window: " << SDL_GetError();
@@ -937,21 +936,21 @@ void WindowImpl::requestFocus()
 
 
 ////////////////////////////////////////////////////////////
-bool WindowImpl::hasFocus() const
+bool SDLWindowImpl::hasFocus() const
 {
     return SDL_GetWindowFlags(m_impl->sdlWindow) & SDL_WINDOW_INPUT_FOCUS;
 }
 
 
 ////////////////////////////////////////////////////////////
-float WindowImpl::getWindowDisplayScale() const
+float SDLWindowImpl::getWindowDisplayScale() const
 {
     return priv::getSDLLayerSingleton().getWindowDisplayScale(*m_impl->sdlWindow);
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowHandle WindowImpl::getNativeHandle() const
+WindowHandle SDLWindowImpl::getNativeHandle() const
 {
     const auto props = SDL_GetWindowProperties(m_impl->sdlWindow);
 
@@ -974,19 +973,19 @@ WindowHandle WindowImpl::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-SDL_Window* WindowImpl::getSDLHandle() const
+SDL_Window* SDLWindowImpl::getSDLHandle() const
 {
     return m_impl->sdlWindow;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImpl::processEvents()
+void SDLWindowImpl::processEvents()
 {
     const auto dispatchSDLEvent = [&](const SDL_WindowID windowID, const SDL_Event& e)
     {
-        const auto it = WindowImplImpl::windowImplMap.find(windowID);
-        if (it == WindowImplImpl::windowImplMap.end())
+        const auto* it = SDLWindowImplImpl::windowImplMap.find(windowID);
+        if (it == SDLWindowImplImpl::windowImplMap.end())
             return;
 
         it->second->processSDLEvent(e);
@@ -996,9 +995,7 @@ void WindowImpl::processEvents()
 
     while (SDL_PollEvent(&e))
     {
-        const auto et = static_cast<SDL_EventType>(e.type);
-
-        switch (et)
+        switch (static_cast<SDL_EventType>(e.type))
         {
             case SDL_EVENT_FIRST:
             case SDL_EVENT_QUIT:

@@ -23,7 +23,7 @@ class EglContext;
 class GlContext;
 class JoystickManager;
 class SensorManager;
-class WindowImpl;
+class SDLWindowImpl;
 class SDLGlContext;
 class GLContextSaver;
 class GLSharedContextGuard;
@@ -111,7 +111,7 @@ private:
     friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableSharedGlContext`
     friend priv::GLSharedContextGuard; // for `setActiveThreadLocalGlContextToSharedContext`
     friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
-    friend priv::WindowImpl;           // for `getJoystickManager`
+    friend priv::SDLWindowImpl;        // for `getJoystickManager`
 
     friend GraphicsContext; // for `setActiveThreadLocalGlContext`
     friend Joystick;        // for `getJoystickManager`
@@ -164,9 +164,9 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
-                                                                          const priv::WindowImpl& owner,
-                                                                          unsigned int            bitsPerPixel);
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&     contextSettings,
+                                                                          const priv::SDLWindowImpl& owner,
+                                                                          unsigned int               bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify unshared resources of context destruction

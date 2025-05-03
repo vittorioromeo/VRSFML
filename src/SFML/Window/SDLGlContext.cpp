@@ -1,12 +1,17 @@
-#include "SDLGlContext.hpp"
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Window/SDLGlContext.hpp"
+#include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/System/Err.hpp"
 
-#include <SDL3/SDL.h>
+#include <SDL3/SDL_video.h>
 
 
 ////////////////////////////////////////////////////////////
@@ -35,16 +40,9 @@ void applyContextSettings(const sf::ContextSettings& settings)
     SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_MINOR_VERSION, static_cast<int>(settings.minorVersion));
 
     // Set context flags
-    int profile = SDL_GL_CONTEXT_PROFILE_COMPATIBILITY;
-    if (settings.isCore())
-        profile = SDL_GL_CONTEXT_PROFILE_CORE;
-
-    int flags = 0;
-    if (settings.isDebug())
-        flags |= SDL_GL_CONTEXT_DEBUG_FLAG;
-
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_PROFILE_MASK, profile);
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_FLAGS, flags);
+    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_PROFILE_MASK,
+                                    settings.isCore() ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_FLAGS, settings.isDebug() ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
 }
 
 } // namespace
@@ -52,7 +50,52 @@ void applyContextSettings(const sf::ContextSettings& settings)
 
 namespace sf::priv
 {
-// TODO P1: cleanup repetition here
+////////////////////////////////////////////////////////////
+void SDLGlContext::destroyWindowIfNeeded()
+{
+    if (!m_ownsWindow || m_window == nullptr)
+        return;
+
+    SDL_DestroyWindow(m_window);
+
+    m_window     = nullptr;
+    m_ownsWindow = false;
+}
+
+
+////////////////////////////////////////////////////////////
+void SDLGlContext::initContext(SDLGlContext* const shared)
+{
+    // Set context sharing attributes if a shared context is provided
+    if (shared != nullptr)
+    {
+        if (!shared->makeCurrent(true))
+        {
+            destroyWindowIfNeeded();
+            return;
+        }
+
+        // The next created context will be shared with the current one
+        SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+    }
+
+    // Create the OpenGL context
+    m_context = SDL_GL_CreateContext(m_window);
+    if (!m_context)
+    {
+        err() << "Failed to create SDL GL context: " << SDL_GetError();
+        destroyWindowIfNeeded();
+        return;
+    }
+
+    // Reset sharing attribute to default
+    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+}
+
+
+////////////////////////////////////////////////////////////
+#undef SFML_PRIV_TRY_SET_SDL_ATTRIBUTE
+
 
 ////////////////////////////////////////////////////////////
 SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, const ContextSettings& settings) :
@@ -72,45 +115,7 @@ m_ownsWindow(false)
     }
 
     m_ownsWindow = true;
-
-    // Set context sharing attributes if a shared context is provided
-    if (shared != nullptr)
-    {
-        if (!SDL_GL_MakeCurrent(shared->m_window, shared->m_context))
-        {
-            err() << "Failed to activate shared SDL GL context: " << SDL_GetError();
-
-            if (m_ownsWindow)
-            {
-                SDL_DestroyWindow(m_window);
-                m_window     = nullptr;
-                m_ownsWindow = false;
-            }
-
-            return;
-        }
-
-        SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-    }
-
-    // Create the OpenGL context
-    m_context = SDL_GL_CreateContext(m_window);
-    if (!m_context)
-    {
-        err() << "Failed to create SDL GL context: " << SDL_GetError();
-
-        if (m_ownsWindow)
-        {
-            SDL_DestroyWindow(m_window);
-            m_window     = nullptr;
-            m_ownsWindow = false;
-        }
-
-        return;
-    }
-
-    // Reset sharing attribute to default
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+    initContext(shared);
 }
 
 
@@ -118,7 +123,7 @@ m_ownsWindow(false)
 SDLGlContext::SDLGlContext(const unsigned int     id,
                            SDLGlContext* const    shared,
                            const ContextSettings& settings,
-                           const WindowImpl&      owner,
+                           const SDLWindowImpl&   owner,
                            const unsigned int /* bitsPerPixel */) :
 GlContext(id, settings),
 m_window(owner.getSDLHandle()),
@@ -126,29 +131,7 @@ m_context(nullptr),
 m_ownsWindow(false)
 {
     applyContextSettings(m_settings);
-
-    // Set context sharing attributes if a shared context is provided
-    if (shared != nullptr)
-    {
-        if (!SDL_GL_MakeCurrent(shared->m_window, shared->m_context))
-        {
-            err() << "Failed to activate shared SDL GL context: " << SDL_GetError();
-            return;
-        }
-
-        SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-    }
-
-    // Create the OpenGL context
-    m_context = SDL_GL_CreateContext(m_window);
-    if (!m_context)
-    {
-        err() << "Failed to create SDL GL context: " << SDL_GetError();
-        return;
-    }
-
-    // Reset sharing attribute to default
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+    initContext(shared);
 }
 
 
@@ -159,15 +142,14 @@ SDLGlContext::~SDLGlContext()
 
     // Deactivate the context if it's current
     if (m_context && SDL_GL_GetCurrentContext() == m_context)
-        SDL_GL_MakeCurrent(nullptr, nullptr);
+        (void)makeCurrent(false);
 
     // Delete the context
     if (m_context)
         SDL_GL_DestroyContext(m_context);
 
     // Destroy the window if owned
-    if (m_ownsWindow && m_window != nullptr)
-        SDL_DestroyWindow(m_window);
+    destroyWindowIfNeeded();
 }
 
 
@@ -179,23 +161,16 @@ GlFunctionPointer SDLGlContext::getFunction(const char* const name) const
 
 
 ////////////////////////////////////////////////////////////
-bool SDLGlContext::makeCurrent(const bool current)
+bool SDLGlContext::makeCurrent(const bool activate)
 {
-    if (current)
+    auto*       targetWindow  = activate ? m_window : nullptr;
+    auto*       targetContext = activate ? m_context : nullptr;
+    const char* targetAction  = activate ? "activate" : "deactivate";
+
+    if (!SDL_GL_MakeCurrent(targetWindow, targetContext))
     {
-        if (!SDL_GL_MakeCurrent(m_window, m_context))
-        {
-            err() << "Failed to activate SDL GL context: " << SDL_GetError();
-            return false;
-        }
-    }
-    else
-    {
-        if (!SDL_GL_MakeCurrent(nullptr, nullptr))
-        {
-            err() << "Failed to deactivate SDL GL context: " << SDL_GetError();
-            return false;
-        }
+        err() << "Failed to " << targetAction << " SDL GL context: " << SDL_GetError();
+        return false;
     }
 
     return true;

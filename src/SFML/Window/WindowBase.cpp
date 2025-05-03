@@ -4,13 +4,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
+#include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/Vulkan.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowHandle.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -23,14 +22,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-priv::WindowImpl& WindowBase::getWindowImpl()
+priv::SDLWindowImpl& WindowBase::getWindowImpl()
 {
     return *m_impl;
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
+WindowBase::WindowBase(base::UniquePtr<priv::SDLWindowImpl>&& impl) : m_impl(SFML_BASE_MOVE(impl))
 {
     // Setup default behaviors (to get a consistent behavior across different implementations)
     setVisible(true);
@@ -43,19 +42,27 @@ WindowBase::WindowBase(base::UniquePtr<priv::WindowImpl>&& impl) : m_impl(SFML_B
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(const Settings& windowSettings) : WindowBase(priv::WindowImpl::create(windowSettings))
+WindowBase::WindowBase(const Settings& windowSettings) : WindowBase(priv::SDLWindowImpl::create(windowSettings))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::WindowImpl::create(handle))
+WindowBase::WindowBase(WindowHandle handle) : WindowBase(priv::SDLWindowImpl::create(handle))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 WindowBase::~WindowBase() = default;
+
+
+////////////////////////////////////////////////////////////
+WindowBase::WindowBase(WindowBase&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+WindowBase& WindowBase::operator=(WindowBase&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -66,7 +73,7 @@ base::Optional<Event> WindowBase::pollEvent()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::waitEvent(Time timeout)
+base::Optional<Event> WindowBase::waitEvent(const Time timeout)
 {
     return filterEvent(m_impl->waitEvent(timeout));
 }
@@ -94,7 +101,7 @@ Vector2u WindowBase::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setSize(Vector2u size)
+void WindowBase::setSize(const Vector2u size)
 {
     enum : unsigned int
     {
@@ -187,28 +194,28 @@ void WindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(Vector2u size, const base::U8* pixels)
+void WindowBase::setIcon(const Vector2u size, const base::U8* const pixels)
 {
     m_impl->setIcon(size, pixels);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setVisible(bool visible)
+void WindowBase::setVisible(const bool visible)
 {
     m_impl->setVisible(visible);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMouseCursorVisible(bool visible)
+void WindowBase::setMouseCursorVisible(const bool visible)
 {
     m_impl->setMouseCursorVisible(visible);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMouseCursorGrabbed(bool grabbed)
+void WindowBase::setMouseCursorGrabbed(const bool grabbed)
 {
     m_impl->setMouseCursorGrabbed(grabbed);
 }
@@ -222,14 +229,14 @@ void WindowBase::setMouseCursor(const Cursor& cursor)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setKeyRepeatEnabled(bool enabled)
+void WindowBase::setKeyRepeatEnabled(const bool enabled)
 {
     m_impl->setKeyRepeatEnabled(enabled);
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setJoystickThreshold(float threshold)
+void WindowBase::setJoystickThreshold(const float threshold)
 {
     m_impl->setJoystickThreshold(threshold);
 }
@@ -278,7 +285,7 @@ bool WindowBase::createVulkanSurface(const Vulkan::VulkanSurfaceData& vulkanSurf
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Event> WindowBase::filterEvent(base::Optional<Event> event)
+base::Optional<Event> WindowBase::filterEvent(const base::Optional<Event> event)
 {
     // Cache the new size if needed
     if (event.hasValue() && event->getIf<Event::Resized>())
