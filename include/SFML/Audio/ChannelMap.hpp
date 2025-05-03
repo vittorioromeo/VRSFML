@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -10,7 +11,7 @@
 
 #include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -88,11 +89,17 @@ public:
     ////////////////////////////////////////////////////////////
     void append(SoundChannel channel);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isPermutationOf(const ChannelMap& rhs) const;
+
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::TrivialVector<SoundChannel> m_channels;
+    base::Vector<SoundChannel> m_channels;
 };
 
 } // namespace sf

@@ -16,6 +16,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/String.hpp"
@@ -23,16 +24,16 @@
 #include "SFML/System/Vector2.hpp"
 #include "SFML/System/Vector3.hpp"
 
+#include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/ThreadPool.hpp"
+
+#include "ExampleUtils.hpp"
+
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
-#include <algorithm>
 #include <array>
-#include <iostream>
-#include <mutex>
-#include <queue>
-#include <sstream>
-#include <thread>
+#include <atomic>
 #include <vector>
 
 #include <cmath>
@@ -50,41 +51,12 @@ constexpr sf::Vector2u windowSize(800, 600);
 constexpr sf::Vector2u resolution(800, 600);
 
 // Thread pool parameters
-constexpr unsigned int threadCount  = 4;
 constexpr unsigned int blockCount   = 32;
 constexpr unsigned int rowBlockSize = (resolution.y / blockCount) + 1;
 
-struct WorkItem
-{
-    sf::Vertex*  targetBuffer{};
-    unsigned int index{};
-};
-
-struct ThreadPool
-{
-    std::mutex               poolMutex;
-    std::vector<std::thread> threads;
-    std::queue<WorkItem>     workQueue;
-    unsigned int             pendingWorkCount    = 0u;
-    bool                     bufferUploadPending = false;
-    bool                     finished            = false;
-
-    explicit ThreadPool() = default;
-
-    ThreadPool(const ThreadPool&) = delete;
-    ThreadPool(ThreadPool&&)      = delete;
-
-    ~ThreadPool()
-    {
-        {
-            const std::lock_guard lock(poolMutex);
-            finished = true;
-        }
-
-        for (std::thread& t : threads)
-            t.join();
-    }
-};
+// Worker status
+bool                      bufferUploadPending = false;
+std::atomic<unsigned int> pendingTasks{0u};
 
 struct Setting
 {
@@ -95,19 +67,19 @@ struct Setting
 // Terrain noise parameters
 constexpr int perlinOctaves = 3;
 
-float perlinFrequency     = 7.0f;
-float perlinFrequencyBase = 4.0f;
+float perlinFrequency     = 7.f;
+float perlinFrequencyBase = 4.f;
 
 // Terrain generation parameters
-float heightBase          = 0.0f;
+float heightBase          = 0.f;
 float edgeFactor          = 0.9f;
 float edgeDropoffExponent = 1.5f;
 
 float snowcapHeight = 0.6f;
 
 // Terrain lighting parameters
-float heightFactor  = static_cast<float>(windowSize.y) / 2.0f;
-float heightFlatten = 3.0f;
+float heightFactor  = static_cast<float>(windowSize.y) / 2.f;
+float heightFlatten = 3.f;
 float lightFactor   = 0.7f;
 
 
@@ -120,7 +92,7 @@ float getElevation(sf::Vector2u position)
     const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
                                     sf::Vector2f(0.5f, 0.5f);
 
-    float elevation = 0.0f;
+    float elevation = 0.f;
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
@@ -131,9 +103,9 @@ float getElevation(sf::Vector2u position)
 
     elevation = (elevation + 1.f) / 2.f;
 
-    const float distance = 2.0f * normalized.length();
-    elevation            = (elevation + heightBase) * (1.0f - edgeFactor * std::pow(distance, edgeDropoffExponent));
-    elevation            = std::clamp(elevation, 0.0f, 1.0f);
+    const float distance = 2.f * normalized.length();
+    elevation            = (elevation + heightBase) * (1.f - edgeFactor * std::pow(distance, edgeDropoffExponent));
+    elevation            = sf::base::clamp(elevation, 0.f, 1.f);
 
     return elevation;
 }
@@ -239,7 +211,7 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 sf::Color getTerrainColor(float elevation, float moisture)
 {
     if (elevation < 0.11f)
-        return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.0f)};
+        return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.f)};
 
     if (elevation < 0.14f)
         return {static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
@@ -249,7 +221,7 @@ sf::Color getTerrainColor(float elevation, float moisture)
     if (elevation < 0.16f)
         return {static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
                 static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<std::uint8_t>(127.0f + (0.16f - elevation) * 128.f / 0.02f)};
+                static_cast<std::uint8_t>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
 
     if (elevation < 0.17f)
         return {240, 230, 140};
@@ -277,7 +249,7 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 
     sf::Vector3f crossProduct = deltaX.cross(deltaY);
 
-    // Scale cross product to make z component 1.0f so we can drop it
+    // Scale cross product to make z component 1.f so we can drop it
     crossProduct /= crossProduct.z;
 
     // Return "compressed" normal
@@ -309,9 +281,9 @@ sf::Vertex computeVertex(sf::Vector2u position)
 /// the vertex buffer when done.
 ///
 ////////////////////////////////////////////////////////////
-void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem)
+void processWorkItem(std::vector<sf::Vertex>& vertices, sf::Vertex* const targetBuffer, const unsigned int index)
 {
-    const unsigned int rowStart = rowBlockSize * workItem.index;
+    const unsigned int rowStart = rowBlockSize * index;
 
     if (rowStart >= resolution.y)
         return;
@@ -327,27 +299,17 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
 
             // Top left corner (first triangle)
             if (x > 0)
-            {
                 vertices[arrayIndexBase + 0] = vertices[arrayIndexBase - 6 + 5];
-            }
             else if (y > rowStart)
-            {
                 vertices[arrayIndexBase + 0] = vertices[arrayIndexBase - resolution.x * 6 + 1];
-            }
             else
-            {
                 vertices[arrayIndexBase + 0] = computeVertex({x, y});
-            }
 
             // Bottom left corner (first triangle)
             if (x > 0)
-            {
                 vertices[arrayIndexBase + 1] = vertices[arrayIndexBase - 6 + 2];
-            }
             else
-            {
                 vertices[arrayIndexBase + 1] = computeVertex({x, y + 1});
-            }
 
             // Bottom right corner (first triangle)
             vertices[arrayIndexBase + 2] = computeVertex({x + 1, y + 1});
@@ -360,68 +322,16 @@ void processWorkItem(std::vector<sf::Vertex>& vertices, const WorkItem& workItem
 
             // Top right corner (second triangle)
             if (y > rowStart)
-            {
                 vertices[arrayIndexBase + 5] = vertices[arrayIndexBase - resolution.x * 6 + 2];
-            }
             else
-            {
                 vertices[arrayIndexBase + 5] = computeVertex({x + 1, y});
-            }
         }
     }
 
     // Copy the resulting geometry from our thread-local buffer into the target buffer
-    std::memcpy(workItem.targetBuffer + (resolution.x * rowStart * 6),
+    std::memcpy(targetBuffer + (resolution.x * rowStart * 6),
                 vertices.data(),
                 sizeof(sf::Vertex) * resolution.x * rowCount * 6);
-}
-
-
-////////////////////////////////////////////////////////////
-/// Worker thread entry point. We use a thread pool to avoid
-/// the heavy cost of constantly recreating and starting
-/// new threads whenever we need to regenerate the terrain.
-///
-////////////////////////////////////////////////////////////
-void threadFunction(ThreadPool& threadPool)
-{
-    std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
-
-    WorkItem workItem{nullptr, 0};
-
-    // Loop until the application exits
-    for (;;)
-    {
-        workItem.targetBuffer = nullptr;
-
-        // Check if there are new work items in the queue
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            if (threadPool.finished)
-                return;
-
-            if (!threadPool.workQueue.empty())
-            {
-                workItem = threadPool.workQueue.front();
-                threadPool.workQueue.pop();
-            }
-        }
-
-        // If we didn't receive a new work item, keep looping
-        if (workItem.targetBuffer == nullptr)
-        {
-            sf::sleep(sf::milliseconds(10));
-            continue;
-        }
-
-        processWorkItem(vertices, workItem);
-
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-            --threadPool.pendingWorkCount;
-        }
-    }
 }
 
 
@@ -431,32 +341,25 @@ void threadFunction(ThreadPool& threadPool)
 /// and process.
 ///
 ////////////////////////////////////////////////////////////
-void generateTerrain(ThreadPool& threadPool, sf::Vertex* buffer)
+void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
 {
-    threadPool.bufferUploadPending = true;
+    bufferUploadPending = true;
 
     // Make sure the work queue is empty before queuing new work
-    for (;;)
-    {
-        {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            if (threadPool.pendingWorkCount == 0u)
-                break;
-        }
-
+    while (pendingTasks.load(std::memory_order::acquire) > 0u)
         sf::sleep(sf::milliseconds(10));
-    }
 
     // Queue all the new work items
-    {
-        const std::lock_guard lock(threadPool.poolMutex);
+    for (unsigned int i = 0u; i < blockCount; ++i)
+        threadPool.post([buffer, i]
+        {
+            static thread_local std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
+            processWorkItem(vertices, buffer, i);
 
-        for (unsigned int i = 0u; i < blockCount; ++i)
-            threadPool.workQueue.emplace(buffer, i);
+            pendingTasks.fetch_sub(1u, std::memory_order::release);
+        });
 
-        threadPool.pendingWorkCount = blockCount;
-    }
+    pendingTasks.fetch_add(blockCount, std::memory_order::release);
 }
 
 } // namespace
@@ -472,47 +375,49 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Load the terrain shader
-    auto       terrainShader = sf::Shader::loadFromFile("resources/terrain.vert", "resources/terrain.frag").value();
+    auto terrainShader = sf::Shader::loadFromFile(
+                             {.vertexPath = "resources/terrain.vert", .fragmentPath = "resources/terrain.frag"})
+                             .value();
     const auto ulLightFactor = terrainShader.getUniformLocation("lightFactor").value();
 
     // Load the font
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     // Create the window of the application
-    sf::RenderWindow window({.size{windowSize}, .title = "SFML Island", .resizable = false, .vsync = true});
+    auto window = makeDPIScaledRenderWindow({
+        .size      = windowSize,
+        .title     = "SFML Island",
+        .resizable = true,
+        .vsync     = true,
+    });
 
     // Create all of our graphics resources
     sf::Text hudText(font,
-                     {.position         = {5.0f, 5.0f},
+                     {.position         = {5.f, 5.f},
                       .characterSize    = 14,
                       .fillColor        = sf::Color::White,
                       .outlineColor     = sf::Color::Black,
-                      .outlineThickness = 2.0f});
+                      .outlineThickness = 2.f});
 
     sf::Text statusText(font,
                         {.string           = "Generating Terrain...",
                          .characterSize    = 28,
                          .fillColor        = sf::Color::White,
                          .outlineColor     = sf::Color::Black,
-                         .outlineThickness = 2.0f});
+                         .outlineThickness = 2.f});
 
-    sf::RenderStates terrainStates;
     sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
     std::vector<sf::Vertex> terrainStagingBuffer;
 
     // Create a thread pool
-    ThreadPool threadPool;
-
-    // Start up our thread pool
-    for (unsigned int i = 0; i < threadCount; ++i)
-        threadPool.threads.emplace_back([&threadPool] { threadFunction(threadPool); });
+    sf::base::ThreadPool threadPool{sf::base::ThreadPool::getHardwareWorkerCount()};
 
     // Create our VertexBuffer with enough space to hold all the terrain geometry
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
-        std::cerr << "Failed to create vertex buffer" << std::endl;
+        sf::cErr() << "Failed to create vertex buffer" << sf::endL;
         return EXIT_FAILURE;
     }
 
@@ -521,9 +426,6 @@ int main()
 
     // Generate the initial terrain
     generateTerrain(threadPool, terrainStagingBuffer.data());
-
-    // Set up the render states
-    terrainStates = sf::RenderStates{.shader = &terrainShader};
 
     // Center the status text
     statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
@@ -542,8 +444,8 @@ int main()
 
     std::size_t currentSetting = 0;
 
-    std::ostringstream oss;
-    sf::Clock          clock;
+    sf::OutStringStream oss;
+    sf::Clock           clock;
 
     while (true)
     {
@@ -552,6 +454,9 @@ int main()
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
+
+            if (handleAspectRatioAwareResize(*event, windowSize.toVector2f(), window))
+                continue;
 
             // Arrow key pressed:
             if (event->is<sf::Event::KeyPressed>())
@@ -584,31 +489,27 @@ int main()
 
         window.draw(statusText);
 
+        // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
+        if (pendingTasks.load(std::memory_order::acquire) == 0u)
         {
-            const std::lock_guard lock(threadPool.poolMutex);
-
-            // Don't bother updating/drawing the VertexBuffer while terrain is being regenerated
-            if (threadPool.pendingWorkCount == 0u)
+            // If there is new data pending to be uploaded to the VertexBuffer, do it now
+            if (bufferUploadPending)
             {
-                // If there is new data pending to be uploaded to the VertexBuffer, do it now
-                if (threadPool.bufferUploadPending)
+                if (!terrain.update(terrainStagingBuffer.data()))
                 {
-                    if (!terrain.update(terrainStagingBuffer.data()))
-                    {
-                        std::cerr << "Failed to update vertex buffer" << std::endl;
-                        return EXIT_SUCCESS;
-                    }
-
-                    threadPool.bufferUploadPending = false;
+                    sf::cErr() << "Failed to update vertex buffer" << sf::endL;
+                    return EXIT_SUCCESS;
                 }
 
-                terrainShader.setUniform(ulLightFactor, lightFactor);
-                window.draw(terrain, terrainStates);
+                bufferUploadPending = false;
             }
+
+            terrainShader.setUniform(ulLightFactor, lightFactor);
+            window.draw(terrain, {.shader = &terrainShader});
         }
 
         // Update and draw the HUD text
-        oss.str("");
+        oss.setStr("");
         oss << "Frame:  " << clock.restart().asMilliseconds() << "ms\n"
             << "perlinOctaves:  " << perlinOctaves << "\n\n"
             << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
@@ -617,7 +518,7 @@ int main()
             oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
                 << '\n';
 
-        hudText.setString(oss.str());
+        hudText.setString(oss.to<sf::String>());
 
         window.draw(hudText);
 

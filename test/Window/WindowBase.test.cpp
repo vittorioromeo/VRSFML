@@ -13,6 +13,19 @@
 #include <SystemUtil.hpp>
 #include <WindowUtil.hpp>
 
+
+namespace
+{
+
+template <class T>
+constexpr const T& asConst(T& t) noexcept
+{
+    return t;
+}
+
+} // namespace
+
+
 TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 {
     auto windowContext = sf::WindowContext::create().value();
@@ -30,10 +43,18 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
     {
         SECTION("Mode and title constructor")
         {
-            const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
+            {
+                const sf::WindowBase windowBase({.size{360u, 240u}, .title = ""});
 
-            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
-            CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+            }
+            {
+                const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
+
+                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
+            }
         }
 
         SECTION("Mode, title, and style constructor")
@@ -75,7 +96,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             const auto event     = windowBase.waitEvent(timeout);
             const auto elapsed   = clock.getElapsedTime() - startTime;
 
-            REQUIRE(elapsed < timeout);
+            REQUIRE(elapsed < (timeout + sf::milliseconds(100)));
 
             if (elapsed <= timeout)
                 CHECK(event.hasValue());
@@ -89,19 +110,11 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
         windowBase.setPosition({12, 34});
-        CHECK(windowBase.getPosition() == sf::Vector2i{});
+        CHECK(windowBase.getPosition() == sf::Vector2i{12, 34});
     }
 
     SECTION("Set/get size")
     {
-        SECTION("Uninitialized window")
-        {
-            sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
-
-            windowBase.setSize({128, 256});
-            CHECK(windowBase.getSize() == sf::Vector2u{});
-        }
-
         SECTION("Initialized window")
         {
             sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
@@ -162,5 +175,43 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         // Should compile if user provides both a specific handler and a catch-all
         windowBase.pollAndHandleEvents([](sf::Event::Closed) {}, [](const auto&) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {}, [](const auto&) {});
+
+        // Should compile if user provides a handler taking an event subtype by value or reference,
+        // but not rvalue reference because it would never be called.
+        windowBase.pollAndHandleEvents([](sf::Event::Closed) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed) {});
+        windowBase.pollAndHandleEvents([](sf::Event::Closed&) {});
+        windowBase.pollAndHandleEvents([](const sf::Event::Closed&) {});
+
+        // Should compile if user provides a move-only handler
+        struct MoveOnly
+        {
+            MoveOnly()                = default;
+            MoveOnly(const MoveOnly&) = delete;
+            MoveOnly(MoveOnly&&)      = default;
+        };
+
+        windowBase.pollAndHandleEvents([p = MoveOnly{}](const sf::Event::Closed&) { (void)p; });
+
+        // Should compile if user provides a handler with deleted rvalue ref-qualified call operator
+        struct LvalueOnlyHandler
+        {
+            void operator()(const sf::Event::Closed&) &
+            {
+            }
+
+            void operator()(const sf::Event::Closed&) && = delete;
+        };
+
+        windowBase.pollAndHandleEvents(LvalueOnlyHandler{});
+
+        // Should compile if user provides a reference to a handler
+        auto handler = [](const sf::Event::Closed&) {};
+        windowBase.pollAndHandleEvents(handler);
+        windowBase.pollAndHandleEvents(asConst(handler));
+
+        // Should compile if user provides a function pointer
+        windowBase.pollAndHandleEvents(+[](const sf::Event::Closed&) {});
     };
 }

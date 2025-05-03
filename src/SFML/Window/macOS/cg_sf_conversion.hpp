@@ -1,12 +1,14 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
 
 #include <ApplicationServices/ApplicationServices.h>
+
 
 namespace sf::priv
 {

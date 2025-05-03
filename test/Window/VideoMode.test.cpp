@@ -15,6 +15,7 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
 {
     SECTION("Type traits")
     {
+        STATIC_CHECK(SFML_BASE_IS_DEFAULT_CONSTRUCTIBLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::VideoMode));
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::VideoMode));
@@ -35,6 +36,8 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
             const sf::VideoMode videoMode{.size{800u, 600u}};
             CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 32);
+            CHECK(videoMode.pixelDensity == 1.f);
+            CHECK(videoMode.refreshRate == 60.f);
         }
 
         SECTION("Width, height, bit depth constructor")
@@ -42,6 +45,8 @@ TEST_CASE("[Window] sf::VideoMode" * doctest::skip(skipDisplayTests))
             const sf::VideoMode videoMode{.size{800u, 600u}, .bitsPerPixel = 24u};
             CHECK(videoMode.size == sf::Vector2u{800, 600});
             CHECK(videoMode.bitsPerPixel == 24);
+            CHECK(videoMode.pixelDensity == 1.f);
+            CHECK(videoMode.refreshRate == 60.f);
         }
     }
 

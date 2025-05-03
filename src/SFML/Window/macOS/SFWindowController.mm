@@ -1,17 +1,18 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/MinMax.hpp"
 
 #include <ApplicationServices/ApplicationServices.h>
 #import <OpenGL/OpenGL.h>

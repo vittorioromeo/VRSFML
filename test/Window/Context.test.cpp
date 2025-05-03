@@ -18,25 +18,22 @@
 #include <string>
 
 #if defined(SFML_SYSTEM_WINDOWS)
-#define GLAPI __stdcall
+    #define GLAPI __stdcall
 #else
-#define GLAPI
+    #define GLAPI
 #endif
 
-namespace sf::priv
-{
-class GlContext
-{
-public:
-    [[nodiscard]] const ContextSettings& getSettings() const;
-    [[nodiscard]] unsigned int           getId() const;
-};
+////////////////////////////////////////////////////////////
+#define protected public
+#include "../src/SFML/GLUtils/GlContext.hpp"
+#undef protected
 
-}; // namespace sf::priv
 
 struct TestContext
 {
-    TestContext() : glContext(sf::WindowContext::createGlContext())
+    decltype(sf::WindowContext::createGlContext(sf::ContextSettings{})) glContext;
+
+    TestContext() : glContext(sf::WindowContext::createGlContext(sf::ContextSettings{}))
     {
         if (!setActive(true))
             sf::priv::err() << "Failed to set context as active during construction";
@@ -66,8 +63,6 @@ struct TestContext
         return glContext->getSettings();
     }
 
-    sf::base::UniquePtr<sf::priv::GlContext> glContext;
-
     [[nodiscard]] static unsigned int getActiveThreadLocalGlContextId()
     {
         return sf::WindowContext::getActiveThreadLocalGlContextId();
@@ -78,9 +73,9 @@ struct TestContext
         return sf::WindowContext::hasActiveThreadLocalGlContext();
     }
 
-    [[nodiscard]] static bool hasActiveThreadLocalOrSharedGlContext()
+    [[nodiscard]] static bool isActiveGlContextSharedContext()
     {
-        return sf::WindowContext::hasActiveThreadLocalOrSharedGlContext();
+        return sf::WindowContext::isActiveGlContextSharedContext();
     }
 
     [[nodiscard]] static bool isExtensionAvailable(const char* name)
@@ -96,173 +91,185 @@ struct TestContext
 
 TEST_CASE("[Window] TestContext" * doctest::skip(skipDisplayTests))
 {
-    CHECK(!sf::WindowContext::isInstalled());
-    auto windowContext = sf::WindowContext::create().value();
-    CHECK(sf::WindowContext::isInstalled());
-
-    SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestContext));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(TestContext));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
-    }
-
-    SECTION("Construction")
-    {
-        const TestContext context;
-        CHECK(context.getSettings().majorVersion > 0);
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+        CHECK(!sf::WindowContext::isInstalled());
+        auto windowContext = sf::WindowContext::create().value();
+        CHECK(sf::WindowContext::isInstalled());
         CHECK(TestContext::hasActiveThreadLocalGlContext());
-    }
+        CHECK(TestContext::isActiveGlContextSharedContext());
 
-    SECTION("Move semantics")
-    {
+        SECTION("Type traits")
+        {
+            STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(TestContext));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(TestContext));
+            STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(TestContext));
+        }
+
         SECTION("Construction")
         {
-            SECTION("From active context")
             {
-                TestContext       movedContext;
-                const TestContext context(SFML_BASE_MOVE(movedContext));
+                const TestContext context;
                 CHECK(context.getSettings().majorVersion > 0);
                 CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
                 CHECK(TestContext::hasActiveThreadLocalGlContext());
             }
 
-            SECTION("From inactive context")
-            {
-                TestContext movedContext;
-                CHECK(movedContext.setActive(false));
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-                CHECK(!TestContext::hasActiveThreadLocalGlContext());
-
-                const TestContext context(SFML_BASE_MOVE(movedContext));
-                CHECK(context.getSettings().majorVersion > 0);
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-                CHECK(!TestContext::hasActiveThreadLocalGlContext());
-            }
-        }
-
-        SECTION("Assignment")
-        {
-            SECTION("From active context")
-            {
-                TestContext movedContext;
-                TestContext context;
-                CHECK(movedContext.setActive(true));
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
-                CHECK(TestContext::hasActiveThreadLocalGlContext());
-
-                context = SFML_BASE_MOVE(movedContext);
-                CHECK(context.getSettings().majorVersion > 0);
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
-                CHECK(TestContext::hasActiveThreadLocalGlContext());
-            }
-
-            SECTION("From inactive context")
-            {
-                TestContext movedContext;
-                CHECK(movedContext.setActive(false));
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-                CHECK(!TestContext::hasActiveThreadLocalGlContext());
-
-                TestContext context;
-                context = SFML_BASE_MOVE(movedContext);
-                CHECK(context.getSettings().majorVersion > 0);
-                CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-                CHECK(!TestContext::hasActiveThreadLocalGlContext());
-            }
-        }
-    }
-
-    SECTION("setActive()")
-    {
-        TestContext context;
-        const auto  contextId = TestContext::getActiveThreadLocalGlContextId();
-
-        // Set inactive
-        CHECK(context.setActive(false));
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-        CHECK(!TestContext::hasActiveThreadLocalGlContext());
-
-        // Set active
-        CHECK(context.setActive(true));
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == contextId);
-
-        // Create new context which becomes active automatically
-        const TestContext newContext;
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == newContext.glContext->getId());
-        const auto newContextId = TestContext::getActiveThreadLocalGlContextId();
-        CHECK(newContextId != 0);
-
-        // Set old context as inactive but new context remains active
-        CHECK(context.setActive(false));
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == newContext.glContext->getId());
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == newContextId);
-
-        // Set old context as active again
-        CHECK(context.setActive(true));
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == contextId);
-    }
-
-    SECTION("getActiveThreadLocalGlContextId()/getActiveThreadLocalGlContextId()")
-    {
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-        CHECK(!TestContext::hasActiveThreadLocalGlContext());
-
-        {
-            const TestContext context;
-            CHECK(context.getSettings().majorVersion > 0);
-            CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
             CHECK(TestContext::hasActiveThreadLocalGlContext());
+            CHECK(TestContext::isActiveGlContextSharedContext());
         }
 
-        CHECK(TestContext::getActiveThreadLocalGlContextId() == 0u);
-        CHECK(!TestContext::hasActiveThreadLocalGlContext());
+        SECTION("Move semantics")
+        {
+            SECTION("Construction")
+            {
+                SECTION("From active context")
+                {
+                    TestContext       movedContext;
+                    const TestContext context(SFML_BASE_MOVE(movedContext));
+                    CHECK(context.getSettings().majorVersion > 0);
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+                    CHECK(TestContext::hasActiveThreadLocalGlContext());
+                }
+
+                SECTION("From inactive context")
+                {
+                    TestContext movedContext;
+                    CHECK(movedContext.setActive(false));
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+                    CHECK(TestContext::isActiveGlContextSharedContext());
+
+                    const TestContext context(SFML_BASE_MOVE(movedContext));
+                    CHECK(context.getSettings().majorVersion > 0);
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+                    CHECK(TestContext::isActiveGlContextSharedContext());
+                }
+            }
+
+            SECTION("Assignment")
+            {
+                SECTION("From active context")
+                {
+                    TestContext movedContext;
+                    TestContext context;
+                    CHECK(movedContext.setActive(true));
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == movedContext.glContext->getId());
+                    CHECK(TestContext::hasActiveThreadLocalGlContext());
+
+                    context = SFML_BASE_MOVE(movedContext);
+                    CHECK(context.getSettings().majorVersion > 0);
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+                    CHECK(TestContext::hasActiveThreadLocalGlContext());
+                }
+
+                SECTION("From inactive context")
+                {
+                    TestContext movedContext;
+                    CHECK(movedContext.setActive(false));
+                    CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+
+                    TestContext context;
+                    CHECK(context.setActive(false));
+                    context = SFML_BASE_MOVE(movedContext);
+                    CHECK(context.getSettings().majorVersion > 0);
+                    CHECK(TestContext::isActiveGlContextSharedContext());
+                }
+            }
+        }
+
+        SECTION("setActive()")
+        {
+            {
+                TestContext context;
+                const auto  contextId = TestContext::getActiveThreadLocalGlContextId();
+
+                // Set inactive
+                CHECK(context.setActive(false));
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+                CHECK(TestContext::isActiveGlContextSharedContext());
+
+                // Set active
+                CHECK(context.setActive(true));
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == contextId);
+
+                // Create new context which becomes active automatically
+                const TestContext newContext;
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == newContext.glContext->getId());
+                const auto newContextId = TestContext::getActiveThreadLocalGlContextId();
+                CHECK(newContextId != 0);
+
+                // Set old context as inactive but new context remains active
+                CHECK(context.setActive(false));
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == newContext.glContext->getId());
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == newContextId);
+
+                // Set old context as active again
+                CHECK(context.setActive(true));
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == contextId);
+            }
+
+            CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+            CHECK(TestContext::isActiveGlContextSharedContext());
+        }
+
+        SECTION("getActiveThreadLocalGlContextId()/getActiveThreadLocalGlContextId()")
+        {
+            {
+                const TestContext context;
+                CHECK(context.getSettings().majorVersion > 0);
+                CHECK(TestContext::getActiveThreadLocalGlContextId() == context.glContext->getId());
+                CHECK(TestContext::hasActiveThreadLocalGlContext());
+            }
+
+            CHECK(TestContext::getActiveThreadLocalGlContextId() == 1u);
+            CHECK(TestContext::isActiveGlContextSharedContext());
+        }
+
+        SECTION("Version String")
+        {
+            TestContext context;
+            CHECK(context.setActive(true));
+
+            using glGetStringFuncType  = const char*(GLAPI*)(unsigned int);
+            const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(TestContext::getFunction("glGetString"));
+            REQUIRE(glGetStringFunc);
+
+            constexpr unsigned int glVendor   = 0x1F'00;
+            constexpr unsigned int glRenderer = 0x1F'01;
+            constexpr unsigned int glVersion  = 0x1F'02;
+
+            const char* vendor   = glGetStringFunc(glVendor);
+            const char* renderer = glGetStringFunc(glRenderer);
+            const char* version  = glGetStringFunc(glVersion);
+
+            REQUIRE(vendor != nullptr);
+            REQUIRE(renderer != nullptr);
+            REQUIRE(version != nullptr);
+
+            SUCCEED(std::string("OpenGL vendor: ") + vendor);
+            SUCCEED(std::string("OpenGL renderer: ") + renderer);
+            SUCCEED(std::string("OpenGL version: ") + version);
+        }
+
+        SECTION("isExtensionAvailable()")
+        {
+            CHECK(!TestContext::isExtensionAvailable("2024-04-01"));
+            CHECK(!TestContext::isExtensionAvailable("let's assume this extension does not exist"));
+        }
+
+        SECTION("getFunction()")
+        {
+            const TestContext context; // Windows requires an active context to use getFunction
+            CHECK(TestContext::getFunction("glEnable"));
+            CHECK(TestContext::getFunction("glGetError"));
+            CHECK(TestContext::getFunction("glGetIntegerv"));
+            CHECK(TestContext::getFunction("glGetString"));
+            CHECK(TestContext::getFunction("glGetStringi"));
+            CHECK(TestContext::getFunction("glIsEnabled"));
+        }
     }
 
-    SECTION("Version String")
-    {
-        TestContext context;
-        CHECK(context.setActive(true));
-
-        using glGetStringFuncType  = const char*(GLAPI*)(unsigned int);
-        const auto glGetStringFunc = reinterpret_cast<glGetStringFuncType>(TestContext::getFunction("glGetString"));
-        REQUIRE(glGetStringFunc);
-
-        constexpr unsigned int glVendor   = 0x1F00;
-        constexpr unsigned int glRenderer = 0x1F01;
-        constexpr unsigned int glVersion  = 0x1F02;
-
-        const char* vendor   = glGetStringFunc(glVendor);
-        const char* renderer = glGetStringFunc(glRenderer);
-        const char* version  = glGetStringFunc(glVersion);
-
-        REQUIRE(vendor != nullptr);
-        REQUIRE(renderer != nullptr);
-        REQUIRE(version != nullptr);
-
-        SUCCEED(std::string("OpenGL vendor: ") + vendor);
-        SUCCEED(std::string("OpenGL renderer: ") + renderer);
-        SUCCEED(std::string("OpenGL version: ") + version);
-    }
-
-    SECTION("isExtensionAvailable()")
-    {
-        CHECK(!TestContext::isExtensionAvailable("2024-04-01"));
-        CHECK(!TestContext::isExtensionAvailable("let's assume this extension does not exist"));
-    }
-
-    SECTION("getFunction()")
-    {
-        const TestContext context; // Windows requires an active context to use getFunction
-        CHECK(TestContext::getFunction("glEnable"));
-        CHECK(TestContext::getFunction("glGetError"));
-        CHECK(TestContext::getFunction("glGetIntegerv"));
-        CHECK(TestContext::getFunction("glGetString"));
-        CHECK(TestContext::getFunction("glGetStringi"));
-        CHECK(TestContext::getFunction("glIsEnabled"));
-    }
+    CHECK(!sf::WindowContext::isInstalled());
 }

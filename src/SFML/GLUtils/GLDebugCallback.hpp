@@ -1,0 +1,22 @@
+#pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+/// \brief Set up the OpenGL debug callback
+///
+/// This function sets up the OpenGL debug callback to log
+/// OpenGL errors and warnings to the SFML error stream.
+///
+////////////////////////////////////////////////////////////
+void setupGLDebugCallback();
+
+} // namespace sf::priv

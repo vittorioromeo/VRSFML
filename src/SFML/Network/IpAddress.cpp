@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -12,7 +13,7 @@
 
 #include "SFML/Base/Optional.hpp"
 
-#include <istream>
+#include <string>
 
 
 namespace sf
@@ -21,7 +22,6 @@ namespace sf
 const IpAddress IpAddress::Any(0, 0, 0, 0);
 const IpAddress IpAddress::LocalHost(127, 0, 0, 1);
 const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
-
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
@@ -46,7 +46,7 @@ base::U32 IpAddress::toInteger() const
 ////////////////////////////////////////////////////////////
 base::Optional<IpAddress> IpAddress::getLocalAddress()
 {
-    // The method here is to connect a UDP socket to anyone (here to localhost),
+    // The method here is to connect a UDP socket to a public ip,
     // and get the local socket address with the getsockname function.
     // UDP connection will not send anything to the network, so this function won't cause any overhead.
 
@@ -58,9 +58,10 @@ base::Optional<IpAddress> IpAddress::getLocalAddress()
         return base::nullOpt;
     }
 
-    // Connect the socket to localhost on any port
-    priv::SockAddrIn address = priv::SocketImpl::createAddress(priv::SocketImpl::getNtohl(priv::SocketImpl::inaddrLoopback()),
-                                                               9);
+    // Connect the socket to a public ip (here 1.1.1.1) on any
+    // port. This will give the local address of the network interface
+    // used for default routing which is usually what we want.
+    priv::SockAddrIn address = priv::SocketImpl::createAddress(0x01'01'01'01, 9);
     if (!priv::SocketImpl::connect(sock, address))
     {
         priv::SocketImpl::close(sock);
@@ -137,24 +138,6 @@ bool operator<=(IpAddress lhs, IpAddress rhs)
 bool operator>=(IpAddress lhs, IpAddress rhs)
 {
     return !(lhs < rhs);
-}
-
-
-////////////////////////////////////////////////////////////
-std::istream& operator>>(std::istream& stream, base::Optional<IpAddress>& address)
-{
-    std::string str;
-    stream >> str;
-    address = IpAddressUtils::resolve(str);
-
-    return stream;
-}
-
-
-////////////////////////////////////////////////////////////
-std::ostream& operator<<(std::ostream& stream, IpAddress address)
-{
-    return stream << IpAddressUtils::toString(address);
 }
 
 } // namespace sf

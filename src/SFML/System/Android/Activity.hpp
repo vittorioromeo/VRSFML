@@ -1,11 +1,13 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/EGL/EGLContext.hpp"
 #include "SFML/Window/Event.hpp"
+
+#include "SFML/GLUtils/EGL/EGLContext.hpp"
 
 #include "SFML/Base/EnumArray.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -18,7 +20,6 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
 
 class SFML_SYSTEM_API LogcatStream : public std::streambuf
 {

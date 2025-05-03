@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -13,6 +14,7 @@ namespace sf::base
 template <typename F>
 struct [[nodiscard]] ScopeGuard : F
 {
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] ~ScopeGuard()
     {
         static_cast<F&>(*this)();

@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -16,6 +17,7 @@ namespace sf
 {
 class String;
 } // namespace sf
+
 
 namespace sf::priv
 {

@@ -46,7 +46,7 @@ else()
         CPMAddPackage(
             NAME freetype
             GITHUB_REPOSITORY freetype/freetype
-            GIT_TAG VER-2-13-2
+            GIT_TAG VER-2-13-3
             # patch out parts we don't want of the FreeType CMake configuration
             # - installing pkgconfig files
             PATCH_COMMAND ${CMAKE_COMMAND} -DFREETYPE_DIR=${FETCHCONTENT_BASE_DIR}/freetype-src -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/freetype/PatchFreetype.cmake
@@ -78,10 +78,14 @@ else()
     sfml_add_graphics_dependencies()
 endif()
 
-target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype)
+target_link_libraries(sfml-graphics PRIVATE Freetype::Freetype PUBLIC SFML::GLUtils)
 
 # add preprocessor symbols
 target_compile_definitions(sfml-graphics PRIVATE "STBI_FAILURE_USERMSG")
+
+if(SFML_FATAL_OPENGL_ERRORS)
+    target_compile_definitions(sfml-graphics PRIVATE "SFML_FATAL_OPENGL_ERRORS")
+endif()
 
 # Image.cpp must be compiled with the -fno-strict-aliasing
 # when gcc is used; otherwise saving PNGs may crash in stb_image_write

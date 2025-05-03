@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/System/IO.hpp"
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -21,9 +22,9 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <algorithm>
+#include "SFML/Base/Clamp.hpp"
+
 #include <array>
-#include <iostream>
 #include <limits>
 #include <string_view>
 #include <vector>
@@ -132,7 +133,7 @@ void matrixLookAt(Matrix& result, const sf::Vector3f& eye, const sf::Vector3f& c
     result[3][0] = (-eye.x) * result[0][0] + (-eye.y) * result[1][0] + (-eye.z) * result[2][0];
     result[3][1] = (-eye.x) * result[0][1] + (-eye.y) * result[1][1] + (-eye.z) * result[2][1];
     result[3][2] = (-eye.x) * result[0][2] + (-eye.y) * result[1][2] + (-eye.z) * result[2][2];
-    result[3][3] = (-eye.x) * result[0][3] + (-eye.y) * result[1][3] + (-eye.z) * result[2][3] + 1.0f;
+    result[3][3] = (-eye.x) * result[0][3] + (-eye.y) * result[1][3] + (-eye.z) * result[2][3] + 1.f;
 }
 
 // Construct a perspective projection matrix
@@ -178,7 +179,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     const char* pMessage,
     void*)
 {
-    std::cerr << pMessage << std::endl;
+    sf::cErr() << pMessage << sf::endL;
 
     return VK_FALSE;
 }
@@ -711,7 +712,7 @@ public:
             return;
         }
 
-        const float queuePriority = 1.0f;
+        const float queuePriority = 1.f;
 
         VkDeviceQueueCreateInfo deviceQueueCreateInfo = VkDeviceQueueCreateInfo();
         deviceQueueCreateInfo.sType                   = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -833,14 +834,14 @@ public:
             return;
         }
 
-        swapchainExtent.width  = std::clamp(window.getSize().x,
-                                           surfaceCapabilities.minImageExtent.width,
-                                           surfaceCapabilities.maxImageExtent.width);
-        swapchainExtent.height = std::clamp(window.getSize().y,
-                                            surfaceCapabilities.minImageExtent.height,
-                                            surfaceCapabilities.maxImageExtent.height);
+        swapchainExtent.width  = sf::base::clamp(window.getSize().x,
+                                                surfaceCapabilities.minImageExtent.width,
+                                                surfaceCapabilities.maxImageExtent.width);
+        swapchainExtent.height = sf::base::clamp(window.getSize().y,
+                                                 surfaceCapabilities.minImageExtent.height,
+                                                 surfaceCapabilities.maxImageExtent.height);
 
-        const auto imageCount = std::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
+        const auto imageCount = sf::base::clamp(2u, surfaceCapabilities.minImageCount, surfaceCapabilities.maxImageCount);
 
         VkSwapchainCreateInfoKHR swapchainCreateInfo = VkSwapchainCreateInfoKHR();
         swapchainCreateInfo.sType                    = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -1153,11 +1154,11 @@ public:
 
         // Set up the viewport
         VkViewport viewport = VkViewport();
-        viewport.x          = 0.0f;
-        viewport.y          = 0.0f;
+        viewport.x          = 0.f;
+        viewport.y          = 0.f;
         viewport.width      = static_cast<float>(swapchainExtent.width);
         viewport.height     = static_cast<float>(swapchainExtent.height);
-        viewport.minDepth   = 0.0f;
+        viewport.minDepth   = 0.f;
         viewport.maxDepth   = 1.f;
 
         // Set up the scissor region
@@ -1179,7 +1180,7 @@ public:
         pipelineRasterizationStateCreateInfo.depthClampEnable        = VK_FALSE;
         pipelineRasterizationStateCreateInfo.rasterizerDiscardEnable = VK_FALSE;
         pipelineRasterizationStateCreateInfo.polygonMode             = VK_POLYGON_MODE_FILL;
-        pipelineRasterizationStateCreateInfo.lineWidth               = 1.0f;
+        pipelineRasterizationStateCreateInfo.lineWidth               = 1.f;
         pipelineRasterizationStateCreateInfo.cullMode                = VK_CULL_MODE_NONE;
         pipelineRasterizationStateCreateInfo.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         pipelineRasterizationStateCreateInfo.depthBiasEnable         = VK_FALSE;
@@ -1411,35 +1412,35 @@ public:
         // clang-format off
         constexpr std::array vertexData = {
             // X      Y      Z     R     G     B     A     U     V
-            -0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-             0.5f, -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-            -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f,
+             0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
+             0.5f,  0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 0.f, 1.f,
+            -0.5f,  0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 1.f, 1.f,
 
-            -0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-             0.5f, -0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f, 1.f, 0.f, 0.f,
+             0.5f, -0.5f, -0.5f, 1.f, 1.f, 0.f, 1.f, 0.f, 1.f,
+             0.5f,  0.5f, -0.5f, 1.f, 1.f, 0.f, 1.f, 1.f, 1.f,
+            -0.5f,  0.5f, -0.5f, 1.f, 1.f, 0.f, 1.f, 1.f, 0.f,
 
-             0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-             0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-             0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-             0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+             0.5f, -0.5f, -0.5f, 0.f, 1.f, 0.f, 1.f, 1.f, 0.f,
+             0.5f,  0.5f, -0.5f, 0.f, 1.f, 0.f, 1.f, 0.f, 0.f,
+             0.5f,  0.5f,  0.5f, 0.f, 1.f, 0.f, 1.f, 0.f, 1.f,
+             0.5f, -0.5f,  0.5f, 0.f, 1.f, 0.f, 1.f, 1.f, 1.f,
 
-            -0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-            -0.5f,  0.5f, -0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-            -0.5f, -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.f, 1.f, 1.f, 1.f, 1.f, 1.f,
+            -0.5f,  0.5f, -0.5f, 0.f, 1.f, 1.f, 1.f, 1.f, 0.f,
+            -0.5f,  0.5f,  0.5f, 0.f, 1.f, 1.f, 1.f, 0.f, 0.f,
+            -0.5f, -0.5f,  0.5f, 0.f, 1.f, 1.f, 1.f, 0.f, 1.f,
 
-            -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-             0.5f, -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f,
-             0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-            -0.5f, -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f, 1.f, 1.f, 0.f,
+             0.5f, -0.5f, -0.5f, 0.f, 0.f, 1.f, 1.f, 0.f, 0.f,
+             0.5f, -0.5f,  0.5f, 0.f, 0.f, 1.f, 1.f, 0.f, 1.f,
+            -0.5f, -0.5f,  0.5f, 0.f, 0.f, 1.f, 1.f, 1.f, 1.f,
 
-            -0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f,
-             0.5f,  0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-             0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f,
-            -0.5f,  0.5f,  0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f
+            -0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f, 1.f, 0.f, 1.f,
+             0.5f,  0.5f, -0.5f, 1.f, 0.f, 1.f, 1.f, 1.f, 1.f,
+             0.5f,  0.5f,  0.5f, 1.f, 0.f, 1.f, 1.f, 1.f, 0.f,
+            -0.5f,  0.5f,  0.5f, 1.f, 0.f, 1.f, 1.f, 0.f, 0.f
         };
         // clang-format on
 
@@ -2132,9 +2133,9 @@ public:
         samplerCreateInfo.compareEnable           = VK_FALSE;
         samplerCreateInfo.compareOp               = VK_COMPARE_OP_ALWAYS;
         samplerCreateInfo.mipmapMode              = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-        samplerCreateInfo.mipLodBias              = 0.0f;
-        samplerCreateInfo.minLod                  = 0.0f;
-        samplerCreateInfo.maxLod                  = 0.0f;
+        samplerCreateInfo.mipLodBias              = 0.f;
+        samplerCreateInfo.minLod                  = 0.f;
+        samplerCreateInfo.maxLod                  = 0.f;
 
         // Create our sampler
         if (vkCreateSampler(device, &samplerCreateInfo, nullptr, &textureSampler) != VK_SUCCESS)
@@ -2264,14 +2265,14 @@ public:
 
         // Clear color buffer to opaque black
         clearColors[0]                  = VkClearValue();
-        clearColors[0].color.float32[0] = 0.0f;
-        clearColors[0].color.float32[1] = 0.0f;
-        clearColors[0].color.float32[2] = 0.0f;
-        clearColors[0].color.float32[3] = 0.0f;
+        clearColors[0].color.float32[0] = 0.f;
+        clearColors[0].color.float32[1] = 0.f;
+        clearColors[0].color.float32[2] = 0.f;
+        clearColors[0].color.float32[3] = 0.f;
 
-        // Clear depth to 1.0f
+        // Clear depth to 1.f
         clearColors[1]                      = VkClearValue();
-        clearColors[1].depthStencil.depth   = 1.0f;
+        clearColors[1].depthStencil.depth   = 1.f;
         clearColors[1].depthStencil.stencil = 0;
 
         VkRenderPassBeginInfo renderPassBeginInfo = VkRenderPassBeginInfo();
@@ -2398,25 +2399,25 @@ public:
     void updateUniformBuffer(float elapsed)
     {
         // Construct the model matrix
-        Matrix model = {{1.0f, 0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f}};
+        Matrix model = {{1.f, 0.f, 0.f, 0.f}, {0.f, 1.f, 0.f, 0.f}, {0.f, 0.f, 1.f, 0.f}, {0.f, 0.f, 0.f, 1.f}};
 
-        matrixRotateX(model, sf::degrees(elapsed * 59.0f));
-        matrixRotateY(model, sf::degrees(elapsed * 83.0f));
-        matrixRotateZ(model, sf::degrees(elapsed * 109.0f));
+        matrixRotateX(model, sf::degrees(elapsed * 59.f));
+        matrixRotateY(model, sf::degrees(elapsed * 83.f));
+        matrixRotateZ(model, sf::degrees(elapsed * 109.f));
 
         // Translate the model based on the mouse position
         const auto  mousePosition = sf::Mouse::getPosition(window).toVector2f();
         const auto  windowSize    = window.getSize().toVector2f();
-        const float x             = std::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.0f, 1.0f) * 2.0f;
-        const float y             = std::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.0f, 1.0f) * 1.5f;
+        const float x             = sf::base::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
+        const float y             = sf::base::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
 
         model[3][0] -= x;
         model[3][2] += y;
 
         // Construct the view matrix
-        const sf::Vector3f eye(0.0f, 4.0f, 0.0f);
-        const sf::Vector3f center(0.0f, 0.0f, 0.0f);
-        const sf::Vector3f up(0.0f, 0.0f, 1.0f);
+        const sf::Vector3f eye(0.f, 4.f, 0.f);
+        const sf::Vector3f center(0.f, 0.f, 0.f);
+        const sf::Vector3f up(0.f, 0.f, 1.f);
 
         Matrix view;
         matrixLookAt(view, eye, center, up);
@@ -2425,7 +2426,7 @@ public:
         const sf::Angle fov    = sf::degrees(45);
         const float     aspect = static_cast<float>(swapchainExtent.width) / static_cast<float>(swapchainExtent.height);
         const float     nearPlane = 0.1f;
-        const float     farPlane  = 10.0f;
+        const float     farPlane  = 10.f;
 
         Matrix projection;
 

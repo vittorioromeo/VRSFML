@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -15,19 +16,17 @@
 
 #include <miniaudio.h>
 
-#include <vector>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
 template <typename THandle, typename F>
-std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContextUtils>&& passKey,
-                                               ma_context&                                maContext,
-                                               const char*                                type,
-                                               F&&                                        fMAContextGetDevices)
+sf::base::Vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContextUtils>&& passKey,
+                                                    ma_context&                                maContext,
+                                                    const char*                                type,
+                                                    F&&                                        fMAContextGetDevices)
 {
-    std::vector<THandle> deviceHandles; // Use a single local variable for NRVO
+    sf::base::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
 
     ma_device_info* maDeviceInfosPtr{};
     ma_uint32       maDeviceInfoCount{};
@@ -44,7 +43,7 @@ std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContex
     deviceHandles.reserve(maDeviceInfoCount);
 
     for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        deviceHandles.emplace_back(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
+        deviceHandles.emplaceBack(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
 
     return deviceHandles;
 }
@@ -55,14 +54,14 @@ std::vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContex
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-std::vector<PlaybackDeviceHandle> AudioContextUtils::getAvailablePlaybackDeviceHandles(AudioContext& audioContext)
+base::Vector<PlaybackDeviceHandle> AudioContextUtils::getAvailablePlaybackDeviceHandles(AudioContext& audioContext)
 {
     return getAvailableDeviceHandles<PlaybackDeviceHandle> //
         (base::PassKey<AudioContextUtils>{},
          *static_cast<ma_context*>(audioContext.getMAContext()),
          "playback",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
+    { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
 }
 
 
@@ -78,14 +77,14 @@ base::Optional<PlaybackDeviceHandle> AudioContextUtils::getDefaultPlaybackDevice
 
 
 ////////////////////////////////////////////////////////////
-std::vector<CaptureDeviceHandle> AudioContextUtils::getAvailableCaptureDeviceHandles(AudioContext& audioContext)
+base::Vector<CaptureDeviceHandle> AudioContextUtils::getAvailableCaptureDeviceHandles(AudioContext& audioContext)
 {
     return getAvailableDeviceHandles<CaptureDeviceHandle> //
         (base::PassKey<AudioContextUtils>{},
          *static_cast<ma_context*>(audioContext.getMAContext()),
          "capture",
          [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
-         { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
+    { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
 }
 
 

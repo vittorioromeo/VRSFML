@@ -1,16 +1,32 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Export.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class String;
+}
 
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+/// \brief Static functions for creating `sf::String` from UTF data.
+///
+/// This class complements the standard `sf::String` constructors
+/// by providing explicit functions for creating strings
+/// from raw UTF-8, UTF-16, or UTF-32 encoded byte sequences.
+///
+////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API StringUtfUtils
 {
 public:
@@ -67,50 +83,13 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::String
+/// \class sf::StringUtfUtils
 /// \ingroup system
 ///
-/// sf::String is a utility string class defined mainly for
-/// convenience. It is a Unicode string (implemented using
-/// UTF-32), thus it can store any character in the world
-/// (European, Chinese, Arabic, Hebrew, etc.).
+/// This class provides static functions for creating `sf::String`
+/// from UTF-8, UTF-16, or UTF-32 encoded byte sequences.
 ///
-/// It automatically handles conversions from/to ANSI and
-/// wide strings, so that you can work with standard string
-/// classes and still be compatible with functions taking a
-/// sf::String.
-///
-/// \code
-/// sf::String s;
-///
-/// std::string s1 = s;  // automatically converted to ANSI string
-/// std::wstring s2 = s; // automatically converted to wide string
-/// s = "hello";         // automatically converted from ANSI string
-/// s = L"hello";        // automatically converted from wide string
-/// s += 'a';            // automatically converted from ANSI string
-/// s += L'a';           // automatically converted from wide string
-/// \endcode
-///
-/// Conversions involving ANSI strings use the default user locale. However
-/// it is possible to use a custom locale if necessary:
-/// \code
-/// std::locale locale;
-/// sf::String s;
-/// ...
-/// std::string s1 = s.toAnsiString(locale);
-/// s = sf::String("hello", locale);
-/// \endcode
-///
-/// sf::String defines the most important functions of the
-/// standard std::string class: removing, random access, iterating,
-/// appending, comparing, etc. However it is a simple class
-/// provided for convenience, and you may have to consider using
-/// a more optimized class if your program requires complex string
-/// handling. The automatic conversion functions will then take
-/// care of converting your string to sf::String whenever SFML
-/// requires it.
-///
-/// Please note that SFML also defines a low-level, generic
-/// interface for Unicode handling, see the sf::Utf classes.
+/// It is useful for converting raw UTF data into `sf::String`
+/// objects, which can then be used with SFML functions.
 ///
 ////////////////////////////////////////////////////////////

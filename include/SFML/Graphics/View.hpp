@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -14,6 +15,8 @@
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/ClampMacro.hpp"
+#include "SFML/Base/FastSinCos.hpp"
 
 
 namespace sf
@@ -30,20 +33,43 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] ScissorRect : FloatRect
     {
-        [[nodiscard, gnu::always_inline]] constexpr explicit ScissorRect(Vector2f thePosition, Vector2f theSize) :
+        ////////////////////////////////////////////////////////////
+        [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vector2f thePosition, Vector2f theSize) :
         FloatRect{thePosition, theSize}
         {
-            SFML_BASE_ASSERT(position.x >= 0.0f && position.x <= 1.0f && "position.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.y >= 0.0f && position.y <= 1.0f && "position.y must lie within [0, 1]");
-            SFML_BASE_ASSERT(size.x >= 0.0f && "size.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(size.y >= 0.0f && "size.y must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.x + size.x <= 1.0f && "position.x + size.x must lie within [0, 1]");
-            SFML_BASE_ASSERT(position.y + size.y <= 1.0f && "position.y + size.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.x >= 0.f && "size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(size.y >= 0.f && "size.y must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.x + size.x <= 1.f && "position.x + size.x must lie within [0, 1]");
+            SFML_BASE_ASSERT(position.y + size.y <= 1.f && "position.y + size.y must lie within [0, 1]");
         }
 
+        ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
         ScissorRect{rect.position, rect.size}
         {
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[nodiscard]] static constexpr ScissorRect fromRectClamped(sf::FloatRect rect)
+        {
+            // Clamp the position to the range `[0, 1]`
+            rect.position.x = SFML_BASE_CLAMP(rect.position.x, 0.f, 1.f);
+            rect.position.y = SFML_BASE_CLAMP(rect.position.y, 0.f, 1.f);
+
+            // Ensure the size is non-negative
+            rect.size.x = SFML_BASE_MAX(rect.size.x, 0.f);
+            rect.size.y = SFML_BASE_MAX(rect.size.y, 0.f);
+
+            // Adjust the size so that `position + size` doesn't exceed `1`
+            if (rect.position.x + rect.size.x > 1.f)
+                rect.size.x = 1.f - rect.position.x;
+
+            if (rect.position.y + rect.size.y > 1.f)
+                rect.size.y = 1.f - rect.position.y;
+
+            return ScissorRect{rect};
         }
     };
 
@@ -53,7 +79,11 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \param rectangle Rectangle defining the zone to display
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::const]] static View fromRect(const FloatRect& rectangle);
+    [[nodiscard, gnu::const]] static constexpr View fromRect(const FloatRect& rectangle)
+    {
+        return {.center = rectangle.position + rectangle.size / 2.f, .size = rectangle.size};
+    }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the projection transform of the view
@@ -65,7 +95,24 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see `getInverseTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Transform getTransform() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getTransform() const
+    {
+        // Rotation components
+        const float angle         = rotation.asRadians();
+        const auto [sine, cosine] = base::fastSinCos(angle);
+
+        const float tx = -center.x * cosine - center.y * sine + center.x;
+        const float ty = center.x * sine - center.y * cosine + center.y;
+
+        // Projection components
+        const float a = 2.f / size.x;
+        const float b = -2.f / size.y;
+        const float c = -a * center.x;
+        const float d = -b * center.y;
+
+        // Rebuild the projection matrix
+        return {a * cosine, a * sine, a * tx + c, -b * sine, b * cosine, b * ty + d};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the inverse projection transform of the view
@@ -77,9 +124,15 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     /// \see `getTransform`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] Transform getInverseTransform() const;
+    [[nodiscard, gnu::pure]] constexpr Transform getInverseTransform() const
+    {
+        return getTransform().getInverse();
+    }
 
-    // TODO P1: docs
+    ////////////////////////////////////////////////////////////
+    /// \brief Compare strict equality between two `View` objects
+    ///
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] SFML_GRAPHICS_API constexpr bool operator==(const View& rhs) const = default;
 
     ////////////////////////////////////////////////////////////

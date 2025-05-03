@@ -5,10 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Assume.hpp"
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/Builtins/IsConstantEvaluated.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Priv/ConstexprSinCos.hpp"
 
 
 namespace sf::base::priv
@@ -36,47 +38,13 @@ inline constexpr float radToIndex = static_cast<float>(sinCount) / tau;
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr U32 fastCosIdx(const float radians) noexcept
 {
-    return fastSinIdx(radians) + 16384u;
+    return fastSinIdx(radians) + 16'384u;
 }
 
 
 ////////////////////////////////////////////////////////////
-inline constexpr struct SinTable
-{
-    ////////////////////////////////////////////////////////////
-    float data[sinCount]{
-#include "SFML/Base/FastSinCosTable.inl"
-    };
-
-
-    ////////////////////////////////////////////////////////////
-    static_assert(sizeof(data) == (sinCount) * sizeof(float));
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr SinTable() noexcept
-    {
-        data[fastSinIdx(halfPi * 0.f) & sinMask]  = 0.f;
-        data[fastSinIdx(halfPi * 0.5f) & sinMask] = 0.70710678118f;
-        data[fastSinIdx(halfPi * 1.f) & sinMask]  = 1.f;
-        data[fastSinIdx(halfPi * 1.5f) & sinMask] = 0.70710678118f;
-        data[fastSinIdx(halfPi * 2.f) & sinMask]  = 0.f;
-        data[fastSinIdx(halfPi * 2.5f) & sinMask] = -0.70710678118f;
-        data[fastSinIdx(halfPi * 3.f) & sinMask]  = -1.f;
-        data[fastSinIdx(halfPi * 3.5f) & sinMask] = -0.70710678118f;
-        data[fastSinIdx(halfPi * 4.f) & sinMask]  = 0.f;
-
-        data[fastCosIdx(halfPi * 0.f) & sinMask]  = 1.f;
-        data[fastCosIdx(halfPi * 0.5f) & sinMask] = 0.70710678118f;
-        data[fastCosIdx(halfPi * 1.f) & sinMask]  = 0.f;
-        data[fastCosIdx(halfPi * 1.5f) & sinMask] = -0.70710678118f;
-        data[fastCosIdx(halfPi * 2.f) & sinMask]  = -1.f;
-        data[fastCosIdx(halfPi * 2.5f) & sinMask] = -0.70710678118f;
-        data[fastCosIdx(halfPi * 3.f) & sinMask]  = 0.f;
-        data[fastCosIdx(halfPi * 3.5f) & sinMask] = 0.70710678118f;
-        data[fastCosIdx(halfPi * 4.f) & sinMask]  = 1.f;
-    }
-} sinTable;
+extern const Array<float, sinCount> sinTableData;
+static_assert(sizeof(sinTableData) == sinCount * sizeof(float));
 
 } // namespace sf::base::priv
 
@@ -84,37 +52,58 @@ inline constexpr struct SinTable
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Fast sine calculation using a lookup table.
+///
+/// Calculates an approximation of `sin(radians)` using a precomputed lookup table.
+/// This is faster than `std::sin` but less precise.
+///
+/// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastSin(const float radians) noexcept
 {
-    SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
-    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
-    return priv::sinTable.data[priv::fastSinIdx(radians) & priv::sinMask];
+    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+        return priv::constexprSin(radians);
+
+    return priv::sinTableData[priv::fastSinIdx(radians) & priv::sinMask];
 }
 
+
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Fast cosine calculation using a lookup table.
+///
+/// Calculates an approximation of `cos(radians)` using a precomputed lookup table.
+/// This is faster than `std::cos` but less precise.
+///
+/// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float fastCos(const float radians) noexcept
 {
-    SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
-    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
-    return priv::sinTable.data[priv::fastCosIdx(radians) & priv::sinMask];
+    if (SFML_BASE_IS_CONSTANT_EVALUATED())
+        return priv::constexprCos(radians);
+
+    return priv::sinTableData[priv::fastCosIdx(radians) & priv::sinMask];
 }
 
+
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Fast sine and cosine calculation using a lookup table.
+///
+/// Calculates approximations of `sin(radians)` and `cos(radians)` simultaneously
+/// using a precomputed lookup table. Faster than separate calls to `fastSin` and `fastCos`.
+///
+/// \param radians Angle in radians. Must be in the range `[0, 2*Pi]`.
+/// \return A struct containing the `sin` and `cos` results.
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto fastSinCos(const float radians) noexcept
 {
-    SFML_BASE_ASSERT(radians >= 0.f && radians <= tau);
-    SFML_BASE_ASSUME(radians >= 0.f && radians <= tau);
+    SFML_BASE_ASSERT_AND_ASSUME(radians >= 0.f && radians <= tau);
 
     struct Result
     {
@@ -122,7 +111,7 @@ namespace sf::base
     };
 
     const auto sinIndex = static_cast<U32>(radians * priv::radToIndex);
-    return Result{priv::sinTable.data[sinIndex & priv::sinMask], priv::sinTable.data[(sinIndex + 16384u) & priv::sinMask]};
+    return Result{priv::sinTableData[sinIndex & priv::sinMask], priv::sinTableData[(sinIndex + 16'384u) & priv::sinMask]};
 }
 
 } // namespace sf::base

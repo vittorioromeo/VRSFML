@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.24)
+cmake_minimum_required(VERSION 3.28)
+set(CMAKE_POLICY_VERSION_MINIMUM "3.5") # workaround for dependencies
 
 # define a macro that helps defining an option
 macro(sfml_set_option var default type docstring)
@@ -46,15 +47,8 @@ endif()
 # avoid transitive includes with libc++
 add_definitions(-D_LIBCPP_REMOVE_TRANSITIVE_INCLUDES)
 
-# download CPM to manage external dependencies
-file(
-    DOWNLOAD
-    https://github.com/cpm-cmake/CPM.cmake/releases/download/v0.40.2/CPM.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake
-    EXPECTED_HASH SHA256=c8cdc32c03816538ce22781ed72964dc864b2a34a310d3b7104812a5ca2d835d
-)
-
-include(${CMAKE_CURRENT_BINARY_DIR}/cmake/CPM.cmake)
+# include CPM to manage external dependencies
+include(cmake/CPM.cmake)
 
 # add an option to enable stack traces on assertions
 sfml_set_option(SFML_ENABLE_STACK_TRACES $<CONFIG:Debug> BOOL "TRUE to enable lifetime tracking, FALSE to disable it")
@@ -65,7 +59,7 @@ if(SFML_ENABLE_STACK_TRACES)
         CPMAddPackage(
             NAME cpptrace
             GITHUB_REPOSITORY vittorioromeo/cpptrace
-            GIT_TAG 09b8fcc593793a07d943c4a6f988ba22878ae6f2
+            GIT_TAG bcd42b677bfd0209add98123e97e6236f81b9c9b
             SYSTEM TRUE
         )
 
@@ -102,11 +96,16 @@ if(SFML_ENABLE_PCH)
 endif()
 
 # add options to select which modules to build
+sfml_set_option(SFML_BUILD_GLUTILS ON BOOL "ON to build SFML's GLUtils module.")
 sfml_set_option(SFML_BUILD_WINDOW ON BOOL "ON to build SFML's Window module. This setting is ignored, if the graphics module is built.")
 sfml_set_option(SFML_BUILD_GRAPHICS ON BOOL "ON to build SFML's Graphics module.")
 sfml_set_option(SFML_BUILD_IMGUI ON BOOL "ON to build SFML's ImGui module.")
 sfml_set_option(SFML_BUILD_AUDIO ON BOOL "ON to build SFML's Audio module.")
 sfml_set_option(SFML_BUILD_NETWORK ON BOOL "ON to build SFML's Network module.")
+
+if(SFML_BUILD_GLUTILS)
+    add_definitions(-DSFML_BUILD_GLUTILS)
+endif()
 
 if(SFML_BUILD_WINDOW)
     add_definitions(-DSFML_BUILD_WINDOW)
@@ -272,15 +271,31 @@ if(SFML_BUILD_TEST_SUITE)
     add_definitions(-DSFML_BUILD_TEST_SUITE)
     # add_definitions(-DDOCTEST_CONFIG_NO_INCLUDE_IOSTREAM=1)
     add_definitions(-DDOCTEST_CONFIG_SUPER_FAST_ASSERTS)
-
-    set(SFML_ENABLE_STDLIB_ASSERTIONS ON)
 endif()
 
 option(SFML_ENABLE_STDLIB_ASSERTIONS "Enable standard library assertions" OFF)
 if(SFML_ENABLE_STDLIB_ASSERTIONS)
-    # intentionally using `add_definitions` here to propagate defines to subdirectories
-    add_definitions(-D_GLIBCXX_ASSERTIONS=1)                                   # see https://gcc.gnu.org/wiki/LibstdcxxDebugMode
-    add_definitions(-D_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE) # see https://libcxx.llvm.org/Hardening.html
+    # intentionally using `add_compile_definitions` here to propagate defines to subdirectories
+    add_compile_definitions(_GLIBCXX_ASSERTIONS=1)                                   # see https://gcc.gnu.org/wiki/LibstdcxxDebugMode
+
+    # Xcode has a property to control this - adding the define ourselves causes multiple definitions
+    if(XCODE)
+        set(CMAKE_XCODE_ATTRIBUTE_CLANG_CXX_STANDARD_LIBRARY_HARDENING "Yes (extensive)")
+    else()
+        add_compile_definitions(_LIBCPP_HARDENING_MODE=_LIBCPP_HARDENING_MODE_EXTENSIVE) # see https://libcxx.llvm.org/Hardening.html
+    endif()
+endif()
+
+option(SFML_ENABLE_HARDENING_FLAGS "Enable hardening flags" OFF)
+if(SFML_ENABLE_HARDENING_FLAGS AND NOT MSVC)
+    add_compile_options(
+        -ftrivial-auto-var-init=pattern
+        -fstack-protector-strong
+        # -fstack-clash-protection (doesn't work on libc++)
+        -fstrict-flex-arrays=3
+        # -fno-delete-null-pointer-checks (broken on GCC)
+        -ftrapv
+    )
 endif()
 
 # set the output directory for SFML DLLs and executables
@@ -316,14 +331,14 @@ if(SFML_INSTALL_PKGCONFIG_FILES)
 
     sfml_set_option(SFML_PKGCONFIG_INSTALL_DIR "${SFML_PKGCONFIG_DIR}" PATH "Install directory for SFML's pkg-config .pc files")
 
-    foreach(sfml_module IN ITEMS all system window graphics audio network)
+    if(SFML_BUILD_AUDIO AND SFML_BUILD_NETWORK AND SFML_BUILD_GRAPHICS AND SFML_BUILD_WINDOW)
         configure_file(
-            "tools/pkg-config/sfml-${sfml_module}.pc.in"
-            "tools/pkg-config/sfml-${sfml_module}.pc"
+            "tools/pkg-config/sfml-all.pc.in"
+            "tools/pkg-config/sfml-all.pc"
             @ONLY)
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tools/pkg-config/sfml-${sfml_module}.pc"
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/tools/pkg-config/sfml-all.pc"
             DESTINATION "${SFML_PKGCONFIG_INSTALL_DIR}")
-    endforeach()
+    endif()
 endif()
 
 if(SFML_ENABLE_PCH AND BUILD_SHARED_LIBS)
@@ -397,6 +412,14 @@ else()
                        ${PROJECT_SOURCE_DIR}/include/SFML/System
                        $<TARGET_FILE_DIR:SFML>/Headers
                        VERBATIM)
+
+    # add glutils module headers if enabled
+    if(SFML_BUILD_GLUTILS)
+        add_custom_command(TARGET SFML POST_BUILD COMMAND cp -r
+                           ${PROJECT_SOURCE_DIR}/include/SFML/GLUtils
+                           $<TARGET_FILE_DIR:SFML>/Headers
+                           VERBATIM)
+    endif()
 
     # add window module headers if enabled
     if(SFML_BUILD_WINDOW)
@@ -524,6 +547,9 @@ if(SFML_BUILD_TEST_SUITE)
         message(WARNING "Cannot build unit testing unless all modules are enabled")
     endif()
 endif()
+
+# add an option for making OpenGL errors fatal
+sfml_set_option(SFML_FATAL_OPENGL_ERRORS OFF BOOL "ON to make SFML OpenGL errors fatal, OFF to simply warn about them")
 
 sfml_set_option(CLANG_FORMAT_EXECUTABLE clang-format STRING "Override clang-format executable, requires version 17")
 add_custom_target(format

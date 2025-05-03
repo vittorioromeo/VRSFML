@@ -1,11 +1,17 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeImpl.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
+
+#include "SFML/System/Err.hpp"
+
+#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <algorithm> // std::sort
 
@@ -13,24 +19,63 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+float VideoModeUtils::getPrimaryDisplayContentScale()
+{
+    // TODO P0: per display?
+    return priv::getSDLLayerSingleton().getPrimaryDisplayContentScale();
+}
+
+
+////////////////////////////////////////////////////////////
 VideoMode VideoModeUtils::getDesktopMode()
 {
-    // Directly forward to the OS-specific implementation
-    return priv::VideoModeImpl::getDesktopMode();
+    auto& sdlLayer = priv::getSDLLayerSingleton();
+
+    const auto* desktopDisplayMode = sdlLayer.getPrimaryDisplayDesktopDisplayMode();
+    if (desktopDisplayMode == nullptr)
+    {
+        priv::err() << "`getDesktopMode` failed, returning default video mode";
+        return {};
+    }
+
+    return sdlLayer.getVideoModeFromSDLDisplayMode(*desktopDisplayMode);
 }
 
 
 ////////////////////////////////////////////////////////////
 base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
 {
-    static const auto modes = []
+    static const auto cachedModes = []
     {
-        std::vector<VideoMode> result = priv::VideoModeImpl::getFullscreenModes();
+        base::Vector<VideoMode> result;
+
+        auto& sdlLayer = priv::getSDLLayerSingleton();
+
+        const auto displays = sdlLayer.getDisplays();
+        if (!displays.valid() || displays.size() == 0)
+            return result;
+
+        const auto displayId = displays[0];
+        const auto modes     = sdlLayer.getFullscreenDisplayModesForDisplay(displayId);
+
+        if (!modes.valid())
+            return result;
+
+        for (const auto* mode : modes)
+        {
+            SFML_BASE_ASSERT(mode != nullptr);
+
+            const sf::VideoMode res = sdlLayer.getVideoModeFromSDLDisplayMode(*mode);
+
+            if (base::find(result.begin(), result.end(), res) == result.end())
+                result.pushBack(res);
+        }
+
         std::sort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
         return result;
     }();
 
-    return {modes.data(), modes.size()};
+    return {cachedModes.data(), cachedModes.size()};
 }
 
 } // namespace sf

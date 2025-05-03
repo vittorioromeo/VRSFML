@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -13,24 +14,27 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 struct SoundStream::Impl
 {
+    ////////////////////////////////////////////////////////////
     explicit Impl(SoundStream* theOwner) : owner(theOwner)
     {
     }
 
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
         SFML_BASE_ASSERT(soundBase.hasValue());
@@ -53,6 +57,7 @@ struct SoundStream::Impl
         soundBase->refreshSoundChannelMap();
     }
 
+    ////////////////////////////////////////////////////////////
     static void onEnd(void* userData, ma_sound* soundPtr)
     {
         // Seek back to the start of the sound when it finishes playing
@@ -64,7 +69,8 @@ struct SoundStream::Impl
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
-    static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -127,7 +133,8 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -137,31 +144,34 @@ struct SoundStream::Impl
         impl.samplesProcessed   = frameIndex * impl.channelCount;
 
         const Time offset = impl.sampleRate == 0
-                                ? Time::Zero
+                                ? Time{}
                                 : seconds(static_cast<float>(frameIndex) / static_cast<float>(impl.sampleRate));
 
         impl.owner->onSeek(offset);
         return MA_SUCCESS;
     }
 
-    static ma_result getFormat(ma_data_source* dataSource,
-                               ma_format*      format,
-                               ma_uint32*      channels,
-                               ma_uint32*      sampleRate,
-                               ma_channel*,
-                               base::SizeT)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getFormat(
+        ma_data_source* dataSource,
+        ma_format*      format,
+        ma_uint32*      channels,
+        ma_uint32*      sampleRate,
+        ma_channel*,
+        base::SizeT)
     {
         const auto& impl = *static_cast<const Impl*>(dataSource);
 
         // If we don't have valid values yet, initialize with defaults so sound creation doesn't fail
         *format     = ma_format_s16;
         *channels   = impl.channelCount ? impl.channelCount : 1;
-        *sampleRate = impl.sampleRate ? impl.sampleRate : 44100;
+        *sampleRate = impl.sampleRate ? impl.sampleRate : 44'100;
 
         return MA_SUCCESS;
     }
 
-    static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
         *cursor    = impl.channelCount ? impl.samplesProcessed / impl.channelCount : 0;
@@ -169,14 +179,16 @@ struct SoundStream::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getLength(ma_data_source*, ma_uint64* length)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getLength(ma_data_source*, ma_uint64* length)
     {
         *length = 0;
 
         return MA_NOT_IMPLEMENTED;
     }
 
-    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }
@@ -188,15 +200,15 @@ struct SoundStream::Impl
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
 
-    SoundStream*                   owner;                //!< Owning `SoundStream` object
-    base::TrivialVector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
-    base::SizeT                    sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
-    base::U64                      samplesProcessed{};   //!< Number of samples processed since beginning of the stream
-    unsigned int                   channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int                   sampleRate{};         //!< Frequency (samples / second)
-    ChannelMap                     channelMap;           //!< The map of position in sample frame to sound channel
-    bool                           streaming{true};      //!< `true` if we are still streaming samples from the source
-    SoundSource::Status            status{SoundSource::Status::Stopped}; //!< The status
+    SoundStream*            owner;                //!< Owning `SoundStream` object
+    base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
+    base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
+    base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
+    unsigned int            channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
+    unsigned int            sampleRate{};         //!< Frequency (samples / second)
+    ChannelMap              channelMap;           //!< The map of position in sample frame to sound channel
+    bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
+    SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
@@ -271,11 +283,11 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
     }
 
     if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time::Zero);
+        setPlayingOffset(Time{});
 
     if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::MiniaudioUtils::fail("start playing sound", result);
+        priv::MiniaudioUtils::fail("start playing sound stream", result);
         return;
     }
 
@@ -291,7 +303,7 @@ void SoundStream::pause()
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::MiniaudioUtils::fail("stop playing sound", result);
+        priv::MiniaudioUtils::fail("stop playing sound stream", result);
         return;
     }
 
@@ -308,11 +320,11 @@ void SoundStream::stop()
 
     if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
-        priv::MiniaudioUtils::fail("stop playing sound", result);
+        priv::MiniaudioUtils::fail("stop playing sound stream", result);
         return;
     }
 
-    setPlayingOffset(Time::Zero);
+    setPlayingOffset(Time{});
     m_impl->status = Status::Stopped;
 }
 
@@ -395,7 +407,7 @@ void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
 ////////////////////////////////////////////////////////////
 base::Optional<base::U64> SoundStream::onLoop()
 {
-    onSeek(Time::Zero);
+    onSeek(Time{});
     return base::makeOptional(base::U64{0});
 }
 

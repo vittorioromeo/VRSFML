@@ -5,14 +5,38 @@
 #include <CommonTraits.hpp>
 #include <GraphicsUtil.hpp>
 
+
 TEST_CASE("[Graphics] sf::StencilMode")
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::StencilMode));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::StencilValue));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::StencilValue));
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::StencilValue)); // due to constructor
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::StencilValue));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::StencilValue, sf::StencilValue));
+
+        STATIC_CHECK(sizeof(sf::StencilValue) <= sizeof(unsigned int));
+
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::StencilMode));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_AGGREGATE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::StencilMode));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::StencilMode, sf::StencilMode));
+
+        STATIC_CHECK(sizeof(sf::StencilMode) <= sizeof(unsigned int) * 4);
     }
 
     SECTION("Construction")
@@ -48,65 +72,83 @@ TEST_CASE("[Graphics] sf::StencilMode")
         SECTION("operator==")
         {
             CHECK(sf::StencilMode{} == sf::StencilMode{});
-            CHECK(sf::StencilMode{sf::StencilComparison::Equal,
-                                  sf::StencilUpdateOperation::Replace,
-                                  sf::StencilValue{1u},
-                                  sf::StencilValue{0u},
-                                  true} ==
-                  sf::StencilMode{sf::StencilComparison::Equal,
-                                  sf::StencilUpdateOperation::Replace,
-                                  sf::StencilValue{1u},
-                                  sf::StencilValue{0u},
-                                  true});
+            CHECK(sf::StencilMode{
+                      .stencilComparison      = sf::StencilComparison::Equal,
+                      .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                      .stencilOnly            = true,
+                      .stencilReference       = sf::StencilValue{1u},
+                      .stencilMask            = sf::StencilValue{0u},
+                  } == sf::StencilMode{
+                           .stencilComparison      = sf::StencilComparison::Equal,
+                           .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                           .stencilOnly            = true,
+                           .stencilReference       = sf::StencilValue{1u},
+                           .stencilMask            = sf::StencilValue{0u},
+                       });
 
             CHECK_FALSE(sf::StencilMode{} ==
-                        sf::StencilMode{sf::StencilComparison::Equal,
-                                        sf::StencilUpdateOperation::Replace,
-                                        sf::StencilValue{1u},
-                                        sf::StencilValue{0u},
-                                        true});
-            CHECK_FALSE(sf::StencilMode{sf::StencilComparison::Greater,
-                                        sf::StencilUpdateOperation::Invert,
-                                        sf::StencilValue{0u},
-                                        sf::StencilValue{~0u},
-                                        false} ==
-                        sf::StencilMode{sf::StencilComparison::Equal,
-                                        sf::StencilUpdateOperation::Replace,
-                                        sf::StencilValue{1u},
-                                        sf::StencilValue{0u},
-                                        true});
+                        sf::StencilMode{
+                            .stencilComparison      = sf::StencilComparison::Equal,
+                            .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                            .stencilOnly            = true,
+                            .stencilReference       = sf::StencilValue{1u},
+                            .stencilMask            = sf::StencilValue{0u},
+                        });
+            CHECK_FALSE(
+                sf::StencilMode{
+                    .stencilComparison      = sf::StencilComparison::Greater,
+                    .stencilUpdateOperation = sf::StencilUpdateOperation::Invert,
+                    .stencilOnly            = false,
+                    .stencilReference       = sf::StencilValue{0u},
+                    .stencilMask            = sf::StencilValue{~0u},
+                } == sf::StencilMode{
+                         .stencilComparison      = sf::StencilComparison::Equal,
+                         .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                         .stencilOnly            = true,
+                         .stencilReference       = sf::StencilValue{1u},
+                         .stencilMask            = sf::StencilValue{0u},
+                     });
         }
 
         SECTION("operator!=")
         {
             CHECK_FALSE(sf::StencilMode{} != sf::StencilMode{});
-            CHECK_FALSE(sf::StencilMode{sf::StencilComparison::Equal,
-                                        sf::StencilUpdateOperation::Replace,
-                                        sf::StencilValue{1u},
-                                        sf::StencilValue{0u},
-                                        true} !=
-                        sf::StencilMode{sf::StencilComparison::Equal,
-                                        sf::StencilUpdateOperation::Replace,
-                                        sf::StencilValue{1u},
-                                        sf::StencilValue{0u},
-                                        true});
+            CHECK_FALSE(
+                sf::StencilMode{
+                    .stencilComparison      = sf::StencilComparison::Equal,
+                    .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                    .stencilOnly            = true,
+                    .stencilReference       = sf::StencilValue{1u},
+                    .stencilMask            = sf::StencilValue{0u},
+                } != sf::StencilMode{
+                         .stencilComparison      = sf::StencilComparison::Equal,
+                         .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                         .stencilOnly            = true,
+                         .stencilReference       = sf::StencilValue{1u},
+                         .stencilMask            = sf::StencilValue{0u},
+                     });
 
             CHECK(sf::StencilMode{} !=
-                  sf::StencilMode{sf::StencilComparison::Equal,
-                                  sf::StencilUpdateOperation::Replace,
-                                  sf::StencilValue{1u},
-                                  sf::StencilValue{0u},
-                                  true});
-            CHECK(sf::StencilMode{sf::StencilComparison::Greater,
-                                  sf::StencilUpdateOperation::Invert,
-                                  sf::StencilValue{0u},
-                                  sf::StencilValue{~0u},
-                                  false} !=
-                  sf::StencilMode{sf::StencilComparison::Equal,
-                                  sf::StencilUpdateOperation::Replace,
-                                  sf::StencilValue{1u},
-                                  sf::StencilValue{0u},
-                                  true});
+                  sf::StencilMode{
+                      .stencilComparison      = sf::StencilComparison::Equal,
+                      .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                      .stencilOnly            = true,
+                      .stencilReference       = sf::StencilValue{1u},
+                      .stencilMask            = sf::StencilValue{0u},
+                  });
+            CHECK(sf::StencilMode{
+                      .stencilComparison      = sf::StencilComparison::Greater,
+                      .stencilUpdateOperation = sf::StencilUpdateOperation::Invert,
+                      .stencilOnly            = false,
+                      .stencilReference       = sf::StencilValue{0u},
+                      .stencilMask            = sf::StencilValue{~0u},
+                  } != sf::StencilMode{
+                           .stencilComparison      = sf::StencilComparison::Equal,
+                           .stencilUpdateOperation = sf::StencilUpdateOperation::Replace,
+                           .stencilOnly            = true,
+                           .stencilReference       = sf::StencilValue{1u},
+                           .stencilMask            = sf::StencilValue{0u},
+                       });
         }
     }
 }

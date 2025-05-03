@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -28,6 +29,7 @@ namespace sf
 class Cursor;
 } // namespace sf
 
+
 namespace sf::priv
 {
 class WindowImpl;
@@ -37,7 +39,6 @@ namespace sf::Vulkan
 {
 struct VulkanSurfaceData;
 } // namespace sf::Vulkan
-
 
 namespace sf
 {
@@ -148,14 +149,14 @@ public:
     /// }
     /// \endcode
     ///
-    /// \param timeout Maximum time to wait (`Time::Zero` for infinite)
+    /// \param timeout Maximum time to wait (`Time{}` for infinite)
     ///
     /// \return The event on success, `base::nullOpt` on timeout or if window was closed
     ///
     /// \see `pollEvent`, `pollAndHandleEvents`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = Time::Zero);
+    [[nodiscard]] base::Optional<Event> waitEvent(Time timeout = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Handle all pending events
@@ -237,6 +238,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of the window
+    ///
+    /// This function returns the position of the top-left corner
+    /// of the window *not* including any decoration such as the titlebar.
     ///
     /// \return Position of the window, in pixels
     ///
@@ -441,6 +445,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasFocus() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return a scaling factor for DPI-aware scaling
+    ///
+    /// \return `1.f` for default DPI (96), otherwise the scaling factor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getWindowDisplayScale() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OS-specific handle of the window

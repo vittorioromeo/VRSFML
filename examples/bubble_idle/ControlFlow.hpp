@@ -1,0 +1,9 @@
+#pragma once
+
+
+////////////////////////////////////////////////////////////
+enum class [[nodiscard]] ControlFlow : bool
+{
+    Continue,
+    Break
+};

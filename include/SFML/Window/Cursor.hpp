@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -8,19 +9,19 @@
 
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+struct SDL_Cursor;
+
+
 namespace sf
 {
-namespace priv
-{
-class CursorImpl;
-} // namespace priv
-
 ////////////////////////////////////////////////////////////
 /// \brief Cursor defines the appearance of a system cursor
 ///
@@ -189,13 +190,24 @@ private:
     /// \return a reference to the OS-specific implementation
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] const priv::CursorImpl& getImpl() const;
+    [[nodiscard]] void* getImpl() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool reloadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool reloadFromSystem(Cursor::Type type);
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<priv::CursorImpl, 32> m_impl; //!< Implementation details
+    SDL_Cursor* m_sdlCursor;
 };
 
 } // namespace sf

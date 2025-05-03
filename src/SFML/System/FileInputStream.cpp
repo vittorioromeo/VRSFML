@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -8,10 +9,11 @@
 #include "SFML/Base/Optional.hpp"
 
 #ifdef SFML_SYSTEM_ANDROID
-#include "SFML/System/Android/Activity.hpp"
-#include "SFML/System/Android/ResourceStream.hpp"
+    #include "SFML/System/Android/Activity.hpp"
+    #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
+#include "SFML/System/FileUtils.hpp"
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -47,18 +49,16 @@ base::Optional<FileInputStream> FileInputStream::open(const Path& filename)
 #ifdef SFML_SYSTEM_ANDROID
     if (priv::getActivityStatesPtr() != nullptr)
     {
-        auto androidFile = base::makeUnique<priv::ResourceStream>(filename);
+        m_androidFile = base::makeUnique<priv::ResourceStream>();
+        if (!m_androidFile->open(filename))
+            return false;
         return androidFile->tell().hasValue()
                    ? base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(androidFile))
                    : base::nullOpt;
     }
 #endif
 
-#ifdef SFML_SYSTEM_WINDOWS
-    if (auto file = base::UniquePtr<std::FILE, FileCloser>(_wfopen(filename.c_str(), L"rb")))
-#else
-    if (auto file = base::UniquePtr<std::FILE, FileCloser>(std::fopen(filename.c_str(), "rb")))
-#endif
+    if (auto file = base::UniquePtr<std::FILE, FileCloser>(openFile(filename, "rb")))
         return base::makeOptional<FileInputStream>(base::PassKey<FileInputStream>{}, SFML_BASE_MOVE(file));
 
     return base::nullOpt;

@@ -41,7 +41,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             CHECK(texture.getSize() == sf::Vector2u{64, 64});
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());
-            CHECK(!texture.isRepeated());
+            CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
             CHECK(texture.getNativeHandle() != 0);
         }
 
@@ -53,8 +53,22 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
             CHECK(texture.getSize() == sf::Vector2u{64, 64});
             CHECK(!texture.isSmooth());
             CHECK(!texture.isSrgb());
-            CHECK(!texture.isRepeated());
+            CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
             CHECK(texture.getNativeHandle() != 0);
+        }
+
+        SECTION("Move assignment")
+        {
+            auto rt0 = sf::Texture::create({100, 100});
+            CHECK(rt0.hasValue());
+            rt0->setSmooth(true);
+
+            auto rt1 = sf::Texture::create({100, 100});
+            CHECK(rt1.hasValue());
+            rt1->setSmooth(true);
+
+            *rt0 = SFML_BASE_MOVE(*rt1);
+            rt0->setSmooth(true);
         }
     }
 
@@ -87,7 +101,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         CHECK(texture.getSize() == sf::Vector2u{1001, 304});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
@@ -98,7 +112,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         CHECK(texture.getSize() == sf::Vector2u{1001, 304});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
@@ -109,7 +123,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         CHECK(texture.getSize() == sf::Vector2u{1001, 304});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(texture.getNativeHandle() != 0);
     }
 
@@ -121,21 +135,21 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
             SECTION("Non-truncated area")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{0, 0}, {5, 10}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{0, 0}, {5, 10}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{5, 10});
                 CHECK(texture.getNativeHandle() != 0);
             }
 
             SECTION("Truncated area (negative position)")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{-5, -5}, {4, 8}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{-5, -5}, {4, 8}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{4, 8});
                 CHECK(texture.getNativeHandle() != 0);
             }
 
             SECTION("Truncated area (width/height too big)")
             {
-                const auto texture = sf::Texture::loadFromImage(image, false, {{5, 5}, {12, 18}}).value();
+                const auto texture = sf::Texture::loadFromImage(image, {.sRgb = false, .area = {{5, 5}, {12, 18}}}).value();
                 CHECK(texture.getSize() == sf::Vector2u{5, 10});
                 CHECK(texture.getNativeHandle() != 0);
             }
@@ -248,11 +262,11 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
     SECTION("Set/get repeated")
     {
         auto texture = sf::Texture::create({64, 64}).value();
-        CHECK(!texture.isRepeated());
-        texture.setRepeated(true);
-        CHECK(texture.isRepeated());
-        texture.setRepeated(false);
-        CHECK(!texture.isRepeated());
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
+        texture.setWrapMode(sf::TextureWrapMode::Repeat);
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Repeat);
+        texture.setWrapMode(sf::TextureWrapMode::Clamp);
+        CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
     }
 
     SECTION("generateMipmap()")
@@ -266,23 +280,23 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
         constexpr sf::base::U8 blue[]{0x00, 0x00, 0xFF, 0xFF};
         constexpr sf::base::U8 green[]{0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF, 0x00, 0xFF};
 
-        auto texture1 = sf::Texture::create(sf::Vector2u{1, 1}, true).value();
+        auto texture1 = sf::Texture::create(sf::Vector2u{1, 1}, {.sRgb = true}).value();
         texture1.update(blue);
         texture1.setSmooth(false);
-        texture1.setRepeated(true);
+        texture1.setWrapMode(sf::TextureWrapMode::Repeat);
 
-        auto texture2 = sf::Texture::create(sf::Vector2u{2, 1}, false).value();
+        auto texture2 = sf::Texture::create(sf::Vector2u{2, 1}, {.sRgb = false}).value();
         texture2.update(green);
         texture2.setSmooth(true);
-        texture2.setRepeated(false);
+        texture2.setWrapMode(sf::TextureWrapMode::Clamp);
 
         sf::swap(texture1, texture2);
         CHECK_FALSE(texture1.isSrgb());
         CHECK(texture1.isSmooth());
-        CHECK_FALSE(texture1.isRepeated());
+        CHECK_FALSE(texture1.getWrapMode() == sf::TextureWrapMode::Repeat);
         // Cannot check texture2.isSrgb() because Srgb is sometimes disabled when using OpenGL ES
         CHECK_FALSE(texture2.isSmooth());
-        CHECK(texture2.isRepeated());
+        CHECK(texture2.getWrapMode() == sf::TextureWrapMode::Repeat);
 
         const auto image1 = texture1.copyToImage();
         const auto image2 = texture2.copyToImage();

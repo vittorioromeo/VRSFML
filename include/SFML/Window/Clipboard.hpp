@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -41,11 +42,12 @@ namespace sf::Clipboard
 /// \param text `sf::String` containing the data to be sent
 /// to the clipboard
 ///
+/// \return `true` if the clipboard was successfully set
+///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setString(const String& text);
+[[nodiscard]] SFML_WINDOW_API bool setString(const String& text);
 
 } // namespace sf::Clipboard
-
 
 ////////////////////////////////////////////////////////////
 /// \namespace sf::Clipboard

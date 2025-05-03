@@ -10,7 +10,7 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Builtins/Memset.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
@@ -18,6 +18,8 @@
 #include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
 #include <SystemUtil.hpp>
+
+#include <string>
 
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
@@ -47,8 +49,8 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(span.length == 0);
 
         const sf::Music::TimeSpan timeSpan;
-        CHECK(timeSpan.offset == sf::Time::Zero);
-        CHECK(timeSpan.length == sf::Time::Zero);
+        CHECK(timeSpan.offset == sf::Time{});
+        CHECK(timeSpan.length == sf::Time{});
     }
 
     SECTION("openFromFile()")
@@ -60,23 +62,30 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid file")
         {
-            auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
-            CHECK(static_cast<const sf::Music&>(music).getDuration() == sf::microseconds(1990884));
-            CHECK(static_cast<const sf::Music&>(music).getChannelCount() == 1);
-            CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
+            const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
 
-            const auto [offset, length] = music.getLoopPoints();
-            CHECK(offset == sf::Time::Zero);
-            CHECK(length == sf::microseconds(1990884));
-            CHECK(music.getStatus() == sf::Music::Status::Stopped);
-            CHECK(music.getPlayingOffset() == sf::Time::Zero);
-            CHECK(!music.isLooping());
+            for (const auto& filenameSuffix : filenameSuffixes)
+            {
+                const sf::Path filename = U"Audio/ding" + filenameSuffix + U".mp3";
+                INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
+
+                auto music = sf::Music::openFromFile("Audio/ding.mp3").value();
+                CHECK(music.getDuration() == sf::microseconds(1990884));
+
+                const auto [offset, length] = music.getLoopPoints();
+                CHECK(offset == sf::Time{});
+                CHECK(length == sf::microseconds(1990884));
+
+                CHECK(music.getStatus() == sf::Music::Status::Stopped);
+                CHECK(music.getPlayingOffset() == sf::Time{});
+                CHECK(!music.isLooping());
+            }
         }
     }
 
     SECTION("openFromMemory()")
     {
-        sf::base::TrivialVector<unsigned char> memory(10);
+        sf::base::Vector<unsigned char> memory(10);
         SFML_BASE_MEMSET(memory.data(), 0xCA, 10);
 
         SECTION("Invalid buffer")
@@ -94,10 +103,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
             const auto [offset, length] = music.getLoopPoints();
-            CHECK(offset == sf::Time::Zero);
+            CHECK(offset == sf::Time{});
             CHECK(length == sf::microseconds(1990884));
             CHECK(music.getStatus() == sf::Music::Status::Stopped);
-            CHECK(music.getPlayingOffset() == sf::Time::Zero);
+            CHECK(music.getPlayingOffset() == sf::Time{});
             CHECK(!music.isLooping());
         }
     }
@@ -111,10 +120,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(static_cast<const sf::Music&>(music).getSampleRate() == 44100);
 
         const auto [offset, length] = music.getLoopPoints();
-        CHECK(offset == sf::Time::Zero);
+        CHECK(offset == sf::Time{});
         CHECK(length == sf::microseconds(24002176));
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
-        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
 
@@ -165,6 +174,8 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Offset too long")
         {
+            music = sf::Music::openFromFile("Audio/killdeer.wav").value();
+
             music.setLoopPoints({sf::seconds(1'000), sf::milliseconds(10)});
             const auto [offset, length] = music.getLoopPoints();
             CHECK(offset == sf::seconds(0));
@@ -174,7 +185,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(music.getChannelCount() == 1);
         CHECK(music.getSampleRate() == 22050);
         CHECK(music.getStatus() == sf::Music::Status::Stopped);
-        CHECK(music.getPlayingOffset() == sf::Time::Zero);
+        CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
 }

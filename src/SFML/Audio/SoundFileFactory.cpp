@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 
-#include <unordered_map>
+#include "SFML/Base/AnkerlUnorderedDense.hpp"
 
 
 namespace
@@ -30,8 +31,8 @@ using CreateFnPtr = sf::base::UniquePtr<T> (*)();
 using ReaderCheckFnPtr = bool (*)(sf::InputStream&);
 using WriterCheckFnPtr = bool (*)(const sf::Path&);
 
-using ReaderFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileReader>, ReaderCheckFnPtr>;
-using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, WriterCheckFnPtr>;
+using ReaderFactoryMap = ankerl::unordered_dense::map<CreateFnPtr<sf::SoundFileReader>, ReaderCheckFnPtr>;
+using WriterFactoryMap = ankerl::unordered_dense::map<CreateFnPtr<sf::SoundFileWriter>, WriterCheckFnPtr>;
 
 
 ////////////////////////////////////////////////////////////
@@ -61,6 +62,7 @@ using WriterFactoryMap = std::unordered_map<CreateFnPtr<sf::SoundFileWriter>, Wr
 }
 
 } // namespace
+
 
 namespace sf
 {

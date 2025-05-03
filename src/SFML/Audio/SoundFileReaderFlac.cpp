@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -26,12 +27,12 @@ namespace
 ////////////////////////////////////////////////////////////
 struct FlacClientData
 {
-    sf::InputStream*                       stream{};
-    sf::SoundFileReader::Info              info;
-    sf::base::I16*                         buffer{};
-    sf::base::U64                          remaining{};
-    sf::base::TrivialVector<sf::base::I16> leftovers;
-    bool                                   error{};
+    sf::InputStream*                stream{};
+    sf::SoundFileReader::Info       info;
+    sf::base::I16*                  buffer{};
+    sf::base::U64                   remaining{};
+    sf::base::Vector<sf::base::I16> leftovers;
+    bool                            error{};
 };
 
 
@@ -250,6 +251,7 @@ void streamError(const FLAC__StreamDecoder*, FLAC__StreamDecoderErrorStatus, voi
 
 } // namespace
 
+
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
@@ -398,8 +400,8 @@ base::U64 SoundFileReaderFlac::read(base::I16* samples, base::U64 maxCount)
             for (base::SizeT i = 0; i < maxCount; ++i)
                 samples[i] = m_impl->clientData.leftovers[i];
 
-            m_impl->clientData.leftovers = base::TrivialVector<base::I16>(m_impl->clientData.leftovers.begin(),
-                                                                          static_cast<base::SizeT>(maxCount));
+            m_impl->clientData.leftovers = base::Vector<base::I16>(m_impl->clientData.leftovers.begin(),
+                                                                   m_impl->clientData.leftovers.begin() + maxCount);
             return maxCount;
         }
 

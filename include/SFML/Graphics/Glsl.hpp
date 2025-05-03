@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -10,27 +11,25 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
-{
-namespace priv
-{
+////////////////////////////////////////////////////////////
 // Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf::priv
+{
 template <base::SizeT Columns, base::SizeT Rows>
 struct [[nodiscard]] Matrix;
 
 template <typename T>
 struct [[nodiscard]] Vector4;
-
-} // namespace priv
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
 /// \brief Namespace with GLSL types
 ///
 ////////////////////////////////////////////////////////////
-namespace Glsl
+namespace sf::Glsl
 {
-
 ////////////////////////////////////////////////////////////
 /// \brief 2D float vector (\p vec2 in GLSL)
 ///
@@ -164,8 +163,7 @@ using Mat4  = priv::Matrix<4, 4>;
 
 #endif // SFML_DOXYGEN
 
-} // namespace Glsl
-} // namespace sf
+} // namespace sf::Glsl
 
 #include "SFML/Graphics/Glsl.inl"
 

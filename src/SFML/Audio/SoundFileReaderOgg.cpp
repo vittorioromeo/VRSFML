@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -51,6 +52,7 @@ long tell(void* data)
 
 ov_callbacks callbacks = {&read, &seek, nullptr, &tell};
 } // namespace
+
 
 namespace sf::priv
 {

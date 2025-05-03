@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -82,6 +83,17 @@ public:
     [[nodiscard]] const JoystickIdentification& getIdentification(unsigned int joystickId) const;
 
     ////////////////////////////////////////////////////////////
+    ///
+    /// \brief Check if a joystick is connected
+    ///
+    /// \param joystickId Index of the joystick
+    ///
+    /// \return `true` if the joystick is connected, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isConnected(unsigned int joystickId) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Update the state of all the joysticks
     ///
     ////////////////////////////////////////////////////////////
@@ -92,7 +104,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 12288> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 12'288> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

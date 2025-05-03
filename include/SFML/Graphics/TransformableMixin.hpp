@@ -1,41 +1,18 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/Priv/TransformableMacros.hpp" // used, exposes macros
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/System/Angle.hpp"         // used
-#include "SFML/System/AutoWrapAngle.hpp" // used
+#include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/FastSinCos.hpp"
 
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE                                     \
-    ::sf::Vector2f position{};      /*!< Position of the object in the 2D world */               \
-    ::sf::Vector2f scale{1.f, 1.f}; /*!< Scale of the object */                                  \
-    ::sf::Vector2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \
-    /* NOLINTNEXTLINE(readability-redundant-member-init) */                                      \
-    ::sf::Angle rotation{}; /*!< Orientation of the object */                                    \
-    using sfPrivSwallowSemicolon0 = void
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-#define SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS                                                   \
-    ::sf::Vector2f position{};      /*!< Position of the object in the 2D world */               \
-    ::sf::Vector2f scale{1.f, 1.f}; /*!< Scale of the object */                                  \
-    ::sf::Vector2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \
-    /* NOLINTNEXTLINE(readability-redundant-member-init) */                                      \
-    ::sf::AutoWrapAngle rotation{}; /*!< Orientation of the object */                            \
-    using sfPrivSwallowSemicolon1 = void
 
 namespace sf
 {
@@ -46,10 +23,18 @@ namespace sf
 struct SFML_GRAPHICS_API TransformableMixinBase
 {
     [[nodiscard, gnu::pure, gnu::flatten]] Transform getTransform(
-        Vector2f position,
-        Vector2f scale,
-        Vector2f origin,
-        float    radians) const;
+        const Vector2f position,
+        const Vector2f scale,
+        const Vector2f origin,
+        const float    radians) const
+    {
+        const auto [sine, cosine] = base::fastSinCos(radians);
+
+        SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+        SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+
+        return Transform::from(position, scale, origin, sine, cosine);
+    }
 };
 
 ////////////////////////////////////////////////////////////

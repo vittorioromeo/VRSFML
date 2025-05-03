@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -12,7 +13,6 @@
 SFML_DECLARE_OBJC_CLASS(UIWindow);
 SFML_DECLARE_OBJC_CLASS(SFView);
 SFML_DECLARE_OBJC_CLASS(SFViewController);
-
 
 namespace sf::priv
 {
@@ -170,6 +170,15 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool hasFocus() const override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return a scaling factor for DPI-aware scaling
+    ///
+    /// \return `1.f` for default DPI (96) or the window is not
+    ///         DPI-aware, otherwise the scaling factor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDisplayContentScale() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify an event

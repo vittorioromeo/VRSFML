@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -18,7 +19,7 @@ using VkSurfaceKHR = struct VkSurfaceKHR_T*;
 
 #else
 
-#include "SFML/Base/IntTypes.hpp"
+    #include "SFML/Base/IntTypes.hpp"
 
 using VkSurfaceKHR = sf::base::U64;
 
@@ -81,7 +82,7 @@ struct VulkanSurfaceData
 ///
 /// \param name Name of the function to get the address of
 ///
-/// \return Address of the Vulkan function, 0 on failure
+/// \return Address of the Vulkan function, `nullptr` on failure
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_WINDOW_API VulkanFunctionPointer getFunction(const char* name);

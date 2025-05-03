@@ -1,13 +1,13 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/VertexBuffer.hpp"
+#include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -24,11 +24,19 @@ class GlContext;
 class JoystickManager;
 class SensorManager;
 class WindowImpl;
+class SDLGlContext;
+class GLContextSaver;
+class GLSharedContextGuard;
+
+bool glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
+
 } // namespace sf::priv
+
 
 namespace sf
 {
 class GraphicsContext;
+class RenderTarget;
 class RenderTexture;
 class Shader;
 class Texture;
@@ -57,7 +65,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<WindowContext> create();
+    [[nodiscard]] static base::Optional<WindowContext> create(const ContextSettings& sharedContextSettings = {});
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -98,20 +106,26 @@ private:
     /// Friend declarations
     ///
     ////////////////////////////////////////////////////////////
-    friend GraphicsContext;   // for `setActiveThreadLocalGlContext`
-    friend Joystick;          // for `getJoystickManager`
-    friend priv::EglContext;  // for `setActiveThreadLocalGlContext`
-    friend priv::GlContext;   // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
-    friend priv::WindowImpl;  // for `getJoystickManager`
-    friend RenderTarget;      // for `getActiveThreadLocalGlContextId`
-    friend RenderTexture;     // for `[un]registerUnsharedFrameBuffer`
-    friend Sensor;            // for `getSensorManager`
-    friend Shader;            // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
-    friend TestContext;       // for `createGlContext`
-    friend Texture;           // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
-    friend VertexBuffer;      // for `hasActiveThreadLocalGlContext` and `hasActiveThreadLocalOrSharedGlContext`
-    friend Window;            // for `createGlContext`
-    friend WindowContextImpl; // for `UnsharedDeleteFn`
+    friend priv::EglContext; // for `setActiveThreadLocalGlContext` and `cleanupUnsharedFrameBuffers`
+    friend priv::GlContext;  // for `onGlContextDestroyed` and `getActiveThreadLocalGlContextPtr`
+    friend priv::GLContextSaver; // for `setActiveThreadLocalGlContext`, `getActiveThreadLocalGlContextPtr`, and `disableSharedGlContext`
+    friend priv::GLSharedContextGuard; // for `setActiveThreadLocalGlContextToSharedContext`
+    friend priv::SDLGlContext;         // for `cleanupUnsharedFrameBuffers`
+    friend priv::WindowImpl;           // for `getJoystickManager`
+
+    friend GraphicsContext; // for `setActiveThreadLocalGlContext`
+    friend Joystick;        // for `getJoystickManager`
+    friend RenderTarget;    // for `getActiveThreadLocalGlContextId`
+    friend RenderTexture;   // for `[un]registerUnsharedFrameBuffer`
+    friend Sensor;          // for `getSensorManager`
+    friend Shader;          // for `hasActiveThreadLocalGlContext`
+    friend TestContext;     // for `createGlContext`
+    friend Texture;         // for `hasActiveThreadLocalGlContext`
+    friend VertexBuffer;    // for `hasActiveThreadLocalGlContext`
+    friend Window;          // for `createGlContext`
+    friend WindowContextImpl;
+
+    friend bool sf::priv::glCheckError(unsigned int openGlError, const char* file, unsigned int line, const char* expression);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context, not associated to a window
@@ -135,7 +149,7 @@ private:
     /// \return Pointer to the created context
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext();
+    [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a new context attached to a window
@@ -153,12 +167,6 @@ private:
     [[nodiscard]] static base::UniquePtr<priv::GlContext> createGlContext(const ContextSettings&  contextSettings,
                                                                           const priv::WindowImpl& owner,
                                                                           unsigned int            bitsPerPixel);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    using UnsharedDeleteFn = void (*)(unsigned int);
 
     ////////////////////////////////////////////////////////////
     /// \brief Notify unshared resources of context destruction
@@ -187,24 +195,10 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool hasActiveThreadLocalOrSharedGlContext();
+    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Register an OpenGL object to be destroyed when its containing context is destroyed
-    ///
-    /// This is used for internal purposes in order to properly
-    /// clean up OpenGL resources that cannot be shared between
-    /// contexts.
-    ///
-    /// \param object Object to be destroyed when its containing context is destroyed
-    ///
-    ////////////////////////////////////////////////////////////
-    static void registerUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId, UnsharedDeleteFn deleteFn);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregister an OpenGL object from its containing context
-    ///
-    /// \param object Object to be unregister
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     static void unregisterUnsharedFrameBuffer(unsigned int glContextId, unsigned int frameBufferId);
@@ -213,7 +207,25 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    static void registerUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void unregisterUnsharedVAO(unsigned int glContextId, unsigned int vaoId);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     static void onGlContextDestroyed(priv::GlContext& glContext);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static bool isSharedContext(priv::GlContext& glContext);
 
     ////////////////////////////////////////////////////////////
     /// \brief Check whether a given OpenGL extension is available
@@ -248,13 +260,19 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext(bool active);
+    [[nodiscard]] static bool setActiveThreadLocalGlContextToSharedContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isActiveGlContextSharedContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    static void disableSharedGlContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Load OpenGL or OpenGL ES entry points using GLAD
@@ -266,7 +284,7 @@ private:
     /// \brief Return the currently active context or a null pointer if none is active
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static const priv::GlContext* getActiveThreadLocalGlContextPtr();
+    [[nodiscard]] static priv::GlContext* getActiveThreadLocalGlContextPtr();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the "global" joystick manager

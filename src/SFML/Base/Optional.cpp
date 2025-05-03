@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,7 +10,7 @@
 #include <cstdio>
 
 #ifndef __EXCEPTIONS
-#include "SFML/Base/Abort.hpp"
+    #include "SFML/Base/Abort.hpp"
 #endif
 
 namespace sf::base::priv

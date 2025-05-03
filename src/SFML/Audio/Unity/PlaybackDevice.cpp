@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -14,11 +15,11 @@
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Vector3.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/TrivialVector.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
 
@@ -89,8 +90,8 @@ struct PlaybackDevice::Impl
     AudioContext*        audioContext; //!< The audio context (used to get the MA context and for lifetime tracking)
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
-    base::TrivialVector<ResourceEntry> resources;      //!< Registered resources
-    std::mutex                         resourcesMutex; //!< The mutex guarding the registered resources
+    base::Vector<ResourceEntry> resources;      //!< Registered resources
+    std::mutex                  resourcesMutex; //!< The mutex guarding the registered resources
 
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
     ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)
@@ -176,7 +177,7 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
     ma_engine* engine = &m_impl->maEngine;
 
     // Set master volume, position, velocity, cone and world up vector
-    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.volume * 0.01f);
+    if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.volume);
         result != MA_SUCCESS)
     {
         priv::MiniaudioUtils::fail("set audio device master volume", result);

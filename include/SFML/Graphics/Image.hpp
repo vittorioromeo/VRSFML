@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -15,7 +16,7 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -244,8 +245,8 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u                      m_size;   //!< Image size
-    base::TrivialVector<base::U8> m_pixels; //!< Pixels of the image
+    Vector2u               m_size;   //!< Image size
+    base::Vector<base::U8> m_pixels; //!< Pixels of the image
 };
 
 } // namespace sf

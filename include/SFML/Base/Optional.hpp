@@ -1,9 +1,12 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Config.hpp"
+
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/PlacementNew.hpp"
@@ -66,6 +69,7 @@ inline constexpr struct FromFunc { } fromFunc;
             buffer.obj.~T();                                   \
         }                                                      \
     } while (false)
+
 // NOLINTEND(bugprone-macro-parentheses)
 
 
@@ -74,74 +78,79 @@ template <typename T>
 class [[nodiscard]] Optional
 {
 public:
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional() noexcept : m_engaged{false}
     {
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(NullOpt) noexcept : m_engaged{false}
     {
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(const T& object) : m_engaged{true}
     {
         SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(object);
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(T&& object) noexcept : m_engaged{true}
     {
         SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(object));
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(!base::isTriviallyCopyConstructible<T> && base::isCopyConstructible<T>) :
-    m_engaged{rhs.m_engaged}
+        requires(!base::isTriviallyCopyConstructible<T> && base::isCopyConstructible<T>)
+    : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(rhs.m_buffer.obj);
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
-        requires(base::isTriviallyCopyConstructible<T>) = default;
+        requires(base::isTriviallyCopyConstructible<T>)
+    = default;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
-        requires(!base::isTriviallyMoveConstructible<T> && base::isMoveConstructible<T>) :
-    m_engaged{rhs.m_engaged}
+        requires(!base::isTriviallyMoveConstructible<T> && base::isMoveConstructible<T>)
+    : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(rhs.m_buffer.obj));
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs)
-        requires(base::isTriviallyMoveConstructible<T>) = default;
+        requires(base::isTriviallyMoveConstructible<T>)
+    = default;
 
 
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(!base::isTriviallyDestructible<T>)
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] constexpr ~Optional() noexcept
+        requires(!base::isTriviallyDestructible<T>)
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
     }
 
 
-    //////////////////////////////////////////
-    [[gnu::always_inline]] constexpr ~Optional() noexcept requires(base::isTriviallyDestructible<T>) = default;
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] constexpr ~Optional() noexcept
+        requires(base::isTriviallyDestructible<T>)
+    = default;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
         requires(!base::isTriviallyCopyAssignable<T> && base::isCopyAssignable<T>)
     {
@@ -168,12 +177,13 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(const Optional& rhs)
-        requires(base::isTriviallyCopyAssignable<T>) = default;
+        requires(base::isTriviallyCopyAssignable<T>)
+    = default;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs) noexcept
         requires(!base::isTriviallyMoveAssignable<T> && base::isMoveAssignable<T>)
     {
@@ -200,20 +210,21 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr Optional& operator=(Optional&& rhs)
-        requires(base::isTriviallyMoveAssignable<T>) = default;
+        requires(base::isTriviallyMoveAssignable<T>)
+    = default;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(InPlace, const Optional&) = delete;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(InPlace, Optional&&) = delete;
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     template <typename... Args>
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(InPlace, Args&&... args) : m_engaged{true}
     {
@@ -221,7 +232,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     template <typename F>
     [[nodiscard, gnu::always_inline]] constexpr explicit Optional(FromFunc, F&& func) : m_engaged{true}
     {
@@ -229,7 +240,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     template <typename... Args>
     [[gnu::always_inline]] constexpr T& emplace(Args&&... args)
     {
@@ -240,7 +251,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     template <typename F>
     [[gnu::always_inline]] constexpr T& emplaceFromFunc(F&& func)
     {
@@ -251,7 +262,31 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
+    template <typename... Args>
+    [[gnu::always_inline]] constexpr T& emplaceIfNeeded(Args&&... args)
+    {
+        if (m_engaged) [[likely]]
+            return m_buffer.obj;
+
+        m_engaged = true;
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(args)...));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename F>
+    [[gnu::always_inline]] constexpr T& emplaceFromFuncIfNeeded(F&& func)
+    {
+        if (m_engaged) [[likely]]
+            return m_buffer.obj;
+
+        m_engaged = true;
+        return *(SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_FORWARD(func)()));
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void reset() noexcept
     {
         SFML_PRIV_OPTIONAL_DESTROY_IF_ENGAGED(T, m_engaged, m_buffer);
@@ -259,7 +294,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T& value() &
     {
         if (!m_engaged) [[unlikely]]
@@ -269,7 +304,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr const T& value() const&
     {
         if (!m_engaged) [[unlikely]]
@@ -279,7 +314,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr T&& value() &&
     {
         if (!m_engaged) [[unlikely]]
@@ -289,42 +324,42 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& valueOr(T& defaultValue) & noexcept
     {
         return m_engaged ? m_buffer.obj : defaultValue;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& valueOr(const T& defaultValue) const& noexcept
     {
         return m_engaged ? m_buffer.obj : defaultValue;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& valueOr(T&& defaultValue) && noexcept
     {
         return SFML_BASE_MOVE(m_engaged ? m_buffer.obj : defaultValue);
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool hasValue() const noexcept
     {
         return m_engaged;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr explicit operator bool() const noexcept
     {
         return m_engaged;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* operator->() & noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
@@ -332,7 +367,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* operator->() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
@@ -340,7 +375,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator*() & noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
@@ -348,7 +383,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T& operator*() const& noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
@@ -356,7 +391,7 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T&& operator*() && noexcept
     {
         SFML_BASE_ASSERT(m_engaged);
@@ -364,23 +399,24 @@ public:
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* asPtr() noexcept
     {
         return m_engaged ? &m_buffer.obj : nullptr;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const T* asPtr() const noexcept
     {
         return m_engaged ? &m_buffer.obj : nullptr;
     }
 
 
-    //////////////////////////////////////////
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator==(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs == *rhs; }
     {
         return lhs.m_engaged == rhs.m_engaged && (!lhs.m_engaged || *lhs == *rhs);
     }
@@ -389,6 +425,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator!=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs != *rhs; }
     {
         return lhs.m_engaged != rhs.m_engaged || (lhs.m_engaged && *lhs != *rhs);
     }
@@ -397,6 +434,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator>=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs >= *rhs; }
     {
         return !rhs.m_engaged || (lhs.m_engaged && *lhs >= *rhs);
     }
@@ -405,6 +443,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator<=(const Optional& lhs,
                                                                                          const Optional& rhs) noexcept
+        requires requires { *lhs <= *rhs; }
     {
         return !lhs.m_engaged || (rhs.m_engaged && *lhs <= *rhs);
     }
@@ -413,6 +452,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator>(const Optional& lhs,
                                                                                         const Optional& rhs) noexcept
+        requires requires { *lhs > *rhs; }
     {
         return lhs.m_engaged && (!rhs.m_engaged || *lhs > *rhs);
     }
@@ -421,6 +461,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator<(const Optional& lhs,
                                                                                         const Optional& rhs) noexcept
+        requires requires { *lhs < *rhs; }
     {
         return rhs.m_engaged && (!lhs.m_engaged || *lhs < *rhs);
     }
@@ -429,7 +470,7 @@ private:
     union Buffer
     {
         char dummy{}; // Needed by GCC for constant expression support
-        T obj;
+        T    obj;
 
         // clang-format off
         constexpr Buffer() requires(base::isTriviallyConstructible<T>) = default;
@@ -448,7 +489,6 @@ private:
 
     bool m_engaged;
 };
-
 
 ////////////////////////////////////////////////////////////
 #undef SFML_PRIV_OPTIONAL_DESTROY

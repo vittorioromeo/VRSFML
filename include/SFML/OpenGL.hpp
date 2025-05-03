@@ -14,39 +14,37 @@
 ////////////////////////////////////////////////////////////
 #if defined(SFML_SYSTEM_WINDOWS)
 
-// The Visual C++ version of gl.h uses WINGDIAPI and APIENTRY but doesn't define them
-#ifdef _MSC_VER
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#endif
+    // The Visual C++ version of gl.h uses WINGDIAPI and APIENTRY but doesn't define them
+    #ifdef _MSC_VER
+        #ifndef WIN32_LEAN_AND_MEAN
+            #define WIN32_LEAN_AND_MEAN
+        #endif
+        #include <windows.h>
+    #endif
 
-#include <GL/gl.h>
+    #include <GL/gl.h>
 
 #elif defined(SFML_SYSTEM_LINUX_OR_BSD)
 
-#if defined(SFML_OPENGL_ES)
-#include <GLES3/gl3.h>
-#else
-#include <GL/gl.h>
-#endif
+    #if defined(SFML_OPENGL_ES)
+        #include <GLES3/gl3.h>
+    #else
+        #include <GL/gl.h>
+    #endif
 
 #elif defined(SFML_SYSTEM_MACOS)
 
-#include <OpenGL/gl.h>
+    #include <OpenGL/gl.h>
 
 #elif defined(SFML_SYSTEM_IOS)
 
-#include <OpenGLES/ES2/gl.h>
-#include <OpenGLES/ES2/glext.h>
+    #include <OpenGLES/ES2/gl.h>
+    #include <OpenGLES/ES2/glext.h>
 
 #elif defined(SFML_SYSTEM_ANDROID)
 
-#include <GLES3/gl3.h>
-
-// We're not using OpenGL ES 2+ yet, but we can use the sRGB extension
-#include <GLES3/gl3ext.h>
-#include <GLES3/gl3platform.h>
+    #include <GLES3/gl3.h>
+    #include <GLES3/gl3ext.h>
+    #include <GLES3/gl3platform.h>
 
 #endif

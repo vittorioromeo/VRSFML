@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -30,7 +31,6 @@ struct Sprite;
 class Texture;
 class Window;
 } // namespace sf
-
 
 namespace sf::ImGui
 {
@@ -204,19 +204,25 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.0f);
+    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRect(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F, float thickness = 1.0f);
+    void drawRect(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.0f, int roundingCorners = 0x0F);
+    void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool wasLastInputTouch() const;
 
 private:
     // Shuts down all ImGui contexts

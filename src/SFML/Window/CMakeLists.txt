@@ -3,131 +3,95 @@ set(SRCROOT ${PROJECT_SOURCE_DIR}/src/SFML/Window)
 
 file(GLOB SRC CONFIGURE_DEPENDS "${INCROOT}/*.hpp" "${INCROOT}/*.inl"  "${SRCROOT}/*.hpp" "${SRCROOT}/*.inl" "${SRCROOT}/*.cpp" "${SRCROOT}/Stub/*.hpp" "${SRCROOT}/Stub/*.cpp")
 
+find_package(Threads REQUIRED)
+
+set(SDL_STATIC ON)
+set(SDL_SHARED OFF)
+
+set(SDL_TEST_LIBRARY OFF)
+set(SDL_TESTS OFF)
+set(SDL_EXAMPLES OFF)
+
+set(SDL_CCACHE ON)
+
+set(SDL_AUDIO OFF)
+set(SDL_CAMERA OFF)
+set(SDL_DIALOG OFF)
+set(SDL_FILESYSTEM OFF)
+set(SDL_FSOPS OFF)
+set(SDL_GPU OFF)
+set(SDL_HIDAPI OFF)
+set(SDL_LOCALE OFF)
+set(SDL_MISC OFF)
+set(SDL_POWER OFF)
+set(SDL_PROCESS OFF)
+set(SDL_RENDER OFF)
+set(SDL_SENSOR OFF)
+set(SDL_STORAGE OFF)
+set(SDL_TRAY OFF)
+
+CPMAddPackage(
+    NAME sdl
+    GITHUB_REPOSITORY vittorioromeo/SDL
+    GIT_TAG 7dc1c88a71b83ec12bb738db2f53b9956282ab05
+    SYSTEM TRUE
+)
+
+get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+target_compile_options(SDL_uclibc PRIVATE "-w" "-pthread")
+set_target_properties(SDL_uclibc PROPERTIES UNITY_BUILD OFF)
+target_link_libraries(SDL_uclibc PRIVATE Threads::Threads)
+
+if (TARGET SDL3-static)
+    get_property(sdl3_include_dirs TARGET SDL3-static PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set_property(TARGET SDL3-static PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+    target_compile_options(SDL3-static PRIVATE "-w" "-pthread")
+    set_target_properties(SDL3-static PROPERTIES UNITY_BUILD OFF)
+    target_link_libraries(SDL3-static PRIVATE Threads::Threads)
+endif()
+
+if (TARGET SDL3-dynamic)
+    get_property(sdl3_include_dirs TARGET SDL3-dynamic PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    set_property(TARGET SDL3-dynamic PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
+    target_compile_options(SDL3-dynamic PRIVATE "-w" "-pthread")
+    set_target_properties(SDL3-dynamic PROPERTIES UNITY_BUILD OFF)
+    target_link_libraries(SDL3-dynamic PRIVATE Threads::Threads)
+endif()
+
+
+
 # add platform specific sources
 if(SFML_OS_WINDOWS)
     set(PLATFORM_SRC
-        ${SRCROOT}/Win32/ClipboardImpl.hpp
-        ${SRCROOT}/Win32/CursorImpl.hpp
-        ${SRCROOT}/Win32/JoystickImpl.hpp
         ${SRCROOT}/Win32/Utils.hpp
-        ${SRCROOT}/Win32/WindowImplWin32.hpp
-
         ${SRCROOT}/Win32/Win32ImplUnity.cpp
 
-        # ${SRCROOT}/Win32/Unity/ClipboardImpl.cpp
-        # ${SRCROOT}/Win32/Unity/CursorImpl.cpp
-        # ${SRCROOT}/Win32/Unity/InputImpl.cpp
-        # ${SRCROOT}/Win32/Unity/JoystickImpl.cpp
         # ${SRCROOT}/Win32/Unity/Utils.cpp
-        # ${SRCROOT}/Win32/Unity/VideoModeImpl.cpp
         # ${SRCROOT}/Win32/Unity/VulkanImplWin32.cpp
-        # ${SRCROOT}/Win32/Unity/WindowImplWin32.cpp
     )
-    if(SFML_OPENGL_ES)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/EGL/EGLCheck.cpp
-            ${SRCROOT}/EGL/EGLCheck.hpp
-            ${SRCROOT}/EGL/EGLContext.cpp
-            ${SRCROOT}/EGL/EGLContext.hpp
-            ${SRCROOT}/EGL/EGLGlad.cpp
-            ${SRCROOT}/EGL/EGLGlad.hpp
-        )
-    else()
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/Win32/WglContext.cpp
-            ${SRCROOT}/Win32/WglContext.hpp
-        )
-    endif()
 elseif(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
-    if(SFML_USE_DRM)
-        add_definitions(-DSFML_USE_DRM)
-        set(PLATFORM_SRC
-            ${SRCROOT}/EGL/EGLCheck.cpp
-            ${SRCROOT}/EGL/EGLCheck.hpp
-            ${SRCROOT}/DRM/InputImpl.cpp
-            ${SRCROOT}/DRM/VideoModeImpl.cpp
-            ${SRCROOT}/DRM/DRMContext.cpp
-            ${SRCROOT}/DRM/DRMContext.hpp
-            ${SRCROOT}/DRM/WindowImplDRM.cpp
-            ${SRCROOT}/DRM/WindowImplDRM.hpp
-        )
-    else()
-        set(PLATFORM_SRC
-            ${SRCROOT}/Unix/CursorImpl.hpp
-            ${SRCROOT}/Unix/CursorImpl.cpp
-            ${SRCROOT}/Unix/ClipboardImpl.hpp
-            ${SRCROOT}/Unix/ClipboardImpl.cpp
-            ${SRCROOT}/Unix/InputImpl.cpp
-            ${SRCROOT}/Unix/KeyboardImpl.hpp
-            ${SRCROOT}/Unix/KeyboardImpl.cpp
-            ${SRCROOT}/Unix/KeySymToKeyMapping.hpp
-            ${SRCROOT}/Unix/KeySymToKeyMapping.cpp
-            ${SRCROOT}/Unix/KeySymToUnicodeMapping.hpp
-            ${SRCROOT}/Unix/KeySymToUnicodeMapping.cpp
-            ${SRCROOT}/Unix/Display.cpp
-            ${SRCROOT}/Unix/Display.hpp
-            ${SRCROOT}/Unix/Utils.hpp
-            ${SRCROOT}/Unix/VideoModeImpl.cpp
-            ${SRCROOT}/Unix/VulkanImplX11.cpp
-            ${SRCROOT}/Unix/WindowImplX11.cpp
-            ${SRCROOT}/Unix/WindowImplX11.hpp
-        )
-        if(SFML_OPENGL_ES)
-            list(APPEND PLATFORM_SRC
-                ${SRCROOT}/EGL/EGLCheck.cpp
-                ${SRCROOT}/EGL/EGLCheck.hpp
-                ${SRCROOT}/EGL/EGLContext.cpp
-                ${SRCROOT}/EGL/EGLContext.hpp
-            )
-        else()
-             list(APPEND PLATFORM_SRC
-                ${SRCROOT}/Unix/GlxContext.cpp
-                ${SRCROOT}/Unix/GlxContext.hpp
-            )
-        endif()
-    endif()
-    if(SFML_OS_LINUX)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/Unix/JoystickImpl.cpp
-            ${SRCROOT}/Unix/JoystickImpl.hpp
-        )
-    elseif(SFML_OS_FREEBSD)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/FreeBSD/JoystickImpl.cpp
-            ${SRCROOT}/FreeBSD/JoystickImpl.hpp
-        )
-    elseif(SFML_OS_NETBSD)
-        list(APPEND PLATFORM_SRC
-            ${SRCROOT}/NetBSD/JoystickImpl.cpp
-            ${SRCROOT}/NetBSD/JoystickImpl.hpp
-        )
-    endif()
+    set(PLATFORM_SRC
+        ${SRCROOT}/Unix/Display.cpp
+        ${SRCROOT}/Unix/Display.hpp
+        ${SRCROOT}/Unix/Utils.hpp
+        ${SRCROOT}/Unix/VulkanImplX11.cpp
+    )
 elseif(SFML_OS_MACOS)
     enable_language(OBJC OBJCXX)
     set(PLATFORM_SRC
         ${SRCROOT}/macOS/cg_sf_conversion.hpp
         ${SRCROOT}/macOS/cg_sf_conversion.mm
-        ${SRCROOT}/macOS/CursorImpl.hpp
-        ${SRCROOT}/macOS/CursorImpl.mm
-        ${SRCROOT}/macOS/ClipboardImpl.hpp
-        ${SRCROOT}/macOS/ClipboardImpl.mm
-        ${SRCROOT}/macOS/InputImpl.mm
         ${SRCROOT}/macOS/HIDInputManager.hpp
         ${SRCROOT}/macOS/HIDInputManager.mm
-        ${SRCROOT}/macOS/HIDJoystickManager.hpp
-        ${SRCROOT}/macOS/HIDJoystickManager.cpp
-        ${SRCROOT}/macOS/JoystickImpl.hpp
         ${SRCROOT}/macOS/NSImage+raw.h
         ${SRCROOT}/macOS/NSImage+raw.mm
         ${SRCROOT}/macOS/Scaling.h
-        ${SRCROOT}/macOS/SensorImpl.cpp
         ${SRCROOT}/macOS/SensorImpl.hpp
         ${SRCROOT}/macOS/SFApplication.h
         ${SRCROOT}/macOS/SFApplication.m
         ${SRCROOT}/macOS/SFApplicationDelegate.h
         ${SRCROOT}/macOS/SFApplicationDelegate.m
-        ${SRCROOT}/macOS/SFContext.hpp
-        ${SRCROOT}/macOS/SFContext.mm
         ${SRCROOT}/macOS/SFKeyboardModifiersHelper.h
         ${SRCROOT}/macOS/SFKeyboardModifiersHelper.mm
         ${SRCROOT}/macOS/SFOpenGLView.h
@@ -144,9 +108,6 @@ elseif(SFML_OS_MACOS)
         ${SRCROOT}/macOS/SFWindowController.mm
         ${SRCROOT}/macOS/SFViewController.h
         ${SRCROOT}/macOS/SFViewController.mm
-        ${SRCROOT}/macOS/VideoModeImpl.cpp
-        ${SRCROOT}/macOS/WindowImplCocoa.hpp
-        ${SRCROOT}/macOS/WindowImplCocoa.mm
         ${SRCROOT}/macOS/WindowImplDelegateProtocol.h
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.hpp
         ${SRCROOT}/macOS/AutoreleasePoolWrapper.mm
@@ -154,16 +115,8 @@ elseif(SFML_OS_MACOS)
 elseif(SFML_OS_IOS)
     enable_language(OBJCXX)
     set(PLATFORM_SRC
-        ${SRCROOT}/iOS/ClipboardImpl.mm
-        ${SRCROOT}/iOS/ClipboardImpl.hpp
-        ${SRCROOT}/iOS/EaglContext.mm
-        ${SRCROOT}/iOS/EaglContext.hpp
-        ${SRCROOT}/iOS/InputImpl.mm
         ${SRCROOT}/iOS/SensorImpl.mm
         ${SRCROOT}/iOS/SensorImpl.hpp
-        ${SRCROOT}/iOS/VideoModeImpl.mm
-        ${SRCROOT}/iOS/WindowImplUIKit.hpp
-        ${SRCROOT}/iOS/WindowImplUIKit.mm
         ${SRCROOT}/iOS/ObjCType.hpp
         ${SRCROOT}/iOS/SFAppDelegate.hpp
         ${SRCROOT}/iOS/SFAppDelegate.mm
@@ -176,26 +129,8 @@ elseif(SFML_OS_IOS)
     )
 elseif(SFML_OS_ANDROID)
     set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EGLCheck.cpp
-        ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EGLContext.cpp
-        ${SRCROOT}/EGL/EGLContext.hpp
-        ${SRCROOT}/Android/WindowImplAndroid.hpp
-        ${SRCROOT}/Android/WindowImplAndroid.cpp
-        ${SRCROOT}/Android/VideoModeImpl.cpp
-        ${SRCROOT}/Android/InputImpl.cpp
-        ${SRCROOT}/Android/SensorImpl.hpp
         ${SRCROOT}/Android/SensorImpl.cpp
-    )
-elseif(SFML_OS_EMSCRIPTEN)
-    set(PLATFORM_SRC
-        ${SRCROOT}/EGL/EGLCheck.cpp
-        ${SRCROOT}/EGL/EGLCheck.hpp
-        ${SRCROOT}/EGL/EGLContext.cpp
-        ${SRCROOT}/EGL/EGLContext.hpp
-        ${SRCROOT}/Emscripten/WindowImplEmscripten.hpp
-        ${SRCROOT}/Emscripten/JoystickImpl.hpp
-        ${SRCROOT}/Emscripten/EmscriptenImpl.cpp
+        ${SRCROOT}/Android/SensorImpl.hpp
     )
 endif()
 
@@ -214,7 +149,11 @@ if(SFML_OS_LINUX OR SFML_OS_FREEBSD OR SFML_OS_OPENBSD OR SFML_OS_NETBSD)
         target_link_libraries(sfml-window PRIVATE X11::X11 X11::Xrandr X11::Xcursor X11::Xi)
     endif()
 endif()
-target_link_libraries(sfml-window PUBLIC SFML::System)
+
+
+# SDL3
+target_link_libraries(sfml-window PUBLIC SFML::System PRIVATE $<BUILD_INTERFACE:SDL3::SDL3> SFML::GLUtils)
+
 
 # glad sources
 target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/glad/include")
@@ -227,13 +166,6 @@ endif()
 
 # Vulkan headers
 target_include_directories(sfml-window SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/vulkan")
-
-# CMake 3.11 and later prefer to choose GLVND, but we choose legacy OpenGL for backward compatibility
-# (unless the OpenGL_GL_PREFERENCE was explicitly set)
-# See CMP0072 for more details (cmake --help-policy CMP0072)
-if(NOT OpenGL_GL_PREFERENCE)
-    set(OpenGL_GL_PREFERENCE "LEGACY")
-endif()
 
 if(SFML_OS_IOS)
     target_link_libraries(sfml-window PRIVATE "-framework OpenGLES")

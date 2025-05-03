@@ -15,8 +15,6 @@ layout(triangle_strip, max_vertices = 4) out;
 // Output texture coordinates
 out vec2 sf_v_texCoord;
 
-layout(location = 1) uniform vec3 sf_u_texParams;
-
 // Main entry point
 void main()
 {

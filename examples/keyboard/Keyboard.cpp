@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
@@ -10,7 +11,7 @@
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Text.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -18,24 +19,26 @@
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include <iomanip>
-#include <unordered_set>
+#include "SFML/Base/Abort.hpp"
+
+#include "ExampleUtils.hpp"
 
 #include <cstddef>
 #include <cstdio>
 
 #ifdef SFML_SYSTEM_IOS
-#include <SFML/Main.hpp>
+    #include <SFML/Main.hpp>
 #endif
 
 #include <array>
-#include <sstream>
 #include <vector>
 
 #include <cassert>
@@ -163,10 +166,165 @@ constexpr const char* keyIdentifier(sf::Keyboard::Key code)
         CASE(F14);
         CASE(F15);
         CASE(Pause);
+        CASE(Exclaim);
+        CASE(DoubleApostrophe);
+        CASE(Hash);
+        CASE(Dollar);
+        CASE(Percent);
+        CASE(Ampersand);
+        CASE(LParenthesis);
+        CASE(RParenthesis);
+        CASE(Asterisk);
+        CASE(Plus);
+        CASE(Colon);
+        CASE(Less);
+        CASE(Greater);
+        CASE(Question);
+        CASE(At);
+        CASE(Caret);
+        CASE(Underscore);
+        CASE(LBrace);
+        CASE(Pipe);
+        CASE(RBrace);
+        CASE(Tilde);
+        CASE(PlusMinus);
+        CASE(CapsLock);
+        CASE(PrintScreen);
+        CASE(ScrollLock);
+        CASE(NumLock);
+        CASE(NumpadEnter);
+        CASE(NumpadPeriod);
+        CASE(Application);
+        CASE(Power);
+        CASE(NumpadEqual);
+        CASE(F16);
+        CASE(F17);
+        CASE(F18);
+        CASE(F19);
+        CASE(F20);
+        CASE(F21);
+        CASE(F22);
+        CASE(F23);
+        CASE(F24);
+        CASE(Execute);
+        CASE(Help);
+        CASE(Select);
+        CASE(Stop);
+        CASE(Redo);
+        CASE(Undo);
+        CASE(Cut);
+        CASE(Copy);
+        CASE(Paste);
+        CASE(Find);
+        CASE(VolumeMute);
+        CASE(VolumeUp);
+        CASE(VolumeDown);
+        CASE(NumpadComma);
+        CASE(NumpadEqualAs400);
+        CASE(AltErase);
+        CASE(SysReq);
+        CASE(Cancel);
+        CASE(Clear);
+        CASE(Prior);
+        CASE(Enter2);
+        CASE(Separator);
+        CASE(Out);
+        CASE(Oper);
+        CASE(ClearAgain);
+        CASE(CrSel);
+        CASE(ExSel);
+        CASE(Numpad00);
+        CASE(Numpad000);
+        CASE(ThousandsSeparator);
+        CASE(DecimalSeparator);
+        CASE(CurrencyUnit);
+        CASE(CurrencySubUnit);
+        CASE(NumpadLParenthesis);
+        CASE(NumpadRParenthesis);
+        CASE(NumpadLBrace);
+        CASE(NumpadRBrace);
+        CASE(NumpadTab);
+        CASE(NumpadBackspace);
+        CASE(NumpadA);
+        CASE(NumpadB);
+        CASE(NumpadC);
+        CASE(NumpadD);
+        CASE(NumpadE);
+        CASE(NumpadF);
+        CASE(NumpadXor);
+        CASE(NumpadPower);
+        CASE(NumpadPercent);
+        CASE(NumpadLess);
+        CASE(NumpadGreater);
+        CASE(NumpadAmpersand);
+        CASE(NumpadDoubleAmpersand);
+        CASE(NumpadVerticalBar);
+        CASE(NumpadDoubleVerticalBar);
+        CASE(NumpadColon);
+        CASE(NumpadHash);
+        CASE(NumpadSpace);
+        CASE(NumpadAt);
+        CASE(NumpadExclamation);
+        CASE(NumpadMemStore);
+        CASE(NumpadMemRecall);
+        CASE(NumpadMemClear);
+        CASE(NumpadMemAdd);
+        CASE(NumpadMemSubtract);
+        CASE(NumpadMemMultiply);
+        CASE(NumpadMemDivide);
+        CASE(NumpadPlusMinus);
+        CASE(NumpadClear);
+        CASE(NumpadClearEntry);
+        CASE(NumpadBinary);
+        CASE(NumpadOctal);
+        CASE(NumpadDecimal);
+        CASE(NumpadHexadecimal);
+        CASE(ModeChange);
+        CASE(Sleep);
+        CASE(Wake);
+        CASE(ChannelIncrement);
+        CASE(ChannelDecrement);
+        CASE(MediaPlay);
+        CASE(MediaPause);
+        CASE(MediaRecord);
+        CASE(MediaFastForward);
+        CASE(MediaRewind);
+        CASE(MediaNextTrack);
+        CASE(MediaPreviousTrack);
+        CASE(MediaStop);
+        CASE(MediaEject);
+        CASE(MediaPlayPause);
+        CASE(LaunchMediaSelect);
+        CASE(AcNew);
+        CASE(AcOpen);
+        CASE(AcClose);
+        CASE(AcExit);
+        CASE(AcSave);
+        CASE(AcPrint);
+        CASE(AcProperties);
+        CASE(Search);
+        CASE(HomePage);
+        CASE(Back);
+        CASE(Forward);
+        CASE(AcStop);
+        CASE(Refresh);
+        CASE(Favorites);
+        CASE(SoftLeft);
+        CASE(SoftRight);
+        CASE(Call);
+        CASE(EndCall);
+        CASE(LTab);
+        CASE(Level5Shift);
+        CASE(MultiKeyCompose);
+        CASE(LMeta);
+        CASE(RMeta);
+        CASE(LHyper);
+        CASE(RHyper);
 #undef CASE
     }
 
-    throw std::runtime_error("invalid keyboard code");
+    sf::cErr() << "invalid keyboard code";
+    sf::base::abort();
 }
 
 // Get the C++ enumerator name of the given `sf::Keyboard::Scancode` value including `Scan::` prefix
@@ -320,15 +478,117 @@ constexpr const char* scancodeIdentifier(sf::Keyboard::Scancode scancode)
         CASE(Search);
         CASE(Favorites);
         CASE(HomePage);
-        CASE(LaunchApplication1);
-        CASE(LaunchApplication2);
-        CASE(LaunchMail);
         CASE(LaunchMediaSelect);
+        CASE(NonUsHash);
+        CASE(NumpadPeriod);
+        CASE(Power);
+        CASE(Find);
+        CASE(NumpadComma);
+        CASE(NumpadEqualas400);
+        CASE(International1);
+        CASE(International2);
+        CASE(International3);
+        CASE(International4);
+        CASE(International5);
+        CASE(International6);
+        CASE(International7);
+        CASE(International8);
+        CASE(International9);
+        CASE(Lang1);
+        CASE(Lang2);
+        CASE(Lang3);
+        CASE(Lang4);
+        CASE(Lang5);
+        CASE(Lang6);
+        CASE(Lang7);
+        CASE(Lang8);
+        CASE(Lang9);
+        CASE(AltErase);
+        CASE(SysReq);
+        CASE(Cancel);
+        CASE(Clear);
+        CASE(Prior);
+        CASE(Enter2);
+        CASE(Separator);
+        CASE(Out);
+        CASE(Oper);
+        CASE(ClearAgain);
+        CASE(CrSel);
+        CASE(ExSel);
+        CASE(Numpad00);
+        CASE(Numpad000);
+        CASE(ThousandsSeparator);
+        CASE(DecimalsSeparator);
+        CASE(CurrencyUnit);
+        CASE(CurrencySubUnit);
+        CASE(NumpadLParenthesis);
+        CASE(NumpadRParenthesis);
+        CASE(NumpadLBrace);
+        CASE(NumpadRBrace);
+        CASE(NumpadTab);
+        CASE(NumpadBackspace);
+        CASE(NumpadA);
+        CASE(NumpadB);
+        CASE(NumpadC);
+        CASE(NumpadD);
+        CASE(NumpadE);
+        CASE(NumpadF);
+        CASE(NumpadXor);
+        CASE(NumpadPower);
+        CASE(NumpadPercent);
+        CASE(NumpadLess);
+        CASE(NumpadGreater);
+        CASE(NumpadAmpersand);
+        CASE(NumpadDoubleAmpersand);
+        CASE(NumpadVerticalBar);
+        CASE(NumpadDoubleVerticalBar);
+        CASE(NumpadColon);
+        CASE(NumpadHash);
+        CASE(NumpadSpace);
+        CASE(NumpadAt);
+        CASE(NumpadExclamation);
+        CASE(NumpadMemStore);
+        CASE(NumpadMemRecall);
+        CASE(NumpadMemClear);
+        CASE(NumpadMemAdd);
+        CASE(NumpadMemSubtract);
+        CASE(NumpadMemMultiply);
+        CASE(NumpadMemDivide);
+        CASE(NumpadPlusMinus);
+        CASE(NumpadClear);
+        CASE(NumpadClearEntry);
+        CASE(NumpadBinary);
+        CASE(NumpadOctal);
+        CASE(NumpadHexadecimal);
+        CASE(Sleep);
+        CASE(Wake);
+        CASE(ChannelIncrement);
+        CASE(ChannelDecrement);
+        CASE(MediaPlay);
+        CASE(MediaPause);
+        CASE(MediaRecord);
+        CASE(MediaFastForward);
+        CASE(MediaRewind);
+        CASE(MediaEject);
+        CASE(AcNew);
+        CASE(AcOpen);
+        CASE(AcClose);
+        CASE(AcExit);
+        CASE(AcSave);
+        CASE(AcPrint);
+        CASE(AcProperties);
+        CASE(AcStop);
+        CASE(SoftLeft);
+        CASE(SoftRight);
+        CASE(Call);
+        CASE(EndCall);
 #undef CASE
     }
 
-    throw std::runtime_error("invalid keyboard scancode");
+    sf::cErr() << "invalid keyboard scancode";
+    sf::base::abort();
 }
+
 
 ////////////////////////////////////////////////////////////
 // Entity showing keyboard events and real-time state on a keyboard
@@ -341,47 +601,49 @@ public:
     {
         // Check all the scancodes are in the matrix exactly once
         {
-            std::unordered_set<sf::Keyboard::Scancode> scancodesInMatrix;
+            [[maybe_unused]] bool scancodesInMatrix[sf::Keyboard::ScancodeCount]{};
+
             for (const auto& [cells, marginBottom] : m_matrix)
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    assert(!scancodesInMatrix.contains(scancode));
-                    scancodesInMatrix.insert(scancode);
+                    assert(!scancodesInMatrix[static_cast<std::size_t>(scancode)]);
+                    scancodesInMatrix[static_cast<std::size_t>(scancode)] = true;
                 }
             }
-            assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
+
+            // TODO P1: restore?
+            // assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
         }
 
         // Initialize keys color and label
-        forEachKey(
-            [this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        {
+            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+
+            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+                m_triangles[6u * scancodeIndex + vertexIndex]
+                    .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
+                                 ? sf::Color::Red
+                                 : sf::Color::White;
+
+            sf::Text& label = m_labels[scancodeIndex];
+            label.setString(sf::Keyboard::getDescription(scancode));
+            label.position = {rect.position + rect.size / 2.f};
+
+            if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
             {
-                const auto scancodeIndex = static_cast<std::size_t>(scancode);
+                sf::String string = label.getString();
+                string.replace(" ", "\n");
+                label.setString(string);
+            }
+            while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
+                label.setCharacterSize(label.getCharacterSize() - 2);
 
-                for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
-                    m_triangles[6u * scancodeIndex + vertexIndex]
-                        .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
-                                     ? sf::Color::Red
-                                     : sf::Color::White;
-
-                sf::Text& label = m_labels[scancodeIndex];
-                label.setString(sf::Keyboard::getDescription(scancode));
-                label.position = {rect.position + rect.size / 2.f};
-
-                if (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
-                {
-                    sf::String string = label.getString();
-                    string.replace(" ", "\n");
-                    label.setString(string);
-                }
-                while (rect.size.x < label.getLocalBounds().size.x + padding * 2.f + 2.f)
-                    label.setCharacterSize(label.getCharacterSize() - 2);
-
-                const sf::FloatRect bounds = label.getLocalBounds();
-                label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
-                                              std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
-            });
+            const sf::FloatRect bounds = label.getLocalBounds();
+            label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
+                                          std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+        });
     }
 
     void handle(const sf::Event& event)
@@ -410,36 +672,35 @@ public:
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
-        forEachKey(
-            [this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
+        {
+            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+
+            static constexpr sf::Vector2f square[]{
+                {0.f, 0.f},
+                {1.f, 0.f},
+                {1.f, 1.f},
+                {0.f, 1.f},
+            };
+
+            static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
+
+            const float        moveFactor = m_moveFactors[scancodeIndex];
+            const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
+
+            const bool pressed = sf::Keyboard::isKeyPressed(scancode);
+
+            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
-                const auto scancodeIndex = static_cast<std::size_t>(scancode);
+                sf::Vertex&                   vertex = m_triangles[6u * scancodeIndex + vertexIndex];
+                const sf::Vector2f&           corner = square[cornerIndexes[vertexIndex]];
+                static constexpr sf::Vector2f pad(padding, padding);
+                vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
+                vertex.color.a  = pressed ? 96 : 48;
+            }
 
-                static constexpr sf::Vector2f square[]{
-                    {0.f, 0.f},
-                    {1.f, 0.f},
-                    {1.f, 1.f},
-                    {0.f, 1.f},
-                };
-
-                static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
-
-                const float        moveFactor = m_moveFactors[scancodeIndex];
-                const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
-
-                const bool pressed = sf::Keyboard::isKeyPressed(scancode);
-
-                for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
-                {
-                    sf::Vertex&                   vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                    const sf::Vector2f&           corner = square[cornerIndexes[vertexIndex]];
-                    static constexpr sf::Vector2f pad(padding, padding);
-                    vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
-                    vertex.color.a  = pressed ? 96 : 48;
-                }
-
-                m_labels[scancodeIndex].position = rect.position + rect.size / 2.f + move;
-            });
+            m_labels[scancodeIndex].position = rect.position + rect.size / 2.f + move;
+        });
     }
 
     void drawOnto(sf::RenderTarget& target, sf::RenderStates states) const
@@ -453,18 +714,18 @@ public:
 private:
     // Template to iterate on scancodes and the corresponding computed rectangle in local coordinates
     template <typename F>
-    void forEachKey(F function) const
+    void forEachKey(F&& function) const
     {
-        sf::Vector2f position;
+        sf::Vector2f pos;
         for (const auto& [cells, marginBottom] : m_matrix)
         {
             for (const auto& [scancode, size, marginRight] : cells)
             {
-                function(scancode, sf::FloatRect(position, size));
-                position.x += size.x + marginRight;
+                function(scancode, sf::FloatRect(pos, size));
+                pos.x += size.x + marginRight;
             }
-            position.x = 0.f;
-            position.y += keySize + marginBottom;
+            pos.x = 0.f;
+            pos.y += keySize + marginBottom;
         }
     }
 
@@ -647,9 +908,6 @@ private:
           {sf::Keyboard::Scan::Search},
           {sf::Keyboard::Scan::Favorites},
           {sf::Keyboard::Scan::HomePage},
-          {sf::Keyboard::Scan::LaunchApplication1},
-          {sf::Keyboard::Scan::LaunchApplication2},
-          {sf::Keyboard::Scan::LaunchMail},
           {sf::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 
@@ -657,6 +915,7 @@ private:
     std::vector<sf::Text>                          m_labels;
     std::array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
 };
+
 
 ////////////////////////////////////////////////////////////
 // Text with fading opacity outline
@@ -683,7 +942,7 @@ public:
         color.a         = static_cast<sf::base::U8>(255 * alpha);
         setOutlineColor(color);
 
-        if (m_remaining > sf::Time::Zero)
+        if (m_remaining > sf::Time{})
             m_remaining -= frameTime;
     }
 
@@ -691,6 +950,7 @@ private:
     static constexpr sf::Time duration = sf::milliseconds(150);
     sf::Time                  m_remaining;
 };
+
 
 ////////////////////////////////////////////////////////////
 // Utilities to create text objets
@@ -723,6 +983,7 @@ sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vector2f p
 
     return text;
 }
+
 
 ////////////////////////////////////////////////////////////
 // Utilities to describe keyboard events
@@ -763,9 +1024,9 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
     text += textEntered.unicode;
     text += "\nU+";
 
-    std::ostringstream oss;
-    oss << std::hex << std::setw(4) << std::setfill('0') << static_cast<sf::base::U32>(textEntered.unicode);
-    text += oss.str();
+    sf::OutStringStream oss;
+    oss << sf::Hex{} << sf::SetWidth{4} << sf::SetFill{'0'} << static_cast<sf::base::U32>(textEntered.unicode);
+    text += oss.to<sf::String>();
 
     return text;
 }
@@ -787,8 +1048,15 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    sf::RenderWindow window({.size = {1280u, 720u}, .title = "Keyboard", .resizable = false, .vsync = true});
-    window.setFramerateLimit(25);
+    constexpr sf::Vector2f windowSize{1280.f, 720.f};
+
+    auto window = makeDPIScaledRenderWindow({
+        .size           = windowSize.toVector2u(),
+        .title          = "Keyboard",
+        .resizable      = true,
+        .vsync          = true,
+        .frametimeLimit = 25u,
+    });
 
     // Load sound buffers
     const auto errorSoundBuffer    = sf::SoundBuffer::loadFromFile(resourcesDir() / "error_005.ogg").value();
@@ -822,6 +1090,9 @@ int main()
             // Window closed: exit
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (handleAspectRatioAwareResize(*event, windowSize, window))
+                continue;
 
             // Window size changed: adjust view appropriately
             if (const auto* resized = event->getIf<sf::Event::Resized>())
@@ -888,7 +1159,7 @@ int main()
 
         // Render frame
         window.clear();
-        keyboardView.drawOnto(window, sf::RenderStates::Default);
+        keyboardView.drawOnto(window, sf::RenderStates{});
         window.draw(keyPressedText);
         window.draw(keyReleasedText);
         window.draw(textEnteredText);

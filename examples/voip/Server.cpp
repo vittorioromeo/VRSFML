@@ -7,18 +7,20 @@
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundStream.hpp"
 
+#include "SFML/Network/IpAddressUtils.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/Socket.hpp"
 #include "SFML/Network/TcpListener.hpp"
 #include "SFML/Network/TcpSocket.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <cstdint>
@@ -43,7 +45,7 @@ public:
     NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
     {
         // Set the sound parameters
-        initialize(1, 44100, {sf::SoundChannel::Mono});
+        initialize(1, 44'100, {sf::SoundChannel::Mono});
     }
 
     ////////////////////////////////////////////////////////////
@@ -57,12 +59,13 @@ public:
             // Listen to the given port for incoming connections
             if (m_listener.listen(port) != sf::Socket::Status::Done)
                 return;
-            std::cout << "Server is listening to port " << port << ", waiting for connections... " << std::endl;
+            sf::cOut() << "Server is listening to port " << port << ", waiting for connections... " << sf::endL;
 
             // Wait for a connection
             if (m_listener.accept(m_client) != sf::Socket::Status::Done)
                 return;
-            std::cout << "Client connected: " << m_client.getRemoteAddress().value() << std::endl;
+            sf::cOut() << "Client connected: " << sf::IpAddressUtils::toString(m_client.getRemoteAddress().value())
+                       << sf::endL;
 
             // Start playback
             play(playbackDevice);
@@ -153,13 +156,13 @@ private:
             else if (id == serverEndOfStream)
             {
                 // End of stream reached: we stop receiving audio data
-                std::cout << "Audio data has been 100% received!" << std::endl;
+                sf::cOut() << "Audio data has been 100% received!" << sf::endL;
                 m_hasFinished = true;
             }
             else
             {
                 // Something's wrong...
-                std::cout << "Invalid packet received..." << std::endl;
+                sf::cOut() << "Invalid packet received..." << sf::endL;
                 m_hasFinished = true;
             }
         }
@@ -196,11 +199,11 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
         sf::sleep(sf::milliseconds(100));
     }
 
-    std::cin.ignore(10000, '\n');
+    sf::cIn().ignore(10'000, '\n');
 
     // Wait until the user presses 'enter' key
-    std::cout << "Press enter to replay the sound..." << std::endl;
-    std::cin.ignore(10000, '\n');
+    sf::cOut() << "Press enter to replay the sound..." << sf::endL;
+    sf::cIn().ignore(10'000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
     audioStream.play(playbackDevice);

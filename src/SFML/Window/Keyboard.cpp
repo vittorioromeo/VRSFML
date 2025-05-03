@@ -1,10 +1,11 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/InputImpl.hpp"
 #include "SFML/Window/Keyboard.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/String.hpp"
 
@@ -12,44 +13,51 @@
 namespace sf::Keyboard
 {
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Key key)
+bool isKeyPressed(const Key key)
 {
-    return priv::InputImpl::isKeyPressed(key);
+    // TODO P0:
+    // dispatch to OS-specific SFML impls
+
+    return isKeyPressed(delocalize(key));
 }
 
 
 ////////////////////////////////////////////////////////////
-bool isKeyPressed(Scancode code)
+bool isKeyPressed(const Scancode code)
 {
-    return priv::InputImpl::isKeyPressed(code);
+    // TODO P0:
+    // dispatch to OS-specific SFML impls
+
+    return priv::getSDLLayerSingleton().isKeyPressedByScancode(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Key localize(Scancode code)
+Key localize(const Scancode code)
 {
-    return priv::InputImpl::localize(code);
+    return priv::getSDLLayerSingleton().localizeScancode(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-Scancode delocalize(Key key)
+Scancode delocalize(const Key key)
 {
-    return priv::InputImpl::delocalize(key);
+    return priv::getSDLLayerSingleton().delocalizeScancode(key);
 }
 
 
 ////////////////////////////////////////////////////////////
-String getDescription(Scancode code)
+String getDescription(const Scancode code)
 {
-    return priv::InputImpl::getDescription(code);
+    return priv::getSDLLayerSingleton().getScancodeDescription(code);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setVirtualKeyboardVisible(bool visible)
+void setVirtualKeyboardVisible(const bool visible)
 {
-    priv::InputImpl::setVirtualKeyboardVisible(visible);
+    // TODO P0:
+    // not always applicable, dispatch to OS-specific SFML impls
 }
 
 } // namespace sf::Keyboard

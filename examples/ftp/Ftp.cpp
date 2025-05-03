@@ -4,10 +4,15 @@
 #include "SFML/Network/Ftp.hpp"
 
 #include "SFML/Network/IpAddress.hpp"
+#include "SFML/Network/IpAddressUtils.hpp"
+
+#include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
+#include <string>
+
+#include <cstdlib>
 
 
 namespace
@@ -16,10 +21,21 @@ namespace
 /// Print a FTP response into a standard output stream
 ///
 ////////////////////////////////////////////////////////////
-std::ostream& operator<<(std::ostream& stream, const sf::Ftp::Response& response)
+sf::IOStreamOutput& operator<<(sf::IOStreamOutput& stream, const sf::Ftp::Response& response)
 {
     return stream << static_cast<int>(response.getStatus()) << response.getMessage();
 }
+
+sf::IOStreamOutput& operator<<(sf::IOStreamOutput& stream, const sf::Ftp::DirectoryResponse& response)
+{
+    return stream << static_cast<int>(response.getStatus()) << response.getMessage();
+}
+
+sf::IOStreamOutput& operator<<(sf::IOStreamOutput& stream, const sf::Ftp::ListingResponse& response)
+{
+    return stream << static_cast<int>(response.getStatus()) << response.getMessage();
+}
+
 } // namespace
 
 
@@ -33,28 +49,31 @@ int main()
     sf::base::Optional<sf::IpAddress> address;
     do
     {
-        std::cout << "Enter the FTP server address: ";
-        std::cin >> address;
+        sf::cOut() << "Enter the FTP server address: ";
+
+        std::string addressStr;
+        sf::cIn() >> addressStr;
+        address = sf::IpAddressUtils::resolve(addressStr);
     } while (!address.hasValue());
 
     // Connect to the server
     sf::Ftp                 server;
     const sf::Ftp::Response connectResponse = server.connect(address.value());
-    std::cout << connectResponse << std::endl;
+    sf::cOut() << connectResponse << sf::endL;
     if (!connectResponse.isOk())
         return EXIT_FAILURE;
 
     // Ask for user name and password
     std::string user;
     std::string password;
-    std::cout << "User name: ";
-    std::cin >> user;
-    std::cout << "Password: ";
-    std::cin >> password;
+    sf::cOut() << "User name: ";
+    sf::cIn() >> user;
+    sf::cOut() << "Password: ";
+    sf::cIn() >> password;
 
     // Login to the server
     const sf::Ftp::Response loginResponse = server.login(user, password);
-    std::cout << loginResponse << std::endl;
+    sf::cOut() << loginResponse << sf::endL;
     if (!loginResponse.isOk())
         return EXIT_FAILURE;
 
@@ -63,32 +82,32 @@ int main()
     do
     {
         // Main FTP menu
-        std::cout << '\n'
-                  << "Choose an action:\n"
-                  << "1. Print working directory\n"
-                  << "2. Print contents of working directory\n"
-                  << "3. Change directory\n"
-                  << "4. Create directory\n"
-                  << "5. Delete directory\n"
-                  << "6. Rename file\n"
-                  << "7. Remove file\n"
-                  << "8. Download file\n"
-                  << "9. Upload file\n"
-                  << "0. Disconnect\n"
-                  << std::endl;
+        sf::cOut() << '\n'
+                   << "Choose an action:\n"
+                   << "1. Print working directory\n"
+                   << "2. Print contents of working directory\n"
+                   << "3. Change directory\n"
+                   << "4. Create directory\n"
+                   << "5. Delete directory\n"
+                   << "6. Rename file\n"
+                   << "7. Remove file\n"
+                   << "8. Download file\n"
+                   << "9. Upload file\n"
+                   << "0. Disconnect\n"
+                   << sf::endL;
 
-        std::cout << "Your choice: ";
-        std::cin >> choice;
-        std::cout << std::endl;
+        sf::cOut() << "Your choice: ";
+        sf::cIn() >> choice;
+        sf::cOut() << sf::endL;
 
         switch (choice)
         {
             default:
             {
                 // Wrong choice
-                std::cout << "Invalid choice!" << std::endl;
-                std::cin.clear();
-                std::cin.ignore(10000, '\n');
+                sf::cOut() << "Invalid choice!" << sf::endL;
+                sf::cIn().clear();
+                sf::cIn().ignore(10'000, '\n');
                 break;
             }
 
@@ -96,8 +115,8 @@ int main()
             {
                 // Print the current server directory
                 const sf::Ftp::DirectoryResponse response = server.getWorkingDirectory();
-                std::cout << response << '\n'
-                          << "Current directory is " << response.getDirectory().to<std::string>() << std::endl;
+                sf::cOut() << response << '\n'
+                           << "Current directory is " << response.getDirectory().to<std::string>() << sf::endL;
                 break;
             }
 
@@ -105,10 +124,10 @@ int main()
             {
                 // Print the contents of the current server directory
                 const sf::Ftp::ListingResponse response = server.getDirectoryListing();
-                std::cout << response << '\n';
+                sf::cOut() << response << '\n';
                 for (const std::string& name : response.getListing())
-                    std::cout << name << '\n';
-                std::cout.flush();
+                    sf::cOut() << name << '\n';
+                sf::cOut().flush();
                 break;
             }
 
@@ -116,9 +135,9 @@ int main()
             {
                 // Change the current directory
                 std::string directory;
-                std::cout << "Choose a directory: ";
-                std::cin >> directory;
-                std::cout << server.changeDirectory(directory) << std::endl;
+                sf::cOut() << "Choose a directory: ";
+                sf::cIn() >> directory;
+                sf::cOut() << server.changeDirectory(directory) << sf::endL;
                 break;
             }
 
@@ -126,9 +145,9 @@ int main()
             {
                 // Create a new directory
                 std::string directory;
-                std::cout << "Name of the directory to create: ";
-                std::cin >> directory;
-                std::cout << server.createDirectory(directory) << std::endl;
+                sf::cOut() << "Name of the directory to create: ";
+                sf::cIn() >> directory;
+                sf::cOut() << server.createDirectory(directory) << sf::endL;
                 break;
             }
 
@@ -136,9 +155,9 @@ int main()
             {
                 // Remove an existing directory
                 std::string directory;
-                std::cout << "Name of the directory to remove: ";
-                std::cin >> directory;
-                std::cout << server.deleteDirectory(directory) << std::endl;
+                sf::cOut() << "Name of the directory to remove: ";
+                sf::cIn() >> directory;
+                sf::cOut() << server.deleteDirectory(directory) << sf::endL;
                 break;
             }
 
@@ -147,11 +166,11 @@ int main()
                 // Rename a file
                 std::string source;
                 std::string destination;
-                std::cout << "Name of the file to rename: ";
-                std::cin >> source;
-                std::cout << "New name: ";
-                std::cin >> destination;
-                std::cout << server.renameFile(source, destination) << std::endl;
+                sf::cOut() << "Name of the file to rename: ";
+                sf::cIn() >> source;
+                sf::cOut() << "New name: ";
+                sf::cIn() >> destination;
+                sf::cOut() << server.renameFile(source, destination) << sf::endL;
                 break;
             }
 
@@ -159,9 +178,9 @@ int main()
             {
                 // Remove an existing directory
                 std::string filename;
-                std::cout << "Name of the file to remove: ";
-                std::cin >> filename;
-                std::cout << server.deleteFile(filename) << std::endl;
+                sf::cOut() << "Name of the file to remove: ";
+                sf::cIn() >> filename;
+                sf::cOut() << server.deleteFile(filename) << sf::endL;
                 break;
             }
 
@@ -170,11 +189,11 @@ int main()
                 // Download a file from server
                 std::string filename;
                 std::string directory;
-                std::cout << "Filename of the file to download (relative to current directory): ";
-                std::cin >> filename;
-                std::cout << "Directory to download the file to: ";
-                std::cin >> directory;
-                std::cout << server.download(filename, directory) << std::endl;
+                sf::cOut() << "Filename of the file to download (relative to current directory): ";
+                sf::cIn() >> filename;
+                sf::cOut() << "Directory to download the file to: ";
+                sf::cIn() >> directory;
+                sf::cOut() << server.download(filename, directory) << sf::endL;
                 break;
             }
 
@@ -183,11 +202,11 @@ int main()
                 // Upload a file to server
                 std::string filename;
                 std::string directory;
-                std::cout << "Path of the file to upload (absolute or relative to working directory): ";
-                std::cin >> filename;
-                std::cout << "Directory to upload the file to (relative to current directory): ";
-                std::cin >> directory;
-                std::cout << server.upload(filename, directory) << std::endl;
+                sf::cOut() << "Path of the file to upload (absolute or relative to working directory): ";
+                sf::cIn() >> filename;
+                sf::cOut() << "Directory to upload the file to (relative to current directory): ";
+                sf::cIn() >> directory;
+                sf::cOut() << server.upload(filename, directory) << sf::endL;
                 break;
             }
 
@@ -201,10 +220,10 @@ int main()
     } while (choice != 0);
 
     // Disconnect from the server
-    std::cout << "Disconnecting from server...\n" << server.disconnect() << '\n';
+    sf::cOut() << "Disconnecting from server...\n" << server.disconnect() << '\n';
 
     // Wait until the user presses 'enter' key
-    std::cout << "Press enter to exit..." << std::endl;
-    std::cin.ignore(10000, '\n');
-    std::cin.ignore(10000, '\n');
+    sf::cOut() << "Press enter to exit..." << sf::endL;
+    sf::cIn().ignore(10'000, '\n');
+    sf::cIn().ignore(10'000, '\n');
 }

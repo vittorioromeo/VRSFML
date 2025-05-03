@@ -1,14 +1,14 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/RenderTarget.hpp"
-
-#include "SFML/Window/ContextSettings.hpp"
+#include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -16,10 +16,18 @@
 #include "SFML/Base/PassKey.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Texture;
+struct ContextSettings;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Target for off-screen 2D rendering into a texture
 ///
@@ -74,7 +82,8 @@ public:
     /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings = {});
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -110,25 +119,25 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable texture repeating
     ///
-    /// This function is similar to `Texture::setRepeated`.
+    /// This function is similar to `Texture::setWrapMode`.
     /// This parameter is disabled by default.
     ///
-    /// \param repeated `true` to enable repeating, `false` to disable it
+    /// \param wrapMode TODO P1: docs
     ///
-    /// \see `isRepeated`
+    /// \see `getWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    void setRepeated(bool repeated);
+    void setWrapMode(TextureWrapMode wrapMode);
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether the texture is repeated or not
     ///
-    /// \return `true` if texture is repeated
+    /// \return TODO P1: docs
     ///
-    /// \see `setRepeated`
+    /// \see `setWrapMode`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isRepeated() const;
+    [[nodiscard]] TextureWrapMode getWrapMode() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Generate a mipmap using the current texture data
@@ -172,7 +181,7 @@ public:
     /// it may leave the texture in an undefined state.
     ///
     ////////////////////////////////////////////////////////////
-    void display();
+    RenderTarget::DrawStatistics display();
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the texture

@@ -82,9 +82,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         SUBCASE("no AA, no SRGB") { testAALevel = 0u; testSRGBCapable = false; }
         SUBCASE("AA, no SRGB")    { testAALevel = 4u; testSRGBCapable = false; }
         SUBCASE("no AA, SRGB")    { testAALevel = 0u; testSRGBCapable = true; }
-#ifndef SFML_OPENGL_ES
         SUBCASE("AA, SRGB")       { testAALevel = 4u; testSRGBCapable = true; }
-#endif
         // clang-format on
 
         sf::RenderWindow window({.size{256u, 256u},
@@ -93,7 +91,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
         REQUIRE(window.getSize() == sf::Vector2u{256, 256});
 
-        auto texture = sf::Texture::create(sf::Vector2u{256, 256}, testSRGBCapable).value();
+        auto texture = sf::Texture::create(sf::Vector2u{256, 256}, {.sRgb = testSRGBCapable}).value();
 
         window.clear(sf::Color::Red);
         CHECK(texture.update(window));
@@ -110,6 +108,15 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
 
 // Creating multiple windows in Emscripten is not supported
 #ifndef SFML_SYSTEM_EMSCRIPTEN
+    SECTION("Move assignment")
+    {
+        sf::RenderWindow window0({.size{128u, 128u}, .title = "A"});
+        sf::RenderWindow window1({.size{256u, 256u}, .title = "B"});
+
+        window1 = SFML_BASE_MOVE(window0);
+        CHECK(window1.getSize() == sf::Vector2u{128u, 128u});
+    }
+
     SECTION("Multiple windows 1")
     {
         sf::RenderWindow window({.size{256u, 256u}, .title = "A"});

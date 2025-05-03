@@ -63,7 +63,7 @@ target_link_libraries(my_app PRIVATE SFML::Graphics SFML::Audio SFML::Network)
 ## Linux Dependencies
 
 When using X11 as the backend on Linux, as opposed to DRM, `libxi-dev` is a newly required dependency.
-This was introduces with the [raw mouse input support](https://www.sfml-dev.org/documentation/3.0.0/structsf_1_1Event_1_1MouseMovedRaw.html).
+This was introduced with the [raw mouse input support](https://www.sfml-dev.org/documentation/3.0.0/structsf_1_1Event_1_1MouseMovedRaw.html).
 
 ## `sf::Vector2<T>` Parameters
 
@@ -231,6 +231,13 @@ Here is a complete list of all enumerations which have undergone this change:
 `sf::Rect<T>` has been refactored from the four scalar values `top`, `left`, `width`, and `height` into two `sf::Vector2<T>`s named `position` and `size`.
 This means that `sf::Rect<T>::getPosition()` and `sf::Rect<T>::getSize()` have been removed in favor of directly accessing the `position` and `size` data members.
 The 4-parameter constructor was also removed in favor of the constructor which takes two `sf::Vector2<T>`s.
+
+| v2        | v3            |
+| --------- | ------------- |
+| `.left`   | `.position.x` |
+| `.top`    | `.position.y` |
+| `.width`  | `.size.x`     |
+| `.height` | `.size.y`     |
 
 v2:
 ```cpp
@@ -485,6 +492,13 @@ SFML 3 removes all of the deprecated APIs in SFML 2.
 | `sf::PrimitiveType::TrianglesStrip` | `sf::PrimitiveType::TriangleStrip` |
 | `sf::PrimitiveType::TrianglesFan`   | `sf::PrimitiveType::TriangleFan`   |
 | `sf::PrimitiveType::Quads`          | See 2                              |
+| `sf::Keyboard::BackSlash`           | `sf::Keyboard::Key::Backslash`     |
+| `sf::Keyboard::BackSpace`           | `sf::Keyboard::Key::Backspace`     |
+| `sf::Keyboard::Dash`                | `sf::Keyboard::Key::Dash`          |
+| `sf::Keyboard::Quote`               | `sf::Keyboard::Key::Hyphen`        |
+| `sf::Keyboard::Return`              | `sf::Keyboard::Key::Enter`         |
+| `sf::Keyboard::SemiColon`           | `sf::Keyboard::Key::Semicolon`     |
+| `sf::Keyboard::Tilde`               | `sf::Keyboard::Key::Grave`         |
 
 1. `sf::RenderWindow::capture` can be recreated by using an `sf::Texture` and its `sf::Texture::update(const Window&)` function to copy its contents into an `sf::Image` instead.
 2. `sf::PrimitiveType::Quads` can be replaced by another primitive type.
@@ -498,6 +512,36 @@ SFML 3 capitalizes the `A` of `aliasing` for all the APIs.
 * `sf::RenderTexture::getMaximumAntialiasingLevel()` becomes `sf::RenderTexture::getMaximumAntiAliasingLevel()`
 * `sf::ContextSettings::antiAliasingLevel` becomes `sf::ContextSettings::antiAliasingLevel`
 
+## CoordinateType for RenderStates
+
+The enum `sf::CoordinateType` was moved from the `sf::Texture` into its own dedicated enum class.
+
+The `sf::RenderStates` class got a new member of type `sf::CoordinateType` to control how the texture coordinates will be interpreted.
+By default SFML uses `sf::CoordinateType::Pixels`, while `sf::CoordinateType::Normalized` is the default for OpenGL.
+Using `sf::CoordinateType::Normalized` with `sf::RenderStates` allows for using normalized textures with `sf::VertexArray` and `sf::VertexBuffer`.
+
+Additionally, as SFML now supports Stencil Testing, there's an additional overload for the Stencil Mode.
+
+The constructor for `sf::RenderStates` has changed.
+
+v2:
+```cpp
+auto renderStates = sf::RenderStates(sf::BlendAlpha,
+                                     transform,
+                                     texture,
+                                     nullptr);
+```
+
+v3:
+```cpp
+auto renderStates = sf::RenderStates(sf::BlendAlpha,
+                                     sf::StencilMode(),
+                                     transform,
+                                     sf::CoordinateTye::Pixels,
+                                     texture,
+                                     nullptr);
+```
+
 ## Other Minor Changes
 
 SFML 3 includes various smaller changes that ought to be mentioned.
@@ -507,7 +551,6 @@ SFML 3 includes various smaller changes that ought to be mentioned.
 * Changed `sf::String` interface to use `std::u16string` and `std::u32string`
 * Removed `sf::ContextSettings` constructor in favor of aggregate initialization
 * Removed `sf::View::reset` in favor of assigning from a new `sf::View` object
-* Added new `sf::CoordinateType` enumeration to `sf::RenderStates::RenderStates`
 * Removed `sf::Vertex` constructors in favor of aggregate initialization
 * Renamed `sf::Mouse::Button::XButton1` and `sf::Mouse::Button::XButton2` enumerators to `sf::Mouse::Button::Extra1` and `sf::Mouse::Button::Extra2`
 * Removed NonCopyable.hpp header in favor of using built-in language features for disabling copy operators

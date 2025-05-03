@@ -8,12 +8,18 @@
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
+#include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
+#include "SFML/Window/Mouse.hpp"
+#include "SFML/Window/VideoMode.hpp"
+#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 int main()
@@ -60,8 +66,14 @@ int main()
     baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
+    sf::Clock    deltaClock;
+    sf::Vector2i eventMousePosition;
 
-    sf::Clock deltaClock;
+    // TODO P0:
+    const auto modes = sf::VideoModeUtils::getFullscreenModes();
+    for (const auto& mode : modes)
+        sf::cOut() << "Fullscreen mode: " << mode.size.x << "x" << mode.size.y << "; " << mode.bitsPerPixel << "bpp; "
+                   << mode.pixelDensity << "x pixel density; " << mode.refreshRate << "Hz\n";
 
     while (true)
     {
@@ -71,6 +83,12 @@ int main()
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
+
+            if (const auto* eResized = event->getIf<sf::Event::Resized>())
+                sf::cOut() << "Resized event: " << eResized->size.x << ", " << eResized->size.y << '\n';
+
+            if (const auto* eMouseMoved = event->getIf<sf::Event::MouseMoved>())
+                eventMousePosition = eMouseMoved->position;
         }
 
         imGuiContext.update(window, deltaClock.restart());
@@ -78,12 +96,28 @@ int main()
         ImGui::ShowDemoWindow();
 
         ImGui::Begin("Hello, world!");
+
+        const auto globalMousePosition = sf::Mouse::getPosition();
+        ImGui::Text("Global mouse position: %d, %d", globalMousePosition.x, globalMousePosition.y);
+
+        const auto relativeMousePosition = sf::Mouse::getPosition(window);
+        ImGui::Text("Relative mouse position: %d, %d", relativeMousePosition.x, relativeMousePosition.y);
+
+        ImGui::Text("Event mouse position: %d, %d", eventMousePosition.x, eventMousePosition.y);
+
+        if (ImGui::Button("Set Window Size to 400x400"))
+            window.setSize({400u, 400u});
+
+        if (ImGui::Button("Set Window Size to 800x800"))
+            window.setSize({800u, 800u});
+
         ImGui::Button("Look at this pretty button");
         imGuiContext.image(baseRenderTexture, size.toVector2f());
+
         ImGui::End();
 
         window.clear();
-        window.draw(shape, nullptr /* texture */);
+        window.draw(shape);
         imGuiContext.render(window);
         window.display();
     }

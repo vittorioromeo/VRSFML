@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -79,6 +80,44 @@ void ChannelMap::reserve(base::SizeT count)
 void ChannelMap::append(SoundChannel channel)
 {
     m_channels.pushBack(channel);
+}
+
+
+////////////////////////////////////////////////////////////
+bool ChannelMap::isPermutationOf(const ChannelMap& rhs) const
+{
+    const base::SizeT lhsSize = m_channels.size();
+    const base::SizeT rhsSize = rhs.m_channels.size();
+
+    if (lhsSize != rhsSize)
+        return false;
+
+    if (lhsSize == 0u)
+        return true;
+
+    SFML_BASE_ASSERT(lhsSize <= 8u);
+    bool rhsMatched[8] = {false};
+
+    for (base::SizeT i = 0u; i < lhsSize; ++i)
+    {
+        bool foundMatchForIInLhs = false;
+
+        for (base::SizeT j = 0u; j < rhsSize; ++j)
+        {
+            // Check if rhs[j] is not already used AND if it matches lhs[i]
+            if (!rhsMatched[j] && m_channels[i] == rhs.m_channels[j])
+            {
+                rhsMatched[j]       = true;
+                foundMatchForIInLhs = true;
+                break; // Found a match for m_channels[i], move to the next element in lhs
+            }
+        }
+
+        if (!foundMatchForIInLhs)
+            return false;
+    }
+
+    return true;
 }
 
 } // namespace sf

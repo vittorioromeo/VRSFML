@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -38,7 +39,7 @@ struct SFML_AUDIO_API Listener
         float outerGain{}; //!< Outer gain
     };
 
-    float    volume{100.f};       //< Volume (between `0` and `100`)
+    float    volume{1.f};         //< Volume (between `0` and `1`)
     Vector3f position{0, 0, 0};   //< Position where audio is heard from
     Vector3f direction{0, 0, -1}; //< Forward-pointing vector from listener's perspective (not necessarily normalized)
     Vector3f velocity{0, 0, 0};   //< Velocity of the listener
@@ -47,6 +48,7 @@ struct SFML_AUDIO_API Listener
 };
 
 } // namespace sf
+
 
 ////////////////////////////////////////////////////////////
 /// \namespace sf::Listener
@@ -73,7 +75,7 @@ struct SFML_AUDIO_API Listener
 /// listener.direction = {1, 0, 0};
 ///
 /// // Reduce the global volume
-/// listener.volume = 50;
+/// listener.volume = 0.5f; // 50%
 ///
 /// // Apply the listener properties
 /// somePlaybackDevice.updateListener(listener);

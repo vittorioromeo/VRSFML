@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.22)
+cmake_minimum_required(VERSION 3.28)
 project(test-sfml-install CXX)
 
 # This skips the find_package call when building via add_subdirectory since that will fail under those circumstances

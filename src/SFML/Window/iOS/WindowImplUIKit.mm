@@ -1,9 +1,9 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/WindowEnums.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 #include "SFML/Window/iOS/SFAppDelegate.hpp"
 #include "SFML/Window/iOS/SFView.hpp"
@@ -15,6 +15,7 @@
 #include <UIKit/UIKit.h>
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 
 namespace sf::priv
 {
@@ -199,6 +200,14 @@ void WindowImplUIKit::requestFocus()
 bool WindowImplUIKit::hasFocus() const
 {
     return m_hasFocus;
+}
+
+
+////////////////////////////////////////////////////////////
+float WindowImplUIKit::getDisplayContentScale() const
+{
+    // TODO P1: implement
+    return 1.f;
 }
 
 

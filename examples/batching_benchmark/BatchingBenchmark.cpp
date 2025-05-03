@@ -1,3 +1,5 @@
+#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -13,6 +15,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Clock.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
@@ -20,20 +23,23 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <iostream>
-#include <random>
 #include <vector>
 
 #include <cstddef>
 #include <cstdio>
 
+
+////////////////////////////////////////////////////////////
+/// Main
+///
+////////////////////////////////////////////////////////////
 int main()
 {
     //
     //
     // Set up random generator
-    std::minstd_rand rng(/* seed */ 1234);
-    const auto getRndFloat = [&](float min, float max) { return std::uniform_real_distribution<float>{min, max}(rng); };
+    RNGFast    rng(/* seed */ 1234);
+    const auto getRndFloat = [&](float min, float max) { return rng.getF(min, max); };
 
     //
     //
@@ -53,8 +59,7 @@ int main()
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}).value()};
-    textureAtlas.getTexture().setSmooth(true);
+    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
 
     //
     //
@@ -135,11 +140,16 @@ int main()
     int  numEntities = 50'000;
     int  numFrames   = 240;
 
-    //
-    //
-    // Set up benchmark
-    // sf::CPUDrawableBatch drawableBatch;
-    sf::PersistentGPUDrawableBatch drawableBatch(window);
+//
+//
+// Set up benchmark
+#ifndef SFML_OPENGL_ES
+    sf::cOut() << "OpenGL ES not detected, using persistent GPU batching\n";
+    sf::PersistentGPUDrawableBatch drawableBatch;
+#else
+    sf::cOut() << "OpenGL ES detected, using CPU storage-backed batching\n";
+    sf::CPUDrawableBatch drawableBatch;
+#endif
     populateEntities(static_cast<std::size_t>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
@@ -163,7 +173,7 @@ int main()
                 if (useBatch)
                     drawableBatch.add(entity.sprite);
                 else
-                    window.draw(entity.sprite, textureAtlas.getTexture());
+                    window.draw(entity.sprite, {.texture = &textureAtlas.getTexture()});
             }
 
             if (drawText)
@@ -183,5 +193,5 @@ int main()
 
     const auto finalTime = clock.getElapsedTime() - startTime;
 
-    std::cout << "FINAL TIME: " << finalTime.asMilliseconds() << " ms\n";
+    sf::cOut() << "FINAL TIME: " << finalTime.asMilliseconds() << " ms\n";
 }

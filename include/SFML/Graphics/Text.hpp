@@ -1,13 +1,15 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/Transformable.hpp"
+#include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
@@ -20,53 +22,40 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Span.hpp"
-#include "SFML/Base/TrivialVector.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class Font;
 class RenderTarget;
 struct RenderStates;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Graphical text that can be drawn to a render target
 ///
 ////////////////////////////////////////////////////////////
-class SFML_GRAPHICS_API Text : public Transformable, public AnchorPointMixin<Text>
+class SFML_GRAPHICS_API Text : public TransformableMixin<Text>, public AnchorPointMixin<Text>
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Enumeration of the string drawing styles
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Style : base::U8
-    {
-        Regular       = 0,      //!< Regular characters, no style
-        Bold          = 1 << 0, //!< Bold characters
-        Italic        = 1 << 1, //!< Italic characters
-        Underlined    = 1 << 2, //!< Underlined characters
-        StrikeThrough = 1 << 3  //!< Strike through characters
-    };
+    using Style = TextStyle;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
-    {
-        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
-
-        // NOLINTNEXTLINE(readability-redundant-member-init)
-        String       string{};                   //!< String to display
-        unsigned int characterSize{30u};         //!< Base size of characters, in pixels
-        float        letterSpacing{1.f};         //!< Spacing factor between letters
-        float        lineSpacing{1.f};           //!< Spacing factor between lines
-        Color        fillColor{Color::White};    //!< Text fill color
-        Color        outlineColor{Color::Black}; //!< Text outline color
-        float        outlineThickness{0.f};      //!< Thickness of the text's outline
-        Style        style{Style::Regular};      //!< Text style (see Style enum)
-    };
+    using Settings = TextData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the text from a string, font and size
@@ -256,6 +245,26 @@ public:
     void setOutlineColor(Color color);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the fill color alpha channel of the text
+    ///
+    /// \param color New fill color alpha channel of the text
+    ///
+    /// \see `getFillColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setFillColorAlpha(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the outline color alpha channel of the text
+    ///
+    /// \param color New outline color alpha channel of the text
+    ///
+    /// \see `getOutlineColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setOutlineColorAlpha(base::U8 alpha);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Set the thickness of the text's outline
     ///
     /// By default, the outline thickness is 0.
@@ -363,6 +372,27 @@ public:
     [[nodiscard]] Color getOutlineColor() const;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Get the fill color alpha channel of the text
+    ///
+    /// \return Fill color alpha channel of the text
+    ///
+    /// \see `setFillColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::U8 getFillColorAlpha() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the outline color alpha channel of the text
+    ///
+    /// \return Outline color alpha channel of the text
+    ///
+    /// \see `setOutlineColorAlpha`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::U8 getOutlineColorAlpha() const;
+    // TODO P2: add these to shape as well, maybe use a mixin?
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the outline thickness of the text
     ///
     /// \return Outline thickness of the text, in pixels
@@ -440,7 +470,11 @@ public:
     /// - The remaining subrange contains all text fill vertices, if any.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<const Vertex> getVertices() const;
+    [[nodiscard, gnu::always_inline]] base::Span<const Vertex> getVertices() const
+    {
+        ensureGeometryUpdate(*m_font);
+        return {m_vertices.data(), m_vertices.size()};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a mutable span to the text's vertices.
@@ -448,13 +482,20 @@ public:
     /// \see `getVertices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Span<Vertex> getVerticesMut();
+    [[nodiscard, gnu::always_inline]] base::Span<Vertex> getVerticesMut()
+    {
+        ensureGeometryUpdate(*m_font);
+        return {m_vertices.data(), m_vertices.size()};
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the index of the first fill vertex.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getFillVerticesStartIndex() const;
+    [[nodiscard, gnu::always_inline, gnu::pure]] base::SizeT getFillVerticesStartIndex() const
+    {
+        return m_fillVerticesStartIndex;
+    }
 
 private:
     ////////////////////////////////////////////////////////////
@@ -469,20 +510,25 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    const Font*  m_font{};                     //!< Font used to display the string
-    String       m_string;                     //!< String to display
-    unsigned int m_characterSize{30};          //!< Base size of characters, in pixels
-    float        m_letterSpacing{1.f};         //!< Spacing factor between letters
-    float        m_lineSpacing{1.f};           //!< Spacing factor between lines
-    Color        m_fillColor{Color::White};    //!< Text fill color
-    Color        m_outlineColor{Color::Black}; //!< Text outline color
-    float        m_outlineThickness{0.f};      //!< Thickness of the text's outline
-    Style        m_style{Style::Regular};      //!< Text style (see Style enum)
+    /* Ordered to minimize padding */
+    String                       m_string;            //!< String to display
+    mutable base::Vector<Vertex> m_vertices;          //!< Vertex array containing the outline and fill geometry
+    mutable FloatRect            m_bounds;            //!< Bounding rectangle of the text (in local coordinates)
+    const Font*                  m_font{};            //!< Font used to display the string
+    mutable base::SizeT m_fillVerticesStartIndex{};   //!< Index in the vertex array where the fill vertices start
+    unsigned int        m_characterSize{30u};         //!< Base size of characters, in pixels
+    float               m_letterSpacing{1.f};         //!< Spacing factor between letters
+    float               m_lineSpacing{1.f};           //!< Spacing factor between lines
+    float               m_outlineThickness{0.f};      //!< Thickness of the text's outline
+    Color               m_fillColor{Color::White};    //!< Text fill color
+    Color               m_outlineColor{Color::Black}; //!< Text outline color
 
-    mutable base::TrivialVector<Vertex> m_vertices; //!< Vertex array containing the outline and fill geometry
-    mutable base::SizeT m_fillVerticesStartIndex{}; //!< Index in the vertex array where the fill vertices start
-    mutable FloatRect   m_bounds;                   //!< Bounding rectangle of the text (in local coordinates)
-    mutable bool        m_geometryNeedUpdate{};     //!< Does the geometry need to be recomputed?
+public:
+    SFML_DEFINE_TRANSFORMABLE_DATA_MEMBERS;
+
+private:
+    Style        m_style{Style::Regular}; //!< Text style (see Style enum)
+    mutable bool m_geometryNeedUpdate{};  //!< Does the geometry need to be recomputed?
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

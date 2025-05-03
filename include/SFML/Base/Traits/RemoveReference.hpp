@@ -4,8 +4,8 @@
 
 #if __has_builtin(__remove_reference)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_REMOVE_REFERENCE(...) __remove_reference(__VA_ARGS__)
 
 #else
 
@@ -20,8 +20,8 @@ template <typename T> struct RemoveReferenceImpl<T&&> { using type = T; };
 
 } // namespace sf::base::priv
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_REMOVE_REFERENCE(...) typename ::sf::base::priv::RemoveReferenceImpl<__VA_ARGS__>::type
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_REMOVE_REFERENCE(...) typename ::sf::base::priv::RemoveReferenceImpl<__VA_ARGS__>::type
 
 #endif
 

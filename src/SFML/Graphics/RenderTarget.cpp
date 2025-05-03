@@ -1,17 +1,14 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/Color.hpp"
-#include "SFML/Graphics/CoordinateType.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
-#include "SFML/Graphics/GLBufferObject.hpp"
-#include "SFML/Graphics/GLPersistentBuffer.hpp"
-#include "SFML/Graphics/GLSyncGuard.hpp"
-#include "SFML/Graphics/GLVAOGroup.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -20,14 +17,16 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/StencilMode.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexBuffer.hpp"
 #include "SFML/Graphics/View.hpp"
 
-#include "SFML/Window/GLCheck.hpp"
-#include "SFML/Window/Glad.hpp"
+#include "SFML/GLUtils/GLCheck.hpp"
+#include "SFML/GLUtils/GLVAOGroup.hpp"
+#include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect.hpp"
@@ -38,6 +37,7 @@
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <atomic>
@@ -86,13 +86,13 @@ constinit std::atomic<IdType> contextRenderTargetMap[maxIdCount]{};
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                  \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(sfEnumType sfEnumValue) \
-    {                                                                                                           \
-        constexpr GLenum glValues[] __VA_ARGS__;                                                                \
-                                                                                                                \
-        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));          \
-        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                \
+#define SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(fnName, sfEnumType, ...)                                        \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr GLenum fnName(const sfEnumType sfEnumValue) \
+    {                                                                                                                 \
+        constexpr GLenum glValues[] __VA_ARGS__;                                                                      \
+                                                                                                                      \
+        SFML_BASE_ASSERT(static_cast<unsigned int>(sfEnumValue) < ::sf::base::getArraySize(glValues));                \
+        return glValues[static_cast<unsigned int>(sfEnumValue)];                                                      \
     }
 
 
@@ -145,82 +145,80 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 ////////////////////////////////////////////////////////////
 #undef SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN
 
-
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
-    sf::Vector2u         renderTargetSize,
+    const sf::Vector2u   renderTargetSize,
     const sf::FloatRect& inputRect)
 {
     const auto [width, height] = renderTargetSize.toVector2f();
 
-    return sf::Rect<long>({sf::base::lround(width * inputRect.position.x), sf::base::lround(height * inputRect.position.y)},
-                          {sf::base::lround(width * inputRect.size.x), sf::base::lround(height * inputRect.size.y)})
+    return sf::Rect<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
+                           SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
+                          {SFML_BASE_MATH_LROUNDF(width * inputRect.size.x),
+                           SFML_BASE_MATH_LROUNDF(height * inputRect.size.y)})
         .to<sf::IntRect>();
 }
 
 
 ////////////////////////////////////////////////////////////
-enum : bool
+[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU(const sf::Vertex* vertexData, const sf::base::SizeT vertexCount)
 {
-#ifdef SFML_OPENGL_ES
-    isOpenGLES = true
-#else
-    isOpenGLES = false
-#endif
+    glCheck(
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeof(sf::Vertex) * vertexCount), vertexData, GL_STREAM_DRAW));
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU(const sf::IndexType*  indexData,
+                                                                    const sf::base::SizeT indexCount)
+{
+    glCheck(glBufferData(GL_ELEMENT_ARRAY_BUFFER,
+                         static_cast<GLsizeiptr>(sizeof(sf::IndexType) * indexCount),
+                         indexData,
+                         GL_STREAM_DRAW));
+}
+
+
+////////////////////////////////////////////////////////////
+void setupVertexAttribPointers()
+{
+#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
+
+    // Hardcoded layout location `0u` for `sf_a_position`
+    glCheck(glEnableVertexAttribArray(0u));
+    glCheck(glVertexAttribPointer(/*      index */ 0u,
+                                  /*       size */ 2,
+                                  /*       type */ GL_FLOAT,
+                                  /* normalized */ GL_FALSE,
+                                  /*     stride */ sizeof(sf::Vertex),
+                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, position)));
+
+    // Hardcoded layout location `1u` for `sf_a_color`
+    glCheck(glEnableVertexAttribArray(1u));
+    glCheck(glVertexAttribPointer(/*      index */ 1u,
+                                  /*       size */ 4,
+                                  /*       type */ GL_UNSIGNED_BYTE,
+                                  /* normalized */ GL_TRUE,
+                                  /*     stride */ sizeof(sf::Vertex),
+                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, color)));
+
+    // Hardcoded layout location `2u` for `sf_a_texCoord`
+    glCheck(glEnableVertexAttribArray(2u));
+    glCheck(glVertexAttribPointer(/*      index */ 2u,
+                                  /*       size */ 2,
+                                  /*       type */ GL_FLOAT,
+                                  /* normalized */ GL_FALSE,
+                                  /*     stride */ sizeof(sf::Vertex),
+                                  /*     offset */ SFML_PRIV_OFFSETOF(sf::Vertex, texCoords)));
+
+#undef SFML_PRIV_OFFSETOF
+}
+
+
+////////////////////////////////////////////////////////////
+constexpr unsigned int precomputedQuadIndices[]{
+#include "SFML/Graphics/PrecomputedQuadIndices.inl"
 };
-
-
-////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamToGPU(unsigned int bufferId, const void* data, sf::base::SizeT dataByteCount)
-{
-    if constexpr (isOpenGLES)
-    {
-        // On OpenGL ES, the "naive" method seems faster, also named buffers are not supported
-        glCheck(glBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
-    }
-    else
-    {
-        // For small batches, the "naive" method also seems faster
-        if (dataByteCount < sizeof(sf::Vertex) * 64)
-        {
-            glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW)); // Must orphan first
-            glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), data, GL_STREAM_DRAW));
-            return;
-        }
-
-        // For larger batches, memcpying into a transient mapped buffer seems faster
-        glCheck(glNamedBufferData(bufferId, static_cast<GLsizeiptr>(dataByteCount), nullptr, GL_STREAM_DRAW));
-
-        void* const ptr = glCheck(
-            glMapNamedBufferRange(bufferId,
-                                  0u,
-                                  static_cast<GLsizeiptr>(dataByteCount),
-                                  GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_INVALIDATE_RANGE_BIT));
-
-        SFML_BASE_MEMCPY(ptr, data, dataByteCount);
-
-        [[maybe_unused]] const auto rc = glCheck(glUnmapNamedBuffer(bufferId));
-        SFML_BASE_ASSERT(rc == GL_TRUE);
-    }
-}
-
-
-////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamVerticesToGPU([[maybe_unused]] unsigned int bufferId,
-                                                                     const sf::Vertex*             vertexData,
-                                                                     sf::base::SizeT               vertexCount)
-{
-    streamToGPU(isOpenGLES ? GL_ARRAY_BUFFER : bufferId, vertexData, sizeof(sf::Vertex) * vertexCount);
-}
-
-
-////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline void streamIndicesToGPU([[maybe_unused]] unsigned int bufferId,
-                                                                    const sf::IndexType*          indexData,
-                                                                    sf::base::SizeT               indexCount)
-{
-    streamToGPU(isOpenGLES ? GL_ELEMENT_ARRAY_BUFFER : bufferId, indexData, sizeof(sf::IndexType) * indexCount);
-}
 
 } // namespace RenderTargetImpl
 } // namespace
@@ -240,91 +238,60 @@ struct [[nodiscard]] StatesCache
     bool      viewChanged{false}; //!< Has the current view changed since last draw?
     Transform lastViewTransform;  //!< Cached transform of latest view
 
-    Transform lastDrawTransform; //!< Cached last draw transform
+    Transform lastRenderStatesTransform; //!< Cached renderstates transform
 
     bool scissorEnabled{false}; //!< Is scissor testing enabled?
     bool stencilEnabled{false}; //!< Is stencil testing enabled?
 
-    unsigned int lastVaoGroup{0u}; //!< Last bound vertex array object id
+    unsigned int lastVaoGroup{0u};          //!< Last bound vertex array object id
+    unsigned int lastVaoGroupContextId{0u}; //!< Last bound vertex array object context id
 
-    BlendMode      lastBlendMode{BlendAlpha};                      //!< Cached blending mode
-    StencilMode    lastStencilMode;                                //!< Cached stencil
-    base::U64      lastTextureId{0u};                              //!< Cached texture
-    CoordinateType lastCoordinateType{CoordinateType::Normalized}; //!< Cached texture coordinate type
+    BlendMode   lastBlendMode{BlendAlpha}; //!< Cached blending mode
+    StencilMode lastStencilMode{};         //!< Cached stencil
+    base::U64   lastTextureId{0u};         //!< Cached texture
 
     GLuint lastProgramId{0u}; //!< GL id of the last used shader program
 };
 
 
 ////////////////////////////////////////////////////////////
-void setupVertexAttribPointers()
-{
-#define SFML_PRIV_OFFSETOF(...) reinterpret_cast<const void*>(SFML_BASE_OFFSETOF(__VA_ARGS__))
-
-    // Hardcoded layout location `0u` for `sf_a_position`
-    glCheck(glEnableVertexAttribArray(0u));
-    glCheck(glVertexAttribPointer(/*      index */ 0u,
-                                  /*       size */ 2,
-                                  /*       type */ GL_FLOAT,
-                                  /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(Vertex, position)));
-
-    // Hardcoded layout location `1u` for `sf_a_color`
-    glCheck(glEnableVertexAttribArray(1u));
-    glCheck(glVertexAttribPointer(/*      index */ 1u,
-                                  /*       size */ 4,
-                                  /*       type */ GL_UNSIGNED_BYTE,
-                                  /* normalized */ GL_TRUE,
-                                  /*     stride */ sizeof(Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(Vertex, color)));
-
-    // Hardcoded layout location `2u` for `sf_a_texCoord`
-    glCheck(glEnableVertexAttribArray(2u));
-    glCheck(glVertexAttribPointer(/*      index */ 2u,
-                                  /*       size */ 2,
-                                  /*       type */ GL_FLOAT,
-                                  /* normalized */ GL_FALSE,
-                                  /*     stride */ sizeof(Vertex),
-                                  /*     offset */ SFML_PRIV_OFFSETOF(Vertex, texCoords)));
-
-#undef SFML_PRIV_OFFSETOF
-}
-
-
-////////////////////////////////////////////////////////////
 struct RenderTarget::Impl
 {
+    ////////////////////////////////////////////////////////////
+    View                     view;     //!< Current view
+    StatesCache              cache{};  //!< Render states cache
+    RenderTargetImpl::IdType id{};     //!< Unique number that identifies the render target
+    GLVAOGroup               vaoGroup; //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
+
+    ////////////////////////////////////////////////////////////
+    CPUDrawableBatch drawableBatch;                     //!< Internal drawable batch (autobatching)
+    bool             autoBatch = true;                  //!< Enable automatic batching of draw calls
+    RenderStates     lastRenderStates;                  //!< Cached render states (autobatching)
+    DrawStatistics   currentDrawStats{};                //!< Statistics for current draw calls
+    base::SizeT      autoBatchVertexThreshold{32'768u}; //!< Threshold for batch vertex count
+
+    ////////////////////////////////////////////////////////////
+#ifndef SFML_OPENGL_ES
+    GLsync persistentBufferFence{};   //!< Fence for persistent buffer synchronization
+    bool   persistentWaitDone{false}; //!< Indicates if a sync is needed for persistent buffer
+#endif
+
+    ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
     view(theView),
-    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order_relaxed)),
-    vaoGroup(),
-    persistentVaoGroup(),
-    vboPersistentBuffer(persistentVaoGroup.vbo),
-    eboPersistentBuffer(persistentVaoGroup.ebo)
+    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
     {
-        vaoGroup.bind();
-        persistentVaoGroup.bind();
     }
 
-    View view; //!< Current view
-
-    StatesCache cache{}; //!< Render states cache
-
-    RenderTargetImpl::IdType id{}; //!< Unique number that identifies the render target
-
-    GLVAOGroup vaoGroup;           //!< VAO, VBO, and EBO associated with the render target (non-persistent storage)
-    GLVAOGroup persistentVaoGroup; //!< VAO, VBO, and EBO associated with the render target (persistent storage)
-
-    GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< Persistent VBO buffer (used for batching)
-    GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< Persistent EBO buffer (used for batching)
-
-    void bindGLObjects(GLVAOGroup& theVAOGroup)
+    ////////////////////////////////////////////////////////////
+    void bindGLObjects(const GLVAOGroup& theVAOGroup)
     {
         theVAOGroup.bind();
-        cache.lastVaoGroup = theVAOGroup.getId();
 
-        setupVertexAttribPointers();
+        cache.lastVaoGroup          = theVAOGroup.getId();
+        cache.lastVaoGroupContextId = GraphicsContext::getActiveThreadLocalGlContextId();
+
+        RenderTargetImpl::setupVertexAttribPointers();
     }
 };
 
@@ -348,20 +315,6 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] GLPersistentBuffer<GLVertexBufferObject>& RenderTarget::getVBOPersistentBuffer()
-{
-    return m_impl->vboPersistentBuffer;
-}
-
-
-////////////////////////////////////////////////////////////
-[[nodiscard]] GLPersistentBuffer<GLElementBufferObject>& RenderTarget::getEBOPersistentBuffer()
-{
-    return m_impl->eboPersistentBuffer;
-}
-
-
-////////////////////////////////////////////////////////////
 [[nodiscard]] bool RenderTarget::clearImpl()
 {
     if (!setActive(true))
@@ -369,6 +322,10 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
         priv::err() << "Failed to activate render target in `clearImpl`";
         return false;
     }
+
+    syncGPUStartFrame();
+
+    m_impl->currentDrawStats = {};
 
     // Unbind texture to fix RenderTexture preventing clear
     unapplyTexture(); // See https://en.sfml-dev.org/forums/index.php?topic=9350
@@ -382,7 +339,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(Color color)
+void RenderTarget::clear(const Color color)
 {
     if (!clearImpl())
         return;
@@ -393,7 +350,7 @@ void RenderTarget::clear(Color color)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clearStencil(StencilValue stencilValue)
+void RenderTarget::clearStencil(const StencilValue stencilValue)
 {
     if (!clearImpl())
         return;
@@ -404,7 +361,7 @@ void RenderTarget::clearStencil(StencilValue stencilValue)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::clear(Color color, StencilValue stencilValue)
+void RenderTarget::clear(const Color color, const StencilValue stencilValue)
 {
     if (!clearImpl())
         return;
@@ -421,6 +378,8 @@ void RenderTarget::setView(const View& view)
     if (view == m_impl->view)
         return;
 
+    flush();
+
     m_impl->view              = view;
     m_impl->cache.viewChanged = true;
 }
@@ -430,6 +389,42 @@ void RenderTarget::setView(const View& view)
 const View& RenderTarget::getView() const
 {
     return m_impl->view;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::setAutoBatchEnabled(const bool enabled)
+{
+    if (m_impl->autoBatch == enabled)
+        return;
+
+    flush();
+    m_impl->autoBatch = enabled;
+}
+
+
+////////////////////////////////////////////////////////////
+bool RenderTarget::isAutoBatchEnabled() const
+{
+    return m_impl->autoBatch;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::setAutoBatchVertexThreshold(const base::SizeT threshold)
+{
+    if (m_impl->autoBatchVertexThreshold == threshold)
+        return;
+
+    flush();
+    m_impl->autoBatchVertexThreshold = threshold;
+}
+
+
+////////////////////////////////////////////////////////////
+base::SizeT RenderTarget::getAutoBatchVertexThreshold() const
+{
+    return m_impl->autoBatchVertexThreshold;
 }
 
 
@@ -448,14 +443,14 @@ IntRect RenderTarget::getScissor(const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(Vector2i point) const
+Vector2f RenderTarget::mapPixelToCoords(const Vector2i point) const
 {
     return mapPixelToCoords(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
+Vector2f RenderTarget::mapPixelToCoords(const Vector2i point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
     const auto     viewport   = getViewport(view).to<FloatRect>();
@@ -469,14 +464,14 @@ Vector2f RenderTarget::mapPixelToCoords(Vector2i point, const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(Vector2f point) const
+Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point) const
 {
     return mapCoordsToPixel(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
+Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point, const View& view) const
 {
     // First, transform the point by the view matrix
     const Vector2f normalized = view.getTransform().transformPoint(point);
@@ -494,57 +489,119 @@ Vector2i RenderTarget::mapCoordsToPixel(Vector2f point, const View& view) const
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, RenderStates states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
 
-    Vertex buffer[4];
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(Sprite{.textureRect = texture.getRect()});
+    }
+    else
+    {
+        Vertex buffer[4];
 
-    appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
-                                                       /* scale */ {1.f, 1.f},
-                                                       /* origin */ {0.f, 0.f}),
-                                       texture.getRect(),
-                                       Color::White,
-                                       buffer);
+        appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
+                                                           /* scale */ {1.f, 1.f},
+                                                           /* origin */ {0.f, 0.f}),
+                                           texture.getRect(),
+                                           Color::White,
+                                           buffer);
 
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params, RenderStates states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    states.texture = &texture;
 
-    const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
 
-    Vertex buffer[4];
+        m_impl->drawableBatch.add(Sprite{
+            .position    = params.position,
+            .scale       = params.scale,
+            .origin      = params.origin,
+            .rotation    = params.rotation,
+            .textureRect = (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+            .color       = params.color,
+        });
+    }
+    else
+    {
+        const auto [sine, cosine] = base::fastSinCos(params.rotation.wrapUnsigned().asRadians());
 
-    appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
-                                       (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
-                                       params.color,
-                                       buffer);
+        Vertex buffer[4];
 
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+        appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
+                                           (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+                                           params.color,
+                                           buffer);
+
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Sprite& sprite, const Texture& texture, RenderStates states)
+void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
 {
-    states.texture        = &texture;
-    states.coordinateType = CoordinateType::Pixels;
+    SFML_BASE_ASSERT(states.texture != nullptr);
 
-    Vertex buffer[4];
-    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
-    draw(buffer, PrimitiveType::TriangleStrip, states);
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(sprite);
+    }
+    else
+    {
+        Vertex buffer[4];
+        appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
+        draw(buffer, PrimitiveType::TriangleStrip, states);
+    }
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const Shape& shape, const Texture* texture, const RenderStates& states)
+void RenderTarget::draw(const Shape& shape, RenderStates states)
 {
-    shape.drawOnto(*this, texture, states);
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(shape);
+    }
+    else
+    {
+        states.transform *= shape.getTransform();
+
+        const auto [fillData, fillSize]       = shape.getFillVertices();
+        const auto [outlineData, outlineSize] = shape.getOutlineVertices();
+
+        drawVertices(fillData, fillSize, PrimitiveType::TriangleFan, states);
+
+        if (shape.getOutlineThickness() != 0.f)
+            drawVertices(outlineData, outlineSize, PrimitiveType::TriangleStrip, states);
+    }
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Text& text, RenderStates states)
+{
+    states.texture = &text.getFont().getTexture();
+
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(text);
+    }
+    else
+    {
+        text.draw(*this, states);
+    }
 }
 
 
@@ -555,9 +612,10 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
     if (vertexData == nullptr || vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
-    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
 
     drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
@@ -567,20 +625,21 @@ void RenderTarget::drawVertices(const Vertex* vertexData, base::SizeT vertexCoun
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawIndexedVertices(
     const Vertex*       vertexData,
-    base::SizeT         vertexCount,
+    const base::SizeT   vertexCount,
     const IndexType*    indexData,
-    base::SizeT         indexCount,
-    PrimitiveType       type,
+    const base::SizeT   indexCount,
+    const PrimitiveType type,
     const RenderStates& states)
 {
     // Nothing to draw or inactive target
     if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
-    RenderTargetImpl::streamVerticesToGPU(m_impl->vaoGroup.vbo.getId(), vertexData, vertexCount);
-    RenderTargetImpl::streamIndicesToGPU(m_impl->vaoGroup.ebo.getId(), indexData, indexCount);
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
+    RenderTargetImpl::streamIndicesToGPU(indexData, indexCount);
 
     drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
@@ -588,44 +647,56 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedVertices(base::SizeT vertexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawIndexedQuads(const Vertex*       vertexData,
+                                    const base::SizeT   vertexCount,
+                                    const PrimitiveType type,
+                                    const RenderStates& states)
+{
+    drawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawPersistentMappedVertices(const PersistentGPUDrawableBatch& batch,
+                                                const base::SizeT                 vertexCount,
+                                                const PrimitiveType               type,
+                                                const RenderStates&               states)
 {
     // Nothing to draw or inactive target
     if (vertexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ true, states);
+    setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
+    m_impl->lastRenderStates = states;
 
-    {
-        GLSyncGuard syncGuard;
-        drawPrimitives(type, 0u, vertexCount);
-    }
-
+    drawPrimitives(type, 0u, vertexCount);
     cleanupDraw(states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPersistentMappedIndexedVertices(base::SizeT indexCount, PrimitiveType type, const RenderStates& states)
+void RenderTarget::drawPersistentMappedIndexedVertices(const PersistentGPUDrawableBatch& batch,
+                                                       const base::SizeT                 indexCount,
+                                                       const PrimitiveType               type,
+                                                       const RenderStates&               states)
 {
     // Nothing to draw or inactive target
     if (indexCount == 0u || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ true, states);
+    setupDraw(*static_cast<const GLVAOGroup*>(batch.m_storage.getVAOGroup()), states);
+    m_impl->lastRenderStates = states;
 
-    {
-        GLSyncGuard syncGuard;
-        drawIndexedPrimitives(type, indexCount);
-    }
-
+    drawIndexedPrimitives(type, indexCount);
     cleanupDraw(states);
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates states)
+void RenderTarget::drawDrawableBatchImpl(const CPUDrawableBatch& drawableBatch, RenderStates states)
 {
+    SFML_BASE_ASSERT(drawableBatch.m_storage.indices.size() % 3u == 0u);
+
     states.transform *= drawableBatch.getTransform();
 
     drawIndexedVertices(drawableBatch.m_storage.vertices.data(),
@@ -638,10 +709,23 @@ void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, RenderStates stat
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states)
+{
+    if (m_impl->autoBatch)
+        flush();
+
+    drawDrawableBatchImpl(drawableBatch, states);
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states)
 {
+    if (m_impl->autoBatch)
+        flush();
+
     states.transform *= drawableBatch.getTransform();
-    drawPersistentMappedIndexedVertices(drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
+    drawPersistentMappedIndexedVertices(drawableBatch, drawableBatch.m_storage.nIndices, PrimitiveType::Triangles, states);
 }
 
 
@@ -653,8 +737,14 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, const RenderStates& st
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVertex, base::SizeT vertexCount, const RenderStates& states)
+void RenderTarget::draw(const VertexBuffer& vertexBuffer,
+                        const base::SizeT   firstVertex,
+                        base::SizeT         vertexCount,
+                        const RenderStates& states)
 {
+    if (m_impl->autoBatch)
+        flush();
+
     // Sanity check
     if (firstVertex > vertexBuffer.getVertexCount())
         return;
@@ -667,13 +757,14 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     if (!vertexCount || !vertexBuffer.getNativeHandle() || !setActive(true))
         return;
 
-    setupDraw(/* persistent */ false, states);
+    setupDraw(m_impl->vaoGroup, states);
+    m_impl->lastRenderStates = states;
 
     // Bind vertex buffer
     vertexBuffer.bind();
 
     // Always enable texture coordinates (needed because different buffer is bound)
-    setupVertexAttribPointers();
+    RenderTargetImpl::setupVertexAttribPointers();
 
     drawPrimitives(vertexBuffer.getPrimitiveType(), firstVertex, vertexCount);
 
@@ -684,6 +775,72 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer, base::SizeT firstVerte
     m_impl->bindGLObjects(m_impl->vaoGroup);
 
     cleanupDraw(states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::drawShapeData(const auto& shapeData, const RenderStates& states)
+{
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(shapeData);
+        return;
+    }
+
+    SFML_BASE_ASSERT(m_impl->drawableBatch.isEmpty());
+
+    m_impl->drawableBatch.add(shapeData);
+    draw(m_impl->drawableBatch, states);
+    m_impl->drawableBatch.clear();
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& states)
+{
+    drawShapeData(sdCircle, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)
+{
+    drawShapeData(sdEllipse, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)
+{
+    drawShapeData(sdRectangle, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states)
+{
+    drawShapeData(sdRoundedRectangle, states);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
+{
+    states.texture = &font.getTexture();
+
+    if (m_impl->autoBatch)
+    {
+        flushIfNeeded(states);
+        m_impl->drawableBatch.add(font, textData);
+        return;
+    }
+
+    SFML_BASE_ASSERT(m_impl->drawableBatch.isEmpty());
+
+    m_impl->drawableBatch.add(font, textData);
+    draw(m_impl->drawableBatch, states);
+    m_impl->drawableBatch.clear();
 }
 
 
@@ -709,29 +866,33 @@ bool RenderTarget::setActive(bool active)
     SFML_BASE_ASSERT(contextId < RenderTargetImpl::maxIdCount);
     std::atomic<RenderTargetImpl::IdType>& renderTargetId = RenderTargetImpl::contextRenderTargetMap[contextId];
 
+    const auto loadedRenderTargetId = renderTargetId.load();
+
     // Deactivation
     if (!active)
     {
-        SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
+        SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
         renderTargetId.store(RenderTargetImpl::invalidId);
 
         m_impl->cache.enable = false;
         return true;
     }
 
-    // First ever activation
-    if (renderTargetId.load() == RenderTargetImpl::invalidId)
+    // First ever activation or different RT activated on same context
+    if (loadedRenderTargetId != m_impl->id)
     {
         renderTargetId.store(m_impl->id);
 
-        m_impl->cache.glStatesSet = false;
-        m_impl->cache.enable      = false;
+        if (loadedRenderTargetId == RenderTargetImpl::invalidId)
+            m_impl->cache.glStatesSet = false; // First-time activation
+
+        m_impl->cache.enable = false;
         return true;
     }
 
     // Activation on a different context
-    SFML_BASE_ASSERT(renderTargetId.load() != RenderTargetImpl::invalidId);
-    SFML_BASE_ASSERT(renderTargetId.load() != m_impl->id);
+    SFML_BASE_ASSERT(loadedRenderTargetId != RenderTargetImpl::invalidId);
+    SFML_BASE_ASSERT(loadedRenderTargetId != m_impl->id);
     renderTargetId.store(m_impl->id);
 
     m_impl->cache.enable = false;
@@ -741,6 +902,14 @@ bool RenderTarget::setActive(bool active)
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::resetGLStates()
+{
+    flush();
+    resetGLStatesImpl();
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::resetGLStatesImpl()
 {
 // Workaround for states not being properly reset on
 // macOS unless a context switch really takes place
@@ -791,6 +960,57 @@ void RenderTarget::resetGLStates()
     setView(getView());
 
     m_impl->cache.enable = true;
+}
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::DrawStatistics RenderTarget::flush()
+{
+    // Avoid autobatch recursion
+    drawDrawableBatchImpl(m_impl->drawableBatch, m_impl->lastRenderStates);
+    m_impl->drawableBatch.clear();
+
+    return m_impl->currentDrawStats;
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::syncGPUStartFrame()
+{
+#ifndef SFML_OPENGL_ES
+    if (m_impl->persistentWaitDone || m_impl->persistentBufferFence == GLsync{})
+        return;
+
+    glCheck(glClientWaitSync(m_impl->persistentBufferFence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
+    glCheck(glDeleteSync(m_impl->persistentBufferFence));
+
+    m_impl->persistentBufferFence = GLsync{};
+    m_impl->persistentWaitDone    = true;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::syncGPUEndFrame()
+{
+#ifndef SFML_OPENGL_ES
+    if (m_impl->persistentBufferFence != GLsync{})
+        glCheck(glDeleteSync(m_impl->persistentBufferFence));
+
+    m_impl->persistentBufferFence = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+    m_impl->persistentWaitDone    = false;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::flushIfNeeded(const RenderStates& states)
+{
+    if (m_impl->drawableBatch.getNumVertices() >= m_impl->autoBatchVertexThreshold || m_impl->lastRenderStates != states)
+    {
+        flush();
+        m_impl->lastRenderStates = states;
+    }
 }
 
 
@@ -888,14 +1108,12 @@ void RenderTarget::applyStencilMode(const StencilMode& mode)
 void RenderTarget::unapplyTexture()
 {
     Texture::unbind();
-
-    m_impl->cache.lastTextureId      = 0ul;
-    m_impl->cache.lastCoordinateType = CoordinateType::Pixels;
+    m_impl->cache.lastTextureId = 0ul;
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
+void RenderTarget::setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& states)
 {
     // GL_FRAMEBUFFER_SRGB is not available on OpenGL ES
     // If a framebuffer supports sRGB, it will always be enabled on OpenGL ES
@@ -909,20 +1127,20 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
         else
             glCheck(glDisable(GL_FRAMEBUFFER_SRGB));
     }
-#else
-    SFML_BASE_ASSERT(!persistent && "Persistent OpenGL buffers are not available in OpenGL ES");
 #endif
 
     // First set the persistent OpenGL states if it's the very first call
     if (!m_impl->cache.glStatesSet)
-        resetGLStates();
+        resetGLStatesImpl();
 
     // Bind GL objects
-    if (GLVAOGroup& vaoGroupToBind = persistent ? m_impl->persistentVaoGroup : m_impl->vaoGroup;
-        !m_impl->cache.enable || m_impl->cache.lastVaoGroup != vaoGroupToBind.getId())
     {
-        m_impl->cache.lastVaoGroup = vaoGroupToBind.getId();
-        m_impl->bindGLObjects(vaoGroupToBind);
+        const bool mustRebindVAO = m_impl->cache.lastVaoGroup == 0u || m_impl->cache.lastVaoGroup != vaoGroup.getId() ||
+                                   m_impl->cache.lastVaoGroupContextId == 0u ||
+                                   m_impl->cache.lastVaoGroupContextId != GraphicsContext::getActiveThreadLocalGlContextId();
+
+        if (!m_impl->cache.enable || mustRebindVAO)
+            m_impl->bindGLObjects(vaoGroup);
     }
 
     // Select shader to be used
@@ -930,7 +1148,7 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
 
     // Update shader
     const auto usedNativeHandle = usedShader.getNativeHandle();
-    const bool shaderChanged    = m_impl->cache.lastProgramId != usedNativeHandle;
+    const bool shaderChanged    = !m_impl->cache.enable || m_impl->cache.lastProgramId != usedNativeHandle;
 
     if (shaderChanged)
     {
@@ -939,11 +1157,12 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
     }
 
     // Apply the view
-    if (!m_impl->cache.enable || m_impl->cache.viewChanged)
+    const bool viewChanged = !m_impl->cache.enable || m_impl->cache.viewChanged;
+    if (viewChanged)
         applyView(m_impl->view);
 
     // Set the model-view-projection matrix
-    setupDrawMVP(states, m_impl->cache.lastViewTransform, shaderChanged);
+    setupDrawMVP(states.transform, m_impl->cache.lastViewTransform, viewChanged, shaderChanged);
 
     // Apply the blend mode
     if (!m_impl->cache.enable || (states.blendMode != m_impl->cache.lastBlendMode))
@@ -963,17 +1182,21 @@ void RenderTarget::setupDraw(bool persistent, const RenderStates& states)
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::setupDrawMVP(const RenderStates& states, const Transform& viewTransform, bool shaderChanged)
+void RenderTarget::setupDrawMVP(const Transform& renderStatesTransform,
+                                const Transform& viewTransform,
+                                const bool       viewChanged,
+                                const bool       shaderChanged)
 {
-    // Compute the final draw transform
-    const Transform trsfm = viewTransform * /* model-view matrix */ states.transform;
-
     // If there's no difference from the cached one, exit early
-    if (!shaderChanged && (m_impl->cache.enable && trsfm == m_impl->cache.lastDrawTransform))
+    if (!shaderChanged &&
+        (m_impl->cache.enable && !viewChanged && renderStatesTransform == m_impl->cache.lastRenderStatesTransform))
         return;
 
+    // Compute the final draw transform
+    const Transform trsfm = viewTransform * /* model-view matrix */ renderStatesTransform;
+
     // Update the cached transform
-    m_impl->cache.lastDrawTransform = trsfm;
+    m_impl->cache.lastRenderStatesTransform = renderStatesTransform;
 
     // clang-format off
     const float transformMatrixBuffer[]{trsfm.a00, trsfm.a10, 0.f, 0.f,
@@ -1002,8 +1225,7 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
 
     // Should the texture be bound?
     const bool mustApplyTexture = !m_impl->cache.enable || usedTexture.m_fboAttachment ||
-                                  usedTexture.m_cacheId != m_impl->cache.lastTextureId ||
-                                  states.coordinateType != m_impl->cache.lastCoordinateType;
+                                  usedTexture.m_cacheId != m_impl->cache.lastTextureId;
 
     // If not, exit early
     if (!mustApplyTexture)
@@ -1013,14 +1235,15 @@ void RenderTarget::setupDrawTexture(const RenderStates& states)
     usedTexture.bind();
 
     // Update basic cache texture stuff
-    m_impl->cache.lastTextureId      = usedTexture.m_cacheId;
-    m_impl->cache.lastCoordinateType = states.coordinateType;
+    m_impl->cache.lastTextureId = usedTexture.m_cacheId;
 }
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount)
+void RenderTarget::drawPrimitives(const PrimitiveType type, const base::SizeT firstVertex, const base::SizeT vertexCount)
 {
+    ++m_impl->currentDrawStats.drawCalls;
+
     glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                          /* first vertex index */ static_cast<GLint>(firstVertex),
                          /*       vertex count */ static_cast<GLsizei>(vertexCount)));
@@ -1028,8 +1251,10 @@ void RenderTarget::drawPrimitives(PrimitiveType type, base::SizeT firstVertex, b
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount)
+void RenderTarget::drawIndexedPrimitives(const PrimitiveType type, const base::SizeT indexCount)
 {
+    ++m_impl->currentDrawStats.drawCalls;
+
     static_assert(SFML_BASE_IS_SAME(IndexType, unsigned int));
 
     glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
@@ -1058,7 +1283,6 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 }
 
 } // namespace sf
-
 
 ////////////////////////////////////////////////////////////
 // Render states caching strategies

@@ -4,15 +4,15 @@
 
 #if __has_builtin(__is_convertible)
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_CONVERTIBLE(from, to) __is_convertible(from, to)
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_CONVERTIBLE(from, to) __is_convertible(from, to)
 
 #else
 
-#include <type_traits>
+    #include <type_traits>
 
-////////////////////////////////////////////////////////////
-#define SFML_BASE_IS_CONVERTIBLE(from, to) ::std::is_convertible_v<from, to>
+    ////////////////////////////////////////////////////////////
+    #define SFML_BASE_IS_CONVERTIBLE(from, to) ::std::is_convertible_v<from, to>
 
 #endif
 

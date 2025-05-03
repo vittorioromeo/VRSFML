@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -13,7 +14,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 FloatRect Sprite::getLocalBounds() const
 {
-    return {{0.f, 0.f}, {base::fabs(textureRect.size.x), base::fabs(textureRect.size.y)}};
+    return {{0.f, 0.f}, {SFML_BASE_MATH_FABSF(textureRect.size.x), SFML_BASE_MATH_FABSF(textureRect.size.y)}};
 }
 
 

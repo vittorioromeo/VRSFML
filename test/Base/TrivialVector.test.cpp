@@ -1,5 +1,3 @@
-#include "SFML/Base/TrivialVector.hpp"
-
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsCopyAssignable.hpp"
@@ -10,14 +8,17 @@
 #include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
+
 namespace
 {
-TEST_CASE("[Base] Base/TrivialVector.hpp")
+TEST_CASE("[Base] Base/Vector.hpp")
 {
     const auto asConst = [](auto& x) -> const auto& { return x; };
 
@@ -31,18 +32,18 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(int));
         STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(int));
 
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::TrivialVector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::Vector<int>));
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::Vector<int>));
 
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::TrivialVector<int>));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::TrivialVector<int>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::base::Vector<int>));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::base::Vector<int>));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::base::Vector<int>));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::base::Vector<int>));
     }
 
     SECTION("Empty")
@@ -59,7 +60,7 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
     CHECK((tv).size() == 0u);                \
     CHECK((tv).empty());
 
-        sf::base::TrivialVector<int> tv;
+        sf::base::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -67,20 +68,20 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
-        sf::base::TrivialVector<int> tv2 = tv;
+        sf::base::Vector<int> tv2 = tv;
         DO_EMPTY_CHECKS(tv2);
         CHECK(tv2.capacity() == 0u);
 
-        sf::base::TrivialVector<int> tv3 = SFML_BASE_MOVE(tv);
+        sf::base::Vector<int> tv3 = SFML_BASE_MOVE(tv);
         DO_EMPTY_CHECKS(tv3);
         CHECK(tv3.capacity() == 0u);
 
-        sf::base::TrivialVector<int> tv4;
+        sf::base::Vector<int> tv4;
         tv4 = tv;
         DO_EMPTY_CHECKS(tv4);
         CHECK(tv4.capacity() == 0u);
 
-        sf::base::TrivialVector<int> tv5;
+        sf::base::Vector<int> tv5;
         tv5 = SFML_BASE_MOVE(tv4);
         DO_EMPTY_CHECKS(tv5);
         CHECK(tv5.capacity() == 0u);
@@ -88,7 +89,7 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
 
     SECTION("Non-empty")
     {
-        sf::base::TrivialVector<int> tv;
+        sf::base::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -140,7 +141,7 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
             int value;
         };
 
-        sf::base::TrivialVector<S> tv;
+        sf::base::Vector<S> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 
@@ -185,7 +186,7 @@ TEST_CASE("[Base] Base/TrivialVector.hpp")
 
     SECTION("Shrink to fit")
     {
-        sf::base::TrivialVector<int> tv;
+        sf::base::Vector<int> tv;
         DO_EMPTY_CHECKS(tv);
         CHECK(tv.capacity() == 0u);
 

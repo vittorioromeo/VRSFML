@@ -1,10 +1,12 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Config.hpp"
+
 
 // Windows' HWND is a type alias for struct HWND__*
 #if defined(SFML_SYSTEM_WINDOWS)
@@ -40,8 +42,8 @@ using WindowHandle = void*;
 
 #elif defined(SFML_SYSTEM_EMSCRIPTEN)
 
-// Window handle is int on Emscripten
-using WindowHandle = int;
+// Window handle is string on Emscripten
+using WindowHandle = const char*;
 
 #elif defined(SFML_DOXYGEN)
 

@@ -20,6 +20,15 @@ imgui.ini
 *.log
 notes.yaml
 examples/batching/imgui.ini
+examples/bubble_idle/imgui.ini
+examples/bubble_idle/art
 compile_commands.json
 old/out.txt
 old/x.x
+*.bak0
+*.bak1
+*.bak2
+
+prepare_build.sh
+examples/bubble_idle/prepare_build.sh
+examples/bubble_idle/userdata*

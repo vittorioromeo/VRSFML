@@ -1,11 +1,14 @@
 #pragma once
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
 
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/Shape.hpp"
 
 #include "SFML/System/Vector2.hpp"
@@ -24,13 +27,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
-    {
-        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
-        SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
-
-        Vector2f size{}; //!< Size of the rectangle
-    };
+    using Settings = RectangleShapeData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor

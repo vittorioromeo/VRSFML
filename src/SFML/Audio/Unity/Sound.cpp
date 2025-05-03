@@ -1,5 +1,7 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+// TODO P0: consider passing buffer in on .play and not storing it
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -13,10 +15,10 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 #include <miniaudio.h>
@@ -24,12 +26,15 @@
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 struct Sound::Impl
 {
+    ////////////////////////////////////////////////////////////
     explicit Impl(Sound* theOwner) : owner(theOwner)
     {
     }
 
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
         SFML_BASE_ASSERT(soundBase.hasValue());
@@ -52,6 +57,7 @@ struct Sound::Impl
         soundBase->refreshSoundChannelMap();
     }
 
+    ////////////////////////////////////////////////////////////
     static void onEnd(void* userData, ma_sound* soundPtr)
     {
         auto& impl  = *static_cast<Impl*>(userData);
@@ -62,7 +68,8 @@ struct Sound::Impl
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
-    static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -90,7 +97,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -103,12 +111,14 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getFormat(ma_data_source* dataSource,
-                               ma_format*      format,
-                               ma_uint32*      channels,
-                               ma_uint32*      sampleRate,
-                               ma_channel*,
-                               base::SizeT)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getFormat(
+        ma_data_source* dataSource,
+        ma_format*      format,
+        ma_uint32*      channels,
+        ma_uint32*      sampleRate,
+        ma_channel*,
+        base::SizeT)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -116,12 +126,13 @@ struct Sound::Impl
         // If we don't have valid values yet, initialize with defaults so sound creation doesn't fail
         *format     = ma_format_s16;
         *channels   = buffer && buffer->getChannelCount() ? buffer->getChannelCount() : 1;
-        *sampleRate = buffer && buffer->getSampleRate() ? buffer->getSampleRate() : 44100;
+        *sampleRate = buffer && buffer->getSampleRate() ? buffer->getSampleRate() : 44'100;
 
         return MA_SUCCESS;
     }
 
-    static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -134,7 +145,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result getLength(ma_data_source* dataSource, ma_uint64* length)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result getLength(ma_data_source* dataSource, ma_uint64* length)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -147,7 +159,8 @@ struct Sound::Impl
         return MA_SUCCESS;
     }
 
-    static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }
@@ -178,6 +191,8 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(base::makeUnique<Impl>(this))
 // NOLINTNEXTLINE(readability-redundant-member-init)
 Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(base::makeUnique<Impl>(this))
 {
+    SFML_BASE_ASSERT(rhs.m_impl != nullptr);
+
     SoundSource::operator=(rhs);
 
     if (rhs.m_impl->buffer != nullptr)
@@ -190,6 +205,8 @@ Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(base::makeUnique<Impl>
 ////////////////////////////////////////////////////////////
 Sound& Sound::operator=(const Sound& rhs)
 {
+    SFML_BASE_ASSERT(rhs.m_impl != nullptr);
+
     // Here we don't use the copy-and-swap idiom, because it would mess up
     // the list of sound instances contained in the buffers
 
@@ -200,18 +217,21 @@ Sound& Sound::operator=(const Sound& rhs)
     // Delegate to base class, which copies all the sound attributes
     SoundSource::operator=(rhs);
 
-    // Detach the sound instance from the previous buffer (if any)
-    if (m_impl->buffer != nullptr)
+    if (m_impl->buffer != rhs.m_impl->buffer)
     {
-        stop();
+        // Detach the sound instance from the previous buffer (if any)
+        if (m_impl->buffer != nullptr)
+        {
+            stop();
 
-        m_impl->buffer->detachSound(this);
-        m_impl->buffer = nullptr;
+            m_impl->buffer->detachSound(this);
+            m_impl->buffer = nullptr;
+        }
+
+        // Copy the remaining sound attributes
+        if (rhs.m_impl->buffer != nullptr)
+            setBuffer(*rhs.m_impl->buffer);
     }
-
-    // Copy the remaining sound attributes
-    if (rhs.m_impl->buffer != nullptr)
-        setBuffer(*rhs.m_impl->buffer);
 
     return *this;
 }
@@ -220,22 +240,41 @@ Sound& Sound::operator=(const Sound& rhs)
 ////////////////////////////////////////////////////////////
 Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
 {
+    if (m_impl->buffer != nullptr)
+    {
+        m_impl->buffer->detachSound(&rhs);
+        m_impl->buffer->attachSound(this);
+    }
+
     // Update self-referential owner pointer.
     m_impl->owner = this;
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
 
 ////////////////////////////////////////////////////////////
 Sound& Sound::operator=(Sound&& rhs) noexcept
 {
-    if (this != &rhs)
-    {
-        m_impl = SFML_BASE_MOVE(rhs.m_impl);
+    if (this == &rhs)
+        return *this;
 
-        // Update self-referential owner pointer.
-        m_impl->owner = this;
+    // TODO P0: add test for all this kind of stuff (e.g. sound manager) and fix existing tests
+    if (m_impl != nullptr && m_impl->buffer != nullptr)
+        m_impl->buffer->detachSound(this);
+
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+
+    if (m_impl->buffer != nullptr)
+    {
+        m_impl->buffer->detachSound(&rhs);
+        m_impl->buffer->attachSound(this);
     }
 
+    // Update self-referential owner pointer.
+    m_impl->owner = this;
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
     return *this;
 }
 
@@ -243,6 +282,9 @@ Sound& Sound::operator=(Sound&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 Sound::~Sound()
 {
+    if (m_impl == nullptr) // Could be moved-from
+        return;
+
     stop();
 
     if (m_impl->buffer != nullptr)
@@ -253,6 +295,8 @@ Sound::~Sound()
 ////////////////////////////////////////////////////////////
 void Sound::play(PlaybackDevice& playbackDevice)
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     if (!m_impl->soundBase.hasValue())
     {
         m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
@@ -265,7 +309,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
     }
 
     if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time::Zero);
+        setPlayingOffset(Time{});
 
     if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
     {
@@ -280,6 +324,8 @@ void Sound::play(PlaybackDevice& playbackDevice)
 ////////////////////////////////////////////////////////////
 void Sound::pause()
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     if (!m_impl->soundBase.hasValue())
         return;
 
@@ -297,6 +343,8 @@ void Sound::pause()
 ////////////////////////////////////////////////////////////
 void Sound::stop()
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     if (!m_impl->soundBase.hasValue())
         return;
 
@@ -306,7 +354,7 @@ void Sound::stop()
         return;
     }
 
-    setPlayingOffset(Time::Zero);
+    setPlayingOffset(Time{});
     m_impl->status = Status::Stopped;
 }
 
@@ -314,6 +362,8 @@ void Sound::stop()
 ////////////////////////////////////////////////////////////
 void Sound::setBuffer(const SoundBuffer& buffer)
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     // First detach from the previous buffer
     if (m_impl->buffer != nullptr)
     {
@@ -342,9 +392,12 @@ void Sound::setBuffer(const SoundBuffer& buffer)
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
+
 ////////////////////////////////////////////////////////////
 void Sound::setPlayingOffset(Time playingOffset)
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     SoundSource::setPlayingOffset(playingOffset);
 
     if (!m_impl->soundBase.hasValue())
@@ -363,6 +416,8 @@ void Sound::setPlayingOffset(Time playingOffset)
 ////////////////////////////////////////////////////////////
 void Sound::setEffectProcessor(EffectProcessor effectProcessor)
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     SoundSource::setEffectProcessor(effectProcessor);
 
     if (!m_impl->soundBase.hasValue())
@@ -383,6 +438,8 @@ const SoundBuffer& Sound::getBuffer() const
 ////////////////////////////////////////////////////////////
 Time Sound::getPlayingOffset() const
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     if (m_impl->buffer == nullptr || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
         return Time{};
 
@@ -393,6 +450,8 @@ Time Sound::getPlayingOffset() const
 ////////////////////////////////////////////////////////////
 Sound::Status Sound::getStatus() const
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     return m_impl->status;
 }
 
@@ -400,6 +459,8 @@ Sound::Status Sound::getStatus() const
 ////////////////////////////////////////////////////////////
 void Sound::detachBuffer()
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     // First stop the sound in case it is playing
     stop();
 
@@ -415,6 +476,8 @@ void Sound::detachBuffer()
 ////////////////////////////////////////////////////////////
 void* Sound::getSound() const
 {
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
     if (!m_impl->soundBase.hasValue())
         return nullptr;
 

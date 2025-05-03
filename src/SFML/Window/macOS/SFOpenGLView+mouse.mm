@@ -1,15 +1,17 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#import <SFML/Window/macOS/SFOpenGLView+mouse_priv.h>
-#import <SFML/Window/macOS/SFOpenGLView.h>
 #include "SFML/Window/macOS/WindowImplCocoa.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+
+#import <SFML/Window/macOS/SFOpenGLView+mouse_priv.h>
+#import <SFML/Window/macOS/SFOpenGLView.h>
 
 
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"

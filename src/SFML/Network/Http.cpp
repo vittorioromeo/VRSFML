@@ -1,5 +1,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -9,6 +10,7 @@
 #include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/IO.hpp"
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -23,17 +25,17 @@
 
 #include <cctype>
 
+
 namespace
 {
 ////////////////////////////////////////////////////////////
 using FieldTable = std::map<std::string, std::string>; // Use an ordered map for predictable payloads
 
-
 ////////////////////////////////////////////////////////////
-void parseFields(std::istream& in, FieldTable& fields)
+void parseFields(auto& in, FieldTable& fields)
 {
     std::string line;
-    while (std::getline(in, line) && (line.size() > 2))
+    while (sf::getLine(in, line) && (line.size() > 2))
     {
         const std::string::size_type pos = line.find(": ");
         if (pos != std::string::npos)
@@ -146,45 +148,45 @@ void Http::Request::setBody(const std::string& body)
 ////////////////////////////////////////////////////////////
 std::string Http::Request::prepare() const
 {
-    std::ostringstream out;
+    OutStringStream oss;
 
     // Convert the method to its string representation
     switch (m_impl->method)
     {
         case Method::Get:
-            out << "GET";
+            oss << "GET";
             break;
         case Method::Post:
-            out << "POST";
+            oss << "POST";
             break;
         case Method::Head:
-            out << "HEAD";
+            oss << "HEAD";
             break;
         case Method::Put:
-            out << "PUT";
+            oss << "PUT";
             break;
         case Method::Delete:
-            out << "DELETE";
+            oss << "DELETE";
             break;
     }
 
     // Write the first line containing the request type
-    out << " " << m_impl->uri << " ";
-    out << "HTTP/" << m_impl->majorVersion << "." << m_impl->minorVersion << "\r\n";
+    oss << " " << m_impl->uri << " ";
+    oss << "HTTP/" << m_impl->majorVersion << "." << m_impl->minorVersion << "\r\n";
 
     // Write fields
     for (const auto& [fieldKey, fieldValue] : m_impl->fields)
     {
-        out << fieldKey << ": " << fieldValue << "\r\n";
+        oss << fieldKey << ": " << fieldValue << "\r\n";
     }
 
     // Use an extra \r\n to separate the header from the body
-    out << "\r\n";
+    oss << "\r\n";
 
     // Add the body
-    out << m_impl->body;
+    oss << m_impl->body;
 
-    return out.str();
+    return oss.getString();
 }
 
 
@@ -416,9 +418,9 @@ Http::Response Http::sendRequest(const Http::Request& request, Time timeout)
     }
     if (!toSend.hasField("Content-Length"))
     {
-        std::ostringstream out;
-        out << toSend.m_impl->body.size();
-        toSend.setField("Content-Length", out.str());
+        OutStringStream oss;
+        oss << toSend.m_impl->body.size();
+        toSend.setField("Content-Length", oss.getString());
     }
     if ((toSend.m_impl->method == Request::Method::Post) && !toSend.hasField("Content-Type"))
     {

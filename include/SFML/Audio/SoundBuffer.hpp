@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
@@ -234,7 +235,7 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesTrivialVectorPtr);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr);
 
 private:
     ////////////////////////////////////////////////////////////

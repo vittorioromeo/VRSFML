@@ -1,36 +1,16 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/CircleShape.hpp"
+#include "SFML/Graphics/ShapeUtils.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Assume.hpp"
-#include "SFML/Base/Constants.hpp"
-#include "SFML/Base/FastSinCos.hpp"
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vector2f computeCirclePoint(
-    const sf::base::SizeT index,
-    const unsigned int    pointCount,
-    const float           radius)
-{
-    const float radians       = static_cast<float>(index) / static_cast<float>(pointCount) * sf::base::tau;
-    const auto [sine, cosine] = sf::base::fastSinCos(radians);
-
-    SFML_BASE_ASSUME(sine >= 0.f && sine <= 1.f);
-    SFML_BASE_ASSUME(cosine >= 0.f && cosine <= 1.f);
-
-    return {radius * (1.f + sine), radius * (1.f + cosine)};
-}
-
-} // namespace
+#include "SFML/Base/LambdaMacros.hpp"
 
 
 namespace sf
@@ -99,14 +79,11 @@ Vector2f CircleShape::getGeometricCenter() const
 ////////////////////////////////////////////////////////////
 void CircleShape::updateCircleGeometry()
 {
-    if (!Shape::updateImplResizeVerticesVector(m_pointCount)) [[unlikely]]
-        return;
+    const float angleStep = sf::base::tau / static_cast<float>(m_pointCount);
 
-    // Position
-    for (unsigned int i = 0u; i < m_pointCount; ++i)
-        m_vertices[i + 1].position = computeCirclePoint(i, m_pointCount, m_radius);
-
-    Shape::updateImplFromVerticesPositions(m_pointCount);
+    updateFromFunc([&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return computeCirclePointFromAngleStep(i, angleStep, m_radius); },
+                   m_pointCount);
 }
 
 } // namespace sf
