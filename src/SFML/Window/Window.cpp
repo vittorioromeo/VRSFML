@@ -9,7 +9,6 @@
 #include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
-#include "SFML/Window/WindowImpl.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/GLUtils/GlContext.hpp"
@@ -62,8 +61,7 @@ m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowI
 
 
 ////////////////////////////////////////////////////////////
-Window::Window(const Settings& windowSettings) :
-Window(windowSettings, windowSettings.bitsPerPixel, priv::WindowImpl::create(windowSettings))
+Window::Window(const Settings& windowSettings) : Window(windowSettings, windowSettings.bitsPerPixel, windowSettings)
 {
 }
 

@@ -115,7 +115,7 @@ private:
 /// while (...)
 /// {
 ///     // Read or generate audio samples from your custom source
-///     std::vector<base::I16> samples = ...;
+///     std::vector<sf::base::I16> samples = ...;
 ///
 ///     // Write them to the file
 ///     file.write(samples.data(), samples.size());

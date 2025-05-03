@@ -25,7 +25,7 @@ class WindowImplCocoa;
 /// Key, mouse and Window focus events are delegated to its view, SFOpenGLView.
 ///
 /// Used when SFML handle everything and when a NSWindow* is given
-/// as handle to WindowImpl.
+/// as handle to WindowImplCocoa.
 ///
 /// When grabbing the cursor, if the window is resizeable, m_restoreResize is
 /// set to YES and the window is marked as not resizeable. This is to prevent

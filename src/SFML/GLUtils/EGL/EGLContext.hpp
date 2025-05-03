@@ -22,7 +22,7 @@
 
 namespace sf::priv
 {
-class WindowImpl;
+class SDLWindowImpl;
 
 class EglContext : public GlContext
 {
@@ -47,7 +47,7 @@ public:
     explicit EglContext(unsigned int           id,
                         EglContext*            shared,
                         const ContextSettings& contextSettings,
-                        const WindowImpl&      owner,
+                        const SDLWindowImpl&   owner,
                         unsigned int           bitsPerPixel);
 
     ////////////////////////////////////////////////////////////
@@ -75,7 +75,7 @@ public:
     /// \return `true` on success, `false` if any error happened
     ///
     ////////////////////////////////////////////////////////////
-    bool makeCurrent(bool current) override;
+    [[nodiscard]] bool makeCurrent(bool activate) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Display what has been rendered to the context so far
