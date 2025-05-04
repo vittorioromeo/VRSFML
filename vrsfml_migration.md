@@ -413,7 +413,7 @@ TODO P0:
 
 ## High DPI Support
 
-TODO P0:
+TODO P0: `makeDPIScaledRenderWindow`, also helper DPI getter functions
 
 
 
