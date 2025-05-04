@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 
@@ -357,21 +358,6 @@ public:
     [[nodiscard]] Vector2i mapCoordsToPixel(Vector2f point, const View& view) const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw a drawable object to the render target
-    ///
-    /// \param drawable Object to draw
-    /// \param states   Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename DrawableObject>
-    void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
-        requires(requires { drawableObject.draw(*this, states); })
-    {
-        flushIfNeeded(states);
-        drawableObject.draw(*this, states);
-    }
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -408,7 +394,9 @@ public:
     /// \param states Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const Texture& texture, const TextureDrawParams& params, RenderStates states = {});
+    void draw(const Texture&           texture,
+              const TextureDrawParams& params,
+              RenderStates             states = {}); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a sprite object to the render target
@@ -442,64 +430,6 @@ public:
     void draw(const Text& text, RenderStates states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw primitives defined by an array of vertices
-    ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const Vertex*       vertexData,
-                             base::SizeT         vertexCount,
-                             const unsigned int* indexData,
-                             base::SizeT         indexCount,
-                             PrimitiveType       type,
-                             const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawIndexedQuads(const Vertex*       vertexData,
-                          base::SizeT         vertexCount,
-                          PrimitiveType       type,
-                          const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw primitives defined by an array of vertices
-    ///
-    /// \brief TODO P1: docs
-    /// \param vertices    Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawPersistentMappedVertices(const PersistentGPUDrawableBatch& batch,
-                                      base::SizeT                       vertexCount,
-                                      PrimitiveType                     type,
-                                      const RenderStates&               states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawPersistentMappedIndexedVertices(
-        const PersistentGPUDrawableBatch& batch,
-        base::SizeT                       indexCount,
-        base::SizeT                       indexOffset,
-        base::SizeT                       vertexOffset,
-        PrimitiveType                     type,
-        const RenderStates&               states = {});
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -510,38 +440,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw primitives defined by a contiguous container of vertices
-    ///
-    /// \tparam ContiguousVertexRange Type of the contiguous container,
-    ///         must support `.data()` and `.size()` operations.
-    ///
-    /// \param vertices    Reference to the contiguous vertex container
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename ContiguousVertexRange>
-    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
-        requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
-    {
-        drawVertices(vertices.data(), vertices.size(), type, states);
-    }
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw primitives defined by a C-style array of vertices
-    ///
-    /// \param vertices    Reference to the C-style vertex array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    template <base::SizeT N>
-    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
-    {
-        drawVertices(vertices, N, type, states);
-    }
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a vertex buffer
@@ -595,6 +493,69 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of vertices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of indices and vertices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param indexData   Pointer to the indices
+    /// \param indexCount  Number of indices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedVertices(const Vertex*       vertexData,
+                             base::SizeT         vertexCount,
+                             const IndexType*    indexData,
+                             base::SizeT         indexCount,
+                             PrimitiveType       type,
+                             const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw quads defined by an array of vertices and precomputed quad indices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedQuads(const Vertex*       vertexData,
+                          base::SizeT         vertexCount,
+                          PrimitiveType       type,
+                          const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a persistent mapped buffer and indices
+    ///
+    /// \param batch        Reference to the persistent mapped buffer
+    /// \param indexCount   Number of indices in the array
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    /// \param vertexCount  Number of vertices in the array
+    /// \param type         Type of primitives to draw
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -666,7 +627,7 @@ public:
 
 protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Constructor from graphics context
+    /// \brief Constructor from view
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit RenderTarget(const View& currentView);
@@ -689,10 +650,90 @@ protected:
 
 private:
     ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by an array of vertices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawVertices(const Vertex*       vertexData,
+                               base::SizeT         vertexCount,
+                               PrimitiveType       type,
+                               const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by an array of indices and vertices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param indexData   Pointer to the indices
+    /// \param indexCount  Number of indices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawIndexedVertices(const Vertex*       vertexData,
+                                      base::SizeT         vertexCount,
+                                      const IndexType*    indexData,
+                                      base::SizeT         indexCount,
+                                      PrimitiveType       type,
+                                      const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw quads defined by an array of vertices and precomputed quad indices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    /// Indices follow the sequence `[0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 9, 10, ...]`.
+    /// Vertex count must be a multiple of `4`.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawIndexedQuads(const Vertex*       vertexData,
+                                   base::SizeT         vertexCount,
+                                   PrimitiveType       type,
+                                   const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by a persistent mapped buffer and indices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param batch        Reference to the persistent mapped buffer
+    /// \param indexCount   Number of indices in the array
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    /// \param vertexCount  Number of vertices in the array
+    /// \param type         Type of primitives to draw
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
+
+    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawDrawableBatchImpl(const CPUDrawableBatch& drawableBatch, RenderStates states);
+    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -704,7 +745,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawShapeData(const auto& shapeData, const RenderStates& states = {});
+    void helperDrawShapeData(const auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -747,6 +788,13 @@ private:
     void unapplyTexture();
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct DrawGuard;
+    friend DrawGuard;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Setup environment for drawing
     ///
     /// \param states Render states to use for drawing
@@ -774,37 +822,6 @@ private:
     void setupDrawTexture(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw non-indexed primitives
-    ///
-    /// \param type        Type of primitives to draw
-    /// \param firstVertex Index of the first vertex to use when drawing
-    /// \param vertexCount Number of vertices to use when drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawPrimitives(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw indexed primitives
-    ///
-    /// \param type         Type of primitives to draw
-    /// \param indexCount   Number of indices to use when drawing
-    /// \param indexOffset  Offset of the first index to use when drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawIndexedPrimitives(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw indexed primitives with base vertex (not supported on OpenGL ES)
-    ///
-    /// \param type         Type of primitives to draw
-    /// \param indexCount   Number of indices to use when drawing
-    /// \param indexOffset  Offset of the first index to use when drawing
-    /// \param vertexOffset Offset of the first vertex to use when drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void drawIndexedPrimitivesBaseVertex(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset, base::SizeT vertexOffset);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Clean up environment after drawing
     ///
     /// \param states Render states used for drawing
@@ -813,8 +830,123 @@ private:
     void cleanupDraw(const RenderStates& states);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: non-indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param firstVertex Index of the first vertex to use when drawing
+    /// \param vertexCount Number of vertices to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCall(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param indexCount  Number of indices to use when drawing
+    /// \param indexOffset Offset of the first index to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCallIndexed(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: indexed with base vertex (not supported on OpenGL ES 3.1)
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCallIndexedBaseVertex(PrimitiveType type,
+                                                  base::SizeT   indexCount,
+                                                  base::SizeT   indexOffset,
+                                                  base::SizeT   vertexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addToAutoBatch(auto&&... xs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT getAutoBatchNumVertices() const;
+
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a contiguous container of vertices
+    ///
+    /// \tparam ContiguousVertexRange Type of the contiguous container,
+    ///         must support `.data()` and `.size()` operations.
+    ///
+    /// \param vertices Reference to the contiguous vertex container
+    /// \param type     Type of primitives to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename ContiguousVertexRange>
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
+        requires(requires { immediateDrawVertices(vertices.data(), vertices.size(), type, states); })
+    {
+        drawVertices(vertices.data(), vertices.size(), type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a C-style array of vertices
+    ///
+    /// \param vertices Reference to the C-style vertex array
+    /// \param type     Type of primitives to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <base::SizeT N>
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
+    {
+        drawVertices(vertices, N, type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a drawable object to the render target
+    ///
+    /// \tparam DrawableObject Type of the drawable object,
+    ///         must support `draw(RenderTarget&, RenderStates&)` method.
+    ///
+    /// \param drawable Object to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename DrawableObject>
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
+        requires(requires { drawableObject.draw(*this, states); })
+    {
+        flushIfNeeded(states);
+        drawableObject.draw(*this, states);
+    }
+
+private:
+    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
+    DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
+    AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
+    base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
+    RenderStates   m_lastRenderStates;                         //!< Cached render states (autobatching)
+
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };

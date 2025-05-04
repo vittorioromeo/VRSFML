@@ -10,6 +10,7 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
@@ -33,13 +34,55 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::addTriangles(const Transform& transform, const Vertex* data, base::SizeT size)
+void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT vertexData,
+                                      const base::SizeT                      vertexCount,
+                                      const PrimitiveType                    type)
 {
-    appendIncreasingIndices(static_cast<IndexType>(size), m_storage.getNumVertices(), m_storage.reserveMoreIndices(size));
-    m_storage.commitMoreIndices(size);
+    SFML_BASE_ASSERT(type == PrimitiveType::Triangles);
+    SFML_BASE_ASSERT(vertexCount % 3u == 0u);
 
-    appendTransformedVertices(transform, data, size, m_storage.reserveMoreVertices(size));
-    m_storage.commitMoreVertices(size);
+    if (vertexData == nullptr || vertexCount == 0u)
+        return;
+
+    const IndexType firstNewVertexIndex = m_storage.getNumVertices();
+
+    SFML_BASE_MEMCPY(m_storage.reserveMoreVertices(vertexCount), vertexData, vertexCount * sizeof(Vertex));
+    m_storage.commitMoreVertices(vertexCount);
+
+    IndexType* dstIndices = m_storage.reserveMoreIndices(vertexCount);
+
+    for (base::SizeT i = 0u; i < vertexCount; ++i)
+        *dstIndices++ = firstNewVertexIndex + static_cast<IndexType>(i);
+
+    m_storage.commitMoreIndices(vertexCount);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT    vertexData,
+                                      const base::SizeT                         vertexCount,
+                                      const IndexType* const SFML_BASE_RESTRICT indexData,
+                                      const base::SizeT                         indexCount,
+                                      const PrimitiveType                       type)
+{
+    SFML_BASE_ASSERT(type == PrimitiveType::Triangles);
+    SFML_BASE_ASSERT(vertexCount % 3u == 0u);
+
+    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u)
+        return;
+
+    const IndexType firstNewVertexIndex = m_storage.getNumVertices();
+
+    SFML_BASE_MEMCPY(m_storage.reserveMoreVertices(vertexCount), vertexData, vertexCount * sizeof(Vertex));
+    m_storage.commitMoreVertices(vertexCount);
+
+    IndexType* dstIndices = m_storage.reserveMoreIndices(indexCount);
+
+    for (base::SizeT i = 0u; i < indexCount; ++i)
+        *dstIndices++ = firstNewVertexIndex + indexData[i];
+
+    m_storage.commitMoreIndices(indexCount);
 }
 
 
