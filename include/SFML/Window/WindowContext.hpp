@@ -96,7 +96,7 @@ public:
     WindowContext& operator=(WindowContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0: docs
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isInstalled();
