@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -17,9 +18,6 @@
 
 namespace sf
 {
-////////////////////////////////////////////////////////////
-using IndexType = unsigned int;
-
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
                                                                                  const IndexType startIndex) noexcept

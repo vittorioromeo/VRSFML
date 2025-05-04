@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Graphics/IndexType.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
@@ -32,17 +34,6 @@ struct RoundedRectangleShapeData;
 struct Sprite;
 struct TextData;
 struct Transform;
-} // namespace sf
-
-
-namespace sf
-{
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-using IndexType = unsigned int;
-
 } // namespace sf
 
 
@@ -215,8 +206,22 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
+    /// \note Only supports triangle primitives.
+    ///
     ////////////////////////////////////////////////////////////
-    void addTriangles(const Transform& transform, const Vertex* data, base::SizeT size);
+    void add(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    /// \note Only supports triangle primitives.
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const Vertex*    vertexData,
+             base::SizeT      vertexCount,
+             const IndexType* indexData,
+             base::SizeT      indexCount,
+             PrimitiveType    type);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
