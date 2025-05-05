@@ -46,6 +46,8 @@ struct GLVAOGroup;
 struct GLVertexBufferObject;
 struct PieSliceShapeData;
 struct RectangleShapeData;
+struct RingShapeData;
+struct RingPieSliceShapeData;
 struct RoundedRectangleShapeData;
 struct Sprite;
 struct StarShapeData;
@@ -496,6 +498,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a ring shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const RingShapeData& sdRing, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a ring shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const RingPieSliceShapeData& sdRing, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a rounded rectangle shape from its relevant data
