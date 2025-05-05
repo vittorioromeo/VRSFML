@@ -18,9 +18,6 @@
 
 #include "SFML/Base/Builtins/Strstr.hpp"
 
-#include <cctype>
-#include <cstdlib>
-
 
 namespace sf::priv
 {

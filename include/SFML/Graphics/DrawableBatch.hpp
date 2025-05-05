@@ -27,10 +27,14 @@ class Font;
 class RenderTarget;
 class Shape;
 class Text;
+
+struct ArrowShapeData;
 struct CircleShapeData;
 struct EllipseShapeData;
+struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RoundedRectangleShapeData;
+struct StarShapeData;
 struct Sprite;
 struct TextData;
 struct Transform;
@@ -245,6 +249,12 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    void add(const ArrowShapeData& sdArrow);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void add(const CircleShapeData& sdCircle);
 
     ////////////////////////////////////////////////////////////
@@ -257,6 +267,12 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
+    void add(const PieSliceShapeData& sdPieSlice);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
     void add(const RectangleShapeData& sdRectangle);
 
     ////////////////////////////////////////////////////////////
@@ -264,6 +280,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void add(const RoundedRectangleShapeData& sdRoundedRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const StarShapeData& sdStarShape);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -314,7 +336,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawShapeFromPoints(base::SizeT nPoints, const auto& descriptor, auto&& pointFn);
+    void drawTriangleFanShapeFromPoints(base::SizeT nPoints, const auto& descriptor, auto&& pointFn, Vector2f centerOffset = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

@@ -6,46 +6,13 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/SDLGlContext.hpp"
+#include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 
 #include <SDL3/SDL_video.h>
-
-
-////////////////////////////////////////////////////////////
-#define SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(attribute, value)                                              \
-    if (!SDL_GL_SetAttribute(attribute, value))                                                        \
-    {                                                                                                  \
-        ::sf::priv::err() << "Failed to set SDL attribute '" << #attribute << "': " << SDL_GetError(); \
-    }
-
-
-namespace
-{
-////////////////////////////////////////////////////////////
-void applyContextSettings(const sf::ContextSettings& settings)
-{
-    // Set context flags
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_DOUBLEBUFFER, 1);
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_MULTISAMPLEBUFFERS, settings.antiAliasingLevel > 0u ? 1 : 0);
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_MULTISAMPLESAMPLES, static_cast<int>(settings.antiAliasingLevel));
-
-    // Set context version
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_MAJOR_VERSION, static_cast<int>(settings.majorVersion));
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_MINOR_VERSION, static_cast<int>(settings.minorVersion));
-
-    // Set context flags
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_PROFILE_MASK,
-                                    settings.isCore() ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_CONTEXT_FLAGS, settings.isDebug() ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
-}
-
-} // namespace
 
 
 namespace sf::priv
@@ -66,6 +33,8 @@ void SDLGlContext::destroyWindowIfNeeded()
 ////////////////////////////////////////////////////////////
 void SDLGlContext::initContext(SDLGlContext* const shared)
 {
+    auto& sdlLayer = getSDLLayerSingleton();
+
     // Set context sharing attributes if a shared context is provided
     if (shared != nullptr)
     {
@@ -76,11 +45,13 @@ void SDLGlContext::initContext(SDLGlContext* const shared)
         }
 
         // The next created context will be shared with the current one
-        SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
+        if (!sdlLayer.setGLAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1))
+            err() << "Failed to set shared GL context attribute";
     }
 
     // Create the OpenGL context
     m_context = SDL_GL_CreateContext(m_window);
+
     if (!m_context)
     {
         err() << "Failed to create SDL GL context: " << SDL_GetError();
@@ -89,12 +60,9 @@ void SDLGlContext::initContext(SDLGlContext* const shared)
     }
 
     // Reset sharing attribute to default
-    SFML_PRIV_TRY_SET_SDL_ATTRIBUTE(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+    if (!sdlLayer.setGLAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0))
+        err() << "Failed to reset shared GL context attribute";
 }
-
-
-////////////////////////////////////////////////////////////
-#undef SFML_PRIV_TRY_SET_SDL_ATTRIBUTE
 
 
 ////////////////////////////////////////////////////////////
@@ -104,7 +72,8 @@ m_window(nullptr),
 m_context(nullptr),
 m_ownsWindow(false)
 {
-    applyContextSettings(m_settings);
+    if (!getSDLLayerSingleton().applyGLContextSettings(m_settings))
+        err() << "Failed to apply SDL GL context settings for shared GL context hidden window";
 
     // Create a hidden window for the context
     m_window = SDL_CreateWindow("", 1, 1, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
@@ -130,7 +99,6 @@ m_window(owner.getSDLHandle()),
 m_context(nullptr),
 m_ownsWindow(false)
 {
-    applyContextSettings(m_settings);
     initContext(shared);
 }
 
