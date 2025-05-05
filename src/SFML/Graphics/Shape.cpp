@@ -206,10 +206,10 @@ void Shape::updateOutline()
     const base::SizeT count = m_vertices.size() - 2u;
     m_vertices.resize(m_verticesEndIndex + (count + 1u) * 2u);
 
-    ShapeUtils::updateOutlineImpl(m_outlineThickness,
-                                  m_vertices.data() + 1u, // Skip the first vertex (center point)
-                                  m_vertices.data() + m_verticesEndIndex,
-                                  count);
+    ShapeUtils::updateOutlineFromTriangleFanFill(m_outlineThickness,
+                                                 m_vertices.data() + 1u, // Skip the first vertex (center point)
+                                                 m_vertices.data() + m_verticesEndIndex,
+                                                 count);
 
     // Update outline colors
     updateOutlineColors();

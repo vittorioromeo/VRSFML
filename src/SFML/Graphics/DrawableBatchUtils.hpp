@@ -39,6 +39,32 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleStripIndices(
+    IndexType*&     indexPtr,
+    const IndexType startIndex,
+    const IndexType i) noexcept
+{
+    const IndexType idx0 = startIndex + i;
+    const IndexType idx1 = startIndex + i + 1u;
+    const IndexType idx2 = startIndex + i + 2u;
+
+    if ((i % 2u) == 0u)
+    {
+        // Even triangle: uses vertices `(i, i+1, i+2)` in that order
+        *indexPtr++ = idx0;
+        *indexPtr++ = idx1;
+        *indexPtr++ = idx2;
+    }
+    else
+    {
+        // Odd triangle: uses vertices `(i, i+1, i+2)` but in order `(i+2, i+1, i)` to flip winding
+        *indexPtr++ = idx2;
+        *indexPtr++ = idx1;
+        *indexPtr++ = idx0;
+    }
+}
+
+////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType*& indexPtr, const IndexType startIndex) noexcept
 {
     appendTriangleIndices(indexPtr, startIndex);      // Triangle strip: triangle #0

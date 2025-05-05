@@ -4,10 +4,12 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
+#include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/RingPieSliceShapeData.hpp"
+#include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/StarShapeData.hpp"
 
@@ -101,6 +103,24 @@ private:
                 .size             = {128.f, 64.f},
                 .cornerRadius     = 32.f,
                 .cornerPointCount = 16u,
+            }));
+
+            m_window.draw(applyCommonSettings(sf::RingPieSliceShapeData{
+                .position    = {364.f, 196.f},
+                .origin      = {64.f, 64.f},
+                .outerRadius = 64.f,
+                .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.2f + phase * 0.75f))),
+                .startAngle  = sf::degrees(0.f),
+                .sweepAngle  = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 3.5f)))),
+                .pointCount  = 32u,
+            }));
+
+            m_window.draw(applyCommonSettings(sf::RingShapeData{
+                .position    = {364.f, 356.f},
+                .origin      = {64.f, 64.f},
+                .outerRadius = 64.f,
+                .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.25f + phase * 2.f))),
+                .pointCount  = 30u,
             }));
 
             m_window.draw(applyCommonSettings(sf::StarShapeData{

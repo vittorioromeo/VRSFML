@@ -22,23 +22,6 @@
 namespace sf::ShapeUtils
 {
 ////////////////////////////////////////////////////////////
-/// \brief Computes the angular step between vertices.
-///
-/// Given the number of points for a circle or ellipse, this function
-/// calculates the angle (in radians) between consecutive vertices.
-///
-/// \param pointCount Number of points/vertices.
-///
-/// \return The angular step in radians.
-///
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computeAngleStep(
-    const unsigned int pointCount) noexcept
-{
-    return base::tau / static_cast<float>(pointCount);
-}
-
-////////////////////////////////////////////////////////////
 /// \brief Computes a point on an ellipse using a precomputed angle step.
 ///
 /// This function calculates the 2D position of a vertex on an ellipse
@@ -87,7 +70,7 @@ namespace sf::ShapeUtils
     const float        hRadius,
     const float        vRadius) noexcept
 {
-    return computeEllipsePointFromAngleStep(index, computeAngleStep(pointCount), hRadius, vRadius);
+    return computeEllipsePointFromAngleStep(index, base::tau / static_cast<float>(pointCount), hRadius, vRadius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -129,7 +112,7 @@ namespace sf::ShapeUtils
     const unsigned int pointCount,
     const float        radius) noexcept
 {
-    return computeCirclePointFromAngleStep(index, computeAngleStep(pointCount), radius);
+    return computeCirclePointFromAngleStep(index, base::tau / static_cast<float>(pointCount), radius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -249,8 +232,8 @@ namespace sf::ShapeUtils
     const float        sweepAngle,
     const unsigned int pointCount) noexcept
 {
-    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);  // Need center + at least start/end points on arc
-    SFML_BASE_ASSERT_AND_ASSUME(sweepAngle != 0.f); // Sweep angle must be non-zero
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u); // Need center + at least start/end points on arc
+    SFML_BASE_ASSERT_AND_ASSUME(sweepAngle > 0.f); // Sweep angle must be positive
     SFML_BASE_ASSERT_AND_ASSUME(index < pointCount);
     SFML_BASE_ASSERT_AND_ASSUME(radius >= 0.f); // Radius should be non-negative
 
@@ -387,6 +370,42 @@ namespace sf::ShapeUtils
 }
 
 ////////////////////////////////////////////////////////////
+/// \brief Computes the outer and inner points of a ring.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr auto computeRingPointsFromAngleStep(
+    const base::SizeT index,
+    const float       startRadians,
+    const float       angleStep,
+    const float       outerRadius,
+    const float       innerRadius)
+{
+    SFML_BASE_ASSERT_AND_ASSUME(outerRadius >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(innerRadius >= 0.f);
+
+    const auto [sine, cosine] = base::fastSinCos(startRadians + static_cast<float>(index) * angleStep);
+
+    SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+
+    // Local center of the ring
+    const Vector2f localCenter{outerRadius, outerRadius};
+
+    // Calculate offset from `localCenter`
+    const Vector2f outerOffset{outerRadius * cosine, outerRadius * sine};
+    const Vector2f innerOffset{innerRadius * cosine, innerRadius * sine};
+
+    struct RingPoints
+    {
+        Vector2f outerPoint;
+        Vector2f innerPoint;
+    };
+
+    // Add offset to `localCenter` to get final local position
+    return RingPoints{localCenter + outerOffset, localCenter + innerOffset};
+}
+
+////////////////////////////////////////////////////////////
 /// \brief Computes the normalized perpendicular of a segment.
 ///
 /// Given two points defining a line segment, this function calculates the unit vector
@@ -422,15 +441,13 @@ namespace sf::ShapeUtils
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-inline constexpr void updateOutlineImpl(const float                            outlineThickness,
-                                        const Vertex* const SFML_BASE_RESTRICT fillVertices,
-                                        Vertex* const SFML_BASE_RESTRICT       outlineVertices,
-                                        const base::SizeT                      pointCount,
-                                        const float                            miterLimit = 4.f) noexcept
+inline constexpr void updateOutlineImpl(const float                      outlineThickness,
+                                        auto&&                           fillPositionFn,
+                                        Vertex* const SFML_BASE_RESTRICT outlineVertices,
+                                        const base::SizeT                pointCount,
+                                        const float                      miterLimit = 4.f) noexcept
 {
-    SFML_BASE_ASSERT_AND_ASSUME(outlineThickness > 0.f);
     SFML_BASE_ASSERT_AND_ASSUME(outlineVertices != nullptr);
-    SFML_BASE_ASSERT_AND_ASSUME(fillVertices != nullptr);
     SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);
     SFML_BASE_ASSERT_AND_ASSUME(miterLimit > 0.f);
 
@@ -438,9 +455,9 @@ inline constexpr void updateOutlineImpl(const float                            o
 
     for (base::SizeT i = 0u; i < pointCount; ++i)
     {
-        const Vector2f& p1 = fillVertices[i].position;
-        const Vector2f& p0 = fillVertices[(i == 0) ? (pointCount - 1) : (i - 1)].position; // Previous point
-        const Vector2f& p2 = fillVertices[(i + 1) % pointCount].position;                  // Next point
+        const Vector2f& p1 = fillPositionFn(i);
+        const Vector2f& p0 = fillPositionFn((i == 0u) ? (pointCount - 1u) : (i - 1u)); // Previous point
+        const Vector2f& p2 = fillPositionFn((i + 1u) % pointCount);                    // Next point
 
         const Vector2f n1 = computeSegmentNormal(p0, p1);
         const Vector2f n2 = computeSegmentNormal(p1, p2);
@@ -474,6 +491,27 @@ inline constexpr void updateOutlineImpl(const float                            o
 
     outlineVertices[dupIndex + 0u].position = outlineVertices[0].position;
     outlineVertices[dupIndex + 1u].position = outlineVertices[1].position;
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+inline constexpr void updateOutlineFromTriangleFanFill(
+    const float                            outlineThickness,
+    const Vertex* const SFML_BASE_RESTRICT fillVertices,
+    Vertex* const SFML_BASE_RESTRICT       outlineVertices,
+    const base::SizeT                      pointCount,
+    const float                            miterLimit = 4.f) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(fillVertices != nullptr);
+
+    updateOutlineImpl(outlineThickness,
+                      [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return fillVertices[i].position; },
+                      outlineVertices,
+                      pointCount,
+                      miterLimit);
 }
 
 ////////////////////////////////////////////////////////////

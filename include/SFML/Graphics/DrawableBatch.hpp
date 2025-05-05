@@ -33,6 +33,8 @@ struct CircleShapeData;
 struct EllipseShapeData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
+struct RingShapeData;
+struct RingPieSliceShapeData;
 struct RoundedRectangleShapeData;
 struct StarShapeData;
 struct Sprite;
@@ -274,6 +276,18 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void add(const RectangleShapeData& sdRectangle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RingShapeData& sdRing);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void add(const RingPieSliceShapeData& sdRingPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
