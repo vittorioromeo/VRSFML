@@ -13,13 +13,13 @@
 #include "SFML/Base/Builtins/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
-#include "SFML/Base/LambdaMacros.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf::ShapeUtils
 {
 ////////////////////////////////////////////////////////////
 /// \brief Computes the angular step between vertices.
@@ -172,6 +172,221 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for an arrow shape's boundary.
+///
+/// Defines an arrow pointing along the positive X-axis, with its
+/// tail base centered at the local origin `(0,0)`. The arrow boundary
+/// is defined by 7 distinct vertices in counter-clockwise order:
+///
+/// 0: Bottom-left tail corner
+/// 1: Bottom-right shaft corner (at shaft end)
+/// 2: Bottom barb corner (inner corner of head)
+/// 3: Tip of the arrowhead
+/// 4: Top barb corner (inner corner of head)
+/// 5: Top-right shaft corner (at shaft end)
+/// 6: Top-left tail corner
+///
+/// \param index       The index of the vertex to compute `(0 <= index < 7)`.
+/// \param shaftLength Length of the arrow's shaft section.
+/// \param shaftWidth  Full width of the arrow's shaft.
+/// \param headLength  Length of the arrowhead section (from shaft end to tip).
+/// \param headWidth   Full width of the arrowhead at its base (barbs).
+///
+/// \return The computed 2D position of the boundary vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeArrowPoint(
+    const base::SizeT index,
+    const float       shaftLength,
+    const float       shaftWidth,
+    const float       headLength,
+    const float       headWidth) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(index < 7u);
+    SFML_BASE_ASSERT_AND_ASSUME(shaftLength >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(shaftWidth >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(headLength >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(headWidth >= 0.f);
+
+    const float halfShaftW = shaftWidth / 2.f;
+    const float halfHeadW  = headWidth / 2.f;
+    const float tipX       = shaftLength + headLength;
+
+    const Vector2f points[7u] = {
+        {0.f, -halfShaftW},         // 0: Bottom-left tail
+        {shaftLength, -halfShaftW}, // 1: Bottom-right shaft
+        {shaftLength, -halfHeadW},  // 2: Bottom barb
+        {tipX, 0.f},                // 3: Tip
+        {shaftLength, halfHeadW},   // 4: Top barb
+        {shaftLength, halfShaftW},  // 5: Top-right shaft
+        {0.f, halfShaftW}           // 6: Top-left tail
+    };
+
+    return points[index];
+}
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float computePieSliceArcAngleStep(
+    const float        sweepAngle,
+    const unsigned int pointCount) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);
+    return sweepAngle / static_cast<float>(pointCount - 2u);
+}
+
+////////////////////////////////////////////////////////////
+/// \see computePieSlicePoint
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computePieSlicePointFromArcAngleStep(
+    const base::SizeT  index,
+    const float        radius,
+    const float        arcAngleStep,
+    const float        startAngle,
+    const float        sweepAngle,
+    const unsigned int pointCount) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);  // Need center + at least start/end points on arc
+    SFML_BASE_ASSERT_AND_ASSUME(sweepAngle != 0.f); // Sweep angle must be non-zero
+    SFML_BASE_ASSERT_AND_ASSUME(index < pointCount);
+    SFML_BASE_ASSERT_AND_ASSUME(radius >= 0.f); // Radius should be non-negative
+
+    // Vertex `0` is the center of the arc/circle, acting as the hub for the triangle fan.
+
+    if (index == 0u)
+        return {radius, radius};
+
+    // Vertices `1` to `pointCount - 1` are on the arc's curved edge.
+    // There are `(pointCount - 1)` points on the arc edge.
+    // These points span `(pointCount - 2)` segments along the arc.
+
+    const auto arcPointStep   = static_cast<float>(index - 1u);
+    const auto [sine, cosine] = base::fastSinCos(startAngle + arcPointStep * arcAngleStep);
+
+    SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+
+    return {radius * (1.f + sine), radius * (1.f + cosine)};
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a filled convex arc (pie slice).
+///
+/// A filled arc is defined by a center point, a radius, a starting
+/// angle, and an angular extent (sweep angle). The shape consists
+/// of the center point (vertex `0`) and a series of points along the
+/// circular arc segment (vertices `1` to `pointCount - 1`), suitable for
+/// rendering as a triangle fan originating from the center.
+///
+/// The arc is generated using the same coordinate system and angle
+/// convention as `computeCirclePoint`: the implicit center of the circle
+/// from which the arc is derived is at `(radius, radius)`. An angle of
+/// `0` radians corresponds to the top point `(radius, 2 * radius)`,
+/// `pi / 2` radians to the right point `(2 * radius, radius)`, `pi`
+/// radians to the bottom point `(radius, 0)`, and `3 * pi / 2` radians
+/// to the left point `(0, radius)`.
+///
+/// The resulting shape must be convex, which requires the absolute value
+/// of `sweepAngle` to be greater than `0` and less than or equal to `pi` radians
+/// (`180` degrees).
+///
+/// Vertex `0` is the center point, located at `(radius, radius)`.
+/// Vertices `1` to `pointCount - 1` trace the curved edge of the arc.
+///
+/// \param index      The index of the vertex to compute `(0 <= index < pointCount)`.
+/// \param radius     The radius of the arc.
+/// \param startAngle The starting angle of the arc in radians (using the described convention).
+/// \param sweepAngle The angular extent of the arc in radians (must be > `0` and <= `pi`).
+///                   Positive sweeps counter-clockwise, negative sweeps clockwise.
+/// \param pointCount Total number of vertices for the shape (must be >= `3`).
+///                   Includes the center point and (`pointCount - 1`) points on the arc.
+///
+/// \return The computed 2D position of the vertex.
+///
+/// \see computeCirclePoint
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computePieSlicePoint(
+    const base::SizeT  index,
+    const float        radius,
+    const float        startAngle,
+    const float        sweepAngle,
+    const unsigned int pointCount) noexcept
+{
+    return computePieSlicePointFromArcAngleStep(index,
+                                                radius,
+                                                computePieSliceArcAngleStep(sweepAngle, pointCount),
+                                                startAngle,
+                                                sweepAngle,
+                                                pointCount);
+}
+
+////////////////////////////////////////////////////////////
+/// \see computeStarPoint
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeStarPointFromAngleStep(
+    const base::SizeT index,
+    const float       angleStep,
+    const float       outerRadius,
+    const float       innerRadius) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(outerRadius >= 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(innerRadius >= 0.f);
+
+    float angle = static_cast<float>(index) * angleStep - base::halfPi; // Start from top (-pi/2)
+
+    if (angle < 0.f)
+        angle += base::tau;
+
+    const float radius = (index % 2u == 0u) ? outerRadius : innerRadius;
+
+    const auto [sine, cosine] = base::fastSinCos(angle);
+
+    SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
+    SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
+
+    // Use outerRadius for centering consistently, like circle/ellipse
+    return {outerRadius + radius * cosine, outerRadius + radius * sine};
+}
+
+////////////////////////////////////////////////////////////
+/// \brief Computes a vertex point for a star shape.
+///
+/// A star is defined by alternating outer and inner points around a center.
+/// Vertices are generated by alternating between outerRadius and innerRadius
+/// at regular angular steps. The total number of vertices generated is
+/// `2 * pointCount`. Vertex indices `0, 2, 4, ...` correspond to outer points,
+/// and indices `1, 3, 5, ...` correspond to inner points.
+///
+/// Assumes the center for angle calculations is `(outerRadius, outerRadius)`.
+///
+/// \param index        The index of the vertex to compute `(0 <= index < 2 * pointCount)`.
+/// \param pointCount   The number of points the star has (e.g., 5 for a 5-pointed star, must be >= 2).
+/// \param outerRadius  Distance from the center to the outer points.
+/// \param innerRadius  Distance from the center to the inner points.
+///
+/// \return The computed 2D position of the vertex.
+///
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeStarPoint(
+    const base::SizeT  index,
+    const unsigned int pointCount,
+    const float        outerRadius,
+    const float        innerRadius) noexcept
+{
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 2u);
+    SFML_BASE_ASSERT_AND_ASSUME(index < 2u * pointCount);
+
+    const float angleStep = base::tau / static_cast<float>(2u * pointCount);
+
+    return computeStarPointFromAngleStep(index, angleStep, outerRadius, innerRadius);
+}
+
+////////////////////////////////////////////////////////////
 /// \brief Computes the normalized perpendicular of a segment.
 ///
 /// Given two points defining a line segment, this function calculates the unit vector
@@ -207,58 +422,58 @@ namespace sf
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-inline constexpr void updateOutlineImpl(const float                      outlineThickness,
-                                        const Vertex* SFML_BASE_RESTRICT fillVertices,
-                                        Vertex* SFML_BASE_RESTRICT       outlineVertices,
-                                        const base::SizeT                pointCount) noexcept
+inline constexpr void updateOutlineImpl(const float                            outlineThickness,
+                                        const Vertex* const SFML_BASE_RESTRICT fillVertices,
+                                        Vertex* const SFML_BASE_RESTRICT       outlineVertices,
+                                        const base::SizeT                      pointCount,
+                                        const float                            miterLimit = 4.f) noexcept
 {
-    // Cache the center (`vertices[0]` is the center of the shape)
-    const Vector2f center = fillVertices[0].position;
+    SFML_BASE_ASSERT_AND_ASSUME(outlineThickness > 0.f);
+    SFML_BASE_ASSERT_AND_ASSUME(outlineVertices != nullptr);
+    SFML_BASE_ASSERT_AND_ASSUME(fillVertices != nullptr);
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);
+    SFML_BASE_ASSERT_AND_ASSUME(miterLimit > 0.f);
 
-    // Lambda that computes and writes the outline for a single segment
-    // - `i` is the logical index (used to compute the output position)
-    // - `p0`, `p1`, `p2` are the three consecutive positions used to compute the normals
-    const auto updateSegment = [&](const base::SizeT i, const Vector2f p0, const Vector2f p1, const Vector2f p2)
-                                   SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    const float miterLimitSq = miterLimit * miterLimit; // Precompute squared limit
+
+    for (base::SizeT i = 0u; i < pointCount; ++i)
     {
-        Vector2f n1 = computeSegmentNormal(p0, p1);
-        Vector2f n2 = computeSegmentNormal(p1, p2);
+        const Vector2f& p1 = fillVertices[i].position;
+        const Vector2f& p0 = fillVertices[(i == 0) ? (pointCount - 1) : (i - 1)].position; // Previous point
+        const Vector2f& p2 = fillVertices[(i + 1) % pointCount].position;                  // Next point
 
-        const Vector2f diff = center - p1;
+        const Vector2f n1 = computeSegmentNormal(p0, p1);
+        const Vector2f n2 = computeSegmentNormal(p1, p2);
 
-        if (n1.dot(diff) > 0.f)
-            n1 = -n1;
+        // Calculate the factor `1 + n1.dot(n2)`. This is related to the angle.
+        // factor = 1 + cos(angle_between_normals)
+        // If angle is near 180 degrees (segments nearly collinear, sharp internal angle), factor is near 0.
+        // If angle is near 0 degrees (segments nearly collinear, flat internal angle), factor is near 2.
+        const float factor = 1.f + n1.dot(n2);
 
-        if (n2.dot(diff) > 0.f)
-            n2 = -n2;
+        // Handle near-collinear segments (factor close to 0) to avoid division issues.
+        // Use a simple normal offset in this case (effectively a bevel/butt cap).
+        // Threshold chosen somewhat arbitrarily, needs to be small but non-zero.
+        constexpr float collinearThreshold = 1e-5f;
 
-        const float factor = 1.f + (n1.x * n2.x + n1.y * n2.y);
+        const auto outlineNormal = (SFML_BASE_MATH_FABSF(factor) < collinearThreshold)
+                                       ? n1 // Segments are almost parallel/anti-parallel, use one normal
+                                       : ((n1 + n2) / factor).clampMaxLengthSquared(miterLimitSq); // miter vector direction with miter limit
 
-        const Vector2f    normal = (n1 + n2) / factor;
-        const base::SizeT outIdx = i << 1u; // Equivalent to `i * 2`
+        const auto offsetVector = outlineNormal * outlineThickness;
 
-        outlineVertices[outIdx + 0u].position = p1;
-        outlineVertices[outIdx + 1u].position = p1 + normal * outlineThickness;
-    };
+        // Store the outline vertex positions
+        const base::SizeT outIdx = i << 1u; // i * 2
 
-    // Handle the first segment (wrap-around):
-    // `p0` is from the last vertex (wrap-around), `p1` is the first point (after center),
-    // and `p2` is the second point.
-    updateSegment(0u, fillVertices[pointCount].position, fillVertices[1].position, fillVertices[2].position);
-
-    // Process the remaining segments.
-    for (base::SizeT i = 1; i < pointCount; ++i)
-    {
-        // For `i >= 1`, the three points are consecutive:
-        // `p0` is `vertices[i]`, `p1` is `vertices[i + 1]`, `p2` is `vertices[i + 2]`.
-        updateSegment(i, fillVertices[i].position, fillVertices[i + 1].position, fillVertices[i + 2].position);
+        outlineVertices[outIdx + 0u].position = p1;                // Inner vertex
+        outlineVertices[outIdx + 1u].position = p1 + offsetVector; // Outer vertex
     }
 
-    // Duplicate the first outline vertex at the end to close the outline loop.
-    const base::SizeT dupIndex = pointCount << 1u; // Equivalent to `pointCount * 2`
+    // Duplicate the first outline vertex pair at the end to close the outline loop.
+    const base::SizeT dupIndex = pointCount << 1u; // pointCount * 2
 
-    outlineVertices[dupIndex + 0].position = outlineVertices[0].position;
-    outlineVertices[dupIndex + 1].position = outlineVertices[1].position;
+    outlineVertices[dupIndex + 0u].position = outlineVertices[0].position;
+    outlineVertices[dupIndex + 1u].position = outlineVertices[1].position;
 }
 
 ////////////////////////////////////////////////////////////
@@ -309,7 +524,7 @@ inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* poin
     return (maxPoint + minPoint) / 2.f;
 }
 
-} // namespace sf
+} // namespace sf::ShapeUtils
 
 
 ////////////////////////////////////////////////////////////

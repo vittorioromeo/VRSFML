@@ -14,23 +14,24 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Data required to draw a circle shape
+/// \brief Data required to draw a star shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
+struct [[nodiscard]] SFML_GRAPHICS_API StarShapeData
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-    float        radius{0.f};     //!< Radius of the circle
-    unsigned int pointCount{30u}; //!< Number of points composing the circle
+    float        outerRadius{0.f}; //!< Distance from the center to the outer points
+    float        innerRadius{0.f}; //!< Distance from the center to the inner points
+    unsigned int pointCount{5u};   //!< Number of points of the star (e.g., 5 for a 5-pointed star)
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::CircleShapeData
+/// \class sf::StarShapeData
 /// \ingroup graphics
 ///
 /// TODO P1: docs

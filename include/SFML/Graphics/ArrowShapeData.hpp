@@ -14,23 +14,25 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Data required to draw a circle shape
+/// \brief Data required to draw a star shape
 ///
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
+struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-    float        radius{0.f};     //!< Radius of the circle
-    unsigned int pointCount{30u}; //!< Number of points composing the circle
+    float shaftLength{50.f}; //!< Length of the shaft of the arrow
+    float shaftWidth{10.f};  //!< Width of the shaft of the arrow
+    float headLength{20.f};  //!< Length of the head of the arrow
+    float headWidth{30.f};   //!< Width of the head of the arrow
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::CircleShapeData
+/// \class sf::ArrowShapeData
 /// \ingroup graphics
 ///
 /// TODO P1: docs

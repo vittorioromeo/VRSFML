@@ -458,6 +458,9 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettings)
 {
+    if (!getSDLLayerSingleton().applyGLContextSettings(windowSettings.contextSettings))
+        err() << "Failed to apply SDL GL context settings for SDL window";
+
     // Fullscreen style requires some tests
     if (windowSettings.fullscreen)
     {

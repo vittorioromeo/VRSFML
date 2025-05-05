@@ -28,11 +28,67 @@
 #include <SDL3/SDL_init.h>
 #include <SDL3/SDL_joystick.h>
 #include <SDL3/SDL_keycode.h>
+#include <SDL3/SDL_oldnames.h>
 #include <SDL3/SDL_properties.h>
 #include <SDL3/SDL_scancode.h>
 #include <SDL3/SDL_stdinc.h>
 #include <SDL3/SDL_touch.h>
 #include <SDL3/SDL_video.h>
+
+
+////////////////////////////////////////////////////////////
+#define SFML_PRIV_SDL_ATTR_X_LIST                                             \
+    X(SDL_GL_RED_SIZE, "SDL_GL_RED_SIZE")                                     \
+    X(SDL_GL_GREEN_SIZE, "SDL_GL_GREEN_SIZE")                                 \
+    X(SDL_GL_BLUE_SIZE, "SDL_GL_BLUE_SIZE")                                   \
+    X(SDL_GL_ALPHA_SIZE, "SDL_GL_ALPHA_SIZE")                                 \
+    X(SDL_GL_BUFFER_SIZE, "SDL_GL_BUFFER_SIZE")                               \
+    X(SDL_GL_DOUBLEBUFFER, "SDL_GL_DOUBLEBUFFER")                             \
+    X(SDL_GL_DEPTH_SIZE, "SDL_GL_DEPTH_SIZE")                                 \
+    X(SDL_GL_STENCIL_SIZE, "SDL_GL_STENCIL_SIZE")                             \
+    X(SDL_GL_ACCUM_RED_SIZE, "SDL_GL_ACCUM_RED_SIZE")                         \
+    X(SDL_GL_ACCUM_GREEN_SIZE, "SDL_GL_ACCUM_GREEN_SIZE")                     \
+    X(SDL_GL_ACCUM_BLUE_SIZE, "SDL_GL_ACCUM_BLUE_SIZE")                       \
+    X(SDL_GL_ACCUM_ALPHA_SIZE, "SDL_GL_ACCUM_ALPHA_SIZE")                     \
+    X(SDL_GL_STEREO, "SDL_GL_STEREO")                                         \
+    X(SDL_GL_MULTISAMPLEBUFFERS, "SDL_GL_MULTISAMPLEBUFFERS")                 \
+    X(SDL_GL_MULTISAMPLESAMPLES, "SDL_GL_MULTISAMPLESAMPLES")                 \
+    X(SDL_GL_ACCELERATED_VISUAL, "SDL_GL_ACCELERATED_VISUAL")                 \
+    X(SDL_GL_RETAINED_BACKING, "SDL_GL_RETAINED_BACKING")                     \
+    X(SDL_GL_CONTEXT_MAJOR_VERSION, "SDL_GL_CONTEXT_MAJOR_VERSION")           \
+    X(SDL_GL_CONTEXT_MINOR_VERSION, "SDL_GL_CONTEXT_MINOR_VERSION")           \
+    X(SDL_GL_CONTEXT_FLAGS, "SDL_GL_CONTEXT_FLAGS")                           \
+    X(SDL_GL_CONTEXT_PROFILE_MASK, "SDL_GL_CONTEXT_PROFILE_MASK")             \
+    X(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, "SDL_GL_SHARE_WITH_CURRENT_CONTEXT") \
+    X(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, "SDL_GL_FRAMEBUFFER_SRGB_CAPABLE")     \
+    X(SDL_GL_CONTEXT_RELEASE_BEHAVIOR, "SDL_GL_CONTEXT_RELEASE_BEHAVIOR")     \
+    X(SDL_GL_CONTEXT_RESET_NOTIFICATION, "SDL_GL_CONTEXT_RESET_NOTIFICATION") \
+    X(SDL_GL_CONTEXT_NO_ERROR, "SDL_GL_CONTEXT_NO_ERROR")                     \
+    X(SDL_GL_FLOATBUFFERS, "SDL_GL_FLOATBUFFERS")                             \
+    X(SDL_GL_EGL_PLATFORM, "SDL_GL_EGL_PLATFORM")
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr const char* getSDLGLAttrName(const SDL_GLAttr attribute) noexcept
+{
+    switch (attribute)
+    {
+#define X(attr, name) \
+    case attr:        \
+        return name;
+        SFML_PRIV_SDL_ATTR_X_LIST
+#undef X
+    }
+
+    return "unknown SDL GL attribute";
+}
+
+} // namespace
+
+
+////////////////////////////////////////////////////////////
+#undef SFML_PRIV_SDL_ATTR_X_LIST
 
 
 ////////////////////////////////////////////////////////////
@@ -998,6 +1054,47 @@ VideoMode SDLLayer::getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) 
         .pixelDensity = mode.pixel_density,
         .refreshRate  = mode.refresh_rate,
     };
+}
+
+
+////////////////////////////////////////////////////////////
+bool SDLLayer::setGLAttribute(const int attribute, const int value) const
+{
+    const auto sdlAttribute = static_cast<SDL_GLAttr>(attribute);
+
+    if (SDL_GL_SetAttribute(sdlAttribute, value))
+        return true;
+
+    err() << "Failed to set SDL attribute '" << getSDLGLAttrName(sdlAttribute) << "': " << SDL_GetError();
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SDLLayer::applyGLContextSettings(const ContextSettings& settings) const
+{
+    // Intentionally using bitwise AND to avoid short-circuit evaluation
+
+    bool result = true;
+
+    // Set context flags
+    result &= setGLAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, settings.sRgbCapable ? 1 : 0);
+    result &= setGLAttribute(SDL_GL_DEPTH_SIZE, static_cast<int>(settings.depthBits));
+    result &= setGLAttribute(SDL_GL_STENCIL_SIZE, static_cast<int>(settings.stencilBits));
+    result &= setGLAttribute(SDL_GL_DOUBLEBUFFER, 1);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLEBUFFERS, settings.antiAliasingLevel > 0u ? 1 : 0);
+    result &= setGLAttribute(SDL_GL_MULTISAMPLESAMPLES, static_cast<int>(settings.antiAliasingLevel));
+
+    // Set context version
+    result &= setGLAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, static_cast<int>(settings.majorVersion));
+    result &= setGLAttribute(SDL_GL_CONTEXT_MINOR_VERSION, static_cast<int>(settings.minorVersion));
+
+    // Set context flags
+    result &= setGLAttribute(SDL_GL_CONTEXT_PROFILE_MASK,
+                             settings.isCore() ? SDL_GL_CONTEXT_PROFILE_CORE : SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+    result &= setGLAttribute(SDL_GL_CONTEXT_FLAGS, settings.isDebug() ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
+
+    return result;
 }
 
 

@@ -866,32 +866,16 @@ void RenderTarget::helperDrawShapeData(const auto& shapeData, const RenderStates
 }
 
 
+// clang-format off
 ////////////////////////////////////////////////////////////
-void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& states)
-{
-    helperDrawShapeData(sdCircle, states);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)
-{
-    helperDrawShapeData(sdEllipse, states);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)
-{
-    helperDrawShapeData(sdRectangle, states);
-}
-
-
-////////////////////////////////////////////////////////////
-void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states)
-{
-    helperDrawShapeData(sdRoundedRectangle, states);
-}
+void RenderTarget::draw(const ArrowShapeData& sdArrow, const RenderStates& states)                       { helperDrawShapeData(sdArrow, states); }
+void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& states)                     { helperDrawShapeData(sdCircle, states); }
+void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)                   { helperDrawShapeData(sdEllipse, states); }
+void RenderTarget::draw(const PieSliceShapeData& sdPieSlice, const RenderStates& states)                 { helperDrawShapeData(sdPieSlice, states); }
+void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)               { helperDrawShapeData(sdRectangle, states); }
+void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states) { helperDrawShapeData(sdRoundedRectangle, states); }
+void RenderTarget::draw(const StarShapeData& sdStar, const RenderStates& states)                         { helperDrawShapeData(sdStar, states); }
+// clang-format on
 
 
 ////////////////////////////////////////////////////////////

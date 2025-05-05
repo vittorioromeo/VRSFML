@@ -55,7 +55,7 @@ Vector2f ConvexShape::getPoint(const base::SizeT index) const
 ////////////////////////////////////////////////////////////
 Vector2f ConvexShape::getGeometricCenter() const
 {
-    return computeConvexShapeGeometricCenter(m_points.data(), m_points.size());
+    return ShapeUtils::computeConvexShapeGeometricCenter(m_points.data(), m_points.size());
 }
 
 } // namespace sf

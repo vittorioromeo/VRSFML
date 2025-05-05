@@ -197,6 +197,235 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's length to a maximum value <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's length exceeds `maxLength`, returns a vector with the same direction
+    /// but with length equal to `maxLength`. Otherwise, returns a copy of the original vector.
+    ///
+    /// \param maxLength The maximum length allowed. Must be non-negative.
+    ///
+    /// \return Vector with length clamped to `maxLength`.
+    ///
+    /// \pre `maxLength >= 0`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampMaxLength(const T maxLength) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampMaxLength() is only supported for floating point types");
+        SFML_BASE_ASSERT(maxLength >= T{0} && "Vector2::clampMaxLength() requires non-negative maxLength");
+
+        const T currentLengthSquared = lengthSquared();
+
+        if (currentLengthSquared <= maxLength * maxLength)
+            return *this;
+
+        return *this * (maxLength / base::sqrt(currentLengthSquared));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's squared length to a maximum value <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's squared length exceeds `maxLengthSquared`, returns a vector with the same direction
+    /// but with squared length equal to `maxLengthSquared`. Otherwise, returns a copy of the original vector.
+    /// This version is more efficient than `clampMaxLength` if you already have squared lengths.
+    ///
+    /// \param maxLengthSquared The maximum squared length allowed. Must be non-negative.
+    ///
+    /// \return Vector with squared length clamped to `maxLengthSquared`.
+    ///
+    /// \pre `maxLengthSquared >= 0`.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampMaxLengthSquared(
+        const T maxLengthSquared) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampMaxLengthSquared() is only supported for floating point types");
+        SFML_BASE_ASSERT(maxLengthSquared >= T{0} &&
+                         "Vector2::clampMaxLengthSquared() requires non-negative maxLengthSquared");
+
+        const T currentLengthSquared = lengthSquared();
+
+        if (currentLengthSquared <= maxLengthSquared)
+            return *this;
+
+        return *this * base::sqrt(maxLengthSquared / currentLengthSquared);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's length to a minimum value <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's length is less than `minLength`, returns a vector with the same direction
+    /// but with length equal to `minLength`. Otherwise, returns a copy of the original vector.
+    ///
+    /// \param minLength The minimum length allowed. Must be non-negative.
+    ///
+    /// \return Vector with length clamped to `minLength`.
+    ///
+    /// \pre `minLength >= 0`.
+    /// \pre If `minLength > 0`, `*this` must not be the zero vector.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampMinLength(const T minLength) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampMinLength() is only supported for floating point types");
+        SFML_BASE_ASSERT(minLength >= T{0} && "Vector2::clampMinLength() requires non-negative minLength");
+
+        const T currentLengthSquared = lengthSquared();
+
+        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLength == T{0} &&
+                                                             "Vector2::clampMinLength() cannot clamp zero vector to a "
+                                                             "positive minimum length");
+
+        if (currentLengthSquared >= minLength * minLength)
+            return *this;
+
+        return *this * (minLength / base::sqrt(currentLengthSquared));
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's squared length to a minimum value <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's squared length is less than `minLengthSquared`, returns a vector with the same direction
+    /// but with squared length equal to `minLengthSquared`. Otherwise, returns a copy of the original vector.
+    /// This version is more efficient than `clampMinLength` if you already have squared lengths.
+    ///
+    /// \param minLengthSquared The minimum squared length allowed. Must be non-negative.
+    ///
+    /// \return Vector with squared length clamped to `minLengthSquared`.
+    ///
+    /// \pre `minLengthSquared >= 0`.
+    /// \pre If `minLengthSquared > 0`, `*this` must not be the zero vector.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampMinLengthSquared(
+        const T minLengthSquared) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampMinLengthSquared() is only supported for floating point types");
+        SFML_BASE_ASSERT(minLengthSquared >= T{0} &&
+                         "Vector2::clampMinLengthSquared() requires non-negative minLengthSquared");
+
+        const T currentLengthSquared = lengthSquared();
+
+        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLengthSquared == T{0} &&
+                                                             "Vector2::clampMinLengthSquared() cannot clamp zero "
+                                                             "vector to a positive minimum squared length");
+
+        if (currentLengthSquared >= minLengthSquared)
+            return *this;
+
+        return *this * base::sqrt(minLengthSquared / currentLengthSquared);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's length to be within a specific range <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's length is less than `minLength`, returns a vector with the same direction
+    /// but with length equal to `minLength`. If the vector's length is greater than `maxLength`,
+    /// returns a vector with the same direction but with length equal to `maxLength`.
+    /// Otherwise, returns a copy of the original vector.
+    ///
+    /// \param minLength The minimum length allowed. Must be non-negative.
+    /// \param maxLength The maximum length allowed. Must be >= `minLength`.
+    ///
+    /// \return Vector with length clamped between `minLength` and `maxLength`.
+    ///
+    /// \pre `0 <= minLength <= maxLength`.
+    /// \pre If `minLength > 0`, `*this` must not be the zero vector.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampLength(const T minLength,
+                                                                                                    const T maxLength) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampLength() is only supported for floating point types");
+        SFML_BASE_ASSERT(minLength >= T{0} && minLength <= maxLength &&
+                         "Vector2::clampLength() requires 0 <= minLength <= maxLength");
+
+        const T currentLengthSquared = lengthSquared();
+
+        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLength == T{0} &&
+                                                             "Vector2::clampLength() cannot clamp zero vector to a "
+                                                             "positive minimum length");
+
+        const T minLengthSquared = minLength * minLength;
+        const T maxLengthSquared = maxLength * maxLength;
+
+        if (currentLengthSquared >= minLengthSquared && currentLengthSquared <= maxLengthSquared)
+            return *this;
+
+        // If length is zero we cannot scale, but previous check/assert handles this unless minLength is 0.
+        // If minLength is 0 and currentLength is 0, we fall through. Clamping 0 to [0, max] should result in 0.
+        if (currentLengthSquared == T{0})
+            return *this;
+
+        const T currentLength = base::sqrt(currentLengthSquared);
+
+        if (currentLength < minLength) // We know currentLength > 0 here
+            return *this * (minLength / currentLength);
+
+        // Must be currentLength > maxLength
+        return *this * (maxLength / currentLength);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clamp the vector's squared length to be within a specific range <i><b>(floating-point)</b></i>.
+    ///
+    /// If the vector's squared length is less than `minLengthSquared`, returns a vector with the same direction
+    /// but with squared length equal to `minLengthSquared`. If the vector's squared length is greater than
+    /// `maxLengthSquared`, returns a vector with the same direction but with squared length equal to
+    /// `maxLengthSquared`. Otherwise, returns a copy of the original vector.
+    /// This version is more efficient than `clampLength` if you already have squared lengths.
+    ///
+    /// \param minLengthSquared The minimum squared length allowed. Must be non-negative.
+    /// \param maxLengthSquared The maximum squared length allowed. Must be >= `minLengthSquared`.
+    ///
+    /// \return Vector with squared length clamped between `minLengthSquared` and `maxLengthSquared`.
+    ///
+    /// \pre `0 <= minLengthSquared <= maxLengthSquared`.
+    /// \pre If `minLengthSquared > 0`, `*this` must not be the zero vector.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2 clampLengthSquared(
+        const T minLengthSquared,
+        const T maxLengthSquared) const
+    {
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
+                      "Vector2::clampLengthSquared() is only supported for floating point types");
+        SFML_BASE_ASSERT(minLengthSquared >= T{0} && minLengthSquared <= maxLengthSquared &&
+                         "Vector2::clampLengthSquared() requires 0 <= minLengthSquared <= maxLengthSquared");
+
+        const T currentLengthSquared = lengthSquared();
+
+        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLengthSquared == T{0} &&
+                                                             "Vector2::clampLengthSquared() cannot clamp zero vector "
+                                                             "to a positive minimum squared length");
+
+        if (currentLengthSquared >= minLengthSquared && currentLengthSquared <= maxLengthSquared)
+            return *this;
+
+        // If length is zero we cannot scale, but previous check/assert handles this unless minLengthSquared is 0.
+        // If minLengthSquared is 0 and currentLengthSquared is 0, we fall through. Clamping 0 to [0, max^2] results in 0.
+        if (currentLengthSquared == T{0})
+            return *this;
+
+        if (currentLengthSquared < minLengthSquared) // We know currentLengthSquared > 0 here
+            return *this * base::sqrt(minLengthSquared / currentLengthSquared);
+
+        // Must be currentLengthSquared > maxLengthSquared
+        return *this * base::sqrt(maxLengthSquared / currentLengthSquared);
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Returns a perpendicular vector.
     ///
     /// Returns `*this` rotated by +90 degrees; (x,y) becomes (-y,x).
@@ -309,6 +538,7 @@ public:
     {
         return {x + addedX, y};
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns a new vector with `addedY` added to the Y component

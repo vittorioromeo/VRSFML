@@ -393,3 +393,5 @@ template <typename TSettings>
 /// \see `sf::RectangleShape`, `sf::CircleShape`, `sf::ConvexShape`, `sf::Transformable`
 ///
 ////////////////////////////////////////////////////////////
+
+// TODO P1: this should probably be a shapemixin
