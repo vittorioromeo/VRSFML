@@ -26,6 +26,7 @@ namespace sf
 {
 class String;
 class Time;
+struct ContextSettings;
 struct WindowSettings;
 
 namespace Vulkan
@@ -50,7 +51,6 @@ public:
     /// \param title Title of the window
     /// \param style Window style
     /// \param state Window state
-    /// \param settings Additional settings for the underlying OpenGL context
     ///
     /// \return Pointer to the created window
     ///

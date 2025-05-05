@@ -42,7 +42,7 @@ Vector2f RectangleShape::getSize() const
 Vector2f RectangleShape::getPoint(base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < 4u && "Index is out of bounds");
-    return computeRectanglePoint(index, m_size);
+    return ShapeUtils::computeRectanglePoint(index, m_size);
 }
 
 

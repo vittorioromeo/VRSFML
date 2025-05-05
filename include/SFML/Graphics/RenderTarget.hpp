@@ -37,15 +37,18 @@ class Text;
 class Texture;
 class VertexBuffer;
 
+struct ArrowShapeData;
 struct BlendMode;
 struct CircleShapeData;
 struct EllipseShapeData;
 struct GLElementBufferObject;
 struct GLVAOGroup;
 struct GLVertexBufferObject;
+struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RoundedRectangleShapeData;
 struct Sprite;
+struct StarShapeData;
 struct StencilMode;
 struct StencilValue;
 struct TextData;
@@ -465,6 +468,12 @@ public:
               const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw an arrow shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const ArrowShapeData& sdArrow, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
     /// \brief Draw a circle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
@@ -477,6 +486,12 @@ public:
     void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
+    /// \brief Draw a pie slice shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const PieSliceShapeData& sdPieSlice, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
     /// \brief Draw a rectangle shape from its relevant data
     ///
     ////////////////////////////////////////////////////////////
@@ -487,6 +502,12 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a star shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const StarShapeData& sdStar, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text from a font and its relevant data

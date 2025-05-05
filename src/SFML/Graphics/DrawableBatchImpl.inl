@@ -5,11 +5,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
@@ -17,6 +19,7 @@
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/Sprite.hpp"
+#include "SFML/Graphics/StarShapeData.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Transform.hpp"
@@ -179,7 +182,11 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints, const auto& descriptor, auto&& pointFn)
+void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
+    const base::SizeT nPoints,
+    const auto&       descriptor,
+    auto&&            pointFn,
+    const Vector2f    centerOffset)
 {
     if (nPoints < 3u) [[unlikely]]
         return;
@@ -218,8 +225,8 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
 
     const sf::Vector2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
 
-    fillVertices[0].position            = fillBoundsPosition + fillBoundsSize / 2.f; // center
-    fillVertices[1u + nPoints].position = fillVertices[1].position;                  // repeated first point
+    fillVertices[0].position            = fillBoundsPosition + fillBoundsSize / 2.f + centerOffset; // center
+    fillVertices[1u + nPoints].position = fillVertices[1].position; // repeated first point
 
     //
     // Update fill color and tex coords (if the shape's fill is visible)
@@ -257,7 +264,10 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
     m_storage.commitMoreVertices(outlineVertexCount);
 
     // Cannot use `vertices` here as the earlier reserve may have invalidated the pointer
-    updateOutlineImpl(descriptor.outlineThickness, outlineVertices - fillVertexCount, outlineVertices, nPoints);
+    ShapeUtils::updateOutlineImpl(descriptor.outlineThickness,
+                                  outlineVertices - fillVertexCount + 1u, // Skip the first vertex (center point)
+                                  outlineVertices,
+                                  nPoints);
 
     //
     // Update outline colors and outline tex coords
@@ -283,14 +293,33 @@ void DrawableBatchImpl<TStorage>::drawShapeFromPoints(const base::SizeT nPoints,
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
+{
+    const auto
+        centerOffset = sdArrow.shaftWidth < sdArrow.headWidth
+                           ? Vector2f{sdArrow.shaftWidth / 2.f, 0.f}.componentWiseMul(sdArrow.scale).rotatedBy(sdArrow.rotation)
+                           : Vector2f{0.f, 0.f};
+
+    drawTriangleFanShapeFromPoints(7u,
+                                   sdArrow,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    {
+        return ShapeUtils::computeArrowPoint(i, sdArrow.shaftLength, sdArrow.shaftWidth, sdArrow.headLength, sdArrow.headWidth);
+    },
+                                   centerOffset);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 {
-    const float angleStep = computeAngleStep(sdCircle.pointCount);
+    const float angleStep = ShapeUtils::computeAngleStep(sdCircle.pointCount);
 
-    drawShapeFromPoints(sdCircle.pointCount,
-                        sdCircle,
-                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius); });
+    drawTriangleFanShapeFromPoints(sdCircle.pointCount,
+                                   sdCircle,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return ShapeUtils::computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius); });
 }
 
 
@@ -298,12 +327,34 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 {
-    const float angleStep = computeAngleStep(sdEllipse.pointCount);
+    const float angleStep = ShapeUtils::computeAngleStep(sdEllipse.pointCount);
 
-    drawShapeFromPoints(sdEllipse.pointCount,
-                        sdEllipse,
-                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius); });
+    drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
+                                   sdEllipse,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    {
+        return ShapeUtils::computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius);
+    });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
+{
+    const float arcAngleStep = ShapeUtils::computePieSliceArcAngleStep(sdPieSlice.sweepAngle.asRadians(), sdPieSlice.pointCount);
+
+    drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
+                                   sdPieSlice,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    {
+        return ShapeUtils::computePieSlicePointFromArcAngleStep(i,
+                                                                sdPieSlice.radius,
+                                                                arcAngleStep,
+                                                                sdPieSlice.startAngle.asRadians(),
+                                                                sdPieSlice.sweepAngle.asRadians(),
+                                                                sdPieSlice.pointCount);
+    });
 }
 
 
@@ -311,10 +362,10 @@ void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
-    drawShapeFromPoints(4u,
-                        sdRectangle,
-                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return computeRectanglePoint(i, sdRectangle.size); });
+    drawTriangleFanShapeFromPoints(4u,
+                                   sdRectangle,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return ShapeUtils::computeRectanglePoint(i, sdRectangle.size); });
 }
 
 
@@ -322,15 +373,30 @@ void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
 {
-    drawShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
-                        sdRoundedRectangle,
-                        [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
+                                   sdRoundedRectangle,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
-        return computeRoundedRectanglePoint(i,
-                                            sdRoundedRectangle.size,
-                                            sdRoundedRectangle.cornerRadius,
-                                            sdRoundedRectangle.cornerPointCount);
+        return ShapeUtils::computeRoundedRectanglePoint(i,
+                                                        sdRoundedRectangle.size,
+                                                        sdRoundedRectangle.cornerRadius,
+                                                        sdRoundedRectangle.cornerPointCount);
     });
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
+{
+    const auto nPoints = sdStar.pointCount * 2u;
+
+    const float angleStep = ShapeUtils::computeAngleStep(nPoints);
+
+    drawTriangleFanShapeFromPoints(nPoints,
+                                   sdStar,
+                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius); });
 }
 
 

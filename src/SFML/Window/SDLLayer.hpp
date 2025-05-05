@@ -34,6 +34,7 @@ struct SDL_GUID;
 
 namespace sf
 {
+struct ContextSettings;
 struct VideoMode;
 } // namespace sf
 
@@ -68,7 +69,7 @@ namespace sf::priv
 [[nodiscard, gnu::const]] base::U8 getSDLButtonFromSFMLButton(Mouse::Button button) noexcept;
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(const SDL_DisplayOrientation displayOrientation);
+[[nodiscard, gnu::const]] DisplayOrientation mapSDLDisplayOrientationToSFML(SDL_DisplayOrientation displayOrientation);
 
 ////////////////////////////////////////////////////////////
 struct SFML_BASE_TRIVIAL_ABI UniquePtrSDLDeleter
@@ -325,6 +326,12 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] VideoMode getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool setGLAttribute(int attribute, int value) const;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool applyGLContextSettings(const ContextSettings& settings) const;
 };
 
 ////////////////////////////////////////////////////////////

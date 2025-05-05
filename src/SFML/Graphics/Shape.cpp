@@ -4,12 +4,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/PrimitiveType.hpp"
-#include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/Vector2.hpp"
@@ -209,7 +206,10 @@ void Shape::updateOutline()
     const base::SizeT count = m_vertices.size() - 2u;
     m_vertices.resize(m_verticesEndIndex + (count + 1u) * 2u);
 
-    updateOutlineImpl(m_outlineThickness, m_vertices.data(), m_vertices.data() + m_verticesEndIndex, count);
+    ShapeUtils::updateOutlineImpl(m_outlineThickness,
+                                  m_vertices.data() + 1u, // Skip the first vertex (center point)
+                                  m_vertices.data() + m_verticesEndIndex,
+                                  count);
 
     // Update outline colors
     updateOutlineColors();
