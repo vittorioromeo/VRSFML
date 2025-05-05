@@ -3,6 +3,7 @@
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
+#include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
@@ -12,6 +13,7 @@
 #include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/StarShapeData.hpp"
+#include "SFML/Graphics/TextData.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 
@@ -19,6 +21,7 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Path.hpp"
 #include "SFML/System/RectUtils.hpp"
 
 #include "ExampleUtils.hpp"
@@ -32,7 +35,7 @@
 
 
 ////////////////////////////////////////////////////////////
-constexpr sf::Vector2f resolution{1024.f, 768.f};
+constexpr sf::Vector2f resolution{1016.f, 1016.f};
 
 
 ////////////////////////////////////////////////////////////
@@ -41,6 +44,8 @@ class Game
 private:
     sf::RenderWindow& m_window;
     float             m_time = 0.f;
+
+    const sf::Font font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
     void exampleImmediateShapeDrawing()
     {
@@ -65,89 +70,124 @@ private:
             return shapeData;
         };
 
+        auto drawShape = [&](const auto& shapeData) { m_window.draw(applyCommonSettings(shapeData)); };
+
+        auto drawLabel = [&](const sf::Vector2f position, const char* label)
+        {
+            m_window.draw(font,
+                          sf::TextData{
+                              .position         = position + offset,
+                              .string           = label,
+                              .characterSize    = 16,
+                              .outlineColor     = sf::Color::Black,
+                              .outlineThickness = 2.f,
+                          });
+        };
+
         auto drawTheShapes = [&]
         {
-            m_window.draw(applyCommonSettings(sf::CircleShapeData{
+            drawShape(sf::CircleShapeData{
                 .position   = {32.f, 32.f},
                 .origin     = {64.f, 64.f},
                 .radius     = 64.f,
-                .pointCount = 32u,
-            }));
+                .pointCount = 3u + static_cast<unsigned int>(29.f * std::abs(std::sin(m_time * 0.04f + phase * 2.f))),
+            });
 
-            m_window.draw(applyCommonSettings(sf::EllipseShapeData{
+            drawLabel({32.f, 32.f}, "Circle");
+
+            drawShape(sf::EllipseShapeData{
                 .position         = {196.f, 32.f},
                 .origin           = {64.f, 32.f},
                 .horizontalRadius = 64.f,
                 .verticalRadius   = 32.f,
-                .pointCount       = 32u,
-            }));
+                .pointCount = 3u + static_cast<unsigned int>(29.f * std::abs(std::sin(m_time * 0.06f + phase * 3.5f))),
+            });
 
-            m_window.draw(applyCommonSettings(sf::PieSliceShapeData{
+            drawLabel({196.f, 32.f}, "Ellipse");
+
+            drawShape(sf::PieSliceShapeData{
                 .position   = {364.f, 32.f},
                 .origin     = {64.f, 64.f},
                 .radius     = 64.f,
                 .startAngle = sf::degrees(0.f),
                 .sweepAngle = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 2.f)))),
                 .pointCount = 32u,
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::RectangleShapeData{
+            drawLabel({364.f, 32.f}, "PieSlice");
+
+            drawShape(sf::RectangleShapeData{
                 .position = {32.f, 196.f},
                 .origin   = {64.f, 32.f},
                 .size     = {128.f, 64.f},
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::RoundedRectangleShapeData{
+            drawLabel({32.f, 196.f}, "Rectangle");
+
+            drawShape(sf::RoundedRectangleShapeData{
                 .position         = {196.f, 196.f},
                 .origin           = {64.f, 32.f},
                 .size             = {128.f, 64.f},
-                .cornerRadius     = 32.f,
+                .cornerRadius     = 3.f + (29.f * std::abs(std::sin(m_time * 0.1f + phase * 1.5f))),
                 .cornerPointCount = 16u,
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::RingPieSliceShapeData{
+            drawLabel({196.f, 196.f}, "RoundedRectangle");
+
+            drawShape(sf::RingPieSliceShapeData{
                 .position    = {364.f, 196.f},
                 .origin      = {64.f, 64.f},
                 .outerRadius = 64.f,
                 .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.2f + phase * 0.75f))),
                 .startAngle  = sf::degrees(0.f),
-                .sweepAngle  = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 3.5f)))),
+                .sweepAngle  = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 2.0f)))),
                 .pointCount  = 32u,
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::RingShapeData{
-                .position    = {364.f, 356.f},
+            drawLabel({364.f, 196.f}, "RingPieSlice");
+
+            drawShape(sf::RingShapeData{
+                .position    = {364.f, 364.f},
                 .origin      = {64.f, 64.f},
                 .outerRadius = 64.f,
                 .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.25f + phase * 2.f))),
                 .pointCount  = 30u,
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::StarShapeData{
-                .position    = {32.f, 356.f},
+            drawLabel({364.f, 364.f}, "Ring");
+
+            drawShape(sf::StarShapeData{
+                .position    = {32.f, 364.f},
                 .origin      = {64.f, 64.f},
                 .outerRadius = 64.f,
                 .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.25f + phase * 2.f))),
                 .pointCount  = 3u + static_cast<unsigned int>(10.f * std::abs(std::sin(m_time * 0.1f + phase * 2.f))),
-            }));
+            });
 
-            m_window.draw(applyCommonSettings(sf::ArrowShapeData{
-                .position    = {196.f, 356.f},
+            drawLabel({32.f, 364.f}, "Star");
+
+            drawShape(sf::ArrowShapeData{
+                .position    = {196.f, 364.f},
                 .origin      = {(64.f + 48.f) / 2.f, 0.f},
                 .shaftLength = 64.f,
-                .shaftWidth  = 32.f + (32.f * std::abs(std::sin(m_time * 0.1f + phase * 2.f))),
+                .shaftWidth  = 32.f + (32.f * std::abs(std::sin(m_time * 0.04f + phase * 2.f))),
                 .headLength  = 48.f,
-                .headWidth   = 96.f - (64.f * std::abs(std::sin(m_time * 0.1f + phase * 3.f))),
-            }));
+                .headWidth   = 96.f - (64.f * std::abs(std::sin(m_time * 0.06f + phase * 3.f))),
+            });
+
+            drawLabel({196.f, 364.f}, "Arrow");
         };
 
+        offset = {0.f, 0.f};
         drawTheShapes();
-        offset.x += 500.f;
+
+        offset = {492.f, 0.f};
         drawTheShapes();
-        offset.x -= 500.f;
-        offset.y += 500.f;
+
+        offset = {0.f, 492.f};
         drawTheShapes();
-        offset.x += 500.f;
+
+        offset = {492.f, 492.f};
         drawTheShapes();
     }
 
