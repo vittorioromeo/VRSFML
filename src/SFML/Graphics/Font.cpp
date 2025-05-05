@@ -1,4 +1,5 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+#include <freetype/fttypes.h>
 
 
 ////////////////////////////////////////////////////////////
@@ -17,6 +18,7 @@
 #include "SFML/System/RectPacker.hpp"
 #include "SFML/System/Vector2.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -80,13 +82,21 @@ template <typename T, typename U>
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::const]] inline sf::base::I32 quantizeOutlineThickness(const float outlineThickness)
+{
+    return static_cast<sf::base::I32>(outlineThickness * float{1 << 6});
+}
+
+
+////////////////////////////////////////////////////////////
 // Combine outline thickness, boldness and font glyph index into a single 64-bit key
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline sf::base::U64 combineGlyphTableKey(
     const float    outlineThickness,
     const bool     bold,
     const char32_t index)
 {
-    return (sf::base::U64{reinterpret<sf::base::U32>(outlineThickness)} << 32) | (sf::base::U64{bold} << 31) | index;
+    return (sf::base::U64{reinterpret<sf::base::U32>(quantizeOutlineThickness(outlineThickness))} << 32) |
+           (sf::base::U64{bold} << 31) | index;
 }
 
 
@@ -196,7 +206,7 @@ template <typename T, typename U>
         if (outlineThickness != 0.f)
         {
             FT_Stroker_Set(stroker,
-                           static_cast<FT_Fixed>(outlineThickness * float{1 << 6}),
+                           static_cast<FT_Fixed>(quantizeOutlineThickness(outlineThickness)),
                            FT_STROKER_LINECAP_ROUND,
                            FT_STROKER_LINEJOIN_ROUND,
                            0);
