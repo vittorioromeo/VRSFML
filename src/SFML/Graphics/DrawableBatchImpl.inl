@@ -11,10 +11,13 @@
 #include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PieSliceShapeData.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/RingPieSliceShapeData.hpp"
+#include "SFML/Graphics/RingShapeData.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Shape.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
@@ -30,7 +33,61 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+void updateOutlineVerticesColorAndTextureRect(const auto&           descriptor,
+                                              sf::Vertex* const     outlineVertexPtr,
+                                              const sf::base::SizeT outlineVertexCount)
+{
+    const sf::Vertex* end = outlineVertexPtr + outlineVertexCount;
+    for (sf::Vertex* vertex = outlineVertexPtr; vertex != end; ++vertex)
+    {
+        vertex->color     = descriptor.outlineColor;
+        vertex->texCoords = descriptor.outlineTextureRect.position; // TODO P1: review this logic
+    }
+}
+
+////////////////////////////////////////////////////////////
+void generateRingVertices(const auto&           descriptor,
+                          const sf::Transform&  transform,
+                          const sf::base::SizeT numArcPoints,
+                          const float           startRadians,
+                          const float           angleStep,
+                          const sf::Vector2f    invLocalBoundsSize,
+                          sf::Vertex* const     fillVertexPtr)
+{
+    for (unsigned int i = 0u; i < numArcPoints; ++i)
+    {
+        const auto [outerPoint, innerPoint] = sf::ShapeUtils::computeRingPointsFromAngleStep(i,
+                                                                                             startRadians,
+                                                                                             angleStep,
+                                                                                             descriptor.outerRadius,
+                                                                                             descriptor.innerRadius);
+
+        // Outer vertex of the pair
+        const sf::Vector2f ratioO = outerPoint.componentWiseMul(invLocalBoundsSize);
+        fillVertexPtr[2 * i + 0]  = {
+             .position  = transform.transformPoint(outerPoint),
+             .color     = descriptor.fillColor,
+             .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioO),
+        };
+
+        // Inner vertex of the pair
+        const sf::Vector2f ratioI = innerPoint.componentWiseMul(invLocalBoundsSize);
+        fillVertexPtr[2 * i + 1]  = {
+             .position  = transform.transformPoint(innerPoint),
+             .color     = descriptor.fillColor,
+             .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioI),
+        };
+    }
+}
+
+} // namespace
 
 
 namespace sf::priv
@@ -260,25 +317,18 @@ void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
 
-    Vertex* outlineVertices = m_storage.reserveMoreVertices(outlineVertexCount);
+    Vertex* outlineVertexPtr = m_storage.reserveMoreVertices(outlineVertexCount);
     m_storage.commitMoreVertices(outlineVertexCount);
 
     // Cannot use `vertices` here as the earlier reserve may have invalidated the pointer
-    ShapeUtils::updateOutlineImpl(descriptor.outlineThickness,
-                                  outlineVertices - fillVertexCount + 1u, // Skip the first vertex (center point)
-                                  outlineVertices,
-                                  nPoints);
+    ShapeUtils::updateOutlineFromTriangleFanFill(descriptor.outlineThickness,
+                                                 outlineVertexPtr - fillVertexCount + 1u, // Skip the first vertex (center point)
+                                                 outlineVertexPtr,
+                                                 nPoints);
 
     //
     // Update outline colors and outline tex coords
-    {
-        const Vertex* end = outlineVertices + outlineVertexCount;
-        for (Vertex* vertex = outlineVertices; vertex != end; ++vertex)
-        {
-            vertex->color     = descriptor.outlineColor;
-            vertex->texCoords = descriptor.outlineTextureRect.position; // TODO P1: review this logic
-        }
-    }
+    updateOutlineVerticesColorAndTextureRect(descriptor, outlineVertexPtr, outlineVertexCount);
 
     const base::SizeT outlineIndexCount = 3u * (outlineVertexCount - 2u);
 
@@ -314,7 +364,7 @@ void DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 {
-    const float angleStep = ShapeUtils::computeAngleStep(sdCircle.pointCount);
+    const float angleStep = base::tau / static_cast<float>(sdCircle.pointCount);
 
     drawTriangleFanShapeFromPoints(sdCircle.pointCount,
                                    sdCircle,
@@ -327,7 +377,7 @@ void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 {
-    const float angleStep = ShapeUtils::computeAngleStep(sdEllipse.pointCount);
+    const float angleStep = base::tau / static_cast<float>(sdEllipse.pointCount);
 
     drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
                                    sdEllipse,
@@ -342,6 +392,28 @@ void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 {
+    if (sdPieSlice.sweepAngle.asRadians() <= 0.f)
+        return;
+
+    if (sdPieSlice.sweepAngle.asRadians() >= base::tau)
+    {
+        add(CircleShapeData{
+            .position           = sdPieSlice.position,
+            .scale              = sdPieSlice.scale,
+            .origin             = sdPieSlice.origin,
+            .rotation           = sdPieSlice.rotation,
+            .textureRect        = sdPieSlice.textureRect,
+            .outlineTextureRect = sdPieSlice.outlineTextureRect,
+            .fillColor          = sdPieSlice.fillColor,
+            .outlineColor       = sdPieSlice.outlineColor,
+            .outlineThickness   = sdPieSlice.outlineThickness,
+            .radius             = sdPieSlice.radius,
+            .pointCount         = sdPieSlice.pointCount,
+        });
+
+        return;
+    }
+
     const float arcAngleStep = ShapeUtils::computePieSliceArcAngleStep(sdPieSlice.sweepAngle.asRadians(), sdPieSlice.pointCount);
 
     drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
@@ -387,11 +459,242 @@ void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRounded
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
+{
+    if (sdRing.outerRadius <= 0.f || sdRing.innerRadius < 0.f || sdRing.innerRadius >= sdRing.outerRadius ||
+        sdRing.pointCount < 3u) [[unlikely]]
+        return;
+
+    const auto [sine, cosine] = base::fastSinCos(sdRing.rotation.asRadians());
+    const auto transform      = Transform::from(sdRing.position, sdRing.scale, sdRing.origin, sine, cosine);
+
+    const unsigned int nPoints   = sdRing.pointCount;
+    const float        angleStep = base::tau / static_cast<float>(nPoints);
+
+    //
+    // Local origin `(0, 0)` is top-left of the bounding box
+    // Bounding box size is `(2 * outerRadius, 2 * outerRadius)`
+    // Geometric center within local coords is `(outerRadius, outerRadius)`
+    const Vector2f localBoundsSize    = {2.f * sdRing.outerRadius, 2.f * sdRing.outerRadius};
+    const Vector2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
+
+    //
+    // Generate fill geometry (triangle strip)
+    const base::SizeT fillVertexCount      = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
+    const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
+    Vertex*           fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+
+    generateRingVertices(sdRing,
+                         transform,
+                         nPoints,
+                         /* startRadians */ 0.f,
+                         angleStep,
+                         invLocalBoundsSize,
+                         fillVertexPtr);
+
+    //
+    // Repeat first pair to close the strip
+    fillVertexPtr[2 * nPoints + 0] = fillVertexPtr[0];
+    fillVertexPtr[2 * nPoints + 1] = fillVertexPtr[1];
+
+    m_storage.commitMoreVertices(fillVertexCount);
+
+    //
+    // Generate fill indices
+    {
+        const base::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
+        const base::SizeT fillIndexCount   = numFillTriangles * 3u;
+
+        IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
+        for (IndexType i = 0u; i < numFillTriangles; ++i)
+            appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
+
+        m_storage.commitMoreIndices(fillIndexCount);
+    }
+
+    //
+    // Update outline if needed
+    if (sdRing.outlineThickness == 0.f)
+        return;
+
+    const base::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
+                                                                  // pairs + duplicated start pair for closed loop
+    const base::SizeT totalOutlineVertices = outlineVerticesPerLoop * 2u;         // Outer + Inner loop
+    const base::SizeT outlineIndicesPerLoop = 3u * (outlineVerticesPerLoop - 2u); // Indices for triangles from the strip
+    const base::SizeT totalOutlineIndices = outlineIndicesPerLoop * 2u;
+
+    const IndexType  firstOutlineVertexIndex = m_storage.getNumVertices();
+    Vertex* const    outlineVertexPtr        = m_storage.reserveMoreVertices(totalOutlineVertices);
+    IndexType* const outlineIndexPtr         = m_storage.reserveMoreIndices(totalOutlineIndices);
+
+    const IndexType firstOuterOutlineLoopVertexIndex = firstOutlineVertexIndex;
+    const IndexType firstInnerOutlineLoopVertexIndex = firstOutlineVertexIndex +
+                                                       static_cast<IndexType>(outlineVerticesPerLoop);
+
+    const auto generateOutlineHelper =
+        [&](Vertex* const      chosenOutlineVertexPtr,
+            IndexType* const   chosenOutlineIndexPtr,
+            const IndexType    firstChonsenOutlineLoopVertexIndex,
+            const unsigned int fillVertexIndexOffset)
+    {
+        // Generate outline vertices
+        const auto getBoundaryPoint = [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+        {
+            SFML_BASE_ASSERT_AND_ASSUME(i < nPoints);
+            return fillVertexPtr[2 * i + fillVertexIndexOffset].position;
+        };
+
+        Vertex* const chosenOutlineVertexStart = chosenOutlineVertexPtr;
+        ShapeUtils::updateOutlineImpl(sdRing.outlineThickness, getBoundaryPoint, chosenOutlineVertexStart, nPoints);
+
+        // Generate outline indices
+        IndexType* chosenOutlineIndexPtrStart = chosenOutlineIndexPtr;
+        for (IndexType i = 0u; i < outlineVerticesPerLoop - 2u; ++i)
+            appendTriangleIndices(chosenOutlineIndexPtrStart, firstChonsenOutlineLoopVertexIndex + i);
+    };
+
+    //
+    // Generate outer outline
+    generateOutlineHelper(outlineVertexPtr, outlineIndexPtr, firstOuterOutlineLoopVertexIndex, 0);
+
+    //
+    // Generate inner outline
+    generateOutlineHelper(outlineVertexPtr + outlineVerticesPerLoop,
+                          outlineIndexPtr + outlineIndicesPerLoop,
+                          firstInnerOutlineLoopVertexIndex,
+                          1);
+
+    //
+    // Update outline colors and outline tex coords
+    updateOutlineVerticesColorAndTextureRect(sdRing, outlineVertexPtr, totalOutlineVertices);
+
+    m_storage.commitMoreVertices(totalOutlineVertices);
+    m_storage.commitMoreIndices(totalOutlineIndices);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
+void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlice)
+{
+    if (sdRingPieSlice.outerRadius <= 0.f || sdRingPieSlice.innerRadius < 0.f ||
+        sdRingPieSlice.innerRadius >= sdRingPieSlice.outerRadius || sdRingPieSlice.pointCount < 3u ||
+        sdRingPieSlice.sweepAngle.asRadians() <= 0.f) [[unlikely]]
+        return;
+
+    if (sdRingPieSlice.sweepAngle.asRadians() >= base::tau)
+    {
+        add(RingShapeData{
+            .position           = sdRingPieSlice.position,
+            .scale              = sdRingPieSlice.scale,
+            .origin             = sdRingPieSlice.origin,
+            .rotation           = sdRingPieSlice.rotation,
+            .textureRect        = sdRingPieSlice.textureRect,
+            .outlineTextureRect = sdRingPieSlice.outlineTextureRect,
+            .fillColor          = sdRingPieSlice.fillColor,
+            .outlineColor       = sdRingPieSlice.outlineColor,
+            .outlineThickness   = sdRingPieSlice.outlineThickness,
+            .outerRadius        = sdRingPieSlice.outerRadius,
+            .innerRadius        = sdRingPieSlice.innerRadius,
+            .pointCount         = sdRingPieSlice.pointCount,
+        });
+
+        return;
+    }
+
+    const auto [sine, cosine] = base::fastSinCos(sdRingPieSlice.rotation.asRadians());
+    const auto transform = Transform::from(sdRingPieSlice.position, sdRingPieSlice.scale, sdRingPieSlice.origin, sine, cosine);
+
+    const float absSweepAngle = SFML_BASE_MATH_FABSF(sdRingPieSlice.sweepAngle.asRadians());
+    const float sweepRadians  = sdRingPieSlice.sweepAngle.asRadians();
+    const float startRadians  = sdRingPieSlice.startAngle.asRadians();
+
+    const unsigned int numArcPoints = base::max(3u,
+                                                static_cast<unsigned int>(SFML_BASE_MATH_CEILF(
+                                                    static_cast<float>(sdRingPieSlice.pointCount) *
+                                                    (absSweepAngle / base::tau))));
+
+    const float angleStep = sweepRadians / static_cast<float>(numArcPoints - 1u);
+
+    //
+    // Local origin `(0, 0)` is top-left of the bounding box
+    // Bounding box size is `(2 * outerRadius, 2 * outerRadius)`
+    // Geometric center within local coords is `(outerRadius, outerRadius)`
+    const Vector2f localBoundsSize    = {2.f * sdRingPieSlice.outerRadius, 2.f * sdRingPieSlice.outerRadius};
+    const Vector2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
+
+    //
+    // Generate fill geometry (triangle strip)
+    const base::SizeT fillVertexCount      = 2u * numArcPoints;
+    const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
+    Vertex*           fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+
+    generateRingVertices(sdRingPieSlice, transform, numArcPoints, startRadians, angleStep, invLocalBoundsSize, fillVertexPtr);
+    m_storage.commitMoreVertices(fillVertexCount);
+
+    //
+    // Generate fill indices
+    if (numArcPoints >= 3)
+    {
+        const base::SizeT numFillTriangles = (fillVertexCount - 2u); // A strip of `V` vertices has `V - 2` triangles
+        const base::SizeT fillIndexCount   = numFillTriangles * 3u;
+
+        IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
+        for (IndexType i = 0u; i < numFillTriangles; ++i)
+            appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
+
+        m_storage.commitMoreIndices(fillIndexCount);
+    }
+
+    //
+    // Update outline if needed
+    if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
+        return;
+
+    const base::SizeT numBoundaryPoints    = 2 * numArcPoints;
+    const base::SizeT totalOutlineVertices = (numBoundaryPoints + 1u) * 2u;
+    const base::SizeT numOutlineTriangles  = totalOutlineVertices - 2u;
+    const base::SizeT totalOutlineIndices  = numOutlineTriangles * 3u;
+
+    const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
+    Vertex* const   outlineVertexPtr        = m_storage.reserveMoreVertices(totalOutlineVertices);
+
+    //
+    // Generate outline vertices
+    const auto getBoundaryPoint = [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    {
+        SFML_BASE_ASSERT_AND_ASSUME(i < numBoundaryPoints);
+        const auto fillVertexIdx = i < numArcPoints ? 2 * i : 2 * (2 * numArcPoints - 1 - i) + 1;
+        return fillVertexPtr[fillVertexIdx].position;
+    };
+
+    ShapeUtils::updateOutlineImpl(sdRingPieSlice.outlineThickness,
+                                  getBoundaryPoint,   // Lambda providing positions
+                                  outlineVertexPtr,   // Output vertex buffer
+                                  numBoundaryPoints); // Number of unique points in the loop
+
+    //
+    // Generate outline indices
+    IndexType* outlineIndexPtr = m_storage.reserveMoreIndices(totalOutlineIndices);
+    for (IndexType i = 0u; i < numOutlineTriangles; ++i)
+        appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
+
+    //
+    // Update outline colors and outline tex coords
+    updateOutlineVerticesColorAndTextureRect(sdRingPieSlice, outlineVertexPtr, totalOutlineVertices);
+
+    m_storage.commitMoreVertices(totalOutlineVertices);
+    m_storage.commitMoreIndices(totalOutlineIndices);
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
 {
     const auto nPoints = sdStar.pointCount * 2u;
 
-    const float angleStep = ShapeUtils::computeAngleStep(nPoints);
+    const float angleStep = base::tau / static_cast<float>(nPoints);
 
     drawTriangleFanShapeFromPoints(nPoints,
                                    sdStar,

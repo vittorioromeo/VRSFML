@@ -873,6 +873,8 @@ void RenderTarget::draw(const CircleShapeData& sdCircle, const RenderStates& sta
 void RenderTarget::draw(const EllipseShapeData& sdEllipse, const RenderStates& states)                   { helperDrawShapeData(sdEllipse, states); }
 void RenderTarget::draw(const PieSliceShapeData& sdPieSlice, const RenderStates& states)                 { helperDrawShapeData(sdPieSlice, states); }
 void RenderTarget::draw(const RectangleShapeData& sdRectangle, const RenderStates& states)               { helperDrawShapeData(sdRectangle, states); }
+void RenderTarget::draw(const RingShapeData& sdRing, const RenderStates& states)                         { helperDrawShapeData(sdRing, states); }
+void RenderTarget::draw(const RingPieSliceShapeData& sdRingPieSlice, const RenderStates& states)         { helperDrawShapeData(sdRingPieSlice, states); }
 void RenderTarget::draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states) { helperDrawShapeData(sdRoundedRectangle, states); }
 void RenderTarget::draw(const StarShapeData& sdStar, const RenderStates& states)                         { helperDrawShapeData(sdStar, states); }
 // clang-format on
