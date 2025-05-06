@@ -72,6 +72,30 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         }
     }
 
+    SECTION("Move construction")
+    {
+        sf::Sound src(soundBuffer);
+        sf::Sound dst = SFML_BASE_MOVE(src);
+
+        CHECK(&dst.getBuffer() == &soundBuffer);
+        CHECK(!dst.isLooping());
+        CHECK(dst.getPlayingOffset() == sf::Time{});
+        CHECK(dst.getStatus() == sf::Sound::Status::Stopped);
+    }
+
+    SECTION("Move assignment")
+    {
+        sf::Sound src(soundBuffer);
+        sf::Sound dst(soundBuffer);
+
+        dst = SFML_BASE_MOVE(src);
+
+        CHECK(&dst.getBuffer() == &soundBuffer);
+        CHECK(!dst.isLooping());
+        CHECK(dst.getPlayingOffset() == sf::Time{});
+        CHECK(dst.getStatus() == sf::Sound::Status::Stopped);
+    }
+
     SECTION("Set/get buffer")
     {
         const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
