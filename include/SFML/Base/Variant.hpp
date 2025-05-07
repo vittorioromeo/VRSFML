@@ -5,6 +5,7 @@
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wshadow"
 
+#include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
@@ -17,7 +18,6 @@
 #include "SFML/Base/Traits/IsSame.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
@@ -32,10 +32,6 @@ using sf::base::SizeT;
 
 namespace sfvr::impl
 {
-
-template <typename T>
-T&& declval();
-
 [[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X, auto... Xs) noexcept
 {
     decltype(X) result = X;
@@ -101,15 +97,16 @@ private:
         max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
 
-    static inline constexpr bool triviallyCopyable     = (sf::base::isTriviallyCopyable<Alternatives> && ...);
-    static inline constexpr bool triviallyDestructible = (sf::base::isTriviallyDestructible<Alternatives> && ...);
-    static inline constexpr bool triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...);
-    static inline constexpr bool triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...);
-    static inline constexpr bool triviallyCopyAssignable = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...);
-    static inline constexpr bool triviallyMoveAssignable = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...);
+    enum : bool
+    {
+        triviallyDestructible      = (sf::base::isTriviallyDestructible<Alternatives> && ...),
+        triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...),
+        triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...),
+        triviallyCopyAssignable    = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...),
+        triviallyMoveAssignable    = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...)
+    };
 
     using index_type = unsigned char; // Support up to 255 alternatives
-
 
 public:
     template <typename T>
@@ -126,32 +123,11 @@ private:
                                                                                         \
     static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                               \
-    do                                                                                                    \
-    {                                                                                                     \
-        if constexpr (sizeof...(Alternatives) == 1)                                                       \
-        {                                                                                                 \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                         \
-            {                                                                                             \
-                __VA_ARGS__;                                                                              \
-            }                                                                                             \
-        }                                                                                                 \
-        else if constexpr (sizeof...(Alternatives) == 2)                                                  \
-        {                                                                                                 \
-            if (constexpr impl::SizeT Is = 0; (obj)._index == Is)                                         \
-            {                                                                                             \
-                __VA_ARGS__;                                                                              \
-            }                                                                                             \
-            else if (constexpr impl::SizeT Is = 1; (obj)._index == Is)                                    \
-            {                                                                                             \
-                __VA_ARGS__;                                                                              \
-            }                                                                                             \
-        }                                                                                                 \
-        else                                                                                              \
-        {                                                                                                 \
-            [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN \
-            { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence);      \
-        }                                                                                                 \
+#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                           \
+    do                                                                                                \
+    {                                                                                                 \
+        [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN \
+        { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence);      \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
@@ -269,7 +245,7 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
-        requires(!triviallyCopyConstructible)
+        requires(!static_cast<bool>(triviallyCopyConstructible))
     : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
@@ -279,11 +255,11 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
-        requires(triviallyCopyConstructible)
+        requires(static_cast<bool>(triviallyCopyConstructible))
     = default;
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
-        requires(!triviallyMoveConstructible)
+        requires(!static_cast<bool>(triviallyMoveConstructible))
     : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
@@ -293,21 +269,21 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
-        requires(triviallyMoveConstructible)
+        requires(static_cast<bool>(triviallyMoveConstructible))
     = default;
 
     [[gnu::always_inline]] ~tinyvariant()
-        requires(!triviallyDestructible)
+        requires(!static_cast<bool>(triviallyDestructible))
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
     }
 
     [[gnu::always_inline]] ~tinyvariant()
-        requires(triviallyDestructible)
+        requires(static_cast<bool>(triviallyDestructible))
     = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
-        requires(!triviallyCopyAssignable)
+        requires(!static_cast<bool>(triviallyCopyAssignable))
     {
         if (this == &rhs)
             return *this;
@@ -324,11 +300,11 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
-        requires(triviallyCopyAssignable)
+        requires(static_cast<bool>(triviallyCopyAssignable))
     = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
-        requires(!triviallyMoveAssignable)
+        requires(!static_cast<bool>(triviallyMoveAssignable))
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -343,7 +319,7 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
-        requires(triviallyMoveAssignable)
+        requires(static_cast<bool>(triviallyMoveAssignable))
     = default;
 
     template <typename T>
@@ -411,8 +387,8 @@ public:
     }
 
     template <typename Visitor,
-              typename R = decltype(impl::declval<Visitor&&>()(
-                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
+              typename R = decltype(sf::base::declVal<Visitor&&>()(
+                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -430,8 +406,8 @@ public:
     }
 
     template <typename Visitor,
-              typename R = decltype(impl::declval<Visitor&&>()(
-                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
+              typename R = decltype(sf::base::declVal<Visitor&&>()(
+                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
@@ -463,8 +439,8 @@ public:
     }
 
     template <typename Visitor,
-              typename R = decltype(impl::declval<Visitor&&>()(
-                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
+              typename R = decltype(sf::base::declVal<Visitor&&>()(
+                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
@@ -491,8 +467,8 @@ public:
     }
 
     template <typename Visitor,
-              typename R = decltype(impl::declval<Visitor&&>()(
-                  impl::declval<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
+              typename R = decltype(sf::base::declVal<Visitor&&>()(
+                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
     [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))

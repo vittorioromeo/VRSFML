@@ -67,7 +67,7 @@ private:
         else
         {
             for (auto* p = srcBegin; p != srcEnd; ++p, ++target)
-                SFML_BASE_PLACEMENT_NEW(target) TItem(SFML_BASE_MOVE(*p));
+                SFML_BASE_PLACEMENT_NEW(target) TItem(static_cast<TItem&&>(*p));
         }
     }
 
@@ -462,7 +462,7 @@ public:
 
                 while (currentRead != m_endSize)
                 {
-                    *currentWrite = SFML_BASE_MOVE(*currentRead);
+                    *currentWrite = static_cast<TItem&&>(*currentRead);
                     ++currentWrite;
                     ++currentRead;
                 }
@@ -477,6 +477,56 @@ public:
         }
 
         return it;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    TItem* erase(TItem* const first, TItem* const last)
+    {
+        SFML_BASE_ASSERT(first >= begin() && first <= end());
+        SFML_BASE_ASSERT(last >= begin() && last <= end());
+        SFML_BASE_ASSERT(first <= last);
+
+        if (first == last)
+            return first;
+
+        // Tracks the position where the next non-erased element should be moved to
+        TItem* currWritePtr = first;
+
+        // If `last` is not the end, elements from `last` onwards need to be shifted to the left to fill the gap
+        if (last != m_endSize)
+        {
+            if constexpr (triviallyCopyable)
+            {
+                SFML_BASE_MEMMOVE(first,                                                 // Destination
+                                  last,                                                  // Source
+                                  static_cast<SizeT>(m_endSize - last) * sizeof(TItem)); // Number of bytes
+
+                // Update `currWritePtr` to the new logical end of the moved block
+                currWritePtr += (m_endSize - last);
+            }
+            else
+            {
+                TItem* currReadPtr = last;
+
+                // Loop until all elements from `last` to `m_endSize` have been processed
+                while (currReadPtr != m_endSize)
+                    *currWritePtr++ = static_cast<TItem&&>(*currReadPtr++);
+
+                // After the loop, `currWritePtr` points to the position after the last moved element
+            }
+        }
+
+        // If `last == m_endSize`, all elements from `first` to `m_endSize` are being erased
+        // No elements need to be moved. `currWritePtr` remains `first`
+
+        destroyRange(currWritePtr, m_endSize);
+        m_endSize = currWritePtr;
+
+        // Return an iterator to the element that now occupies the position
+        // where the first erased element (`first`) was. This is `first` itself,
+        // as elements were shifted into this position, or it's the new `end()`.
+        return first;
     }
 
 

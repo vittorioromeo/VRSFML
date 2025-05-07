@@ -2,6 +2,7 @@
 
 #include <Doctest.hpp>
 
+#include <CommonTraits.hpp>
 #include <StringifyStringViewUtil.hpp>
 
 #include <string>
@@ -9,6 +10,35 @@
 
 TEST_CASE("[Base] Base/StringView.hpp")
 {
+    SECTION("Type traits")
+    {
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_CONSTRUCTIBLE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPY_ASSIGNABLE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_CONSTRUCTIBLE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_MOVE_ASSIGNABLE(sf::base::StringView));
+
+        STATIC_CHECK(!SFML_BASE_IS_TRIVIAL(sf::base::StringView)); // because of member initializers
+        STATIC_CHECK(SFML_BASE_IS_STANDARD_LAYOUT(sf::base::StringView));
+        STATIC_CHECK(!SFML_BASE_IS_AGGREGATE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_COPYABLE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(sf::base::StringView));
+        STATIC_CHECK(SFML_BASE_IS_TRIVIALLY_ASSIGNABLE(sf::base::StringView, sf::base::StringView));
+    }
+
+    //----------------------------------------------------------------------------
+
+    SECTION("Structured bindings")
+    {
+        sf::base::StringView span{nullptr, 0u};
+
+        auto [data, size] = span;
+
+        CHECK(data == nullptr);
+        CHECK(size == 0u);
+    }
+
+    //----------------------------------------------------------------------------
+
     SECTION("Default constructor")
     {
         sf::base::StringView view;
