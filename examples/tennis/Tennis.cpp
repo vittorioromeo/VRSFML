@@ -1,6 +1,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "../bubble_idle/TextEffectWiggle.hpp"
+
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -55,65 +57,6 @@ sf::Path resourcesDir()
 }
 } // namespace
 
-
-class TextEffectWiggle
-{
-public:
-    explicit TextEffectWiggle(float frequency, float amplitude, float phase = 0.f) :
-    m_frequency{frequency},
-    m_amplitude{amplitude},
-    m_phase{phase}
-    {
-    }
-
-    void advance(float deltaTime)
-    {
-        m_time += deltaTime;
-    }
-
-    void apply(sf::Text& text)
-    {
-        auto textVertices = text.getVerticesMut();
-
-        m_oldVertexPositions.clear();
-        m_oldVertexPositions.reserve(textVertices.size);
-
-        for (const sf::Vertex& v : textVertices)
-            m_oldVertexPositions.pushBack(v.position);
-
-        auto       nOutlineVertices = text.getFillVerticesStartIndex();
-        const auto t                = m_time * m_frequency;
-
-        auto func = [this](float xTime, sf::base::SizeT xIndex)
-        { return static_cast<float>(sf::base::sin(xTime + float(xIndex) + m_phase) * m_amplitude); };
-
-        for (sf::base::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
-            for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data[i * 4u + j].position.y += func(t, i);
-
-        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size / 4u; ++i)
-            for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
-    }
-
-    void unapply(sf::Text& text)
-    {
-        auto [tvData, tvSize] = text.getVerticesMut();
-
-        for (auto i = 0u; i < tvSize; ++i)
-            tvData[i].position = m_oldVertexPositions[i];
-    }
-
-private:
-    sf::base::Vector<sf::Vector2f> m_oldVertexPositions;
-    float                                 m_time = 0.f;
-    float                                 m_frequency;
-    float                                 m_amplitude;
-    float                                 m_phase;
-};
-
-// tvData[i * 6u + j].color.r = sf::base::U8(int(3.14f + sf::base::sin(test) * 25.f) % 255);
-// tvData[i * 6u + j].color.g = sf::base::U8(int(3.14f + sf::base::sin(test) * 25.f) % 255);
 
 ////////////////////////////////////////////////////////////
 /// Main

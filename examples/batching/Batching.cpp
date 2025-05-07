@@ -482,15 +482,15 @@ int main()
                 if (drawText)
                 {
                     drawFn(entity.text);
-                    drawnVertexCounter += entity.text.getVertices().size;
+                    drawnVertexCounter += entity.text.getVertices().size();
                 }
 
                 if (drawShapes)
                 {
                     drawFn(entity.circleShape, sf::RenderStates{.texture = &textureAtlas.getTexture()});
 
-                    drawnVertexCounter += entity.circleShape.getFillVertices().size +
-                                          entity.circleShape.getOutlineVertices().size;
+                    drawnVertexCounter += entity.circleShape.getFillVertices().size() +
+                                          entity.circleShape.getOutlineVertices().size();
                 }
             };
 

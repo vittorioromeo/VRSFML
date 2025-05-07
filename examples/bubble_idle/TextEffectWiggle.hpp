@@ -29,10 +29,11 @@ public:
     ////////////////////////////////////////////////////////////
     void apply(sf::Text& text)
     {
-        auto textVertices = text.getVerticesMut();
+        auto textVertices           = text.getVerticesMut();
+        const auto [tvData, tvSize] = textVertices;
 
         m_oldVertexPositions.clear();
-        m_oldVertexPositions.reserve(textVertices.size);
+        m_oldVertexPositions.reserve(tvSize);
 
         for (const sf::Vertex& v : textVertices)
             m_oldVertexPositions.pushBack(v.position);
@@ -45,17 +46,17 @@ public:
 
         for (sf::base::SizeT i = 0u; i < nOutlineVertices / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data[i * 4u + j].position.y += func(t, i);
+                tvData[i * 4u + j].position.y += func(t, i);
 
-        for (sf::base::SizeT i = nOutlineVertices / 4u; i < textVertices.size / 4u; ++i)
+        for (sf::base::SizeT i = nOutlineVertices / 4u; i < tvSize / 4u; ++i)
             for (sf::base::SizeT j = 0u; j < 4u; ++j)
-                textVertices.data[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
+                tvData[i * 4u + j].position.y += func(t, i - nOutlineVertices / 4u);
     }
 
     ////////////////////////////////////////////////////////////
     void unapply(sf::Text& text)
     {
-        auto [tvData, tvSize] = text.getVerticesMut();
+        const auto [tvData, tvSize] = text.getVerticesMut();
 
         for (auto i = 0u; i < tvSize; ++i)
             tvData[i].position = m_oldVertexPositions[i];
@@ -63,8 +64,8 @@ public:
 
 private:
     sf::base::Vector<sf::Vector2f> m_oldVertexPositions;
-    float                                 m_time = 0.f;
-    float                                 m_frequency;
-    float                                 m_amplitude;
-    float                                 m_phase;
+    float                          m_time = 0.f;
+    float                          m_frequency;
+    float                          m_amplitude;
+    float                          m_phase;
 };

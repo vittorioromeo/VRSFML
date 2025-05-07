@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 
 
 namespace sf::base
@@ -20,19 +21,15 @@ struct [[nodiscard]] Span
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Span(decltype(nullptr), SizeT) = delete;
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Span(T* theData, SizeT theSize) : data{theData}, size{theSize}
+    [[nodiscard, gnu::always_inline]] constexpr Span(T* theData, SizeT theSize) : theData{theData}, theSize{theSize}
     {
-        SFML_BASE_ASSERT(data != nullptr || (data == nullptr && size == 0u));
+        SFML_BASE_ASSERT(theData != nullptr || (theData == nullptr && theSize == 0u));
     }
 
 
     ////////////////////////////////////////////////////////////
     template <SizeT N>
-    [[nodiscard, gnu::always_inline]] constexpr Span(T (&array)[N]) : data{array}, size{N}
+    [[nodiscard, gnu::always_inline]] constexpr Span(T (&array)[N]) : theData{array}, theSize{N}
     {
     }
 
@@ -40,40 +37,54 @@ struct [[nodiscard]] Span
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* begin() const
     {
-        return data;
+        return theData;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T* end() const
     {
-        return data + size;
+        return theData + theSize;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr T& operator[](SizeT i) const
     {
-        SFML_BASE_ASSERT(i < size);
-        return *(data + i);
+        SFML_BASE_ASSERT(i < theSize);
+        return *(theData + i);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* data() const noexcept
+    {
+        return theData;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT size() const noexcept
+    {
+        return theSize;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const
     {
-        return size == 0u;
+        return theSize == 0u;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool valueEquals(const T* rhsData, SizeT rhsSize) const
     {
-        if (size != rhsSize)
+        if (theSize != rhsSize)
             return false;
 
-        for (SizeT i = 0u; i < size; ++i)
-            if (data[i] != rhsData[i])
+        for (SizeT i = 0u; i < theSize; ++i)
+            if (theData[i] != rhsData[i])
                 return false;
 
         return true;
@@ -83,15 +94,23 @@ struct [[nodiscard]] Span
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool valueEquals(const Span& rhs) const
     {
-        return valueEquals(rhs.data, rhs.size);
+        return valueEquals(rhs.theData, rhs.theSize);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend void swap(Span& lhs, Span& rhs) noexcept
+    {
+        base::swap(lhs.theData, rhs.theData);
+        base::swap(lhs.theSize, rhs.theSize);
     }
 
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    T*    data{nullptr};
-    SizeT size{0u};
+    T*    theData{nullptr};
+    SizeT theSize{0u};
 };
 
 } // namespace sf::base

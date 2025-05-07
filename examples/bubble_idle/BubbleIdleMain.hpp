@@ -18,7 +18,6 @@
 #include "Easing.hpp"
 #include "HellPortal.hpp"
 #include "HueColor.hpp"
-#include "ImGuiNotify.hpp"
 #include "InputHelper.hpp"
 #include "MathUtils.hpp"
 #include "MemberGuard.hpp"
@@ -105,11 +104,11 @@
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
-#include <imgui_internal.h>
 
 #include <random>
 #include <string>
@@ -119,8 +118,6 @@
 #include <cctype>
 #include <cmath>
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <ctime>
 
 
@@ -985,7 +982,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Cat names
-    sf::base::Vector<sf::base::Vector<std::string>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
+    sf::base::Vector<sf::base::Vector<sf::base::StringView>> shuffledCatNamesPerType = makeShuffledCatNames(rng);
 
     ////////////////////////////////////////////////////////////
     // Prestige transition
@@ -1306,9 +1303,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::base::Vector<sf::base::Vector<std::string>> makeShuffledCatNames(RNG& rng)
+    [[nodiscard]] static sf::base::Vector<sf::base::Vector<sf::base::StringView>> makeShuffledCatNames(RNG& rng)
     {
-        sf::base::Vector<sf::base::Vector<std::string>> result(nCatTypes);
+        sf::base::Vector<sf::base::Vector<sf::base::StringView>> result(nCatTypes);
 
         for (SizeT i = 0u; i < nCatTypes; ++i)
             result[i] = getShuffledCatNames(static_cast<CatType>(i), rng.getEngine());
@@ -2128,19 +2125,9 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* findFirstCatByType(const CatType catType)
+    [[nodiscard]] Cat* findFirstCatByType(const CatType catType) const
     {
         for (Cat& cat : pt->cats)
-            if (cat.type == catType)
-                return &cat;
-
-        return nullptr;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] const Cat* findFirstCatByType(const CatType catType) const
-    {
-        for (const Cat& cat : pt->cats)
             if (cat.type == catType)
                 return &cat;
 
@@ -2517,7 +2504,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void updateSelectedBackgroundSelectorIndex()
+    void updateSelectedBackgroundSelectorIndex() const
     {
         auto& [entries, selectedIndex] = getBackgroundSelectorData();
 
@@ -2527,7 +2514,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void updateSelectedBGMSelectorIndex()
+    void updateSelectedBGMSelectorIndex() const
     {
         auto& [entries, selectedIndex] = getBGMSelectorData();
 
@@ -2544,7 +2531,7 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    SelectorData& getBGMSelectorData()
+    SelectorData& getBGMSelectorData() const
     {
         static thread_local SelectorData data;
         data.entries.clear();
@@ -2579,7 +2566,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    SelectorData& getBackgroundSelectorData()
+    SelectorData& getBackgroundSelectorData() const
     {
         static thread_local SelectorData data;
         data.entries.clear();
@@ -2774,8 +2761,8 @@ struct Main
                           ParticleType::Smoke);
 
         // TODO P2: cleanup
-        const auto bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
-        const auto bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
+        const auto  bubbleIdx  = static_cast<sf::base::SizeT>(&bubble - pt->bubbles.data());
+        const auto* bombIdxItr = bombIdxToCatIdx.find(bubbleIdx);
 
         Cat* catWhoMadeBomb = bombIdxItr != bombIdxToCatIdx.end() ? pt->cats.data() + bombIdxItr->second : nullptr;
 
@@ -2973,7 +2960,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopCheats()
+    void gameLoopCheats() const
     {
         if (!isDebugModeEnabled())
             return;
@@ -3323,7 +3310,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateAttractoBuff(const float deltaTimeMs)
+    void gameLoopUpdateAttractoBuff(const float deltaTimeMs) const
     {
         if (pt->buffCountdownsPerType[asIdx(CatType::Attracto)].value <= 0.f)
             return;
@@ -3698,7 +3685,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getHexedCat()
+    [[nodiscard]] Cat* getHexedCat() const
     {
         for (Cat& cat : pt->cats)
             if (cat.hexedTimer.hasValue())
@@ -3708,7 +3695,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Cat* getCopyHexedCat()
+    [[nodiscard]] Cat* getCopyHexedCat() const
     {
         for (Cat& cat : pt->cats)
             if (cat.hexedCopyTimer.hasValue())
@@ -7070,7 +7057,8 @@ struct Main
             if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u == 0u)
                 catNameBuffer += "Dr. ";
 
-            catNameBuffer += shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx];
+            const sf::base::StringView catNameSv = shuffledCatNamesPerType[asIdx(cat.type)][cat.nameIdx];
+            catNameBuffer.append(catNameSv.data(), catNameSv.size());
 
             if (pt->perm.smartCatsPurchased && cat.type == CatType::Normal && cat.nameIdx % 2u != 0u)
                 catNameBuffer += ", PhD";
@@ -7511,33 +7499,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
-    {
-        if (profile.enableNotifications)
-            ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
-                                       [&]
-            {
-                ImGui::PushFont(fontImGuiMouldyCheese);
-                uiSetFontScale(uiToolTipFontScale);
-            },
-                                       [&]
-            {
-                uiSetFontScale(uiNormalFontScale);
-                ImGui::PopFont();
-            });
-
-        imGuiContext.setCurrentWindow(window);
-
-        rtImGui.setView(scaledHUDView);
-        rtImGui.clear(sf::Color::Transparent);
-        imGuiContext.render(rtImGui);
-        rtImGui.display();
-
-        rtGame.draw(rtImGui.getTexture(),
-                    {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
-                     .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
-                    {.shader = &shader});
-    }
+    void gameLoopDrawImGui(sf::base::U8 shouldDrawUIAlpha);
 
     ////////////////////////////////////////////////////////////
     void gameLoopUpdatePurchaseUnlockedEffects(const float deltaTimeMs)
@@ -8712,31 +8674,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateNotificationQueue(const float deltaTimeMs)
-    {
-        if (tipTCByte.hasValue())
-            return;
-
-        if (notificationQueue.empty())
-            return;
-
-        if (notificationCountdown.updateAndIsActive(deltaTimeMs))
-            return;
-
-        notificationCountdown.restart();
-
-        const auto& notification = notificationQueue.front();
-
-        ImGuiToast toast{ImGuiToastType::None, 4500};
-        toast.setTitle(notification.title);
-        toast.setContent("%s", notification.content.c_str());
-
-        ImGui::InsertNotification(toast);
-        playSound(sounds.notification);
-
-        // pop front
-        notificationQueue.erase(notificationQueue.begin());
-    }
+    void gameLoopUpdateNotificationQueue(float deltaTimeMs);
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool gameLoop()

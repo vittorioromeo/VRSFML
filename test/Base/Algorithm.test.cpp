@@ -1,8 +1,8 @@
 #include "SFML/Base/Algorithm.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/Vector.hpp"
 
-#include <vector>
+#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] Base/Algorithm.hpp")
@@ -87,8 +87,8 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
 
     SECTION("Back Inserter")
     {
-        const int        values[]{0, 1, 2, 3};
-        std::vector<int> target{-1};
+        const int             values[]{0, 1, 2, 3};
+        sf::base::Vector<int> target{-1};
 
         sf::base::copy(values, values + 4, sf::base::BackInserter{target});
 
@@ -111,11 +111,11 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
 
     SECTION("RemoveIf")
     {
-        std::vector<int> v = {1, 2, 3, 4, 5, 6, 7, 8};
+        sf::base::Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8};
 
         const auto isEven = [](int x) { return x % 2 == 0; };
 
-        auto newEnd = sf::base::removeIf(v.begin(), v.end(), isEven);
+        auto* newEnd = sf::base::removeIf(v.begin(), v.end(), isEven);
 
         // Check the returned iterator position
         CHECK((newEnd == v.begin() + 4));
@@ -128,33 +128,33 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         // Elements from v[4] onwards are moved-from/unspecified but valid
 
         // Check with no elements to remove
-        std::vector<int> vecOdd    = {1, 3, 5, 7};
-        auto             newEndOdd = sf::base::removeIf(vecOdd.begin(), vecOdd.end(), isEven);
+        sf::base::Vector<int> vecOdd{1, 3, 5, 7};
+        auto*                 newEndOdd = sf::base::removeIf(vecOdd.begin(), vecOdd.end(), isEven);
         CHECK((newEndOdd == vecOdd.end()));
-        CHECK((vecOdd == std::vector<int>{1, 3, 5, 7}));
+        CHECK((vecOdd == sf::base::Vector<int>{1, 3, 5, 7}));
 
         // Check with all elements to remove
-        std::vector<int> vecEven    = {2, 4, 6, 8};
-        auto             newEndEven = sf::base::removeIf(vecEven.begin(), vecEven.end(), isEven);
+        sf::base::Vector<int> vecEven{2, 4, 6, 8};
+        auto*                 newEndEven = sf::base::removeIf(vecEven.begin(), vecEven.end(), isEven);
         CHECK((newEndEven == vecEven.begin()));
     }
 
     SECTION("VectorEraseIf")
     {
-        std::vector<int> v      = {1, 2, 3, 4, 5, 6, 7, 8};
-        auto             isEven = [](int x) { return x % 2 == 0; };
+        sf::base::Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8};
+        auto                  isEven = [](int x) { return x % 2 == 0; };
 
         sf::base::SizeT removedCount = sf::base::vectorEraseIf(v, isEven);
 
         CHECK(removedCount == 4);
         CHECK(v.size() == 4);
-        CHECK((v == std::vector<int>{1, 3, 5, 7}));
+        CHECK((v == sf::base::Vector<int>{1, 3, 5, 7}));
 
         // Check with no elements removed
         removedCount = sf::base::vectorEraseIf(v, isEven);
         CHECK(removedCount == 0);
         CHECK(v.size() == 4);
-        CHECK((v == std::vector<int>{1, 3, 5, 7}));
+        CHECK((v == sf::base::Vector<int>{1, 3, 5, 7}));
 
         // Check removing all elements
         auto isOdd   = [](int x) { return x % 2 != 0; };
