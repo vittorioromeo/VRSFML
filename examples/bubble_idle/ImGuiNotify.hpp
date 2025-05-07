@@ -26,8 +26,8 @@
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Vector.hpp"
+#include "SFML/Base/IntTypes.hpp"
 
-#include <cstdint>
 
 
 
@@ -70,7 +70,7 @@ static const ImGuiWindowFlags NOTIFY_DEFAULT_TOAST_FLAGS = ImGuiWindowFlags_Alwa
 #define NOTIFY_NULL_OR_EMPTY(str)		(!str || !strlen(str))
 #define NOTIFY_FORMAT(fn, format, ...)	if (format) {va_list args; va_start(args, format); fn(format, args, ##__VA_ARGS__); va_end(args);}
 
-enum class ImGuiToastType : uint8_t
+enum class ImGuiToastType : sf::base::U8
 {
     None,
     Success,
@@ -80,7 +80,7 @@ enum class ImGuiToastType : uint8_t
     COUNT
 };
 
-enum class ImGuiToastPhase : uint8_t
+enum class ImGuiToastPhase : sf::base::U8
 {
     FadeIn,
     Wait,
@@ -89,7 +89,7 @@ enum class ImGuiToastPhase : uint8_t
     COUNT
 };
 
-enum class ImGuiToastPos : uint8_t
+enum class ImGuiToastPos : sf::base::U8
 {
     TopLeft,
     TopCenter,
@@ -324,7 +324,7 @@ public:
      */
     inline ImGuiToastPhase getPhase()
     {
-        const int64_t elapsed = getElapsedTime().asMilliseconds();
+        const sf::base::I32 elapsed = getElapsedTime().asMilliseconds();
 
         if (elapsed > NOTIFY_FADE_IN_OUT_TIME + this->dismissTime + NOTIFY_FADE_IN_OUT_TIME)
         {
@@ -350,7 +350,7 @@ public:
     inline float getFadePercent()
     {
         const ImGuiToastPhase phase = getPhase();
-        const int64_t elapsed = getElapsedTime().asMilliseconds();
+        const sf::base::I32 elapsed = getElapsedTime().asMilliseconds();
 
         if (phase == ImGuiToastPhase::FadeIn)
         {

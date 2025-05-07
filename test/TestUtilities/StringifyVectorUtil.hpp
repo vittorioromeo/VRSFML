@@ -1,6 +1,6 @@
 #pragma once
 
-#include <doctest/parts/doctest_fwd.h>
+#include <DoctestFwd.hpp>
 
 #include <vector>
 

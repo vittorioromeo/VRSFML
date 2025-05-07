@@ -10,6 +10,7 @@
 #include "SFML/Base/Builtins/Strncmp.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Swap.hpp"
 
 
 namespace sf::base
@@ -42,15 +43,13 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr explicit(false) StringView() noexcept : m_data{nullptr}, m_size{0u}
-    {
-    }
+    [[nodiscard, gnu::always_inline]] constexpr explicit(false) StringView() noexcept = default;
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* cStr) noexcept :
-    m_data{cStr},
-    m_size{SFML_BASE_STRLEN(cStr)}
+    theData{cStr},
+    theSize{SFML_BASE_STRLEN(cStr)}
     {
         SFML_BASE_ASSERT(cStr != nullptr);
     }
@@ -58,10 +57,10 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* cStr, const SizeT len) noexcept :
-    m_data{cStr},
-    m_size{len}
+    theData{cStr},
+    theSize{len}
     {
-        SFML_BASE_ASSERT(cStr != nullptr);
+        SFML_BASE_ASSERT(cStr != nullptr || (cStr == nullptr && len == 0u));
     }
 
 
@@ -72,7 +71,7 @@ public:
                     stringLike.data();
                     stringLike.size();
                 })
-    : m_data{stringLike.data()}, m_size{stringLike.size()}
+    : theData{stringLike.data()}, theSize{stringLike.size()}
     {
         SFML_BASE_ASSERT(stringLike.data() != nullptr);
     }
@@ -81,21 +80,21 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* data() const noexcept
     {
-        return m_data;
+        return theData;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT size() const noexcept
     {
-        return m_size;
+        return theSize;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr bool empty() const noexcept
     {
-        return m_size == 0u;
+        return theSize == 0u;
     }
 
 
@@ -103,12 +102,12 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr StringView substrByPosLen(const SizeT startPos = 0u,
                                                                                      const SizeT len      = nPos) const
     {
-        SFML_BASE_ASSERT(startPos <= m_size);
+        SFML_BASE_ASSERT(startPos <= theSize);
 
-        const SizeT maxPossibleLength = startPos > m_size ? 0 : m_size - startPos;
+        const SizeT maxPossibleLength = startPos > theSize ? 0 : theSize - startPos;
         const SizeT lengthToUse       = base::min(len, maxPossibleLength);
 
-        return {m_data + startPos, lengthToUse};
+        return {theData + startPos, lengthToUse};
     }
 
 
@@ -116,17 +115,17 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT find(const StringView v, const SizeT startPos = 0u) const noexcept
     {
         // Exit early if substring is bigger than actual string
-        if (startPos > m_size || (startPos + v.m_size) > m_size)
+        if (startPos > theSize || (startPos + v.theSize) > theSize)
             return nPos;
 
         const SizeT offset = startPos;
-        const SizeT inc    = m_size - v.m_size - offset;
+        const SizeT inc    = theSize - v.theSize - offset;
 
         for (SizeT i = 0u; i <= inc; ++i)
         {
             const SizeT j = i + offset;
 
-            if (substrByPosLen(j, v.m_size) == v)
+            if (substrByPosLen(j, v.theSize) == v)
                 return j;
         }
 
@@ -162,13 +161,13 @@ public:
             return v.empty() ? SizeT{0u} : static_cast<SizeT>(nPos);
 
         if (v.empty())
-            return base::min(m_size - 1, startPos);
+            return base::min(theSize - 1, startPos);
 
-        if (v.m_size > m_size)
+        if (v.theSize > theSize)
             return nPos;
 
-        for (SizeT i = base::min(startPos, (m_size - v.m_size)); i != nPos; --i)
-            if (substrByPosLen(i, v.m_size) == v)
+        for (SizeT i = base::min(startPos, (theSize - v.theSize)); i != nPos; --i)
+            if (substrByPosLen(i, v.theSize) == v)
                 return i;
 
         return nPos;
@@ -199,10 +198,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstOf(StringView v, SizeT startPos = 0u) const noexcept
     {
-        const SizeT maxIdx = m_size;
+        const SizeT maxIdx = theSize;
 
         for (SizeT i = startPos; i < maxIdx; ++i)
-            if (containsChar(m_data[i], v))
+            if (containsChar(theData[i], v))
                 return i;
 
         return nPos;
@@ -236,13 +235,13 @@ public:
         if (empty())
             return nPos;
 
-        const SizeT maxIdx = base::min(m_size - 1, startPos);
+        const SizeT maxIdx = base::min(theSize - 1, startPos);
 
         for (SizeT i = 0u; i <= maxIdx; ++i)
         {
             const SizeT j = maxIdx - i;
 
-            if (containsChar(m_data[j], v))
+            if (containsChar(theData[j], v))
                 return j;
         }
 
@@ -274,10 +273,10 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT findFirstNotOf(StringView v, SizeT startPos = 0u) const noexcept
     {
-        const SizeT maxIdx = m_size;
+        const SizeT maxIdx = theSize;
 
         for (SizeT i = startPos; i < maxIdx; ++i)
-            if (!containsChar(m_data[i], v))
+            if (!containsChar(theData[i], v))
                 return i;
 
         return nPos;
@@ -311,13 +310,13 @@ public:
         if (empty())
             return nPos;
 
-        const SizeT maxIdx = base::min(m_size - 1, startPos);
+        const SizeT maxIdx = base::min(theSize - 1, startPos);
 
         for (SizeT i = 0u; i <= maxIdx; ++i)
         {
             const SizeT j = maxIdx - i;
 
-            if (!containsChar(m_data[j], v))
+            if (!containsChar(theData[j], v))
                 return j;
         }
 
@@ -349,38 +348,38 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* begin() const noexcept
     {
-        return m_data;
+        return theData;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* cbegin() const noexcept
     {
-        return m_data;
+        return theData;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* end() const noexcept
     {
-        return m_data + m_size;
+        return theData + theSize;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char* cend() const noexcept
     {
-        return m_data + m_size;
+        return theData + theSize;
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr const char& operator[](SizeT i) const noexcept
     {
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(i < m_size);
+        SFML_BASE_ASSERT(theData != nullptr);
+        SFML_BASE_ASSERT(i < theSize);
 
-        return m_data[i];
+        return theData[i];
     }
 
 
@@ -388,10 +387,10 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] friend inline constexpr bool operator==(const StringView& lhs,
                                                                                          const StringView& rhs) noexcept
     {
-        if (lhs.m_size != rhs.m_size)
+        if (lhs.theSize != rhs.theSize)
             return false;
 
-        return SFML_BASE_STRNCMP(lhs.m_data, rhs.m_data, lhs.m_size) == 0;
+        return SFML_BASE_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
     }
 
 
@@ -407,12 +406,23 @@ public:
     template <typename StringLike>
     [[nodiscard, gnu::always_inline]] StringLike toString() const
     {
-        return StringLike{m_data, m_size};
+        return StringLike{theData, theSize};
     }
 
-private:
-    const char* m_data;
-    SizeT       m_size;
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] friend void swap(StringView& lhs, StringView& rhs) noexcept
+    {
+        base::swap(lhs.theData, rhs.theData);
+        base::swap(lhs.theSize, rhs.theSize);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    const char* theData{nullptr};
+    SizeT       theSize{0u};
 };
 
 

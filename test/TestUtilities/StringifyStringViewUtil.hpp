@@ -2,7 +2,7 @@
 
 #include "SFML/Base/StringView.hpp"
 
-#include <doctest/parts/doctest_fwd.h>
+#include <DoctestFwd.hpp>
 
 namespace doctest
 {

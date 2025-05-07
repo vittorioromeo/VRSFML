@@ -6,6 +6,7 @@
 #include "CatType.hpp"
 #include "Constants.hpp"
 #include "Countdown.hpp"
+#include "ImGuiNotify.hpp"
 #include "InputHelper.hpp"
 #include "Milestones.hpp"
 #include "ParticleType.hpp"
@@ -56,7 +57,6 @@
 #include <string>
 #include <vector>
 
-#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -700,7 +700,7 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
                                                                         purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
-            const auto it = uiLabelToY.find(effect.widgetLabel);
+            const auto* it = uiLabelToY.find(effect.widgetLabel);
             return it != uiLabelToY.end() && it->second == uiLabelToY[label];
         });
 
@@ -1696,7 +1696,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
                                                                         purchaseUnlockedEffects.end(),
                                                                         [&](const PurchaseUnlockedEffect& effect)
         {
-            const auto it = uiLabelToY.find(effect.widgetLabel);
+            const auto* it = uiLabelToY.find(effect.widgetLabel);
             return it != uiLabelToY.end() && it->second == uiLabelToY[label];
         });
 
@@ -4653,4 +4653,60 @@ void Main::uiTabBarSettings()
     uiSetFontScale(uiNormalFontScale);
 
     ImGui::Text("FPS: %.2f", static_cast<double>(fps));
+}
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
+{
+    if (profile.enableNotifications)
+        ImGui::RenderNotifications(/* paddingY */ (profile.showDpsMeter ? (15.f + 60.f + 15.f) : 15.f) * profile.uiScale,
+                                   [&]
+        {
+            ImGui::PushFont(fontImGuiMouldyCheese);
+            uiSetFontScale(uiToolTipFontScale);
+        },
+                                   [&]
+        {
+            uiSetFontScale(uiNormalFontScale);
+            ImGui::PopFont();
+        });
+
+    imGuiContext.setCurrentWindow(window);
+
+    rtImGui.setView(scaledHUDView);
+    rtImGui.clear(sf::Color::Transparent);
+    imGuiContext.render(rtImGui);
+    rtImGui.display();
+
+    rtGame.draw(rtImGui.getTexture(),
+                {.scale = {1.f / profile.hudScale, 1.f / profile.hudScale},
+                 .color = hueColor(currentBackgroundHue.asDegrees(), shouldDrawUIAlpha)},
+                {.shader = &shader});
+}
+
+////////////////////////////////////////////////////////////
+void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
+{
+    if (tipTCByte.hasValue())
+        return;
+
+    if (notificationQueue.empty())
+        return;
+
+    if (notificationCountdown.updateAndIsActive(deltaTimeMs))
+        return;
+
+    notificationCountdown.restart();
+
+    const auto& notification = notificationQueue.front();
+
+    ImGuiToast toast{ImGuiToastType::None, 4500};
+    toast.setTitle(notification.title);
+    toast.setContent("%s", notification.content.c_str());
+
+    ImGui::InsertNotification(toast);
+    playSound(sounds.notification);
+
+    // pop front
+    notificationQueue.erase(notificationQueue.begin());
 }

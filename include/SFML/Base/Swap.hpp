@@ -2,22 +2,15 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/Base/Macros.hpp"
-#include "SFML/Base/SizeT.hpp"
-
-
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
 [[gnu::always_inline]] constexpr void swap(T& a, T& b) noexcept
 {
-    T tempA = SFML_BASE_MOVE(a);
-    a       = SFML_BASE_MOVE(b);
-    b       = SFML_BASE_MOVE(tempA);
+    T tempA = static_cast<T&&>(a);
+    a       = static_cast<T&&>(b);
+    b       = static_cast<T&&>(tempA);
 }
 
 

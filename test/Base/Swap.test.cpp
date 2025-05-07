@@ -1,8 +1,8 @@
 #include "SFML/Base/Swap.hpp"
 
-#include <Doctest.hpp>
+#include "SFML/Base/Vector.hpp"
 
-#include <vector>
+#include <Doctest.hpp>
 
 
 TEST_CASE("[Base] Base/Swap.hpp")
@@ -15,11 +15,11 @@ TEST_CASE("[Base] Base/Swap.hpp")
         CHECK(a == 20);
         CHECK(b == 10);
 
-        std::vector<int> v1 = {1, 2};
-        std::vector<int> v2 = {3, 4, 5};
+        sf::base::Vector<int> v1{1, 2};
+        sf::base::Vector<int> v2{3, 4, 5};
         sf::base::swap(v1, v2);
-        CHECK((v1 == std::vector<int>{3, 4, 5}));
-        CHECK((v2 == std::vector<int>{1, 2}));
+        CHECK((v1 == sf::base::Vector<int>{3, 4, 5}));
+        CHECK((v2 == sf::base::Vector<int>{1, 2}));
     }
 
     SECTION("IterSwap")
@@ -31,7 +31,7 @@ TEST_CASE("[Base] Base/Swap.hpp")
         CHECK(values[2] == 10);
         CHECK(values[3] == 40);
 
-        std::vector<int> v = {5, 15, 25};
+        sf::base::Vector<int> v{5, 15, 25};
         sf::base::iterSwap(v.begin(), v.begin() + 1);
         CHECK(v[0] == 15);
         CHECK(v[1] == 5);
@@ -60,15 +60,15 @@ TEST_CASE("[Base] Base/Swap.hpp")
         CHECK(arr2[3] == 40); // Unchanged
         CHECK(arr2[4] == 50); // Unchanged
 
-        std::vector<int> v1 = {100, 200, 300, 400};
-        std::vector<int> v2 = {500, 600, 700, 800};
+        sf::base::Vector<int> v1{100, 200, 300, 400};
+        sf::base::Vector<int> v2{500, 600, 700, 800};
 
         // Swap the middle 2 elements
-        resultIter = sf::base::swapRanges(v1.begin() + 1, v1.begin() + 3, v2.begin() + 1).base();
+        resultIter = sf::base::swapRanges(v1.begin() + 1, v1.begin() + 3, v2.begin() + 1);
 
-        CHECK((resultIter == (v2.begin() + 3).base()));
+        CHECK((resultIter == (v2.begin() + 3)));
 
-        CHECK((v1 == std::vector<int>{100, 600, 700, 400}));
-        CHECK((v2 == std::vector<int>{500, 200, 300, 800}));
+        CHECK((v1 == sf::base::Vector<int>{100, 600, 700, 400}));
+        CHECK((v2 == sf::base::Vector<int>{500, 200, 300, 800}));
     }
 }

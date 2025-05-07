@@ -3,7 +3,7 @@
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/SizeT.hpp"
 
-#include <doctest/parts/doctest_fwd.h>
+#include <DoctestFwd.hpp>
 
 namespace doctest
 {

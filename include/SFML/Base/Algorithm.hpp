@@ -238,13 +238,29 @@ public:
 
     [[gnu::always_inline]] BackInserter& operator=(const value_type& value)
     {
-        m_container->push_back(value);
+        if constexpr (requires { m_container->push_back(value); })
+        {
+            m_container->push_back(value);
+        }
+        else
+        {
+            m_container->pushBack(value);
+        }
+
         return *this;
     }
 
     [[gnu::always_inline]] BackInserter& operator=(value_type&& value)
     {
-        m_container->push_back(static_cast<value_type&&>(value));
+        if constexpr (requires { m_container->push_back(static_cast<value_type &&>(value)); })
+        {
+            m_container->push_back(static_cast<value_type&&>(value));
+        }
+        else
+        {
+            m_container->pushBack(static_cast<value_type&&>(value));
+        }
+
         return *this;
     }
 
