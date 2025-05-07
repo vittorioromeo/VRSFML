@@ -781,7 +781,7 @@ void SDLWindowImpl::processSensorEvents()
         m_impl->sensorValue[sensor]  = sensorManager.getValue(sensor);
 
         // If the value has changed, trigger an event
-        if (m_impl->sensorValue[sensor] != previousValue) // TODO P2: use a threshold?
+        if (m_impl->sensorValue[sensor] != previousValue)
             pushEvent(Event::SensorChanged{sensor, m_impl->sensorValue[sensor]});
     }
 }

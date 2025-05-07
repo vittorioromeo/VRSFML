@@ -13,7 +13,7 @@ struct StringMaker<sf::base::Array<T, N>>
 {
     static doctest::String convert(const sf::base::Array<T, N>&)
     {
-        return ""; // TODO P2:
+        return ""; // TODO P3:
     }
 };
 
