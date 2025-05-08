@@ -20,17 +20,17 @@ namespace sf::base::priv
         x += tau;
 
     if (x > pi)
-        x -= tau; // Map (pi, 2pi] to (-pi, 0]
+        x -= tau; // Map `(pi, 2pi]` to `(-pi, 0]`
 
     if (x <= -pi)
-        x += tau; // Map (-2pi, -pi] to (0, pi]
+        x += tau; // Map `(-2pi, -pi]` to `(0, pi]`
 
     return x;
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const, gnu::flatten]] inline constexpr float sinTaylor(float x)
+[[nodiscard, gnu::always_inline, gnu::const, gnu::flatten]] inline constexpr float sinTaylor(const float x)
 {
     if (x == 0.f)
         return 0.f;

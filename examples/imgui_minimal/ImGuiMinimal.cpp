@@ -111,6 +111,9 @@ int main()
         if (ImGui::Button("Set Window Size to 800x800"))
             window.setSize({800u, 800u});
 
+        if (ImGui::Button("Recreate Window"))
+            window = sf::RenderWindow({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
+
         ImGui::Button("Look at this pretty button");
         imGuiContext.image(baseRenderTexture, size.toVec2f());
 
