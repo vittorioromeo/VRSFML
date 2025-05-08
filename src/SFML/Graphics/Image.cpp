@@ -394,7 +394,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
     else
     {
         // Optimized copy ignoring alpha values, row by row (faster)
-        for (unsigned int i = 0; i < dstSize.y; ++i)
+        for (unsigned int i = 0u; i < dstSize.y; ++i)
         {
             SFML_BASE_MEMCPY(dstPixels, srcPixels, pitch);
             srcPixels += srcStride;

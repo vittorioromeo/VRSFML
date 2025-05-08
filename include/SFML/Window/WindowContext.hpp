@@ -65,7 +65,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<WindowContext> create(const ContextSettings& sharedContextSettings = {});
+    [[nodiscard]] static base::Optional<WindowContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \private

@@ -1,3 +1,1086 @@
+#pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Export.hpp"
+
+#include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/IndexType.hpp"
+#include "SFML/Graphics/PrimitiveType.hpp"
+#include "SFML/Graphics/RenderStates.hpp"
+
+#include "SFML/System/Rect.hpp"
+#include "SFML/System/Vector2.hpp"
+
+#include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
+namespace sf
+{
+class CPUDrawableBatch;
+
+template <typename TBufferObject>
+class GLPersistentBuffer;
+
+class Font;
+class PersistentGPUDrawableBatch;
+class Shader;
+class Shape;
+class Text;
+class Texture;
+class VertexBuffer;
+
+struct ArrowShapeData;
+struct CircleShapeData;
+struct EllipseShapeData;
+struct PieSliceShapeData;
+struct RectangleShapeData;
+struct RingShapeData;
+struct RingPieSliceShapeData;
+struct RoundedRectangleShapeData;
+struct StarShapeData;
+
+struct BlendMode;
+struct GLElementBufferObject;
+struct GLVAOGroup;
+struct GLVertexBufferObject;
+struct Sprite;
+struct StencilMode;
+struct StencilValue;
+struct TextData;
+struct Transform;
+struct Vertex;
+struct View;
+} // namespace sf
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+concept ShapeDataConcept =                             //
+    SFML_BASE_IS_SAME(T, ArrowShapeData) ||            //
+    SFML_BASE_IS_SAME(T, CircleShapeData) ||           //
+    SFML_BASE_IS_SAME(T, EllipseShapeData) ||          //
+    SFML_BASE_IS_SAME(T, PieSliceShapeData) ||         //
+    SFML_BASE_IS_SAME(T, RectangleShapeData) ||        //
+    SFML_BASE_IS_SAME(T, RingShapeData) ||             //
+    SFML_BASE_IS_SAME(T, RingPieSliceShapeData) ||     //
+    SFML_BASE_IS_SAME(T, RoundedRectangleShapeData) || //
+    SFML_BASE_IS_SAME(T, StarShapeData);
+
+} // namespace sf::priv
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
+/// \brief Base class for all render targets (window, texture, ...)
+///
+////////////////////////////////////////////////////////////
+class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Struct to hold the statistics of a render target
+    ///
+    ////////////////////////////////////////////////////////////
+    struct DrawStatistics
+    {
+        unsigned int drawCalls{0u}; //!< Number of draw calls
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    virtual ~RenderTarget();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget(const RenderTarget&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget& operator=(const RenderTarget&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget(RenderTarget&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget& operator=(RenderTarget&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clear the entire target with a single color
+    ///
+    /// This function is usually called once every frame,
+    /// to clear the previous contents of the target.
+    ///
+    /// \param color Fill color to use to clear the render target
+    ///
+    ////////////////////////////////////////////////////////////
+    void clear(Color color = Color::Black);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clear the stencil buffer to a specific value
+    ///
+    /// The specified value is truncated to the bit width of
+    /// the current stencil buffer.
+    ///
+    /// \param stencilValue Stencil value to clear to
+    ///
+    ////////////////////////////////////////////////////////////
+    void clearStencil(StencilValue stencilValue);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clear the entire target with a single color and stencil value
+    ///
+    /// The specified stencil value is truncated to the bit
+    /// width of the current stencil buffer.
+    ///
+    /// \param color        Fill color to use to clear the render target
+    /// \param stencilValue Stencil value to clear to
+    ///
+    ////////////////////////////////////////////////////////////
+    void clear(Color color, StencilValue stencilValue);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Change the current active view
+    ///
+    /// The view is like a 2D camera, it controls which part of
+    /// the 2D scene is visible, and how it is viewed in the
+    /// render target.
+    /// The new view will affect everything that is drawn, until
+    /// another view is set.
+    /// The render target keeps its own copy of the view object,
+    /// so it is not necessary to keep the original one alive
+    /// after calling this function.
+    ///
+    /// \param view New view to use
+    ///
+    /// \see `getView`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setView(const View& view);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the view currently in use in the render target
+    ///
+    /// \return The view object that is currently used
+    ///
+    /// \see `setView`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const View& getView() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    enum class [[nodiscard]] AutoBatchMode : unsigned char
+    {
+        Disabled,   //!< Auto-batching is disabled
+        CPUStorage, //!< Auto-batching is enabled with CPU storage
+        GPUStorage, //!< Auto-batching is enabled with GPU storage (fallback to CPU if GPU storage is not available)
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the current auto-batching mode
+    ///
+    /// Auto-batching is a performance optimization that groups
+    /// draw calls together to reduce the number of state changes
+    /// and improve rendering performance. When enabled, the
+    /// render target will automatically batch draw calls
+    /// together when possible, reducing the overhead of
+    /// individual draw calls.
+    ///
+    /// \param mode The auto-batching mode to set
+    ///
+    /// \see `getAutoBatchMode`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setAutoBatchMode(AutoBatchMode mode);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the current auto-batching mode
+    ///
+    /// \return The current auto-batching mode
+    ///
+    /// \see `setAutoBatchMode`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] AutoBatchMode getAutoBatchMode() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the vertex threshold for auto-batching
+    ///
+    /// When the current number of vertices in the batch exceeds
+    /// this threshold, the batch will be flushed and a new one
+    /// will be started. This can help to control the size of
+    /// the batches and optimize performance.
+    ///
+    /// \param threshold The vertex threshold for auto-batching
+    ///
+    /// \see `getAutoBatchVertexThreshold`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setAutoBatchVertexThreshold(base::SizeT threshold);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the vertex threshold for auto-batching
+    ///
+    /// \return The vertex threshold for auto-batching
+    ///
+    /// \see `setAutoBatchVertexThreshold`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT getAutoBatchVertexThreshold() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the viewport of a view, applied to this render target
+    ///
+    /// The viewport is defined in the view as a ratio, this function
+    /// simply applies this ratio to the current dimensions of the
+    /// render target to calculate the pixels rectangle that the viewport
+    /// actually covers in the target.
+    ///
+    /// \param view The view for which we want to compute the viewport
+    ///
+    /// \return Viewport rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] IntRect getViewport(const View& view) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the scissor rectangle of a view, applied to this render target
+    ///
+    /// The scissor rectangle is defined in the view as a ratio. This
+    /// function simply applies this ratio to the current dimensions
+    /// of the render target to calculate the pixels rectangle
+    /// that the scissor rectangle actually covers in the target.
+    ///
+    /// \param view The view for which we want to compute the scissor rectangle
+    ///
+    /// \return Scissor rectangle, expressed in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] IntRect getScissor(const View& view) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a point from target coordinates to world
+    ///        coordinates, using the current view
+    ///
+    /// This function is an overload of the mapPixelToCoords
+    /// function that implicitly uses the current view.
+    /// It is equivalent to:
+    /// \code
+    /// target.mapPixelToCoords(point, target.getView());
+    /// \endcode
+    ///
+    /// \param point Pixel to convert
+    ///
+    /// \return The converted point, in "world" coordinates
+    ///
+    /// \see `mapCoordsToPixel`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2f mapPixelToCoords(Vector2i point) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a point from target coordinates to world coordinates
+    ///
+    /// This function finds the 2D position that matches the
+    /// given pixel of the render target. In other words, it does
+    /// the inverse of what the graphics card does, to find the
+    /// initial position of a rendered pixel.
+    ///
+    /// Initially, both coordinate systems (world units and target pixels)
+    /// match perfectly. But if you define a custom view or resize your
+    /// render target, this assertion is not `true` anymore, i.e. a point
+    /// located at (10, 50) in your render target may map to the point
+    /// (150, 75) in your 2D world -- if the view is translated by (140, 25).
+    ///
+    /// For render-windows, this function is typically used to find
+    /// which point (or object) is located below the mouse cursor.
+    ///
+    /// This version uses a custom view for calculations, see the other
+    /// overload of the function if you want to use the current view of the
+    /// render target.
+    ///
+    /// \param point Pixel to convert
+    /// \param view The view to use for converting the point
+    ///
+    /// \return The converted point, in "world" units
+    ///
+    /// \see `mapCoordsToPixel`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2f mapPixelToCoords(Vector2i point, const View& view) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a point from world coordinates to target
+    ///        coordinates, using the current view
+    ///
+    /// This function is an overload of the `mapCoordsToPixel`
+    /// function that implicitly uses the current view.
+    /// It is equivalent to:
+    /// \code
+    /// target.mapCoordsToPixel(point, target.getView());
+    /// \endcode
+    ///
+    /// \param point Point to convert
+    ///
+    /// \return The converted point, in target coordinates (pixels)
+    ///
+    /// \see `mapPixelToCoords`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2i mapCoordsToPixel(Vector2f point) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Convert a point from world coordinates to target coordinates
+    ///
+    /// This function finds the pixel of the render target that matches
+    /// the given 2D point. In other words, it goes through the same process
+    /// as the graphics card, to compute the final position of a rendered point.
+    ///
+    /// Initially, both coordinate systems (world units and target pixels)
+    /// match perfectly. But if you define a custom view or resize your
+    /// render target, this assertion is not `true` anymore, i.e. a point
+    /// located at (150, 75) in your 2D world may map to the pixel
+    /// (10, 50) of your render target -- if the view is translated by (140, 25).
+    ///
+    /// This version uses a custom view for calculations, see the other
+    /// overload of the function if you want to use the current view of the
+    /// render target.
+    ///
+    /// \param point Point to convert
+    /// \param view The view to use for converting the point
+    ///
+    /// \return The converted point, in target coordinates (pixels)
+    ///
+    /// \see `mapPixelToCoords`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vector2i mapCoordsToPixel(Vector2f point, const View& view) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct TextureDrawParams
+    {
+        Vector2f position{};      //!< Position of the object in the 2D world
+        Vector2f scale{1.f, 1.f}; //!< Scale of the object
+        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+
+        // NOLINTNEXTLINE(readability-redundant-member-init)
+        Angle rotation{}; //!< Orientation of the object
+
+        FloatRect textureRect{};       //!< Rectangle defining the area of the source texture to display
+        Color     color{Color::White}; //!< Color of the sprite
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// The full texture is drawn at position `{0.f, 0.f}` with default origin,
+    /// rotation, scale, and color
+    ///
+    /// \param sprite Texture to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture& texture, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a texture to the render target
+    ///
+    /// \param sprite Texture to draw
+    /// \param params Drawing parameters
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Texture&           texture,
+              const TextureDrawParams& params,
+              RenderStates             states = {}); // TODO P1: RenderStatesWithoutTexture?
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a sprite object to the render target
+    ///
+    /// The texture associated with a sprite must be passed while drawing.
+    ///
+    /// \param sprite Sprite to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Sprite& sprite, const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a shape object to the render target
+    ///
+    /// A texture associated with a shape can be passed while drawing.
+    ///
+    /// \param shape  Shape to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Shape& shape, RenderStates states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a text object to the render target
+    ///
+    /// \param text Text to draw
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Text& text, RenderStates states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const CPUDrawableBatch& drawableBatch, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const PersistentGPUDrawableBatch& drawableBatch, RenderStates states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a vertex buffer
+    ///
+    /// \param vertexBuffer Vertex buffer
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const VertexBuffer& vertexBuffer, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a vertex buffer
+    ///
+    /// \param vertexBuffer Vertex buffer
+    /// \param firstVertex  Index of the first vertex to render
+    /// \param vertexCount  Number of vertices to render
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const VertexBuffer& vertexBuffer,
+              base::SizeT         firstVertex,
+              base::SizeT         vertexCount,
+              const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a shape from its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a text from a font and its relevant data
+    ///
+    ////////////////////////////////////////////////////////////
+    void draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of vertices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of indices and vertices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param indexData   Pointer to the indices
+    /// \param indexCount  Number of indices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedVertices(const Vertex*       vertexData,
+                             base::SizeT         vertexCount,
+                             const IndexType*    indexData,
+                             base::SizeT         indexCount,
+                             PrimitiveType       type,
+                             const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw quads defined by an array of vertices and precomputed quad indices
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawIndexedQuads(const Vertex*       vertexData,
+                          base::SizeT         vertexCount,
+                          PrimitiveType       type,
+                          const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a persistent mapped buffer and indices
+    ///
+    /// \param batch        Reference to the persistent mapped buffer
+    /// \param indexCount   Number of indices in the array
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    /// \param vertexCount  Number of vertices in the array
+    /// \param type         Type of primitives to draw
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the size of the rendering region of the target
+    ///
+    /// \return Size in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual Vector2u getSize() const = 0;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell if the render target will use sRGB encoding when drawing on it
+    ///
+    /// \return `true` if the render target use sRGB encoding, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual bool isSrgb() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Activate or deactivate the render target for rendering
+    ///
+    /// This function makes the render target's context current for
+    /// future OpenGL rendering operations (so you shouldn't care
+    /// about it if you're not doing direct OpenGL stuff).
+    /// A render target's context is active only on the current thread,
+    /// if you want to make it active on another thread you have
+    /// to deactivate it on the previous thread first if it was active.
+    /// Only one context can be current in a thread, so if you
+    /// want to draw OpenGL geometry to another render target
+    /// don't forget to activate it again. Activating a render
+    /// target will automatically deactivate the previously active
+    /// context (if any).
+    ///
+    /// \param active `true` to activate, `false` to deactivate
+    ///
+    /// \return `true` if operation was successful, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual bool setActive(bool active = true);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Reset the internal OpenGL states so that the target is ready for drawing
+    ///
+    /// This function can be used when you mix SFML drawing
+    /// and direct OpenGL rendering. It makes sure that all OpenGL
+    /// states needed by SFML are set, so that subsequent `draw()`
+    /// calls will work as expected.
+    ///
+    /// Example:
+    /// \code
+    /// // OpenGL code here...
+    /// glPushAttrib(...);
+    /// window.resetGLStates();
+    /// window.draw(...);
+    /// window.draw(...);
+    /// glPopAttrib(...);
+    /// // OpenGL code here...
+    /// \endcode
+    ///
+    ////////////////////////////////////////////////////////////
+    void resetGLStates();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draws the currently autobatched drawables (if any)
+    ///
+    /// \return Statistics about the draw calls that were made
+    ///
+    ////////////////////////////////////////////////////////////
+    RenderTarget::DrawStatistics flush();
+
+protected:
+    ////////////////////////////////////////////////////////////
+    /// \brief Constructor from view
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit RenderTarget(const View& currentView);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Synchronize the GPU with the CPU (beginning of a frame)
+    ///
+    /// Only useful when working with persistently mapped buffers.
+    ///
+    ////////////////////////////////////////////////////////////
+    void syncGPUStartFrame();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Synchronize the GPU with the CPU (end of a frame)
+    ///
+    /// Only useful when working with persistently mapped buffers.
+    ///
+    ////////////////////////////////////////////////////////////
+    void syncGPUEndFrame();
+
+private:
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by an array of vertices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawVertices(const Vertex*       vertexData,
+                               base::SizeT         vertexCount,
+                               PrimitiveType       type,
+                               const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by an array of indices and vertices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param indexData   Pointer to the indices
+    /// \param indexCount  Number of indices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawIndexedVertices(const Vertex*       vertexData,
+                                      base::SizeT         vertexCount,
+                                      const IndexType*    indexData,
+                                      base::SizeT         indexCount,
+                                      PrimitiveType       type,
+                                      const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw quads defined by an array of vertices and precomputed quad indices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    /// Indices follow the sequence `[0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 9, 10, ...]`.
+    /// Vertex count must be a multiple of `4`.
+    ///
+    /// \param vertexData  Pointer to the vertices
+    /// \param vertexCount Number of vertices in the array
+    /// \param type        Type of primitives to draw
+    /// \param states      Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawIndexedQuads(const Vertex*       vertexData,
+                                   base::SizeT         vertexCount,
+                                   PrimitiveType       type,
+                                   const RenderStates& states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Immediately draw primitives defined by a persistent mapped buffer and indices
+    ///
+    /// Will result in an OpenGL draw call.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param batch        Reference to the persistent mapped buffer
+    /// \param indexCount   Number of indices in the array
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    /// \param vertexCount  Number of vertices in the array
+    /// \param type         Type of primitives to draw
+    /// \param states       Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawPersistentMappedIndexedVertices(
+        const PersistentGPUDrawableBatch& batch,
+        base::SizeT                       indexCount,
+        base::SizeT                       indexOffset,
+        base::SizeT                       vertexOffset,
+        PrimitiveType                     type,
+        const RenderStates&               states = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
+    {
+        if (getAutoBatchNumVertices() >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+        {
+            flush();
+            m_lastRenderStates = states;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] void flushIfNeededOnlyThreshold()
+    {
+        if (getAutoBatchNumVertices() >= m_autoBatchVertexThreshold) [[unlikely]]
+            flush();
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void resetGLStatesImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Perform common cleaning operations prior to GL calls
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool clearImpl();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply a view
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyView(const View& view);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply a new blending mode
+    ///
+    /// \param mode Blending mode to apply
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyBlendMode(const BlendMode& mode);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply a new stencil mode
+    ///
+    /// \param mode Stencil mode to apply
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyStencilMode(const StencilMode& mode);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Unbind any bound texture
+    ///
+    ////////////////////////////////////////////////////////////
+    void unapplyTexture();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct DrawGuard;
+    friend DrawGuard;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDraw(const GLVAOGroup& vaoGroup, const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: MVP matrix
+    ///
+    /// \param renderStatesTransform Transform to use for the MVP matrix
+    /// \param viewTransform         View transform to use for the MVP matrix
+    /// \param viewChanged           Whether the view has changed
+    /// \param shaderChanged         Whether the shader has changed
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawMVP(const Transform& renderStatesTransform, const Transform& viewTransform, bool viewChanged, bool shaderChanged);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Setup environment for drawing: texture
+    ///
+    /// \param states Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void setupDrawTexture(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Clean up environment after drawing
+    ///
+    /// \param states Render states used for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void cleanupDraw(const RenderStates& states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: non-indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param firstVertex Index of the first vertex to use when drawing
+    /// \param vertexCount Number of vertices to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCall(PrimitiveType type, base::SizeT firstVertex, base::SizeT vertexCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type        Type of primitives to draw
+    /// \param indexCount  Number of indices to use when drawing
+    /// \param indexOffset Offset of the first index to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCallIndexed(PrimitiveType type, base::SizeT indexCount, base::SizeT indexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: indexed with base vertex (not supported on OpenGL ES 3.1)
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type         Type of primitives to draw
+    /// \param indexCount   Number of indices to use when drawing
+    /// \param indexOffset  Offset of the first index to use when drawing
+    /// \param vertexOffset Offset of the first vertex to use when drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokePrimitiveDrawCallIndexedBaseVertex(PrimitiveType type,
+                                                  base::SizeT   indexCount,
+                                                  base::SizeT   indexOffset,
+                                                  base::SizeT   vertexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void addToAutoBatch(auto&&... xs);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::SizeT getAutoBatchNumVertices() const;
+
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a contiguous container of vertices
+    ///
+    /// \tparam ContiguousVertexRange Type of the contiguous container,
+    ///         must support `.data()` and `.size()` operations.
+    ///
+    /// \param vertices Reference to the contiguous vertex container
+    /// \param type     Type of primitives to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename ContiguousVertexRange>
+    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
+        requires(requires { immediateDrawVertices(vertices.data(), vertices.size(), type, states); })
+    {
+        drawVertices(vertices.data(), vertices.size(), type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by a C-style array of vertices
+    ///
+    /// \param vertices Reference to the C-style vertex array
+    /// \param type     Type of primitives to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <base::SizeT N>
+    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
+    {
+        drawVertices(vertices, N, type, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw a drawable object to the render target
+    ///
+    /// \tparam DrawableObject Type of the drawable object,
+    ///         must support `draw(RenderTarget&, RenderStates&)` method.
+    ///
+    /// \param drawable Object to draw
+    /// \param states   Render states to use for drawing
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename DrawableObject>
+    void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
+        requires(requires { drawableObject.draw(*this, states); })
+    {
+        flushIfNeeded(states);
+        drawableObject.draw(*this, states);
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct BatchedDrawGuard
+    {
+        RenderTarget&       renderTarget;
+        const RenderStates& renderStates;
+
+        ////////////////////////////////////////////////////////////
+        explicit BatchedDrawGuard(RenderTarget& theRenderTarget, const RenderStates& theRenderStates) :
+        renderTarget(theRenderTarget),
+        renderStates(theRenderStates)
+        {
+            SFML_BASE_ASSERT(renderTarget.m_autoBatchMode != AutoBatchMode::Disabled);
+            renderTarget.flushIfNeeded(renderStates);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void add(const Sprite& sprite)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(sprite);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void add(const Shape& shape)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(shape);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void add(const Text& text)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(text);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void add(const priv::ShapeDataConcept auto& shapeData)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(shapeData);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void add(const Font& font, const TextData& textData)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(font, textData);
+        }
+
+        ////////////////////////////////////////////////////////////
+        [[gnu::always_inline]] void addVertices(const Vertex* const vertexData,
+                                                const base::SizeT   vertexCount,
+                                                const PrimitiveType type)
+        {
+            renderTarget.flushIfNeededOnlyThreshold();
+            renderTarget.addToAutoBatch(vertexData, vertexCount, type);
+        }
+    };
+
+    friend BatchedDrawGuard;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] BatchedDrawGuard batchedDraw(const RenderStates& states = {})
+    {
+        return BatchedDrawGuard{*this, states};
+    }
+
+private:
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
+    AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
+    base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
+    RenderStates   m_lastRenderStates;                         //!< Cached render states (autobatching)
+
+    struct Impl;
+    base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
+};
+
+} // namespace sf
+
+
+////////////////////////////////////////////////////////////
+/// \class sf::RenderTarget
+/// \ingroup graphics
+///
+/// `sf::RenderTarget` defines the common behavior of all the
+/// 2D render targets usable in the graphics module. It makes
+/// it possible to draw 2D entities like sprites, shapes, text
+/// without using any OpenGL command directly.
+///
+/// A `sf::RenderTarget` is also able to use views (`sf::View`),
+/// which are a kind of 2D cameras. With views you can globally
+/// scroll, rotate or zoom everything that is drawn,
+/// without having to transform every single entity. See the
+/// documentation of `sf::View` for more details and sample pieces of
+/// code about this class.
+///
+/// On top of that, render targets are still able to render direct
+/// OpenGL stuff. It is even possible to mix together OpenGL calls
+/// and regular SFML drawing commands. When doing so, make sure that
+/// OpenGL states are not messed up by calling `resetGLStates`.
+///
+/// While render targets are moveable, it is not valid to move them
+/// between threads. This will cause your program to crash. The
+/// problem boils down to OpenGL being limited with regard to how it
+/// works in multithreaded environments. Please ensure you only move
+/// render targets within the same thread.
+///
+/// \see `sf::RenderWindow`, `sf::RenderTexture`, `sf::View`
+///
+////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -22,7 +1105,6 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexBuffer.hpp"
-#include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
@@ -39,7 +1121,6 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Math/Lround.hpp"
 #include "SFML/Base/MinMax.hpp"
-#include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 #include <atomic>
@@ -234,6 +1315,7 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
 
     sf::base::SizeT indexOffset{0u};  //!< Index offset for GPU autobatching
     sf::base::SizeT vertexOffset{0u}; //!< Vertex offset for GPU autobatching
+    sf::base::SizeT numVertices{0u};  //!< Vertex count for GPU autobatching
 
     GLsync          fences[maxFramesInFlight]{}; //!< Fences for GPU autobatching
     sf::base::SizeT currentFenceIndex{0u};       //!< Cycles `0`, `1`, ..., `maxFramesInFlight - 1`
@@ -312,26 +1394,49 @@ struct [[nodiscard]] RenderTarget::Impl
 
 
 ////////////////////////////////////////////////////////////
-auto RenderTarget::addToAutoBatch(auto&&... xs)
+void RenderTarget::addToAutoBatch(auto&&... xs)
 {
     SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
 
-    const auto addImpl = [&](auto& batch) SFML_BASE_LAMBDA_ALWAYS_INLINE
-    {
-        const auto prevVertices = batch.getNumVertices();
-        SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices += batch.getNumVertices() - prevVertices; });
-
-        return batch.add(SFML_BASE_FORWARD(xs)...);
-    };
-
 #ifdef SFML_OPENGL_ES
-    return addImpl(m_impl->cpuAutoBatch);
+    m_impl->cpuAutoBatch.add(SFML_BASE_FORWARD(xs)...);
 #else
     if (m_autoBatchMode == AutoBatchMode::CPUStorage)
-        return addImpl(m_impl->cpuAutoBatch);
+    {
+        m_impl->cpuAutoBatch.add(SFML_BASE_FORWARD(xs)...);
+        return;
+    }
 
     SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
-    return addImpl(m_impl->gpuAutoBatch);
+
+    const auto prevVertices = m_impl->gpuAutoBatch.getNumVertices();
+    m_impl->gpuAutoBatch.add(SFML_BASE_FORWARD(xs)...);
+    m_impl->gpuAutoBatchState.numVertices += m_impl->gpuAutoBatch.getNumVertices() - prevVertices;
+#endif
+}
+
+
+////////////////////////////////////////////////////////////
+template void RenderTarget::addToAutoBatch(const Sprite&);
+template void RenderTarget::addToAutoBatch(const Shape&);
+template void RenderTarget::addToAutoBatch(const Text&);
+template void RenderTarget::addToAutoBatch(const Font&, const TextData&);
+template void RenderTarget::addToAutoBatch(const Vertex* const, const base::SizeT, const PrimitiveType);
+
+
+////////////////////////////////////////////////////////////
+base::SizeT RenderTarget::getAutoBatchNumVertices() const
+{
+    SFML_BASE_ASSERT(m_autoBatchMode != AutoBatchMode::Disabled);
+
+#ifdef SFML_OPENGL_ES
+    return m_impl->cpuAutoBatch.getNumVertices();
+#else
+    if (m_autoBatchMode == AutoBatchMode::CPUStorage)
+        return m_impl->cpuAutoBatch.getNumVertices();
+
+    SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+    return m_impl->gpuAutoBatchState.numVertices;
 #endif
 }
 
@@ -648,21 +1753,22 @@ void RenderTarget::draw(const Text& text, RenderStates states)
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] RenderTarget::DrawGuard
 {
-    RenderTarget& renderTarget;
+    RenderTarget&       renderTarget;
+    const RenderStates& renderStates; // TODO P1: remove and use lastRenderStates?
 
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit DrawGuard(RenderTarget&       theRenderTarget,
                                                          const RenderStates& theRenderStates,
                                                          const GLVAOGroup&   vaoGroup) :
-    renderTarget(theRenderTarget)
+    renderTarget(theRenderTarget),
+    renderStates(theRenderStates)
     {
         renderTarget.setupDraw(vaoGroup, theRenderStates);
     }
 
-    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~DrawGuard()
     {
-        renderTarget.cleanupDraw(renderTarget.m_lastRenderStates);
+        SFML_BASE_ASSERT(renderTarget.m_lastRenderStates == renderStates); // TODO P1: remove?
+        renderTarget.cleanupDraw(renderStates);
     }
 };
 
@@ -834,54 +1940,52 @@ void RenderTarget::draw(const VertexBuffer& vertexBuffer,
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states)
+void RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states)
 {
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
         flushIfNeeded(states);
-        return addToAutoBatch(shapeData);
+        addToAutoBatch(shapeData);
+        return;
     }
 
     SFML_BASE_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
 
-    m_impl->cpuAutoBatch.clear();
-
-    const auto result = m_impl->cpuAutoBatch.add(shapeData);
+    m_impl->cpuAutoBatch.add(shapeData);
     immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states);
-    return result;
+    m_impl->cpuAutoBatch.clear();
 }
 
 
 ////////////////////////////////////////////////////////////
-template VertexSpan RenderTarget::draw(const ArrowShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const CircleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const EllipseShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const PieSliceShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RectangleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RingShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RingPieSliceShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const RoundedRectangleShapeData&, const RenderStates&);
-template VertexSpan RenderTarget::draw(const StarShapeData&, const RenderStates&);
+template void RenderTarget::draw(const ArrowShapeData&, const RenderStates&);
+template void RenderTarget::draw(const CircleShapeData&, const RenderStates&);
+template void RenderTarget::draw(const EllipseShapeData&, const RenderStates&);
+template void RenderTarget::draw(const PieSliceShapeData&, const RenderStates&);
+template void RenderTarget::draw(const RectangleShapeData&, const RenderStates&);
+template void RenderTarget::draw(const RingShapeData&, const RenderStates&);
+template void RenderTarget::draw(const RingPieSliceShapeData&, const RenderStates&);
+template void RenderTarget::draw(const RoundedRectangleShapeData&, const RenderStates&);
+template void RenderTarget::draw(const StarShapeData&, const RenderStates&);
 
 
 ////////////////////////////////////////////////////////////
-VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
+void RenderTarget::draw(const Font& font, const TextData& textData, RenderStates states)
 {
     states.texture = &font.getTexture();
 
     if (m_autoBatchMode != AutoBatchMode::Disabled)
     {
         flushIfNeeded(states);
-        return addToAutoBatch(font, textData);
+        addToAutoBatch(font, textData);
+        return;
     }
 
     SFML_BASE_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
 
+    m_impl->cpuAutoBatch.add(font, textData);
+    draw(m_impl->cpuAutoBatch, states);
     m_impl->cpuAutoBatch.clear();
-
-    const auto result = m_impl->cpuAutoBatch.add(font, textData);
-    immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states);
-    return result;
 }
 
 
@@ -1071,53 +2175,49 @@ void RenderTarget::resetGLStatesImpl()
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTarget::flush()
 {
-    SFML_BASE_SCOPE_GUARD({ m_numAutoBatchVertices = 0u; });
-
     if (m_autoBatchMode == AutoBatchMode::Disabled)
         return m_currentDrawStats;
 
 #ifdef SFML_OPENGL_ES
-
     immediateDrawDrawableBatch(m_impl->cpuAutoBatch, m_lastRenderStates);
     m_impl->cpuAutoBatch.clear();
-
+    return m_currentDrawStats;
 #else
 
     if (m_autoBatchMode == AutoBatchMode::CPUStorage)
     {
         immediateDrawDrawableBatch(m_impl->cpuAutoBatch, m_lastRenderStates);
         m_impl->cpuAutoBatch.clear();
-    }
-    else
-    {
-        SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
-
-        const auto vertexOffset = m_impl->gpuAutoBatchState.vertexOffset;
-        const auto vertexCount  = m_impl->gpuAutoBatch.getNumVertices() - vertexOffset;
-
-        const auto indexOffset = m_impl->gpuAutoBatchState.indexOffset;
-        const auto indexCount  = m_impl->gpuAutoBatch.getNumIndices() - indexOffset;
-
-        if (vertexCount == 0u || indexCount == 0u)
-            return m_currentDrawStats;
-
-        m_impl->gpuAutoBatch.flushVertexWritesToGPU(vertexCount, vertexOffset);
-        m_impl->gpuAutoBatch.flushIndexWritesToGPU(indexCount, indexOffset);
-
-        immediateDrawPersistentMappedIndexedVertices(m_impl->gpuAutoBatch,
-                                                     indexCount,
-                                                     indexOffset,
-                                                     /* vertexOffset */ 0u, // Vertex offset is always `0` for GPU autobatching
-                                                     PrimitiveType::Triangles,
-                                                     m_lastRenderStates);
-
-        m_impl->gpuAutoBatchState.indexOffset  = m_impl->gpuAutoBatch.getNumIndices();
-        m_impl->gpuAutoBatchState.vertexOffset = m_impl->gpuAutoBatch.getNumVertices();
+        return m_currentDrawStats;
     }
 
-#endif
+    SFML_BASE_ASSERT(m_autoBatchMode == AutoBatchMode::GPUStorage);
+
+    const auto vertexOffset = m_impl->gpuAutoBatchState.vertexOffset;
+    const auto vertexCount  = m_impl->gpuAutoBatch.getNumVertices() - vertexOffset;
+
+    const auto indexOffset = m_impl->gpuAutoBatchState.indexOffset;
+    const auto indexCount  = m_impl->gpuAutoBatch.getNumIndices() - indexOffset;
+
+    if (vertexCount == 0u || indexCount == 0u)
+        return m_currentDrawStats;
+
+    m_impl->gpuAutoBatch.flushVertexWritesToGPU(vertexCount, vertexOffset);
+    m_impl->gpuAutoBatch.flushIndexWritesToGPU(indexCount, indexOffset);
+
+    immediateDrawPersistentMappedIndexedVertices(m_impl->gpuAutoBatch,
+                                                 indexCount,
+                                                 indexOffset,
+                                                 /* vertexOffset */ 0u, // Vertex offset is always `0` for GPU autobatching
+                                                 PrimitiveType::Triangles,
+                                                 m_lastRenderStates);
+
+    m_impl->gpuAutoBatchState.indexOffset  = m_impl->gpuAutoBatch.getNumIndices();
+    m_impl->gpuAutoBatchState.vertexOffset = m_impl->gpuAutoBatch.getNumVertices();
+    m_impl->gpuAutoBatchState.numVertices  = 0u;
 
     return m_currentDrawStats;
+#endif
 }
 
 
@@ -1175,6 +2275,7 @@ void RenderTarget::syncGPUEndFrame()
 
     m_impl->gpuAutoBatchState.indexOffset  = 0u;
     m_impl->gpuAutoBatchState.vertexOffset = 0u;
+    m_impl->gpuAutoBatchState.numVertices  = 0u;
 #endif
 }
 

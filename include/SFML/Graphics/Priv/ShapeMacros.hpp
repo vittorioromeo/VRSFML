@@ -22,4 +22,5 @@
     ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
     ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
     float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
+                                                                                                                    \
     using sfPrivSwallowSemicolon2 = void

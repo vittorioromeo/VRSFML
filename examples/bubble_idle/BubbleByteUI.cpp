@@ -105,13 +105,13 @@ void Main::uiPushButtonColors()
 {
     const auto convertColorWithHueMod = [&](const auto colorId)
     {
-        return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId)).withHueMod(uiButtonHueMod).template toVec4<ImVec4>();
+        return sf::Color::fromVec4(ImGui::GetStyleColorVec4(colorId)).withRotatedHue(uiButtonHueMod).template toVec4<ImVec4>();
     };
 
     ImGui::PushStyleColor(ImGuiCol_Button, convertColorWithHueMod(ImGuiCol_Button));
     ImGui::PushStyleColor(ImGuiCol_ButtonHovered, convertColorWithHueMod(ImGuiCol_ButtonHovered));
     ImGui::PushStyleColor(ImGuiCol_ButtonActive, convertColorWithHueMod(ImGuiCol_ButtonActive));
-    ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withHueMod(uiButtonHueMod).toVec4<ImVec4>());
+    ImGui::PushStyleColor(ImGuiCol_Border, colorBlueOutline.withRotatedHue(uiButtonHueMod).toVec4<ImVec4>());
 }
 
 ////////////////////////////////////////////////////////////

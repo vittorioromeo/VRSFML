@@ -1,3 +1,5 @@
+// clang-format off
+
 // Small fork of ankerl::unordered_dense to use SFML's base library.
 // Removes allocator support.
 
@@ -623,22 +625,26 @@ constexpr bool has_reserve = is_detected_v<detect_reserve, T>;
 
 // base type for map has mapped_type
 template <class T>
-struct base_table_type_map {
+struct base_table_type_map
+{
     using mapped_type = T;
 };
 
 // base type for set doesn't have mapped_type
-struct base_table_type_set {};
+struct base_table_type_set
+{
+};
 
 } // namespace detail
 
-// Very much like std::deque, but faster for indexing (in most cases). As of now this doesn't implement the full detail::vector
-// API, but merely what's necessary to work as an underlying container for ankerl::unordered_dense::{map, set}.
-// It allocates blocks of equal size and puts them into the m_blocks vector. That means it can grow simply by adding a new
-// block to the back of m_blocks, and doesn't double its size like an detail::vector. The disadvantage is that memory is not
-// linear and thus there is one more indirection necessary for indexing.
+// Very much like std::deque, but faster for indexing (in most cases). As of now this doesn't implement the full
+// detail::vector API, but merely what's necessary to work as an underlying container for ankerl::unordered_dense::{map,
+// set}. It allocates blocks of equal size and puts them into the m_blocks vector. That means it can grow simply by
+// adding a new block to the back of m_blocks, and doesn't double its size like an detail::vector. The disadvantage is
+// that memory is not linear and thus there is one more indirection necessary for indexing.
 template <typename T, sf::base::SizeT MaxSegmentSizeBytes = 4096>
-class segmented_vector {
+class segmented_vector
+{
     template <bool IsConst>
     class iter_t;
 
@@ -649,7 +655,7 @@ public:
     using value_type = T;
     using size_type = sf::base::SizeT;
     using reference = T&;
-    using const_reference = T const&;
+    using const_reference = const T&;
     using iterator = iter_t<false>;
     using const_iterator = iter_t<true>;
 
@@ -658,9 +664,11 @@ private:
     sf::base::SizeT m_size{};
 
     // Calculates the maximum number for x in  (s << x) <= max_val
-    static constexpr auto num_bits_closest(sf::base::SizeT max_val, sf::base::SizeT s) -> sf::base::SizeT {
+    static constexpr auto num_bits_closest(sf::base::SizeT max_val, sf::base::SizeT s) -> sf::base::SizeT
+    {
         auto f = sf::base::SizeT{0};
-        while (s << (f + 1) <= max_val) {
+        while (s << (f + 1) <= max_val)
+        {
             ++f;
         }
         return f;
@@ -675,8 +683,9 @@ private:
      * Iterator class doubles as const_iterator and iterator
      */
     template <bool IsConst>
-    class iter_t {
-        using ptr_t = typename sf::base::Conditional<IsConst, segmented_vector::const_pointer const*, segmented_vector::pointer*>;
+    class iter_t
+    {
+        using ptr_t = typename sf::base::Conditional<IsConst, const segmented_vector::const_pointer*, segmented_vector::pointer*>;
         ptr_t m_data{};
         sf::base::SizeT m_idx{};
 
@@ -686,7 +695,7 @@ private:
     public:
         using difference_type = segmented_vector::difference_type;
         using value_type = T;
-        using reference = typename sf::base::Conditional<IsConst, value_type const&, value_type&>;
+        using reference = typename sf::base::Conditional<IsConst, const value_type&, value_type&>;
         using pointer = typename sf::base::Conditional<IsConst, segmented_vector::const_pointer, segmented_vector::pointer>;
         // using iterator_category = std::forward_iterator_tag;
 
@@ -694,91 +703,111 @@ private:
 
         template <bool OtherIsConst>
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
-        constexpr iter_t(iter_t<OtherIsConst> const& other) noexcept
-            requires (IsConst && !OtherIsConst) : m_data(other.m_data)
-            , m_idx(other.m_idx) {}
+        constexpr iter_t(const iter_t<OtherIsConst>& other) noexcept
+            requires(IsConst && !OtherIsConst)
+        : m_data(other.m_data), m_idx(other.m_idx)
+        {
+        }
 
-        constexpr iter_t(ptr_t data, sf::base::SizeT idx) noexcept
-            : m_data(data)
-            , m_idx(idx) {}
+        constexpr iter_t(ptr_t data, sf::base::SizeT idx) noexcept : m_data(data), m_idx(idx)
+        {
+        }
 
         template <bool OtherIsConst>
-        constexpr auto operator=(iter_t<OtherIsConst> const& other) noexcept -> iter_t& requires (IsConst && !OtherIsConst) {
+        constexpr auto operator=(const iter_t<OtherIsConst>& other) noexcept -> iter_t&
+            requires(IsConst && !OtherIsConst)
+        {
             m_data = other.m_data;
             m_idx = other.m_idx;
             return *this;
         }
 
-        constexpr auto operator++() noexcept -> iter_t& {
+        constexpr auto operator++() noexcept -> iter_t&
+        {
             ++m_idx;
             return *this;
         }
 
-        constexpr auto operator++(int) noexcept -> iter_t {
+        constexpr auto operator++(int) noexcept -> iter_t
+        {
             iter_t prev(*this);
             this->operator++();
             return prev;
         }
 
-        constexpr auto operator+(difference_type diff) noexcept -> iter_t {
+        constexpr auto operator+(difference_type diff) noexcept -> iter_t
+        {
             return {m_data, static_cast<sf::base::SizeT>(static_cast<difference_type>(m_idx) + diff)};
         }
 
         template <bool OtherIsConst>
-        constexpr auto operator-(iter_t<OtherIsConst> const& other) noexcept -> difference_type {
+        constexpr auto operator-(const iter_t<OtherIsConst>& other) noexcept -> difference_type
+        {
             return static_cast<difference_type>(m_idx) - static_cast<difference_type>(other.m_idx);
         }
 
-        constexpr auto operator*() const noexcept -> reference {
+        constexpr auto operator*() const noexcept -> reference
+        {
             return m_data[m_idx >> num_bits][m_idx & mask];
         }
 
-        constexpr auto operator->() const noexcept -> pointer {
+        constexpr auto operator->() const noexcept -> pointer
+        {
             return &m_data[m_idx >> num_bits][m_idx & mask];
         }
 
         template <bool O>
-        constexpr auto operator==(iter_t<O> const& o) const noexcept -> bool {
+        constexpr auto operator==(const iter_t<O>& o) const noexcept -> bool
+        {
             return m_idx == o.m_idx;
         }
 
         template <bool O>
-        constexpr auto operator!=(iter_t<O> const& o) const noexcept -> bool {
+        constexpr auto operator!=(const iter_t<O>& o) const noexcept -> bool
+        {
             return !(*this == o);
         }
     };
 
     // slow path: need to allocate a new segment every once in a while
-    void increase_capacity() {
+    void increase_capacity()
+    {
         auto ba = detail::my_allocator<pointer>{};
         pointer block = ba.allocate(num_elements_in_block);
         m_blocks.push_back(block);
     }
 
     // Moves everything from other
-    void append_everything_from(segmented_vector&& other) {
+    void append_everything_from(segmented_vector&& other)
+    {
         reserve(size() + other.size());
-        for (auto&& o : other) {
+        for (auto&& o : other)
+        {
             emplace_back(SFML_BASE_MOVE(o));
         }
     }
 
     // Copies everything from other
-    void append_everything_from(segmented_vector const& other) {
+    void append_everything_from(const segmented_vector& other)
+    {
         reserve(size() + other.size());
-        for (auto const& o : other) {
+        for (const auto& o : other)
+        {
             emplace_back(o);
         }
     }
 
-    void dealloc() {
+    void dealloc()
+    {
         auto ba = detail::my_allocator<pointer>{};
-        for (auto ptr : m_blocks) {
+        for (auto ptr : m_blocks)
+        {
             ba.deallocate(ptr, num_elements_in_block);
         }
     }
 
-    [[nodiscard]] static constexpr auto calc_num_blocks_for_capacity(sf::base::SizeT capacity) {
+    [[nodiscard]] static constexpr auto calc_num_blocks_for_capacity(sf::base::SizeT capacity)
+    {
         return (capacity + num_elements_in_block - 1U) / num_elements_in_block;
     }
 
@@ -787,12 +816,15 @@ public:
 
     segmented_vector(segmented_vector&& other) noexcept = default;
 
-    segmented_vector(segmented_vector const& other) {
+    segmented_vector(const segmented_vector& other)
+    {
         append_everything_from(other);
     }
 
-    auto operator=(segmented_vector const& other) -> segmented_vector& {
-        if (this == &other) {
+    auto operator=(const segmented_vector& other) -> segmented_vector&
+    {
+        if (this == &other)
+        {
             return *this;
         }
         clear();
@@ -800,7 +832,8 @@ public:
         return *this;
     }
 
-    auto operator=(segmented_vector&& other) noexcept -> segmented_vector& {
+    auto operator=(segmented_vector&& other) noexcept -> segmented_vector&
+    {
         clear();
         dealloc();
 
@@ -810,74 +843,93 @@ public:
         return *this;
     }
 
-    ~segmented_vector() {
+    ~segmented_vector()
+    {
         clear();
         dealloc();
     }
 
-    [[nodiscard]] constexpr auto size() const -> sf::base::SizeT {
+    [[nodiscard]] constexpr auto size() const -> sf::base::SizeT
+    {
         return m_size;
     }
 
-    [[nodiscard]] constexpr auto capacity() const -> sf::base::SizeT {
+    [[nodiscard]] constexpr auto capacity() const -> sf::base::SizeT
+    {
         return m_blocks.size() * num_elements_in_block;
     }
 
     // Indexing is highly performance critical
-    [[nodiscard]] constexpr auto operator[](sf::base::SizeT i) const noexcept -> T const& {
+    [[nodiscard]] constexpr auto operator[](sf::base::SizeT i) const noexcept -> const T&
+    {
         return m_blocks[i >> num_bits][i & mask];
     }
 
-    [[nodiscard]] constexpr auto operator[](sf::base::SizeT i) noexcept -> T& {
+    [[nodiscard]] constexpr auto operator[](sf::base::SizeT i) noexcept -> T&
+    {
         return m_blocks[i >> num_bits][i & mask];
     }
 
-    [[nodiscard]] constexpr auto begin() -> iterator {
+    [[nodiscard]] constexpr auto begin() -> iterator
+    {
         return {m_blocks.data(), 0U};
     }
-    [[nodiscard]] constexpr auto begin() const -> const_iterator {
+    [[nodiscard]] constexpr auto begin() const -> const_iterator
+    {
         return {m_blocks.data(), 0U};
     }
-    [[nodiscard]] constexpr auto cbegin() const -> const_iterator {
+    [[nodiscard]] constexpr auto cbegin() const -> const_iterator
+    {
         return {m_blocks.data(), 0U};
     }
 
-    [[nodiscard]] constexpr auto end() -> iterator {
+    [[nodiscard]] constexpr auto end() -> iterator
+    {
         return {m_blocks.data(), m_size};
     }
-    [[nodiscard]] constexpr auto end() const -> const_iterator {
+    [[nodiscard]] constexpr auto end() const -> const_iterator
+    {
         return {m_blocks.data(), m_size};
     }
-    [[nodiscard]] constexpr auto cend() const -> const_iterator {
+    [[nodiscard]] constexpr auto cend() const -> const_iterator
+    {
         return {m_blocks.data(), m_size};
     }
 
-    [[nodiscard]] constexpr auto back() -> reference {
+    [[nodiscard]] constexpr auto back() -> reference
+    {
         return operator[](m_size - 1);
     }
-    [[nodiscard]] constexpr auto back() const -> const_reference {
+    [[nodiscard]] constexpr auto back() const -> const_reference
+    {
         return operator[](m_size - 1);
     }
 
-    void pop_back() {
+    void pop_back()
+    {
         back().~T();
         --m_size;
     }
 
-    [[nodiscard]] auto empty() const {
+    [[nodiscard]] auto empty() const
+    {
         return 0 == m_size;
     }
 
-    void reserve(sf::base::SizeT new_capacity) {
+    void reserve(sf::base::SizeT new_capacity)
+    {
         m_blocks.reserve(calc_num_blocks_for_capacity(new_capacity));
-        while (new_capacity > capacity()) {
+        while (new_capacity > capacity())
+        {
             increase_capacity();
         }
     }
 
     template <class... Args>
-    auto emplace_back(Args&&... args) -> reference {
-        if (m_size == capacity()) {
+    auto emplace_back(Args&&... args) -> reference
+    {
+        if (m_size == capacity())
+        {
             increase_capacity();
         }
         auto* ptr = static_cast<void*>(&operator[](m_size));
@@ -886,19 +938,24 @@ public:
         return ref;
     }
 
-    void clear() {
-        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T)) {
-            for (sf::base::SizeT i = 0, s = size(); i < s; ++i) {
+    void clear()
+    {
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(T))
+        {
+            for (sf::base::SizeT i = 0, s = size(); i < s; ++i)
+            {
                 operator[](i).~T();
             }
         }
         m_size = 0;
     }
 
-    void shrink_to_fit() {
+    void shrink_to_fit()
+    {
         auto ba = detail::my_allocator<pointer>{};
         auto num_blocks_required = calc_num_blocks_for_capacity(m_size);
-        while (m_blocks.size() > num_blocks_required) {
+        while (m_blocks.size() > num_blocks_required)
+        {
             ba.deallocate(m_blocks.back(), num_elements_in_block);
             m_blocks.popBack();
         }
@@ -906,7 +963,8 @@ public:
     }
 };
 
-namespace detail {
+namespace detail
+{
 
 // This is it, the table. Doubles as map and set, and uses `void` for T when its used as a set.
 template <class Key,
@@ -916,22 +974,21 @@ template <class Key,
           class Bucket,
           class BucketContainer,
           bool IsSegmented>
-class table : public sf::base::Conditional<is_map_v<T>, base_table_type_map<T>, base_table_type_set> {
+class table : public sf::base::Conditional<is_map_v<T>, base_table_type_map<T>, base_table_type_set>
+{
     using underlying_value_type = typename sf::base::Conditional<is_map_v<T>, std::pair<Key, T>, Key>;
-    using underlying_container_type = sf::base::Conditional<IsSegmented,
-                                                         segmented_vector<underlying_value_type>,
-                                                         detail::vector<underlying_value_type>>;
+    using underlying_container_type = sf::base::
+        Conditional<IsSegmented, segmented_vector<underlying_value_type>, detail::vector<underlying_value_type>>;
 
 public:
     using value_container_type = underlying_container_type;
 
 private:
-    using default_bucket_container_type =
-        sf::base::Conditional<IsSegmented, segmented_vector<Bucket>, detail::vector<Bucket>>;
+    using default_bucket_container_type = sf::base::Conditional<IsSegmented, segmented_vector<Bucket>, detail::vector<Bucket>>;
 
     using bucket_container_type = sf::base::Conditional<SFML_BASE_IS_SAME(BucketContainer, detail::default_container_t),
-                                                     default_bucket_container_type,
-                                                     BucketContainer>;
+                                                        default_bucket_container_type,
+                                                        BucketContainer>;
 
     static constexpr sf::base::U8 initial_shifts = 64 - 2; // 2^(64-m_shift) number of buckets
     static constexpr float default_max_load_factor = 0.8F;
@@ -955,7 +1012,8 @@ private:
     using value_idx_type = decltype(Bucket::m_value_idx);
     using dist_and_fingerprint_type = decltype(Bucket::m_dist_and_fingerprint);
 
-    static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(Bucket), "assert there's no need to call destructor / std::destroy");
+    static_assert(SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(Bucket),
+                  "assert there's no need to call destructor / std::destroy");
     static_assert(SFML_BASE_IS_TRIVIALLY_COPYABLE(Bucket), "assert we can just memset / memcpy");
 
     value_container_type m_values{}; // Contains all the key-value pairs in one densely stored container. No holes.
@@ -966,79 +1024,101 @@ private:
     KeyEqual m_equal{};
     sf::base::U8 m_shifts = initial_shifts;
 
-    [[nodiscard]] auto next(value_idx_type bucket_idx) const -> value_idx_type {
+    [[nodiscard]] auto next(value_idx_type bucket_idx) const -> value_idx_type
+    {
         return ANKERL_UNORDERED_DENSE_UNLIKELY(bucket_idx + 1U == bucket_count())
                    ? 0
                    : static_cast<value_idx_type>(bucket_idx + 1U);
     }
 
     // Helper to access bucket through pointer types
-    [[nodiscard]] static constexpr auto at(bucket_container_type& bucket, sf::base::SizeT offset) -> Bucket& {
+    [[nodiscard]] static constexpr auto at(bucket_container_type& bucket, sf::base::SizeT offset) -> Bucket&
+    {
         return bucket[offset];
     }
 
-    [[nodiscard]] static constexpr auto at(const bucket_container_type& bucket, sf::base::SizeT offset) -> const Bucket& {
+    [[nodiscard]] static constexpr auto at(const bucket_container_type& bucket, sf::base::SizeT offset) -> const Bucket&
+    {
         return bucket[offset];
     }
 
     // use the dist_inc and dist_dec functions so that uint16_t types work without warning
-    [[nodiscard]] static constexpr auto dist_inc(dist_and_fingerprint_type x) -> dist_and_fingerprint_type {
+    [[nodiscard]] static constexpr auto dist_inc(dist_and_fingerprint_type x) -> dist_and_fingerprint_type
+    {
         return static_cast<dist_and_fingerprint_type>(x + Bucket::dist_inc);
     }
 
-    [[nodiscard]] static constexpr auto dist_dec(dist_and_fingerprint_type x) -> dist_and_fingerprint_type {
+    [[nodiscard]] static constexpr auto dist_dec(dist_and_fingerprint_type x) -> dist_and_fingerprint_type
+    {
         return static_cast<dist_and_fingerprint_type>(x - Bucket::dist_inc);
     }
 
     // The goal of mixed_hash is to always produce a high quality 64bit hash.
     template <typename K>
-    [[nodiscard]] constexpr auto mixed_hash(K const& key) const -> sf::base::U64 {
-        if constexpr (is_detected_v<detect_avalanching, Hash>) {
+    [[nodiscard]] constexpr auto mixed_hash(const K& key) const -> sf::base::U64
+    {
+        if constexpr (is_detected_v<detect_avalanching, Hash>)
+        {
             // we know that the hash is good because is_avalanching.
-            if constexpr (sizeof(decltype(m_hash(key))) < sizeof(sf::base::U64)) {
+            if constexpr (sizeof(decltype(m_hash(key))) < sizeof(sf::base::U64))
+            {
                 // 32bit hash and is_avalanching => multiply with a constant to avalanche bits upwards
-                return m_hash(key) * sf::base::U64(0x9ddfea08eb382d69);
-            } else {
+                return m_hash(key) * sf::base::U64(0x9d'df'ea'08'eb'38'2d'69);
+            }
+            else
+            {
                 // 64bit and is_avalanching => only use the hash itself.
                 return m_hash(key);
             }
-        } else {
+        }
+        else
+        {
             // not is_avalanching => apply wyhash
             return wyhash::hash(m_hash(key));
         }
     }
 
-    [[nodiscard]] constexpr auto dist_and_fingerprint_from_hash(sf::base::U64 hash) const -> dist_and_fingerprint_type {
+    [[nodiscard]] constexpr auto dist_and_fingerprint_from_hash(sf::base::U64 hash) const -> dist_and_fingerprint_type
+    {
         return Bucket::dist_inc | (static_cast<dist_and_fingerprint_type>(hash) & Bucket::fingerprint_mask);
     }
 
-    [[nodiscard]] constexpr auto bucket_idx_from_hash(sf::base::U64 hash) const -> value_idx_type {
+    [[nodiscard]] constexpr auto bucket_idx_from_hash(sf::base::U64 hash) const -> value_idx_type
+    {
         return static_cast<value_idx_type>(hash >> m_shifts);
     }
 
-    [[nodiscard]] static constexpr auto get_key(value_type const& vt) -> key_type const& {
-        if constexpr (is_map_v<T>) {
+    [[nodiscard]] static constexpr auto get_key(const value_type& vt) -> const key_type&
+    {
+        if constexpr (is_map_v<T>)
+        {
             return vt.first;
-        } else {
+        }
+        else
+        {
             return vt;
         }
     }
 
     template <typename K>
-    [[nodiscard]] auto next_while_less(K const& key) const -> Bucket {
+    [[nodiscard]] auto next_while_less(const K& key) const -> Bucket
+    {
         auto hash = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        while (dist_and_fingerprint < at(m_buckets, bucket_idx).m_dist_and_fingerprint) {
+        while (dist_and_fingerprint < at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
             bucket_idx = next(bucket_idx);
         }
         return {dist_and_fingerprint, bucket_idx};
     }
 
-    void place_and_shift_up(Bucket bucket, value_idx_type place) {
-        while (0 != at(m_buckets, place).m_dist_and_fingerprint) {
+    void place_and_shift_up(Bucket bucket, value_idx_type place)
+    {
+        while (0 != at(m_buckets, place).m_dist_and_fingerprint)
+        {
             bucket = sf::base::exchange(at(m_buckets, place), bucket);
             bucket.m_dist_and_fingerprint = dist_inc(bucket.m_dist_and_fingerprint);
             place = next(place);
@@ -1046,33 +1126,45 @@ private:
         at(m_buckets, place) = bucket;
     }
 
-    [[nodiscard]] static constexpr auto calc_num_buckets(sf::base::U8 shifts) -> sf::base::SizeT {
+    [[nodiscard]] static constexpr auto calc_num_buckets(sf::base::U8 shifts) -> sf::base::SizeT
+    {
         return (sf::base::min)(max_bucket_count(), sf::base::SizeT{1} << (64U - shifts));
     }
 
-    [[nodiscard]] constexpr auto calc_shifts_for_size(sf::base::SizeT s) const -> sf::base::U8 {
+    [[nodiscard]] constexpr auto calc_shifts_for_size(sf::base::SizeT s) const -> sf::base::U8
+    {
         auto shifts = initial_shifts;
-        while (shifts > 0 && static_cast<sf::base::SizeT>(static_cast<float>(calc_num_buckets(shifts)) * max_load_factor()) < s) {
+        while (shifts > 0 &&
+               static_cast<sf::base::SizeT>(static_cast<float>(calc_num_buckets(shifts)) * max_load_factor()) < s)
+        {
             --shifts;
         }
         return shifts;
     }
 
     // assumes m_values has data, m_buckets=m_buckets_end=nullptr, m_shifts is INITIAL_SHIFTS
-    void copy_buckets(table const& other) {
+    void copy_buckets(const table& other)
+    {
         // assumes m_values has already the correct data copied over.
-        if (empty()) {
+        if (empty())
+        {
             // when empty, at least allocate an initial buckets and clear them.
             allocate_buckets_from_shift();
             clear_buckets();
-        } else {
+        }
+        else
+        {
             m_shifts = other.m_shifts;
             allocate_buckets_from_shift();
-            if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t)) {
-                for (auto i = 0UL; i < bucket_count(); ++i) {
+            if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t))
+            {
+                for (auto i = 0UL; i < bucket_count(); ++i)
+                {
                     at(m_buckets, i) = at(other.m_buckets, i);
                 }
-            } else {
+            }
+            else
+            {
                 SFML_BASE_MEMCPY(m_buckets.data(), other.m_buckets.data(), sizeof(Bucket) * bucket_count());
             }
         }
@@ -1081,51 +1173,69 @@ private:
     /**
      * True when no element can be added any more without increasing the size
      */
-    [[nodiscard]] auto is_full() const -> bool {
+    [[nodiscard]] auto is_full() const -> bool
+    {
         return size() > m_max_bucket_capacity;
     }
 
-    void deallocate_buckets() {
+    void deallocate_buckets()
+    {
         m_buckets.clear();
         m_buckets.shrinkToFit();
         m_max_bucket_capacity = 0;
     }
 
-    void allocate_buckets_from_shift() {
+    void allocate_buckets_from_shift()
+    {
         auto num_buckets = calc_num_buckets(m_shifts);
-        if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t)) {
-            if constexpr (has_reserve<bucket_container_type>) {
+        if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t))
+        {
+            if constexpr (has_reserve<bucket_container_type>)
+            {
                 m_buckets.reserve(num_buckets);
             }
-            for (sf::base::SizeT i = m_buckets.size(); i < num_buckets; ++i) {
+            for (sf::base::SizeT i = m_buckets.size(); i < num_buckets; ++i)
+            {
                 m_buckets.emplaceBack();
             }
-        } else {
+        }
+        else
+        {
             m_buckets.resize(num_buckets);
         }
-        if (num_buckets == max_bucket_count()) {
+        if (num_buckets == max_bucket_count())
+        {
             // reached the maximum, make sure we can use each bucket
             m_max_bucket_capacity = max_bucket_count();
-        } else {
+        }
+        else
+        {
             m_max_bucket_capacity = static_cast<value_idx_type>(static_cast<float>(num_buckets) * max_load_factor());
         }
     }
 
-    void clear_buckets() {
-        if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t)) {
-            for (auto&& e : m_buckets) {
+    void clear_buckets()
+    {
+        if constexpr (IsSegmented || !SFML_BASE_IS_SAME(BucketContainer, default_container_t))
+        {
+            for (auto&& e : m_buckets)
+            {
                 SFML_BASE_MEMSET(&e, 0, sizeof(e));
             }
-        } else {
+        }
+        else
+        {
             SFML_BASE_MEMSET(m_buckets.data(), 0, sizeof(Bucket) * bucket_count());
         }
     }
 
-    void clear_and_fill_buckets_from_values() {
+    void clear_and_fill_buckets_from_values()
+    {
         clear_buckets();
         for (value_idx_type value_idx = 0, end_idx = static_cast<value_idx_type>(m_values.size()); value_idx < end_idx;
-             ++value_idx) {
-            auto const& key = get_key(m_values[value_idx]);
+             ++value_idx)
+        {
+            const auto& key = get_key(m_values[value_idx]);
             auto [dist_and_fingerprint, bucket] = next_while_less(key);
 
             // we know for certain that key has not yet been inserted, so no need to check it.
@@ -1133,14 +1243,17 @@ private:
         }
     }
 
-    void increase_size() {
-        if (m_max_bucket_capacity == max_bucket_count()) {
+    void increase_size()
+    {
+        if (m_max_bucket_capacity == max_bucket_count())
+        {
             // remove the value again, we can't add it!
             m_values.popBack();
             sf::base::abort(); // on_error_bucket_overflow();
         }
         --m_shifts;
-        if constexpr (!IsSegmented || SFML_BASE_IS_SAME(BucketContainer, default_container_t)) {
+        if constexpr (!IsSegmented || SFML_BASE_IS_SAME(BucketContainer, default_container_t))
+        {
             deallocate_buckets();
         }
         allocate_buckets_from_shift();
@@ -1148,12 +1261,14 @@ private:
     }
 
     template <typename Op>
-    void do_erase(value_idx_type bucket_idx, Op handle_erased_value) {
-        auto const value_idx_to_remove = at(m_buckets, bucket_idx).m_value_idx;
+    void do_erase(value_idx_type bucket_idx, Op handle_erased_value)
+    {
+        const auto value_idx_to_remove = at(m_buckets, bucket_idx).m_value_idx;
 
         // shift down until either empty or an element with correct spot is found
         auto next_bucket_idx = next(bucket_idx);
-        while (at(m_buckets, next_bucket_idx).m_dist_and_fingerprint >= Bucket::dist_inc * 2) {
+        while (at(m_buckets, next_bucket_idx).m_dist_and_fingerprint >= Bucket::dist_inc * 2)
+        {
             at(m_buckets, bucket_idx) = {dist_dec(at(m_buckets, next_bucket_idx).m_dist_and_fingerprint),
                                          at(m_buckets, next_bucket_idx).m_value_idx};
             bucket_idx = sf::base::exchange(next_bucket_idx, next(next_bucket_idx));
@@ -1162,7 +1277,8 @@ private:
         handle_erased_value(SFML_BASE_MOVE(m_values[value_idx_to_remove]));
 
         // update m_values
-        if (value_idx_to_remove != m_values.size() - 1) {
+        if (value_idx_to_remove != m_values.size() - 1)
+        {
             // no luck, we'll have to replace the value with the last one and update the index accordingly
             auto& val = m_values[value_idx_to_remove];
             val = SFML_BASE_MOVE(m_values.back());
@@ -1171,8 +1287,9 @@ private:
             auto mh = mixed_hash(get_key(val));
             bucket_idx = bucket_idx_from_hash(mh);
 
-            auto const values_idx_back = static_cast<value_idx_type>(m_values.size() - 1);
-            while (values_idx_back != at(m_buckets, bucket_idx).m_value_idx) {
+            const auto values_idx_back = static_cast<value_idx_type>(m_values.size() - 1);
+            while (values_idx_back != at(m_buckets, bucket_idx).m_value_idx)
+            {
                 bucket_idx = next(bucket_idx);
             }
             at(m_buckets, bucket_idx).m_value_idx = value_idx_to_remove;
@@ -1181,20 +1298,24 @@ private:
     }
 
     template <typename K, typename Op>
-    auto do_erase_key(K&& key, Op handle_erased_value) -> sf::base::SizeT {
-        if (empty()) {
+    auto do_erase_key(K&& key, Op handle_erased_value) -> sf::base::SizeT
+    {
+        if (empty())
+        {
             return 0;
         }
 
         auto [dist_and_fingerprint, bucket_idx] = next_while_less(key);
 
         while (dist_and_fingerprint == at(m_buckets, bucket_idx).m_dist_and_fingerprint &&
-               !m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx]))) {
+               !m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx])))
+        {
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
             bucket_idx = next(bucket_idx);
         }
 
-        if (dist_and_fingerprint != at(m_buckets, bucket_idx).m_dist_and_fingerprint) {
+        if (dist_and_fingerprint != at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
             return 0;
         }
         do_erase(bucket_idx, handle_erased_value);
@@ -1202,9 +1323,11 @@ private:
     }
 
     template <class K, class M>
-    auto do_insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool> {
+    auto do_insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool>
+    {
         auto it_isinserted = try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(mapped));
-        if (!it_isinserted.second) {
+        if (!it_isinserted.second)
+        {
             it_isinserted.first->second = SFML_BASE_FORWARD(mapped);
         }
         return it_isinserted;
@@ -1212,15 +1335,19 @@ private:
 
     template <typename... Args>
     auto do_place_element(dist_and_fingerprint_type dist_and_fingerprint, value_idx_type bucket_idx, Args&&... args)
-        -> std::pair<iterator, bool> {
+        -> std::pair<iterator, bool>
+    {
 
         // emplace the new value. If that throws an exception, no harm done; index is still in a valid state
         m_values.emplaceBack(SFML_BASE_FORWARD(args)...);
 
         auto value_idx = static_cast<value_idx_type>(m_values.size() - 1);
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full())) {
+        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full()))
+        {
             increase_size();
-        } else {
+        }
+        else
+        {
             place_and_shift_up({dist_and_fingerprint, value_idx}, bucket_idx);
         }
 
@@ -1229,18 +1356,24 @@ private:
     }
 
     template <typename K, typename... Args>
-    auto do_try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool> {
+    auto do_try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool>
+    {
         auto hash = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        while (true) {
+        while (true)
+        {
             auto* bucket = &at(m_buckets, bucket_idx);
-            if (dist_and_fingerprint == bucket->m_dist_and_fingerprint) {
-                if (m_equal(key, get_key(m_values[bucket->m_value_idx]))) {
+            if (dist_and_fingerprint == bucket->m_dist_and_fingerprint)
+            {
+                if (m_equal(key, get_key(m_values[bucket->m_value_idx])))
+                {
                     return {begin() + static_cast<difference_type>(bucket->m_value_idx), false};
                 }
-            } else if (dist_and_fingerprint > bucket->m_dist_and_fingerprint) {
+            }
+            else if (dist_and_fingerprint > bucket->m_dist_and_fingerprint)
+            {
                 return do_place_element(dist_and_fingerprint,
                                         bucket_idx,
                                         std::piecewise_construct,
@@ -1253,8 +1386,10 @@ private:
     }
 
     template <typename K>
-    auto do_find(K const& key) -> iterator {
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(empty())) {
+    auto do_find(const K& key) -> iterator
+    {
+        if (ANKERL_UNORDERED_DENSE_UNLIKELY(empty()))
+        {
             return end();
         }
 
@@ -1264,26 +1399,33 @@ private:
         auto* bucket = &at(m_buckets, bucket_idx);
 
         // unrolled loop. *Always* check a few directly, then enter the loop. This is faster.
-        if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx]))) {
+        if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx])))
+        {
             return begin() + static_cast<difference_type>(bucket->m_value_idx);
         }
         dist_and_fingerprint = dist_inc(dist_and_fingerprint);
         bucket_idx = next(bucket_idx);
         bucket = &at(m_buckets, bucket_idx);
 
-        if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx]))) {
+        if (dist_and_fingerprint == bucket->m_dist_and_fingerprint && m_equal(key, get_key(m_values[bucket->m_value_idx])))
+        {
             return begin() + static_cast<difference_type>(bucket->m_value_idx);
         }
         dist_and_fingerprint = dist_inc(dist_and_fingerprint);
         bucket_idx = next(bucket_idx);
         bucket = &at(m_buckets, bucket_idx);
 
-        while (true) {
-            if (dist_and_fingerprint == bucket->m_dist_and_fingerprint) {
-                if (m_equal(key, get_key(m_values[bucket->m_value_idx]))) {
+        while (true)
+        {
+            if (dist_and_fingerprint == bucket->m_dist_and_fingerprint)
+            {
+                if (m_equal(key, get_key(m_values[bucket->m_value_idx])))
+                {
                     return begin() + static_cast<difference_type>(bucket->m_value_idx);
                 }
-            } else if (dist_and_fingerprint > bucket->m_dist_and_fingerprint) {
+            }
+            else if (dist_and_fingerprint > bucket->m_dist_and_fingerprint)
+            {
                 return end();
             }
             dist_and_fingerprint = dist_inc(dist_and_fingerprint);
@@ -1293,34 +1435,42 @@ private:
     }
 
     template <typename K>
-    auto do_find(K const& key) const -> const_iterator {
+    auto do_find(const K& key) const -> const_iterator
+    {
         return const_cast<table*>(this)->do_find(key); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     }
 
     template <typename K, typename Q = T>
-    auto do_at(K const& key) -> Q& requires (is_map_v<Q>) {
-        if (auto it = find(key); ANKERL_UNORDERED_DENSE_LIKELY(end() != it)) {
+    auto do_at(const K& key) -> Q&
+        requires(is_map_v<Q>)
+    {
+        if (auto it = find(key); ANKERL_UNORDERED_DENSE_LIKELY(end() != it))
+        {
             return it->second;
         }
         sf::base::abort(); // on_error_key_not_found();
     }
 
     template <typename K, typename Q = T>
-    auto do_at(K const& key) const -> Q const& requires (is_map_v<Q>) {
+    auto do_at(const K& key) const -> const Q&
+        requires(is_map_v<Q>)
+    {
         return const_cast<table*>(this)->at(key); // NOLINT(cppcoreguidelines-pro-type-const-cast)
     }
 
 public:
-    explicit table(sf::base::SizeT bucket_count = 0,
-                   Hash const& hash = Hash(),
-                   KeyEqual const& equal = KeyEqual())
-        : m_values()
-        , m_buckets()
-        , m_hash(hash)
-        , m_equal(equal) {
-        if (0 != bucket_count) {
+    explicit table(sf::base::SizeT bucket_count = 0, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
+    m_values(),
+    m_buckets(),
+    m_hash(hash),
+    m_equal(equal)
+    {
+        if (0 != bucket_count)
+        {
             reserve(bucket_count);
-        } else {
+        }
+        else
+        {
             allocate_buckets_from_shift();
             clear_buckets();
         }
@@ -1330,33 +1480,41 @@ public:
     table(InputIt first,
           InputIt last,
           size_type bucket_count = 0,
-          Hash const& hash = Hash(),
-          KeyEqual const& equal = KeyEqual())
-        : table(bucket_count, hash, equal) {
+          const Hash& hash = Hash(),
+          const KeyEqual& equal = KeyEqual()) :
+    table(bucket_count, hash, equal)
+    {
         insert(first, last);
     }
 
-    table(table const& other)= default;
+    table(const table& other) = default;
     table(table&& other) noexcept = default;
 
     table(std::initializer_list<value_type> ilist,
           sf::base::SizeT bucket_count = 0,
-          Hash const& hash = Hash(),
-          KeyEqual const& equal = KeyEqual())
-        : table(bucket_count, hash, equal) {
+          const Hash& hash = Hash(),
+          const KeyEqual& equal = KeyEqual()) :
+    table(bucket_count, hash, equal)
+    {
         insert(ilist);
     }
 
-    table(std::initializer_list<value_type> ilist, size_type bucket_count)
-        : table(ilist, bucket_count, Hash(), KeyEqual()) {}
+    table(std::initializer_list<value_type> ilist, size_type bucket_count) :
+    table(ilist, bucket_count, Hash(), KeyEqual())
+    {
+    }
 
-    table(std::initializer_list<value_type> init, size_type bucket_count, Hash const& hash)
-        : table(init, bucket_count, hash, KeyEqual()) {}
+    table(std::initializer_list<value_type> init, size_type bucket_count, const Hash& hash) :
+    table(init, bucket_count, hash, KeyEqual())
+    {
+    }
 
     ~table() = default;
 
-    auto operator=(table const& other) -> table& {
-        if (&other != this) {
+    auto operator=(const table& other) -> table&
+    {
+        if (&other != this)
+        {
             m_values = other.m_values;
             m_max_load_factor = other.m_max_load_factor;
             m_hash = other.m_hash;
@@ -1369,8 +1527,10 @@ public:
 
     auto operator=(table&& other) noexcept(noexcept(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(value_container_type) &&
                                                     SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(Hash) &&
-                                                    SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(KeyEqual))) -> table& {
-        if (&other != this) {
+                                                    SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(KeyEqual))) -> table&
+    {
+        if (&other != this)
+        {
             m_values = SFML_BASE_MOVE(other.m_values);
             m_buckets = SFML_BASE_MOVE(other.m_buckets);
             m_max_bucket_capacity = sf::base::exchange(other.m_max_bucket_capacity, sf::base::SizeT{0});
@@ -1384,7 +1544,8 @@ public:
         return *this;
     }
 
-    auto operator=(std::initializer_list<value_type> ilist) -> table& {
+    auto operator=(std::initializer_list<value_type> ilist) -> table&
+    {
         clear();
         insert(ilist);
         return *this;
@@ -1392,107 +1553,135 @@ public:
 
     // iterators //////////////////////////////////////////////////////////////
 
-    auto begin() noexcept -> iterator {
+    auto begin() noexcept -> iterator
+    {
         return m_values.begin();
     }
 
-    auto begin() const noexcept -> const_iterator {
+    auto begin() const noexcept -> const_iterator
+    {
         return m_values.begin();
     }
 
-    auto cbegin() const noexcept -> const_iterator {
+    auto cbegin() const noexcept -> const_iterator
+    {
         return m_values.cbegin();
     }
 
-    auto end() noexcept -> iterator {
+    auto end() noexcept -> iterator
+    {
         return m_values.end();
     }
 
-    auto cend() const noexcept -> const_iterator {
+    auto cend() const noexcept -> const_iterator
+    {
         return m_values.cend();
     }
 
-    auto end() const noexcept -> const_iterator {
+    auto end() const noexcept -> const_iterator
+    {
         return m_values.end();
     }
 
     // capacity ///////////////////////////////////////////////////////////////
 
-    [[nodiscard]] auto empty() const noexcept -> bool {
+    [[nodiscard]] auto empty() const noexcept -> bool
+    {
         return m_values.empty();
     }
 
-    [[nodiscard]] auto size() const noexcept -> sf::base::SizeT {
+    [[nodiscard]] auto size() const noexcept -> sf::base::SizeT
+    {
         return m_values.size();
     }
 
-    [[nodiscard]] static constexpr auto max_size() noexcept -> sf::base::SizeT {
-        if constexpr (value_idx_type(-1) == sf::base::SizeT(-1)) {
+    [[nodiscard]] static constexpr auto max_size() noexcept -> sf::base::SizeT
+    {
+        if constexpr (value_idx_type(-1) == sf::base::SizeT(-1))
+        {
             return sf::base::SizeT{1} << (sizeof(value_idx_type) * 8 - 1);
-        } else {
+        }
+        else
+        {
             return sf::base::SizeT{1} << (sizeof(value_idx_type) * 8);
         }
     }
 
     // modifiers //////////////////////////////////////////////////////////////
 
-    void clear() {
+    void clear()
+    {
         m_values.clear();
         clear_buckets();
     }
 
-    auto insert(value_type const& value) -> std::pair<iterator, bool> {
+    auto insert(const value_type& value) -> std::pair<iterator, bool>
+    {
         return emplace(value);
     }
 
-    auto insert(value_type&& value) -> std::pair<iterator, bool> {
+    auto insert(value_type&& value) -> std::pair<iterator, bool>
+    {
         return emplace(SFML_BASE_MOVE(value));
     }
 
     template <class P>
-    auto insert(P&& value) -> std::pair<iterator, bool> requires (sf::base::isConstructible<value_type, P&&>) {
+    auto insert(P&& value) -> std::pair<iterator, bool>
+        requires(sf::base::isConstructible<value_type, P &&>)
+    {
         return emplace(SFML_BASE_FORWARD(value));
     }
 
-    auto insert(const_iterator /*hint*/, value_type const& value) -> iterator {
+    auto insert(const_iterator /*hint*/, const value_type& value) -> iterator
+    {
         return insert(value).first;
     }
 
-    auto insert(const_iterator /*hint*/, value_type&& value) -> iterator {
+    auto insert(const_iterator /*hint*/, value_type&& value) -> iterator
+    {
         return insert(SFML_BASE_MOVE(value)).first;
     }
 
     template <class P>
-    auto insert(const_iterator /*hint*/, P&& value) -> iterator requires (sf::base::isConstructible<value_type, P&&>) {
+    auto insert(const_iterator /*hint*/, P&& value) -> iterator
+        requires(sf::base::isConstructible<value_type, P &&>)
+    {
         return insert(SFML_BASE_FORWARD(value)).first;
     }
 
     template <class InputIt>
-    void insert(InputIt first, InputIt last) {
-        while (first != last) {
+    void insert(InputIt first, InputIt last)
+    {
+        while (first != last)
+        {
             insert(*first);
             ++first;
         }
     }
 
-    void insert(std::initializer_list<value_type> ilist) {
+    void insert(std::initializer_list<value_type> ilist)
+    {
         insert(ilist.begin(), ilist.end());
     }
 
     // nonstandard API: *this is emptied.
     // Also see "A Standard flat_map" https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2022/p0429r9.pdf
-    auto extract() && -> value_container_type {
+    auto extract() && -> value_container_type
+    {
         return SFML_BASE_MOVE(m_values);
     }
 
     // nonstandard API:
     // Discards the internally held container and replaces it with the one passed. Erases non-unique elements.
-    auto replace(value_container_type&& container) {
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(container.size() > max_size())) {
+    auto replace(value_container_type&& container)
+    {
+        if (ANKERL_UNORDERED_DENSE_UNLIKELY(container.size() > max_size()))
+        {
             sf::base::abort(); // on_error_too_many_elements();
         }
         auto shifts = calc_shifts_for_size(container.size());
-        if (0 == bucket_count() || shifts < m_shifts || container.get_allocator() != m_values.get_allocator()) {
+        if (0 == bucket_count() || shifts < m_shifts || container.get_allocator() != m_values.get_allocator())
+        {
             m_shifts = shifts;
             deallocate_buckets();
             allocate_buckets_from_shift();
@@ -1505,21 +1694,25 @@ public:
         auto value_idx = value_idx_type{};
 
         // loop until we reach the end of the container. duplicated entries will be replaced with back().
-        while (value_idx != static_cast<value_idx_type>(m_values.size())) {
-            auto const& key = get_key(m_values[value_idx]);
+        while (value_idx != static_cast<value_idx_type>(m_values.size()))
+        {
+            const auto& key = get_key(m_values[value_idx]);
 
             auto hash = mixed_hash(key);
             auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
             auto bucket_idx = bucket_idx_from_hash(hash);
 
             bool key_found = false;
-            while (true) {
-                auto const& bucket = at(m_buckets, bucket_idx);
-                if (dist_and_fingerprint > bucket.m_dist_and_fingerprint) {
+            while (true)
+            {
+                const auto& bucket = at(m_buckets, bucket_idx);
+                if (dist_and_fingerprint > bucket.m_dist_and_fingerprint)
+                {
                     break;
                 }
                 if (dist_and_fingerprint == bucket.m_dist_and_fingerprint &&
-                    m_equal(key, get_key(m_values[bucket.m_value_idx]))) {
+                    m_equal(key, get_key(m_values[bucket.m_value_idx])))
+                {
                     key_found = true;
                     break;
                 }
@@ -1527,12 +1720,16 @@ public:
                 bucket_idx = next(bucket_idx);
             }
 
-            if (key_found) {
-                if (value_idx != static_cast<value_idx_type>(m_values.size() - 1)) {
+            if (key_found)
+            {
+                if (value_idx != static_cast<value_idx_type>(m_values.size() - 1))
+                {
                     m_values[value_idx] = SFML_BASE_MOVE(m_values.back());
                 }
                 m_values.popBack();
-            } else {
+            }
+            else
+            {
                 place_and_shift_up({dist_and_fingerprint, value_idx}, bucket_idx);
                 ++value_idx;
             }
@@ -1540,56 +1737,61 @@ public:
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(Key const& key, M&& mapped) -> std::pair<iterator, bool> requires (is_map_v<Q>) {
+    auto insert_or_assign(const Key& key, M&& mapped) -> std::pair<iterator, bool>
+        requires(is_map_v<Q>)
+    {
         return do_insert_or_assign(key, SFML_BASE_FORWARD(mapped));
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(Key&& key, M&& mapped) -> std::pair<iterator, bool> requires (is_map_v<Q>) {
+    auto insert_or_assign(Key&& key, M&& mapped) -> std::pair<iterator, bool>
+        requires(is_map_v<Q>)
+    {
         return do_insert_or_assign(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(mapped));
     }
 
-    template <typename K,
-              typename M,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool> requires (is_map_v<Q> && is_transparent_v<H, KE>) {
+    template <typename K, typename M, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto insert_or_assign(K&& key, M&& mapped) -> std::pair<iterator, bool>
+        requires(is_map_v<Q> && is_transparent_v<H, KE>)
+    {
         return do_insert_or_assign(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(mapped));
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(const_iterator /*hint*/, Key const& key, M&& mapped) -> iterator requires (is_map_v<Q>) {
+    auto insert_or_assign(const_iterator /*hint*/, const Key& key, M&& mapped) -> iterator
+        requires(is_map_v<Q>)
+    {
         return do_insert_or_assign(key, SFML_BASE_FORWARD(mapped)).first;
     }
 
     template <class M, typename Q = T>
-    auto insert_or_assign(const_iterator /*hint*/, Key&& key, M&& mapped) -> iterator requires (is_map_v<Q>) {
+    auto insert_or_assign(const_iterator /*hint*/, Key&& key, M&& mapped) -> iterator
+        requires(is_map_v<Q>)
+    {
         return do_insert_or_assign(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(mapped)).first;
     }
 
-    template <typename K,
-              typename M,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto insert_or_assign(const_iterator /*hint*/, K&& key, M&& mapped) -> iterator requires (is_map_v<Q> && is_transparent_v<H, KE>) {
+    template <typename K, typename M, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto insert_or_assign(const_iterator /*hint*/, K&& key, M&& mapped) -> iterator
+        requires(is_map_v<Q> && is_transparent_v<H, KE>)
+    {
         return do_insert_or_assign(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(mapped)).first;
     }
 
     // Single arguments for unordered set can be used without having to construct the value_type
-    template <class K,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto emplace(K&& key) -> std::pair<iterator, bool> requires (!is_map_v<Q> && is_transparent_v<H, KE>) {
+    template <class K, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto emplace(K&& key) -> std::pair<iterator, bool>
+        requires(!is_map_v<Q> && is_transparent_v<H, KE>)
+    {
         auto hash = mixed_hash(key);
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint) {
+        while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
             if (dist_and_fingerprint == at(m_buckets, bucket_idx).m_dist_and_fingerprint &&
-                m_equal(key, m_values[at(m_buckets, bucket_idx).m_value_idx])) {
+                m_equal(key, m_values[at(m_buckets, bucket_idx).m_value_idx]))
+            {
                 // found it, return without ever actually creating anything
                 return {begin() + static_cast<difference_type>(at(m_buckets, bucket_idx).m_value_idx), false};
             }
@@ -1602,7 +1804,8 @@ public:
     }
 
     template <class... Args>
-    auto emplace(Args&&... args) -> std::pair<iterator, bool> {
+    auto emplace(Args&&... args) -> std::pair<iterator, bool>
+    {
         // we have to instantiate the value_type to be able to access the key.
         // 1. emplace_back the object so it is constructed. 2. If the key is already there, pop it later in the loop.
         auto& key = get_key(m_values.emplaceBack(SFML_BASE_FORWARD(args)...));
@@ -1610,9 +1813,11 @@ public:
         auto dist_and_fingerprint = dist_and_fingerprint_from_hash(hash);
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint) {
+        while (dist_and_fingerprint <= at(m_buckets, bucket_idx).m_dist_and_fingerprint)
+        {
             if (dist_and_fingerprint == at(m_buckets, bucket_idx).m_dist_and_fingerprint &&
-                m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx]))) {
+                m_equal(key, get_key(m_values[at(m_buckets, bucket_idx).m_value_idx])))
+            {
                 m_values.popBack(); // value was already there, so get rid of it
                 return {begin() + static_cast<difference_type>(at(m_buckets, bucket_idx).m_value_idx), false};
             }
@@ -1622,10 +1827,13 @@ public:
 
         // value is new, place the bucket and shift up until we find an empty spot
         auto value_idx = static_cast<value_idx_type>(m_values.size() - 1);
-        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full())) {
+        if (ANKERL_UNORDERED_DENSE_UNLIKELY(is_full()))
+        {
             // increase_size just rehashes all the data we have in m_values
             increase_size();
-        } else {
+        }
+        else
+        {
             // place element and shift up until we find an empty spot
             place_and_shift_up({dist_and_fingerprint, value_idx}, bucket_idx);
         }
@@ -1633,107 +1841,118 @@ public:
     }
 
     template <class... Args>
-    auto emplace_hint(const_iterator /*hint*/, Args&&... args) -> iterator {
+    auto emplace_hint(const_iterator /*hint*/, Args&&... args) -> iterator
+    {
         return emplace(SFML_BASE_FORWARD(args)...).first;
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(Key const& key, Args&&... args) -> std::pair<iterator, bool> requires (is_map_v<Q>) {
+    auto try_emplace(const Key& key, Args&&... args) -> std::pair<iterator, bool>
+        requires(is_map_v<Q>)
+    {
         return do_try_emplace(key, SFML_BASE_FORWARD(args)...);
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(Key&& key, Args&&... args) -> std::pair<iterator, bool> requires (is_map_v<Q>) {
+    auto try_emplace(Key&& key, Args&&... args) -> std::pair<iterator, bool>
+        requires(is_map_v<Q>)
+    {
         return do_try_emplace(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(args)...);
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(const_iterator /*hint*/, Key const& key, Args&&... args) -> iterator requires (is_map_v<Q>) {
+    auto try_emplace(const_iterator /*hint*/, const Key& key, Args&&... args) -> iterator
+        requires(is_map_v<Q>)
+    {
         return do_try_emplace(key, SFML_BASE_FORWARD(args)...).first;
     }
 
     template <class... Args, typename Q = T>
-    auto try_emplace(const_iterator /*hint*/, Key&& key, Args&&... args) -> iterator requires (is_map_v<Q>) {
+    auto try_emplace(const_iterator /*hint*/, Key&& key, Args&&... args) -> iterator
+        requires(is_map_v<Q>)
+    {
         return do_try_emplace(SFML_BASE_MOVE(key), SFML_BASE_FORWARD(args)...).first;
     }
 
-    template <
-        typename K,
-        typename... Args,
-        typename Q = T,
-        typename H = Hash,
-        typename KE = KeyEqual>
-    auto try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool> requires (is_map_v<Q> && is_transparent_v<H, KE> && is_neither_convertible_v<K&&, iterator, const_iterator>) {
+    template <typename K, typename... Args, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto try_emplace(K&& key, Args&&... args) -> std::pair<iterator, bool>
+        requires(is_map_v<Q> && is_transparent_v<H, KE> && is_neither_convertible_v<K &&, iterator, const_iterator>)
+    {
         return do_try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(args)...);
     }
 
-    template <
-        typename K,
-        typename... Args,
-        typename Q = T,
-        typename H = Hash,
-        typename KE = KeyEqual>
-    auto try_emplace(const_iterator /*hint*/, K&& key, Args&&... args) -> iterator requires (is_map_v<Q> && is_transparent_v<H, KE> && is_neither_convertible_v<K&&, iterator, const_iterator>) {
+    template <typename K, typename... Args, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto try_emplace(const_iterator /*hint*/, K&& key, Args&&... args) -> iterator
+        requires(is_map_v<Q> && is_transparent_v<H, KE> && is_neither_convertible_v<K &&, iterator, const_iterator>)
+    {
         return do_try_emplace(SFML_BASE_FORWARD(key), SFML_BASE_FORWARD(args)...).first;
     }
 
-    auto erase(iterator it) -> iterator {
+    auto erase(iterator it) -> iterator
+    {
         auto hash = mixed_hash(get_key(*it));
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        auto const value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
-        while (at(m_buckets, bucket_idx).m_value_idx != value_idx_to_remove) {
+        const auto value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
+        while (at(m_buckets, bucket_idx).m_value_idx != value_idx_to_remove)
+        {
             bucket_idx = next(bucket_idx);
         }
 
-        do_erase(bucket_idx, [](value_type&& /*unused*/) {
-        });
+        do_erase(bucket_idx, [](value_type&& /*unused*/) {});
         return begin() + static_cast<difference_type>(value_idx_to_remove);
     }
 
-    auto extract(iterator it) -> value_type {
+    auto extract(iterator it) -> value_type
+    {
         auto hash = mixed_hash(get_key(*it));
         auto bucket_idx = bucket_idx_from_hash(hash);
 
-        auto const value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
-        while (at(m_buckets, bucket_idx).m_value_idx != value_idx_to_remove) {
+        const auto value_idx_to_remove = static_cast<value_idx_type>(it - cbegin());
+        while (at(m_buckets, bucket_idx).m_value_idx != value_idx_to_remove)
+        {
             bucket_idx = next(bucket_idx);
         }
 
         auto tmp = sf::base::Optional<value_type>{};
-        do_erase(bucket_idx, [&tmp](value_type&& val) {
-            tmp = SFML_BASE_MOVE(val);
-        });
+        do_erase(bucket_idx, [&tmp](value_type&& val) { tmp = SFML_BASE_MOVE(val); });
         return SFML_BASE_MOVE(tmp).value();
     }
 
     template <typename Q = T>
-    auto erase(const_iterator it) -> iterator requires (is_map_v<Q>) {
+    auto erase(const_iterator it) -> iterator
+        requires(is_map_v<Q>)
+    {
         return erase(begin() + (it - cbegin()));
     }
 
     template <typename Q = T>
-    auto extract(const_iterator it) -> value_type requires (is_map_v<Q>) {
+    auto extract(const_iterator it) -> value_type
+        requires(is_map_v<Q>)
+    {
         return extract(begin() + (it - cbegin()));
     }
 
-    auto erase(const_iterator first, const_iterator last) -> iterator {
-        auto const idx_first = first - cbegin();
-        auto const idx_last = last - cbegin();
-        auto const first_to_last = detail::my_distance(first, last);
-        auto const last_to_end = detail::my_distance(last, cend());
+    auto erase(const_iterator first, const_iterator last) -> iterator
+    {
+        const auto idx_first = first - cbegin();
+        const auto idx_last = last - cbegin();
+        const auto first_to_last = detail::my_distance(first, last);
+        const auto last_to_end = detail::my_distance(last, cend());
 
         // remove elements from left to right which moves elements from the end back
-        auto const mid = idx_first + (sf::base::min)(first_to_last, last_to_end);
+        const auto mid = idx_first + (sf::base::min)(first_to_last, last_to_end);
         auto idx = idx_first;
-        while (idx != mid) {
+        while (idx != mid)
+        {
             erase(begin() + idx);
             ++idx;
         }
 
         // all elements from the right are moved, now remove the last element until all done
         idx = idx_last;
-        while (idx != mid) {
+        while (idx != mid)
+        {
             --idx;
             erase(begin() + idx);
         }
@@ -1741,36 +1960,38 @@ public:
         return begin() + idx_first;
     }
 
-    auto erase(Key const& key) -> sf::base::SizeT {
-        return do_erase_key(key, [](value_type&& /*unused*/) {
-        });
+    auto erase(const Key& key) -> sf::base::SizeT
+    {
+        return do_erase_key(key, [](value_type&& /*unused*/) {});
     }
 
-    auto extract(Key const& key) -> sf::base::Optional<value_type> {
+    auto extract(const Key& key) -> sf::base::Optional<value_type>
+    {
         auto tmp = sf::base::Optional<value_type>{};
-        do_erase_key(key, [&tmp](value_type&& val) {
-            tmp = SFML_BASE_MOVE(val);
-        });
+        do_erase_key(key, [&tmp](value_type&& val) { tmp = SFML_BASE_MOVE(val); });
         return tmp;
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto erase(K&& key) -> sf::base::SizeT requires (is_transparent_v<H, KE>) {
-        return do_erase_key(SFML_BASE_FORWARD(key), [](value_type&& /*unused*/) {
-        });
+    auto erase(K&& key) -> sf::base::SizeT
+        requires(is_transparent_v<H, KE>)
+    {
+        return do_erase_key(SFML_BASE_FORWARD(key), [](value_type&& /*unused*/) {});
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto extract(K&& key) -> sf::base::Optional<value_type> requires (is_transparent_v<H, KE>) {
+    auto extract(K&& key) -> sf::base::Optional<value_type>
+        requires(is_transparent_v<H, KE>)
+    {
         auto tmp = sf::base::Optional<value_type>{};
-        do_erase_key(SFML_BASE_FORWARD(key), [&tmp](value_type&& val) {
-            tmp = SFML_BASE_MOVE(val);
-        });
+        do_erase_key(SFML_BASE_FORWARD(key), [&tmp](value_type&& val) { tmp = SFML_BASE_MOVE(val); });
         return tmp;
     }
 
     void swap(table& other) noexcept(noexcept(SFML_BASE_IS_NOTHROW_SWAPPABLE(value_container_type) &&
-                                              SFML_BASE_IS_NOTHROW_SWAPPABLE(Hash) && SFML_BASE_IS_NOTHROW_SWAPPABLE(KeyEqual))) {
+                                              SFML_BASE_IS_NOTHROW_SWAPPABLE(Hash) &&
+                                              SFML_BASE_IS_NOTHROW_SWAPPABLE(KeyEqual)))
+    {
         using std::swap;
 
         swap(m_values, other.m_values);
@@ -1782,145 +2003,177 @@ public:
         swap(m_shifts, other.m_shifts);
     }
 
-    friend void swap(table& lhs, table& rhs) noexcept(noexcept(lhs.swap(rhs))) {
+    friend void swap(table& lhs, table& rhs) noexcept(noexcept(lhs.swap(rhs)))
+    {
         lhs.swap(rhs);
     }
 
     // lookup /////////////////////////////////////////////////////////////////
 
     template <typename Q = T>
-    auto at(key_type const& key) -> Q& requires (is_map_v<Q>) {
+    auto at(const key_type& key) -> Q&
+        requires(is_map_v<Q>)
+    {
         return do_at(key);
     }
 
-    template <typename K,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto at(K const& key) -> Q& requires (is_map_v<Q> && is_transparent_v<H, KE>) {
-        return do_at(key);
-    }
-
-    template <typename Q = T>
-    auto at(key_type const& key) const -> Q const& requires (is_map_v<Q>) {
-        return do_at(key);
-    }
-
-    template <typename K,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto at(K const& key) const -> Q const& requires (is_map_v<Q> && is_transparent_v<H, KE>) {
+    template <typename K, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto at(const K& key) -> Q&
+        requires(is_map_v<Q> && is_transparent_v<H, KE>)
+    {
         return do_at(key);
     }
 
     template <typename Q = T>
-    auto operator[](Key const& key) -> Q& requires (is_map_v<Q>) {
+    auto at(const key_type& key) const -> const Q&
+        requires(is_map_v<Q>)
+    {
+        return do_at(key);
+    }
+
+    template <typename K, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto at(const K& key) const -> const Q&
+        requires(is_map_v<Q> && is_transparent_v<H, KE>)
+    {
+        return do_at(key);
+    }
+
+    template <typename Q = T>
+    auto operator[](const Key& key) -> Q&
+        requires(is_map_v<Q>)
+    {
         return try_emplace(key).first->second;
     }
 
     template <typename Q = T>
-    auto operator[](Key&& key) -> Q& requires (is_map_v<Q>) {
+    auto operator[](Key&& key) -> Q&
+        requires(is_map_v<Q>)
+    {
         return try_emplace(SFML_BASE_MOVE(key)).first->second;
     }
 
-    template <typename K,
-              typename Q = T,
-              typename H = Hash,
-              typename KE = KeyEqual>
-    auto operator[](K&& key) -> Q& requires (is_map_v<Q> && is_transparent_v<H, KE>) {
+    template <typename K, typename Q = T, typename H = Hash, typename KE = KeyEqual>
+    auto operator[](K&& key) -> Q&
+        requires(is_map_v<Q> && is_transparent_v<H, KE>)
+    {
         return try_emplace(SFML_BASE_FORWARD(key)).first->second;
     }
 
-    auto count(Key const& key) const -> sf::base::SizeT {
+    auto count(const Key& key) const -> sf::base::SizeT
+    {
         return find(key) == end() ? 0 : 1;
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto count(K const& key) const -> sf::base::SizeT requires (is_transparent_v<H, KE>) {
+    auto count(const K& key) const -> sf::base::SizeT
+        requires(is_transparent_v<H, KE>)
+    {
         return find(key) == end() ? 0 : 1;
     }
 
-    auto find(Key const& key) -> iterator {
+    auto find(const Key& key) -> iterator
+    {
         return do_find(key);
     }
 
-    auto find(Key const& key) const -> const_iterator {
+    auto find(const Key& key) const -> const_iterator
+    {
         return do_find(key);
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto find(K const& key) -> iterator requires (is_transparent_v<H, KE>) {
+    auto find(const K& key) -> iterator
+        requires(is_transparent_v<H, KE>)
+    {
         return do_find(key);
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto find(K const& key) const -> const_iterator requires (is_transparent_v<H, KE>) {
+    auto find(const K& key) const -> const_iterator
+        requires(is_transparent_v<H, KE>)
+    {
         return do_find(key);
     }
 
-    auto contains(Key const& key) const -> bool {
+    auto contains(const Key& key) const -> bool
+    {
         return find(key) != end();
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto contains(K const& key) const -> bool requires (is_transparent_v<H, KE>) {
+    auto contains(const K& key) const -> bool
+        requires(is_transparent_v<H, KE>)
+    {
         return find(key) != end();
     }
 
-    auto equal_range(Key const& key) -> std::pair<iterator, iterator> {
+    auto equal_range(const Key& key) -> std::pair<iterator, iterator>
+    {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
-    auto equal_range(const Key& key) const -> std::pair<const_iterator, const_iterator> {
+    auto equal_range(const Key& key) const -> std::pair<const_iterator, const_iterator>
+    {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto equal_range(K const& key) -> std::pair<iterator, iterator> requires (is_transparent_v<H, KE>) {
+    auto equal_range(const K& key) -> std::pair<iterator, iterator>
+        requires(is_transparent_v<H, KE>)
+    {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
     template <class K, class H = Hash, class KE = KeyEqual>
-    auto equal_range(K const& key) const -> std::pair<const_iterator, const_iterator> requires (is_transparent_v<H, KE>) {
+    auto equal_range(const K& key) const -> std::pair<const_iterator, const_iterator>
+        requires(is_transparent_v<H, KE>)
+    {
         auto it = do_find(key);
         return {it, it == end() ? end() : it + 1};
     }
 
     // bucket interface ///////////////////////////////////////////////////////
 
-    auto bucket_count() const noexcept -> sf::base::SizeT { // NOLINT(modernize-use-nodiscard)
+    auto bucket_count() const noexcept -> sf::base::SizeT
+    { // NOLINT(modernize-use-nodiscard)
         return m_buckets.size();
     }
 
-    static constexpr auto max_bucket_count() noexcept -> sf::base::SizeT { // NOLINT(modernize-use-nodiscard)
+    static constexpr auto max_bucket_count() noexcept -> sf::base::SizeT
+    { // NOLINT(modernize-use-nodiscard)
         return max_size();
     }
 
     // hash policy ////////////////////////////////////////////////////////////
 
-    [[nodiscard]] auto load_factor() const -> float {
+    [[nodiscard]] auto load_factor() const -> float
+    {
         return bucket_count() ? static_cast<float>(size()) / static_cast<float>(bucket_count()) : 0.0F;
     }
 
-    [[nodiscard]] auto max_load_factor() const -> float {
+    [[nodiscard]] auto max_load_factor() const -> float
+    {
         return m_max_load_factor;
     }
 
-    void max_load_factor(float ml) {
+    void max_load_factor(float ml)
+    {
         m_max_load_factor = ml;
-        if (bucket_count() != max_bucket_count()) {
+        if (bucket_count() != max_bucket_count())
+        {
             m_max_bucket_capacity = static_cast<value_idx_type>(static_cast<float>(bucket_count()) * max_load_factor());
         }
     }
 
-    void rehash(sf::base::SizeT count) {
+    void rehash(sf::base::SizeT count)
+    {
         count = (sf::base::min)(count, max_size());
         auto shifts = calc_shifts_for_size((sf::base::max)(count, size()));
-        if (shifts != m_shifts) {
+        if (shifts != m_shifts)
+        {
             m_shifts = shifts;
             deallocate_buckets();
             m_values.shrinkToFit();
@@ -1929,14 +2182,17 @@ public:
         }
     }
 
-    void reserve(sf::base::SizeT capa) {
+    void reserve(sf::base::SizeT capa)
+    {
         capa = (sf::base::min)(capa, max_size());
-        if constexpr (has_reserve<value_container_type>) {
+        if constexpr (has_reserve<value_container_type>)
+        {
             // std::deque doesn't have reserve(). Make sure we only call when available
             m_values.reserve(capa);
         }
         auto shifts = calc_shifts_for_size((sf::base::max)(capa, size()));
-        if (0 == bucket_count() || shifts < m_shifts) {
+        if (0 == bucket_count() || shifts < m_shifts)
+        {
             m_shifts = shifts;
             deallocate_buckets();
             allocate_buckets_from_shift();
@@ -1946,38 +2202,50 @@ public:
 
     // observers //////////////////////////////////////////////////////////////
 
-    auto hash_function() const -> hasher {
+    auto hash_function() const -> hasher
+    {
         return m_hash;
     }
 
-    auto key_eq() const -> key_equal {
+    auto key_eq() const -> key_equal
+    {
         return m_equal;
     }
 
     // nonstandard API: expose the underlying values container
-    [[nodiscard]] auto values() const noexcept -> value_container_type const& {
+    [[nodiscard]] auto values() const noexcept -> const value_container_type&
+    {
         return m_values;
     }
 
     // non-member functions ///////////////////////////////////////////////////
 
-    friend auto operator==(table const& a, table const& b) -> bool {
-        if (&a == &b) {
+    friend auto operator==(const table& a, const table& b) -> bool
+    {
+        if (&a == &b)
+        {
             return true;
         }
-        if (a.size() != b.size()) {
+        if (a.size() != b.size())
+        {
             return false;
         }
-        for (auto const& b_entry : b) {
+        for (const auto& b_entry : b)
+        {
             auto it = a.find(get_key(b_entry));
-            if constexpr (is_map_v<T>) {
+            if constexpr (is_map_v<T>)
+            {
                 // map: check that key is here, then also check that value is the same
-                if (a.end() == it || !(b_entry.second == it->second)) {
+                if (a.end() == it || !(b_entry.second == it->second))
+                {
                     return false;
                 }
-            } else {
+            }
+            else
+            {
                 // set: only check that the key is here
-                if (a.end() == it) {
+                if (a.end() == it)
+                {
                     return false;
                 }
             }
@@ -1985,7 +2253,8 @@ public:
         return true;
     }
 
-    friend auto operator!=(table const& a, table const& b) -> bool {
+    friend auto operator!=(const table& a, const table& b) -> bool
+    {
         return !(a == b);
     }
 };
@@ -2032,31 +2301,25 @@ using segmented_set = detail::table<Key, void, Hash, KeyEqual, Bucket, BucketCon
 
 // std extensions /////////////////////////////////////////////////////////////
 
-namespace std { // NOLINT(cert-dcl58-cpp)
+namespace std
+{ // NOLINT(cert-dcl58-cpp)
 
-ANKERL_UNORDERED_DENSE_EXPORT template <class Key,
-                                        class T,
-                                        class Hash,
-                                        class KeyEqual,
-                                        class Bucket,
-                                        class Pred,
-                                        class BucketContainer,
-                                        bool IsSegmented>
+ANKERL_UNORDERED_DENSE_EXPORT template <class Key, class T, class Hash, class KeyEqual, class Bucket, class Pred, class BucketContainer, bool IsSegmented>
 // NOLINTNEXTLINE(cert-dcl58-cpp)
-auto erase_if(
-    ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>&
-        map,
-    Pred pred) -> sf::base::SizeT {
-    using map_t = ankerl::unordered_dense::detail::
-        table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>;
+auto erase_if(ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>& map,
+              Pred pred) -> sf::base::SizeT
+{
+    using map_t = ankerl::unordered_dense::detail::table<Key, T, Hash, KeyEqual, Bucket, BucketContainer, IsSegmented>;
 
     // going back to front because erase() invalidates the end iterator
-    auto const old_size = map.size();
+    const auto old_size = map.size();
     auto idx = old_size;
-    while (idx) {
+    while (idx)
+    {
         --idx;
         auto it = map.begin() + static_cast<typename map_t::difference_type>(idx);
-        if (pred(*it)) {
+        if (pred(*it))
+        {
             map.erase(it);
         }
     }
@@ -2066,7 +2329,9 @@ auto erase_if(
 
 } // namespace std
 
-#endif
+    #endif
 #endif
 
 // NOLINTEND(readability-identifier-naming)
+
+// clang-format on

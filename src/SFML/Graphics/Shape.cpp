@@ -215,7 +215,8 @@ void Shape::updateOutline()
     updateOutlineColors();
 
     // Update the shape's bounds from outline vertices
-    m_bounds = getVertexRangeBounds(m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex);
+    m_bounds = VertexUtils::getVertexRangeBounds(m_vertices.data() + m_verticesEndIndex,
+                                                 m_vertices.size() - m_verticesEndIndex);
 }
 
 

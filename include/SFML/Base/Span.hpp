@@ -14,7 +14,7 @@ namespace sf::base
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct [[nodiscard]] Span
+struct Span
 {
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr Span() = default;
@@ -31,6 +31,13 @@ struct [[nodiscard]] Span
     template <SizeT N>
     [[nodiscard, gnu::always_inline]] constexpr Span(T (&array)[N]) : theData{array}, theSize{N}
     {
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr operator Span<const T>() const
+    {
+        return Span<const T>{theData, theSize};
     }
 
 
