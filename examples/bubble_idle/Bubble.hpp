@@ -3,14 +3,14 @@
 #include "BubbleType.hpp"
 #include "Countdown.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] Bubble
 {
-    sf::Vector2f position;
-    sf::Vector2f velocity;
+    sf::Vec2f position;
+    sf::Vec2f velocity;
 
     float radius;
     float rotation;

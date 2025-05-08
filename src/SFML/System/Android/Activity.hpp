@@ -53,14 +53,14 @@ struct ActivityStates
     void (*forwardEvent)(const Event& event){};
     int (*processEvent)(int fd, int events, void* data){};
 
-    std::unordered_map<int, Vector2i>                  touchEvents;
-    Vector2i                                           mousePosition;
+    std::unordered_map<int, Vec2i>                     touchEvents;
+    Vec2i                                              mousePosition;
     EnumArray<Mouse::Button, bool, Mouse::ButtonCount> isButtonPressed{};
 
     bool mainOver{};
 
-    Vector2i screenSize;
-    Vector2i fullScreenSize;
+    Vec2i screenSize;
+    Vec2i fullScreenSize;
 
     bool initialized{};
     bool terminated{};

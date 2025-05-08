@@ -47,12 +47,12 @@ public:
     CHECK((xSoundSource).getPan() == 0.f);                                \
     CHECK((xSoundSource).getVolume() == 1.f);                             \
     CHECK((xSoundSource).isSpatializationEnabled());                      \
-    CHECK((xSoundSource).getPosition() == sf::Vector3{0.f, 0.f, 0.f});    \
-    CHECK((xSoundSource).getDirection() == sf::Vector3f{0.f, 0.f, -1.f}); \
+    CHECK((xSoundSource).getPosition() == sf::Vec3{0.f, 0.f, 0.f});       \
+    CHECK((xSoundSource).getDirection() == sf::Vec3f{0.f, 0.f, -1.f});    \
     CHECK((xSoundSource).getCone().innerAngle == sf::radians(6.283185f)); \
     CHECK((xSoundSource).getCone().outerAngle == sf::radians(6.283185f)); \
     CHECK((xSoundSource).getCone().outerGain == 1.f);                     \
-    CHECK((xSoundSource).getVelocity() == sf::Vector3f{});                \
+    CHECK((xSoundSource).getVelocity() == sf::Vec3f{});                   \
     CHECK((xSoundSource).getDopplerFactor() == 1.f);                      \
     CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);       \
     CHECK(!(xSoundSource).isRelativeToListener());                        \
@@ -142,7 +142,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
         SoundSource soundSource;
 
         soundSource.setPosition({1, 2, 3});
-        CHECK(soundSource.getPosition() == sf::Vector3f{1, 2, 3});
+        CHECK(soundSource.getPosition() == sf::Vec3f{1, 2, 3});
     }
 
     SECTION("Set/get direction")
@@ -150,7 +150,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
         SoundSource soundSource;
 
         soundSource.setDirection({4, 5, 6});
-        CHECK(soundSource.getDirection() == sf::Vector3f{4, 5, 6});
+        CHECK(soundSource.getDirection() == sf::Vec3f{4, 5, 6});
     }
 
     SECTION("Set/get cone")
@@ -168,7 +168,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
         SoundSource soundSource;
 
         soundSource.setVelocity({7, 8, 9});
-        CHECK(soundSource.getVelocity() == sf::Vector3f{7, 8, 9});
+        CHECK(soundSource.getVelocity() == sf::Vec3f{7, 8, 9});
     }
 
     SECTION("Set/get doppler factor")

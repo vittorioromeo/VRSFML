@@ -36,7 +36,7 @@ base::SizeT ConvexShape::getPointCount() const
 
 
 ////////////////////////////////////////////////////////////
-void ConvexShape::setPoint(const base::SizeT index, const Vector2f point)
+void ConvexShape::setPoint(const base::SizeT index, const Vec2f point)
 {
     SFML_BASE_ASSERT(index < m_points.size() && "Index is out of bounds");
     m_points[index] = point;
@@ -45,7 +45,7 @@ void ConvexShape::setPoint(const base::SizeT index, const Vector2f point)
 
 
 ////////////////////////////////////////////////////////////
-Vector2f ConvexShape::getPoint(const base::SizeT index) const
+Vec2f ConvexShape::getPoint(const base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < m_points.size() && "Index is out of bounds");
     return m_points[index];
@@ -53,7 +53,7 @@ Vector2f ConvexShape::getPoint(const base::SizeT index) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f ConvexShape::getGeometricCenter() const
+Vec2f ConvexShape::getGeometricCenter() const
 {
     return ShapeUtils::computeConvexShapeGeometricCenter(m_points.data(), m_points.size());
 }

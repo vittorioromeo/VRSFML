@@ -149,10 +149,10 @@ SFML_PRIV_DEFINE_ENUM_TO_GLENUM_CONVERSION_FN(
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline sf::IntRect getMultipliedBySizeAndRoundedRect(
-    const sf::Vector2u   renderTargetSize,
+    const sf::Vec2u      renderTargetSize,
     const sf::FloatRect& inputRect)
 {
-    const auto [width, height] = renderTargetSize.toVector2f();
+    const auto [width, height] = renderTargetSize.toVec2f();
 
     return sf::Rect<long>({SFML_BASE_MATH_LROUNDF(width * inputRect.position.x),
                            SFML_BASE_MATH_LROUNDF(height * inputRect.position.y)},
@@ -483,20 +483,20 @@ IntRect RenderTarget::getScissor(const View& view) const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(const Vector2i point) const
+Vec2f RenderTarget::mapPixelToCoords(const Vec2i point) const
 {
     return mapPixelToCoords(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2f RenderTarget::mapPixelToCoords(const Vector2i point, const View& view) const
+Vec2f RenderTarget::mapPixelToCoords(const Vec2i point, const View& view) const
 {
     // First, convert from viewport coordinates to homogeneous coordinates
-    const auto     viewport   = getViewport(view).to<FloatRect>();
-    const Vector2f normalized = Vector2f(-1.f, 1.f) + Vector2f(2.f, -2.f)
-                                                          .componentWiseMul(point.toVector2f() - viewport.position)
-                                                          .componentWiseDiv(viewport.size);
+    const auto  viewport   = getViewport(view).to<FloatRect>();
+    const Vec2f normalized = Vec2f(-1.f, 1.f) + Vec2f(2.f, -2.f)
+                                                    .componentWiseMul(point.toVec2f() - viewport.position)
+                                                    .componentWiseDiv(viewport.size);
 
     // Then transform by the inverse of the view matrix
     return view.getInverseTransform().transformPoint(normalized);
@@ -504,25 +504,25 @@ Vector2f RenderTarget::mapPixelToCoords(const Vector2i point, const View& view) 
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point) const
+Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point) const
 {
     return mapCoordsToPixel(point, getView());
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i RenderTarget::mapCoordsToPixel(const Vector2f point, const View& view) const
+Vec2i RenderTarget::mapCoordsToPixel(const Vec2f point, const View& view) const
 {
     // First, transform the point by the view matrix
-    const Vector2f normalized = view.getTransform().transformPoint(point);
+    const Vec2f normalized = view.getTransform().transformPoint(point);
 
     // Then convert to viewport coordinates
     const auto viewport = getViewport(view).to<FloatRect>();
-    return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vector2f{1.f, 1.f})
+    return ((normalized.componentWiseMul({1.f, -1.f}) + sf::Vec2f{1.f, 1.f})
                 .componentWiseMul({0.5f, 0.5f})
                 .componentWiseMul(viewport.size) +
             viewport.position)
-        .toVector2i();
+        .toVec2i();
 }
 
 

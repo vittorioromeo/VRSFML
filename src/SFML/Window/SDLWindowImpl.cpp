@@ -26,7 +26,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Utf.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
@@ -75,7 +75,7 @@ namespace SDLWindowImplImpl
 struct TouchInfo
 {
     unsigned int     normalizedIndex;
-    sf::Vector2i     position;
+    sf::Vec2i        position;
     sf::WindowHandle handle;
 };
 
@@ -121,15 +121,15 @@ struct SDLWindowImpl::Impl
     JoystickState joystickStates[Joystick::MaxCount]{};    //!< Previous state of the joysticks
     bool          joystickConnected[Joystick::MaxCount]{}; //!< Previous connection state of the joysticks
 
-    base::EnumArray<Sensor::Type, Vector3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
+    base::EnumArray<Sensor::Type, Vec3f, Sensor::Count> sensorValue; //!< Previous value of the sensors
 
     float joystickThreshold{0.1f}; //!< Joystick threshold (minimum motion for "move" event to be generated)
 
     base::EnumArray<Joystick::Axis, float, Joystick::AxisCount>
         previousAxes[Joystick::MaxCount]{}; //!< Position of each axis last time a move event triggered, in range [-100, 100]
 
-    base::Optional<Vector2u> minimumSize; //!< Minimum window size
-    base::Optional<Vector2u> maximumSize; //!< Maximum window size
+    base::Optional<Vec2u> minimumSize; //!< Minimum window size
+    base::Optional<Vec2u> maximumSize; //!< Maximum window size
 
     SDL_Window* sdlWindow; //!< SDL window handle
 
@@ -194,7 +194,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
 
         case SDL_EVENT_WINDOW_RESIZED:
         {
-            pushEvent(Event::Resized{Vector2i{e.window.data1, e.window.data2}.toVector2u()});
+            pushEvent(Event::Resized{Vec2i{e.window.data1, e.window.data2}.toVec2u()});
             break;
         }
 
@@ -303,7 +303,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_FINGER_DOWN:
         {
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger; // TODO P0: add touch device?
-            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+            const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
             SFML_BASE_ASSERT(!SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
 
@@ -323,7 +323,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_FINGER_UP:
         {
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
-            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+            const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
             SFML_BASE_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
             const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
@@ -338,7 +338,7 @@ void SDLWindowImpl::processSDLEvent(const SDL_Event& e)
         case SDL_EVENT_FINGER_MOTION:
         {
             const SDL_TouchFingerEvent& fingerEvent = e.tfinger;
-            const auto touchPos = Vector2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVector2f()).toVector2i();
+            const auto touchPos = Vec2f{fingerEvent.x, fingerEvent.y}.componentWiseMul(getSize().toVec2f()).toVec2i();
 
             SFML_BASE_ASSERT(SDLWindowImplImpl::touchMap.contains(fingerEvent.fingerID));
             const auto [fingerIdx, pos, handle] = SDLWindowImplImpl::touchMap[fingerEvent.fingerID];
@@ -570,14 +570,14 @@ SDLWindowImpl::~SDLWindowImpl()
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2u> SDLWindowImpl::getMinimumSize() const
+base::Optional<Vec2u> SDLWindowImpl::getMinimumSize() const
 {
     return m_impl->minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2u> SDLWindowImpl::getMaximumSize() const
+base::Optional<Vec2u> SDLWindowImpl::getMaximumSize() const
 {
     return m_impl->maximumSize;
 }
@@ -591,14 +591,14 @@ void SDLWindowImpl::setJoystickThreshold(const float threshold)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
+void SDLWindowImpl::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
 {
     m_impl->minimumSize = minimumSize;
 }
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
+void SDLWindowImpl::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 {
     m_impl->maximumSize = maximumSize;
 }
@@ -674,7 +674,7 @@ m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
     }
 
     // Get the initial sensor states
-    for (Vector3f& vec : m_impl->sensorValue.data)
+    for (Vec3f& vec : m_impl->sensorValue.data)
         vec = {0.f, 0.f, 0.f};
 
     // Register the window in the global map
@@ -777,8 +777,8 @@ void SDLWindowImpl::processSensorEvents()
             continue;
 
         // Copy the previous value of the sensor and get the new one
-        const Vector3f previousValue = m_impl->sensorValue[sensor];
-        m_impl->sensorValue[sensor]  = sensorManager.getValue(sensor);
+        const Vec3f previousValue   = m_impl->sensorValue[sensor];
+        m_impl->sensorValue[sensor] = sensorManager.getValue(sensor);
 
         // If the value has changed, trigger an event
         if (m_impl->sensorValue[sensor] != previousValue)
@@ -819,9 +819,9 @@ bool SDLWindowImpl::createVulkanSurface([[maybe_unused]] const Vulkan::VulkanSur
 
 
 ////////////////////////////////////////////////////////////
-Vector2i SDLWindowImpl::getPosition() const
+Vec2i SDLWindowImpl::getPosition() const
 {
-    Vector2i result;
+    Vec2i result;
 
     if (!SDL_GetWindowPosition(m_impl->sdlWindow, &result.x, &result.y))
         err() << "Failed to get window position: " << SDL_GetError();
@@ -831,14 +831,14 @@ Vector2i SDLWindowImpl::getPosition() const
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setPosition(const Vector2i position)
+void SDLWindowImpl::setPosition(const Vec2i position)
 {
     SDL_SetWindowPosition(m_impl->sdlWindow, position.x, position.y);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u SDLWindowImpl::getSize() const
+Vec2u SDLWindowImpl::getSize() const
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     return getSDLLayerSingleton().getWindowSize(*m_impl->sdlWindow);
@@ -846,7 +846,7 @@ Vector2u SDLWindowImpl::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setSize(const Vector2u size)
+void SDLWindowImpl::setSize(const Vec2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
@@ -862,7 +862,7 @@ void SDLWindowImpl::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void SDLWindowImpl::setIcon(const Vector2u size, const base::U8* pixels)
+void SDLWindowImpl::setIcon(const Vec2u size, const base::U8* pixels)
 {
     auto surface = getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
     if (surface == nullptr)

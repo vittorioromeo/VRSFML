@@ -23,10 +23,10 @@ namespace sf
 struct SFML_GRAPHICS_API TransformableMixinBase
 {
     [[nodiscard, gnu::pure, gnu::flatten]] Transform getTransform(
-        const Vector2f position,
-        const Vector2f scale,
-        const Vector2f origin,
-        const float    radians) const
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin,
+        const float radians) const
     {
         const auto [sine, cosine] = base::fastSinCos(radians);
 
@@ -51,7 +51,7 @@ struct SFML_GRAPHICS_API TransformableMixin : TransformableMixinBase
     /// unlike `setScale` which overwrites it.
     /// Thus, it is equivalent to the following code:
     /// \code
-    /// sf::Vector2f scale = object.scale;
+    /// sf::Vec2f scale = object.scale;
     /// object.scale = scale.x * factor.x, scale.y * factor.y;
     /// \endcode
     ///
@@ -60,7 +60,7 @@ struct SFML_GRAPHICS_API TransformableMixin : TransformableMixinBase
     /// \see `setScale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr void scaleBy(Vector2f factor)
+    [[gnu::always_inline]] constexpr void scaleBy(Vec2f factor)
     {
         static_cast<T&>(*this).scale.x *= factor.x;
         static_cast<T&>(*this).scale.y *= factor.y;

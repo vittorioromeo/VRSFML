@@ -31,10 +31,10 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vector2f windowSize{800.f, 600.f};
+    constexpr sf::Vec2f windowSize{800.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "SFML Raw Mouse Input",
         .resizable = true,
         .vsync     = true,
@@ -59,7 +59,7 @@ int main()
             if (handleAspectRatioAwareResize(*event, windowSize, window))
                 continue;
 
-            static const auto vec2ToString = [](const sf::Vector2i vec2)
+            static const auto vec2ToString = [](const sf::Vec2i vec2)
             { return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')'; };
 
             if (const auto* const mouseMoved = event->getIf<sf::Event::MouseMoved>())

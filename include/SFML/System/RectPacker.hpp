@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/UniquePtr.hpp"
@@ -31,7 +31,7 @@ public:
     /// \param size The dimensions (width, height) of the area to pack rectangles into.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RectPacker(Vector2u size);
+    [[nodiscard]] explicit RectPacker(Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -72,19 +72,19 @@ public:
     /// \param rectSize The size (width, height) of the rectangle to pack.
     ///                 Both dimensions must be greater than zero.
     ///
-    /// \return An `Optional<Vector2u>` containing the top-left position
+    /// \return An `Optional<Vec2u>` containing the top-left position
     ///         where the rectangle was packed if successful, or `nullOpt`
     ///         if there was no room left in the bin.
     ///
     ////////////////////////////////////////////////////////////
     // TODO P1: add overload to pack multiple rects at once
-    [[nodiscard]] base::Optional<Vector2u> pack(Vector2u rectSize);
+    [[nodiscard]] base::Optional<Vec2u> pack(Vec2u rectSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the packing area (the bin).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const;
+    [[nodiscard]] Vec2u getSize() const;
 
 private:
     ////////////////////////////////////////////////////////////

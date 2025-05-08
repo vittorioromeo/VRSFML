@@ -10,10 +10,10 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
+    #define WIN32_LEAN_AND_MEAN
 #endif
 
 #include <windows.h>
@@ -155,8 +155,8 @@ int main()
 
                 // Draw sprite 1 on view 1
                 sfmlView1.draw(texture1,
-                               {.position = texture1.getSize().toVector2f() / 2.f,
-                                .origin   = texture1.getSize().toVector2f() / 2.f,
+                               {.position = texture1.getSize().toVec2f() / 2.f,
+                                .origin   = texture1.getSize().toVec2f() / 2.f,
                                 .rotation = sf::degrees(time * 100)});
 
                 // Draw sprite 2 on view 2

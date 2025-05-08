@@ -15,7 +15,7 @@
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Vector.hpp"
 
@@ -248,7 +248,7 @@ protected:
     /// getPointCount or getPoint is different).
     ///
     ////////////////////////////////////////////////////////////
-    void update(const sf::Vector2f* points, base::SizeT pointCount); // TODO P1: make public?
+    void update(const sf::Vec2f* points, base::SizeT pointCount); // TODO P1: make public?
 
     ////////////////////////////////////////////////////////////
     /// \brief Recompute the internal geometry of the shape

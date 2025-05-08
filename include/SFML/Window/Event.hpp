@@ -10,7 +10,7 @@
 #include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/Sensor.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Variant.hpp"
 
@@ -38,7 +38,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct Resized
     {
-        Vector2u size; //!< New size, in pixels
+        Vec2u size; //!< New size, in pixels
     };
 
     ////////////////////////////////////////////////////////////
@@ -102,7 +102,7 @@ public:
     {
         Mouse::Wheel wheel{}; //!< Which wheel (for mice with multiple ones)
         float delta{}; //!< Wheel offset (positive is up/left, negative is down/right). High-precision mice may use non-integral offsets.
-        Vector2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        Vec2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -112,7 +112,7 @@ public:
     struct MouseButtonPressed
     {
         Mouse::Button button{}; //!< Code of the button that has been pressed
-        Vector2i      position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        Vec2i         position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ public:
     struct MouseButtonReleased
     {
         Mouse::Button button{}; //!< Code of the button that has been released
-        Vector2i      position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        Vec2i         position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct MouseMoved
     {
-        Vector2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
+        Vec2i position; //!< Position of the mouse pointer, relative to the top left of the owner window
     };
 
     ////////////////////////////////////////////////////////////
@@ -164,7 +164,7 @@ public:
     ////////////////////////////////////////////////////////////
     struct MouseMovedRaw
     {
-        Vector2i delta; ///< Delta movement of the mouse since the last event
+        Vec2i delta; ///< Delta movement of the mouse since the last event
     };
 
     ////////////////////////////////////////////////////////////
@@ -239,7 +239,7 @@ public:
     struct TouchBegan
     {
         unsigned int finger{};   //!< Index of the finger in case of multi-touch events
-        Vector2i     position;   //!< Start position of the touch, relative to the top left of the owner window
+        Vec2i        position;   //!< Start position of the touch, relative to the top left of the owner window
         float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
@@ -250,7 +250,7 @@ public:
     struct TouchMoved
     {
         unsigned int finger{};   //!< Index of the finger in case of multi-touch events
-        Vector2i     position;   //!< Current position of the touch, relative to the top left of the owner window
+        Vec2i        position;   //!< Current position of the touch, relative to the top left of the owner window
         float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
@@ -261,7 +261,7 @@ public:
     struct TouchEnded
     {
         unsigned int finger{};   //!< Index of the finger in case of multi-touch events
-        Vector2i     position;   //!< Final position of the touch, relative to the top left of the owner window
+        Vec2i        position;   //!< Final position of the touch, relative to the top left of the owner window
         float        pressure{}; //!< Pressure of the touch (in range [0, 1])
     };
 
@@ -272,7 +272,7 @@ public:
     struct SensorChanged
     {
         Sensor::Type type{}; //!< Type of the sensor
-        Vector3f     value;  //!< Current value of the sensor on the X, Y, and Z axes
+        Vec3f        value;  //!< Current value of the sensor on the X, Y, and Z axes
     };
 
     ////////////////////////////////////////////////////////////

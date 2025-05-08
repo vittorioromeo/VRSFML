@@ -6,7 +6,7 @@
 #include "TextShakeEffect.hpp"
 #include "Timer.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -33,13 +33,13 @@ struct [[nodiscard]] Cat
     ////////////////////////////////////////////////////////////
     Timer spawnEffectTimer{};
 
-    sf::Vector2f position;
+    sf::Vec2f position;
 
     float     wobbleRadians{0.f};
     Countdown cooldown;
 
-    sf::Vector2f pawPosition;
-    sf::Angle    pawRotation{sf::Angle::Zero};
+    sf::Vec2f pawPosition;
+    sf::Angle pawRotation{sf::Angle::Zero};
 
     float pawOpacity = 255.f;
 
@@ -102,9 +102,9 @@ struct [[nodiscard]] Cat
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vector2f getDrawPosition(const bool enableBobbing) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition(const bool enableBobbing) const
     {
-        return enableBobbing ? position + sf::Vector2f{0.f, sf::base::sin(wobbleRadians * 2.f) * 7.5f} : position;
+        return enableBobbing ? position + sf::Vec2f{0.f, sf::base::sin(wobbleRadians * 2.f) * 7.5f} : position;
     }
 
     ////////////////////////////////////////////////////////////

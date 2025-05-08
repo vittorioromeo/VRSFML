@@ -15,7 +15,7 @@
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline sf::FloatRect getAspectRatioAwareViewport(const sf::Vector2f newSize, const sf::Vector2f originalSize)
+[[nodiscard]] inline sf::FloatRect getAspectRatioAwareViewport(const sf::Vec2f newSize, const sf::Vec2f originalSize)
 {
     SFML_BASE_ASSERT(newSize.x > 0.f && newSize.y > 0.f);
     SFML_BASE_ASSERT(originalSize.x > 0.f && originalSize.y > 0.f);
@@ -45,15 +45,15 @@
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event&   event,
-                                                       const sf::Vector2f originalSize,
-                                                       sf::RenderWindow&  renderWindow)
+[[nodiscard]] inline bool handleAspectRatioAwareResize(const sf::Event&  event,
+                                                       const sf::Vec2f   originalSize,
+                                                       sf::RenderWindow& renderWindow)
 {
     const auto* eResized = event.getIf<sf::Event::Resized>();
     if (eResized == nullptr)
         return false;
 
-    const auto newSize = eResized->size.toVector2f();
+    const auto newSize = eResized->size.toVec2f();
 
     if (newSize.x <= 0.f || newSize.y <= 0.f)
         return true;
@@ -69,11 +69,11 @@
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline sf::RenderWindow makeDPIScaledRenderWindow(const sf::WindowSettings& windowSettings)
 {
-    const auto  fSize                      = windowSettings.size.toVector2f();
+    const auto  fSize                      = windowSettings.size.toVec2f();
     const float primaryDisplayContentScale = sf::VideoModeUtils::getPrimaryDisplayContentScale();
 
     auto adjustedWindowSettings = windowSettings;
-    adjustedWindowSettings.size = (fSize * primaryDisplayContentScale).toVector2u();
+    adjustedWindowSettings.size = (fSize * primaryDisplayContentScale).toVec2u();
 
     sf::RenderWindow renderWindow(adjustedWindowSettings);
     renderWindow.setView({.center = fSize / 2.f, .size = fSize});

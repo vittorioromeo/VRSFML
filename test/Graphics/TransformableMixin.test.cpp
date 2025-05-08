@@ -32,10 +32,10 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("Construction")
     {
         const TestTransformable transformable;
-        CHECK(transformable.position == sf::Vector2f{0, 0});
+        CHECK(transformable.position == sf::Vec2f{0, 0});
         CHECK(transformable.rotation == sf::Angle::Zero);
-        CHECK(transformable.scale == sf::Vector2f{1, 1});
-        CHECK(transformable.origin == sf::Vector2f{0, 0});
+        CHECK(transformable.scale == sf::Vec2f{1, 1});
+        CHECK(transformable.origin == sf::Vec2f{0, 0});
         CHECK(transformable.getTransform() == sf::Transform());
         CHECK(transformable.getInverseTransform() == sf::Transform());
     }
@@ -45,7 +45,7 @@ TEST_CASE("[Graphics] sf::Transformable")
         TestTransformable transformable;
 
         transformable.position = {3, 4};
-        CHECK(transformable.position == sf::Vector2f{3, 4});
+        CHECK(transformable.position == sf::Vec2f{3, 4});
 
         transformable.rotation = sf::degrees(3.14f);
         CHECK(transformable.rotation == Approx(sf::degrees(3.14f)));
@@ -55,10 +55,10 @@ TEST_CASE("[Graphics] sf::Transformable")
         CHECK(transformable.rotation == Approx(sf::degrees(288)));
 
         transformable.scale = {5, 6};
-        CHECK(transformable.scale == sf::Vector2f{5, 6});
+        CHECK(transformable.scale == sf::Vec2f{5, 6});
 
         transformable.origin = {7, 8};
-        CHECK(transformable.origin == sf::Vector2f{7, 8});
+        CHECK(transformable.origin == sf::Vec2f{7, 8});
 
         sf::Transform transform;
         transform.translate(transformable.position - transformable.origin);
@@ -122,11 +122,11 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("Movement")
     {
         TestTransformable transformable;
-        CHECK(transformable.position == sf::Vector2f{0, 0});
+        CHECK(transformable.position == sf::Vec2f{0, 0});
         transformable.position += {9, 10};
-        CHECK(transformable.position == sf::Vector2f{9, 10});
+        CHECK(transformable.position == sf::Vec2f{9, 10});
         transformable.position += {-15, 2};
-        CHECK(transformable.position == sf::Vector2f(-6, 12));
+        CHECK(transformable.position == sf::Vec2f(-6, 12));
     }
 
     SECTION("Rotation")
@@ -148,12 +148,12 @@ TEST_CASE("[Graphics] sf::Transformable")
     SECTION("scaleBy()")
     {
         TestTransformable transformable;
-        CHECK(transformable.scale == sf::Vector2f{1, 1});
+        CHECK(transformable.scale == sf::Vec2f{1, 1});
         transformable.scaleBy({2, 3});
-        CHECK(transformable.scale == sf::Vector2f{2, 3});
+        CHECK(transformable.scale == sf::Vec2f{2, 3});
         transformable.scaleBy({2, 1});
-        CHECK(transformable.scale == sf::Vector2f{4, 3});
+        CHECK(transformable.scale == sf::Vec2f{4, 3});
         transformable.scaleBy({-1, -1});
-        CHECK(transformable.scale == sf::Vector2f(-4, -3));
+        CHECK(transformable.scale == sf::Vec2f(-4, -3));
     }
 }

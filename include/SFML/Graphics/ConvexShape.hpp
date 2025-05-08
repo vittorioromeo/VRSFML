@@ -9,7 +9,7 @@
 
 #include "SFML/Graphics/Shape.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Vector.hpp"
 
@@ -84,7 +84,7 @@ public:
     /// \see `getPoint`
     ///
     ////////////////////////////////////////////////////////////
-    void setPoint(base::SizeT index, Vector2f point);
+    void setPoint(base::SizeT index, Vec2f point);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the position of a point
@@ -101,7 +101,7 @@ public:
     /// \see `setPoint`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the convex shape
@@ -113,13 +113,13 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const;
+    [[nodiscard]] Vec2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<Vector2f> m_points; //!< Points composing the convex polygon
+    base::Vector<Vec2f> m_points; //!< Points composing the convex polygon
 };
 
 } // namespace sf
@@ -142,9 +142,9 @@ private:
 /// \code
 /// sf::ConvexShape polygon;
 /// polygon.setPointCount(3);
-/// polygon.setPoint(0, sf::Vector2f{0, 0});
-/// polygon.setPoint(1, sf::Vector2f{0, 10});
-/// polygon.setPoint(2, sf::Vector2f{25, 5});
+/// polygon.setPoint(0, sf::Vec2f{0, 0});
+/// polygon.setPoint(1, sf::Vec2f{0, 10});
+/// polygon.setPoint(2, sf::Vec2f{25, 5});
 /// polygon.setOutlineColor(sf::Color::Red);
 /// polygon.setOutlineThickness(5);
 /// polygon.position = {10, 20};

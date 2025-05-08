@@ -18,7 +18,7 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -49,12 +49,14 @@ int main()
     //
     //
     // Set up window
-    constexpr sf::Vector2f windowSize{1680.f, 1050.f};
+    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
 
-    sf::RenderWindow window({.size      = windowSize.toVector2u(),
-                             .title     = "Vittorio's SFML fork: batching benchmark",
-                             .resizable = false,
-                             .vsync     = true});
+    sf::RenderWindow window({
+        .size      = windowSize.toVec2u(),
+        .title     = "Vittorio's SFML fork: batching benchmark",
+        .resizable = false,
+        .vsync     = true,
+    });
 
     //
     //

@@ -11,7 +11,7 @@
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -83,7 +83,7 @@ using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-base::Optional<Image> Image::create(Vector2u size, Color color)
+base::Optional<Image> Image::create(Vec2u size, Color color)
 {
     base::Optional<Image> result; // Use a single local variable for NRVO
 
@@ -112,7 +112,7 @@ base::Optional<Image> Image::create(Vector2u size, Color color)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Image> Image::create(Vector2u size, const base::U8* pixels)
+base::Optional<Image> Image::create(Vec2u size, const base::U8* pixels)
 {
     if (size.x == 0 || size.y == 0)
     {
@@ -131,7 +131,7 @@ base::Optional<Image> Image::create(Vector2u size, const base::U8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_size(size), m_pixels(pixelCount)
+Image::Image(base::PassKey<Image>&&, Vec2u size, base::SizeT pixelCount) : m_size(size), m_pixels(pixelCount)
 {
     SFML_BASE_ASSERT(size.x > 0 && "Attempted to create an image with size.x == 0");
     SFML_BASE_ASSERT(size.y > 0 && "Attempted to create an image with size.y == 0");
@@ -139,7 +139,7 @@ Image::Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount) : m_
 
 
 ////////////////////////////////////////////////////////////
-Image::Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd) :
+Image::Image(base::PassKey<Image>&&, Vec2u size, const base::U8* itBegin, const base::U8* itEnd) :
 m_size(size),
 m_pixels(itBegin, itEnd)
 {
@@ -197,8 +197,8 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
     }
 
     // Load the image and get a pointer to the pixels in memory
-    sf::Vector2i imageSize;
-    int          channels = 0;
+    sf::Vec2i imageSize;
+    int       channels = 0;
 
     if (const auto ptr = StbPtr(
             stbi_load_from_callbacks(&callbacks, &file, &imageSize.x, &imageSize.y, &channels, STBI_rgb_alpha)))
@@ -207,7 +207,7 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
         SFML_BASE_ASSERT(imageSize.y > 0 && "Loaded image from file with height == 0");
 
         return base::makeOptional<Image>(base::PassKey<Image>{},
-                                         Vector2i{imageSize.x, imageSize.y}.toVector2u(),
+                                         Vec2i{imageSize.x, imageSize.y}.toVec2u(),
                                          ptr.get(),
                                          ptr.get() + imageSize.x * imageSize.y * 4);
     }
@@ -248,7 +248,7 @@ base::Optional<Image> Image::loadFromMemory(const void* data, base::SizeT size)
     SFML_BASE_ASSERT(height > 0 && "Loaded image from memory with height == 0");
 
     return base::makeOptional<Image>(base::PassKey<Image>{},
-                                     Vector2i{width, height}.toVector2u(),
+                                     Vec2i{width, height}.toVec2u(),
                                      ptr.get(),
                                      ptr.get() + width * height * 4);
 }
@@ -287,14 +287,14 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
     SFML_BASE_ASSERT(height > 0 && "Loaded image from stream with height == 0");
 
     return base::makeOptional<Image>(base::PassKey<Image>{},
-                                     Vector2i{width, height}.toVector2u(),
+                                     Vec2i{width, height}.toVec2u(),
                                      ptr.get(),
                                      ptr.get() + width * height * 4);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u Image::getSize() const
+Vec2u Image::getSize() const
 {
     return m_size;
 }
@@ -320,7 +320,7 @@ void Image::createMaskFromColor(Color color, base::U8 alpha)
 
 
 ////////////////////////////////////////////////////////////
-bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, bool applyAlpha)
+bool Image::copy(const Image& source, Vec2u dest, const IntRect& sourceRect, bool applyAlpha)
 {
     // Make sure that both images are valid
     SFML_BASE_ASSERT(source.m_size.x > 0 && source.m_size.y > 0 && m_size.x > 0 && m_size.y > 0);
@@ -350,7 +350,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
         return false;
 
     // Then find the valid size of the destination rectangle
-    const Vector2u dstSize(base::min(m_size.x - dest.x, srcRect.size.x), base::min(m_size.y - dest.y, srcRect.size.y));
+    const Vec2u dstSize(base::min(m_size.x - dest.x, srcRect.size.x), base::min(m_size.y - dest.y, srcRect.size.y));
 
     // Precompute as much as possible
     const base::SizeT  pitch     = static_cast<base::SizeT>(dstSize.x) * 4;
@@ -407,7 +407,7 @@ bool Image::copy(const Image& source, Vector2u dest, const IntRect& sourceRect, 
 
 
 ////////////////////////////////////////////////////////////
-void Image::setPixel(Vector2u coords, Color color)
+void Image::setPixel(Vec2u coords, Color color)
 {
     SFML_BASE_ASSERT(coords.x < m_size.x && "Image::setPixel() x coordinate is out of bounds");
     SFML_BASE_ASSERT(coords.y < m_size.y && "Image::setPixel() y coordinate is out of bounds");
@@ -423,7 +423,7 @@ void Image::setPixel(Vector2u coords, Color color)
 
 
 ////////////////////////////////////////////////////////////
-Color Image::getPixel(Vector2u coords) const
+Color Image::getPixel(Vec2u coords) const
 {
     SFML_BASE_ASSERT(coords.x < m_size.x && "Image::getPixel() x coordinate is out of bounds");
     SFML_BASE_ASSERT(coords.y < m_size.y && "Image::getPixel() y coordinate is out of bounds");

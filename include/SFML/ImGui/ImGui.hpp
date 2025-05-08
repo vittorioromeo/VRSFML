@@ -13,7 +13,7 @@
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 
@@ -79,7 +79,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
     [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, Vector2f displaySize, bool loadDefaultFont = true);
+    [[nodiscard]] bool init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -93,7 +93,7 @@ public:
     ////////////////////////////////////////////////////////////
     void update(RenderWindow& window, Time dt);
     void update(Window& window, RenderTarget& target, Time dt);
-    void update(Vector2i mousePos, Vector2f displaySize, Time dt);
+    void update(Vec2i mousePos, Vec2f displaySize, Time dt);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -145,14 +145,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void image(const Texture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
-    void image(const Texture& texture, Vector2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+    void image(const Texture& texture, Vec2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void image(const RenderTexture& texture, Color tintColor = Color::White, Color borderColor = Color::Transparent);
-    void image(const RenderTexture& texture, Vector2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
+    void image(const RenderTexture& texture, Vec2f size, Color tintColor = Color::White, Color borderColor = Color::Transparent);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -165,7 +165,7 @@ public:
 
     void image(const Sprite&  sprite,
                const Texture& texture,
-               Vector2f       size,
+               Vec2f          size,
                Color          tintColor   = Color::White,
                Color          borderColor = Color::Transparent);
 
@@ -175,7 +175,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool imageButton(const char*    id,
                                    const Texture& texture,
-                                   Vector2f       size,
+                                   Vec2f          size,
                                    Color          bgColor   = Color::Transparent,
                                    Color          tintColor = Color::White);
 
@@ -185,7 +185,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool imageButton(const char*          id,
                                    const RenderTexture& texture,
-                                   Vector2f             size,
+                                   Vec2f                size,
                                    Color                bgColor   = Color::Transparent,
                                    Color                tintColor = Color::White);
 
@@ -196,7 +196,7 @@ public:
     [[nodiscard]] bool imageButton(const char*    id,
                                    const Sprite&  sprite,
                                    const Texture& texture,
-                                   Vector2f       size,
+                                   Vec2f          size,
                                    Color          bgColor   = Color::Transparent,
                                    Color          tintColor = Color::White);
 
@@ -204,7 +204,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawLine(Vector2f a, Vector2f b, Color col, float thickness = 1.f);
+    void drawLine(Vec2f a, Vec2f b, Color col, float thickness = 1.f);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

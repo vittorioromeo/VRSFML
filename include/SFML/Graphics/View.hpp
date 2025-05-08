@@ -12,7 +12,7 @@
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/AutoWrapAngle.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/ClampMacro.hpp"
@@ -34,7 +34,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     struct [[nodiscard]] ScissorRect : FloatRect
     {
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vector2f thePosition, Vector2f theSize) :
+        [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
         FloatRect{thePosition, theSize}
         {
             SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
@@ -138,8 +138,8 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
-    Vector2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
+    Vec2f center{500.f, 500.f}; //!< Center of the view, in scene coordinates
+    Vec2f size{1000.f, 1000.f}; //!< Size of the view, in scene coordinates
 
     // NOLINTNEXTLINE(readability-redundant-member-init)
     AutoWrapAngle rotation{}; //!< Angle of rotation of the view rectangle

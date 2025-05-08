@@ -87,7 +87,7 @@ struct SFML_GRAPHICS_API Transformable : TransformableMixin<Transformable>
 /// class MyEntity
 /// {
 /// public:
-///     void SetPosition(const MyVector& v)
+///     void SetPosition(const MyVec2& v)
 ///     {
 ///         myTransform.position = v.x(), v.y();
 ///     }

@@ -26,7 +26,7 @@ void Sensor::setEnabled(Type sensor, bool enabled)
 
 
 ////////////////////////////////////////////////////////////
-Vector3f Sensor::getValue(Type sensor)
+Vec3f Sensor::getValue(Type sensor)
 {
     return WindowContext::getSensorManager().getValue(sensor);
 }

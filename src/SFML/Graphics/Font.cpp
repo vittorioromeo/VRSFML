@@ -16,7 +16,7 @@
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/MemoryInputStream.hpp"
 #include "SFML/System/RectPacker.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -249,22 +249,22 @@ template <typename T, typename U>
     // pollute them with pixels from neighbors
     constexpr unsigned int padding = 2u;
 
-    const sf::Vector2u size{bitmap.width + 2u * padding, bitmap.rows + 2u * padding};
+    const sf::Vec2u size{bitmap.width + 2u * padding, bitmap.rows + 2u * padding};
 
     // Find a good position for the new glyph into the texture
     {
-        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVector2f(); // TODO P0: what if there is no room?
-        glyph.textureRect = {pos, size.toVector2f()};
+        const auto pos = textureAtlas.getRectPacker().pack(size).value().toVec2f(); // TODO P0: what if there is no room?
+        glyph.textureRect = {pos, size.toVec2f()};
     }
 
     // Make sure the texture data is positioned in the center
     // of the allocated texture rectangle
-    glyph.textureRect.position += sf::Vector2f{padding, padding};
-    glyph.textureRect.size -= 2.f * sf::Vector2f{padding, padding};
+    glyph.textureRect.position += sf::Vec2f{padding, padding};
+    glyph.textureRect.size -= 2.f * sf::Vec2f{padding, padding};
 
     // Compute the glyph's bounding box
-    glyph.bounds.position = sf::Vector2i(bitmapGlyph->left, -bitmapGlyph->top).toVector2f();
-    glyph.bounds.size     = sf::Vector2u(bitmap.width, bitmap.rows).toVector2f();
+    glyph.bounds.position = sf::Vec2i(bitmapGlyph->left, -bitmapGlyph->top).toVec2f();
+    glyph.bounds.size     = sf::Vec2u(bitmap.width, bitmap.rows).toVec2f();
 
     // Resize the pixel buffer to the new size and fill it with transparent white pixels
     pixelBuffer.resize(static_cast<sf::base::SizeT>(size.x) * static_cast<sf::base::SizeT>(size.y) * 4u);
@@ -314,8 +314,8 @@ template <typename T, typename U>
     }
 
     // Write the pixels to the texture
-    const auto dest       = glyph.textureRect.position.toVector2u() - sf::Vector2u{padding, padding};
-    const auto updateSize = glyph.textureRect.size.toVector2u() + 2u * sf::Vector2u{padding, padding};
+    const auto dest       = glyph.textureRect.position.toVec2u() - sf::Vec2u{padding, padding};
+    const auto updateSize = glyph.textureRect.size.toVec2u() + 2u * sf::Vec2u{padding, padding};
     textureAtlas.getTexture().update(pixelBuffer.data(), updateSize, dest);
 
     // Delete the FT glyph
@@ -733,7 +733,7 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
 
     float calculatedKerning = 0.f;
 
-    // Get the kerning vector if present
+    // Get the kerning vec2 if present
     FT_Vector kerning{0, 0};
     if (FT_HAS_KERNING(face))
         FT_Get_Kerning(face, index1, index2, FT_KERNING_UNFITTED, &kerning);

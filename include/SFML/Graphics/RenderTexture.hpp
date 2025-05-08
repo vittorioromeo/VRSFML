@@ -10,7 +10,7 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -82,8 +82,8 @@ public:
     /// \return Render texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size);
-    [[nodiscard]] static base::Optional<RenderTexture> create(Vector2u size, const ContextSettings& contextSettings);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size);
+    [[nodiscard]] static base::Optional<RenderTexture> create(Vec2u size, const ContextSettings& contextSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum anti-aliasing level supported by the system
@@ -192,7 +192,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const override;
+    [[nodiscard]] Vec2u getSize() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render-texture will use sRGB encoding when drawing on it

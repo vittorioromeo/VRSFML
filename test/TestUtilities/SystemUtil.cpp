@@ -2,8 +2,8 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include <Doctest.hpp>
 
@@ -40,26 +40,26 @@ std::ostream& operator<<(std::ostream& os, Time time)
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, Vector2<T> vector)
+std::ostream& operator<<(std::ostream& os, Vec2<T> vec)
 {
     setStreamPrecision(os, std::numeric_limits<T>::max_digits10);
-    return os << "(" << vector.x << ", " << vector.y << ")";
+    return os << "(" << vec.x << ", " << vec.y << ")";
 }
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector)
+std::ostream& operator<<(std::ostream& os, const Vec3<T>& vec)
 {
     setStreamPrecision(os, std::numeric_limits<T>::max_digits10);
-    return os << "(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
+    return os << "(" << vec.x << ", " << vec.y << ", " << vec.z << ")";
 }
 
-template std::ostream& operator<<(std::ostream&, Vector2<int>);
-template std::ostream& operator<<(std::ostream&, Vector2<unsigned int>);
-template std::ostream& operator<<(std::ostream&, Vector2<float>);
+template std::ostream& operator<<(std::ostream&, Vec2<int>);
+template std::ostream& operator<<(std::ostream&, Vec2<unsigned int>);
+template std::ostream& operator<<(std::ostream&, Vec2<float>);
 
-template std::ostream& operator<<(std::ostream&, const Vector3<int>&);
-template std::ostream& operator<<(std::ostream&, const Vector3<unsigned int>&);
-template std::ostream& operator<<(std::ostream&, const Vector3<float>&);
+template std::ostream& operator<<(std::ostream&, const Vec3<int>&);
+template std::ostream& operator<<(std::ostream&, const Vec3<unsigned int>&);
+template std::ostream& operator<<(std::ostream&, const Vec3<float>&);
 } // namespace sf
 
 bool operator==(const float& lhs, const Approx<float>& rhs)
@@ -67,12 +67,12 @@ bool operator==(const float& lhs, const Approx<float>& rhs)
     return static_cast<double>(lhs) == doctest::Approx(static_cast<double>(rhs.value)).epsilon(1e-3);
 }
 
-bool operator==(sf::Vector2f lhs, const Approx<sf::Vector2f>& rhs)
+bool operator==(sf::Vec2f lhs, const Approx<sf::Vec2f>& rhs)
 {
     return (lhs - rhs.value).length() == Approx(0.f);
 }
 
-bool operator==(const sf::Vector3f& lhs, const Approx<sf::Vector3f>& rhs)
+bool operator==(const sf::Vec3f& lhs, const Approx<sf::Vec3f>& rhs)
 {
     return (lhs - rhs.value).length() == Approx(0.f);
 }
@@ -96,8 +96,8 @@ std::ostream& operator<<(std::ostream& os, const Approx<T>& approx)
 
 template std::ostream& operator<<(std::ostream&, const Approx<float>&);
 template std::ostream& operator<<(std::ostream&, const Approx<double>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector2<float>>&);
-template std::ostream& operator<<(std::ostream&, const Approx<sf::Vector3<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Vec2<float>>&);
+template std::ostream& operator<<(std::ostream&, const Approx<sf::Vec3<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Transform>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Rect<float>>&);
 template std::ostream& operator<<(std::ostream&, const Approx<sf::Angle>&);

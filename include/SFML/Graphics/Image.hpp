@@ -10,7 +10,7 @@
 #include "SFML/Graphics/Color.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -52,7 +52,7 @@ public:
     /// \param color Fill color
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Image> create(Vector2u size, Color color = Color::Black);
+    [[nodiscard]] static base::Optional<Image> create(Vec2u size, Color color = Color::Black);
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the image from an array of pixels
@@ -65,7 +65,7 @@ public:
     /// \param pixels Array of pixels to copy to the image
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Image> create(Vector2u size, const base::U8* pixels);
+    [[nodiscard]] static base::Optional<Image> create(Vec2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the image from a file on disk
@@ -125,7 +125,7 @@ public:
     /// \return Size of the image, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const;
+    [[nodiscard]] Vec2u getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create a transparency mask from a specified color-key
@@ -172,7 +172,7 @@ public:
     /// \return `true` if the operation was successful, `false` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool copy(const Image& source, Vector2u dest, const IntRect& sourceRect = {}, bool applyAlpha = false);
+    [[nodiscard]] bool copy(const Image& source, Vec2u dest, const IntRect& sourceRect = {}, bool applyAlpha = false);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the color of a pixel
@@ -187,7 +187,7 @@ public:
     /// \see `getPixel`
     ///
     ////////////////////////////////////////////////////////////
-    void setPixel(Vector2u coords, Color color);
+    void setPixel(Vec2u coords, Color color);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the color of a pixel
@@ -203,7 +203,7 @@ public:
     /// \see `setPixel`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Color getPixel(Vector2u coords) const;
+    [[nodiscard]] Color getPixel(Vec2u coords) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a read-only pointer to the array of pixels
@@ -238,14 +238,14 @@ public:
     /// \brief Directly initialize data members
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, base::SizeT pixelCount);
-    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vector2u size, const base::U8* itBegin, const base::U8* itEnd);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vec2u size, base::SizeT pixelCount);
+    [[nodiscard]] explicit Image(base::PassKey<Image>&&, Vec2u size, const base::U8* itBegin, const base::U8* itEnd);
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u               m_size;   //!< Image size
+    Vec2u                  m_size;   //!< Image size
     base::Vector<base::U8> m_pixels; //!< Pixels of the image
 };
 

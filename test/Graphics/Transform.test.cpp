@@ -103,18 +103,18 @@ TEST_CASE("[Graphics] sf::Transform")
 
     SECTION("transformPoint()")
     {
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({-10.f, -10.f}) == sf::Vector2f(-10.f, -10.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({-1.f, -1.f}) == sf::Vector2f(-1.f, -1.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({-1.f, 0.f}) == sf::Vector2f(-1.f, 0.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({0.f, 0.f}) == sf::Vector2f(0.f, 0.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({0.f, 1.f}) == sf::Vector2f(0.f, 1.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({1.f, 1.f}) == sf::Vector2f(1.f, 1.f));
-        STATIC_CHECK(sf::Transform::Identity.transformPoint({10.f, 10.f}) == sf::Vector2f(10.f, 10.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({-10.f, -10.f}) == sf::Vec2f(-10.f, -10.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({-1.f, -1.f}) == sf::Vec2f(-1.f, -1.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({-1.f, 0.f}) == sf::Vec2f(-1.f, 0.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({0.f, 0.f}) == sf::Vec2f(0.f, 0.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({0.f, 1.f}) == sf::Vec2f(0.f, 1.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({1.f, 1.f}) == sf::Vec2f(1.f, 1.f));
+        STATIC_CHECK(sf::Transform::Identity.transformPoint({10.f, 10.f}) == sf::Vec2f(10.f, 10.f));
 
         constexpr sf::Transform transform(1.f, 2.f, 3.f, 4.f, 5.f, 4.f);
-        STATIC_CHECK(transform.transformPoint({-1.f, -1.f}) == sf::Vector2f(0.f, -5.f));
-        STATIC_CHECK(transform.transformPoint({0.f, 0.f}) == sf::Vector2f(3.f, 4.f));
-        STATIC_CHECK(transform.transformPoint({1.f, 1.f}) == sf::Vector2f(6.f, 13.f));
+        STATIC_CHECK(transform.transformPoint({-1.f, -1.f}) == sf::Vec2f(0.f, -5.f));
+        STATIC_CHECK(transform.transformPoint({0.f, 0.f}) == sf::Vec2f(3.f, 4.f));
+        STATIC_CHECK(transform.transformPoint({1.f, 1.f}) == sf::Vec2f(6.f, 13.f));
     }
 
     SECTION("transformRect()")
@@ -217,20 +217,20 @@ TEST_CASE("[Graphics] sf::Transform")
             CHECK(transform == sf::Transform(138.f, 618.f, 521.f, 372.f, 1698.f, 1428.f));
         }
 
-        SECTION("operator* with vector")
+        SECTION("operator* with vec2")
         {
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(-10.f, -10.f) == sf::Vector2f(-10.f, -10.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(-1.f, -1.f) == sf::Vector2f(-1.f, -1.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(-1.f, 0.f) == sf::Vector2f(-1.f, 0.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(0.f, 0.f) == sf::Vector2f(0.f, 0.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(0.f, 1.f) == sf::Vector2f(0.f, 1.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(1.f, 1.f) == sf::Vector2f(1.f, 1.f));
-            STATIC_CHECK(sf::Transform::Identity * sf::Vector2f(10.f, 10.f) == sf::Vector2f(10.f, 10.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(-10.f, -10.f) == sf::Vec2f(-10.f, -10.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(-1.f, -1.f) == sf::Vec2f(-1.f, -1.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(-1.f, 0.f) == sf::Vec2f(-1.f, 0.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(0.f, 0.f) == sf::Vec2f(0.f, 0.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(0.f, 1.f) == sf::Vec2f(0.f, 1.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(1.f, 1.f) == sf::Vec2f(1.f, 1.f));
+            STATIC_CHECK(sf::Transform::Identity * sf::Vec2f(10.f, 10.f) == sf::Vec2f(10.f, 10.f));
 
             constexpr sf::Transform transform(1.f, 2.f, 3.f, 4.f, 5.f, 4.f);
-            STATIC_CHECK(transform * sf::Vector2f(-1.f, -1.f) == sf::Vector2f(0.f, -5.f));
-            STATIC_CHECK(transform * sf::Vector2f(0.f, 0.f) == sf::Vector2f(3.f, 4.f));
-            STATIC_CHECK(transform * sf::Vector2f(1.f, 1.f) == sf::Vector2f(6.f, 13.f));
+            STATIC_CHECK(transform * sf::Vec2f(-1.f, -1.f) == sf::Vec2f(0.f, -5.f));
+            STATIC_CHECK(transform * sf::Vec2f(0.f, 0.f) == sf::Vec2f(3.f, 4.f));
+            STATIC_CHECK(transform * sf::Vec2f(1.f, 1.f) == sf::Vec2f(6.f, 13.f));
         }
 
         SECTION("operator==")

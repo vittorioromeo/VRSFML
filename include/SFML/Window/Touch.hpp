@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Span.hpp"
@@ -73,7 +73,7 @@ struct Device
 /// \return Current position of \a finger, or undefined if it's not down
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger);
+[[nodiscard]] SFML_WINDOW_API Vec2i getPosition(unsigned int finger);
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of a touch in window coordinates
@@ -87,7 +87,7 @@ struct Device
 /// \return Current position of \a finger, or undefined if it's not down
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo);
+[[nodiscard]] SFML_WINDOW_API Vec2i getPosition(unsigned int finger, const WindowBase& relativeTo);
 
 } // namespace Touch
 } // namespace sf
@@ -130,10 +130,10 @@ struct Device
 /// }
 ///
 /// // get global position of touch 1
-/// sf::Vector2i globalPos = sf::Touch::getPosition(1);
+/// sf::Vec2i globalPos = sf::Touch::getPosition(1);
 ///
 /// // get position of touch 1 relative to a window
-/// sf::Vector2i relativePos = sf::Touch::getPosition(1, window);
+/// sf::Vec2i relativePos = sf::Touch::getPosition(1, window);
 /// \endcode
 ///
 /// \see `sf::Joystick`, `sf::Keyboard`, `sf::Mouse`

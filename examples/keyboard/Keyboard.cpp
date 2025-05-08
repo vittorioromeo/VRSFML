@@ -25,7 +25,7 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
 
@@ -676,7 +676,7 @@ public:
         {
             const auto scancodeIndex = static_cast<std::size_t>(scancode);
 
-            static constexpr sf::Vector2f square[]{
+            static constexpr sf::Vec2f square[]{
                 {0.f, 0.f},
                 {1.f, 0.f},
                 {1.f, 1.f},
@@ -685,16 +685,16 @@ public:
 
             static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
 
-            const float        moveFactor = m_moveFactors[scancodeIndex];
-            const sf::Vector2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
+            const float     moveFactor = m_moveFactors[scancodeIndex];
+            const sf::Vec2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
 
             const bool pressed = sf::Keyboard::isKeyPressed(scancode);
 
             for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
-                sf::Vertex&                   vertex = m_triangles[6u * scancodeIndex + vertexIndex];
-                const sf::Vector2f&           corner = square[cornerIndexes[vertexIndex]];
-                static constexpr sf::Vector2f pad(padding, padding);
+                sf::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
+                const sf::Vec2f&           corner = square[cornerIndexes[vertexIndex]];
+                static constexpr sf::Vec2f pad(padding, padding);
                 vertex.position = rect.position + pad + (rect.size - 2.f * pad).componentWiseMul(corner) + move;
                 vertex.color.a  = pressed ? 96 : 48;
             }
@@ -716,7 +716,7 @@ private:
     template <typename F>
     void forEachKey(F&& function) const
     {
-        sf::Vector2f pos;
+        sf::Vec2f pos;
         for (const auto& [cells, marginBottom] : m_matrix)
         {
             for (const auto& [scancode, size, marginRight] : cells)
@@ -734,7 +734,7 @@ private:
 
     struct Cell
     {
-        Cell(sf::Keyboard::Scancode theScancode, sf::Vector2f sizeRatio = {1.f, 1.f}, float marginRightRatio = 0.f) :
+        Cell(sf::Keyboard::Scancode theScancode, sf::Vec2f sizeRatio = {1.f, 1.f}, float marginRightRatio = 0.f) :
         scancode(theScancode),
         size(sizeRatio * keySize),
         marginRight(marginRightRatio * keySize)
@@ -747,7 +747,7 @@ private:
         }
 
         sf::Keyboard::Scancode scancode;
-        sf::Vector2f           size;
+        sf::Vec2f              size;
         float                  marginRight;
     };
 
@@ -965,7 +965,7 @@ float getSpacingFactor(const sf::Font& font)
     return static_cast<float>(lineSize) / font.getLineSpacing(textSize);
 }
 
-ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vector2f position)
+ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vec2f position)
 {
     ShinyText text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
@@ -975,7 +975,7 @@ ShinyText makeShinyText(const sf::Font& font, const sf::String& string, sf::Vect
     return text;
 }
 
-sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vector2f position)
+sf::Text makeText(const sf::Font& font, const sf::String& string, sf::Vec2f position)
 {
     sf::Text text(font, {.string = string, .characterSize = textSize});
     text.setLineSpacing(getSpacingFactor(font));
@@ -1048,10 +1048,10 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vector2f windowSize{1280.f, 720.f};
+    constexpr sf::Vec2f windowSize{1280.f, 720.f};
 
     auto window = makeDPIScaledRenderWindow({
-        .size           = windowSize.toVector2u(),
+        .size           = windowSize.toVec2u(),
         .title          = "Keyboard",
         .resizable      = true,
         .vsync          = true,
@@ -1096,7 +1096,7 @@ int main()
 
             // Window size changed: adjust view appropriately
             if (const auto* resized = event->getIf<sf::Event::Resized>())
-                window.setView({.center = resized->size.toVector2f() / 2.f, .size = resized->size.toVector2f()});
+                window.setView({.center = resized->size.toVec2f() / 2.f, .size = resized->size.toVec2f()});
 
             // Key events: update text and play sound
             if (const auto* keyPressed = event->getIf<sf::Event::KeyPressed>())

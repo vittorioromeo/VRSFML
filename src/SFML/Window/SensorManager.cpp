@@ -42,7 +42,7 @@ bool SensorManager::isEnabled(Sensor::Type sensor) const
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SensorManager::getValue(Sensor::Type sensor) const
+Vec3f SensorManager::getValue(Sensor::Type sensor) const
 {
     return m_sensors[sensor].value;
 }

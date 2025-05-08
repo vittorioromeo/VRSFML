@@ -20,7 +20,7 @@
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 
@@ -107,13 +107,13 @@ void matrixRotateZ(Matrix& result, sf::Angle angle)
 }
 
 // Construct a lookat view matrix
-void matrixLookAt(Matrix& result, const sf::Vector3f& eye, const sf::Vector3f& center, const sf::Vector3f& up)
+void matrixLookAt(Matrix& result, const sf::Vec3f& eye, const sf::Vec3f& center, const sf::Vec3f& up)
 {
     // Forward-looking vector
-    const sf::Vector3f forward = (center - eye).normalized();
+    const sf::Vec3f forward = (center - eye).normalized();
 
     // Side vector (Forward cross product Up)
-    const sf::Vector3f side = forward.cross(up).normalized();
+    const sf::Vec3f side = forward.cross(up).normalized();
 
     result[0][0] = side.x;
     result[0][1] = side.y * forward.z - side.z * forward.y;
@@ -2406,8 +2406,8 @@ public:
         matrixRotateZ(model, sf::degrees(elapsed * 109.f));
 
         // Translate the model based on the mouse position
-        const auto  mousePosition = sf::Mouse::getPosition(window).toVector2f();
-        const auto  windowSize    = window.getSize().toVector2f();
+        const auto  mousePosition = sf::Mouse::getPosition(window).toVec2f();
+        const auto  windowSize    = window.getSize().toVec2f();
         const float x             = sf::base::clamp(mousePosition.x * 2.f / windowSize.x - 1.f, -1.f, 1.f) * 2.f;
         const float y             = sf::base::clamp(-mousePosition.y * 2.f / windowSize.y + 1.f, -1.f, 1.f) * 1.5f;
 
@@ -2415,9 +2415,9 @@ public:
         model[3][2] += y;
 
         // Construct the view matrix
-        const sf::Vector3f eye(0.f, 4.f, 0.f);
-        const sf::Vector3f center(0.f, 0.f, 0.f);
-        const sf::Vector3f up(0.f, 0.f, 1.f);
+        const sf::Vec3f eye(0.f, 4.f, 0.f);
+        const sf::Vec3f center(0.f, 0.f, 0.f);
+        const sf::Vec3f up(0.f, 0.f, 1.f);
 
         Matrix view;
         matrixLookAt(view, eye, center, up);

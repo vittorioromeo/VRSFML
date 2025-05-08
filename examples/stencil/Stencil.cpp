@@ -9,7 +9,7 @@
 #include "SFML/Window/EventUtils.hpp"
 
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "ExampleUtils.hpp"
 
@@ -26,10 +26,10 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application with a stencil buffer
-    constexpr sf::Vector2f windowSize{600.f, 600.f};
+    constexpr sf::Vec2f windowSize{600.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow({
-        .size            = windowSize.toVector2u(),
+        .size            = windowSize.toVec2u(),
         .title           = "SFML Stencil",
         .resizable       = true,
         .vsync           = true,

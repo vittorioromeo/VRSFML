@@ -23,7 +23,7 @@ namespace sf
 template <typename... TWindowArgs>
 RenderWindow::RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs) :
 Window(SFML_BASE_FORWARD(windowArgs)...),
-RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVector2f()}))
+RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -65,7 +65,7 @@ RenderWindow::~RenderWindow()
 
 
 ////////////////////////////////////////////////////////////
-Vector2u RenderWindow::getSize() const
+Vec2u RenderWindow::getSize() const
 {
     return Window::getSize();
 }
@@ -142,7 +142,7 @@ RenderTarget::DrawStatistics RenderWindow::display()
 
 
 ////////////////////////////////////////////////////////////
-void RenderWindow::setSize(const Vector2u& size)
+void RenderWindow::setSize(const Vec2u& size)
 {
     WindowBase::setSize(size);
     onResize();

@@ -1,7 +1,6 @@
 #include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
-#include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
@@ -19,7 +18,6 @@
 #include "SFML/Graphics/StarShapeData.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 
@@ -29,15 +27,13 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Path.hpp"
-#include "SFML/System/RectUtils.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "ExampleUtils.hpp"
 
 #include <algorithm>
 #include <initializer_list>
 #include <iostream>
-#include <utility>
 #include <vector>
 
 #include <cmath>
@@ -45,7 +41,7 @@
 
 
 ////////////////////////////////////////////////////////////
-constexpr sf::Vector2f resolution{1016.f, 1016.f};
+constexpr sf::Vec2f resolution{1016.f, 1016.f};
 
 
 ////////////////////////////////////////////////////////////
@@ -71,10 +67,10 @@ private:
     ////////////////////////////////////////////////////////////
     struct Bunny
     {
-        sf::Vector2f position;
-        sf::Vector2f velocity;
-        sf::Angle    rotation;
-        float        scale{};
+        sf::Vec2f position;
+        sf::Vec2f velocity;
+        sf::Angle rotation;
+        float     scale{};
     };
 
     std::vector<Bunny> m_bunnies;
@@ -96,7 +92,7 @@ private:
     {
         float phase = 0.f;
 
-        auto applyCommonSettings = [&](const sf::Vector2f currentOffset, auto shapeData)
+        auto applyCommonSettings = [&](const sf::Vec2f currentOffset, auto shapeData)
         {
             const auto fillColor = sf::Color::Red.withRotatedHue(m_time + phase * 65.f);
 
@@ -114,7 +110,7 @@ private:
             return shapeData;
         };
 
-        auto drawShape = [&](const sf::Vector2f currentOffset, const char* label, const auto& shapeData)
+        auto drawShape = [&](const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
         {
             m_window.draw(applyCommonSettings(currentOffset, shapeData));
 
@@ -128,7 +124,7 @@ private:
                           });
         };
 
-        for (const auto offset : {sf::Vector2f{0.f, 0.f}, {492.f, 0.f}, {0.f, 492.f}, {492.f, 492.f}})
+        for (const auto offset : {sf::Vec2f{0.f, 0.f}, {492.f, 0.f}, {0.f, 492.f}, {492.f, 492.f}})
         {
             drawShape(offset,
                       "Circle",
@@ -403,7 +399,7 @@ int main()
     //
     // Set up window
     auto window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVector2u(),
+        {.size            = resolution.toVec2u(),
          .title           = "Showcase",
          .resizable       = true,
          .vsync           = true,

@@ -72,7 +72,7 @@ int main()
     #include "SFML/Window/EventUtils.hpp"
 
     #include "SFML/System/Path.hpp"
-    #include "SFML/System/Vector2.hpp"
+    #include "SFML/System/Vec2.hpp"
 
     #include "SFML/Base/Optional.hpp"
 
@@ -94,7 +94,7 @@ int main()
     const float height    = 64.f;
     const float halfWidth = width / 2.f;
 
-    const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+    const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
     const auto     font0 = sf::Font::openFromFile("resources/tuffy.ttf").value();
     const sf::Text text0(font0, {.position = {0u, 0u}, .string = "Test", .characterSize = 16u});
@@ -191,7 +191,7 @@ int main()
     sf::RenderWindow window({.size{800u, 600u}, .title = L"महसुस", .contextSettings = {.antiAliasingLevel = 4}});
 
 
-    sf::Vector2u size = window.getSize();
+    sf::Vec2u size = window.getSize();
 
     auto texture = sf::Texture::loadFromFile("resources/biga.png").value();
 
@@ -390,7 +390,7 @@ int main()
     const float screenWidth  = 800.f;
     const float screenHeight = 600.f;
 
-    const sf::Vector2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
+    const sf::Vec2u screenSize{static_cast<unsigned int>(screenWidth), static_cast<unsigned int>(screenHeight)};
 
     auto graphicsContext = sf::GraphicsContext::create().value();
 
@@ -430,24 +430,24 @@ int main()
 
         float xCenter = screenWidth / 2;
 
-        vertexArrays[0].emplace_back(sf::Vector2f{0, 0}, sf::Color::White, sf::Vector2f{0, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vec2f{0, 0}, sf::Color::White, sf::Vec2f{0, 0});
+        vertexArrays[0].emplace_back(sf::Vec2f{xCenter, 0}, sf::Color::White, sf::Vec2f{xCenter, 0});
+        vertexArrays[0].emplace_back(sf::Vec2f{0, screenHeight}, sf::Color::White, sf::Vec2f{0, screenHeight});
 
-        vertexArrays[0].emplace_back(sf::Vector2f{0, screenHeight}, sf::Color::White, sf::Vector2f{0, screenHeight});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[0].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vec2f{0, screenHeight}, sf::Color::White, sf::Vec2f{0, screenHeight});
+        vertexArrays[0].emplace_back(sf::Vec2f{xCenter, 0}, sf::Color::White, sf::Vec2f{xCenter, 0});
+        vertexArrays[0].emplace_back(sf::Vec2f{xCenter, screenHeight}, sf::Color::White, sf::Vec2f{xCenter, screenHeight});
 
         // right half of screen
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, 0}, sf::Color::White, sf::Vector2f{xCenter, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
+        vertexArrays[1].emplace_back(sf::Vec2f{xCenter, 0}, sf::Color::White, sf::Vec2f{xCenter, 0});
+        vertexArrays[1].emplace_back(sf::Vec2f{screenWidth, 0}, sf::Color::White, sf::Vec2f{screenWidth, 0});
+        vertexArrays[1].emplace_back(sf::Vec2f{xCenter, screenHeight}, sf::Color::White, sf::Vec2f{xCenter, screenHeight});
 
-        vertexArrays[1].emplace_back(sf::Vector2f{xCenter, screenHeight}, sf::Color::White, sf::Vector2f{xCenter, screenHeight});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, 0}, sf::Color::White, sf::Vector2f{screenWidth, 0});
-        vertexArrays[1].emplace_back(sf::Vector2f{screenWidth, screenHeight},
+        vertexArrays[1].emplace_back(sf::Vec2f{xCenter, screenHeight}, sf::Color::White, sf::Vec2f{xCenter, screenHeight});
+        vertexArrays[1].emplace_back(sf::Vec2f{screenWidth, 0}, sf::Color::White, sf::Vec2f{screenWidth, 0});
+        vertexArrays[1].emplace_back(sf::Vec2f{screenWidth, screenHeight},
                                      sf::Color::White,
-                                     sf::Vector2f{screenWidth, screenHeight});
+                                     sf::Vec2f{screenWidth, screenHeight});
 
         renderTextures[0].clear();
         renderTextures[1].clear();

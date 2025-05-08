@@ -400,14 +400,14 @@ RenderTexture& RenderTexture::operator=(RenderTexture&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vector2u size)
+base::Optional<RenderTexture> RenderTexture::create(const Vec2u size)
 {
     return create(size, {});
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<RenderTexture> RenderTexture::create(const Vector2u size, const ContextSettings& contextSettings)
+base::Optional<RenderTexture> RenderTexture::create(const Vec2u size, const ContextSettings& contextSettings)
 {
     base::Optional<RenderTexture> result; // Use a single local variable for NRVO
 
@@ -514,7 +514,7 @@ RenderTarget::DrawStatistics RenderTexture::display()
 
 
 ////////////////////////////////////////////////////////////
-Vector2u RenderTexture::getSize() const
+Vec2u RenderTexture::getSize() const
 {
     return m_impl->texture.getSize();
 }
@@ -536,7 +536,7 @@ const Texture& RenderTexture::getTexture() const
 
 ////////////////////////////////////////////////////////////
 RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
-RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVector2f()})),
+RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVec2f()})),
 m_impl(SFML_BASE_MOVE(texture))
 {
 }

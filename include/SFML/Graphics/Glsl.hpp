@@ -5,8 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 
@@ -20,7 +20,7 @@ template <base::SizeT Columns, base::SizeT Rows>
 struct [[nodiscard]] Matrix;
 
 template <typename T>
-struct [[nodiscard]] Vector4;
+struct [[nodiscard]] Vec4;
 } // namespace sf::priv
 
 
@@ -34,37 +34,37 @@ namespace sf::Glsl
 /// \brief 2D float vector (\p vec2 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Vec2 = Vector2<float>;
+using Vec2 = sf::Vec2<float>;
 
 ////////////////////////////////////////////////////////////
 /// \brief 2D int vector (\p ivec2 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Ivec2 = Vector2<int>;
+using Ivec2 = sf::Vec2<int>;
 
 ////////////////////////////////////////////////////////////
 /// \brief 2D bool vector (\p bvec2 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Bvec2 = Vector2<bool>;
+using Bvec2 = sf::Vec2<bool>;
 
 ////////////////////////////////////////////////////////////
 /// \brief 3D float vector (\p vec3 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Vec3 = Vector3<float>;
+using Vec3 = sf::Vec3<float>;
 
 ////////////////////////////////////////////////////////////
 /// \brief 3D int vector (\p ivec3 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Ivec3 = Vector3<int>;
+using Ivec3 = sf::Vec3<int>;
 
 ////////////////////////////////////////////////////////////
 /// \brief 3D bool vector (\p bvec3 in GLSL)
 ///
 ////////////////////////////////////////////////////////////
-using Bvec3 = Vector3<bool>;
+using Bvec3 = sf::Vec3<bool>;
 
 #ifdef SFML_DOXYGEN
 
@@ -75,7 +75,7 @@ using Bvec3 = Vector3<bool>;
 /// instances. Each color channel is normalized from integers
 /// in [0, 255] to floating point values in [0, 1].
 /// \code
-/// sf::Glsl::Vec4 zeroVector;
+/// sf::Glsl::Vec4 zeroVec;
 /// sf::Glsl::Vec4 vector(1.f, 2.f, 3.f, 4.f);
 /// sf::Glsl::Vec4 color = sf::Color::Cyan;
 /// \endcode
@@ -89,7 +89,7 @@ using Vec4 = ImplementationDefined;
 /// instances. Each color channel remains unchanged inside
 /// the integer interval [0, 255].
 /// \code
-/// sf::Glsl::Ivec4 zeroVector;
+/// sf::Glsl::Ivec4 zeroVec;
 /// sf::Glsl::Ivec4 vector(1, 2, 3, 4);
 /// sf::Glsl::Ivec4 color = sf::Color::Cyan;
 /// \endcode
@@ -155,9 +155,9 @@ using Mat4 = ImplementationDefined;
 
 #else // SFML_DOXYGEN
 
-using Vec4  = priv::Vector4<float>;
-using Ivec4 = priv::Vector4<int>;
-using Bvec4 = priv::Vector4<bool>;
+using Vec4  = priv::Vec4<float>;
+using Ivec4 = priv::Vec4<int>;
+using Bvec4 = priv::Vec4<bool>;
 using Mat3  = priv::Matrix<3, 3>;
 using Mat4  = priv::Matrix<4, 4>;
 
@@ -176,8 +176,8 @@ using Mat4  = priv::Matrix<4, 4>;
 /// their equivalents in GLSL, the OpenGL shading language.
 /// These types are exclusively used by the `sf::Shader` class.
 ///
-/// Types that already exist in SFML, such as `sf::Vector2<T>`
-/// and `sf::Vector3<T>`, are reused as type aliases, so you
+/// Types that already exist in SFML, such as `sf::Vec2<T>`
+/// and `sf::Vec3<T>`, are reused as type aliases, so you
 /// can use the types in this namespace as well as the original ones.
 /// Others are newly defined, such as `Glsl::Vec4` or `Glsl::Mat3`.
 /// Their actual type is an implementation detail and should not be used.

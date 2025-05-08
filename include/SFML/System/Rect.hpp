@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
@@ -39,7 +39,7 @@ public:
     /// \see `findIntersection`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] constexpr bool contains(const Vector2<T> point) const
+    [[nodiscard]] constexpr bool contains(const Vec2<T> point) const
     {
         // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
@@ -63,7 +63,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr U to() const
     {
         using ValueType = decltype(U{}.position.x);
-        return Rect<ValueType>{position.template to<Vector2<ValueType>>(), size.template to<Vector2<ValueType>>()};
+        return Rect<ValueType>{position.template to<Vec2<ValueType>>(), size.template to<Vec2<ValueType>>()};
     }
 
 
@@ -92,7 +92,7 @@ public:
     /// \return Coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPoint(const Vector2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> getAnchorPoint(const Vec2f factors) const
     {
         if constexpr (SFML_BASE_IS_SAME(T, float))
         {
@@ -100,17 +100,17 @@ public:
         }
         else
         {
-            return position + size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>();
+            return position + size.toVec2f().componentWiseMul(factors).template to<Vec2<T>>();
         }
     }
 
 
     ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                           \
-    /** \brief Get the position of the name anchor point */                                      \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> name() const \
-    {                                                                                            \
-        return getAnchorPoint(__VA_ARGS__);                                                      \
+#define SFML_PRIV_DEFINE_RECT_ANCHOR_GETTER(name, ...)                                        \
+    /** \brief Get the position of the name anchor point */                                   \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> name() const \
+    {                                                                                         \
+        return getAnchorPoint(__VA_ARGS__);                                                   \
     }
 
     ////////////////////////////////////////////////////////////
@@ -178,12 +178,12 @@ public:
     ///
     /// \param factors Normalized factors `(x, y)` defining the anchor point.
     ///
-    /// \return The offset vector to apply to the rectangle's position.
+    /// \return The offset vec2 to apply to the rectangle's position.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2<T> getAnchorPointOffset(const Vector2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2<T> getAnchorPointOffset(const Vec2f factors) const
     {
-        return -(size.toVector2f().componentWiseMul(factors).template to<Vector2<T>>());
+        return -(size.toVec2f().componentWiseMul(factors).template to<Vec2<T>>());
     }
 
 
@@ -253,17 +253,17 @@ public:
     /// \param newPosition Target coordinates for the anchor point.
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] constexpr void setAnchorPoint(const Vector2f factors, const Vector2<T> newPosition)
+    [[gnu::always_inline, gnu::flatten]] constexpr void setAnchorPoint(const Vec2f factors, const Vec2<T> newPosition)
     {
         position = newPosition + getAnchorPointOffset(factors);
     }
 
     ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                                \
-    /** \brief Set the position based on the name anchor point */                     \
-    [[gnu::always_inline, gnu::flatten]] constexpr void name(const Vector2<T> newPos) \
-    {                                                                                 \
-        return setAnchorPoint(__VA_ARGS__, newPos);                                   \
+#define SFML_PRIV_DEFINE_RECT_ANCHOR_SETTER(name, ...)                             \
+    /** \brief Set the position based on the name anchor point */                  \
+    [[gnu::always_inline, gnu::flatten]] constexpr void name(const Vec2<T> newPos) \
+    {                                                                              \
+        return setAnchorPoint(__VA_ARGS__, newPos);                                \
     }
 
     ////////////////////////////////////////////////////////////
@@ -399,8 +399,8 @@ public:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2<T> position; //!< Position of the top-left corner of the rectangle
-    Vector2<T> size;     //!< Size of the rectangle
+    Vec2<T> position; //!< Position of the top-left corner of the rectangle
+    Vec2<T> size;     //!< Size of the rectangle
 };
 
 // Create type aliases for the most common types
@@ -429,7 +429,7 @@ extern template class sf::Rect<unsigned int>;
 /// It is a very simple class defined for convenience, so
 /// its member variables (position and size) are public
 /// and can be accessed directly, just like the vector classes
-/// (`Vector2` and `Vector3`).
+/// (`Vec2` and `Vec3`).
 ///
 /// To keep things simple, `sf::Rect` doesn't define
 /// functions to emulate the properties that are not directly
@@ -456,8 +456,8 @@ extern template class sf::Rect<unsigned int>;
 /// sf::IntRect r1({0, 0}, {20, 5});
 ///
 /// // Define another rectangle, located at (4, 2) with a size of 18x10
-/// sf::Vector2i position(4, 2);
-/// sf::Vector2i size(18, 10);
+/// sf::Vec2i position(4, 2);
+/// sf::Vec2i size(18, 10);
 /// sf::IntRect r2(position, size);
 ///
 /// // Test intersections with the point (3, 1)

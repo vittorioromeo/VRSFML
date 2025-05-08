@@ -5,7 +5,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace CatConstants
@@ -97,7 +97,7 @@ inline constexpr EXACT_ARRAY(
 
 ////////////////////////////////////////////////////////////
 inline constexpr EXACT_ARRAY(
-    sf::Vector2f,
+    sf::Vec2f,
     rangeOffsets,
     nCatTypes,
     {

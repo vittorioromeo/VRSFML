@@ -39,7 +39,7 @@ int main()
     const float height    = 64.f;
     const float halfWidth = width / 2.f;
 
-    const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+    const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
 
     auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true}).value();
@@ -66,8 +66,8 @@ int main()
     baseRenderTexture.draw(leftVertexArray, sf::PrimitiveType::Triangles, {.texture = &leftInnerRT.getTexture()});
     baseRenderTexture.display();
 
-    sf::Clock    deltaClock;
-    sf::Vector2i eventMousePosition;
+    sf::Clock deltaClock;
+    sf::Vec2i eventMousePosition;
 
     // TODO P0:
     const auto modes = sf::VideoModeUtils::getFullscreenModes();
@@ -112,7 +112,7 @@ int main()
             window.setSize({800u, 800u});
 
         ImGui::Button("Look at this pretty button");
-        imGuiContext.image(baseRenderTexture, size.toVector2f());
+        imGuiContext.image(baseRenderTexture, size.toVec2f());
 
         ImGui::End();
 

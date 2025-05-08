@@ -6,7 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf::priv
@@ -46,7 +46,7 @@ void blitFramebuffer(bool invertYAxis, UIntRect src, UIntRect dst);
 /// \note Uses `GL_NEAREST` filtering - appropriate for same-size copies.
 ///
 ////////////////////////////////////////////////////////////
-void blitFramebuffer(bool invertYAxis, Vector2u size, Vector2u srcPos, Vector2u dstPos);
+void blitFramebuffer(bool invertYAxis, Vec2u size, Vec2u srcPos, Vec2u dstPos);
 
 ////////////////////////////////////////////////////////////
 /// \brief Copy framebuffer contents between specified FBOs
@@ -63,11 +63,11 @@ void blitFramebuffer(bool invertYAxis, Vector2u size, Vector2u srcPos, Vector2u 
 ///
 ////////////////////////////////////////////////////////////
 void copyFramebuffer(bool         invertYAxis,
-                     Vector2u     size,
+                     Vec2u        size,
                      unsigned int srcFBO,
                      unsigned int dstFBO,
-                     Vector2u     srcPos = {0u, 0u},
-                     Vector2u     dstPos = {0u, 0u});
+                     Vec2u        srcPos = {0u, 0u},
+                     Vec2u        dstPos = {0u, 0u});
 
 ////////////////////////////////////////////////////////////
 /// \brief Copy framebuffer contents with vertical flipping
@@ -87,11 +87,11 @@ void copyFramebuffer(bool         invertYAxis,
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool copyFlippedFramebuffer(
     unsigned int tmpTextureNativeHandle,
-    Vector2u     size,
+    Vec2u        size,
     unsigned int srcFBO,
     unsigned int dstFBO,
-    Vector2u     srcPos = {0u, 0u},
-    Vector2u     dstPos = {0u, 0u});
+    Vec2u        srcPos = {0u, 0u},
+    Vec2u        dstPos = {0u, 0u});
 
 ////////////////////////////////////////////////////////////
 /// \brief Generate and bind a new framebuffer object

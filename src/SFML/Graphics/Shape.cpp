@@ -9,7 +9,7 @@
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -144,7 +144,7 @@ FloatRect Shape::getGlobalBounds() const
 
 
 ////////////////////////////////////////////////////////////
-void Shape::update(const sf::Vector2f* points, const base::SizeT pointCount)
+void Shape::update(const sf::Vec2f* points, const base::SizeT pointCount)
 {
     updateFromFunc([&points](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return points[i]; }, pointCount);
 }
@@ -169,8 +169,8 @@ void Shape::updateTexCoords()
     const Vertex* end = m_vertices.data() + m_verticesEndIndex;
     for (Vertex* vertex = m_vertices.data(); vertex != end; ++vertex)
     {
-        const Vector2f ratio = (vertex->position - m_insideBounds.position).componentWiseDiv(m_insideBounds.size);
-        vertex->texCoords    = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
+        const Vec2f ratio = (vertex->position - m_insideBounds.position).componentWiseDiv(m_insideBounds.size);
+        vertex->texCoords = m_textureRect.position + m_textureRect.size.componentWiseMul(ratio);
     }
 }
 
@@ -185,8 +185,8 @@ void Shape::updateOutlineTexCoords()
     const auto* end = m_vertices.data() + m_vertices.size();
     for (Vertex* vertex = m_vertices.data() + m_verticesEndIndex; vertex != end; ++vertex)
     {
-        const Vector2f ratio = (vertex->position - m_bounds.position).componentWiseDiv(m_bounds.size);
-        vertex->texCoords    = m_outlineTextureRect.position + m_outlineTextureRect.size.componentWiseMul(ratio);
+        const Vec2f ratio = (vertex->position - m_bounds.position).componentWiseDiv(m_bounds.size);
+        vertex->texCoords = m_outlineTextureRect.position + m_outlineTextureRect.size.componentWiseMul(ratio);
     }
 }
 

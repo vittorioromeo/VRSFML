@@ -8,7 +8,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
@@ -158,15 +158,14 @@ namespace sf::VertexUtils
 /// \return The (min x, min y) of a range of vertices.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getTopLeft(
-    const Vertex* const data,
-    const base::SizeT   nVertices) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopLeft(const Vertex* const data,
+                                                                                             const base::SizeT nVertices) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(data != nullptr);
     SFML_BASE_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
-    Vector2f result = data[0].position;
+    Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
@@ -186,7 +185,7 @@ namespace sf::VertexUtils
 /// \return The (max x, min y) of a range of vertices.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getTopRight(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight(
     const Vertex* const data,
     const base::SizeT   nVertices) noexcept
 {
@@ -194,7 +193,7 @@ namespace sf::VertexUtils
     SFML_BASE_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
-    Vector2f result = data[0].position;
+    Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
@@ -214,7 +213,7 @@ namespace sf::VertexUtils
 /// \return The (min x, max y) of a range of vertices.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getBottomLeft(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomLeft(
     const Vertex* const data,
     const base::SizeT   nVertices) noexcept
 {
@@ -222,7 +221,7 @@ namespace sf::VertexUtils
     SFML_BASE_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
-    Vector2f result = data[0].position;
+    Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {
@@ -242,7 +241,7 @@ namespace sf::VertexUtils
 /// \return The (max x, max y) of a range of vertices.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getBottomRight(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomRight(
     const Vertex* const data,
     const base::SizeT   nVertices) noexcept
 {
@@ -250,7 +249,7 @@ namespace sf::VertexUtils
     SFML_BASE_ASSERT_AND_ASSUME(nVertices > 0u);
     const Vertex* const end = data + nVertices;
 
-    Vector2f result = data[0].position;
+    Vec2f result = data[0].position;
 
     for (const Vertex* v = data + 1; v < end; ++v)
     {

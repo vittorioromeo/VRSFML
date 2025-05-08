@@ -46,13 +46,13 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             {
                 const sf::WindowBase windowBase({.size{360u, 240u}, .title = ""});
 
-                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getSize() == sf::Vec2u{360, 240});
                 CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
             }
             {
                 const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
-                CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+                CHECK(windowBase.getSize() == sf::Vec2u{360, 240});
                 CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
             }
         }
@@ -61,7 +61,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
-            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+            CHECK(windowBase.getSize() == sf::Vec2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -69,7 +69,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
-            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+            CHECK(windowBase.getSize() == sf::Vec2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
 
@@ -77,7 +77,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         {
             const sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
-            CHECK(windowBase.getSize() == sf::Vector2u{360, 240});
+            CHECK(windowBase.getSize() == sf::Vec2u{360, 240});
             CHECK(windowBase.getNativeHandle() != sf::WindowHandle());
         }
     }
@@ -110,7 +110,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
         windowBase.setPosition({12, 34});
-        CHECK(windowBase.getPosition() == sf::Vector2i{12, 34});
+        CHECK(windowBase.getPosition() == sf::Vec2i{12, 34});
     }
 
     SECTION("Set/get size")
@@ -120,7 +120,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
             sf::WindowBase windowBase({.size{360u, 240u}, .title = "WindowBase Tests"});
 
             windowBase.setSize({128, 256});
-            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
+            CHECK(windowBase.getSize() == sf::Vec2u{128, 256});
         }
 
         SECTION("Minimum size")
@@ -129,7 +129,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
             windowBase.setMinimumSize({128u, 256u});
             windowBase.setSize({100, 100});
-            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
+            CHECK(windowBase.getSize() == sf::Vec2u{128, 256});
         }
 
         SECTION("Maximum size")
@@ -138,7 +138,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
             windowBase.setMaximumSize({128u, 256u});
             windowBase.setSize({400, 400});
-            CHECK(windowBase.getSize() == sf::Vector2u{128, 256});
+            CHECK(windowBase.getSize() == sf::Vec2u{128, 256});
         }
     }
 
@@ -147,7 +147,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase({.size{100u, 100u}, .title = "WindowBase Tests"});
 
         windowBase.setMinimumSize({200u, 300u});
-        CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
+        CHECK(windowBase.getSize() == sf::Vec2u{200, 300});
         windowBase.setMaximumSize({200u, 300u});
     }
 
@@ -156,7 +156,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
         sf::WindowBase windowBase({.size{400u, 400u}, .title = "WindowBase Tests"});
 
         windowBase.setMaximumSize({200u, 300u});
-        CHECK(windowBase.getSize() == sf::Vector2u{200, 300});
+        CHECK(windowBase.getSize() == sf::Vec2u{200, 300});
         windowBase.setMinimumSize({200u, 300u});
     }
 
@@ -213,5 +213,7 @@ TEST_CASE("[Window] sf::WindowBase" * doctest::skip(skipDisplayTests))
 
         // Should compile if user provides a function pointer
         windowBase.pollAndHandleEvents(+[](const sf::Event::Closed&) {});
+        // clang-format off
     };
+    // clang-format on
 }
