@@ -207,10 +207,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withHueMod(const float hueMod) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRotatedHue(const float degrees) const
     {
         auto hsl = toHSL();
-        hsl.hue  = base::positiveRemainder(hsl.hue + hueMod, 360.f);
+        hsl.hue  = base::positiveRemainder(hsl.hue + degrees, 360.f);
         return Color::fromHSLA(hsl, a);
     }
 

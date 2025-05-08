@@ -22,6 +22,7 @@
     ::sf::Vector2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \
     /* NOLINTNEXTLINE(readability-redundant-member-init) */                                      \
     ::sf::Angle rotation{}; /*!< Orientation of the object */                                    \
+                                                                                                 \
     using sfPrivSwallowSemicolon0 = void
 
 
@@ -35,4 +36,5 @@
     ::sf::Vector2f origin{};        /*!< Origin of translation/rotation/scaling of the object */ \
     /* NOLINTNEXTLINE(readability-redundant-member-init) */                                      \
     ::sf::AutoWrapAngle rotation{}; /*!< Orientation of the object */                            \
+                                                                                                 \
     using sfPrivSwallowSemicolon1 = void

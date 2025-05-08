@@ -10,13 +10,13 @@
 #include "SFML/Graphics/Priv/ShapeMacros.hpp" // used, exposes macros
 #include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
-#include "SFML/Base/Span.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -225,7 +225,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getFillVertices() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] ConstVertexSpan getFillVertices() const
     {
         return {m_vertices.data(), m_verticesEndIndex};
     }
@@ -234,7 +234,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] base::Span<const Vertex> getOutlineVertices() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] ConstVertexSpan getOutlineVertices() const
     {
         return {m_vertices.data() + m_verticesEndIndex, m_vertices.size() - m_verticesEndIndex};
     }
@@ -276,7 +276,7 @@ protected:
         m_vertices[pointCount + 1u].position = m_vertices[1].position; // repeated first point
 
         // Update the bounding rectangle
-        m_insideBounds = getVertexRangeBounds(m_vertices.data() + 1u, m_verticesEndIndex - 1u); // skip center
+        m_insideBounds = VertexUtils::getVertexRangeBounds(m_vertices.data() + 1u, m_verticesEndIndex - 1u); // skip center
 
         // Compute the center and make it the first vertex
         m_vertices[0].position = m_insideBounds.getCenter();

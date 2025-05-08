@@ -11,6 +11,7 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
@@ -21,7 +22,6 @@
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Span.hpp"
 #include "SFML/Base/Vector.hpp"
 
 
@@ -470,7 +470,7 @@ public:
     /// - The remaining subrange contains all text fill vertices, if any.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] base::Span<const Vertex> getVertices() const
+    [[nodiscard, gnu::always_inline]] ConstVertexSpan getVertices() const
     {
         ensureGeometryUpdate(*m_font);
         return {m_vertices.data(), m_vertices.size()};
@@ -482,7 +482,7 @@ public:
     /// \see `getVertices`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] base::Span<Vertex> getVerticesMut()
+    [[nodiscard, gnu::always_inline]] VertexSpan getVerticesMut()
     {
         ensureGeometryUpdate(*m_font);
         return {m_vertices.data(), m_vertices.size()};

@@ -22,8 +22,8 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // Create the graphics context // TODO P0: review the need for passing contextsettings here
-    auto graphicsContext = sf::GraphicsContext::create({.depthBits = 0u, .stencilBits = 8u}).value();
+    // Create the graphics context
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application with a stencil buffer
     constexpr sf::Vector2f windowSize{600.f, 600.f};
