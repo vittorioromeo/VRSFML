@@ -11,6 +11,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Transformable.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -251,61 +252,61 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const ArrowShapeData& sdArrow);
+    VertexSpan add(const ArrowShapeData& sdArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const CircleShapeData& sdCircle);
+    VertexSpan add(const CircleShapeData& sdCircle);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const EllipseShapeData& sdEllipse);
+    VertexSpan add(const EllipseShapeData& sdEllipse);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const PieSliceShapeData& sdPieSlice);
+    VertexSpan add(const PieSliceShapeData& sdPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const RectangleShapeData& sdRectangle);
+    VertexSpan add(const RectangleShapeData& sdRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const RingShapeData& sdRing);
+    VertexSpan add(const RingShapeData& sdRing);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const RingPieSliceShapeData& sdRingPieSlice);
+    VertexSpan add(const RingPieSliceShapeData& sdRingPieSlice);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const RoundedRectangleShapeData& sdRoundedRectangle);
+    VertexSpan add(const RoundedRectangleShapeData& sdRoundedRectangle);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const StarShapeData& sdStarShape);
+    VertexSpan add(const StarShapeData& sdStarShape);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void add(const Font& font, const TextData& textData);
+    VertexSpan add(const Font& font, const TextData& textData);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -350,7 +351,10 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void drawTriangleFanShapeFromPoints(base::SizeT nPoints, const auto& descriptor, auto&& pointFn, Vector2f centerOffset = {});
+    VertexSpan drawTriangleFanShapeFromPoints(base::SizeT nPoints,
+                                              const auto& descriptor,
+                                              auto&&      pointFn,
+                                              Vector2f    centerOffset = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

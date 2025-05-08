@@ -11,12 +11,14 @@
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vector2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -38,19 +40,20 @@ class Texture;
 class VertexBuffer;
 
 struct ArrowShapeData;
-struct BlendMode;
 struct CircleShapeData;
 struct EllipseShapeData;
-struct GLElementBufferObject;
-struct GLVAOGroup;
-struct GLVertexBufferObject;
 struct PieSliceShapeData;
 struct RectangleShapeData;
 struct RingShapeData;
 struct RingPieSliceShapeData;
 struct RoundedRectangleShapeData;
-struct Sprite;
 struct StarShapeData;
+
+struct BlendMode;
+struct GLElementBufferObject;
+struct GLVAOGroup;
+struct GLVertexBufferObject;
+struct Sprite;
 struct StencilMode;
 struct StencilValue;
 struct TextData;
@@ -58,6 +61,24 @@ struct Transform;
 struct Vertex;
 struct View;
 } // namespace sf
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+template <typename T>
+concept ShapeDataConcept =                             //
+    SFML_BASE_IS_SAME(T, ArrowShapeData) ||            //
+    SFML_BASE_IS_SAME(T, CircleShapeData) ||           //
+    SFML_BASE_IS_SAME(T, EllipseShapeData) ||          //
+    SFML_BASE_IS_SAME(T, PieSliceShapeData) ||         //
+    SFML_BASE_IS_SAME(T, RectangleShapeData) ||        //
+    SFML_BASE_IS_SAME(T, RingShapeData) ||             //
+    SFML_BASE_IS_SAME(T, RingPieSliceShapeData) ||     //
+    SFML_BASE_IS_SAME(T, RoundedRectangleShapeData) || //
+    SFML_BASE_IS_SAME(T, StarShapeData);
+
+} // namespace sf::priv
 
 
 namespace sf
@@ -470,64 +491,22 @@ public:
               const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw an arrow shape from its relevant data
+    /// \brief Draw a shape from its relevant data
+    ///
+    /// \return Span pointing to vertices in the batch
+    ///         (WARNING: the span is only valid until the next draw call)
     ///
     ////////////////////////////////////////////////////////////
-    void draw(const ArrowShapeData& sdArrow, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a circle shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const CircleShapeData& sdCircle, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw an ellipse shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const EllipseShapeData& sdEllipse, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a pie slice shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const PieSliceShapeData& sdPieSlice, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a rectangle shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const RectangleShapeData& sdRectangle, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a ring shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const RingShapeData& sdRing, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a ring shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const RingPieSliceShapeData& sdRing, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a rounded rectangle shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const RoundedRectangleShapeData& sdRoundedRectangle, const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Draw a star shape from its relevant data
-    ///
-    ////////////////////////////////////////////////////////////
-    void draw(const StarShapeData& sdStar, const RenderStates& states = {});
+    VertexSpan draw(const priv::ShapeDataConcept auto& shapeData, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw a text from a font and its relevant data
     ///
+    /// \return Span pointing to vertices in the batch
+    ///         (WARNING: the span is only valid until the next draw call)
+    ///
     ////////////////////////////////////////////////////////////
-    void draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
+    VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of vertices
@@ -774,13 +753,14 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void flushIfNeeded(const RenderStates& states);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void helperDrawShapeData(const auto& shapeData, const RenderStates& states = {});
+    [[gnu::always_inline]] void flushIfNeeded(const RenderStates& states)
+    {
+        if (m_numAutoBatchVertices >= m_autoBatchVertexThreshold || m_lastRenderStates != states)
+        {
+            flush();
+            m_lastRenderStates = states;
+        }
+    }
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -914,13 +894,7 @@ private:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void addToAutoBatch(auto&&... xs);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::SizeT getAutoBatchNumVertices() const;
+    auto addToAutoBatch(auto&&... xs);
 
 public:
     ////////////////////////////////////////////////////////////
@@ -935,7 +909,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
-    void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
         requires(requires { immediateDrawVertices(vertices.data(), vertices.size(), type, states); })
     {
         drawVertices(vertices.data(), vertices.size(), type, states);
@@ -950,7 +924,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <base::SizeT N>
-    void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
         drawVertices(vertices, N, type, states);
     }
@@ -966,7 +940,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     template <typename DrawableObject>
-    void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
+    [[gnu::always_inline]] void draw(const DrawableObject& drawableObject, const RenderStates& states = {})
         requires(requires { drawableObject.draw(*this, states); })
     {
         flushIfNeeded(states);
@@ -979,9 +953,11 @@ private:
     ////////////////////////////////////////////////////////////
     DrawStatistics m_currentDrawStats{};                       //!< Statistics for current draw calls
     AutoBatchMode  m_autoBatchMode{AutoBatchMode::GPUStorage}; //!< Enable automatic batching of draw calls
+    base::SizeT    m_numAutoBatchVertices{0u};                 //!< Number of vertices in the current autobatch
     base::SizeT    m_autoBatchVertexThreshold{32'768u};        //!< Threshold for batch vertex count
     RenderStates   m_lastRenderStates;                         //!< Cached render states (autobatching)
 
+    ////////////////////////////////////////////////////////////
     struct Impl;
     base::InPlacePImpl<Impl, 768> m_impl; //!< Implementation details
 };

@@ -27,6 +27,7 @@
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Vector2.hpp"
 
@@ -44,7 +45,7 @@ void updateOutlineVerticesColorAndTextureRect(const auto&           descriptor,
                                               sf::Vertex* const     outlineVertexPtr,
                                               const sf::base::SizeT outlineVertexCount)
 {
-    const sf::Vertex* end = outlineVertexPtr + outlineVertexCount;
+    const sf::Vertex* const end = outlineVertexPtr + outlineVertexCount;
     for (sf::Vertex* vertex = outlineVertexPtr; vertex != end; ++vertex)
     {
         vertex->color     = descriptor.outlineColor;
@@ -98,10 +99,36 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT ver
                                       const base::SizeT                      vertexCount,
                                       const PrimitiveType                    type)
 {
-    SFML_BASE_ASSERT(type == PrimitiveType::Triangles);
-    SFML_BASE_ASSERT(vertexCount % 3u == 0u);
-
     if (vertexData == nullptr || vertexCount == 0u)
+        return;
+
+    IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
+    base::SizeT numIndicesToGenerate     = 0u;
+
+    switch (type)
+    {
+        case PrimitiveType::Triangles:
+        {
+            SFML_BASE_ASSERT(vertexCount % 3u == 0u);
+            numIndicesToGenerate = vertexCount;
+            break;
+        }
+
+        case PrimitiveType::TriangleFan:
+        case PrimitiveType::TriangleStrip:
+        {
+            SFML_BASE_ASSERT(vertexCount >= 3u);
+            numTrianglesInStripOrFan = static_cast<IndexType>(vertexCount - 2u);
+            numIndicesToGenerate     = static_cast<base::SizeT>(numTrianglesInStripOrFan) * 3u;
+            break;
+        }
+
+        default:
+            SFML_BASE_ASSERT(false && "Unsupported primitive type");
+            return;
+    }
+
+    if (numIndicesToGenerate == 0u)
         return;
 
     const IndexType firstNewVertexIndex = m_storage.getNumVertices();
@@ -109,12 +136,29 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT ver
     SFML_BASE_MEMCPY(m_storage.reserveMoreVertices(vertexCount), vertexData, vertexCount * sizeof(Vertex));
     m_storage.commitMoreVertices(vertexCount);
 
-    IndexType* dstIndices = m_storage.reserveMoreIndices(vertexCount);
+    IndexType* dstIndices = m_storage.reserveMoreIndices(numIndicesToGenerate);
 
-    for (base::SizeT i = 0u; i < vertexCount; ++i)
-        *dstIndices++ = firstNewVertexIndex + static_cast<IndexType>(i);
+    if (type == PrimitiveType::Triangles)
+    {
+        SFML_BASE_ASSERT(numIndicesToGenerate == vertexCount);
 
-    m_storage.commitMoreIndices(vertexCount);
+        for (base::SizeT i = 0u; i < numIndicesToGenerate; ++i)
+            *dstIndices++ = firstNewVertexIndex + static_cast<IndexType>(i);
+    }
+    else if (type == PrimitiveType::TriangleStrip)
+    {
+        for (IndexType i = 0u; i < numTrianglesInStripOrFan; ++i)
+            appendTriangleStripIndices(dstIndices, firstNewVertexIndex, i);
+    }
+    else
+    {
+        SFML_BASE_ASSERT(type == PrimitiveType::TriangleFan);
+
+        for (IndexType i = 0u; i < numTrianglesInStripOrFan; ++i)
+            appendTriangleFanIndices(dstIndices, firstNewVertexIndex, /* second vertex relative index */ i + 1u);
+    }
+
+    m_storage.commitMoreIndices(numIndicesToGenerate);
 }
 
 
@@ -126,23 +170,98 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT    
                                       const base::SizeT                         indexCount,
                                       const PrimitiveType                       type)
 {
-    SFML_BASE_ASSERT(type == PrimitiveType::Triangles);
-    SFML_BASE_ASSERT(vertexCount % 3u == 0u);
-
     if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u)
         return;
+
+    IndexType   numTrianglesInStripOrFan = 0u; // Only used for triangle strips and triangle fans
+    base::SizeT numIndicesToGenerate     = 0u;
+
+    // Type-specific assertions. The core logic of copying indices is type-agnostic.
+    switch (type)
+    {
+        case PrimitiveType::Triangles:
+        {
+            SFML_BASE_ASSERT(indexCount % 3u == 0u);
+            numIndicesToGenerate = indexCount;
+            break;
+        }
+
+        case PrimitiveType::TriangleStrip:
+        case PrimitiveType::TriangleFan:
+        {
+            SFML_BASE_ASSERT(indexCount == 0u || indexCount >= 3u);
+            numTrianglesInStripOrFan = static_cast<IndexType>(indexCount - 2u);
+            numIndicesToGenerate     = static_cast<base::SizeT>(numTrianglesInStripOrFan) * 3u;
+            break;
+        }
+
+        default:
+            SFML_BASE_ASSERT(false && "Unsupported primitive type");
+            return;
+    }
+
+    if (numIndicesToGenerate == 0u)
+        return;
+
+#ifdef SFML_DEBUG
+    for (base::SizeT i = 0u; i < indexCount; ++i)
+        SFML_BASE_ASSERT(indexData[i] < static_cast<IndexType>(vertexCount));
+#endif
 
     const IndexType firstNewVertexIndex = m_storage.getNumVertices();
 
     SFML_BASE_MEMCPY(m_storage.reserveMoreVertices(vertexCount), vertexData, vertexCount * sizeof(Vertex));
     m_storage.commitMoreVertices(vertexCount);
 
-    IndexType* dstIndices = m_storage.reserveMoreIndices(indexCount);
+    IndexType* dstIndices = m_storage.reserveMoreIndices(numIndicesToGenerate);
 
-    for (base::SizeT i = 0u; i < indexCount; ++i)
-        *dstIndices++ = firstNewVertexIndex + indexData[i];
+    if (type == PrimitiveType::Triangles)
+    {
+        for (base::SizeT i = 0u; i < indexCount; ++i)
+            *dstIndices++ = firstNewVertexIndex + indexData[i];
+    }
+    else if (type == PrimitiveType::TriangleStrip)
+    {
+        for (IndexType k = 0u; k < numTrianglesInStripOrFan; ++k) // `k` is the triangle index within the strip
+        {
+            // Get the global indices for the `k-th`, `(k+1)-th`, and (`k+2)-th` vertices of the strip
+            const IndexType vGlobalK0 = firstNewVertexIndex + indexData[k + 0u];
+            const IndexType vGlobalK1 = firstNewVertexIndex + indexData[k + 1u];
+            const IndexType vGlobalK2 = firstNewVertexIndex + indexData[k + 2u];
 
-    m_storage.commitMoreIndices(indexCount);
+            if ((k % 2u) == 0u) // Even triangle: `(V_k, V_{k+1}, V_{k+2})`
+            {
+                *dstIndices++ = vGlobalK0;
+                *dstIndices++ = vGlobalK1;
+                *dstIndices++ = vGlobalK2;
+            }
+            else // Odd triangle: `(V_{k+2}, V_{k+1}, V_k)` to maintain winding, consistent with `appendTriangleStripIndices`
+            {
+                *dstIndices++ = vGlobalK2;
+                *dstIndices++ = vGlobalK1;
+                *dstIndices++ = vGlobalK0;
+            }
+        }
+    }
+    else
+    {
+        SFML_BASE_ASSERT(type == PrimitiveType::TriangleFan);
+
+        const IndexType vCenterGlobal = firstNewVertexIndex + indexData[0];
+
+        for (IndexType k = 0u; k < numTrianglesInStripOrFan; ++k) // `k` is the triangle index within the fan
+        {
+            // Triangles are `(Center, V_{k+1}, V_{k+2})`
+            const IndexType vGlobalK1 = firstNewVertexIndex + indexData[k + 1u];
+            const IndexType vGlobalK2 = firstNewVertexIndex + indexData[k + 2u];
+
+            *dstIndices++ = vCenterGlobal;
+            *dstIndices++ = vGlobalK1;
+            *dstIndices++ = vGlobalK2;
+        }
+    }
+
+    m_storage.commitMoreIndices(numIndicesToGenerate);
 }
 
 
@@ -239,14 +358,14 @@ void DrawableBatchImpl<TStorage>::add(const Shape& shape)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
+VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     const base::SizeT nPoints,
     const auto&       descriptor,
     auto&&            pointFn,
     const Vector2f    centerOffset)
 {
     if (nPoints < 3u) [[unlikely]]
-        return;
+        return {};
 
     const auto [sine, cosine] = base::fastSinCos(descriptor.rotation.asRadians());
     const auto transform      = Transform::from(descriptor.position, descriptor.scale, descriptor.origin, sine, cosine);
@@ -256,20 +375,20 @@ void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     const base::SizeT fillVertexCount = nPoints + 2u;                  // +2 for center and repeated first point
     const IndexType firstFillVertexIndex = m_storage.getNumVertices(); // index of 1st fill vertex (center of the triangle fan)
 
-    Vertex* fillVertices = m_storage.reserveMoreVertices(fillVertexCount);
+    Vertex* const fillVertexPtr = m_storage.reserveMoreVertices(fillVertexCount);
     m_storage.commitMoreVertices(fillVertexCount);
 
     //
     // Update fill vertex positions and compute inside bounds
-    fillVertices[1].position        = transform.transformPoint(pointFn(0u)); // first point
-    sf::Vector2f fillBoundsPosition = fillVertices[1].position;              // left and top
+    fillVertexPtr[1].position       = transform.transformPoint(pointFn(0u)); // first point
+    sf::Vector2f fillBoundsPosition = fillVertexPtr[1].position;             // left and top
 
-    float fillBoundsMaxX = fillVertices[1].position.x; // right
-    float fillBoundsMaxY = fillVertices[1].position.y; // bottom
+    float fillBoundsMaxX = fillVertexPtr[1].position.x; // right
+    float fillBoundsMaxY = fillVertexPtr[1].position.y; // bottom
 
     for (unsigned int i = 1u; i < nPoints; ++i)
     {
-        Vertex& v = fillVertices[1u + i];
+        Vertex& v = fillVertexPtr[1u + i];
 
         v.position = transform.transformPoint(pointFn(i));
 
@@ -282,15 +401,15 @@ void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     const sf::Vector2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
 
-    fillVertices[0].position            = fillBoundsPosition + fillBoundsSize / 2.f + centerOffset; // center
-    fillVertices[1u + nPoints].position = fillVertices[1].position; // repeated first point
+    fillVertexPtr[0].position            = fillBoundsPosition + fillBoundsSize / 2.f + centerOffset; // center
+    fillVertexPtr[1u + nPoints].position = fillVertexPtr[1].position; // repeated first point
 
     //
     // Update fill color and tex coords (if the shape's fill is visible)
     if (fillBoundsSize.x > 0.f && fillBoundsSize.y > 0.f) [[likely]]
     {
-        const Vertex* end = fillVertices + fillVertexCount;
-        for (Vertex* vertex = fillVertices; vertex != end; ++vertex)
+        const Vertex* end = fillVertexPtr + fillVertexCount;
+        for (Vertex* vertex = fillVertexPtr; vertex != end; ++vertex)
         {
             vertex->color = descriptor.fillColor;
 
@@ -311,13 +430,13 @@ void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     //
     // Update outline if needed
     if (descriptor.outlineThickness == 0.f)
-        return;
+        return {fillVertexPtr, fillVertexCount};
 
     const base::SizeT outlineVertexCount = (nPoints + 1u) * 2u;
 
     const IndexType firstOutlineVertexIndex = m_storage.getNumVertices();
 
-    Vertex* outlineVertexPtr = m_storage.reserveMoreVertices(outlineVertexCount);
+    Vertex* const outlineVertexPtr = m_storage.reserveMoreVertices(outlineVertexCount);
     m_storage.commitMoreVertices(outlineVertexCount);
 
     // Cannot use `vertices` here as the earlier reserve may have invalidated the pointer
@@ -338,50 +457,52 @@ void DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
         appendTriangleIndices(outlineIndexPtr, firstOutlineVertexIndex + i);
 
     m_storage.commitMoreIndices(outlineIndexCount);
+
+    return {outlineVertexPtr - fillVertexCount, outlineVertexCount + fillVertexCount};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
+VertexSpan DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 {
     const auto
         centerOffset = sdArrow.shaftWidth < sdArrow.headWidth
                            ? Vector2f{sdArrow.shaftWidth / 2.f, 0.f}.componentWiseMul(sdArrow.scale).rotatedBy(sdArrow.rotation)
                            : Vector2f{0.f, 0.f};
 
-    drawTriangleFanShapeFromPoints(7u,
-                                   sdArrow,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(7u,
+                                          sdArrow,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         return ShapeUtils::computeArrowPoint(i, sdArrow.shaftLength, sdArrow.shaftWidth, sdArrow.headLength, sdArrow.headWidth);
     },
-                                   centerOffset);
+                                          centerOffset);
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
+VertexSpan DrawableBatchImpl<TStorage>::add(const CircleShapeData& sdCircle)
 {
     const float angleStep = base::tau / static_cast<float>(sdCircle.pointCount);
 
-    drawTriangleFanShapeFromPoints(sdCircle.pointCount,
-                                   sdCircle,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(sdCircle.pointCount,
+                                          sdCircle,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return ShapeUtils::computeCirclePointFromAngleStep(i, angleStep, sdCircle.radius); });
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
+VertexSpan DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 {
     const float angleStep = base::tau / static_cast<float>(sdEllipse.pointCount);
 
-    drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
-                                   sdEllipse,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(sdEllipse.pointCount,
+                                          sdEllipse,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         return ShapeUtils::computeEllipsePointFromAngleStep(i, angleStep, sdEllipse.horizontalRadius, sdEllipse.verticalRadius);
     });
@@ -390,14 +511,13 @@ void DrawableBatchImpl<TStorage>::add(const EllipseShapeData& sdEllipse)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
+VertexSpan DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 {
     if (sdPieSlice.sweepAngle.asRadians() <= 0.f)
-        return;
+        return {};
 
     if (sdPieSlice.sweepAngle.asRadians() >= base::tau)
-    {
-        add(CircleShapeData{
+        return add(CircleShapeData{
             .position           = sdPieSlice.position,
             .scale              = sdPieSlice.scale,
             .origin             = sdPieSlice.origin,
@@ -411,14 +531,11 @@ void DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
             .pointCount         = sdPieSlice.pointCount,
         });
 
-        return;
-    }
-
     const float arcAngleStep = ShapeUtils::computePieSliceArcAngleStep(sdPieSlice.sweepAngle.asRadians(), sdPieSlice.pointCount);
 
-    drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
-                                   sdPieSlice,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(sdPieSlice.pointCount,
+                                          sdPieSlice,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         return ShapeUtils::computePieSlicePointFromArcAngleStep(i,
                                                                 sdPieSlice.radius,
@@ -432,22 +549,22 @@ void DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
+VertexSpan DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
-    drawTriangleFanShapeFromPoints(4u,
-                                   sdRectangle,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(4u,
+                                          sdRectangle,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return ShapeUtils::computeRectanglePoint(i, sdRectangle.size); });
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
+VertexSpan DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRoundedRectangle)
 {
-    drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
-                                   sdRoundedRectangle,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(sdRoundedRectangle.cornerPointCount * 4u,
+                                          sdRoundedRectangle,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     {
         return ShapeUtils::computeRoundedRectanglePoint(i,
                                                         sdRoundedRectangle.size,
@@ -459,11 +576,11 @@ void DrawableBatchImpl<TStorage>::add(const RoundedRectangleShapeData& sdRounded
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
+VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 {
     if (sdRing.outerRadius <= 0.f || sdRing.innerRadius < 0.f || sdRing.innerRadius >= sdRing.outerRadius ||
         sdRing.pointCount < 3u) [[unlikely]]
-        return;
+        return {};
 
     const auto [sine, cosine] = base::fastSinCos(sdRing.rotation.asRadians());
     const auto transform      = Transform::from(sdRing.position, sdRing.scale, sdRing.origin, sine, cosine);
@@ -482,7 +599,7 @@ void DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     // Generate fill geometry (triangle strip)
     const base::SizeT fillVertexCount      = 2u * nPoints + 2u; // `nPoints` pairs + repeated start pair
     const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
-    Vertex*           fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+    Vertex* const     fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
 
     generateRingVertices(sdRing,
                          transform,
@@ -515,7 +632,7 @@ void DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     //
     // Update outline if needed
     if (sdRing.outlineThickness == 0.f)
-        return;
+        return {fillVertexPtr, fillVertexCount};
 
     const base::SizeT outlineVerticesPerLoop = nPoints * 2u + 2u; // nPoints original points -> nPoints inner/outer
                                                                   // pairs + duplicated start pair for closed loop
@@ -570,21 +687,22 @@ void DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 
     m_storage.commitMoreVertices(totalOutlineVertices);
     m_storage.commitMoreIndices(totalOutlineIndices);
+
+    return {outlineVertexPtr - fillVertexCount, fillVertexCount + totalOutlineVertices};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlice)
+VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlice)
 {
     if (sdRingPieSlice.outerRadius <= 0.f || sdRingPieSlice.innerRadius < 0.f ||
         sdRingPieSlice.innerRadius >= sdRingPieSlice.outerRadius || sdRingPieSlice.pointCount < 3u ||
         sdRingPieSlice.sweepAngle.asRadians() <= 0.f) [[unlikely]]
-        return;
+        return {};
 
     if (sdRingPieSlice.sweepAngle.asRadians() >= base::tau)
-    {
-        add(RingShapeData{
+        return add(RingShapeData{
             .position           = sdRingPieSlice.position,
             .scale              = sdRingPieSlice.scale,
             .origin             = sdRingPieSlice.origin,
@@ -598,9 +716,6 @@ void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlic
             .innerRadius        = sdRingPieSlice.innerRadius,
             .pointCount         = sdRingPieSlice.pointCount,
         });
-
-        return;
-    }
 
     const auto [sine, cosine] = base::fastSinCos(sdRingPieSlice.rotation.asRadians());
     const auto transform = Transform::from(sdRingPieSlice.position, sdRingPieSlice.scale, sdRingPieSlice.origin, sine, cosine);
@@ -627,7 +742,7 @@ void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlic
     // Generate fill geometry (triangle strip)
     const base::SizeT fillVertexCount      = 2u * numArcPoints;
     const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
-    Vertex*           fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
+    Vertex* const     fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
 
     generateRingVertices(sdRingPieSlice, transform, numArcPoints, startRadians, angleStep, invLocalBoundsSize, fillVertexPtr);
     m_storage.commitMoreVertices(fillVertexCount);
@@ -649,7 +764,7 @@ void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlic
     //
     // Update outline if needed
     if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
-        return;
+        return {fillVertexPtr, fillVertexCount};
 
     const base::SizeT numBoundaryPoints    = 2 * numArcPoints;
     const base::SizeT totalOutlineVertices = (numBoundaryPoints + 1u) * 2u;
@@ -685,30 +800,32 @@ void DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingPieSlic
 
     m_storage.commitMoreVertices(totalOutlineVertices);
     m_storage.commitMoreIndices(totalOutlineIndices);
+
+    return {outlineVertexPtr - fillVertexCount, fillVertexCount + totalOutlineVertices};
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
+VertexSpan DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
 {
     const auto nPoints = sdStar.pointCount * 2u;
 
     const float angleStep = base::tau / static_cast<float>(nPoints);
 
-    drawTriangleFanShapeFromPoints(nPoints,
-                                   sdStar,
-                                   [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    return drawTriangleFanShapeFromPoints(nPoints,
+                                          sdStar,
+                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
     { return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius); });
 }
 
 
 ////////////////////////////////////////////////////////////
 template <typename TStorage>
-void DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
+VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData)
 {
     if (textData.string.isEmpty())
-        return;
+        return {};
 
     const auto fillQuadCount    = precomputeTextQuadCount(textData.string, textData.style);
     const auto outlineQuadCount = textData.outlineThickness == 0.f ? 0u : fillQuadCount;
@@ -743,6 +860,8 @@ void DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& textData
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
+
+    return {vertexPtr, 4u * numQuads};
 }
 
 } // namespace sf::priv

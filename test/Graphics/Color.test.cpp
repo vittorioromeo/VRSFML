@@ -273,23 +273,23 @@ TEST_CASE("[Graphics] sf::Color")
         CHECK(sf::Color::fromHSLA({0.f, 1.f, -0.5f}) == sf::Color::fromHSLA({0.f, 1.f, 0.f}));
     }
 
-    SECTION("withHueMod modifier")
+    SECTION("withRotatedHue modifier")
     {
         SECTION("Basic hue shifts")
         {
             // Red (0°) + 120° → Green (120°)
             sf::Color red   = sf::Color::Red;
-            sf::Color green = red.withHueMod(120.f);
+            sf::Color green = red.withRotatedHue(120.f);
             CHECK(green == sf::Color::Green);
 
             // Green (120°) - 120° → Red (0°)
             sf::Color greenColor = sf::Color::Green;
-            sf::Color redColor   = greenColor.withHueMod(-120.f);
+            sf::Color redColor   = greenColor.withRotatedHue(-120.f);
             CHECK(redColor == sf::Color::Red);
 
             // Blue (240°) + 60° → 300° (Magenta)
             sf::Color blue    = sf::Color::Blue;
-            sf::Color magenta = blue.withHueMod(60.f);
+            sf::Color magenta = blue.withRotatedHue(60.f);
             CHECK(magenta == sf::Color::Magenta);
         }
 
@@ -297,21 +297,21 @@ TEST_CASE("[Graphics] sf::Color")
         {
             // 350° + 20° → 10° (wrapped within [0, 360))
             sf::Color color        = sf::Color::fromHSLA({350.f, 1.f, 0.5f});
-            sf::Color shiftedColor = color.withHueMod(20.f);
+            sf::Color shiftedColor = color.withRotatedHue(20.f);
             CHECK(shiftedColor == Approx(sf::Color::fromHSLA({10.f, 1.f, 0.5f})));
 
             // 30° - 50° → 340°
             color        = sf::Color::fromHSLA({30.f, 1.f, 0.5f});
-            shiftedColor = color.withHueMod(-50.f);
+            shiftedColor = color.withRotatedHue(-50.f);
             CHECK(shiftedColor == sf::Color::fromHSLA({340.f, 1.f, 0.5f}));
 
             // 300° + 120° → 60° (Yellow)
             color        = sf::Color::fromHSLA({300.f, 1.f, 0.5f});
-            shiftedColor = color.withHueMod(120.f);
+            shiftedColor = color.withRotatedHue(120.f);
             CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
 
             // 300° + 480° → (300 + 480) % 360 = 60°
-            shiftedColor = color.withHueMod(480.f);
+            shiftedColor = color.withRotatedHue(480.f);
             CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
         }
 
@@ -319,7 +319,7 @@ TEST_CASE("[Graphics] sf::Color")
         {
             // Original alpha should remain unchanged
             sf::Color color{255, 0, 0, 128};
-            sf::Color shiftedColor = color.withHueMod(120.f);
+            sf::Color shiftedColor = color.withRotatedHue(120.f);
             CHECK(shiftedColor.a == 128);
         }
 
@@ -327,7 +327,7 @@ TEST_CASE("[Graphics] sf::Color")
         {
             // After hue shift, saturation and lightness should match original
             sf::Color      color        = sf::Color::fromHSLA({180.f, 0.8f, 0.6f}, 255);
-            sf::Color      shiftedColor = color.withHueMod(90.f);
+            sf::Color      shiftedColor = color.withRotatedHue(90.f);
             sf::Color::HSL hsla         = shiftedColor.toHSL();
             CHECK(hsla.saturation == Approx(0.8039f));
             CHECK(hsla.lightness == Approx(0.6f));
@@ -338,20 +338,20 @@ TEST_CASE("[Graphics] sf::Color")
         {
             // Shift by 0° (no change)
             sf::Color color     = sf::Color::Red;
-            sf::Color sameColor = color.withHueMod(0.f);
+            sf::Color sameColor = color.withRotatedHue(0.f);
             CHECK(sameColor == color);
 
             // Shift by 360° (no change)
-            sameColor = color.withHueMod(360.f);
+            sameColor = color.withRotatedHue(360.f);
             CHECK(sameColor == color);
 
             // Shift by 720° (equivalent to 0°)
-            sameColor = color.withHueMod(720.f);
+            sameColor = color.withRotatedHue(720.f);
             CHECK(sameColor == color);
 
             // Negative shift wrapping (50° - 400° = -350° ≡ 10°)
             color                  = sf::Color::fromHSLA({50.f, 1.f, 0.5f});
-            sf::Color shiftedColor = color.withHueMod(-400.f);
+            sf::Color shiftedColor = color.withRotatedHue(-400.f);
             CHECK(shiftedColor == sf::Color::fromHSLA({10.f, 1.f, 0.5f}));
         }
     }

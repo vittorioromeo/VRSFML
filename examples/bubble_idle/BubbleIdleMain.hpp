@@ -264,7 +264,7 @@ inline void drawMinimap(
     const sf::RectangleShapeData
         minimapIndicator{.position     = minimapPos.addX((gameView.center.x - gameScreenSize.x / 2.f) / minimapScale),
                          .fillColor    = sf::Color::Transparent,
-                         .outlineColor = sf::Color::Blue.withHueMod(hueMod).withAlpha(shouldDrawUIAlpha),
+                         .outlineColor = sf::Color::Blue.withRotatedHue(hueMod).withAlpha(shouldDrawUIAlpha),
                          .outlineThickness = 2.f,
                          .size             = {gameScreenSize / minimapScale}};
 
@@ -6674,7 +6674,7 @@ struct Main
                                      ? static_cast<U8>(0u)
                                      : static_cast<U8>(255.f - (cat.cooldown.value / maxCooldown * 225.f));
 
-        const auto circleColor        = CatConstants::colors[asIdx(cat.type)].withHueMod(cat.hue).withLightness(0.75f);
+        const auto circleColor = CatConstants::colors[asIdx(cat.type)].withRotatedHue(cat.hue).withLightness(0.75f);
         const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha == 0u ? circleAlpha : 255u);
         const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
@@ -7173,7 +7173,7 @@ struct Main
             const auto shrineAlpha = static_cast<U8>(remap(shrine.getActivationProgress(), 0.f, 1.f, 128.f, 255.f));
             const auto shrineColor = hueColor(shrine.getHue(), shrineAlpha);
 
-            const auto circleColor        = sf::Color{231u, 198u, 39u}.withHueMod(shrine.getHue()).withLightness(0.75f);
+            const auto circleColor = sf::Color{231u, 198u, 39u}.withRotatedHue(shrine.getHue()).withLightness(0.75f);
             const auto circleOutlineColor = circleColor.withAlpha(rangeInnerAlpha);
             const auto textOutlineColor   = circleColor.withLightness(0.25f);
 
@@ -7611,7 +7611,7 @@ struct Main
 
         cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
         cursorComboText.setOutlineColor(
-            sf::Color{111u, 170u, 244u, alphaU8}.withHueMod(profile.cursorHue + currentBackgroundHue.asDegrees()));
+            sf::Color{111u, 170u, 244u, alphaU8}.withRotatedHue(profile.cursorHue + currentBackgroundHue.asDegrees()));
 
         if (combo > 0)
             cursorComboText.setString("x" + std::to_string(combo + 1));
@@ -8406,7 +8406,7 @@ struct Main
 
         targetBackgroundHue = sf::radians(sf::degrees(backgroundHues[idx]).asRadians()).wrapUnsigned();
         currentBackgroundHue = currentBackgroundHue.rotatedTowards(targetBackgroundHue, deltaTimeMs * 0.01f).wrapUnsigned();
-        outlineHueColor = colorBlueOutline.withHueMod(currentBackgroundHue.asDegrees());
+        outlineHueColor = colorBlueOutline.withRotatedHue(currentBackgroundHue.asDegrees());
 
         rtBackground.draw(*chunkTx[idx],
                           {

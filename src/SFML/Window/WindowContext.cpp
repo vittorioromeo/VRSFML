@@ -264,7 +264,7 @@ WindowContextImpl& ensureInstalled()
 } // namespace
 
 ////////////////////////////////////////////////////////////
-base::Optional<WindowContext> WindowContext::create(const ContextSettings& sharedContextSettings)
+base::Optional<WindowContext> WindowContext::create()
 {
     priv::getSDLLayerSingleton(); // TODO P0:
 
@@ -278,6 +278,10 @@ base::Optional<WindowContext> WindowContext::create(const ContextSettings& share
     // Ensure window context is not already installed
     if (installedWindowContext.hasValue())
         return fail("a `sf::WindowContext` object already exists");
+
+    //
+    // Shared context settings
+    const ContextSettings sharedContextSettings{};
 
     //
     // Install window context
