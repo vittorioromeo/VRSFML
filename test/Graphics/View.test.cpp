@@ -30,8 +30,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Default constructor")
         {
             const sf::View view;
-            CHECK(view.center == sf::Vector2f{500, 500});
-            CHECK(view.size == sf::Vector2f{1'000, 1'000});
+            CHECK(view.center == sf::Vec2f{500, 500});
+            CHECK(view.size == sf::Vec2f{1000, 1000});
             CHECK(view.rotation == sf::Angle::Zero);
             CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
@@ -42,8 +42,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Rectangle factory function")
         {
             const auto view = sf::View::fromRect({{10, 20}, {400, 600}});
-            CHECK(view.center == sf::Vector2f{210, 320});
-            CHECK(view.size == sf::Vector2f{400, 600});
+            CHECK(view.center == sf::Vec2f{210, 320});
+            CHECK(view.size == sf::Vec2f{400, 600});
             CHECK(view.rotation == sf::Angle::Zero);
             CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
@@ -54,8 +54,8 @@ TEST_CASE("[Graphics] sf::View")
         SECTION("Center + size constructor")
         {
             const sf::View view({520, 960}, {1080, 1920});
-            CHECK(view.center == sf::Vector2f{520, 960});
-            CHECK(view.size == sf::Vector2f{1080, 1920});
+            CHECK(view.center == sf::Vec2f{520, 960});
+            CHECK(view.size == sf::Vec2f{1080, 1920});
             CHECK(view.rotation == sf::Angle::Zero);
             CHECK(view.viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(view.scissor == sf::FloatRect({0, 0}, {1, 1}));
@@ -68,7 +68,7 @@ TEST_CASE("[Graphics] sf::View")
     {
         sf::View view;
         view.center = {3.14f, 4.2f};
-        CHECK(view.center == sf::Vector2f(3.14f, 4.2f));
+        CHECK(view.center == sf::Vec2f(3.14f, 4.2f));
         CHECK(view.getTransform() == Approx(sf::Transform(0.002f, 0, -0.00628f, 0, -0.002f, 0.0084f)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(500, 0, 3.14f, 0, -500, 4.2f)));
     }
@@ -77,7 +77,7 @@ TEST_CASE("[Graphics] sf::View")
     {
         sf::View view;
         view.size = {600, 900};
-        CHECK(view.size == sf::Vector2f{600, 900});
+        CHECK(view.size == sf::Vec2f{600, 900});
         CHECK(view.getTransform() == Approx(sf::Transform(0.00333333f, 0, -1.66667f, 0, -0.00222222f, 1.11111f)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(300, 0, 500, 0, -450, 500)));
     }
@@ -131,7 +131,7 @@ TEST_CASE("[Graphics] sf::View")
         sf::View view;
         view.size = {25, 25};
         view.size *= 4.f;
-        CHECK(view.size == sf::Vector2f(100, 100));
+        CHECK(view.size == sf::Vec2f(100, 100));
         CHECK(view.getTransform() == Approx(sf::Transform(0.02f, 0, -10, 0, -0.02f, 10)));
         CHECK(view.getInverseTransform() == Approx(sf::Transform(50, 0, 500, 0, -50, 500)));
     }

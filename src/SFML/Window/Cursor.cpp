@@ -8,7 +8,7 @@
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include <SDL3/SDL_mouse.h>
 #include <SDL3/SDL_surface.h>
@@ -17,7 +17,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vector2u size, const Vector2u hotspot)
+[[nodiscard]] bool Cursor::reloadFromPixels(const base::U8* pixels, const Vec2u size, const Vec2u hotspot)
 {
     auto surface = priv::getSDLLayerSingleton().createSurfaceFromPixels(size, pixels);
     if (surface == nullptr)
@@ -98,7 +98,7 @@ Cursor& Cursor::operator=(Cursor&& rhs) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vector2u size, Vector2u hotspot)
+base::Optional<Cursor> Cursor::loadFromPixels(const base::U8* pixels, Vec2u size, Vec2u hotspot)
 {
     base::Optional<Cursor> cursor; // Use a single local variable for NRVO
 

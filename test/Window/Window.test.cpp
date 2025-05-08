@@ -30,7 +30,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         {
             const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
         }
@@ -39,7 +39,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         {
             const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
         }
@@ -48,7 +48,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         {
             const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
         }
@@ -59,7 +59,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
                                      .title = "Window Tests",
                                      .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);
@@ -70,7 +70,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
         {
             const sf::Window window({.size{360u, 240u}, .title = "Window Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
         }
@@ -81,7 +81,7 @@ TEST_CASE("[Window] sf::Window" * doctest::skip(skipDisplayTests))
                                      .title = "Window Tests",
                                      .contextSettings{.depthBits = 1, .stencilBits = 1, .antiAliasingLevel = 1}});
 
-            CHECK(window.getSize() == sf::Vector2u{360, 240});
+            CHECK(window.getSize() == sf::Vec2u{360, 240});
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().depthBits >= 1);
             CHECK(window.getSettings().stencilBits >= 1);

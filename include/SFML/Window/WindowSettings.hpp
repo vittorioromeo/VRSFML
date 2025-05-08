@@ -8,7 +8,7 @@
 #include "SFML/Window/ContextSettings.hpp"
 
 #include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -30,7 +30,7 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] WindowSettings
 {
-    Vector2u        size;                     //!< Video mode width and height, in pixels
+    Vec2u           size;                     //!< Video mode width and height, in pixels
     unsigned int    bitsPerPixel{32u};        //!< Video mode pixel depth, in bits per pixels
     String          title{"Untitled Window"}; //!< Title of the window
     bool            fullscreen{false};        //!< Is the window fullscreen?

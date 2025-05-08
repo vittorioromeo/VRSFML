@@ -12,7 +12,7 @@
 
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -25,7 +25,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] std::string vec2ToString(const sf::Vector2i vec2)
+[[nodiscard]] std::string vec2ToString(const sf::Vec2i vec2)
 {
     return '(' + std::to_string(vec2.x) + ", " + std::to_string(vec2.y) + ')';
 }

@@ -9,7 +9,7 @@
 #include "SFML/Graphics/VertexUtils.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Span.hpp"
 
@@ -98,7 +98,7 @@ struct VertexSpanImpl : base::Span<T>
     /// \return The (min x, min y) of this vertex span.
     ///
     ////////////////////////////////////////////////////////////D
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getTopLeft() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopLeft() const noexcept
     {
         return VertexUtils::getTopLeft(this->theData, this->theSize);
     }
@@ -109,7 +109,7 @@ struct VertexSpanImpl : base::Span<T>
     /// \return The (max x, min y) of this vertex span.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getTopRight() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getTopRight() const noexcept
     {
         return VertexUtils::getTopRight(this->theData, this->theSize);
     }
@@ -120,7 +120,7 @@ struct VertexSpanImpl : base::Span<T>
     /// \return The (min y, max y) of this vertex span.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getBottomLeft() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomLeft() const noexcept
     {
         return VertexUtils::getBottomLeft(this->theData, this->theSize);
     }
@@ -131,7 +131,7 @@ struct VertexSpanImpl : base::Span<T>
     /// \return The (max x, max y) of this vertex span.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vector2f getBottomRight() const noexcept
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2f getBottomRight() const noexcept
     {
         return VertexUtils::getBottomRight(this->theData, this->theSize);
     }

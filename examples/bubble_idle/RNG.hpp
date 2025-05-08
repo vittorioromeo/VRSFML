@@ -2,7 +2,7 @@
 
 #include "RNGSeedType.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Constants.hpp"
@@ -66,20 +66,19 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vector2f getVec2f(const sf::Vector2f mins, const sf::Vector2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f mins, const sf::Vec2f maxs)
     {
         return {getF(mins.x, maxs.x), getF(mins.y, maxs.y)};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vector2f getVec2f(const sf::Vector2f maxs)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getVec2f(const sf::Vec2f maxs)
     {
         return {getF(0.f, maxs.x), getF(0.f, maxs.y)};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vector2f getPointInCircle(const sf::Vector2f center,
-                                                                                         const float        radius)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getPointInCircle(const sf::Vec2f center, const float radius)
     {
         const float angle    = getF(0.f, sf::base::tau);
         const float distance = radius * sf::base::sqrt(getF(0.f, 1.f));
@@ -89,7 +88,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vector2f getRandomDirection()
+    [[nodiscard, gnu::always_inline, gnu::flatten]] inline sf::Vec2f getRandomDirection()
     {
         const float angle = getF(0.f, sf::base::tau);
         return {sf::base::cos(angle), sf::base::sin(angle)};

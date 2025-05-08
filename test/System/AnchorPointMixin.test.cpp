@@ -29,19 +29,19 @@ struct TestLayoutObject : sf::AnchorPointMixin<TestLayoutObject>
         return {position + localBounds.position, localBounds.size};
     }
 
-    sf::Vector2f position{42.f, 55.f};
+    sf::Vec2f position{42.f, 55.f};
 };
 
 
 ////////////////////////////////////////////////////////////
-consteval bool doSetAnchorPointTest(sf::Vector2f factors)
+consteval bool doSetAnchorPointTest(sf::Vec2f factors)
 {
-    constexpr sf::Vector2f newPos{24.f, 24.f};
+    constexpr sf::Vec2f newPos{24.f, 24.f};
 
     TestLayoutObject testObject;
     testObject.setAnchorPoint(factors, newPos);
-    return testObject.position == newPos - sf::Vector2f{testRect.size.x * factors.x, testRect.size.y * factors.y};
-};
+    return testObject.position == newPos - sf::Vec2f{testRect.size.x * factors.x, testRect.size.y * factors.y};
+}
 
 
 ////////////////////////////////////////////////////////////

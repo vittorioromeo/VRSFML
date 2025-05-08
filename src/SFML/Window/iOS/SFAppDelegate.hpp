@@ -43,7 +43,7 @@
 /// \return Current touch position, or (-1, -1) if no touch
 ///
 ////////////////////////////////////////////////////////////
-- (sf::Vector2i)getTouchPosition:(unsigned int)index;
+- (sf::Vec2i)getTouchPosition:(unsigned int)index;
 
 ////////////////////////////////////////////////////////////
 /// \brief Receive an external touch begin notification
@@ -52,7 +52,7 @@
 /// \param position Position of the touch
 ///
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchBegin:(unsigned int)index atPosition:(sf::Vector2i)position;
+- (void)notifyTouchBegin:(unsigned int)index atPosition:(sf::Vec2i)position;
 
 ////////////////////////////////////////////////////////////
 /// \brief Receive an external touch move notification
@@ -61,7 +61,7 @@
 /// \param position Position of the touch
 ///
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchMove:(unsigned int)index atPosition:(sf::Vector2i)position;
+- (void)notifyTouchMove:(unsigned int)index atPosition:(sf::Vec2i)position;
 
 ////////////////////////////////////////////////////////////
 /// \brief Receive an external touch end notification
@@ -70,7 +70,7 @@
 /// \param position Position of the touch
 ///
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchEnd:(unsigned int)index atPosition:(sf::Vector2i)position;
+- (void)notifyTouchEnd:(unsigned int)index atPosition:(sf::Vec2i)position;
 
 ////////////////////////////////////////////////////////////
 /// \brief Receive an external character notification

@@ -21,7 +21,7 @@ bool isDown(unsigned int finger)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getPosition(unsigned int finger)
+Vec2i getPosition(unsigned int finger)
 {
     // TODO P0: implement
     return {};
@@ -29,7 +29,7 @@ Vector2i getPosition(unsigned int finger)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getPosition(unsigned int finger, const WindowBase& relativeTo)
+Vec2i getPosition(unsigned int finger, const WindowBase& relativeTo)
 {
     // TODO P0: implement
     return {};

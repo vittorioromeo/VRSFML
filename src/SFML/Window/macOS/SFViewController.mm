@@ -123,7 +123,7 @@
 
 
 ////////////////////////////////////////////////////////.
-- (void)setWindowPositionTo:(sf::Vector2i)position
+- (void)setWindowPositionTo:(sf::Vec2i)position
 {
     (void)position;
     sf::priv::err() << "Cannot move SFML area when SFML is integrated in a NSView. Use the view handler directly "
@@ -140,7 +140,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)resizeTo:(sf::Vector2u)size
+- (void)resizeTo:(sf::Vec2u)size
 {
     NSRect frame = NSMakeRect([m_view frame].origin.x, [m_view frame].origin.y, size.x, size.y);
 
@@ -225,7 +225,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
+- (void)setIconTo:(sf::Vec2u)size with:(const base::U8*)pixels
 {
     (void)size;
     (void)pixels;

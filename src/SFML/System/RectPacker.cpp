@@ -28,7 +28,7 @@ struct RectPacker::Impl
     stbrp_node    nodes[MaxNodes]{};
     stbrp_context context{};
 
-    explicit Impl(Vector2u size)
+    explicit Impl(Vec2u size)
     {
         stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
     }
@@ -36,7 +36,7 @@ struct RectPacker::Impl
 
 
 ////////////////////////////////////////////////////////////
-RectPacker::RectPacker(Vector2u size) : m_impl(base::makeUnique<Impl>(size))
+RectPacker::RectPacker(Vec2u size) : m_impl(base::makeUnique<Impl>(size))
 {
 }
 
@@ -54,7 +54,7 @@ RectPacker& RectPacker::operator=(RectPacker&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vector2u> RectPacker::pack(Vector2u rectSize)
+base::Optional<Vec2u> RectPacker::pack(Vec2u rectSize)
 {
     const auto fail = [&](const char* what)
     {
@@ -80,12 +80,12 @@ base::Optional<Vector2u> RectPacker::pack(Vector2u rectSize)
     SFML_BASE_ASSERT(rc == /* success */ 1);
     SFML_BASE_ASSERT(toPack.was_packed != 0);
 
-    return base::makeOptional<Vector2u>(static_cast<unsigned int>(toPack.x), static_cast<unsigned int>(toPack.y));
+    return base::makeOptional<Vec2u>(static_cast<unsigned int>(toPack.x), static_cast<unsigned int>(toPack.y));
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u RectPacker::getSize() const
+Vec2u RectPacker::getSize() const
 {
     return {static_cast<unsigned int>(m_impl->context.width), static_cast<unsigned int>(m_impl->context.height)};
 }

@@ -90,7 +90,7 @@ void SoundSource::setSpatializationEnabled(bool spatializationEnabled)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setPosition(const Vector3f& position)
+void SoundSource::setPosition(const Vec3f& position)
 {
     m_impl->savedSettings.position = position;
 
@@ -100,7 +100,7 @@ void SoundSource::setPosition(const Vector3f& position)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setDirection(const Vector3f& direction)
+void SoundSource::setDirection(const Vec3f& direction)
 {
     m_impl->savedSettings.direction = direction;
 
@@ -123,7 +123,7 @@ void SoundSource::setCone(const Cone& cone)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setVelocity(const Vector3f& velocity)
+void SoundSource::setVelocity(const Vec3f& velocity)
 {
     m_impl->savedSettings.velocity = velocity;
 
@@ -267,7 +267,7 @@ bool SoundSource::isSpatializationEnabled() const
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SoundSource::getPosition() const
+Vec3f SoundSource::getPosition() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
     return m_impl->savedSettings.position;
@@ -275,7 +275,7 @@ Vector3f SoundSource::getPosition() const
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SoundSource::getDirection() const
+Vec3f SoundSource::getDirection() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
     return m_impl->savedSettings.direction;
@@ -291,7 +291,7 @@ SoundSource::Cone SoundSource::getCone() const
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SoundSource::getVelocity() const
+Vec3f SoundSource::getVelocity() const
 {
     // NOLINTNEXTLINE(modernize-return-braced-init-list)
     return m_impl->savedSettings.velocity;

@@ -1,24 +1,24 @@
 #include "SFML/Config.hpp"
 #ifdef SFML_SYSTEM_WINDOWS
 
-#include "SFML/Window/WindowBase.hpp"
-#include "SFML/Window/WindowContext.hpp"
+    #include "SFML/Window/WindowBase.hpp"
+    #include "SFML/Window/WindowContext.hpp"
 
-#include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Optional.hpp"
+    #include "SFML/Base/Assert.hpp"
+    #include "SFML/Base/Optional.hpp"
 
-#include <Doctest.hpp>
+    #include <Doctest.hpp>
 
-#include <SystemUtil.hpp>
+    #include <SystemUtil.hpp>
 
 
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <Windows.h>
+    #ifndef NOMINMAX
+        #define NOMINMAX
+    #endif
+    #ifndef WIN32_LEAN_AND_MEAN
+        #define WIN32_LEAN_AND_MEAN
+    #endif
+    #include <Windows.h>
 
 
 namespace
@@ -71,7 +71,8 @@ private:
             case WM_SHOWWINDOW:
                 gotWmShowWindow0 = true;
                 SFML_BASE_ASSERT(wParam == TRUE); // If wParam is TRUE, the window is being shown
-                SFML_BASE_ASSERT(lParam == 0); // If lParam is zero, the message was sent because of a call to the ShowWindow function
+                SFML_BASE_ASSERT(
+                    lParam == 0); // If lParam is zero, the message was sent because of a call to the ShowWindow function
                 break;
             case WM_CLOSE:
                 PostQuitMessage(0);
@@ -102,7 +103,7 @@ TEST_CASE("[Window] sf::WindowBase (Win32)")
 
     RECT rect{};
     GetClientRect(handle, &rect);
-    CHECK(windowBase->getSize() == sf::Vector2(rect.right - rect.left, rect.bottom - rect.top).toVector2u());
+    CHECK(windowBase->getSize() == sf::Vec2(rect.right - rect.left, rect.bottom - rect.top).toVec2u());
     CHECK(windowBase->getNativeHandle() == handle);
 
     CHECK(gotWmShowWindow0);

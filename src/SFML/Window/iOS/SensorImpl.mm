@@ -104,7 +104,7 @@ void SensorImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SensorImpl::update()
+Vec3f SensorImpl::update()
 {
     CMMotionManager* const manager = [SFAppDelegate getInstance].motionManager;
 
@@ -112,30 +112,30 @@ Vector3f SensorImpl::update()
     {
         case Sensor::Type::Accelerometer:
             // Acceleration is given in G, convert to m/s^2
-            return Vector3f(9.81 * Vector3(manager.accelerometerData.acceleration.x,
+            return Vec3f(9.81 * Vec3(manager.accelerometerData.acceleration.x,
                                            manager.accelerometerData.acceleration.y,
                                            manager.accelerometerData.acceleration.z));
 
         case Sensor::Type::Gyroscope:
             // Rotation rates are given in rad/s
-            return Vector3f(
-                Vector3(manager.gyroData.rotationRate.x, manager.gyroData.rotationRate.y, manager.gyroData.rotationRate.z));
+            return Vec3f(
+                Vec3(manager.gyroData.rotationRate.x, manager.gyroData.rotationRate.y, manager.gyroData.rotationRate.z));
 
         case Sensor::Type::Magnetometer:
             // Magnetic field is given in microteslas
-            return Vector3f(Vector3(manager.magnetometerData.magneticField.x,
+            return Vec3f(Vec3(manager.magnetometerData.magneticField.x,
                                     manager.magnetometerData.magneticField.y,
                                     manager.magnetometerData.magneticField.z));
 
         case Sensor::Type::UserAcceleration:
             // User acceleration is given in G, convert to m/s^2
-            return Vector3f(9.81 * Vector3(manager.deviceMotion.userAcceleration.x,
+            return Vec3f(9.81 * Vec3(manager.deviceMotion.userAcceleration.x,
                                            manager.deviceMotion.userAcceleration.y,
                                            manager.deviceMotion.userAcceleration.z));
 
         case Sensor::Type::Orientation:
             // Absolute rotation (Euler) angles are given in radians
-            return Vector3f(Vector3<double>(manager.deviceMotion.attitude.yaw,
+            return Vec3f(Vec3<double>(manager.deviceMotion.attitude.yaw,
                                             manager.deviceMotion.attitude.pitch,
                                             manager.deviceMotion.attitude.roll));
 

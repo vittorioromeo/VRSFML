@@ -81,7 +81,7 @@ public:
     /// \return Current value of the sensor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f getValue(Sensor::Type sensor) const;
+    [[nodiscard]] Vec3f getValue(Sensor::Type sensor) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Update the state of all the sensors
@@ -99,7 +99,7 @@ private:
         bool       available{}; //!< Is the sensor available on this device?
         bool       enabled{};   //!< Current enable state of the sensor
         SensorImpl sensor{};    //!< Sensor implementation
-        Vector3f   value;       //!< The current sensor value
+        Vec3f      value;       //!< The current sensor value
     };
 
     ////////////////////////////////////////////////////////////

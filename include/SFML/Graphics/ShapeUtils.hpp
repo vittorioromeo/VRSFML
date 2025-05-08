@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Builtins/Restrict.hpp"
@@ -36,7 +36,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePointFromAngleStep(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePointFromAngleStep(
     const base::SizeT index,
     const float       angleStep,
     const float       hRadius,
@@ -64,7 +64,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeEllipsePoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePoint(
     const base::SizeT  index,
     const unsigned int pointCount,
     const float        hRadius,
@@ -86,7 +86,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePointFromAngleStep(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePointFromAngleStep(
     const base::SizeT index,
     const float       angleStep,
     const float       radius) noexcept
@@ -107,7 +107,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeCirclePoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePoint(
     const base::SizeT  index,
     const unsigned int pointCount,
     const float        radius) noexcept
@@ -119,13 +119,13 @@ namespace sf::ShapeUtils
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeRectanglePoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeRectanglePoint(
     const base::SizeT index,
-    const Vector2f    size) noexcept
+    const Vec2f       size) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(index <= 4u);
 
-    const Vector2f points[]{{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
+    const Vec2f points[]{{0.f, 0.f}, {size.x, 0.f}, {size.x, size.y}, {0.f, size.y}};
     return points[index];
 }
 
@@ -133,9 +133,9 @@ namespace sf::ShapeUtils
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeRoundedRectanglePoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeRoundedRectanglePoint(
     const base::SizeT  index,
-    const Vector2f     size,
+    const Vec2f        size,
     const float        cornerRadius,
     const unsigned int cornerPointCount) noexcept
 {
@@ -147,11 +147,11 @@ namespace sf::ShapeUtils
 
     const float deltaAngle = (base::halfPi) / static_cast<float>(cornerPointCount - 1u);
 
-    const Vector2f center{(centerIndex == 0 || centerIndex == 3) ? size.x - cornerRadius : cornerRadius,
-                          (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
+    const Vec2f center{(centerIndex == 0 || centerIndex == 3) ? size.x - cornerRadius : cornerRadius,
+                       (centerIndex < 2) ? cornerRadius : size.y - cornerRadius};
 
     const auto [sine, cosine] = base::fastSinCos(deltaAngle * static_cast<float>(index - centerIndex));
-    return center + Vector2f{cornerRadius * cosine, -cornerRadius * sine};
+    return center + Vec2f{cornerRadius * cosine, -cornerRadius * sine};
 }
 
 ////////////////////////////////////////////////////////////
@@ -178,7 +178,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position of the boundary vertex.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeArrowPoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeArrowPoint(
     const base::SizeT index,
     const float       shaftLength,
     const float       shaftWidth,
@@ -195,7 +195,7 @@ namespace sf::ShapeUtils
     const float halfHeadW  = headWidth / 2.f;
     const float tipX       = shaftLength + headLength;
 
-    const Vector2f points[7u] = {
+    const Vec2f points[7u] = {
         {0.f, -halfShaftW},         // 0: Bottom-left tail
         {shaftLength, -halfShaftW}, // 1: Bottom-right shaft
         {shaftLength, -halfHeadW},  // 2: Bottom barb
@@ -224,7 +224,7 @@ namespace sf::ShapeUtils
 /// \see computePieSlicePoint
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computePieSlicePointFromArcAngleStep(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computePieSlicePointFromArcAngleStep(
     const base::SizeT  index,
     const float        radius,
     const float        arcAngleStep,
@@ -292,7 +292,7 @@ namespace sf::ShapeUtils
 /// \see computeCirclePoint
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computePieSlicePoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computePieSlicePoint(
     const base::SizeT  index,
     const float        radius,
     const float        startAngle,
@@ -311,7 +311,7 @@ namespace sf::ShapeUtils
 /// \see computeStarPoint
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeStarPointFromAngleStep(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeStarPointFromAngleStep(
     const base::SizeT index,
     const float       angleStep,
     const float       outerRadius,
@@ -355,7 +355,7 @@ namespace sf::ShapeUtils
 /// \return The computed 2D position of the vertex.
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vector2f computeStarPoint(
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeStarPoint(
     const base::SizeT  index,
     const unsigned int pointCount,
     const float        outerRadius,
@@ -389,16 +389,16 @@ namespace sf::ShapeUtils
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
 
     // Local center of the ring
-    const Vector2f localCenter{outerRadius, outerRadius};
+    const Vec2f localCenter{outerRadius, outerRadius};
 
     // Calculate offset from `localCenter`
-    const Vector2f outerOffset{outerRadius * cosine, outerRadius * sine};
-    const Vector2f innerOffset{innerRadius * cosine, innerRadius * sine};
+    const Vec2f outerOffset{outerRadius * cosine, outerRadius * sine};
+    const Vec2f innerOffset{innerRadius * cosine, innerRadius * sine};
 
     struct RingPoints
     {
-        Vector2f outerPoint;
-        Vector2f innerPoint;
+        Vec2f outerPoint;
+        Vec2f innerPoint;
     };
 
     // Add offset to `localCenter` to get final local position
@@ -408,20 +408,20 @@ namespace sf::ShapeUtils
 ////////////////////////////////////////////////////////////
 /// \brief Computes the normalized perpendicular of a segment.
 ///
-/// Given two points defining a line segment, this function calculates the unit vector
+/// Given two points defining a line segment, this function calculates the unit vec2
 /// perpendicular to that segment.
 ///
 /// \param p1 The starting point of the segment.
 /// \param p2 The ending point of the segment.
 ///
-/// \return The normal vector (normalized).
+/// \return The normal vec2 (normalized).
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline Vector2f computeSegmentNormal(const Vector2f p1, const Vector2f p2) noexcept
+[[nodiscard, gnu::always_inline, gnu::const]] inline Vec2f computeSegmentNormal(const Vec2f p1, const Vec2f p2) noexcept
 {
     // Compute the difference and its perpendicular.
-    const Vector2f diff   = p2 - p1;
-    const Vector2f normal = {-diff.y, diff.x};
+    const Vec2f diff   = p2 - p1;
+    const Vec2f normal = {-diff.y, diff.x};
 
     // Compute squared length of the normal.
     const float lenSq = normal.x * normal.x + normal.y * normal.y;
@@ -455,12 +455,12 @@ inline constexpr void updateOutlineImpl(const float                      outline
 
     for (base::SizeT i = 0u; i < pointCount; ++i)
     {
-        const Vector2f& p1 = fillPositionFn(i);
-        const Vector2f& p0 = fillPositionFn((i == 0u) ? (pointCount - 1u) : (i - 1u)); // Previous point
-        const Vector2f& p2 = fillPositionFn((i + 1u) % pointCount);                    // Next point
+        const Vec2f& p1 = fillPositionFn(i);
+        const Vec2f& p0 = fillPositionFn((i == 0u) ? (pointCount - 1u) : (i - 1u)); // Previous point
+        const Vec2f& p2 = fillPositionFn((i + 1u) % pointCount);                    // Next point
 
-        const Vector2f n1 = computeSegmentNormal(p0, p1);
-        const Vector2f n2 = computeSegmentNormal(p1, p2);
+        const Vec2f n1 = computeSegmentNormal(p0, p1);
+        const Vec2f n2 = computeSegmentNormal(p1, p2);
 
         // Calculate the factor `1 + n1.dot(n2)`. This is related to the angle.
         // factor = 1 + cos(angle_between_normals)
@@ -475,15 +475,15 @@ inline constexpr void updateOutlineImpl(const float                      outline
 
         const auto outlineNormal = (SFML_BASE_MATH_FABSF(factor) < collinearThreshold)
                                        ? n1 // Segments are almost parallel/anti-parallel, use one normal
-                                       : ((n1 + n2) / factor).clampMaxLengthSquared(miterLimitSq); // miter vector direction with miter limit
+                                       : ((n1 + n2) / factor).clampMaxLengthSquared(miterLimitSq); // miter vec2 direction with miter limit
 
-        const auto offsetVector = outlineNormal * outlineThickness;
+        const auto offsetVec2 = outlineNormal * outlineThickness;
 
         // Store the outline vertex positions
         const base::SizeT outIdx = i << 1u; // i * 2
 
-        outlineVertices[outIdx + 0u].position = p1;                // Inner vertex
-        outlineVertices[outIdx + 1u].position = p1 + offsetVector; // Outer vertex
+        outlineVertices[outIdx + 0u].position = p1;              // Inner vertex
+        outlineVertices[outIdx + 1u].position = p1 + offsetVec2; // Outer vertex
     }
 
     // Duplicate the first outline vertex pair at the end to close the outline loop.
@@ -518,7 +518,7 @@ inline constexpr void updateOutlineFromTriangleFanFill(
 /// \brief TODO P1: docs
 ///
 ////////////////////////////////////////////////////////////
-inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* points, const base::SizeT pointCount)
+inline constexpr Vec2f computeConvexShapeGeometricCenter(const Vec2f* points, const base::SizeT pointCount)
 {
     SFML_BASE_ASSERT(pointCount > 0u && "Cannot calculate geometric center of shape with no points");
 
@@ -528,8 +528,8 @@ inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* poin
     if (pointCount == 2u)
         return (points[0] + points[1]) / 2.f;
 
-    Vector2f centroid{};
-    float    twiceArea = 0;
+    Vec2f centroid{};
+    float twiceArea = 0;
 
     auto previousPoint = points[pointCount - 1];
     for (base::SizeT i = 0; i < pointCount; ++i)
@@ -546,8 +546,8 @@ inline constexpr Vector2f computeConvexShapeGeometricCenter(const Vector2f* poin
         return centroid / 3.f / twiceArea;
 
     // Fallback for no area - find the center of the bounding box
-    Vector2f minPoint = points[0];
-    Vector2f maxPoint = minPoint;
+    Vec2f minPoint = points[0];
+    Vec2f maxPoint = minPoint;
 
     for (base::SizeT i = 1; i < pointCount; ++i)
     {

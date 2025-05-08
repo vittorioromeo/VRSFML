@@ -13,7 +13,7 @@
 #include "SFML/Window/WindowSettings.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -259,10 +259,10 @@ public:
     [[nodiscard]] const char* getScancodeDescription(Keyboard::Scancode code) const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2i getGlobalMousePosition() const noexcept;
+    [[nodiscard]] Vec2i getGlobalMousePosition() const noexcept;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool setGlobalMousePosition(Vector2i position) const noexcept;
+    [[nodiscard]] bool setGlobalMousePosition(Vec2i position) const noexcept;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] String getClipboardString() const noexcept;
@@ -295,7 +295,7 @@ public:
     [[nodiscard]] float getWindowDisplayScale(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(Vector2u size, const base::U8* pixels) const;
+    [[nodiscard]] SDLSurfaceUPtr createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] unsigned int getJoystickButtonCount(SDL_Joystick& handle);
@@ -319,10 +319,10 @@ public:
     [[nodiscard]] bool areGUIDsEqual(const SDL_GUID& a, const SDL_GUID& b);
 
     ////////////////////////////////////////////////////////////
-    void setWindowSize(SDL_Window& window, Vector2u size) const;
+    void setWindowSize(SDL_Window& window, Vec2u size) const;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getWindowSize(SDL_Window& window) const;
+    [[nodiscard]] Vec2u getWindowSize(SDL_Window& window) const;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] VideoMode getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) const;

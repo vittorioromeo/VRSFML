@@ -54,7 +54,7 @@ void blitFramebuffer(const bool invertYAxis, const UIntRect src, const UIntRect 
 
 
 ////////////////////////////////////////////////////////////
-void blitFramebuffer(const bool invertYAxis, const Vector2u size, const Vector2u srcPos, const Vector2u dstPos)
+void blitFramebuffer(const bool invertYAxis, const Vec2u size, const Vec2u srcPos, const Vec2u dstPos)
 {
     blitFramebuffer(invertYAxis, {srcPos, size}, {dstPos, size});
 }
@@ -62,11 +62,11 @@ void blitFramebuffer(const bool invertYAxis, const Vector2u size, const Vector2u
 
 ////////////////////////////////////////////////////////////
 void copyFramebuffer(const bool         invertYAxis,
-                     const Vector2u     size,
+                     const Vec2u        size,
                      const unsigned int srcFBO,
                      const unsigned int dstFBO,
-                     const Vector2u     srcPos,
-                     const Vector2u     dstPos)
+                     const Vec2u        srcPos,
+                     const Vec2u        dstPos)
 {
     glCheck(glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFBO));
     glCheck(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFBO));
@@ -80,11 +80,11 @@ void copyFramebuffer(const bool         invertYAxis,
 
 ////////////////////////////////////////////////////////////
 bool copyFlippedFramebuffer([[maybe_unused]] const unsigned int tmpTextureNativeHandle,
-                            const Vector2u                      size,
+                            const Vec2u                         size,
                             const unsigned int                  srcFBO,
                             const unsigned int                  dstFBO,
-                            const Vector2u                      srcPos,
-                            const Vector2u                      dstPos)
+                            const Vec2u                         srcPos,
+                            const Vec2u                         dstPos)
 {
     const FramebufferSaver framebufferSaver;
 

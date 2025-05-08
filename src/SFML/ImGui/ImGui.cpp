@@ -132,14 +132,14 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr ImVec2 toImVec2(Vector2f v)
+[[nodiscard, gnu::const]] constexpr ImVec2 toImVec2(Vec2f v)
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr Vector2f toSfVector2f(ImVec2 v)
+[[nodiscard, gnu::const]] constexpr Vec2f toSfVec2f(ImVec2 v)
 {
     return {v.x, v.y};
 }
@@ -148,14 +148,14 @@ namespace
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ImVec2 getTopLeftAbsolute(const FloatRect& rect)
 {
-    return toImVec2(toSfVector2f(::ImGui::GetCursorScreenPos()) + rect.position);
+    return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position);
 }
 
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] ImVec2 getDownRightAbsolute(const FloatRect& rect)
 {
-    return toImVec2(toSfVector2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
+    return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
 }
 
 
@@ -384,10 +384,10 @@ struct [[nodiscard]] ImGuiPerWindowContext
     bool             mousePressed[3]{};
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
 
-    bool     lastInputSourceWasTouch{};
-    bool     touchDown[3]{};
-    Vector2i touchPositions[3]{};
-    Vector2i lastTouchPos;
+    bool  lastInputSourceWasTouch{};
+    bool  touchDown[3]{};
+    Vec2i touchPositions[3]{};
+    Vec2i lastTouchPos;
 
     unsigned int joystickId;
     ImGuiKey     joystickMapping[Joystick::ButtonCount]{ImGuiKey_None};
@@ -442,7 +442,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
     using GetClipboardTextFn = const char* (*)(void*);
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(Vector2f           displaySize,
+    [[nodiscard]] bool init(Vec2f              displaySize,
                             bool               loadDefaultFont,
                             SetClipboardTextFn setClipboardTextFn,
                             GetClipboardTextFn getClipboardTextFn)
@@ -803,17 +803,17 @@ struct [[nodiscard]] ImGuiPerWindowContext
                 lastTouchPos = touchPositions[0];
 
             lastInputSourceWasTouch = true;
-            update(lastTouchPos, target.getSize().toVector2f(), dt);
+            update(lastTouchPos, target.getSize().toVec2f(), dt);
         }
         else
         {
             lastInputSourceWasTouch = false;
-            update(Mouse::getPosition(theWindow), target.getSize().toVector2f(), dt);
+            update(Mouse::getPosition(theWindow), target.getSize().toVec2f(), dt);
         }
     }
 
     ////////////////////////////////////////////////////////////
-    void update(Vector2i mousePos, Vector2f displaySize, Time dt)
+    void update(Vec2i mousePos, Vec2f displaySize, Time dt)
     {
         ImGuiIO& io    = ::ImGui::GetIO();
         io.DisplaySize = toImVec2(displaySize);
@@ -1052,7 +1052,7 @@ struct [[nodiscard]] SpriteTextureData
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SpriteTextureData getSpriteTextureData(const Sprite& sprite, const Texture& texture)
 {
-    const auto textureSize(texture.getSize().toVector2f());
+    const auto textureSize(texture.getSize().toVec2f());
     const auto& [txrPosition, txrSize](sprite.textureRect);
 
     return {toImVec2(txrPosition.componentWiseDiv(textureSize)),
@@ -1119,12 +1119,12 @@ bool ImGuiContext::init(RenderWindow& window, bool loadDefaultFont)
 ////////////////////////////////////////////////////////////
 bool ImGuiContext::init(Window& window, RenderTarget& target, bool loadDefaultFont)
 {
-    return init(window, target.getSize().toVector2f(), loadDefaultFont);
+    return init(window, target.getSize().toVec2f(), loadDefaultFont);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::init(Window& window, Vector2f displaySize, bool loadDefaultFont)
+bool ImGuiContext::init(Window& window, Vec2f displaySize, bool loadDefaultFont)
 {
     m_impl->perWindowContexts.emplaceBack(base::makeUnique<ImGuiPerWindowContext>(window));
 
@@ -1204,7 +1204,7 @@ void ImGuiContext::update(Window& window, RenderTarget& target, Time dt)
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::update(Vector2i mousePos, Vector2f displaySize, Time dt)
+void ImGuiContext::update(Vec2i mousePos, Vec2f displaySize, Time dt)
 {
     SFML_BASE_ASSERT(m_impl->currentPerWindowContext && "No current window is set - forgot to call init?");
     m_impl->currentPerWindowContext->update(mousePos, displaySize, dt);
@@ -1286,12 +1286,12 @@ void ImGuiContext::shutdown()
 // TODO P1: add TextureDrawParams overload, use in BubbleByte
 void ImGuiContext::image(const Texture& texture, Color tintColor, Color borderColor)
 {
-    image(texture, texture.getSize().toVector2f(), tintColor, borderColor);
+    image(texture, texture.getSize().toVec2f(), tintColor, borderColor);
 }
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::image(const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
+void ImGuiContext::image(const Texture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
 
@@ -1302,12 +1302,12 @@ void ImGuiContext::image(const Texture& texture, Vector2f size, Color tintColor,
 ////////////////////////////////////////////////////////////
 void ImGuiContext::image(const RenderTexture& texture, Color tintColor, Color borderColor)
 {
-    image(texture, texture.getSize().toVector2f(), tintColor, borderColor);
+    image(texture, texture.getSize().toVec2f(), tintColor, borderColor);
 }
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::image(const RenderTexture& texture, Vector2f size, Color tintColor, Color borderColor)
+void ImGuiContext::image(const RenderTexture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
     ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
     ::ImGui::Image(textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(tintColor), toImColor(borderColor));
@@ -1322,7 +1322,7 @@ void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Color tin
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vector2f size, Color tintColor, Color borderColor)
+void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vec2f size, Color tintColor, Color borderColor)
 {
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     ::ImGui::Image(textureID, toImVec2(size), uv0, uv1, toImColor(tintColor), toImColor(borderColor));
@@ -1330,7 +1330,7 @@ void ImGuiContext::image(const Sprite& sprite, const Texture& texture, Vector2f 
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
+bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getNativeHandle());
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
@@ -1338,7 +1338,7 @@ bool ImGuiContext::imageButton(const char* id, const Texture& texture, Vector2f 
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vector2f size, Color bgColor, Color tintColor)
+bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
     const ImTextureID textureID = convertGLTextureHandleToImTextureID(texture.getTexture().getNativeHandle());
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), ImVec2(0, 0), ImVec2(1, 1), toImColor(bgColor), toImColor(tintColor));
@@ -1346,7 +1346,7 @@ bool ImGuiContext::imageButton(const char* id, const RenderTexture& texture, Vec
 
 
 ////////////////////////////////////////////////////////////
-bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Texture& texture, Vector2f size, Color bgColor, Color tintColor)
+bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Texture& texture, Vec2f size, Color bgColor, Color tintColor)
 {
     const auto [uv0, uv1, textureID] = getSpriteTextureData(sprite, texture);
     return ::ImGui::ImageButton(id, textureID, toImVec2(size), uv0, uv1, toImColor(bgColor), toImColor(tintColor));
@@ -1354,7 +1354,7 @@ bool ImGuiContext::imageButton(const char* id, const Sprite& sprite, const Textu
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::drawLine(Vector2f a, Vector2f b, Color color, float thickness)
+void ImGuiContext::drawLine(Vec2f a, Vec2f b, Color color, float thickness)
 {
     ImDrawList* const drawList = ::ImGui::GetWindowDrawList();
     SFML_BASE_ASSERT(drawList != nullptr);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Math/Exp.hpp"
@@ -43,11 +43,11 @@
 }
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vector2f exponentialApproach(
-    const sf::Vector2f current,
-    const sf::Vector2f target,
-    const float        deltaTimeMs,
-    const float        speed) noexcept
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::Vec2f exponentialApproach(
+    const sf::Vec2f current,
+    const sf::Vec2f target,
+    const float     deltaTimeMs,
+    const float     speed) noexcept
 {
     // TODO P2: this is axis independent, should be fixed
 

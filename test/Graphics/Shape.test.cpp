@@ -16,7 +16,7 @@
 class TriangleShape : public sf::Shape
 {
 public:
-    explicit TriangleShape(sf::Vector2f size) : sf::Shape({}), m_size(size)
+    explicit TriangleShape(sf::Vec2f size) : sf::Shape({}), m_size(size)
     {
         m_points[0] = {m_size.x / 2, 0};
         m_points[1] = {0, m_size.y};
@@ -26,8 +26,8 @@ public:
     }
 
 private:
-    sf::Vector2f m_size;
-    sf::Vector2f m_points[3];
+    sf::Vec2f m_size;
+    sf::Vec2f m_points[3];
 };
 
 TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))

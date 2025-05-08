@@ -24,10 +24,10 @@
 
 namespace
 {
-ALooper*                                                               looper;
-ASensorManager*                                                        sensorManager;
-ASensorEventQueue*                                                     sensorEventQueue;
-sf::base::EnumArray<sf::Sensor::Type, sf::Vector3f, sf::Sensor::Count> sensorData;
+ALooper*                                                            looper;
+ASensorManager*                                                     sensorManager;
+ASensorEventQueue*                                                  sensorEventQueue;
+sf::base::EnumArray<sf::Sensor::Type, sf::Vec3f, sf::Sensor::Count> sensorData;
 } // namespace
 
 
@@ -96,7 +96,7 @@ void SensorImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-Vector3f SensorImpl::update() const
+Vec3f SensorImpl::update() const
 {
     // Update our sensor data list
     while (ALooper_pollOnce(0, nullptr, nullptr, nullptr) >= 0)
@@ -143,7 +143,7 @@ int SensorImpl::processSensorEvents(int /* fd */, int /* events */, void* /* sen
     while (ASensorEventQueue_getEvents(sensorEventQueue, &event, 1) > 0)
     {
         base::Optional<Sensor::Type> type;
-        Vector3f                     data;
+        Vec3f                        data;
 
         switch (event.type)
         {

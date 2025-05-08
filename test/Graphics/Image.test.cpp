@@ -33,37 +33,37 @@ TEST_CASE("[Graphics] sf::Image")
             CHECK(!sf::Image::create({0, 10}, sf::Color::Magenta).hasValue());
         }
 
-        SECTION("Vector2 constructor")
+        SECTION("Vec2 constructor")
         {
-            const auto image = sf::Image::create(sf::Vector2u{10, 10}).value();
-            CHECK(image.getSize() == sf::Vector2u{10, 10});
+            const auto image = sf::Image::create(sf::Vec2u{10, 10}).value();
+            CHECK(image.getSize() == sf::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Black);
+                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Black);
                 }
             }
         }
 
-        SECTION("Vector2 and color constructor")
+        SECTION("Vec2 and color constructor")
         {
-            const auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
-            CHECK(image.getSize() == sf::Vector2u{10, 10});
+            const auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
+            CHECK(image.getSize() == sf::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
+                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
                 }
             }
         }
 
-        SECTION("Vector2 and sf::base::U8* constructor")
+        SECTION("Vec2 and sf::base::U8* constructor")
         {
             // 10 x 10, with 4 color channels array
             sf::base::U8 pixels[400]{};
@@ -75,15 +75,15 @@ TEST_CASE("[Graphics] sf::Image")
                 pixels[i + 3] = 255; // a
             }
 
-            const auto image = sf::Image::create(sf::Vector2u{10, 10}, pixels).value();
-            CHECK(image.getSize() == sf::Vector2u{10, 10});
+            const auto image = sf::Image::create(sf::Vec2u{10, 10}, pixels).value();
+            CHECK(image.getSize() == sf::Vec2u{10, 10});
             CHECK(image.getPixelsPtr() != nullptr);
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
+                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
                 }
             }
         }
@@ -153,7 +153,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
-            CHECK(image->getSize() == sf::Vector2u{1001, 304});
+            CHECK(image->getSize() == sf::Vec2u{1001, 304});
             CHECK(image->getPixelsPtr() != nullptr);
         }
     }
@@ -194,7 +194,7 @@ TEST_CASE("[Graphics] sf::Image")
                                                              sf::ImageUtils::SaveFormat::PNG);
 
             const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
-            CHECK(image.getSize() == sf::Vector2u{24, 24});
+            CHECK(image.getSize() == sf::Vec2u{24, 24});
 
             CHECK(image.getPixelsPtr() != nullptr);
             CHECK(image.getPixel({0, 0}) == sf::Color::Green);
@@ -206,7 +206,7 @@ TEST_CASE("[Graphics] sf::Image")
     {
         auto       stream = sf::FileInputStream::open("Graphics/sfml-logo-big.png").value();
         const auto image  = sf::Image::loadFromStream(stream).value();
-        CHECK(image.getSize() == sf::Vector2u{1001, 304});
+        CHECK(image.getSize() == sf::Vec2u{1001, 304});
         CHECK(image.getPixelsPtr() != nullptr);
         CHECK(image.getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
         CHECK(image.getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -236,7 +236,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -248,7 +248,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -260,7 +260,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -273,7 +273,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -286,7 +286,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -299,7 +299,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -312,7 +312,7 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(sf::ImageUtils::saveToFile(image, filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
-                CHECK(loadedImage.getSize() == sf::Vector2u{256, 256});
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
                 CHECK(loadedImage.getPixelsPtr() != nullptr);
 
                 CHECK(filename.remove());
@@ -370,49 +370,49 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Set/get pixel")
     {
-        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Green).value();
-        CHECK(image.getPixel(sf::Vector2u{2, 2}) == sf::Color::Green);
+        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Green).value();
+        CHECK(image.getPixel(sf::Vec2u{2, 2}) == sf::Color::Green);
 
-        image.setPixel(sf::Vector2u{2, 2}, sf::Color::Blue);
-        CHECK(image.getPixel(sf::Vector2u{2, 2}) == sf::Color::Blue);
+        image.setPixel(sf::Vec2u{2, 2}, sf::Color::Blue);
+        CHECK(image.getPixel(sf::Vec2u{2, 2}) == sf::Color::Blue);
     }
 
     SECTION("Copy from Image")
     {
-        SECTION("Copy (Image, Vector2u)")
+        SECTION("Copy (Image, Vec2u)")
         {
-            const auto image1 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
-            CHECK(image2.copy(image1, sf::Vector2u{0, 0}));
+            const auto image1 = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}).value();
+            CHECK(image2.copy(image1, sf::Vec2u{0, 0}));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vector2u{i, j}) == image2.getPixel(sf::Vector2u{i, j}));
+                    CHECK(image1.getPixel(sf::Vec2u{i, j}) == image2.getPixel(sf::Vec2u{i, j}));
                 }
             }
         }
 
-        SECTION("Copy (Image, Vector2u, IntRect)")
+        SECTION("Copy (Image, Vec2u, IntRect)")
         {
-            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}).value();
-            CHECK(image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{5, 5})));
+            const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}).value();
+            CHECK(image2.copy(image1, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{0, 0}, sf::Vec2i{5, 5})));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
                     if (i <= 4 && j <= 4)
-                        CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Blue);
+                        CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Blue);
                     else
-                        CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Black);
+                        CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Black);
                 }
             }
         }
 
-        SECTION("Copy (Image, Vector2u, IntRect, bool)")
+        SECTION("Copy (Image, Vec2u, IntRect, bool)")
         {
             const sf::Color dest(255, 0, 0, 255);
             const sf::Color source(5, 255, 78, 232);
@@ -427,30 +427,30 @@ TEST_CASE("[Graphics] sf::Image")
                 ((source.b * source.a) + ((dest.b * dest.a) * (255 - source.a)) / 255) / a);
             const sf::Color composite(r, g, b, a);
 
-            auto       image1 = sf::Image::create(sf::Vector2u{10, 10}, dest).value();
-            const auto image2 = sf::Image::create(sf::Vector2u{10, 10}, source).value();
-            CHECK(image1.copy(image2, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{0, 0}, sf::Vector2i{10, 10}), true));
+            auto       image1 = sf::Image::create(sf::Vec2u{10, 10}, dest).value();
+            const auto image2 = sf::Image::create(sf::Vec2u{10, 10}, source).value();
+            CHECK(image1.copy(image2, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{0, 0}, sf::Vec2i{10, 10}), true));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image1.getPixel(sf::Vector2u{i, j}) == composite);
+                    CHECK(image1.getPixel(sf::Vec2u{i, j}) == composite);
                 }
             }
         }
 
         SECTION("Copy (Out of bounds sourceRect)")
         {
-            const auto image1 = sf::Image::create(sf::Vector2u{5, 5}, sf::Color::Blue).value();
-            auto       image2 = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
-            CHECK(!image2.copy(image1, sf::Vector2u{0, 0}, sf::IntRect(sf::Vector2i{5, 5}, sf::Vector2i{9, 9})));
+            const auto image1 = sf::Image::create(sf::Vec2u{5, 5}, sf::Color::Blue).value();
+            auto       image2 = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
+            CHECK(!image2.copy(image1, sf::Vec2u{0, 0}, sf::IntRect(sf::Vec2i{5, 5}, sf::Vec2i{9, 9})));
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image2.getPixel(sf::Vector2u{i, j}) == sf::Color::Red);
+                    CHECK(image2.getPixel(sf::Vec2u{i, j}) == sf::Color::Red);
                 }
             }
         }
@@ -460,28 +460,28 @@ TEST_CASE("[Graphics] sf::Image")
     {
         SECTION("createMaskFromColor(Color)")
         {
-            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
+            auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue);
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 0));
+                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color(0, 0, 255, 0));
                 }
             }
         }
 
         SECTION("createMaskFromColor(Color, sf::base::U8)")
         {
-            auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Blue).value();
+            auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Blue).value();
             image.createMaskFromColor(sf::Color::Blue, 100);
 
             for (sf::base::U32 i = 0; i < 10; ++i)
             {
                 for (sf::base::U32 j = 0; j < 10; ++j)
                 {
-                    CHECK(image.getPixel(sf::Vector2u{i, j}) == sf::Color(0, 0, 255, 100));
+                    CHECK(image.getPixel(sf::Vec2u{i, j}) == sf::Color(0, 0, 255, 100));
                 }
             }
         }
@@ -489,19 +489,19 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("Flip horizontally")
     {
-        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
-        image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
+        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
+        image.setPixel(sf::Vec2u{0, 0}, sf::Color::Green);
         image.flipHorizontally();
 
-        CHECK(image.getPixel(sf::Vector2u{9, 0}) == sf::Color::Green);
+        CHECK(image.getPixel(sf::Vec2u{9, 0}) == sf::Color::Green);
     }
 
     SECTION("Flip vertically")
     {
-        auto image = sf::Image::create(sf::Vector2u{10, 10}, sf::Color::Red).value();
-        image.setPixel(sf::Vector2u{0, 0}, sf::Color::Green);
+        auto image = sf::Image::create(sf::Vec2u{10, 10}, sf::Color::Red).value();
+        image.setPixel(sf::Vec2u{0, 0}, sf::Color::Green);
         image.flipVertically();
 
-        CHECK(image.getPixel(sf::Vector2u{0, 9}) == sf::Color::Green);
+        CHECK(image.getPixel(sf::Vec2u{0, 9}) == sf::Color::Green);
     }
 }

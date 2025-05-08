@@ -20,16 +20,16 @@
 // Do we want to showcase direct JNI/NDK interaction?
 // Undefine this to get real cross-platform code.
 // Uncomment this to try JNI access; this seems to be broken in latest NDKs
-//#define USE_JNI
+// #define USE_JNI
 
 #if defined(USE_JNI)
-// These headers are only needed for direct NDK/JDK interaction
-#include <android/native_activity.h>
-#include <jni.h>
+    // These headers are only needed for direct NDK/JDK interaction
+    #include <android/native_activity.h>
+    #include <jni.h>
 
-// Since we want to get the native activity from SFML, we'll have to use an
-// extra header here:
-#include "SFML/System/NativeActivity.hpp"
+    // Since we want to get the native activity from SFML, we'll have to use an
+    // extra header here:
+    #include "SFML/System/NativeActivity.hpp"
 
 // NDK/JNI sub example - call Java code from native code
 int vibrate(sf::Time duration)
@@ -101,8 +101,8 @@ int main(int, char**)
     const auto texture = sf::Texture::loadFromFile("image.png").value();
 
     sf::Sprite image{.textureRect = texture.getRect()};
-    image.position = size.toVector2f() / 2.f;
-    image.origin   = texture.getSize().toVector2f() / 2.f;
+    image.position = size.toVec2f() / 2.f;
+    image.origin   = texture.getSize().toVec2f() / 2.f;
 
     const auto font = sf::Font::openFromFile("tuffy.ttf").value();
 
@@ -128,7 +128,7 @@ int main(int, char**)
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {
-                const auto fSize = resized->size.toVector2f();
+                const auto fSize = resized->size.toVec2f();
                 view.size        = fSize;
                 view.center      = fSize / 2.f;
                 window.setView(view);
@@ -155,7 +155,7 @@ int main(int, char**)
             {
                 if (touchBegan->finger == 0)
                 {
-                    image.position = touchBegan->position.toVector2f();
+                    image.position = touchBegan->position.toVec2f();
 #if defined(USE_JNI)
                     vibrate(sf::milliseconds(10));
 #endif

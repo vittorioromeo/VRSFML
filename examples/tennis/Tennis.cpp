@@ -28,10 +28,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
-
-#include "SFML/Base/Math/Sin.hpp"
-#include "SFML/Base/Vector.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "ExampleUtils.hpp"
 
@@ -69,16 +66,16 @@ int main()
     std::mt19937       rng(rd());
 
     // Define some constants
-    constexpr sf::Vector2f gameSize{800.f, 600.f};
-    constexpr sf::Vector2f paddleSize{25.f, 100.f};
-    constexpr float        ballRadius = 10.f;
+    constexpr sf::Vec2f gameSize{800.f, 600.f};
+    constexpr sf::Vec2f paddleSize{25.f, 100.f};
+    constexpr float     ballRadius = 10.f;
 
     // Create the graphics context
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow({
-        .size         = gameSize.toVector2u(),
+        .size         = gameSize.toVec2u(),
         .bitsPerPixel = 32u,
         .title        = "SFML Tennis",
         .resizable    = true,
@@ -102,7 +99,7 @@ int main()
          .fillColor        = {100u, 100u, 200u},
          .outlineColor     = sf::Color::Black,
          .outlineThickness = 3.f,
-         .size             = paddleSize - sf::Vector2f{3.f, 3.f}}};
+         .size             = paddleSize - sf::Vec2f{3.f, 3.f}}};
 
     // Create the right paddle
     sf::RectangleShape rightPaddle = leftPaddle;
@@ -202,9 +199,9 @@ int main()
 
             if (sf::Touch::isDown(0))
             {
-                const sf::Vector2i pos       = sf::Touch::getPosition(0);
-                const sf::Vector2f mappedPos = window.mapPixelToCoords(pos);
-                leftPaddle.position.y        = mappedPos.y;
+                const sf::Vec2i pos       = sf::Touch::getPosition(0);
+                const sf::Vec2f mappedPos = window.mapPixelToCoords(pos);
+                leftPaddle.position.y     = mappedPos.y;
             }
 
             // Move the computer's paddle
@@ -227,7 +224,7 @@ int main()
             }
 
             // Move the ball
-            ball.position += sf::Vector2f::fromAngle(ballSpeed * deltaTime, ballAngle);
+            ball.position += sf::Vec2f::fromAngle(ballSpeed * deltaTime, ballAngle);
 
 #ifdef SFML_SYSTEM_IOS
             const std::string inputString = "Touch the screen to restart.";

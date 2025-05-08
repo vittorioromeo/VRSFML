@@ -21,8 +21,8 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/ThreadPool.hpp"
@@ -45,10 +45,10 @@
 namespace
 {
 // Width and height of the application window
-constexpr sf::Vector2u windowSize(800, 600);
+constexpr sf::Vec2u windowSize(800, 600);
 
 // Resolution of the generated terrain
-constexpr sf::Vector2u resolution(800, 600);
+constexpr sf::Vec2u resolution(800, 600);
 
 // Thread pool parameters
 constexpr unsigned int blockCount   = 32;
@@ -87,16 +87,15 @@ float lightFactor   = 0.7f;
 /// Get the terrain elevation at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getElevation(sf::Vector2u position)
+float getElevation(sf::Vec2u position)
 {
-    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
-                                    sf::Vector2f(0.5f, 0.5f);
+    const sf::Vec2f normalized = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - sf::Vec2f(0.5f, 0.5f);
 
     float elevation = 0.f;
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
-        const sf::Vector2f scaled = normalized * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i));
+        const sf::Vec2f scaled = normalized * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i));
         elevation += stb_perlin_noise3(scaled.x, scaled.y, 0, 0, 0, 0) *
                      static_cast<float>(std::pow(perlinFrequencyBase, -i));
     }
@@ -115,11 +114,10 @@ float getElevation(sf::Vector2u position)
 /// Get the terrain moisture at the given coordinates.
 ///
 ////////////////////////////////////////////////////////////
-float getMoisture(sf::Vector2u position)
+float getMoisture(sf::Vec2u position)
 {
-    const sf::Vector2f normalized = position.toVector2f().componentWiseDiv(resolution.toVector2f()) -
-                                    sf::Vector2f(0.5f, 0.5f);
-    const sf::Vector2f transformed = normalized * 4.f + sf::Vector2f(0.5f, 0.5f);
+    const sf::Vec2f normalized  = position.toVec2f().componentWiseDiv(resolution.toVec2f()) - sf::Vec2f(0.5f, 0.5f);
+    const sf::Vec2f transformed = normalized * 4.f + sf::Vec2f(0.5f, 0.5f);
 
     const float moisture = stb_perlin_noise3(transformed.x, transformed.y, 0, 0, 0, 0);
 
@@ -242,12 +240,12 @@ sf::Color getTerrainColor(float elevation, float moisture)
 /// of the 4 adjacent neighbours.
 ///
 ////////////////////////////////////////////////////////////
-sf::Vector2f computeNormal(float left, float right, float bottom, float top)
+sf::Vec2f computeNormal(float left, float right, float bottom, float top)
 {
-    const sf::Vector3f deltaX(1, 0, (std::pow(right, heightFlatten) - std::pow(left, heightFlatten)) * heightFactor);
-    const sf::Vector3f deltaY(0, 1, (std::pow(top, heightFlatten) - std::pow(bottom, heightFlatten)) * heightFactor);
+    const sf::Vec3f deltaX(1, 0, (std::pow(right, heightFlatten) - std::pow(left, heightFlatten)) * heightFactor);
+    const sf::Vec3f deltaY(0, 1, (std::pow(top, heightFlatten) - std::pow(bottom, heightFlatten)) * heightFactor);
 
-    sf::Vector3f crossProduct = deltaX.cross(deltaY);
+    sf::Vec3f crossProduct = deltaX.cross(deltaY);
 
     // Scale cross product to make z component 1.f so we can drop it
     crossProduct /= crossProduct.z;
@@ -262,16 +260,16 @@ sf::Vector2f computeNormal(float left, float right, float bottom, float top)
 /// coordinates.
 ///
 ////////////////////////////////////////////////////////////
-sf::Vertex computeVertex(sf::Vector2u position)
+sf::Vertex computeVertex(sf::Vec2u position)
 {
-    static constexpr auto scalingFactors = windowSize.toVector2f().componentWiseDiv(resolution.toVector2f());
+    static constexpr auto scalingFactors = windowSize.toVec2f().componentWiseDiv(resolution.toVec2f());
 
-    return {.position  = position.toVector2f().componentWiseMul(scalingFactors),
+    return {.position  = position.toVec2f().componentWiseMul(scalingFactors),
             .color     = getTerrainColor(getElevation(position), getMoisture(position)),
-            .texCoords = computeNormal(getElevation(position - sf::Vector2u(1, 0)),
-                                       getElevation(position + sf::Vector2u(1, 0)),
-                                       getElevation(position + sf::Vector2u(0, 1)),
-                                       getElevation(position - sf::Vector2u(0, 1)))};
+            .texCoords = computeNormal(getElevation(position - sf::Vec2u(1, 0)),
+                                       getElevation(position + sf::Vec2u(1, 0)),
+                                       getElevation(position + sf::Vec2u(0, 1)),
+                                       getElevation(position - sf::Vec2u(0, 1)))};
 }
 
 
@@ -428,7 +426,7 @@ int main()
     generateTerrain(threadPool, terrainStagingBuffer.data());
 
     // Center the status text
-    statusText.position = (windowSize.toVector2f() - statusText.getLocalBounds().size) / 2.f;
+    statusText.position = (windowSize.toVec2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
     constexpr std::array<Setting, 9> settings = {
@@ -455,7 +453,7 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return EXIT_SUCCESS;
 
-            if (handleAspectRatioAwareResize(*event, windowSize.toVector2f(), window))
+            if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), window))
                 continue;
 
             // Arrow key pressed:

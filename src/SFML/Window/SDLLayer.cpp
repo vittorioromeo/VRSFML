@@ -14,7 +14,7 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/StringUtfUtils.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Builtins/Memcmp.hpp"
@@ -731,16 +731,16 @@ const char* SDLLayer::getScancodeDescription(const Keyboard::Scancode code) cons
 
 
 ////////////////////////////////////////////////////////////
-Vector2i SDLLayer::getGlobalMousePosition() const noexcept
+Vec2i SDLLayer::getGlobalMousePosition() const noexcept
 {
-    Vector2f result;
+    Vec2f result;
     SDL_GetGlobalMouseState(&result.x, &result.y);
-    return result.toVector2i();
+    return result.toVec2i();
 }
 
 
 ////////////////////////////////////////////////////////////
-bool SDLLayer::setGlobalMousePosition(const Vector2i position) const noexcept
+bool SDLLayer::setGlobalMousePosition(const Vec2i position) const noexcept
 {
     if (!SDL_WarpMouseGlobal(static_cast<float>(position.x), static_cast<float>(position.y)))
     {
@@ -900,7 +900,7 @@ float SDLLayer::getWindowDisplayScale(SDL_Window& window) const
 
 
 ////////////////////////////////////////////////////////////
-SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vector2u size, const base::U8* pixels) const
+SDLSurfaceUPtr SDLLayer::createSurfaceFromPixels(Vec2u size, const base::U8* pixels) const
 {
     SFML_BASE_ASSERT(pixels != nullptr);
 
@@ -1018,7 +1018,7 @@ unsigned int SDLLayer::getJoystickHatCount(SDL_Joystick& handle)
 
 
 ////////////////////////////////////////////////////////////
-void SDLLayer::setWindowSize(SDL_Window& window, const Vector2u size) const
+void SDLLayer::setWindowSize(SDL_Window& window, const Vec2u size) const
 {
     if (!SDL_SetWindowSize(&window, static_cast<int>(size.x), static_cast<int>(size.y)))
         err() << "`SDL_SetWindowSize` failed: " << SDL_GetError();
@@ -1026,14 +1026,14 @@ void SDLLayer::setWindowSize(SDL_Window& window, const Vector2u size) const
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] Vector2u SDLLayer::getWindowSize(SDL_Window& window) const
+[[nodiscard]] Vec2u SDLLayer::getWindowSize(SDL_Window& window) const
 {
-    Vector2i result;
+    Vec2i result;
 
     if (!SDL_GetWindowSize(&window, &result.x, &result.y))
         err() << "`SDL_GetWindowSize` failed: " << SDL_GetError();
 
-    return result.toVector2u();
+    return result.toVec2u();
 }
 
 
@@ -1049,7 +1049,7 @@ VideoMode SDLLayer::getVideoModeFromSDLDisplayMode(const SDL_DisplayMode& mode) 
     }
 
     return {
-        .size         = sf::Vector2i(mode.w, mode.h).toVector2u(),
+        .size         = sf::Vec2i(mode.w, mode.h).toVec2u(),
         .bitsPerPixel = static_cast<unsigned int>(info->bits_per_pixel),
         .pixelDensity = mode.pixel_density,
         .refreshRate  = mode.refresh_rate,

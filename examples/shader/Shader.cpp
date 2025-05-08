@@ -100,7 +100,7 @@ public:
     void update(float time, float x, float y) override
     {
         m_shader.setUniform(m_ulWavePhase, time);
-        m_shader.setUniform(m_ulWaveAmplitude, sf::Vector2f(x * 40, y * 40));
+        m_shader.setUniform(m_ulWaveAmplitude, sf::Vec2f(x * 40, y * 40));
         m_shader.setUniform(m_ulBlurRadius, (x + y) * 0.008f);
     }
 
@@ -159,7 +159,7 @@ public:
     {
         const float radius = 200 + std::cos(time) * 150;
 
-        m_shader.setUniform(m_ulStormPosition, sf::Vector2f(x * 800, y * 600));
+        m_shader.setUniform(m_ulStormPosition, sf::Vec2f(x * 800, y * 600));
         m_shader.setUniform(m_ulStormInnerRadius, radius / 3);
         m_shader.setUniform(m_ulStormTotalRadius, radius);
         m_shader.setUniform(m_ulBlinkAlpha, 0.5f + std::cos(time * 3) * 0.25f);
@@ -284,7 +284,7 @@ public:
         const float size = 25 + std::abs(y) * 50;
 
         // Update the shader parameter
-        m_shader.setUniform(m_ulSize, sf::Vector2f{size, size});
+        m_shader.setUniform(m_ulSize, sf::Vec2f{size, size});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -417,7 +417,7 @@ sf::base::Optional<Geometry> tryLoadGeometry()
     shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
 
     // Set the render resolution (used for proper scaling)
-    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vector2f{800, 600});
+    shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vec2f{800, 600});
 
     return sf::base::makeOptional<Geometry>(std::move(*logoTexture), std::move(*shader));
 }
@@ -479,10 +479,10 @@ int main()
                            .outlineThickness = 1.5f});
 
     // Create the main window
-    constexpr sf::Vector2f windowSize{800.f, 600.f};
+    constexpr sf::Vec2f windowSize{800.f, 600.f};
 
     auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "SFML Shader",
         .resizable = true,
         .vsync     = true,
@@ -540,7 +540,7 @@ int main()
         if (Effect* currentEffect = effects[current])
         {
             // Update the current example
-            const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(window.getSize().toVector2f());
+            const auto [x, y] = sf::Mouse::getPosition(window).toVec2f().componentWiseDiv(window.getSize().toVec2f());
             currentEffect->update(clock.getElapsedTime().asSeconds(), x, y);
 
             // Clear the window

@@ -85,7 +85,7 @@
 
         // get the touch position
         CGPoint      point = [touch locationInView:self];
-        sf::Vector2i position(static_cast<int>(point.x), static_cast<int>(point.y));
+        sf::Vec2i position(static_cast<int>(point.x), static_cast<int>(point.y));
 
         // notify the application delegate
         [[SFAppDelegate getInstance] notifyTouchBegin:(static_cast<unsigned int>(index)) atPosition:position];
@@ -104,7 +104,7 @@
         {
             // get the touch position
             CGPoint      point = [touch locationInView:self];
-            sf::Vector2i position(static_cast<int>(point.x), static_cast<int>(point.y));
+            sf::Vec2i position(static_cast<int>(point.x), static_cast<int>(point.y));
 
             // notify the application delegate
             [[SFAppDelegate getInstance] notifyTouchMove:(static_cast<unsigned int>(index)) atPosition:position];
@@ -124,7 +124,7 @@
         {
             // get the touch position
             CGPoint      point = [touch locationInView:self];
-            sf::Vector2i position(static_cast<int>(point.x), static_cast<int>(point.y));
+            sf::Vec2i position(static_cast<int>(point.x), static_cast<int>(point.y));
 
             // notify the application delegate
             [[SFAppDelegate getInstance] notifyTouchEnd:(static_cast<unsigned int>(index)) atPosition:position];

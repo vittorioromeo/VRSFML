@@ -435,7 +435,7 @@ void onContentRectChanged(ANativeActivity* activity, const ARect* /* rect */)
     {
         // Send an event to warn people about the window move/resize
         const sf::Event::Resized event{
-            sf::Vector2u(sf::Vector2(ANativeWindow_getWidth(states.window), ANativeWindow_getHeight(states.window)))};
+            sf::Vec2u(sf::Vec2(ANativeWindow_getWidth(states.window), ANativeWindow_getHeight(states.window)))};
         states.forwardEvent(event);
     }
 }

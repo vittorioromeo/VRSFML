@@ -11,9 +11,9 @@
 
 #include <CommonTraits.hpp>
 #include <LoadIntoMemoryUtil.hpp>
+#include <StringifyArrayUtil.hpp>
 #include <SystemUtil.hpp>
 
-#include <StringifyArrayUtil.hpp>
 #include <string>
 
 
@@ -168,33 +168,33 @@ TEST_CASE("[Audio] sf::InputSoundFile")
         SECTION("flac")
         {
             auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.flac").value();
-            inputSoundFile.seek(1'000);
+            inputSoundFile.seek(1000);
             CHECK(inputSoundFile.getTimeOffset() == sf::microseconds(22'675));
-            CHECK(inputSoundFile.getSampleOffset() == 1'000);
+            CHECK(inputSoundFile.getSampleOffset() == 1000);
         }
 
         SECTION("mp3")
         {
             auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/ding.mp3").value();
-            inputSoundFile.seek(1'000);
+            inputSoundFile.seek(1000);
             CHECK(inputSoundFile.getTimeOffset() == sf::microseconds(22'675));
-            CHECK(inputSoundFile.getSampleOffset() == 1'000);
+            CHECK(inputSoundFile.getSampleOffset() == 1000);
         }
 
         SECTION("ogg")
         {
             auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/doodle_pop.ogg").value();
-            inputSoundFile.seek(1'000);
+            inputSoundFile.seek(1000);
             CHECK(inputSoundFile.getTimeOffset() == sf::microseconds(11'337));
-            CHECK(inputSoundFile.getSampleOffset() == 1'000);
+            CHECK(inputSoundFile.getSampleOffset() == 1000);
         }
 
         SECTION("wav")
         {
             auto inputSoundFile = sf::InputSoundFile::openFromFile("Audio/killdeer.wav").value();
-            inputSoundFile.seek(1'000);
+            inputSoundFile.seek(1000);
             CHECK(inputSoundFile.getTimeOffset() == sf::microseconds(45'351));
-            CHECK(inputSoundFile.getSampleOffset() == 1'000);
+            CHECK(inputSoundFile.getSampleOffset() == 1000);
         }
     }
 
@@ -207,7 +207,7 @@ TEST_CASE("[Audio] sf::InputSoundFile")
         CHECK(inputSoundFile.getSampleRate() == 44'100);
         CHECK(inputSoundFile.getDuration() == sf::microseconds(1'990'884));
         CHECK(inputSoundFile.getTimeOffset() == sf::milliseconds(100));
-        CHECK(inputSoundFile.getSampleOffset() == 4'410);
+        CHECK(inputSoundFile.getSampleOffset() == 4410);
     }
 
     SECTION("read()")

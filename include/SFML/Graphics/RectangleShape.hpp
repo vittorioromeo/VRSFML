@@ -11,7 +11,7 @@
 #include "SFML/Graphics/RectangleShapeData.hpp"
 #include "SFML/Graphics/Shape.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -45,7 +45,7 @@ public:
     /// \see `getSize`
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(Vector2f size);
+    void setSize(Vec2f size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rectangle
@@ -55,7 +55,7 @@ public:
     /// \see `setSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getSize() const;
+    [[nodiscard]] Vec2f getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the number of points defining the shape
@@ -82,7 +82,7 @@ public:
     /// \return `index`-th point of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getPoint(base::SizeT index) const;
+    [[nodiscard]] Vec2f getPoint(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the geometric center of the rectangle
@@ -94,13 +94,13 @@ public:
     /// \return The geometric center of the shape
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f getGeometricCenter() const;
+    [[nodiscard]] Vec2f getGeometricCenter() const;
 
 private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f m_size; //!< Size of the rectangle
+    Vec2f m_size; //!< Size of the rectangle
 };
 
 } // namespace sf
@@ -117,7 +117,7 @@ private:
 /// Usage example:
 /// \code
 /// sf::RectangleShape rectangle;
-/// rectangle.setSize(sf::Vector2f{100, 50});
+/// rectangle.setSize(sf::Vec2f{100, 50});
 /// rectangle.setOutlineColor(sf::Color::Red);
 /// rectangle.setOutlineThickness(5);
 /// rectangle.position = {10, 20};

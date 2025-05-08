@@ -19,10 +19,10 @@ class String;
 class Time;
 
 template <typename>
-class Vector2;
+class Vec2;
 
 template <typename>
-class Vector3;
+class Vec3;
 
 void setStreamPrecision(std::ostream& os, int maxDigits10);
 
@@ -31,10 +31,10 @@ std::ostream& operator<<(std::ostream& os, const String& string);
 std::ostream& operator<<(std::ostream& os, Time time);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, Vector2<T> vector);
+std::ostream& operator<<(std::ostream& os, Vec2<T> vec);
 
 template <typename T>
-std::ostream& operator<<(std::ostream& os, const Vector3<T>& vector);
+std::ostream& operator<<(std::ostream& os, const Vec3<T>& vec);
 
 template <typename T, typename Del>
 std::ostream& operator<<(std::ostream& os, const sf::base::UniquePtr<T, Del>&)
@@ -59,8 +59,8 @@ struct Approx
 };
 
 bool operator==(const float& lhs, const Approx<float>& rhs);
-bool operator==(sf::Vector2<float> lhs, const Approx<sf::Vector2<float>>& rhs);
-bool operator==(const sf::Vector3<float>& lhs, const Approx<sf::Vector3<float>>& rhs);
+bool operator==(sf::Vec2<float> lhs, const Approx<sf::Vec2<float>>& rhs);
+bool operator==(const sf::Vec3<float>& lhs, const Approx<sf::Vec3<float>>& rhs);
 bool operator==(const sf::Angle& lhs, const Approx<sf::Angle>& rhs);
 bool operator==(const sf::FloatRect& lhs, const Approx<sf::FloatRect>& rhs);
 

@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -37,7 +37,7 @@ struct AnchorPointMixin
     /// \return World coordinates of the calculated anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getAnchorPoint(const Vector2f factors) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr auto getAnchorPoint(const Vec2f factors) const
     {
         if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
         {
@@ -46,7 +46,7 @@ struct AnchorPointMixin
         else
         {
             // For `sf::WindowBase`
-            return static_cast<const T&>(*this).getSize().toVector2f().componentWiseMul(factors);
+            return static_cast<const T&>(*this).getSize().toVec2f().componentWiseMul(factors);
         }
     }
 
@@ -169,18 +169,18 @@ struct AnchorPointMixin
     /// \param newPosition Target world coordinates for the anchor point
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(const Vector2f factors, const Vector2f newPosition)
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(const Vec2f factors, const Vec2f newPosition)
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
         static_cast<T&>(*this).position += newPosition - bounds.position + bounds.getAnchorPointOffset(factors);
     }
 
 ////////////////////////////////////////////////////////////
-#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                                \
-    /** \brief Set the position based on the name anchor point */                               \
-    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(const Vector2f newPosition) \
-    {                                                                                           \
-        this->setAnchorPoint(__VA_ARGS__, newPosition);                                         \
+#define SFML_PRIV_DEFINE_MIXIN_SETTER(name, ...)                                             \
+    /** \brief Set the position based on the name anchor point */                            \
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void name(const Vec2f newPosition) \
+    {                                                                                        \
+        this->setAnchorPoint(__VA_ARGS__, newPosition);                                      \
     }
 
     ////////////////////////////////////////////////////////////
@@ -340,7 +340,7 @@ struct AnchorPointMixin
 /// The template argument `T` must be the type of the inheriting class itself.
 /// The inheriting class must provide `getGlobalBounds()` (or `getSize()` if
 /// bounds are not applicable, like for `sf::WindowBase`) and have a public
-/// `position` member of type `sf::Vector2f`.
+/// `position` member of type `sf::Vec2f`.
 ///
 /// \see `sf::Transformable`, `sf::WindowBase`
 ///

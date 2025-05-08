@@ -31,7 +31,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Clamp.hpp"
 
@@ -153,7 +153,7 @@ private:
     sf::Listener&   m_listener;
     sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
     sf::CircleShape m_soundShape{{.radius = 20.f}};
-    sf::Vector2f    m_position;
+    sf::Vec2f       m_position;
     sf::Music       m_music;
 };
 
@@ -326,7 +326,7 @@ private:
     sf::ConvexShape m_soundConeOuter{{.position = {20.f, 20.f}, .fillColor = sf::Color::Black, .pointCount = 3u}};
     sf::ConvexShape m_soundConeInner{{.position = {20.f, 20.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
     sf::Text        m_text;
-    sf::Vector2f    m_position;
+    sf::Vec2f       m_position;
     sf::Music       m_music;
 
     float m_attenuation{0.01f};
@@ -515,7 +515,7 @@ public:
     {
         auto statesCopy(states);
         statesCopy.transform = sf::Transform::Identity;
-        statesCopy.transform.translate(m_position - sf::Vector2f({20.f, 0.f}));
+        statesCopy.transform.translate(m_position - sf::Vec2f({20.f, 0.f}));
 
         target.draw(m_listenerShape, states);
         target.draw(m_soundShape, statesCopy);
@@ -579,7 +579,7 @@ private:
     sf::CircleShape m_listenerShape{
         {.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f}, .fillColor = sf::Color::Red, .radius = 20.f}};
     sf::CircleShape m_soundShape{{.radius = 20.f}};
-    sf::Vector2f    m_position;
+    sf::Vec2f       m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
 };
@@ -664,7 +664,7 @@ private:
 
     sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
     sf::CircleShape m_soundShape{{.radius = 20.f}};
-    sf::Vector2f    m_position;
+    sf::Vec2f       m_position;
     sf::Text        m_enabledText;
     sf::Text        m_instructions;
 };
@@ -1016,10 +1016,10 @@ int main()
     auto graphicsContext = sf::GraphicsContext::create().value();
 
     // Create the main window
-    constexpr sf::Vector2f windowSize{windowWidth, windowHeight};
+    constexpr sf::Vec2f windowSize{windowWidth, windowHeight};
 
     auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "SFML Sound Effects",
         .resizable = true,
         .vsync     = true,
@@ -1227,8 +1227,8 @@ int main()
         }
 
         // Update the current example
-        const auto [x, y] = sf::Mouse::getPosition(window).toVector2f().componentWiseDiv(
-            window.getSize().toVector2f()); // TODO P2: wrong when resizing
+        const auto [x, y] = sf::Mouse::getPosition(window).toVec2f().componentWiseDiv(
+            window.getSize().toVec2f()); // TODO P2: wrong when resizing
         effects[current]->update(clock.getElapsedTime().asSeconds(), x, y);
 
         // Clear the window

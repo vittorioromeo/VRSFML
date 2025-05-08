@@ -50,7 +50,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
+            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect());
             CHECK(text.getGlobalBounds() == sf::FloatRect());
         }
@@ -67,7 +67,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
+            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 8}, {357, 28}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({1, 8}, {357, 28}));
         }
@@ -84,7 +84,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vector2f{});
+            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
             CHECK(text.getLocalBounds() == sf::FloatRect({1, 7}, {290, 22}));
             CHECK(text.getGlobalBounds() == sf::FloatRect({1, 7}, {290, 22}));
         }
@@ -158,14 +158,14 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
     {
         sf::Text text(font, {.string = "\tabcdefghijklmnopqrstuvwxyz \n"});
         text.position = {120, 240};
-        CHECK(text.findCharacterPos(0) == sf::Vector2f{120, 240});
-        CHECK(text.findCharacterPos(1) == sf::Vector2f{156, 240});
-        CHECK(text.findCharacterPos(2) == sf::Vector2f{170, 240});
-        CHECK(text.findCharacterPos(3) == sf::Vector2f{185, 240});
-        CHECK(text.findCharacterPos(4) == sf::Vector2f{198, 240});
+        CHECK(text.findCharacterPos(0) == sf::Vec2f{120, 240});
+        CHECK(text.findCharacterPos(1) == sf::Vec2f{156, 240});
+        CHECK(text.findCharacterPos(2) == sf::Vec2f{170, 240});
+        CHECK(text.findCharacterPos(3) == sf::Vec2f{185, 240});
+        CHECK(text.findCharacterPos(4) == sf::Vec2f{198, 240});
 
         // Indices that are too large are capped at maximum valid index
-        CHECK(text.findCharacterPos(1000) == sf::Vector2f{120, 277});
+        CHECK(text.findCharacterPos(1000) == sf::Vec2f{120, 277});
     }
 
     SECTION("Get bounds")

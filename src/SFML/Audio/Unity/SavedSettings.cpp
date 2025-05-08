@@ -7,7 +7,7 @@
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/SavedSettings.hpp"
 
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include <miniaudio.h>
 
@@ -15,7 +15,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vector3f convertMAVec3(const ma_vec3f& v)
+[[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec3f convertMAVec3(const ma_vec3f& v)
 {
     return {v.x, v.y, v.z};
 }

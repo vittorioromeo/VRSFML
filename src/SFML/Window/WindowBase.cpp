@@ -12,7 +12,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Macros.hpp"
@@ -80,28 +80,28 @@ base::Optional<Event> WindowBase::waitEvent(const Time timeout)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i WindowBase::getPosition() const
+Vec2i WindowBase::getPosition() const
 {
     return m_impl->getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setPosition(Vector2i position)
+void WindowBase::setPosition(Vec2i position)
 {
     m_impl->setPosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u WindowBase::getSize() const
+Vec2u WindowBase::getSize() const
 {
     return m_size;
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setSize(const Vector2u size)
+void WindowBase::setSize(const Vec2u size)
 {
     enum : unsigned int
     {
@@ -109,8 +109,8 @@ void WindowBase::setSize(const Vector2u size)
     };
 
     // Constrain requested size within minimum and maximum bounds
-    const auto minimumSize = m_impl->getMinimumSize().valueOr(Vector2u{});
-    const auto maximumSize = m_impl->getMaximumSize().valueOr(Vector2u{uIntMax, uIntMax});
+    const auto minimumSize = m_impl->getMinimumSize().valueOr(Vec2u{});
+    const auto maximumSize = m_impl->getMaximumSize().valueOr(Vec2u{uIntMax, uIntMax});
 
     // Do nothing if requested size matches current size
     const auto clampedSize = size.componentWiseClamp(minimumSize, maximumSize);
@@ -125,7 +125,7 @@ void WindowBase::setSize(const Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const Vector2u& minimumSize)
+void WindowBase::setMinimumSize(const Vec2u& minimumSize)
 {
     [[maybe_unused]] const auto validateMinimumSize = [&]
     {
@@ -143,7 +143,7 @@ void WindowBase::setMinimumSize(const Vector2u& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
+void WindowBase::setMinimumSize(const base::Optional<Vec2u>& minimumSize)
 {
     if (minimumSize.hasValue())
         setMinimumSize(*minimumSize);
@@ -156,7 +156,7 @@ void WindowBase::setMinimumSize(const base::Optional<Vector2u>& minimumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const Vector2u& maximumSize)
+void WindowBase::setMaximumSize(const Vec2u& maximumSize)
 {
     [[maybe_unused]] const auto validateMaximumSize = [&]
     {
@@ -174,7 +174,7 @@ void WindowBase::setMaximumSize(const Vector2u& maximumSize)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setMaximumSize(const base::Optional<Vector2u>& maximumSize)
+void WindowBase::setMaximumSize(const base::Optional<Vec2u>& maximumSize)
 {
     if (maximumSize.hasValue())
         setMinimumSize(*maximumSize);
@@ -194,7 +194,7 @@ void WindowBase::setTitle(const String& title)
 
 
 ////////////////////////////////////////////////////////////
-void WindowBase::setIcon(const Vector2u size, const base::U8* const pixels)
+void WindowBase::setIcon(const Vec2u size, const base::U8* const pixels)
 {
     m_impl->setIcon(size, pixels);
 }

@@ -9,7 +9,7 @@
 
 #include "SFML/Audio/Listener.hpp"
 
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 
@@ -156,7 +156,7 @@ public:
     /// \see `getPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void setPosition(const Vector3f& position);
+    void setPosition(const Vec3f& position);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the 3D direction of the sound in the audio scene
@@ -171,7 +171,7 @@ public:
     /// \see `getDirection`
     ///
     ////////////////////////////////////////////////////////////
-    void setDirection(const Vector3f& direction);
+    void setDirection(const Vec3f& direction);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the cone properties of the sound in the audio scene
@@ -199,7 +199,7 @@ public:
     /// \see `getVelocity`
     ///
     ////////////////////////////////////////////////////////////
-    void setVelocity(const Vector3f& velocity);
+    void setVelocity(const Vec3f& velocity);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the doppler factor of the sound
@@ -417,7 +417,7 @@ public:
     /// \see `setPosition`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f getPosition() const;
+    [[nodiscard]] Vec3f getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the 3D direction of the sound in the audio scene
@@ -427,7 +427,7 @@ public:
     /// \see `setDirection`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f getDirection() const;
+    [[nodiscard]] Vec3f getDirection() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the cone properties of the sound in the audio scene
@@ -447,7 +447,7 @@ public:
     /// \see `setVelocity`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector3f getVelocity() const;
+    [[nodiscard]] Vec3f getVelocity() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the doppler factor of the sound

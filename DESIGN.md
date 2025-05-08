@@ -374,6 +374,6 @@
     - Optimize rendering of `sf::Text` with outlines: now takes a single draw call compared to upstream SFML's two draw calls.
     - `sf::priv::Err` is now thread-safe.
     - All factory functions have been improved to support RVO or NRVO, checked via GCC's `-Wnrvo` flag.
-    - Added `Vector2<T>::movedTowards(T r, Angle phi)` function.
-    - `sf::Vector2`, `sf::Vector3`, and `sf::Rect` are now aggregates.
+    - Added `Vec2<T>::movedTowards(T r, Angle phi)` function.
+    - `sf::Vec2`, `sf::Vec3`, and `sf::Rect` are now aggregates.
     - Removed catch-all headers such as `SFML/Audio.hpp` to promote good header hygiene in user projects.

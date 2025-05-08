@@ -234,20 +234,20 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec2 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the vec2 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the vec2
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Vec2 vector) const;
+    void setUniform(UniformLocation location, Glsl::Vec2 vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec3 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the vec3 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the vec3
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Vec3& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Vec3& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p vec4 uniform
@@ -261,11 +261,11 @@ public:
     /// For example, a `sf::Color(255, 127, 0, 255)` will be transformed
     /// to a `vec4(1.0, 0.5, 0.0, 1.0)` in the shader.
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the vec4 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the vec4
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Vec4& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Vec4& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p int uniform
@@ -279,20 +279,20 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec2 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the ivec2 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the ivec2
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Ivec2 vector) const;
+    void setUniform(UniformLocation location, Glsl::Ivec2 vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec3 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the ivec3 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the ivec3
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Ivec3& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Ivec3& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p ivec4 uniform
@@ -305,11 +305,11 @@ public:
     /// instance. For example, `sf::Color(255, 127, 0, 255)` is
     /// mapped to `ivec4(255, 127, 0, 255)`.
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the ivec4 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the ivec4
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Ivec4& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Ivec4& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bool uniform
@@ -323,29 +323,29 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec2 uniform
     ///
-    /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the bvec2 vector
+    /// \param name Name of the uniform variable in GLSL
+    /// \param vec  Value of the bvec2
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, Glsl::Bvec2 vector) const;
+    void setUniform(UniformLocation location, Glsl::Bvec2 vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec3 uniform
     ///
     /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the bvec3 vector
+    /// \param vec Value of the bvec3
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Bvec3& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Bvec3& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p bvec4 uniform
     ///
     /// \param name   Name of the uniform variable in GLSL
-    /// \param vector Value of the bvec4 vector
+    /// \param vec Value of the bvec4
     ///
     ////////////////////////////////////////////////////////////
-    void setUniform(UniformLocation location, const Glsl::Bvec4& vector) const;
+    void setUniform(UniformLocation location, const Glsl::Bvec4& vec) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify value for \p mat3 matrix
@@ -440,31 +440,31 @@ public:
     /// \brief Specify values for \p vec2[] array uniform
     ///
     /// \param name        Name of the uniform variable in GLSL
-    /// \param vectorArray pointer to array of \p vec2 values
+    /// \param vecArray pointer to array of \p vec2 values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec3[] array uniform
     ///
     /// \param name        Name of the uniform variable in GLSL
-    /// \param vectorArray pointer to array of \p vec3 values
+    /// \param vecArray pointer to array of \p vec3 values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p vec4[] array uniform
     ///
     /// \param name        Name of the uniform variable in GLSL
-    /// \param vectorArray pointer to array of \p vec4 values
+    /// \param vecArray pointer to array of \p vec4 values
     /// \param length      Number of elements in the array
     ///
     ////////////////////////////////////////////////////////////
-    void setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length);
+    void setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length);
 
     ////////////////////////////////////////////////////////////
     /// \brief Specify values for \p mat3[] array uniform
@@ -654,7 +654,7 @@ private:
 /// defined in the `sf::Glsl` namespace:
 /// \code
 /// shader.setUniform("offset", 2.f);
-/// shader.setUniform("point", sf::Vector3f(0.5f, 0.8f, 0.3f));
+/// shader.setUniform("point", sf::Vec3f(0.5f, 0.8f, 0.3f));
 /// shader.setUniform("color", sf::Glsl::Vec4(color));          // color is a sf::Color
 /// shader.setUniform("matrix", sf::Glsl::Mat4(transform));     // transform is a sf::Transform
 /// shader.setUniform("overlay", texture);                      // texture is a sf::Texture

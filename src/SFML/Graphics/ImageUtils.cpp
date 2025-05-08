@@ -11,7 +11,7 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 
@@ -47,7 +47,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 {
     // Extract the extension
     const Path extension     = filename.extension();
-    const auto convertedSize = image.getSize().toVector2i();
+    const auto convertedSize = image.getSize().toVec2i();
 
     // Callback to write to output stream
     auto writeStdOfstream = [](void* context, void* data, int size)
@@ -104,7 +104,7 @@ bool ImageUtils::saveToFile(const Image& image, const Path& filename)
 base::Vector<base::U8> ImageUtils::saveToMemory(const Image& image, SaveFormat format)
 {
     // Choose function based on format
-    const auto convertedSize = image.getSize().toVector2i();
+    const auto convertedSize = image.getSize().toVec2i();
 
     base::Vector<base::U8> buffer; // Use a single local variable for NRVO
 

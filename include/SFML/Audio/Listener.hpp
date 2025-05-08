@@ -8,7 +8,7 @@
 #include "SFML/Audio/Export.hpp"
 
 #include "SFML/System/Angle.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec3.hpp"
 
 
 namespace sf
@@ -39,12 +39,12 @@ struct SFML_AUDIO_API Listener
         float outerGain{}; //!< Outer gain
     };
 
-    float    volume{1.f};         //< Volume (between `0` and `1`)
-    Vector3f position{0, 0, 0};   //< Position where audio is heard from
-    Vector3f direction{0, 0, -1}; //< Forward-pointing vector from listener's perspective (not necessarily normalized)
-    Vector3f velocity{0, 0, 0};   //< Velocity of the listener
+    float volume{1.f};         //< Volume (between `0` and `1`)
+    Vec3f position{0, 0, 0};   //< Position where audio is heard from
+    Vec3f direction{0, 0, -1}; //< Forward-pointing vec3 from listener's perspective (not necessarily normalized)
+    Vec3f velocity{0, 0, 0};   //< Velocity of the listener
     Listener::Cone cone{Angle::Full, Angle::Full, 1}; //< Cone properties (affects directional attenuation)
-    Vector3f upVector{0, 1, 0}; //< Upward-pointing vector from the listener's perspective (not necessarily normalized)
+    Vec3f          upVec{0, 1, 0}; //< Upward-pointing vec3 from the listener's perspective (not necessarily normalized)
 };
 
 } // namespace sf
@@ -62,7 +62,7 @@ struct SFML_AUDIO_API Listener
 ///
 /// `sf::Listener` is a simple interface, which allows to setup the
 /// listener in the 3D audio environment (position, direction and
-/// up vector), and to adjust the global volume.
+/// up vec3), and to adjust the global volume.
 ///
 /// Usage example:
 /// \code

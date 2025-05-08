@@ -39,13 +39,13 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         CHECK(sf::RenderTexture::create({100, 100}, sf::ContextSettings{.depthBits = 0, .stencilBits = 8}).hasValue());
 
         const auto renderTexture = sf::RenderTexture::create({360, 480}).value();
-        CHECK(renderTexture.getSize() == sf::Vector2u{360, 480});
+        CHECK(renderTexture.getSize() == sf::Vec2u{360, 480});
         CHECK(!renderTexture.isSmooth());
         CHECK(renderTexture.getWrapMode() == sf::TextureWrapMode::Clamp);
         CHECK(!renderTexture.isSrgb());
 
         const auto& texture = renderTexture.getTexture();
-        CHECK(texture.getSize() == sf::Vector2u{360, 480});
+        CHECK(texture.getSize() == sf::Vec2u{360, 480});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
         CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
@@ -88,7 +88,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
     SECTION("getTexture()")
     {
         const auto renderTexture = sf::RenderTexture::create({64, 64}).value();
-        CHECK(renderTexture.getTexture().getSize() == sf::Vector2u{64, 64});
+        CHECK(renderTexture.getTexture().getSize() == sf::Vec2u{64, 64});
     }
 
     SECTION("Sanity check 1")
@@ -130,7 +130,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
 
-        const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+        const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
         auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(image).value();
@@ -197,7 +197,7 @@ TEST_CASE("[Graphics] sf::RenderTexture" * doctest::skip(skipDisplayTests))
         const float height    = 64.f;
         const float halfWidth = width / 2.f;
 
-        const sf::Vector2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
+        const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
 
         auto image   = sf::Image::create(size, sf::Color::White).value();
         auto texture = sf::Texture::loadFromImage(image).value();

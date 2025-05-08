@@ -38,7 +38,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         {
             const sf::RenderWindow window({.size{256u, 256u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{256, 256});
+            CHECK(window.getSize() == sf::Vec2u{256, 256});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -46,8 +46,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().center == sf::Vector2f{128, 128});
-            CHECK(window.getView().size == sf::Vector2f{256, 256});
+            CHECK(window.getView().center == sf::Vec2f{128, 128});
+            CHECK(window.getView().size == sf::Vec2f{256, 256});
             CHECK(window.getView().rotation == sf::Angle::Zero);
             CHECK(window.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() == Approx(sf::Transform(0.0078125f, 0, -1, 0, -0.0078125f, 1)));
@@ -57,7 +57,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         {
             const sf::RenderWindow window({.size{240u, 300u}, .bitsPerPixel = 24, .title = "RenderWindow Tests"});
 
-            CHECK(window.getSize() == sf::Vector2u{240, 300});
+            CHECK(window.getSize() == sf::Vec2u{240, 300});
 #ifndef SFML_SYSTEM_EMSCRIPTEN
             CHECK(window.getNativeHandle() != sf::WindowHandle());
             CHECK(window.getSettings().attributeFlags == sf::ContextSettings{}.attributeFlags);
@@ -65,8 +65,8 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
             CHECK(window.getNativeHandle() == sf::WindowHandle());
 #endif
             CHECK(!window.isSrgb());
-            CHECK(window.getView().center == sf::Vector2f{120, 150});
-            CHECK(window.getView().size == sf::Vector2f{240, 300});
+            CHECK(window.getView().center == sf::Vec2f{120, 150});
+            CHECK(window.getView().size == sf::Vec2f{240, 300});
             CHECK(window.getView().rotation == sf::Angle::Zero);
             CHECK(window.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
             CHECK(window.getView().getTransform() == Approx(sf::Transform(0.00833333f, 0, -1, 0, -0.00666667f, 1)));
@@ -89,21 +89,21 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
                                  .title = "RenderWindow Tests",
                                  .contextSettings = {.antiAliasingLevel = testAALevel, .sRgbCapable = testSRGBCapable}});
 
-        REQUIRE(window.getSize() == sf::Vector2u{256, 256});
+        REQUIRE(window.getSize() == sf::Vec2u{256, 256});
 
-        auto texture = sf::Texture::create(sf::Vector2u{256, 256}, {.sRgb = testSRGBCapable}).value();
+        auto texture = sf::Texture::create(sf::Vec2u{256, 256}, {.sRgb = testSRGBCapable}).value();
 
         window.clear(sf::Color::Red);
         CHECK(texture.update(window));
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u{64, 64}) == sf::Color::Red);
+        CHECK(texture.copyToImage().getPixel(sf::Vec2u{64, 64}) == sf::Color::Red);
 
         window.clear(sf::Color::Green);
         CHECK(texture.update(window));
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u{128, 128}) == sf::Color::Green);
+        CHECK(texture.copyToImage().getPixel(sf::Vec2u{128, 128}) == sf::Color::Green);
 
         window.clear(sf::Color::Blue);
         CHECK(texture.update(window));
-        CHECK(texture.copyToImage().getPixel(sf::Vector2u{196, 196}) == sf::Color::Blue);
+        CHECK(texture.copyToImage().getPixel(sf::Vec2u{196, 196}) == sf::Color::Blue);
     }
 
 // Creating multiple windows in Emscripten is not supported
@@ -114,7 +114,7 @@ TEST_CASE("[Graphics] sf::RenderWindow" * doctest::skip(skipDisplayTests))
         sf::RenderWindow window1({.size{256u, 256u}, .title = "B"});
 
         window1 = SFML_BASE_MOVE(window0);
-        CHECK(window1.getSize() == sf::Vector2u{128u, 128u});
+        CHECK(window1.getSize() == sf::Vec2u{128u, 128u});
     }
 
     SECTION("Multiple windows 1")

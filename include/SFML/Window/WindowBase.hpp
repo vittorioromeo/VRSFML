@@ -14,7 +14,7 @@
 #include "SFML/System/AnchorPointMixin.hpp"
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -249,7 +249,7 @@ public:
     /// \see `setPosition`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2i getPosition() const;
+    [[nodiscard]] Vec2i getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -263,7 +263,7 @@ public:
     /// \see `getPosition`
     ///
     ////////////////////////////////////////////////////////////
-    void setPosition(Vector2i position);
+    void setPosition(Vec2i position);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the rendering region of the window
@@ -276,7 +276,7 @@ public:
     /// \see `setSize`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const;
+    [[nodiscard]] Vec2u getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the size of the rendering region of the window
@@ -286,7 +286,7 @@ public:
     /// \see `getSize`
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(Vector2u size);
+    void setSize(Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
@@ -296,8 +296,8 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const Vector2u& minimumSize);
-    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const Vec2u& minimumSize);
+    void setMinimumSize(const base::Optional<Vec2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -307,8 +307,8 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const Vector2u& maximumSize);
-    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const Vec2u& maximumSize);
+    void setMaximumSize(const base::Optional<Vec2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -336,7 +336,7 @@ public:
     /// \see `setTitle`
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const base::U8* pixels);
+    void setIcon(Vec2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window
@@ -523,7 +523,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     base::UniquePtr<priv::SDLWindowImpl> m_impl; //!< Platform-specific implementation of the window
-    Vector2u                             m_size; //!< Current size of the window
+    Vec2u                                m_size; //!< Current size of the window
 };
 
 } // namespace sf

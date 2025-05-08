@@ -10,7 +10,7 @@
 #include "SFML/Graphics/Priv/ShapeMacros.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -24,7 +24,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RoundedRectangleShapeData
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
-    Vector2f     size{};                //!< Size of the rounded rectangle
+    Vec2f        size{};                //!< Size of the rounded rectangle
     float        cornerRadius{0.f};     //!< Radius of the corners of the rounded rectangle
     unsigned int cornerPointCount{16u}; //!< Number of points used to draw the corners of the rounded rectangle
 };

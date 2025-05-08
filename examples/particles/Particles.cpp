@@ -21,7 +21,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
@@ -62,10 +62,10 @@ int main()
     //
     //
     // Set up window
-    constexpr sf::Vector2f windowSize{1680.f, 1050.f};
+    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
 
     sf::RenderWindow window({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "Vittorio's SFML fork: particles example",
         .resizable = false,
         .vsync     = false,
@@ -109,9 +109,9 @@ int main()
     // SoA Particles
     struct ParticleAoS
     {
-        sf::Vector2f position;
-        sf::Vector2f velocity;
-        sf::Vector2f acceleration;
+        sf::Vec2f position;
+        sf::Vec2f velocity;
+        sf::Vec2f acceleration;
 
         float scale;
         float scaleGrowth;
@@ -128,9 +128,9 @@ int main()
     //
     //
     // AoS Particles
-    using ParticleSoA = SoAFor<sf::Vector2f, // position
-                               sf::Vector2f, // velocity
-                               sf::Vector2f, // acceleration
+    using ParticleSoA = SoAFor<sf::Vec2f, // position
+                               sf::Vec2f, // velocity
+                               sf::Vec2f, // acceleration
 
                                float, // scale
                                float, // scaleGrowth
@@ -364,9 +364,9 @@ int main()
             populateParticles(static_cast<std::size_t>(numEntities));
 
             const auto updateParticle =
-                [&](sf::Vector2f&      position,
-                    sf::Vector2f&      velocity,
-                    const sf::Vector2f acceleration,
+                [&](sf::Vec2f&      position,
+                    sf::Vec2f&      velocity,
+                    const sf::Vec2f acceleration,
 
                     float&      scale,
                     const float scaleGrowth,
@@ -394,10 +394,10 @@ int main()
                     }
                     else
                     {
-                        particlesSoA.with<1, 2>([](sf::Vector2f& velocity, const sf::Vector2f& acc)
+                        particlesSoA.with<1, 2>([](sf::Vec2f& velocity, const sf::Vec2f& acc)
                                                     SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { velocity += acc; });
 
-                        particlesSoA.with<0, 1>([](sf::Vector2f& position, sf::Vector2f& velocity)
+                        particlesSoA.with<0, 1>([](sf::Vec2f& position, sf::Vec2f& velocity)
                                                     SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { position += velocity; });
 
                         particlesSoA.with<3, 4>([](float& scale, const float scaleGrowth)
@@ -445,13 +445,13 @@ int main()
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](sf::Vector2f& velocity, const sf::Vector2f& acc)
+                                                            [](sf::Vec2f& velocity, const sf::Vec2f& acc)
                                                                 SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                             { velocity += acc; });
 
                             particlesSoA.withSubRange<0, 1>(batchStartIdx,
                                                             batchEndIdx,
-                                                            [](sf::Vector2f& position, sf::Vector2f& velocity)
+                                                            [](sf::Vec2f& position, sf::Vec2f& velocity)
                                                                 SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                             { position += velocity; });
 
@@ -616,7 +616,7 @@ int main()
             const auto           origin      = textureRect.size / 2.f;
 
             const auto drawParticleImpl =
-                [&](const sf::Vector2f position, const float scale, const float rotation, auto&& drawFn)
+                [&](const sf::Vec2f position, const float scale, const float rotation, auto&& drawFn)
             {
                 drawFn(
                     sf::Sprite{

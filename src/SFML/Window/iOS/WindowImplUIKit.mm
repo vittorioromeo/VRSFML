@@ -86,7 +86,7 @@ WindowHandle WindowImplUIKit::getNativeHandle() const
 
 
 ////////////////////////////////////////////////////////////
-Vector2i WindowImplUIKit::getPosition() const
+Vec2i WindowImplUIKit::getPosition() const
 {
     const CGPoint origin = m_window.frame.origin;
     return {static_cast<int>(origin.x * static_cast<double>(m_backingScale)),
@@ -95,13 +95,13 @@ Vector2i WindowImplUIKit::getPosition() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setPosition(Vector2i /* position */)
+void WindowImplUIKit::setPosition(Vec2i /* position */)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2u WindowImplUIKit::getSize() const
+Vec2u WindowImplUIKit::getSize() const
 {
     const CGRect physicalFrame = m_window.frame;
     return {static_cast<unsigned int>(physicalFrame.size.width * static_cast<double>(m_backingScale)),
@@ -110,7 +110,7 @@ Vector2u WindowImplUIKit::getSize() const
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setSize(Vector2u size)
+void WindowImplUIKit::setSize(Vec2u size)
 {
     // TODO P2: ...
 
@@ -127,14 +127,14 @@ void WindowImplUIKit::setSize(Vector2u size)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMinimumSize(const base::Optional<Vector2u>& /* minimumSize */)
+void WindowImplUIKit::setMinimumSize(const base::Optional<Vec2u>& /* minimumSize */)
 {
     // Not applicable
 }
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setMaximumSize(const base::Optional<Vector2u>& /* maximumSize */)
+void WindowImplUIKit::setMaximumSize(const base::Optional<Vec2u>& /* maximumSize */)
 {
     // Not applicable
 }
@@ -148,7 +148,7 @@ void WindowImplUIKit::setTitle(const String& /* title */)
 
 
 ////////////////////////////////////////////////////////////
-void WindowImplUIKit::setIcon(Vector2u /* size */, const base::U8* /* pixels */)
+void WindowImplUIKit::setIcon(Vec2u /* size */, const base::U8* /* pixels */)
 {
     // Not applicable
 }

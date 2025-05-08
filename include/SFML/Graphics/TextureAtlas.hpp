@@ -11,7 +11,7 @@
 
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/RectPacker.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -45,7 +45,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vector2u size);
+    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vec2u size);
     [[nodiscard]] base::Optional<FloatRect> add(const Image& image);
     [[nodiscard]] base::Optional<FloatRect> add(const Texture& texture);
 

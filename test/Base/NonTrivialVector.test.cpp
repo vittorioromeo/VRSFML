@@ -1,5 +1,3 @@
-#include "SFML/Base/Vector.hpp"
-
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsCopyAssignable.hpp"
@@ -13,6 +11,7 @@
 #include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
 #include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 

@@ -64,7 +64,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
                 CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
                 CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
                 const auto& texture = font.getTexture();
-                CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
+                CHECK(texture.getSize() == sf::Vec2u{1024u, 1024u});
                 CHECK(texture.isSmooth());
                 CHECK(!texture.isSrgb());
                 CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
@@ -102,7 +102,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
             CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
             const auto& texture = font.getTexture();
-            CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
+            CHECK(texture.getSize() == sf::Vec2u{1024u, 1024u});
             CHECK(texture.isSmooth());
             CHECK(!texture.isSrgb());
             CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);
@@ -130,7 +130,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
         CHECK(font.getUnderlinePosition(36) == Approx(2.20312f));
         CHECK(font.getUnderlineThickness(48) == Approx(1.17188f));
         const auto& texture = font.getTexture();
-        CHECK(texture.getSize() == sf::Vector2u{1024u, 1024u});
+        CHECK(texture.getSize() == sf::Vec2u{1024u, 1024u});
         CHECK(texture.isSmooth());
         CHECK(!texture.isSrgb());
         CHECK(texture.getWrapMode() == sf::TextureWrapMode::Clamp);

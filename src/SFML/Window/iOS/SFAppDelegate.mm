@@ -16,7 +16,7 @@ namespace
 SFAppDelegate* delegateInstance = nullptr;
 
 // Current touches positions
-std::vector<sf::Vector2i> touchPositions;
+std::vector<sf::Vec2i> touchPositions;
 } // namespace
 
 
@@ -167,7 +167,7 @@ std::vector<sf::Vector2i> touchPositions;
 
 - (bool)needsToFlipFrameForOrientation:(UIDeviceOrientation)orientation
 {
-    sf::Vector2u size = self.sfWindow->getSize();
+    sf::Vec2u size = self.sfWindow->getSize();
     return (!UIDeviceOrientationIsLandscape(orientation) && size.x > size.y) ||
            (UIDeviceOrientationIsLandscape(orientation) && size.y > size.x);
 }
@@ -183,7 +183,7 @@ std::vector<sf::Vector2i> touchPositions;
         if (UIDeviceOrientationIsValidInterfaceOrientation(orientation))
         {
             // Get the new size
-            sf::Vector2u size = self.sfWindow->getSize();
+            sf::Vec2u size = self.sfWindow->getSize();
             // Check if the app can switch to this orientation and if so if the window's size must be adjusted
             if ([self supportsOrientation:orientation] && [self needsToFlipFrameForOrientation:orientation])
                 std::swap(size.x, size.y);
@@ -202,23 +202,23 @@ std::vector<sf::Vector2i> touchPositions;
 }
 
 ////////////////////////////////////////////////////////////
-- (sf::Vector2i)getTouchPosition:(unsigned int)index
+- (sf::Vec2i)getTouchPosition:(unsigned int)index
 {
     if (index < touchPositions.size())
         return touchPositions[index];
 
-    return sf::Vector2i(-1, -1);
+    return sf::Vec2i(-1, -1);
 }
 
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchBegin:(unsigned int)index atPosition:(sf::Vector2i)position
+- (void)notifyTouchBegin:(unsigned int)index atPosition:(sf::Vec2i)position
 {
     position.x *= static_cast<int>(backingScaleFactor);
     position.y *= static_cast<int>(backingScaleFactor);
 
     // save the touch position
     if (index >= touchPositions.size())
-        touchPositions.resize(index + 1, sf::Vector2i(-1, -1));
+        touchPositions.resize(index + 1, sf::Vec2i(-1, -1));
     touchPositions[index] = position;
 
     // notify the event to the application window
@@ -227,14 +227,14 @@ std::vector<sf::Vector2i> touchPositions;
 }
 
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchMove:(unsigned int)index atPosition:(sf::Vector2i)position
+- (void)notifyTouchMove:(unsigned int)index atPosition:(sf::Vec2i)position
 {
     position.x *= static_cast<int>(backingScaleFactor);
     position.y *= static_cast<int>(backingScaleFactor);
 
     // save the touch position
     if (index >= touchPositions.size())
-        touchPositions.resize(index + 1, sf::Vector2i(-1, -1));
+        touchPositions.resize(index + 1, sf::Vec2i(-1, -1));
     touchPositions[index] = position;
 
     // notify the event to the application window
@@ -243,11 +243,11 @@ std::vector<sf::Vector2i> touchPositions;
 }
 
 ////////////////////////////////////////////////////////////
-- (void)notifyTouchEnd:(unsigned int)index atPosition:(sf::Vector2i)position
+- (void)notifyTouchEnd:(unsigned int)index atPosition:(sf::Vec2i)position
 {
     // clear the touch position
     if (index < touchPositions.size())
-        touchPositions[index] = sf::Vector2i(-1, -1);
+        touchPositions[index] = sf::Vec2i(-1, -1);
 
     // notify the event to the application window
     if (self.sfWindow)

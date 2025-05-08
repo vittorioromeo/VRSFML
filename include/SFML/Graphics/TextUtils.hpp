@@ -146,25 +146,25 @@ inline void addLine(Vertex* const SFML_BASE_RESTRICT vertices,
 // Add a glyph quad to the vertex array
 inline void addGlyphQuad(Vertex* const SFML_BASE_RESTRICT vertices,
                          base::SizeT&                     index,
-                         const Vector2f                   position,
+                         const Vec2f                      position,
                          const Color                      color,
                          const Glyph&                     glyph,
                          const float                      italicShear)
 {
-    constexpr Vector2f padding{1.f, 1.f};
+    constexpr Vec2f padding{1.f, 1.f};
 
-    const Vector2f p1 = glyph.bounds.position - padding;
-    const Vector2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
+    const Vec2f p1 = glyph.bounds.position - padding;
+    const Vec2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
 
     const auto uv1 = glyph.textureRect.position - padding;
     const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size) + padding;
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {position + Vector2f{p1.x - italicShear * p1.y, p1.y}, color, {uv1.x, uv1.y}};
-    *ptr++ = {position + Vector2f{p2.x - italicShear * p1.y, p1.y}, color, {uv2.x, uv1.y}};
-    *ptr++ = {position + Vector2f{p1.x - italicShear * p2.y, p2.y}, color, {uv1.x, uv2.y}};
-    *ptr++ = {position + Vector2f{p2.x - italicShear * p2.y, p2.y}, color, {uv2.x, uv2.y}};
+    *ptr++ = {position + Vec2f{p1.x - italicShear * p1.y, p1.y}, color, {uv1.x, uv1.y}};
+    *ptr++ = {position + Vec2f{p2.x - italicShear * p1.y, p1.y}, color, {uv2.x, uv1.y}};
+    *ptr++ = {position + Vec2f{p1.x - italicShear * p2.y, p2.y}, color, {uv1.x, uv2.y}};
+    *ptr++ = {position + Vec2f{p2.x - italicShear * p2.y, p2.y}, color, {uv2.x, uv2.y}};
 
     index += 4u;
 }
@@ -203,25 +203,25 @@ inline void addGlyphQuadPreTransformed(
     const Transform&                 transform,
     Vertex* const SFML_BASE_RESTRICT vertices,
     base::SizeT&                     index,
-    const Vector2f                   position,
+    const Vec2f                      position,
     const Color                      color,
     const Glyph&                     glyph,
     const float                      italicShear)
 {
-    constexpr Vector2f padding{1.f, 1.f};
+    constexpr Vec2f padding{1.f, 1.f};
 
-    const Vector2f p1 = glyph.bounds.position - padding;
-    const Vector2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
+    const Vec2f p1 = glyph.bounds.position - padding;
+    const Vec2f p2 = glyph.bounds.position + glyph.bounds.size + padding;
 
     const auto uv1 = glyph.textureRect.position - padding;
     const auto uv2 = (glyph.textureRect.position + glyph.textureRect.size) + padding;
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {transform.transformPoint(position + Vector2f{p1.x - italicShear * p1.y, p1.y}), color, {uv1.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f{p2.x - italicShear * p1.y, p1.y}), color, {uv2.x, uv1.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f{p1.x - italicShear * p2.y, p2.y}), color, {uv1.x, uv2.y}};
-    *ptr++ = {transform.transformPoint(position + Vector2f{p2.x - italicShear * p2.y, p2.y}), color, {uv2.x, uv2.y}};
+    *ptr++ = {transform.transformPoint(position + Vec2f{p1.x - italicShear * p1.y, p1.y}), color, {uv1.x, uv1.y}};
+    *ptr++ = {transform.transformPoint(position + Vec2f{p2.x - italicShear * p1.y, p1.y}), color, {uv2.x, uv1.y}};
+    *ptr++ = {transform.transformPoint(position + Vec2f{p1.x - italicShear * p2.y, p2.y}), color, {uv1.x, uv2.y}};
+    *ptr++ = {transform.transformPoint(position + Vec2f{p2.x - italicShear * p2.y, p2.y}), color, {uv2.x, uv2.y}};
 
     index += 4u;
 }
@@ -291,8 +291,8 @@ inline auto createTextGeometryAndGetBounds(
     {
         if constexpr (CalculateBounds)
         {
-            const Vector2f p1 = fillGlyph.bounds.position;
-            const Vector2f p2 = fillGlyph.bounds.position + fillGlyph.bounds.size;
+            const Vec2f p1 = fillGlyph.bounds.position;
+            const Vec2f p2 = fillGlyph.bounds.position + fillGlyph.bounds.size;
 
             const float newMinX = x + p1.x - italicShear * p2.y;
             const float newMaxX = x + p2.x - italicShear * p1.y;
@@ -368,7 +368,7 @@ inline auto createTextGeometryAndGetBounds(
         if (outlineThickness == 0.f)
         {
             const Glyph& fillGlyph = font.getGlyph(curChar, characterSize, isBold, /* outlineThickness */ 0.f);
-            fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, fillGlyph, italicShear);
+            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillColor, fillGlyph, italicShear);
 
             updateBoundsAndAdvance(fillGlyph);
         }
@@ -377,8 +377,8 @@ inline auto createTextGeometryAndGetBounds(
             const auto& [fillGlyph,
                          outlineGlyph] = font.getFillAndOutlineGlyph(curChar, characterSize, isBold, outlineThickness);
 
-            fAddGlyphQuad(currFillIndex, Vector2f{x, y}, fillColor, fillGlyph, italicShear);
-            fAddGlyphQuad(currOutlineIndex, Vector2f{x, y}, outlineColor, outlineGlyph, italicShear);
+            fAddGlyphQuad(currFillIndex, Vec2f{x, y}, fillColor, fillGlyph, italicShear);
+            fAddGlyphQuad(currOutlineIndex, Vec2f{x, y}, outlineColor, outlineGlyph, italicShear);
 
             updateBoundsAndAdvance(fillGlyph);
         }

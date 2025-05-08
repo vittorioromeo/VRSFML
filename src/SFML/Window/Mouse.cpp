@@ -41,28 +41,28 @@ bool isButtonPressed(Button button)
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getPosition()
+Vec2i getPosition()
 {
     return priv::getSDLLayerSingleton().getGlobalMousePosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-Vector2i getPosition(const WindowBase& relativeTo)
+Vec2i getPosition(const WindowBase& relativeTo)
 {
     return getPosition() - relativeTo.getPosition();
 }
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(const Vector2i position)
+void setPosition(const Vec2i position)
 {
     (void)priv::getSDLLayerSingleton().setGlobalMousePosition(position);
 }
 
 
 ////////////////////////////////////////////////////////////
-void setPosition(const Vector2i position, const WindowBase& relativeTo)
+void setPosition(const Vec2i position, const WindowBase& relativeTo)
 {
     setPosition(position + relativeTo.getPosition());
 }

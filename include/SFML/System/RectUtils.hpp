@@ -64,8 +64,7 @@ template <typename T>
         return base::nullOpt;
 
     // Intersection found
-    return base::makeOptional<Rect<T>>(Vector2<T>{interLeft, interTop},
-                                       Vector2<T>{interRight - interLeft, interBottom - interTop});
+    return base::makeOptional<Rect<T>>(Vec2<T>{interLeft, interTop}, Vec2<T>{interRight - interLeft, interBottom - interTop});
 }
 
 } // namespace sf

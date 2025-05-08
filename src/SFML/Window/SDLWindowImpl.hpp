@@ -8,7 +8,7 @@
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -152,7 +152,7 @@ public:
     /// \return Position of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2i getPosition() const;
+    [[nodiscard]] Vec2i getPosition() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the minimum window rendering region size
@@ -160,7 +160,7 @@ public:
     /// \return Minimum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vector2u> getMinimumSize() const;
+    [[nodiscard]] base::Optional<Vec2u> getMinimumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the maximum window rendering region size
@@ -168,7 +168,7 @@ public:
     /// \return Maximum size
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<Vector2u> getMaximumSize() const;
+    [[nodiscard]] base::Optional<Vec2u> getMaximumSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the position of the window on screen
@@ -176,7 +176,7 @@ public:
     /// \param position New position of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setPosition(Vector2i position);
+    void setPosition(Vec2i position);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the client size of the window
@@ -184,7 +184,7 @@ public:
     /// \return Size of the window, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const;
+    [[nodiscard]] Vec2u getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the size of the rendering region of the window
@@ -192,7 +192,7 @@ public:
     /// \param size New size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(Vector2u size);
+    void setSize(Vec2u size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the minimum window rendering region size
@@ -202,7 +202,7 @@ public:
     /// \param minimumSize New minimum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMinimumSize(const base::Optional<Vector2u>& minimumSize);
+    void setMinimumSize(const base::Optional<Vec2u>& minimumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the maximum window rendering region size
@@ -212,7 +212,7 @@ public:
     /// \param maximumSize New maximum size, in pixels
     ///
     ////////////////////////////////////////////////////////////
-    void setMaximumSize(const base::Optional<Vector2u>& maximumSize);
+    void setMaximumSize(const base::Optional<Vec2u>& maximumSize);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the title of the window
@@ -229,7 +229,7 @@ public:
     /// \param pixels Pointer to the pixels in memory, format must be RGBA 32 bits
     ///
     ////////////////////////////////////////////////////////////
-    void setIcon(Vector2u size, const base::U8* pixels);
+    void setIcon(Vec2u size, const base::U8* pixels);
 
     ////////////////////////////////////////////////////////////
     /// \brief Show or hide the window

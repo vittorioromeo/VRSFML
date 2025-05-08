@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -23,9 +23,9 @@ struct [[nodiscard]] Vertex
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2f position;            //!< 2D position of the vertex
-    Color    color{Color::White}; //!< Color of the vertex
-    Vector2f texCoords{};         //!< Coordinates of the texture's pixel to map to the vertex
+    Vec2f position;            //!< 2D position of the vertex
+    Color color{Color::White}; //!< Color of the vertex
+    Vec2f texCoords{};         //!< Coordinates of the texture's pixel to map to the vertex
 };
 
 } // namespace sf

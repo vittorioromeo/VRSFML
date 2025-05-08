@@ -9,25 +9,25 @@
 
 #include "SFML/Graphics/Color.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 
 ////////////////////////////////////////////////////////////
-#define IM_VEC2_CLASS_EXTRA                                            \
-    template <typename T>                                              \
-    ImVec2(const ::sf::Vector2<T>& v)                                  \
-    {                                                                  \
-        x = static_cast<float>(v.x);                                   \
-        y = static_cast<float>(v.y);                                   \
-    }                                                                  \
-                                                                       \
-    template <typename T>                                              \
-    operator ::sf::Vector2<T>() const                                  \
-    {                                                                  \
-        return ::sf::Vector2<T>(static_cast<T>(x), static_cast<T>(y)); \
+#define IM_VEC2_CLASS_EXTRA                                         \
+    template <typename T>                                           \
+    ImVec2(const ::sf::Vec2<T>& v)                                  \
+    {                                                               \
+        x = static_cast<float>(v.x);                                \
+        y = static_cast<float>(v.y);                                \
+    }                                                               \
+                                                                    \
+    template <typename T>                                           \
+    operator ::sf::Vec2<T>() const                                  \
+    {                                                               \
+        return ::sf::Vec2<T>(static_cast<T>(x), static_cast<T>(y)); \
     }
 
 

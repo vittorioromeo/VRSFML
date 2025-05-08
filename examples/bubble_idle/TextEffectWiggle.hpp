@@ -63,9 +63,9 @@ public:
     }
 
 private:
-    sf::base::Vector<sf::Vector2f> m_oldVertexPositions;
-    float                          m_time = 0.f;
-    float                          m_frequency;
-    float                          m_amplitude;
-    float                          m_phase;
+    sf::base::Vector<sf::Vec2f> m_oldVertexPositions;
+    float                       m_time = 0.f;
+    float                       m_frequency;
+    float                       m_amplitude;
+    float                       m_phase;
 };

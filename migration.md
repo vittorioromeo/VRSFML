@@ -65,13 +65,13 @@ target_link_libraries(my_app PRIVATE SFML::Graphics SFML::Audio SFML::Network)
 When using X11 as the backend on Linux, as opposed to DRM, `libxi-dev` is a newly required dependency.
 This was introduced with the [raw mouse input support](https://www.sfml-dev.org/documentation/3.0.0/structsf_1_1Event_1_1MouseMovedRaw.html).
 
-## `sf::Vector2<T>` Parameters
+## `sf::Vec2<T>` Parameters
 
 A common pattern in SFML 2 was to use pairs of scalar parameters to represent concepts like sizes or positions.
 Take `sf::Transformable::setPosition(float, float)` for example.
 The two parameters combine to represent a position in world space.
 
-SFML 3 takes all of the APIs with pairs of parameters like `(float, float)` or `(unsigned int, unsigned int)` and converts them to their corresponding `sf::Vector2<T>` type like `sf::Vector2f` or `sf::Vector2u` to make the interface more expressive and composable.
+SFML 3 takes all of the APIs with pairs of parameters like `(float, float)` or `(unsigned int, unsigned int)` and converts them to their corresponding `sf::Vec2<T>` type like `sf::Vec2f` or `sf::Vec2u` to make the interface more expressive and composable.
 This transition is often as simple as wrapping the two adjacent parameters with braces to construct the vector.
 
 v2:
@@ -228,9 +228,9 @@ Here is a complete list of all enumerations which have undergone this change:
 
 ## `sf::Rect<T>`
 
-`sf::Rect<T>` has been refactored from the four scalar values `top`, `left`, `width`, and `height` into two `sf::Vector2<T>`s named `position` and `size`.
+`sf::Rect<T>` has been refactored from the four scalar values `top`, `left`, `width`, and `height` into two `sf::Vec2<T>`s named `position` and `size`.
 This means that `sf::Rect<T>::getPosition()` and `sf::Rect<T>::getSize()` have been removed in favor of directly accessing the `position` and `size` data members.
-The 4-parameter constructor was also removed in favor of the constructor which takes two `sf::Vector2<T>`s.
+The 4-parameter constructor was also removed in favor of the constructor which takes two `sf::Vec2<T>`s.
 
 | v2        | v3            |
 | --------- | ------------- |
@@ -242,14 +242,14 @@ The 4-parameter constructor was also removed in favor of the constructor which t
 v2:
 ```cpp
 sf::FloatRect rect(10, 20, 30, 40);
-sf::Vector2f position = rect.position;;
-sf::Vector2f size = rect.getSize();
+sf::Vec2f position = rect.position;;
+sf::Vec2f size = rect.getSize();
 ```
 
 v3:
 ```cpp
 sf::FloatRect rect({10, 20}, {30, 40});
-sf::Vector2f position = rect.position;
+sf::Vec2f position = rect.position;
 sf::Vectro2f size = rect.size;
 ```
 
@@ -273,7 +273,7 @@ If you need access to the raw angle as a `float` then you can use either `sf::An
 
 v2:
 ```cpp
-sf::RectangleShape shape(sf::Vector2f(50, 50));
+sf::RectangleShape shape(sf::Vec2f(50, 50));
 shape.rotation = 90;
 std::cout << "Rotation: " << shape.rotation << '\n';
 ```
@@ -402,35 +402,35 @@ if (!soundBuffer.loadFromFile("sound.wav"))
 const sf::SoundBuffer soundBuffer("sound.wav");
 ```
 
-## `sf::Vector2<T>` and `sf::Vector3<T>` Utility Functions
+## `sf::Vec2<T>` and `sf::Vec3<T>` Utility Functions
 
-`sf::Vector2<T>` and `sf::Vector3<T>` gained a number of new functions for performing common mathematic operations on vectors.
+`sf::Vec2<T>` and `sf::Vec3<T>` gained a number of new functions for performing common mathematic operations on vectors.
 
-| `sf::Vector2<T>` Function       | Description                              |
+| `sf::Vec2<T>` Function       | Description                              |
 | ------------------------------- | ---------------------------------------- |
-| `Vector2(T, sf::Angle)`         | Construct from polar coordinates         |
+| `Vec2(T, sf::Angle)`         | Construct from polar coordinates         |
 | `length()`                      | Get length                               |
 | `lengthSquared()`               | Get length squared                       |
 | `normalized()`                  | Get vector normalized to unit circle     |
-| `angleTo(sf::Vector2)`          | Get angle to another vector              |
+| `angleTo(sf::Vec2)`          | Get angle to another vector              |
 | `angle()`                       | Get angle from X axis                    |
 | `rotatedBy(sf::Angle)`          | Get vector rotated by a given angle      |
-| `projectedOnto(sf::Vector2)`    | Get vector projected onto another vector |
+| `projectedOnto(sf::Vec2)`    | Get vector projected onto another vector |
 | `perpendicular()`               | Get perpendicular vector                 |
-| `dot(sf::Vector2)`              | Get dot product                          |
-| `cross(sf::Vector2)`            | Get Z component of cross product         |
-| `componentWiseMul(sf::Vector2)` | Get component-wise multiple              |
-| `componentWiseDiv(sf::Vector2)` | Get component-wise divisor               |
+| `dot(sf::Vec2)`              | Get dot product                          |
+| `cross(sf::Vec2)`            | Get Z component of cross product         |
+| `componentWiseMul(sf::Vec2)` | Get component-wise multiple              |
+| `componentWiseDiv(sf::Vec2)` | Get component-wise divisor               |
 
-| `sf::Vector3<T>` Function       | Description                           |
+| `sf::Vec3<T>` Function       | Description                           |
 | ------------------------------- | ------------------------------------- |
 | `length()`                      | Get length                            |
 | `lengthSquared()`               | Get length squared                    |
 | `normalized()`                  | Get vector normalized to unit circle  |
-| `dot(sf::Vector3)`              | Get dot product                       |
-| `cross(sf::Vector3)`            | Get cross product                     |
-| `componentWiseMul(sf::Vector3)` | Get component-wise multiple           |
-| `componentWiseDiv(sf::Vector3)` | Get component-wise divisor            |
+| `dot(sf::Vec3)`              | Get dot product                       |
+| `cross(sf::Vec3)`            | Get cross product                     |
+| `componentWiseMul(sf::Vec3)` | Get component-wise multiple           |
+| `componentWiseDiv(sf::Vec3)` | Get component-wise divisor            |
 
 ## Threading Primitives
 

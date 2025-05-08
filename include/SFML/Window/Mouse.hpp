@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -70,7 +70,7 @@ enum class Wheel
 /// \return Current position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector2i getPosition();
+[[nodiscard]] SFML_WINDOW_API Vec2i getPosition();
 
 ////////////////////////////////////////////////////////////
 /// \brief Get the current position of the mouse in window coordinates
@@ -83,7 +83,7 @@ enum class Wheel
 /// \return Current position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard]] SFML_WINDOW_API Vector2i getPosition(const WindowBase& relativeTo);
+[[nodiscard]] SFML_WINDOW_API Vec2i getPosition(const WindowBase& relativeTo);
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the current position of the mouse in desktop coordinates
@@ -94,7 +94,7 @@ enum class Wheel
 /// \param position New position of the mouse
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setPosition(Vector2i position);
+SFML_WINDOW_API void setPosition(Vec2i position);
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the current position of the mouse in window coordinates
@@ -106,7 +106,7 @@ SFML_WINDOW_API void setPosition(Vector2i position);
 /// \param relativeTo Reference window
 ///
 ////////////////////////////////////////////////////////////
-SFML_WINDOW_API void setPosition(Vector2i position, const WindowBase& relativeTo);
+SFML_WINDOW_API void setPosition(Vec2i position, const WindowBase& relativeTo);
 } // namespace Mouse
 
 } // namespace sf
@@ -144,10 +144,10 @@ SFML_WINDOW_API void setPosition(Vector2i position, const WindowBase& relativeTo
 /// }
 ///
 /// // get global mouse position
-/// sf::Vector2i position = sf::Mouse::getPosition();
+/// sf::Vec2i position = sf::Mouse::getPosition();
 ///
 /// // set mouse position relative to a window
-/// sf::Mouse::setPosition(sf::Vector2i{100, 200}, window);
+/// sf::Mouse::setPosition(sf::Vec2i{100, 200}, window);
 /// \endcode
 ///
 /// \see `sf::Joystick`, `sf::Keyboard`, `sf::Touch`

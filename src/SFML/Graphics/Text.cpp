@@ -285,7 +285,7 @@ float Text::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-Vector2f Text::findCharacterPos(base::SizeT index) const
+Vec2f Text::findCharacterPos(base::SizeT index) const
 {
     // Adjust the index if it's out of range
     index = base::min(index, m_string.getSize());
@@ -298,7 +298,7 @@ Vector2f Text::findCharacterPos(base::SizeT index) const
                 lineSpacing] = precomputeSpacingConstants(*m_font, m_style, m_characterSize, m_letterSpacing, m_lineSpacing);
 
     // Compute the position
-    Vector2f characterPos;
+    Vec2f    characterPos;
     char32_t prevChar = 0;
     for (base::SizeT i = 0u; i < index; ++i)
     {

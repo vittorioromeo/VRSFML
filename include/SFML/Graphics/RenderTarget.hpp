@@ -14,7 +14,7 @@
 #include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -303,7 +303,7 @@ public:
     /// \see `mapCoordsToPixel`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f mapPixelToCoords(Vector2i point) const;
+    [[nodiscard]] Vec2f mapPixelToCoords(Vec2i point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from target coordinates to world coordinates
@@ -334,7 +334,7 @@ public:
     /// \see `mapCoordsToPixel`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f mapPixelToCoords(Vector2i point, const View& view) const;
+    [[nodiscard]] Vec2f mapPixelToCoords(Vec2i point, const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from world coordinates to target
@@ -354,7 +354,7 @@ public:
     /// \see `mapPixelToCoords`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2i mapCoordsToPixel(Vector2f point) const;
+    [[nodiscard]] Vec2i mapCoordsToPixel(Vec2f point) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Convert a point from world coordinates to target coordinates
@@ -381,7 +381,7 @@ public:
     /// \see `mapPixelToCoords`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2i mapCoordsToPixel(Vector2f point, const View& view) const;
+    [[nodiscard]] Vec2i mapCoordsToPixel(Vec2f point, const View& view) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -389,9 +389,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct TextureDrawParams
     {
-        Vector2f position{};      //!< Position of the object in the 2D world
-        Vector2f scale{1.f, 1.f}; //!< Scale of the object
-        Vector2f origin{};        //!< Origin of translation/rotation/scaling of the object
+        Vec2f position{};      //!< Position of the object in the 2D world
+        Vec2f scale{1.f, 1.f}; //!< Scale of the object
+        Vec2f origin{};        //!< Origin of translation/rotation/scaling of the object
 
         // NOLINTNEXTLINE(readability-redundant-member-init)
         Angle rotation{}; //!< Orientation of the object
@@ -577,7 +577,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Vector2u getSize() const = 0;
+    [[nodiscard]] virtual Vec2u getSize() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell if the render target will use sRGB encoding when drawing on it
