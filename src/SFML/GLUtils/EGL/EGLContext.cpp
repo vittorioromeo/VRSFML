@@ -91,14 +91,15 @@ bool ensureInit()
 }
 
 ////////////////////////////////////////////////////////////
-int evaluateFormat(unsigned int               bitsPerPixel,
-                   const sf::ContextSettings& contextSettings,
-                   int                        colorBits,
-                   int                        depthBits,
-                   int                        stencilBits,
-                   int                        antiAliasing,
-                   bool                       accelerated,
-                   bool                       sRgb)
+[[maybe_unused]] int evaluateFormat(
+    unsigned int               bitsPerPixel,
+    const sf::ContextSettings& contextSettings,
+    int                        colorBits,
+    int                        depthBits,
+    int                        stencilBits,
+    int                        antiAliasing,
+    bool                       accelerated,
+    bool                       sRgb)
 {
     // Weight sub-scores so that better contextSettings don't score equally as bad as worse contextSettings
     const auto adjustNegativeScore = [](int x) { return static_cast<unsigned int>(x * (x > 0 ? 100'000 : -1)); };

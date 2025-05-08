@@ -499,10 +499,7 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
         windowSettings.hasTitlebar = true;
 #endif
 
-    SDL_Window* sdlWindowPtr = SDL_CreateWindow(windowSettings.title.toAnsiString<std::string>().data(),
-                                                static_cast<int>(windowSettings.size.x),
-                                                static_cast<int>(windowSettings.size.y),
-                                                makeSDLWindowFlagsFromWindowSettings(windowSettings));
+    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromWindowSettings(windowSettings));
 
     if (sdlWindowPtr == nullptr)
     {
@@ -540,16 +537,16 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
 ////////////////////////////////////////////////////////////
 base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(const WindowHandle handle)
 {
-    auto* sdlWindow = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle));
+    SDL_Window* sdlWindowPtr = SDL_CreateWindowWithProperties(makeSDLWindowPropertiesFromHandle(handle));
 
-    if (sdlWindow == nullptr)
+    if (sdlWindowPtr == nullptr)
     {
         err() << "Failed to create window from handle: " << SDL_GetError();
         return nullptr;
     }
 
     auto* windowImplPtr = new SDLWindowImpl{"handle",
-                                            static_cast<void*>(sdlWindow),
+                                            static_cast<void*>(sdlWindowPtr),
                                             /* isExternal */ true};
 
     return base::UniquePtr<SDLWindowImpl>{windowImplPtr};

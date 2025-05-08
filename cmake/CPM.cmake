@@ -45,7 +45,7 @@ endif()
 if(DEFINED EXTRACTED_CPM_VERSION)
   set(CURRENT_CPM_VERSION "${EXTRACTED_CPM_VERSION}${CPM_DEVELOPMENT}")
 else()
-  set(CURRENT_CPM_VERSION 0.40.8)
+  set(CURRENT_CPM_VERSION 0.41.0)
 endif()
 
 get_filename_component(CPM_CURRENT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}" REALPATH)
@@ -594,14 +594,6 @@ endfunction()
 function(CPMAddPackage)
   cpm_set_policies()
 
-  list(LENGTH ARGN argnLength)
-  if(argnLength EQUAL 1)
-    cpm_parse_add_package_single_arg("${ARGN}" ARGN)
-
-    # The shorthand syntax implies EXCLUDE_FROM_ALL and SYSTEM
-    set(ARGN "${ARGN};EXCLUDE_FROM_ALL;YES;SYSTEM;YES;")
-  endif()
-
   set(oneValueArgs
       NAME
       FORCE
@@ -624,10 +616,26 @@ function(CPMAddPackage)
 
   set(multiValueArgs URL OPTIONS DOWNLOAD_COMMAND PATCHES)
 
+  list(LENGTH ARGN argnLength)
+
+  # Parse single shorthand argument
+  if(argnLength EQUAL 1)
+    cpm_parse_add_package_single_arg("${ARGN}" ARGN)
+
+    # The shorthand syntax implies EXCLUDE_FROM_ALL and SYSTEM
+    set(ARGN "${ARGN};EXCLUDE_FROM_ALL;YES;SYSTEM;YES;")
+
+    # Parse URI shorthand argument
+  elseif(argnLength GREATER 1 AND "${ARGV0}" STREQUAL "URI")
+    list(REMOVE_AT ARGN 0 1) # remove "URI gh:<...>@version#tag"
+    cpm_parse_add_package_single_arg("${ARGV1}" ARGV0)
+
+    set(ARGN "${ARGV0};EXCLUDE_FROM_ALL;YES;SYSTEM;YES;${ARGN}")
+  endif()
+
   cmake_parse_arguments(CPM_ARGS "" "${oneValueArgs}" "${multiValueArgs}" "${ARGN}")
 
   # Set default values for arguments
-
   if(NOT DEFINED CPM_ARGS_VERSION)
     if(DEFINED CPM_ARGS_GIT_TAG)
       cpm_get_version_from_git_tag("${CPM_ARGS_GIT_TAG}" CPM_ARGS_VERSION)

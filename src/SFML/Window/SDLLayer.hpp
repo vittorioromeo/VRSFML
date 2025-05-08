@@ -60,6 +60,9 @@ namespace sf::priv
 [[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromHandle(WindowHandle handle);
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromWindowSettings(const WindowSettings& windowSettings);
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::pure]] SDL_WindowFlags makeSDLWindowFlagsFromWindowSettings(const WindowSettings& windowSettings) noexcept;
 
 ////////////////////////////////////////////////////////////

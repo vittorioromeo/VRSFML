@@ -462,6 +462,33 @@ namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] SDL_PropertiesID makeSDLWindowPropertiesFromWindowSettings(const WindowSettings& windowSettings)
+{
+    const auto flags = makeSDLWindowFlagsFromWindowSettings(windowSettings);
+
+    const SDL_PropertiesID props = SDL_CreateProperties();
+
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_FLAGS_NUMBER, static_cast<Sint64>(flags));
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, windowSettings.size.x);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, windowSettings.size.y);
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, windowSettings.title.toAnsiString<std::string>().data());
+
+
+    static int i = 0;
+
+    if (i++ != 0)
+    {
+        char id[64];
+        SDL_snprintf(id, sizeof(id), "#canvas%d", i + 1);
+        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_CANVAS_ID_STRING, id);
+        SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_EMSCRIPTEN_KEYBOARD_ELEMENT_STRING, id);
+    }
+
+    return props;
+}
+
+
+////////////////////////////////////////////////////////////
 [[nodiscard, gnu::pure]] SDL_WindowFlags makeSDLWindowFlagsFromWindowSettings(const WindowSettings& windowSettings) noexcept
 {
     SDL_WindowFlags flags{};
