@@ -51,7 +51,7 @@ else()
         CPMAddPackage(
             NAME flac
             GITHUB_REPOSITORY xiph/flac
-            GIT_TAG 1.4.3
+            GIT_TAG 1.5.0
             SYSTEM TRUE
             # patch out the annoying parts of the FLAC CMake configuration:
             # - adding unnecessary libraries that aren't even used

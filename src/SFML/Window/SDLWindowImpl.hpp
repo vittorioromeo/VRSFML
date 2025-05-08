@@ -47,10 +47,7 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Create a new window depending on the current OS
     ///
-    /// \param mode  Video mode to use
-    /// \param title Title of the window
-    /// \param style Window style
-    /// \param state Window state
+    /// \param windowSettings Settings for the window
     ///
     /// \return Pointer to the created window
     ///

@@ -22,6 +22,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"
+#include "SFML/System/SignalErrHandler.hpp"
 
 #include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Algorithm.hpp"
@@ -34,8 +35,6 @@
 
 #include <atomic>
 #include <mutex>
-
-#include <csignal>
 
 
 namespace sf
@@ -289,10 +288,7 @@ base::Optional<WindowContext> WindowContext::create()
 
     //
     // Define fatal signal handlers for the user that will display a stack trace
-    std::signal(SIGSEGV, [](int) { priv::err() << "FATAL SIGNAL: SIGSEGV"; });
-    std::signal(SIGILL, [](int) { priv::err() << "FATAL SIGNAL: SIGILL"; });
-    std::signal(SIGABRT, [](int) { priv::err() << "FATAL SIGNAL: SIGABRT"; });
-    std::signal(SIGFPE, [](int) { priv::err() << "FATAL SIGNAL: SIGFPE"; });
+    priv::installSignalErrHandler();
 
     //
     // Enable shader GL context

@@ -23,5 +23,6 @@ class Path;
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API std::FILE* openFile(const Path& filename, base::StringView mode);
 } // namespace sf
