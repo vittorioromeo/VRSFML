@@ -3,7 +3,7 @@
 #include "Achievements.hpp"
 #include "Stats.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -49,7 +49,7 @@ struct [[nodiscard]] Profile
 
     Stats statsLifetime;
 
-    sf::Vector2u resWidth = {};
+    sf::Vec2u resWidth = {};
 
     bool windowed = true;
     bool vsync    = true;

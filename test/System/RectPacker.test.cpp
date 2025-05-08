@@ -1,6 +1,6 @@
 #include "SFML/System/RectPacker.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include <Doctest.hpp>
 
@@ -11,7 +11,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-void checkPack(sf::RectPacker& rectPacker, sf::Vector2u size, sf::Vector2u position)
+void checkPack(sf::RectPacker& rectPacker, sf::Vec2u size, sf::Vec2u position)
 {
     const auto p0 = rectPacker.pack(size);
     CHECK(p0.hasValue());
@@ -26,7 +26,7 @@ TEST_CASE("[System] sf::RectPacker", "")
     SECTION("Size constructor")
     {
         sf::RectPacker rectPacker({128u, 128u});
-        CHECK(rectPacker.getSize() == sf::Vector2u{128u, 128u});
+        CHECK(rectPacker.getSize() == sf::Vec2u{128u, 128u});
     }
 
     SECTION("Failure to pack -- OOB")

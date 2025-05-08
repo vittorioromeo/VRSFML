@@ -12,7 +12,7 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/RectPacker.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -40,7 +40,7 @@ m_rectPacker(m_atlasTexture.getSize())
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vector2u size)
+base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vec2u size)
 {
     const auto packedPosition = m_rectPacker.pack(size);
 
@@ -49,7 +49,7 @@ base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vector2u siz
 
     m_atlasTexture.update(pixels, size, *packedPosition);
 
-    return base::makeOptional<FloatRect>(packedPosition->to<Vector2f>(), size.to<Vector2f>());
+    return base::makeOptional<FloatRect>(packedPosition->to<Vec2f>(), size.to<Vec2f>());
 }
 
 
@@ -71,7 +71,7 @@ base::Optional<FloatRect> TextureAtlas::add(const Texture& texture)
     if (!m_atlasTexture.update(texture, *packedPosition))
         return fail("update texture for texture atlas");
 
-    return base::makeOptional<FloatRect>(packedPosition->to<Vector2f>(), texture.getSize().to<Vector2f>());
+    return base::makeOptional<FloatRect>(packedPosition->to<Vec2f>(), texture.getSize().to<Vec2f>());
 }
 
 

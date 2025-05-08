@@ -62,7 +62,7 @@ TEST_CASE("[System] sf::Utf8")
             CHECK(output == u8" "sv);
             sf::Utf8::encode(U'🐌', std::back_inserter(output));
             CHECK(output == u8" 🐌"sv);
-            sf::Utf8::encode(0xFFFFFFFF, std::back_inserter(output));
+            sf::Utf8::encode(0xFF'FF'FF'FF, std::back_inserter(output));
             CHECK(output == u8" 🐌"sv);
         }
 
@@ -72,7 +72,7 @@ TEST_CASE("[System] sf::Utf8")
             CHECK(output == u8" "sv);
             sf::Utf8::encode(U'🐌', std::back_inserter(output), '?');
             CHECK(output == u8" 🐌"sv);
-            sf::Utf8::encode(0xFFFFFFFF, std::back_inserter(output), '?');
+            sf::Utf8::encode(0xFF'FF'FF'FF, std::back_inserter(output), '?');
             CHECK(output == u8" 🐌?"sv);
         }
     }
@@ -237,7 +237,7 @@ TEST_CASE("[System] sf::Utf16")
             CHECK(output == u" "sv);
             sf::Utf16::encode(U'🐌', std::back_inserter(output));
             CHECK(output == u" 🐌"sv);
-            sf::Utf16::encode(0xFFFFFFFF, std::back_inserter(output));
+            sf::Utf16::encode(0xFF'FF'FF'FF, std::back_inserter(output));
             CHECK(output == u" 🐌"sv);
         }
 
@@ -247,7 +247,7 @@ TEST_CASE("[System] sf::Utf16")
             CHECK(output == u" "sv);
             sf::Utf16::encode(U'🐌', std::back_inserter(output), '?');
             CHECK(output == u" 🐌"sv);
-            sf::Utf16::encode(0xFFFFFFFF, std::back_inserter(output), '?');
+            sf::Utf16::encode(0xFF'FF'FF'FF, std::back_inserter(output), '?');
             CHECK(output == u" 🐌?"sv);
         }
     }

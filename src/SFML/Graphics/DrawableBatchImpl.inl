@@ -29,7 +29,7 @@
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
@@ -59,7 +59,7 @@ void generateRingVertices(const auto&           descriptor,
                           const sf::base::SizeT numArcPoints,
                           const float           startRadians,
                           const float           angleStep,
-                          const sf::Vector2f    invLocalBoundsSize,
+                          const sf::Vec2f    invLocalBoundsSize,
                           sf::Vertex* const     fillVertexPtr)
 {
     for (unsigned int i = 0u; i < numArcPoints; ++i)
@@ -71,7 +71,7 @@ void generateRingVertices(const auto&           descriptor,
                                                                                              descriptor.innerRadius);
 
         // Outer vertex of the pair
-        const sf::Vector2f ratioO = outerPoint.componentWiseMul(invLocalBoundsSize);
+        const sf::Vec2f ratioO = outerPoint.componentWiseMul(invLocalBoundsSize);
         fillVertexPtr[2 * i + 0]  = {
              .position  = transform.transformPoint(outerPoint),
              .color     = descriptor.fillColor,
@@ -79,7 +79,7 @@ void generateRingVertices(const auto&           descriptor,
         };
 
         // Inner vertex of the pair
-        const sf::Vector2f ratioI = innerPoint.componentWiseMul(invLocalBoundsSize);
+        const sf::Vec2f ratioI = innerPoint.componentWiseMul(invLocalBoundsSize);
         fillVertexPtr[2 * i + 1]  = {
              .position  = transform.transformPoint(innerPoint),
              .color     = descriptor.fillColor,
@@ -362,7 +362,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     const base::SizeT nPoints,
     const auto&       descriptor,
     auto&&            pointFn,
-    const Vector2f    centerOffset)
+    const Vec2f    centerOffset)
 {
     if (nPoints < 3u) [[unlikely]]
         return {};
@@ -381,7 +381,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     //
     // Update fill vertex positions and compute inside bounds
     fillVertexPtr[1].position       = transform.transformPoint(pointFn(0u)); // first point
-    sf::Vector2f fillBoundsPosition = fillVertexPtr[1].position;             // left and top
+    sf::Vec2f fillBoundsPosition = fillVertexPtr[1].position;             // left and top
 
     float fillBoundsMaxX = fillVertexPtr[1].position.x; // right
     float fillBoundsMaxY = fillVertexPtr[1].position.y; // bottom
@@ -399,7 +399,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
         fillBoundsMaxY = SFML_BASE_MAX(fillBoundsMaxY, v.position.y);
     }
 
-    const sf::Vector2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
+    const sf::Vec2f fillBoundsSize{fillBoundsMaxX - fillBoundsPosition.x, fillBoundsMaxY - fillBoundsPosition.y};
 
     fillVertexPtr[0].position            = fillBoundsPosition + fillBoundsSize / 2.f + centerOffset; // center
     fillVertexPtr[1u + nPoints].position = fillVertexPtr[1].position; // repeated first point
@@ -413,7 +413,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
         {
             vertex->color = descriptor.fillColor;
 
-            const Vector2f ratio = (vertex->position - fillBoundsPosition).componentWiseDiv(fillBoundsSize);
+            const Vec2f ratio = (vertex->position - fillBoundsPosition).componentWiseDiv(fillBoundsSize);
             vertex->texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratio);
         }
     }
@@ -468,8 +468,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const ArrowShapeData& sdArrow)
 {
     const auto
         centerOffset = sdArrow.shaftWidth < sdArrow.headWidth
-                           ? Vector2f{sdArrow.shaftWidth / 2.f, 0.f}.componentWiseMul(sdArrow.scale).rotatedBy(sdArrow.rotation)
-                           : Vector2f{0.f, 0.f};
+                           ? Vec2f{sdArrow.shaftWidth / 2.f, 0.f}.componentWiseMul(sdArrow.scale).rotatedBy(sdArrow.rotation)
+                           : Vec2f{0.f, 0.f};
 
     return drawTriangleFanShapeFromPoints(7u,
                                           sdArrow,
@@ -592,8 +592,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     // Local origin `(0, 0)` is top-left of the bounding box
     // Bounding box size is `(2 * outerRadius, 2 * outerRadius)`
     // Geometric center within local coords is `(outerRadius, outerRadius)`
-    const Vector2f localBoundsSize    = {2.f * sdRing.outerRadius, 2.f * sdRing.outerRadius};
-    const Vector2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
+    const Vec2f localBoundsSize    = {2.f * sdRing.outerRadius, 2.f * sdRing.outerRadius};
+    const Vec2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
 
     //
     // Generate fill geometry (triangle strip)
@@ -735,8 +735,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     // Local origin `(0, 0)` is top-left of the bounding box
     // Bounding box size is `(2 * outerRadius, 2 * outerRadius)`
     // Geometric center within local coords is `(outerRadius, outerRadius)`
-    const Vector2f localBoundsSize    = {2.f * sdRingPieSlice.outerRadius, 2.f * sdRingPieSlice.outerRadius};
-    const Vector2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
+    const Vec2f localBoundsSize    = {2.f * sdRingPieSlice.outerRadius, 2.f * sdRingPieSlice.outerRadius};
+    const Vec2f invLocalBoundsSize = {1.f / localBoundsSize.x, 1.f / localBoundsSize.y};
 
     //
     // Generate fill geometry (triangle strip)

@@ -10,7 +10,7 @@
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -104,7 +104,7 @@ public:
     /// \return Texture on success, `base::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Texture> create(Vector2u size, const TextureCreateSettings& settings = {});
+    [[nodiscard]] static base::Optional<Texture> create(Vec2u size, const TextureCreateSettings& settings = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Load the texture from a file on disk
@@ -216,7 +216,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const;
+    [[nodiscard]] Vec2u getSize() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy the texture pixels to an image
@@ -269,7 +269,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const base::U8* pixels, Vector2u size, Vector2u dest);
+    void update(const base::U8* pixels, Vec2u size, Vec2u dest);
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of this texture from another texture
@@ -285,7 +285,7 @@ public:
     /// \param dest    Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Texture& texture, Vector2u dest = {0u, 0u});
+    [[nodiscard]] bool update(const Texture& texture, Vec2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from an image
@@ -301,7 +301,7 @@ public:
     /// \param dest  Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    void update(const Image& image, Vector2u dest = {0u, 0u});
+    void update(const Image& image, Vec2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Update a part of the texture from the contents of a window
@@ -319,7 +319,7 @@ public:
     /// \param dest   Coordinates of the destination position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(const Window& window, Vector2u dest = {0u, 0u});
+    [[nodiscard]] bool update(const Window& window, Vec2u dest = {0u, 0u});
 
     ////////////////////////////////////////////////////////////
     /// \brief Enable or disable the smooth filter
@@ -498,7 +498,7 @@ public:
     /// Creates an empty texture.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture(base::PassKey<Texture>&&, Vector2u size, unsigned int texture, bool sRgb);
+    [[nodiscard]] Texture(base::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -513,7 +513,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u        m_size;            //!< Public texture size
+    Vec2u           m_size;            //!< Public texture size
     unsigned int    m_texture{};       //!< Internal texture identifier
     bool            m_isSmooth{};      //!< Status of the smooth filter
     bool            m_sRgb{};          //!< Should the texture source be converted from sRGB?

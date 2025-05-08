@@ -14,7 +14,7 @@
 #include "SFML/Window/WindowHandle.hpp"
 #include "SFML/Window/WindowSettings.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -106,7 +106,7 @@ public:
     /// \return Size in pixels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2u getSize() const override;
+    [[nodiscard]] Vec2u getSize() const override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the window's icon
@@ -155,7 +155,7 @@ public:
     /// \see WindowBase::setSize
     ///
     ////////////////////////////////////////////////////////////
-    void setSize(const Vector2u& size);
+    void setSize(const Vec2u& size);
 
     ////////////////////////////////////////////////////////////
     /// \brief Polls the next event and forwards to `WindowBase::pollEvent`

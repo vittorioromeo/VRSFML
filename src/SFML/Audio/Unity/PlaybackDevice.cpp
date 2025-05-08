@@ -13,7 +13,7 @@
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/LifetimeDependant.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
@@ -176,7 +176,7 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
 {
     ma_engine* engine = &m_impl->maEngine;
 
-    // Set master volume, position, velocity, cone and world up vector
+    // Set master volume, position, velocity, cone and world up vec
     if (const ma_result result = ma_device_set_master_volume(ma_engine_get_device(engine), listener.volume);
         result != MA_SUCCESS)
     {
@@ -193,7 +193,7 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
                                 base::clamp(listener.cone.outerAngle, Angle::Zero, Angle::Full).asRadians(),
                                 listener.cone.outerGain);
 
-    ma_engine_listener_set_world_up(engine, 0, listener.upVector.x, listener.upVector.y, listener.upVector.z);
+    ma_engine_listener_set_world_up(engine, 0, listener.upVec.x, listener.upVec.y, listener.upVec.z);
 
     return true;
 }

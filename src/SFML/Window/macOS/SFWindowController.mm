@@ -390,7 +390,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setWindowPositionTo:(sf::Vector2i)position
+- (void)setWindowPositionTo:(sf::Vec2i)position
 {
     NSPoint point = NSMakePoint(position.x, position.y);
 
@@ -413,7 +413,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)resizeTo:(sf::Vector2u)size
+- (void)resizeTo:(sf::Vec2u)size
 {
     if (m_fullscreen)
     {
@@ -424,7 +424,7 @@
         size.x = sf::base::min(size.x, desktop.size.x);
         size.y = sf::base::min(size.y, desktop.size.y);
 
-        const auto origin  = sf::Vector2<CGFloat>(desktop.size - size) / CGFloat{2};
+        const auto origin  = sf::Vec2<CGFloat>(desktop.size - size) / CGFloat{2};
         NSRect     oglRect = NSMakeRect(origin.x, origin.y, size.x, size.y);
 
         [m_oglView setFrame:oglRect];
@@ -539,7 +539,7 @@
 
 
 ////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels
+- (void)setIconTo:(sf::Vec2u)size with:(const base::U8*)pixels
 {
     // Load image and set app icon.
     NSImage* icon = [NSImage imageWithRawData:pixels andSize:NSMakeSize(size.x, size.y)];

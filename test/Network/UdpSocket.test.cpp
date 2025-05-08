@@ -17,7 +17,7 @@ TEST_CASE("[Network] sf::UdpSocket")
 
     SECTION("Constants")
     {
-        STATIC_CHECK(sf::UdpSocket::MaxDatagramSize == 65507);
+        STATIC_CHECK(sf::UdpSocket::MaxDatagramSize == 65'507);
     }
 
     SECTION("Construction")

@@ -18,7 +18,7 @@ public:
     }
 
 private:
-    [[nodiscard]] sf::Vector2u getSize() const override
+    [[nodiscard]] sf::Vec2u getSize() const override
     {
         return {640, 480};
     }
@@ -40,8 +40,8 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     SECTION("Construction")
     {
         const TestRenderTarget renderTarget;
-        CHECK(renderTarget.getView().center == sf::Vector2f{500, 500});
-        CHECK(renderTarget.getView().size == sf::Vector2f{1000, 1000});
+        CHECK(renderTarget.getView().center == sf::Vec2f{500, 500});
+        CHECK(renderTarget.getView().size == sf::Vec2f{1000, 1000});
         CHECK(renderTarget.getView().rotation == sf::Angle::Zero);
         CHECK(renderTarget.getView().viewport == sf::FloatRect({0, 0}, {1, 1}));
         CHECK(renderTarget.getView().getTransform() == sf::Transform(.002f, 0, -1, 0, -.002f, 1));
@@ -60,8 +60,8 @@ TEST_CASE("[Graphics] sf::RenderTarget")
     {
         TestRenderTarget renderTarget;
         renderTarget.setView({{1, 2}, {3, 4}});
-        CHECK(renderTarget.getView().center == sf::Vector2f{1, 2});
-        CHECK(renderTarget.getView().size == sf::Vector2f{3, 4});
+        CHECK(renderTarget.getView().center == sf::Vec2f{1, 2});
+        CHECK(renderTarget.getView().size == sf::Vec2f{3, 4});
     }
 
     SECTION("setActive()")
@@ -98,7 +98,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
               sf::IntRect({0, 0}, {640, 480}));
     }
 
-    SECTION("mapPixelToCoords(Vector2i)")
+    SECTION("mapPixelToCoords(Vec2i)")
     {
         sf::View view;
         view.center += {5, 5};
@@ -116,7 +116,7 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK_THAT(y3, Catch::Matchers::WithinRel(505, 1e-5));
     }
 
-    SECTION("mapPixelToCoords(Vector2i, const View&)")
+    SECTION("mapPixelToCoords(Vec2i, const View&)")
     {
         sf::View view;
         view.center += {5, 5};
@@ -130,28 +130,28 @@ TEST_CASE("[Graphics] sf::RenderTarget")
         CHECK_THAT(y2, Catch::Matchers::WithinRel(505, 1e-5));
     }
 
-    SECTION("mapCoordsToPixel(Vector2f)")
+    SECTION("mapCoordsToPixel(Vec2f)")
     {
         sf::View view;
         view.center += {5, 5};
         view.viewport = sf::FloatRect({.25f, 0}, {1, 1});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
-        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vector2i(156, -2));
-        CHECK(renderTarget.mapCoordsToPixel({-500, 0}) == sf::Vector2i(-163, -2));
-        CHECK(renderTarget.mapCoordsToPixel({0, -250}) == sf::Vector2i(156, -122));
+        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(156, -2));
+        CHECK(renderTarget.mapCoordsToPixel({-500, 0}) == sf::Vec2i(-163, -2));
+        CHECK(renderTarget.mapCoordsToPixel({0, -250}) == sf::Vec2i(156, -122));
     }
 
-    SECTION("mapCoordsToPixel(Vector2f, const View&)")
+    SECTION("mapCoordsToPixel(Vec2f, const View&)")
     {
         sf::View view;
         view.center += {5, 5};
         view.viewport = sf::FloatRect({0, 0}, {.5, .25f});
         TestRenderTarget renderTarget;
         renderTarget.setView(view);
-        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vector2i(-1, 0));
-        CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vector2i{100, 0});
-        CHECK(renderTarget.mapCoordsToPixel({0, 480}) == sf::Vector2i(-1, 57));
-        CHECK(renderTarget.mapCoordsToPixel({640, 480}) == sf::Vector2i{203, 57});
+        CHECK(renderTarget.mapCoordsToPixel({0, 0}) == sf::Vec2i(-1, 0));
+        CHECK(renderTarget.mapCoordsToPixel({320, 0}) == sf::Vec2i{100, 0});
+        CHECK(renderTarget.mapCoordsToPixel({0, 480}) == sf::Vec2i(-1, 57));
+        CHECK(renderTarget.mapCoordsToPixel({640, 480}) == sf::Vec2i{203, 57});
     }
 }

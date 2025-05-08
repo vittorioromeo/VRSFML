@@ -22,7 +22,7 @@
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
@@ -39,7 +39,7 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
-void to_json(nlohmann::json& j, const Vector2<T>& p)
+void to_json(nlohmann::json& j, const Vec2<T>& p)
 {
     j[0] = p.x;
     j[1] = p.y;
@@ -48,7 +48,7 @@ void to_json(nlohmann::json& j, const Vector2<T>& p)
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-void from_json(const nlohmann::json& j, Vector2<T>& p)
+void from_json(const nlohmann::json& j, Vec2<T>& p)
 {
     p.x = j[0].get<T>();
     p.y = j[1].get<T>();

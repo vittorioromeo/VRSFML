@@ -79,7 +79,7 @@ namespace sf
     Vertex* const    vertexPtr)
 {
     const auto& [position, size] = textureRect;
-    const Vector2f absSize{SFML_BASE_MATH_FABSF(size.x), SFML_BASE_MATH_FABSF(size.y)};
+    const Vec2f absSize{SFML_BASE_MATH_FABSF(size.x), SFML_BASE_MATH_FABSF(size.y)};
 
     // Position
     vertexPtr[0].position.x = transform.a02;

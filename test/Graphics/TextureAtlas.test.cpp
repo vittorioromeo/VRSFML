@@ -7,7 +7,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include <Doctest.hpp>
 
@@ -24,7 +24,7 @@ TEST_CASE("[Graphics] sf::TextureAtlas" * doctest::skip(skipDisplayTests))
     const auto makeColoredTexture = [&](sf::Color color)
     { return sf::Texture::loadFromImage(sf::Image::create({64u, 64u}, color).value()).value(); };
 
-    constexpr sf::Vector2u atlasSize{512u, 512u};
+    constexpr sf::Vec2u atlasSize{512u, 512u};
 
     SECTION("Add -- failure case")
     {

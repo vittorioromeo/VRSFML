@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec3.hpp"
 
 
 namespace sf
@@ -70,7 +70,7 @@ struct Sensor
     /// \return The current sensor value
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_WINDOW_API static Vector3f getValue(Type sensor);
+    [[nodiscard]] SFML_WINDOW_API static Vec3f getValue(Type sensor);
 };
 
 } // namespace sf
@@ -118,7 +118,7 @@ struct Sensor
 /// sf::Sensor::setEnabled(sf::Sensor::Type::Gravity, true);
 ///
 /// // get the current value of gravity
-/// sf::Vector3f gravity = sf::Sensor::getValue(sf::Sensor::Type::Gravity);
+/// sf::Vec3f gravity = sf::Sensor::getValue(sf::Sensor::Type::Gravity);
 /// \endcode
 ///
 ////////////////////////////////////////////////////////////

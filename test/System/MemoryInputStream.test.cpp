@@ -77,7 +77,7 @@ TEST_CASE("[System] sf::MemoryInputStream")
 
         SECTION("Seek beyond input")
         {
-            CHECK(memoryInputStream.seek(1'000).value() == input.size());
+            CHECK(memoryInputStream.seek(1000).value() == input.size());
             CHECK(memoryInputStream.tell().value() == input.size());
         }
     }

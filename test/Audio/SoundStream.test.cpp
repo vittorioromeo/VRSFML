@@ -120,14 +120,14 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
     {
         TestSoundStream soundStream;
         soundStream.setPosition({1, 2, 3});
-        CHECK(soundStream.getPosition() == sf::Vector3f(1, 2, 3));
+        CHECK(soundStream.getPosition() == sf::Vec3f(1, 2, 3));
     }
 
     SECTION("Set/get direction")
     {
         TestSoundStream soundStream;
         soundStream.setDirection({4, 5, 6});
-        CHECK(soundStream.getDirection() == sf::Vector3f(4, 5, 6));
+        CHECK(soundStream.getDirection() == sf::Vec3f(4, 5, 6));
     }
 
     SECTION("Set/get cone")
@@ -143,7 +143,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
     {
         TestSoundStream soundStream;
         soundStream.setVelocity({7, 8, 9});
-        CHECK(soundStream.getVelocity() == sf::Vector3f(7, 8, 9));
+        CHECK(soundStream.getVelocity() == sf::Vec3f(7, 8, 9));
     }
 
     SECTION("Set/get doppler factor")

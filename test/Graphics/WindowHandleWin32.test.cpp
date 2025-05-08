@@ -94,12 +94,12 @@ void runWindowTest(DWORD exStyle, bool withMenu)
     RECT windowRect{};
     REQUIRE(GetClientRect(handle, &windowRect));
     ClientToScreen(handle, reinterpret_cast<LPPOINT>(&windowRect));
-    const auto position = sf::Vector2(windowRect.left, windowRect.top).toVector2i();
+    const auto position = sf::Vec2(windowRect.left, windowRect.top).toVec2i();
 
     RECT clientRect{};
     REQUIRE(GetClientRect(handle, &clientRect));
-    const auto initialSize = sf::Vector2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVector2u();
-    constexpr sf::Vector2u newSize(640, 480);
+    const auto initialSize = sf::Vec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVec2u();
+    constexpr sf::Vec2u newSize(640, 480);
 
     // Test sf::WindowBase functionality
     SUBCASE("sf::WindowBase tests")
@@ -117,7 +117,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         windowBase->setSize(newSize);
 
         REQUIRE(GetClientRect(handle, &clientRect));
-        const auto size = sf::Vector2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVector2u();
+        const auto size = sf::Vec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVec2u();
         CHECK(size == newSize);
         CHECK(windowBase->getSize() == size);
     }
@@ -156,7 +156,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         window->setSize(newSize);
 
         REQUIRE(GetClientRect(handle, &clientRect));
-        const auto size = sf::Vector2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVector2u();
+        const auto size = sf::Vec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVec2u();
         CHECK(size == newSize);
         CHECK(window->getSize() == size);
     }
@@ -196,7 +196,7 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         renderWindow->setSize(newSize);
 
         REQUIRE(GetClientRect(handle, &clientRect));
-        const auto size = sf::Vector2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVector2u();
+        const auto size = sf::Vec2(clientRect.right - clientRect.left, clientRect.bottom - clientRect.top).toVec2u();
         CHECK(size == newSize);                 // Validate that the actual client rect is indeed what we asked for
         CHECK(renderWindow->getSize() == size); // Validate that the `getSize` also returns the _actual_ client size
     }

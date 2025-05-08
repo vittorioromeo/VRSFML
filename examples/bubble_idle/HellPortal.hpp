@@ -2,18 +2,18 @@
 
 #include "Countdown.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] HellPortal
 {
-    sf::Vector2f    position;
+    sf::Vec2f    position;
     Countdown       life;
     sf::base::SizeT catIdx;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vector2f getDrawPosition() const
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline sf::Vec2f getDrawPosition() const
     {
         return position;
     }

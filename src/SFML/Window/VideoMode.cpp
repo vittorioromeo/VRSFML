@@ -25,7 +25,7 @@ bool VideoMode::isValid() const
 ////////////////////////////////////////////////////////////
 bool operator<(const VideoMode& lhs, const VideoMode& rhs)
 {
-    const auto vecLessThan = [](const Vector2u& lhs, const Vector2u& rhs) -> bool
+    const auto vecLessThan = [](const Vec2u& lhs, const Vec2u& rhs) -> bool
     {
         if (lhs.x == rhs.x)
             return lhs.y < rhs.y;

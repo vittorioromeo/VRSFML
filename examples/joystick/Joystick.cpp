@@ -119,11 +119,11 @@ int main()
         texts.at("Threshold").value.setString(oss.to<sf::String>());
     };
 
-    constexpr sf::Vector2f windowSize{400.f, 775.f};
+    constexpr sf::Vec2f windowSize{400.f, 775.f};
 
     // Create the window of the application
     auto window = makeDPIScaledRenderWindow({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "Joystick",
         .resizable = true,
         .vsync     = true,

@@ -8,7 +8,7 @@
 
 #include "SFML/Window/WindowHandle.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #import <AppKit/AppKit.h>
 
@@ -112,7 +112,7 @@ class WindowImplCocoa;
 /// \param position x and y position in SFML coordinates
 ///
 ////////////////////////////////////////////////////////////
-- (void)setWindowPositionTo:(sf::Vector2i)position;
+- (void)setWindowPositionTo:(sf::Vec2i)position;
 
 ////////////////////////////////////////////////////////////
 /// \brief Get window/view's size
@@ -128,7 +128,7 @@ class WindowImplCocoa;
 /// \param size new width and height
 ///
 ////////////////////////////////////////////////////////////
-- (void)resizeTo:(sf::Vector2u)size;
+- (void)resizeTo:(sf::Vec2u)size;
 
 ////////////////////////////////////////////////////////////
 /// \brief Set the minimize window/view size
@@ -214,7 +214,7 @@ class WindowImplCocoa;
 /// \param pixels icon's data
 ///
 ////////////////////////////////////////////////////////////
-- (void)setIconTo:(sf::Vector2u)size with:(const base::U8*)pixels;
+- (void)setIconTo:(sf::Vec2u)size with:(const base::U8*)pixels;
 
 ////////////////////////////////////////////////////////////
 /// \brief Fetch new event

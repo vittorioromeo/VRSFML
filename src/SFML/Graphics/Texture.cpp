@@ -64,7 +64,7 @@ constinit std::atomic<unsigned int> nextUniqueId{1u}; // start at 1, zero is "no
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Texture::Texture(base::PassKey<Texture>&&, Vector2u size, unsigned int texture, bool sRgb) :
+Texture::Texture(base::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
 m_size(size),
 m_texture(texture),
 m_sRgb(sRgb),
@@ -165,7 +165,7 @@ Texture& Texture::operator=(Texture&& right) noexcept
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Texture> Texture::create(Vector2u size, const TextureCreateSettings& settings)
+base::Optional<Texture> Texture::create(Vec2u size, const TextureCreateSettings& settings)
 {
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
@@ -274,7 +274,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     base::Optional<Texture> result; // Use a single local variable for NRVO
 
     // Retrieve the image size
-    const auto size = image.getSize().toVector2i();
+    const auto size = image.getSize().toVec2i();
 
     // Load the entire image if the source area is either empty or contains the whole image
     if (settings.area.size.x == 0 || (settings.area.size.y == 0) ||
@@ -303,7 +303,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     rectangle.size.y     = base::min(rectangle.size.y, size.y - rectangle.position.y);
 
     // Create the texture and upload the pixels
-    if ((result = sf::Texture::create(rectangle.size.toVector2u(),
+    if ((result = sf::Texture::create(rectangle.size.toVec2u(),
                                       {.sRgb = settings.sRgb, .smooth = settings.smooth, .wrapMode = settings.wrapMode})))
     {
         SFML_BASE_ASSERT(GraphicsContext::hasActiveThreadLocalGlContext());
@@ -334,7 +334,7 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
 
 
 ////////////////////////////////////////////////////////////
-Vector2u Texture::getSize() const
+Vec2u Texture::getSize() const
 {
     return m_size;
 }
@@ -393,7 +393,7 @@ void Texture::update(const base::U8* pixels)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
+void Texture::update(const base::U8* pixels, Vec2u size, Vec2u dest)
 {
     SFML_BASE_ASSERT(dest.x + size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -430,7 +430,7 @@ void Texture::update(const base::U8* pixels, Vector2u size, Vector2u dest)
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::update(const Texture& texture, Vector2u dest)
+bool Texture::update(const Texture& texture, Vec2u dest)
 {
     SFML_BASE_ASSERT(dest.x + texture.m_size.x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + texture.m_size.y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -517,14 +517,14 @@ bool Texture::update(const Texture& texture, Vector2u dest)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::update(const Image& image, Vector2u dest)
+void Texture::update(const Image& image, Vec2u dest)
 {
     update(image.getPixelsPtr(), image.getSize(), dest);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool Texture::update(const Window& window, Vector2u dest)
+bool Texture::update(const Window& window, Vec2u dest)
 {
     SFML_BASE_ASSERT(dest.x + window.getSize().x <= m_size.x && "Destination x coordinate is outside of texture");
     SFML_BASE_ASSERT(dest.y + window.getSize().y <= m_size.y && "Destination y coordinate is outside of texture");
@@ -787,7 +787,7 @@ unsigned int Texture::getNativeHandle() const
 ////////////////////////////////////////////////////////////
 FloatRect Texture::getRect() const
 {
-    return {{0, 0}, getSize().toVector2f()};
+    return {{0, 0}, getSize().toVec2f()};
 }
 
 

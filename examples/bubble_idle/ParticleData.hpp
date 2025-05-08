@@ -1,13 +1,13 @@
 #pragma once
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ParticleData
 {
-    sf::Vector2f position;
-    sf::Vector2f velocity;
+    sf::Vec2f position;
+    sf::Vec2f velocity;
 
     float scale; // TODO P2: consider optimizing memory layout
     float scaleDecay;

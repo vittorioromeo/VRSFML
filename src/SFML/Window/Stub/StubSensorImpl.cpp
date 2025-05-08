@@ -49,7 +49,7 @@ void StubSensorImpl::close()
 
 
 ////////////////////////////////////////////////////////////
-Vector3f StubSensorImpl::update()
+Vec3f StubSensorImpl::update()
 {
     // err() << "Sensor API not implemented";
     return {};

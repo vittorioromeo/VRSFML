@@ -87,7 +87,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Time.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
@@ -234,7 +234,7 @@ inline void drawMinimap(
     const sf::Texture&      txDrawings,
     sf::CPUDrawableBatch&   batch,
     const sf::TextureAtlas& textureAtlas,
-    const sf::Vector2f      resolution,
+    const sf::Vec2f         resolution,
     const float             hudScale,
     const float             hueMod,
     const sf::base::U8      shouldDrawUIAlpha,
@@ -242,11 +242,11 @@ inline void drawMinimap(
 {
     //
     // Screen position of minimap's top-left corner
-    constexpr sf::Vector2f minimapPos = {15.f, 15.f};
+    constexpr sf::Vec2f minimapPos = {15.f, 15.f};
 
     //
     // Size of full map in minimap space
-    const sf::Vector2f minimapSize = boundaries / minimapScale;
+    const sf::Vec2f minimapSize = boundaries / minimapScale;
 
     //
     // White border around minimap
@@ -299,8 +299,8 @@ inline void drawMinimap(
     rt.draw(sf::RectangleShapeData{.fillColor = sf::Color::blackMask(shouldDrawUIAlpha), .size = boundaries * hudScale});
 
     // The background has a repeating texture, and it's one ninth of the whole map
-    const sf::Vector2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
-                                          static_cast<float>(txBackgroundChunk.getSize().y)};
+    const sf::Vec2f backgroundRectSize{static_cast<float>(txBackgroundChunk.getSize().x) * nGameScreens,
+                                       static_cast<float>(txBackgroundChunk.getSize().y)};
 
     rt.draw(txBackgroundChunk,
             {.scale       = {hudScale, hudScale},
@@ -333,14 +333,14 @@ inline void drawMinimap(
 inline void drawSplashScreen(sf::RenderTarget&        rt,
                              const sf::Texture&       txLogo,
                              const TargetedCountdown& splashCountdown,
-                             const sf::Vector2f       resolution,
+                             const sf::Vec2f          resolution,
                              const float              hudScale)
 {
     const auto progress = easeInOutCubic(splashCountdown.getProgressBounced());
 
     rt.draw(sf::Sprite{.position    = resolution / 2.f / hudScale,
-                       .scale       = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
-                       .origin      = txLogo.getSize().toVector2f() / 2.f,
+                       .scale       = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutCubic(progress)) / hudScale,
+                       .origin      = txLogo.getSize().toVec2f() / 2.f,
                        .textureRect = txLogo.getRect(),
                        .color       = sf::Color::whiteMask(static_cast<U8>(easeInOutSine(progress) * 255.f))},
             {.texture = &txLogo});
@@ -525,7 +525,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
     sf::RenderTexture rtBackground{
-        sf::RenderTexture::create(gameScreenSize.toVector2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
+        sf::RenderTexture::create(gameScreenSize.toVec2u(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
     sf::RenderTexture rtImGui{
         sf::RenderTexture::create(window.getSize(), {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value()};
 
@@ -969,8 +969,8 @@ struct Main
 
     struct EarnedCoinParticle
     {
-        sf::Vector2f startPosition;
-        Timer        progress;
+        sf::Vec2f startPosition;
+        Timer     progress;
     };
 
     std::vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
@@ -1043,9 +1043,9 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
-    sf::base::Optional<sf::Vector2f> dragPosition;
-    float                            scroll{0.f};
-    float                            actualScroll{0.f};
+    sf::base::Optional<sf::Vec2f> dragPosition;
+    float                         scroll{0.f};
+    float                         actualScroll{0.f};
 
     ////////////////////////////////////////////////////////////
     // Screen shake effect state
@@ -1062,8 +1062,7 @@ struct Main
         float bottom;
 
         ////////////////////////////////////////////////////////////
-        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(
-            const sf::Vector2f point) const noexcept
+        [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr bool isInside(const sf::Vec2f point) const noexcept
         {
             return (point.x >= left) && (point.x <= right) && (point.y >= top) && (point.y <= bottom);
         }
@@ -1075,18 +1074,18 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Last frame mouse position (world space)
-    sf::Vector2f lastMousePos;
+    sf::Vec2f lastMousePos;
 
     ////////////////////////////////////////////////////////////
     // Cat dragging state
-    float                            catDragPressDuration{0.f};
-    sf::base::Optional<sf::Vector2f> catDragOrigin;
-    std::vector<Cat*>                draggedCats;
-    Cat*                             catToPlace{nullptr};
+    float                         catDragPressDuration{0.f};
+    sf::base::Optional<sf::Vec2f> catDragOrigin;
+    std::vector<Cat*>             draggedCats;
+    Cat*                          catToPlace{nullptr};
 
     ////////////////////////////////////////////////////////////
     // Touch state
-    std::vector<sf::base::Optional<sf::Vector2f>> fingerPositions;
+    std::vector<sf::base::Optional<sf::Vec2f>> fingerPositions;
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
@@ -1327,7 +1326,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    Particle& implEmplaceParticle(const sf::Vector2f position,
+    Particle& implEmplaceParticle(const sf::Vec2f    position,
                                   const ParticleType particleType,
                                   const float        scaleMult,
                                   const float        speedMult,
@@ -1378,7 +1377,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool spawnEarnedCoinParticle(const sf::Vector2f startPosition)
+    [[nodiscard]] bool spawnEarnedCoinParticle(const sf::Vec2f startPosition)
     {
         if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
             return false;
@@ -1398,7 +1397,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void spawnParticles(const SizeT n, const sf::Vector2f position, const auto... args)
+    void spawnParticles(const SizeT n, const sf::Vec2f position, const auto... args)
     {
         if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
             return;
@@ -1408,7 +1407,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void spawnParticlesWithHue(const float hue, const SizeT n, const sf::Vector2f position, const auto... args)
+    void spawnParticlesWithHue(const float hue, const SizeT n, const sf::Vec2f position, const auto... args)
     {
         if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
             return;
@@ -1418,7 +1417,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void spawnParticlesNoGravity(const SizeT n, const sf::Vector2f position, const auto... args)
+    void spawnParticlesNoGravity(const SizeT n, const sf::Vec2f position, const auto... args)
     {
         if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
             return;
@@ -1428,7 +1427,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void spawnParticlesWithHueNoGravity(const float hue, const SizeT n, const sf::Vector2f position, const auto... args)
+    void spawnParticlesWithHueNoGravity(const float hue, const SizeT n, const sf::Vec2f position, const auto... args)
     {
         if (!profile.showParticles || !particleCullingBoundaries.isInside(position))
             return;
@@ -1595,7 +1594,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void forEachBubbleInRadiusSquared(const sf::Vector2f center, const float radiusSq, auto&& func)
+    void forEachBubbleInRadiusSquared(const sf::Vec2f center, const float radiusSq, auto&& func)
     {
         for (Bubble& bubble : pt->bubbles)
             if ((bubble.position - center).lengthSquared() <= radiusSq)
@@ -1604,13 +1603,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void forEachBubbleInRadius(const sf::Vector2f center, const float radius, auto&& func)
+    void forEachBubbleInRadius(const sf::Vec2f center, const float radius, auto&& func)
     {
         forEachBubbleInRadiusSquared(center, radius * radius, func);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Bubble* pickRandomBubbleInRadiusMatching(const sf::Vector2f center, const float radius, auto&& predicate)
+    [[nodiscard]] Bubble* pickRandomBubbleInRadiusMatching(const sf::Vec2f center, const float radius, auto&& predicate)
     {
         const float radiusSq = radius * radius;
 
@@ -1631,7 +1630,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Bubble* pickRandomBubbleInRadius(const sf::Vector2f center, const float radius)
+    [[nodiscard]] Bubble* pickRandomBubbleInRadius(const sf::Vec2f center, const float radius)
     {
         return pickRandomBubbleInRadiusMatching(center,
                                                 radius,
@@ -1639,13 +1638,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2f getResolution() const
+    [[nodiscard]] sf::Vec2f getResolution() const
     {
-        return window.getSize().toVector2f();
+        return window.getSize().toVec2f();
     }
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnCat(const sf::Vector2f pos, const CatType catType, const float hue)
+    Cat& spawnCat(const sf::Vec2f pos, const CatType catType, const float hue)
     {
         const auto meowPitch = [&]() -> float
         {
@@ -1681,7 +1680,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     Cat& spawnCatCentered(const CatType catType, const float hue, const bool placeInHand = true)
     {
-        const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
+        const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVec2i(), gameView);
 
         Cat& newCat = spawnCat(pos, catType, hue);
 
@@ -1700,7 +1699,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    Cat& spawnSpecialCat(const sf::Vector2f pos, const CatType catType)
+    Cat& spawnSpecialCat(const sf::Vec2f pos, const CatType catType)
     {
         ++pt->psvPerCatType[static_cast<SizeT>(catType)].nPurchases;
         return spawnCat(pos, catType, /* hue */ 0.f);
@@ -1748,7 +1747,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
+    [[nodiscard]] float getAspectRatioScalingFactor(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
     {
         // Calculate the scale factors for both dimensions
         const float scaleX = windowSize.x / originalSize.x;
@@ -1759,10 +1758,10 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
+    [[nodiscard]] sf::View createScaledGameView(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
     {
-        const float        scale      = getAspectRatioScalingFactor(originalSize, windowSize);
-        const sf::Vector2f scaledSize = originalSize * scale;
+        const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
+        const sf::Vec2f scaledSize = originalSize * scale;
 
         return {.center   = originalSize / 2.f,
                 .size     = originalSize,
@@ -1771,10 +1770,10 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vector2f& originalSize, const sf::Vector2f& windowSize) const
+    [[nodiscard]] sf::View createScaledTopGameView(const sf::Vec2f& originalSize, const sf::Vec2f& windowSize) const
     {
-        const float        scale      = getAspectRatioScalingFactor(originalSize, windowSize);
-        const sf::Vector2f scaledSize = originalSize * scale;
+        const float     scale      = getAspectRatioScalingFactor(originalSize, windowSize);
+        const sf::Vec2f scaledSize = originalSize * scale;
 
         // Compute the full window width in world coordinates.
         float newWidth = windowSize.x / scale;
@@ -1785,9 +1784,9 @@ struct Main
 
         // Align the left edge with that of the normal game view.
         // The left edge is given by (baseCenter.x - originalSize.x / 2).
-        sf::Vector2f baseCenter = getViewCenter();
-        float        left       = baseCenter.x - originalSize.x / 2.f;
-        view.center             = {left + newWidth / 2.f, baseCenter.y};
+        sf::Vec2f baseCenter = getViewCenter();
+        float     left       = baseCenter.x - originalSize.x / 2.f;
+        view.center          = {left + newWidth / 2.f, baseCenter.y};
 
         // Use the same vertical letterboxing as the regular game view.
         view.viewport = {{0.f, (windowSize.y - scaledSize.y) / (windowSize.y * 2.f)}, {1.f, scaledSize.y / windowSize.y}};
@@ -1796,13 +1795,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::View makeScaledHUDView(const sf::Vector2f& resolution, float scale) const
+    [[nodiscard]] sf::View makeScaledHUDView(const sf::Vec2f& resolution, float scale) const
     {
         return {.center = {resolution.x / (2.f * scale), resolution.y / (2.f * scale)}, .size = resolution / scale};
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2f getHUDMousePos() const
+    [[nodiscard]] sf::Vec2f getHUDMousePos() const
     {
         return window.mapPixelToCoords(sf::Mouse::getPosition(window), nonScaledHUDView);
     }
@@ -1880,7 +1879,7 @@ struct Main
     void                uiBeginTooltip(float width);
     void                uiEndTooltip();
     void                uiMakeTooltip(bool small = false);
-    void                uiMakeShrineOrCatTooltip(sf::Vector2f mousePos);
+    void                uiMakeShrineOrCatTooltip(sf::Vec2f mousePos);
 
     ////////////////////////////////////////////////////////////
     enum class [[nodiscard]] AnimatedButtonOutcome : sf::base::U8
@@ -2018,20 +2017,20 @@ struct Main
     void uiBeginColumns() const;
     void uiCenteredText(const char* str, float offsetX = 0.f, float offsetY = 0.f);
     void uiCenteredTextColored(sf::Color color, const char* str, float offsetX = 0.f, float offsetY = 0.f);
-    [[nodiscard]] sf::Vector2f uiGetWindowPos() const;
-    void                       uiDrawExitPopup(float newScalingFactor);
-    void                       uiDrawQuickbarCopyCat(sf::Vector2f quickBarPos, Cat& copyCat);
-    void                       uiDrawQuickbarBackgroundSelector(sf::Vector2f quickBarPos);
-    void                       uiDrawQuickbarBGMSelector(sf::Vector2f quickBarPos);
-    void                       uiDrawQuickbarQuickSettings(sf::Vector2f quickBarPos);
-    void                       uiDrawQuickbarVolumeControls(sf::Vector2f quickBarPos);
-    void                       uiDrawQuickbar();
-    void                       uiDraw(sf::Vector2f mousePos);
-    void                       uiDpsMeter();
-    void                       uiSpeedrunning();
-    void                       uiTabBar();
-    void                       uiSetUnlockLabelY(sf::base::SizeT unlockId);
-    [[nodiscard]] bool         checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
+    [[nodiscard]] sf::Vec2f uiGetWindowPos() const;
+    void                    uiDrawExitPopup(float newScalingFactor);
+    void                    uiDrawQuickbarCopyCat(sf::Vec2f quickBarPos, Cat& copyCat);
+    void                    uiDrawQuickbarBackgroundSelector(sf::Vec2f quickBarPos);
+    void                    uiDrawQuickbarBGMSelector(sf::Vec2f quickBarPos);
+    void                    uiDrawQuickbarQuickSettings(sf::Vec2f quickBarPos);
+    void                    uiDrawQuickbarVolumeControls(sf::Vec2f quickBarPos);
+    void                    uiDrawQuickbar();
+    void                    uiDraw(sf::Vec2f mousePos);
+    void                    uiDpsMeter();
+    void                    uiSpeedrunning();
+    void                    uiTabBar();
+    void                    uiSetUnlockLabelY(sf::base::SizeT unlockId);
+    [[nodiscard]] bool      checkUiUnlock(sf::base::SizeT unlockId, bool unlockCondition);
     void uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::TextureDrawParams& drawParams);
     void uiImgsep(const sf::FloatRect& txr, const char* sepLabel, bool first = false);
     void uiImgsep2(const sf::FloatRect& txr, const char* sepLabel);
@@ -2044,7 +2043,7 @@ struct Main
     void uiTabBarSettings();
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<sf::FloatRect> getAoEDragRect(const sf::Vector2f mousePos) const
+    [[nodiscard]] sf::base::Optional<sf::FloatRect> getAoEDragRect(const sf::Vec2f mousePos) const
     {
         if (!catDragOrigin.hasValue())
             return sf::base::nullOpt;
@@ -2070,7 +2069,7 @@ struct Main
             return 0u;
 
         // First calculate the centroid
-        sf::Vector2f centroid;
+        sf::Vec2f centroid;
 
         for (const Cat* cat : draggedCats)
             centroid += cat->position;
@@ -2358,7 +2357,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool mustApplyMewltiplierAura(const sf::Vector2f bubblePosition) const
+    [[nodiscard]] bool mustApplyMewltiplierAura(const sf::Vec2f bubblePosition) const
     {
         if (pt->mewltiplierAuraTimer <= 0.f)
             return false;
@@ -2457,11 +2456,11 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vector2u getReasonableWindowSize(const float scalingFactorMult = 1.f)
+    [[nodiscard]] static sf::Vec2u getReasonableWindowSize(const float scalingFactorMult = 1.f)
     {
         constexpr float gameRatio = gameScreenSize.x / gameScreenSize.y;
 
-        const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVector2f();
+        const auto fullscreenSize = sf::VideoModeUtils::getDesktopMode().size.toVec2f();
 
         const float aspectRatio = fullscreenSize.x / fullscreenSize.y;
 
@@ -2474,7 +2473,7 @@ struct Main
 
         const auto windowedWidth = windowSize.y * gameRatio + (uiWindowWidth + 35.f);
 
-        return sf::Vector2f{windowedWidth, windowSize.y}.toVector2u();
+        return sf::Vec2f{windowedWidth, windowSize.y}.toVec2u();
     }
 
     ////////////////////////////////////////////////////////////
@@ -2682,7 +2681,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    TextParticle& makeRewardTextParticle(const sf::Vector2f position)
+    TextParticle& makeRewardTextParticle(const sf::Vec2f position)
     {
         return textParticles.emplace_back(TextParticle{
             {.position      = {position.x, position.y - 10.f},
@@ -2810,10 +2809,10 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2f fromWorldToHud(const sf::Vector2f point) const
+    [[nodiscard]] sf::Vec2f fromWorldToHud(const sf::Vec2f point) const
     {
         // From game coordinates to screen coordinates
-        const sf::Vector2i screenPos = window.mapCoordsToPixel(point, gameView);
+        const sf::Vec2i screenPos = window.mapCoordsToPixel(point, gameView);
 
         // From screen coordinates to HUD view coordinates
         return window.mapPixelToCoords(screenPos, scaledHUDView);
@@ -2874,8 +2873,8 @@ struct Main
             shrineCollectReward(shrine, reward, bubble);
         }
 
-        const bool         collectedByShrine = collectorShrine != nullptr;
-        const sf::Vector2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
+        const bool      collectedByShrine = collectorShrine != nullptr;
+        const sf::Vec2f tpPosition        = collectedByShrine ? collectorShrine->getDrawPosition() : bubble.position;
 
         if (profile.showTextParticles)
         {
@@ -2895,7 +2894,7 @@ struct Main
         {
             if (!collectedByShrine && profile.showCoinParticles)
                 spawnSpentCoinParticle(
-                    {.position      = moneyText.getCenterRight() + sf::Vector2f{32.f, rngFast.getF(-12.f, 12.f)},
+                    {.position      = moneyText.getCenterRight() + sf::Vec2f{32.f, rngFast.getF(-12.f, 12.f)},
                      .velocity      = {-0.25f, 0.f},
                      .scale         = 0.25f,
                      .scaleDecay    = 0.f,
@@ -2906,7 +2905,7 @@ struct Main
                      .torque        = 0.f});
 
 
-            const sf::Vector2f hudPos = fromWorldToHud(bubble.position);
+            const sf::Vec2f hudPos = fromWorldToHud(bubble.position);
 
             if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
                 spawnEarnedCoinParticle(hudPos))
@@ -3008,7 +3007,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateScrolling(const float deltaTimeMs, const std::vector<sf::Vector2f>& downFingers)
+    void gameLoopUpdateScrolling(const float deltaTimeMs, const std::vector<sf::Vec2f>& downFingers)
     {
         // Reset map scrolling
         if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(getRMB(), /* penetrateUI */ true)))
@@ -3042,7 +3041,7 @@ struct Main
             targetBubbleCount *= 2u;
 
         // Helper functions
-        const auto playReversePopAt = [this](const sf::Vector2f position)
+        const auto playReversePopAt = [this](const sf::Vec2f position)
         {
             // TODO P2: refactor into function for any sound and reuse
             sounds.reversePop.setPosition({position.x, position.y});
@@ -3325,7 +3324,7 @@ struct Main
             if (bubble.type == BubbleType::Bomb)
                 bombs.push_back(&bubble);
 
-        const auto attract = [&](const sf::Vector2f pos, Bubble& bubble)
+        const auto attract = [&](const sf::Vec2f pos, Bubble& bubble)
         {
             const auto diff     = (pos - bubble.position);
             const auto sqLength = diff.lengthSquared();
@@ -3355,12 +3354,12 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vector2f>& clickPosition)
+    [[nodiscard]] bool gameLoopUpdateBubbleClick(sf::base::Optional<sf::Vec2f>& clickPosition)
     {
         if (!clickPosition.hasValue())
             return false;
 
-        const auto clickPos = window.mapPixelToCoords(clickPosition->toVector2i(), gameView);
+        const auto clickPos = window.mapPixelToCoords(clickPosition->toVec2i(), gameView);
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {
@@ -3463,7 +3462,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static sf::Vector2f getCatRangeCenter(const Cat& cat)
+    [[nodiscard]] static sf::Vec2f getCatRangeCenter(const Cat& cat)
     {
         return cat.position + CatConstants::rangeOffsets[asIdx(cat.type)];
     }
@@ -3826,7 +3825,7 @@ struct Main
 
             statRitual(selected->type);
 
-            const auto isPositionFarFromOtherDolls = [&](const sf::Vector2f& position) -> bool
+            const auto isPositionFarFromOtherDolls = [&](const sf::Vec2f& position) -> bool
             {
                 for (const Doll& d : dollsToUse)
                     if ((d.position - position).lengthSquared() < (256.f * 256.f))
@@ -3835,7 +3834,7 @@ struct Main
                 return true;
             };
 
-            const auto isOnTopOfAnyCat = [&](const sf::Vector2f& position) -> bool
+            const auto isOnTopOfAnyCat = [&](const sf::Vec2f& position) -> bool
             {
                 for (const Cat& c : pt->cats)
                     if ((c.position - position).lengthSquared() < c.getRadiusSquared())
@@ -3844,7 +3843,7 @@ struct Main
                 return false;
             };
 
-            const auto isOnTopOfAnyShrine = [&](const sf::Vector2f& position) -> bool
+            const auto isOnTopOfAnyShrine = [&](const sf::Vec2f& position) -> bool
             {
                 for (const Shrine& s : pt->shrines)
                     if ((s.position - position).lengthSquared() < s.getRadiusSquared())
@@ -4158,7 +4157,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] auto makeMagnetAction(
-        const sf::Vector2f position,
+        const sf::Vec2f    position,
         const CatType      catType,
         const float        deltaTimeMs,
         auto               countdownPm,
@@ -4239,7 +4238,7 @@ struct Main
 
             const auto drawPosition = cat.getDrawPosition(profile.enableCatBobbing);
 
-            auto diff = cat.pawPosition - drawPosition - sf::Vector2f{-25.f, 25.f};
+            auto diff = cat.pawPosition - drawPosition - sf::Vec2f{-25.f, 25.f};
             cat.pawPosition -= diff * 0.01f * deltaTimeMs;
             cat.pawRotation = cat.pawRotation.rotatedTowards(sf::degrees(-45.f), deltaTimeMs * 0.005f);
 
@@ -4315,7 +4314,7 @@ struct Main
 
                         if (rngFast.getF(0.f, 1.f) < intensity)
                             spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
-                                                       sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                                                       sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                            .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                            .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                            .scaleDecay    = 0.f,
@@ -4342,7 +4341,7 @@ struct Main
 
             if (cat.hexedTimer.hasValue() || (cat.type == CatType::Witch && (anyCatHexed() || !pt->dolls.empty())))
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                .scaleDecay    = 0.f,
@@ -4360,7 +4359,7 @@ struct Main
             if (cat.hexedCopyTimer.hasValue() || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Witch &&
                                                   (anyCatCopyHexed() || !pt->copyDolls.empty())))
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
+                spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 9.f},
                                .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
                                .scaleDecay    = 0.f,
@@ -4395,10 +4394,10 @@ struct Main
 
             if (cat.inspiredCountdown.value > 0.f && rngFast.getF(0.f, 1.f) > 0.5f)
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
-                               .velocity = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                               .scale    = rngFast.getF(0.08f, 0.27f) * 0.2f,
-                               .scaleDecay    = 0.f,
+                spawnParticle({.position   = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius},
+                               .velocity   = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                               .scale      = rngFast.getF(0.08f, 0.27f) * 0.2f,
+                               .scaleDecay = 0.f,
                                .accelerationY = -0.002f,
                                .opacity       = 1.f,
                                .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
@@ -4411,7 +4410,7 @@ struct Main
             const float globalBoost = pt->buffCountdownsPerType[asIdx(CatType::Engi)].value;
             if ((globalBoost > 0.f || cat.boostCountdown.value > 0.f) && rngFast.getF(0.f, 1.f) > 0.75f)
             {
-                spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
                                .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                .scale         = rngFast.getF(0.08f, 0.27f) * 0.15f,
                                .scaleDecay    = 0.f,
@@ -4431,8 +4430,8 @@ struct Main
             {
                 if (rngFast.getF(0.f, 1.f) > 0.75f)
                 {
-                    spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius + 15.f, +catRadius - 5.f),
-                                                                           catRadius - 20.f},
+                    spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius + 15.f, +catRadius - 5.f),
+                                                                        catRadius - 20.f},
                                    .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
@@ -4444,7 +4443,7 @@ struct Main
                                   /* hue */ 0.f,
                                   ParticleType::Fire2);
 
-                    spawnParticle({.position      = drawPosition + sf::Vector2f{-52.f * 0.2f, -85.f * 0.2f},
+                    spawnParticle({.position      = drawPosition + sf::Vec2f{-52.f * 0.2f, -85.f * 0.2f},
                                    .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
@@ -4456,7 +4455,7 @@ struct Main
                                   /* hue */ 0.f,
                                   ParticleType::Fire2);
 
-                    spawnParticle({.position      = drawPosition + sf::Vector2f{-140.f * 0.2f, -90.f * 0.2f},
+                    spawnParticle({.position      = drawPosition + sf::Vec2f{-140.f * 0.2f, -90.f * 0.2f},
                                    .velocity      = rngFast.getVec2f({-0.025f, -0.015f}, {0.025f, 0.015f}),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 0.55f,
                                    .scaleDecay    = -0.00025f,
@@ -4481,10 +4480,10 @@ struct Main
                     sounds.rocket.setPosition({cx, cy});
                     playSound(sounds.rocket, /* maxOverlap */ 1u);
 
-                    spawnParticles(1, drawPosition + sf::Vector2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
+                    spawnParticles(1, drawPosition + sf::Vec2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
 
                     if (rngFast.getI(0, 10) > 5)
-                        spawnParticle(ParticleData{.position   = drawPosition + sf::Vector2f{56.f, 45.f},
+                        spawnParticle(ParticleData{.position   = drawPosition + sf::Vec2f{56.f, 45.f},
                                                    .velocity   = {rngFast.getF(-0.15f, 0.15f), rngFast.getF(0.f, 0.1f)},
                                                    .scale      = rngFast.getF(0.75f, 1.f) * 0.45f,
                                                    .scaleDecay = -0.00025f,
@@ -4576,7 +4575,7 @@ struct Main
 
                 if (isWizardBusy() && rngFast.getF(0.f, 1.f) > 0.5f)
                 {
-                    spawnParticle({.position = drawPosition + sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius},
+                    spawnParticle({.position = drawPosition + sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius},
                                    .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
                                    .scale         = rngFast.getF(0.08f, 0.27f) * 0.2f,
                                    .scaleDecay    = 0.f,
@@ -4602,7 +4601,7 @@ struct Main
 
                     if (rngFast.getF(0.f, 1.f) > 0.95f)
                         spawnParticle({.position = otherCat.getDrawPosition(profile.enableCatBobbing) +
-                                                   sf::Vector2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
+                                                   sf::Vec2f{rngFast.getF(-catRadius, +catRadius), catRadius - 25.f},
                                        .velocity      = rngFast.getVec2f({-0.01f, -0.05f}, {0.01f, 0.05f}),
                                        .scale         = rngFast.getF(0.08f, 0.27f) * 0.4f,
                                        .scaleDecay    = 0.f,
@@ -4703,7 +4702,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vector2f mousePos)
+    void gameLoopUpdateCatDragging(const float deltaTimeMs, const SizeT countFingersDown, const sf::Vec2f mousePos)
     {
         if (inPrestigeTransition)
         {
@@ -4789,14 +4788,14 @@ struct Main
                 const auto pivotCatIdx = pickDragPivotCatIndex();
                 Cat&       pivotCat    = *draggedCats[pivotCatIdx];
 
-                static thread_local std::vector<sf::Vector2f> relativeCatPositions;
+                static thread_local std::vector<sf::Vec2f> relativeCatPositions;
                 relativeCatPositions.clear();
                 relativeCatPositions.reserve(draggedCats.size());
 
                 for (const Cat* cat : draggedCats)
                     relativeCatPositions.push_back(cat->position - pivotCat.position);
 
-                pivotCat.position = exponentialApproach(pivotCat.position, mousePos + sf::Vector2f{-10.f, 13.f}, deltaTimeMs, 25.f);
+                pivotCat.position = exponentialApproach(pivotCat.position, mousePos + sf::Vec2f{-10.f, 13.f}, deltaTimeMs, 25.f);
 
                 for (sf::base::SizeT i = 0u; i < draggedCats.size(); ++i)
                 {
@@ -5241,7 +5240,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vector2f mousePos, std::vector<Doll>& dollsToUse, Cat* hexedCat)
+    void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mousePos, std::vector<Doll>& dollsToUse, Cat* hexedCat)
     {
         const bool copy = &dollsToUse == &pt->copyDolls;
 
@@ -5270,10 +5269,10 @@ struct Main
             if (!d.tcDeath.hasValue())
             {
                 if (rngFast.getF(0.f, 1.f) > 0.8f)
-                    spawnParticle({.position   = d.getDrawPosition() + sf::Vector2f{rngFast.getF(-32.f, +32.f), 32.f},
-                                   .velocity   = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
-                                   .scale      = rngFast.getF(0.08f, 0.27f) * 0.5f,
-                                   .scaleDecay = 0.f,
+                    spawnParticle({.position      = d.getDrawPosition() + sf::Vec2f{rngFast.getF(-32.f, +32.f), 32.f},
+                                   .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
+                                   .scale         = rngFast.getF(0.08f, 0.27f) * 0.5f,
+                                   .scaleDecay    = 0.f,
                                    .accelerationY = -0.002f,
                                    .opacity       = 1.f,
                                    .opacityDecay  = rngFast.getF(0.00025f, 0.0015f),
@@ -5309,7 +5308,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
+    void gameLoopUpdateDolls(const float deltaTimeMs, const sf::Vec2f mousePos)
     {
         if (cachedWitchCat == nullptr)
             return;
@@ -5318,7 +5317,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vector2f mousePos)
+    void gameLoopUpdateCopyDolls(const float deltaTimeMs, const sf::Vec2f mousePos)
     {
         if (cachedCopyCat == nullptr || pt->copycatCopiedCatType != CatType::Witch)
             return;
@@ -6286,7 +6285,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawCursorTrail(const sf::Vector2f mousePos)
+    void gameLoopDrawCursorTrail(const sf::Vec2f mousePos)
     {
         if (profile.cursorTrailMode == 2 /* disabled */)
             return;
@@ -6294,8 +6293,8 @@ struct Main
         if (combo <= 1 && profile.cursorTrailMode == 0 /* combo mode */)
             return;
 
-        const sf::Vector2f mousePosDiff    = lastMousePos - mousePos;
-        const float        mousePosDiffLen = mousePosDiff.length();
+        const sf::Vec2f mousePosDiff    = lastMousePos - mousePos;
+        const float     mousePosDiffLen = mousePosDiff.length();
 
         if (mousePosDiffLen == 0.f)
             return;
@@ -6305,7 +6304,7 @@ struct Main
 
         const float trailHue = wrapHue(profile.cursorHue + currentBackgroundHue.asDegrees());
 
-        const sf::Vector2f trailStep = mousePosDiff.normalized() * chunkLen;
+        const sf::Vec2f trailStep = mousePosDiff.normalized() * chunkLen;
 
         const float trailScaleMult = pt->laserPopEnabled ? 1.5f : 1.f;
 
@@ -6449,7 +6448,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawCats(const sf::Vector2f mousePos, const float deltaTimeMs)
+    void gameLoopDrawCats(const sf::Vec2f mousePos, const float deltaTimeMs)
     {
         ////////////////////////////////////////////////////////////
         const sf::FloatRect* const uniCatTxr     = isUnicatTranscendenceActive() ? &txrUniCat2 : &txrUniCat;
@@ -6517,7 +6516,7 @@ struct Main
         static_assert(sf::base::getArraySize(catTailTxrsByType) == nCatTypes);
 
         ////////////////////////////////////////////////////////////
-        const sf::Vector2f catTailOffsetsByType[] = {
+        const sf::Vec2f catTailOffsetsByType[] = {
             {0.f, 0.f},      // Normal
             {-35.f, -222.f}, // Uni
             {-8.f, 2.f},     // Devil
@@ -6567,13 +6566,13 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawCat(Cat&               cat,
-                         const float        deltaTimeMs,
-                         const sf::Vector2f mousePos,
+    void gameLoopDrawCat(Cat&            cat,
+                         const float     deltaTimeMs,
+                         const sf::Vec2f mousePos,
                          const sf::FloatRect* const (&catTxrsByType)[nCatTypes],
                          const sf::FloatRect* const (&catPawTxrsByType)[nCatTypes],
                          const sf::FloatRect* const (&catTailTxrsByType)[nCatTypes],
-                         const sf::Vector2f (&catTailOffsetsByType)[nCatTypes],
+                         const sf::Vec2f (&catTailOffsetsByType)[nCatTypes],
                          const float (&catHueByType)[nCatTypes])
     {
         auto& batchToUse     = catToPlace == &cat ? cpuTopDrawableBatch : cpuDrawableBatch;
@@ -6602,7 +6601,7 @@ struct Main
 
         const sf::FloatRect& catPawTxr = *catPawTxrsByType[asIdx(isCopyCatWithType(CatType::Mouse) ? CatType::Mouse : cat.type)];
         const sf::FloatRect& catTailTxr    = *catTailTxrsByType[asIdx(cat.type)];
-        const sf::Vector2f   catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
+        const sf::Vec2f      catTailOffset = catTailOffsetsByType[asIdx(cat.type)];
 
         const float maxCooldown  = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const float cooldownDiff = cat.cooldown.value;
@@ -6691,11 +6690,11 @@ struct Main
             });
 
         const float catScaleMult = easeOutElastic(cat.spawnEffectTimer.value);
-        const auto  catScale     = sf::Vector2f{0.2f, 0.2f} * catScaleMult;
+        const auto  catScale     = sf::Vec2f{0.2f, 0.2f} * catScaleMult;
 
         const auto catAnchor = beingDragged ? cat.position : cat.getDrawPosition(profile.enableCatBobbing);
 
-        const auto anchorOffset = [&](const sf::Vector2f offset)
+        const auto anchorOffset = [&](const sf::Vec2f offset)
         { return catAnchor + (offset / 2.f * 0.2f * catScaleMult).rotatedBy(sf::radians(catRotation)); };
 
         const float tailRotationMult = cat.type == CatType::Uni ? 0.4f : 1.f;
@@ -6708,20 +6707,19 @@ struct Main
             catRotation + ((beingDragged ? 0.2f : 0.f) +
                            std::sin(cat.wobbleRadians) * (beingDragged ? 0.125f : 0.075f) * tailRotationMult));
 
-        const sf::Vector2f pushDown{0.f, beingDragged ? 75.f : 0.f};
+        const sf::Vec2f pushDown{0.f, beingDragged ? 75.f : 0.f};
 
         const auto attachmentHue = hueColor(catHueByType[asIdx(cat.type)] + cat.hue, alpha);
 
         // Devilcat: draw tail behind
         if (cat.type == CatType::Devil)
         {
-            batchToUse.add(
-                sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{905.f, 10.f} + pushDown * 2.f),
-                           .scale       = catScale * 1.25f,
-                           .origin      = {320.f, 32.f},
-                           .rotation    = tailWiggleRotationInvertedDragged,
-                           .textureRect = catTailTxr,
-                           .color       = catColor});
+            batchToUse.add(sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{905.f, 10.f} + pushDown * 2.f),
+                                      .scale    = catScale * 1.25f,
+                                      .origin   = {320.f, 32.f},
+                                      .rotation = tailWiggleRotationInvertedDragged,
+                                      .textureRect = catTailTxr,
+                                      .color       = catColor});
         }
 
         //
@@ -6745,7 +6743,7 @@ struct Main
 
             batchToUse.add(sf::Sprite{.position    = anchorOffset({250.f, -175.f}),
                                       .scale       = catScale * 1.25f,
-                                      .origin      = txrUniCatWings.size / 2.f - sf::Vector2f{35.f, 10.f},
+                                      .origin      = txrUniCatWings.size / 2.f - sf::Vec2f{35.f, 10.f},
                                       .rotation    = wingRotation,
                                       .textureRect = txrUniCatWings,
                                       .color       = hueColor(cat.hue + 180.f, 180u)});
@@ -6756,7 +6754,7 @@ struct Main
         if (cat.type == CatType::Devil)
         {
             batchToUse.add(
-                sf::Sprite{.position    = catAnchor + sf::Vector2f{10.f, 20.f},
+                sf::Sprite{.position    = catAnchor + sf::Vec2f{10.f, 20.f},
                            .scale       = catScale * 1.55f,
                            .origin      = txrDevilCat3Book.size / 2.f,
                            .rotation    = sf::radians(catRotation),
@@ -6772,7 +6770,7 @@ struct Main
         if (cat.type == CatType::Devil)
         {
             batchToUse.add(
-                sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vector2f{-6.f, 6.f} : sf::Vector2f{4.f, 2.f}),
+                sf::Sprite{.position    = cat.pawPosition + (beingDragged ? sf::Vec2f{-6.f, 6.f} : sf::Vec2f{4.f, 2.f}),
                            .scale       = catScale * 1.25f,
                            .origin      = catPawTxr.size / 2.f,
                            .rotation    = cat.pawRotation + sf::degrees(35.f),
@@ -6791,7 +6789,7 @@ struct Main
 
         if (cat.type == CatType::Duck)
         {
-            batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{335.f, -65.f} + pushDown),
+            batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{335.f, -65.f} + pushDown),
                                       .scale       = catScale,
                                       .origin      = {98.f, 330.f},
                                       .rotation    = tailWiggleRotation,
@@ -6830,7 +6828,7 @@ struct Main
             if (cat.type == CatType::Normal) // TODO P2: implement for other cats as well?
             {
                 batchToUse.add(
-                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-131.f, -365.f}),
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{-131.f, -365.f}),
                                .scale    = catScale,
                                .origin   = txrCatEars0.size / 2.f,
                                .rotation = sf::radians(catRotation),
@@ -6854,7 +6852,7 @@ struct Main
 
                 (void)cat.yawnAnimCountdown.updateAndStop(deltaTimeMs);
 
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-221.f, 25.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-221.f, 25.f}),
                                           .scale       = catScale,
                                           .origin      = txrCatYawn0.size / 2.f,
                                           .rotation    = sf::radians(catRotation),
@@ -6870,7 +6868,7 @@ struct Main
             // Draw attachments
             if (cat.type == CatType::Normal && pt->perm.smartCatsPurchased) // Smart cat diploma
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 355.f} + pushDown),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{295.f, 355.f} + pushDown),
                                           .scale       = catScale,
                                           .origin      = {23.f, 150.f},
                                           .rotation    = tailWiggleRotation,
@@ -6879,7 +6877,7 @@ struct Main
             }
             else if (cat.type == CatType::Astro && pt->perm.astroCatInspirePurchased) // Astro cat flag
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{395.f, 225.f} + pushDown),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{395.f, 225.f} + pushDown),
                                           .scale       = catScale,
                                           .origin      = {98.f, 330.f},
                                           .rotation    = tailWiggleRotation,
@@ -6889,7 +6887,7 @@ struct Main
             else if (cat.type == CatType::Engi ||
                      (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Engi)) // Engi cat wrench
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{295.f, 385.f} + pushDown),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{295.f, 385.f} + pushDown),
                                           .scale       = catScale,
                                           .origin      = {36.f, 167.f},
                                           .rotation    = tailWiggleRotation,
@@ -6899,7 +6897,7 @@ struct Main
             else if (cat.type == CatType::Attracto ||
                      (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Attracto)) // Attracto cat magnet
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{190.f, 315.f} + pushDown),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{190.f, 315.f} + pushDown),
                                           .scale       = catScale,
                                           .origin      = {142.f, 254.f},
                                           .rotation    = tailWiggleRotation,
@@ -6912,13 +6910,13 @@ struct Main
             // Draw cat tail
             if (cat.type != CatType::Devil)
             {
-                const auto originOffset = cat.type == CatType::Uni ? sf::Vector2f{250.f, 0.f} : sf::Vector2f{0.f, 0.f};
-                const auto offset = cat.type == CatType::Uni ? sf::Vector2f{-130.f, 405.f} : sf::Vector2f{0.f, 0.f};
+                const auto originOffset = cat.type == CatType::Uni ? sf::Vec2f{250.f, 0.f} : sf::Vec2f{0.f, 0.f};
+                const auto offset       = cat.type == CatType::Uni ? sf::Vec2f{-130.f, 405.f} : sf::Vec2f{0.f, 0.f};
 
                 batchToUse.add(
-                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{475.f, 240.f} + offset + originOffset),
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{475.f, 240.f} + offset + originOffset),
                                .scale       = catScale,
-                               .origin      = originOffset + sf::Vector2f{320.f, 32.f},
+                               .origin      = originOffset + sf::Vec2f{320.f, 32.f},
                                .rotation    = tailWiggleRotation,
                                .textureRect = catTailTxr,
                                .color       = catColor});
@@ -6928,7 +6926,7 @@ struct Main
             // Mousecat: mouse
             if (cat.type == CatType::Mouse || (cat.type == CatType::Copy && pt->copycatCopiedCatType == CatType::Mouse))
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{-275.f, -15.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{-275.f, -15.f}),
                                           .scale       = catScale,
                                           .origin      = {53.f, 77.f},
                                           .rotation    = tailWiggleRotationInvertedDragged,
@@ -6961,7 +6959,7 @@ struct Main
 
             if (!cat.yawnAnimCountdown.isDone())
             {
-                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
+                batchToUse.add(sf::Sprite{.position    = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
                                           .scale       = catScale,
                                           .origin      = txrCatEyeLid0.size / 2.f,
                                           .rotation    = sf::radians(catRotation),
@@ -6972,7 +6970,7 @@ struct Main
             else if (!cat.blinkAnimCountdown.isDone())
             {
                 batchToUse.add(
-                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vector2f{-185.f, -185.f}),
+                    sf::Sprite{.position = anchorOffset(catTailOffset + sf::Vec2f{-185.f, -185.f}),
                                .scale    = catScale,
                                .origin   = txrCatEyeLid0.size / 2.f,
                                .rotation = sf::radians(catRotation),
@@ -6993,8 +6991,7 @@ struct Main
 
             if (!cat.isHexedOrCopyHexed() && cat.type != CatType::Devil)
                 batchToUse.add(
-                    sf::Sprite{.position = cat.pawPosition +
-                                           (beingDragged ? sf::Vector2f{-12.f, 12.f} : sf::Vector2f{0.f, 0.f}),
+                    sf::Sprite{.position = cat.pawPosition + (beingDragged ? sf::Vec2f{-12.f, 12.f} : sf::Vec2f{0.f, 0.f}),
                                .scale       = catScale,
                                .origin      = catPawTxr.size / 2.f,
                                .rotation    = cat.type == CatType::Mouse ? sf::radians(-0.6f) : cat.pawRotation,
@@ -7039,7 +7036,7 @@ struct Main
                 }();
 
                 if (txrMaskToUse != nullptr)
-                    batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vector2f{265.f, 115.f}),
+                    batchToUse.add(sf::Sprite{.position    = anchorOffset(sf::Vec2f{265.f, 115.f}),
                                               .scale       = catScale * remap(foo, 0.f, 0.5f, 1.f, 0.75f),
                                               .origin      = {353.f, 295.f * remap(foo, 0.f, 0.5f, 1.f, 1.25f)},
                                               .rotation    = sf::radians(catRotation + foo),
@@ -7067,7 +7064,7 @@ struct Main
             textNameBuffer.setString(catNameBuffer);
             textNameBuffer.position = cat.position.addY(48.f);
             textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
-            textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * catScaleMult;
+            textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * catScaleMult;
             textNameBuffer.setOutlineColor(textOutlineColor);
             textBatchToUse.add(textNameBuffer);
 
@@ -7133,7 +7130,7 @@ struct Main
                     .fillColor          = sf::Color::whiteMask(128u),
                     .outlineColor       = textOutlineColor,
                     .outlineThickness   = 1.f,
-                    .size               = sf::Vector2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, 64.f),
+                    .size               = sf::Vec2f{cat.cooldown.value / maxCooldown * 64.f, 3.f}.clampX(1.f, 64.f),
                     .cornerRadius       = 1.f,
                     .cornerPointCount   = 8u,
                 });
@@ -7141,7 +7138,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawShrines(const sf::Vector2f mousePos)
+    void gameLoopDrawShrines(const sf::Vec2f mousePos)
     {
         Shrine* hoveredShrine = nullptr;
 
@@ -7179,8 +7176,8 @@ struct Main
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position = shrine.getDrawPosition(),
-                           .scale    = sf::Vector2f{0.3f, 0.3f} * invDeathProgress +
-                                    sf::Vector2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
+                           .scale    = sf::Vec2f{0.3f, 0.3f} * invDeathProgress +
+                                    sf::Vec2f{1.25f, 1.25f} * shrine.textStatusShakeEffect.grow * 0.015f,
                            .origin      = txrShrine.size / 2.f,
                            .textureRect = txrShrine,
                            .color       = shrineColor});
@@ -7201,7 +7198,7 @@ struct Main
             textNameBuffer.setString(shrineNames[asIdx(shrine.type)]);
             textNameBuffer.position = shrine.position.addY(48.f);
             textNameBuffer.origin   = textNameBuffer.getLocalBounds().size / 2.f;
-            textNameBuffer.scale    = sf::Vector2f{0.5f, 0.5f} * invDeathProgress;
+            textNameBuffer.scale    = sf::Vec2f{0.5f, 0.5f} * invDeathProgress;
             textNameBuffer.setFillColor(sf::Color::White);
             textNameBuffer.setOutlineColor(textOutlineColor);
             catTextDrawableBatch.add(textNameBuffer);
@@ -7252,7 +7249,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopDrawDolls(const sf::Vector2f mousePos)
+    void gameLoopDrawDolls(const sf::Vec2f mousePos)
     {
         ////////////////////////////////////////////////////////////
         const sf::FloatRect* dollTxrs[] = {
@@ -7290,7 +7287,7 @@ struct Main
 
                 cpuDrawableBatch.add(
                     sf::Sprite{.position    = doll.getDrawPosition(),
-                               .scale       = sf::Vector2f{0.22f, 0.22f} * progress,
+                               .scale       = sf::Vec2f{0.22f, 0.22f} * progress,
                                .origin      = dollTxr.size / 2.f,
                                .rotation    = sf::radians(-0.15f + 0.3f * sf::base::sin(doll.wobbleRadians / 2.f)),
                                .textureRect = dollTxr,
@@ -7316,7 +7313,7 @@ struct Main
 
             cpuDrawableBatch.add(
                 sf::Sprite{.position    = hp.getDrawPosition(),
-                           .scale       = sf::Vector2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
+                           .scale       = sf::Vec2f{1.f, 1.f} * scaleMult * hellPortalRadius / 256.f * 1.15f,
                            .origin      = txrHellPortal.size / 2.f,
                            .rotation    = sf::radians(hp.life.value / 200.f),
                            .textureRect = txrHellPortal,
@@ -7325,7 +7322,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2f getViewCenter() const
+    [[nodiscard]] sf::Vec2f getViewCenter() const
     {
         return {sf::base::clamp(gameScreenSize.x / 2.f + actualScroll * 2.f,
                                 gameScreenSize.x / 2.f,
@@ -7334,7 +7331,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2f getViewCenterWithoutScroll() const
+    [[nodiscard]] sf::Vec2f getViewCenterWithoutScroll() const
     {
         return {gameScreenSize.x / 2.f, gameScreenSize.y / 2.f};
     }
@@ -7342,7 +7339,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] CullingBoundaries getViewCullingBoundaries(const float offset) const
     {
-        const sf::Vector2f viewCenter{getViewCenter()};
+        const sf::Vec2f viewCenter{getViewCenter()};
 
         return {viewCenter.x - gameScreenSize.x / 2.f + offset,
                 viewCenter.x + gameScreenSize.x / 2.f - offset,
@@ -7399,10 +7396,10 @@ struct Main
 
         const auto targetPosition = moneyText.getCenterRight();
 
-        const auto bezier = [](const sf::Vector2f& start, const sf::Vector2f& end, const float t)
+        const auto bezier = [](const sf::Vec2f& start, const sf::Vec2f& end, const float t)
         {
-            const sf::Vector2f control(start.x, end.y);
-            const float        u = 1.f - t;
+            const sf::Vec2f control(start.x, end.y);
+            const float     u = 1.f - t;
 
             return u * u * start + 2.f * u * t * control + t * t * end;
         };
@@ -7417,7 +7414,7 @@ struct Main
 
             hudDrawableBatch.add(sf::Sprite{
                 .position    = {blend(newPos2.x, newPos.x, 0.5f), newPos.y},
-                .scale       = sf::Vector2f{0.25f, 0.25f} * opacityScale,
+                .scale       = sf::Vec2f{0.25f, 0.25f} * opacityScale,
                 .origin      = txrCoin.size / 2.f,
                 .rotation    = sf::radians(particle.progress.remap(0.f, sf::base::tau)),
                 .textureRect = txrCoin,
@@ -7515,8 +7512,7 @@ struct Main
             {
                 const float x = remap(countdown.value, 0.f, 1000.f, 0.f, imguiWidth);
 
-                const auto pos = sf::Vector2f{uiGetWindowPos().x + x,
-                                              y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
+                const auto pos = sf::Vec2f{uiGetWindowPos().x + x, y + (14.f + rngFast.getF(-14.f, 14.f)) * profile.uiScale};
 
                 for (sf::base::SizeT i = 0u; i < 2u; ++i)
                     spawnHUDTopParticle({.position      = pos,
@@ -7542,7 +7538,7 @@ struct Main
 
                 rtGame.draw(tx,
                             {.position = {uiGetWindowPos().x, y + 14.f * profile.uiScale},
-                             .scale = sf::Vector2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
+                             .scale = sf::Vec2f{0.25f, 0.25f} * (profile.uiScale + -0.15f * easeInOutBack(blinkProgress)),
                              .origin = tx.getRect().getCenterRight(),
                              .color  = hueColor(hue + currentBackgroundHue.asDegrees(), arrowAlpha)},
                             {.shader = &shader});
@@ -7561,7 +7557,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void gameLoopDrawCursor(const float deltaTimeMs, const float cursorGrow)
     {
-        const sf::Vector2i windowSpaceMousePos = sf::Mouse::getPosition(window);
+        const sf::Vec2i windowSpaceMousePos = sf::Mouse::getPosition(window);
 
         const bool mouseNearWindowEdges = windowSpaceMousePos.x < 4 || windowSpaceMousePos.y < 4 ||
                                           windowSpaceMousePos.x > static_cast<int>(window.getSize().x) - 4 ||
@@ -7581,8 +7577,8 @@ struct Main
                     : pt->laserPopEnabled      ? txCursorLaser
                     : pt->multiPopEnabled      ? txCursorMultipop
                                                : txCursor,
-                    {.position = sf::Mouse::getPosition(window).toVector2f(),
-                     .scale    = sf::Vector2f{profile.cursorScale, profile.cursorScale} *
+                    {.position = sf::Mouse::getPosition(window).toVec2f(),
+                     .scale    = sf::Vec2f{profile.cursorScale, profile.cursorScale} *
                               ((1.f + easeInOutBack(cursorGrow) * std::pow(static_cast<float>(combo), 0.09f)) *
                                dpiScalingFactor),
                      .origin = {5.f, 5.f},
@@ -7607,7 +7603,7 @@ struct Main
 
         const auto alphaU8 = static_cast<U8>(sf::base::clamp(alpha, 0.f, 255.f));
 
-        cursorComboText.position = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{30.f, 48.f} * scaleMult;
+        cursorComboText.position = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{30.f, 48.f} * scaleMult;
 
         cursorComboText.setFillColor(sf::Color::blackMask(alphaU8));
         cursorComboText.setOutlineColor(
@@ -7620,10 +7616,10 @@ struct Main
 
         cursorComboText.scale *= (static_cast<float>(combo) * 0.65f) * cursorGrow * 0.3f;
         cursorComboText.scale += {0.85f, 0.85f};
-        cursorComboText.scale += sf::Vector2f{1.f, 1.f} * comboFailCountdown.value / 325.f;
+        cursorComboText.scale += sf::Vec2f{1.f, 1.f} * comboFailCountdown.value / 325.f;
         cursorComboText.scale *= scaleMult;
 
-        const auto minScale = sf::Vector2f{0.25f, 0.25f} + sf::Vector2f{0.25f, 0.25f} * comboFailCountdown.value / 125.f;
+        const auto minScale = sf::Vec2f{0.25f, 0.25f} + sf::Vec2f{0.25f, 0.25f} * comboFailCountdown.value / 125.f;
 
         cursorComboText.scale = cursorComboText.scale.componentWiseClamp(minScale, {1.5f, 1.5f});
 
@@ -7644,7 +7640,7 @@ struct Main
 
         const float scaleMult = profile.cursorScale * dpiScalingFactor;
 
-        const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVector2f() + sf::Vector2f{52.f, 14.f} * scaleMult;
+        const auto cursorComboBarPosition = sf::Mouse::getPosition(window).toVec2f() + sf::Vec2f{52.f, 14.f} * scaleMult;
 
         rtGame.draw(sf::RectangleShapeData{
             .position           = cursorComboBarPosition,
@@ -7667,7 +7663,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Helper function to convert a view's normalized viewport to pixel bounds relative to a target size (e.g. window size)
-    [[nodiscard]] sf::FloatRect getViewportPixelBounds(const sf::View& view, const sf::Vector2f targetSize) const
+    [[nodiscard]] sf::FloatRect getViewportPixelBounds(const sf::View& view, const sf::Vec2f targetSize) const
     {
         return {{view.viewport.position.x * targetSize.x, view.viewport.position.y * targetSize.y},
                 {view.viewport.size.x * targetSize.x, view.viewport.size.y * targetSize.y}};
@@ -7675,7 +7671,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Returns a random position along the edges of the provided bounds.
-    [[nodiscard]] sf::Vector2f getEdgeSpawnPosition(const sf::FloatRect& bounds, const float thickness)
+    [[nodiscard]] sf::Vec2f getEdgeSpawnPosition(const sf::FloatRect& bounds, const float thickness)
     {
         // Randomly select one of the four edges: 0=top, 1=bottom, 2=left, 3=right.
         const int edge = rngFast.getI<int>(0, 3);
@@ -7709,7 +7705,7 @@ struct Main
         for (int i = 0; i < 10; ++i)
         {
             const sf::FloatRect gameViewBounds = getViewportPixelBounds(gameView, getResolution());
-            const sf::Vector2f  spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
+            const sf::Vec2f     spawnPos       = getEdgeSpawnPosition(gameViewBounds, 10.f);
 
             spawnHUDBottomParticle({.position      = spawnPos,
                                     .velocity      = rngFast.getVec2f({-0.05f, -0.05f}, {0.05f, 0.05f}),
@@ -7761,8 +7757,8 @@ struct Main
         const float tipBackgroundAlpha = bgProgress * 255.f;
 
         sf::Sprite tipBackgroundSprite{.position = {},
-                                       .scale = sf::Vector2f{0.4f, 0.4f} + sf::Vector2f{0.4f, 0.4f} * easeInOutBack(bgProgress),
-                                       .origin      = txTipBg.getSize().toVector2f() / 2.f,
+                                       .scale = sf::Vec2f{0.4f, 0.4f} + sf::Vec2f{0.4f, 0.4f} * easeInOutBack(bgProgress),
+                                       .origin      = txTipBg.getSize().toVec2f() / 2.f,
                                        .textureRect = txTipBg.getRect(),
                                        .color = sf::Color::whiteMask(static_cast<U8>(tipBackgroundAlpha * 0.85f))};
 
@@ -7775,8 +7771,8 @@ struct Main
         rtGame.draw(tipBackgroundSprite, {.texture = &txTipBg});
 
         sf::Sprite tipByteSprite{.position    = {},
-                                 .scale       = sf::Vector2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
-                                 .origin      = txTipByte.getSize().toVector2f() / 2.f,
+                                 .scale       = sf::Vec2f{0.85f, 0.85f} * easeInOutBack(byteProgress),
+                                 .origin      = txTipByte.getSize().toVec2f() / 2.f,
                                  .rotation    = sf::radians(sf::base::tau * easeInOutBack(byteProgress)),
                                  .textureRect = txTipByte.getRect(),
                                  .color       = sf::Color::whiteMask(static_cast<U8>(tipByteAlpha))};
@@ -7843,14 +7839,14 @@ struct Main
 
         sf::Text tipText{fontSuperBakery,
                          {.position         = {},
-                          .scale            = sf::Vector2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
+                          .scale            = sf::Vec2f{0.5f, 0.5f} * easeInOutBack(byteProgress),
                           .string           = tipString.substr(0, tipCharIdx),
                           .characterSize    = 60u,
                           .fillColor        = sf::Color::whiteMask(static_cast<sf::base::U8>(tipByteAlpha)),
                           .outlineColor     = outlineHueColor.withAlpha(static_cast<sf::base::U8>(tipByteAlpha)),
                           .outlineThickness = 4.f}};
 
-        tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vector2f{45.f, 65.f});
+        tipText.setTopLeft(tipBackgroundSprite.getTopLeft() + sf::Vec2f{45.f, 65.f});
 
         tipStringWiggle.advance(deltaTimeMs);
         tipStringWiggle.apply(tipText);
@@ -7861,27 +7857,27 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void recreateImGuiRenderTexture(const sf::Vector2u newResolution)
+    void recreateImGuiRenderTexture(const sf::Vec2u newResolution)
     {
         rtImGui = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
     }
 
     ////////////////////////////////////////////////////////////
-    void recreateGameRenderTexture(const sf::Vector2u newResolution)
+    void recreateGameRenderTexture(const sf::Vec2u newResolution)
     {
         rtGame = sf::RenderTexture::create(newResolution, {.antiAliasingLevel = aaLevel, .sRgbCapable = false}).value();
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::Vector2u getNewResolution() const
+    [[nodiscard]] sf::Vec2u getNewResolution() const
     {
-        return profile.resWidth == sf::Vector2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
+        return profile.resWidth == sf::Vec2u{} ? getReasonableWindowSize(0.9f) : profile.resWidth;
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::RenderWindow makeWindow()
     {
-        const sf::Vector2u newResolution = getNewResolution();
+        const sf::Vec2u newResolution = getNewResolution();
 
         const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
 
@@ -7900,7 +7896,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void recreateWindow()
     {
-        const sf::Vector2u newResolution = getNewResolution();
+        const sf::Vec2u newResolution = getNewResolution();
 
         window = makeWindow();
 
@@ -7928,10 +7924,10 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCombo(const float                            deltaTimeMs,
-                             const bool                             anyBubblePoppedByClicking,
-                             const sf::Vector2f                     mousePos,
-                             const sf::base::Optional<sf::Vector2f> clickPosition)
+    void gameLoopUpdateCombo(const float                         deltaTimeMs,
+                             const bool                          anyBubblePoppedByClicking,
+                             const sf::Vec2f                     mousePos,
+                             const sf::base::Optional<sf::Vec2f> clickPosition)
     {
         // Mousecat combo
         checkComboEnd(deltaTimeMs, pt->mouseCatCombo, pt->mouseCatComboCountdown);
@@ -8222,7 +8218,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vector2f mousePos)
+    void gameLoopUpdateSounds(const float deltaTimeMs, const sf::Vec2f mousePos)
     {
 #ifndef BUBBLEBYTE_NO_AUDIO
         const float volumeMult = profile.playAudioInBackground || window.hasFocus() ? 1.f : 0.f;
@@ -8341,7 +8337,7 @@ struct Main
         fixedBgSlide = exponentialApproach(fixedBgSlide, fixedBgSlideTarget, deltaTimeMs, 1000.f);
 
         const float fixedBgX = 2100.f * ratio * 0.5f * sf::base::remainder(fixedBgSlide, 3.f);
-        const auto  sz       = txFixedBg.getSize().toVector2f();
+        const auto  sz       = txFixedBg.getSize().toVec2f();
 
         // Result of linear regression and trial-and-error >:3
         const float fixedBgOffsetX = 1648.f * ratio - 3216.62f;
@@ -8412,7 +8408,7 @@ struct Main
                           {
                               .scale       = {0.5f, 0.5f},
                               .textureRect = {{actualScroll + backgroundScroll * 0.25f, 0.f},
-                                              txBackgroundChunk.getSize().toVector2f() * 2.f},
+                                              txBackgroundChunk.getSize().toVec2f() * 2.f},
                               .color       = hueColor(currentBackgroundHue.asDegrees(), getAlpha(255.f)),
                           },
                           {.shader = &shader});
@@ -8420,7 +8416,7 @@ struct Main
         if (idx == 0u || profile.alwaysShowDrawings)
             rtBackground.draw(txDrawings,
                               {
-                                  .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVector2f() * 2.f},
+                                  .textureRect = {{actualScroll * 2.f, 0.f}, txBackgroundChunk.getSize().toVec2f() * 2.f},
                                   .color = sf::Color::whiteMask(getAlpha(200.f)),
                               });
 
@@ -8428,7 +8424,7 @@ struct Main
                           {
                               .scale       = {0.75f, 0.75f},
                               .textureRect = {{actualScroll * 2.f + backgroundScroll * 0.5f, 0.f},
-                                              txBackgroundChunk.getSize().toVector2f() * 1.5f},
+                                              txBackgroundChunk.getSize().toVec2f() * 1.5f},
                               .color       = sf::Color::whiteMask(getAlpha(175.f)),
                           });
 
@@ -8436,7 +8432,7 @@ struct Main
                           {
                               .scale       = {1.25f, 1.25f},
                               .textureRect = {{actualScroll * 4.f + backgroundScroll * 3.f, 0.f},
-                                              txBackgroundChunk.getSize().toVector2f()},
+                                              txBackgroundChunk.getSize().toVec2f()},
                               .color       = sf::Color::whiteMask(getAlpha(128.f)),
                           });
 
@@ -8478,7 +8474,7 @@ struct Main
 
             spawnSpentCoinParticle(
                 {.position      = moneyText.getCenterRight().addY(rngFast.getF(-12.f, 12.f)),
-                 .velocity      = sf::Vector2f{3.f, 0.f},
+                 .velocity      = sf::Vec2f{3.f, 0.f},
                  .scale         = 0.35f,
                  .scaleDecay    = 0.f,
                  .accelerationY = 0.f,
@@ -8697,7 +8693,7 @@ struct Main
         fps = 1.f / fpsClock.getElapsedTime().asSeconds();
         fpsClock.restart();
 
-        sf::base::Optional<sf::Vector2f> clickPosition;
+        sf::base::Optional<sf::Vec2f> clickPosition;
 
         inputHelper.beginNewFrame();
 
@@ -8723,10 +8719,10 @@ struct Main
 #pragma GCC diagnostic ignored "-Wshadow"
             if (const auto* e0 = event->getIf<sf::Event::TouchBegan>())
             {
-                fingerPositions[e0->finger].emplace(e0->position.toVector2f());
+                fingerPositions[e0->finger].emplace(e0->position.toVec2f());
 
                 if (!clickPosition.hasValue())
-                    clickPosition.emplace(e0->position.toVector2f());
+                    clickPosition.emplace(e0->position.toVec2f());
             }
             else if (const auto* e1 = event->getIf<sf::Event::TouchEnded>())
             {
@@ -8734,22 +8730,22 @@ struct Main
             }
             else if (const auto* e2 = event->getIf<sf::Event::TouchMoved>())
             {
-                fingerPositions[e2->finger].emplace(e2->position.toVector2f());
+                fingerPositions[e2->finger].emplace(e2->position.toVec2f());
 
                 if (pt->laserPopEnabled)
                     if (!clickPosition.hasValue())
-                        clickPosition.emplace(e2->position.toVector2f());
+                        clickPosition.emplace(e2->position.toVec2f());
             }
             else if (const auto* e3 = event->getIf<sf::Event::MouseButtonPressed>())
             {
                 if (e3->button == getLMB())
-                    clickPosition.emplace(e3->position.toVector2f());
+                    clickPosition.emplace(e3->position.toVec2f());
 
                 if (e3->button == getRMB() && !dragPosition.hasValue())
                 {
                     clickPosition.reset();
 
-                    dragPosition.emplace(e3->position.toVector2f());
+                    dragPosition.emplace(e3->position.toVec2f());
                     dragPosition->x += scroll;
                 }
             }
@@ -8775,7 +8771,7 @@ struct Main
             {
                 if (e7->code == sf::Keyboard::Key::Z || e7->code == sf::Keyboard::Key::X ||
                     e7->code == sf::Keyboard::Key::Y)
-                    clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
+                    clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
             }
             else if (const auto* e8 = event->getIf<sf::Event::MouseWheelScrolled>())
             {
@@ -8818,12 +8814,12 @@ struct Main
                 mBtnDown(getLMB(), /* penetrateUI */ false))
             {
                 if (!clickPosition.hasValue())
-                    clickPosition.emplace(sf::Mouse::getPosition(window).toVector2f());
+                    clickPosition.emplace(sf::Mouse::getPosition(window).toVec2f());
             }
 
         //
         // Number of fingers
-        std::vector<sf::Vector2f> downFingers;
+        std::vector<sf::Vec2f> downFingers;
         for (const auto maybeFinger : fingerPositions)
             if (maybeFinger.hasValue())
                 downFingers.push_back(*maybeFinger);
@@ -8876,7 +8872,7 @@ struct Main
                 // TODO P2: check fingers distance
                 const auto [fingerPos0, fingerPos1] = [&]
                 {
-                    std::pair<sf::base::Optional<sf::Vector2f>, sf::base::Optional<sf::Vector2f>> result;
+                    std::pair<sf::base::Optional<sf::Vec2f>, sf::base::Optional<sf::Vec2f>> result;
 
                     for (const auto& fingerPosition : fingerPositions)
                     {
@@ -8922,7 +8918,7 @@ struct Main
 
         //
         // Culling boundaries
-        const sf::Vector2f resolution = getResolution();
+        const sf::Vec2f resolution = getResolution();
 
         hudCullingBoundaries      = {0.f, resolution.x, 0.f, resolution.y};
         particleCullingBoundaries = getViewCullingBoundaries(/* offset */ 0.f);
@@ -8930,7 +8926,7 @@ struct Main
 
         //
         // World-space mouse position
-        const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVector2i()
+        const auto windowSpaceMouseOrFingerPos = downFingers.size() == 1u ? downFingers[0].toVec2i()
                                                                           : sf::Mouse::getPosition(window);
 
         const auto mousePos = window.mapPixelToCoords(windowSpaceMouseOrFingerPos, gameView);
@@ -9048,7 +9044,7 @@ struct Main
         // Compute views
         const auto screenShake = profile.enableScreenShake ? rngFast.getVec2f({-screenShakeAmount, -screenShakeAmount},
                                                                               {screenShakeAmount, screenShakeAmount})
-                                                           : sf::Vector2f{0.f, 0.f};
+                                                           : sf::Vec2f{0.f, 0.f};
 
         nonScaledHUDView = {.center = resolution / 2.f, .size = resolution};
         scaledHUDView    = makeScaledHUDView(resolution, profile.hudScale);
@@ -9061,8 +9057,8 @@ struct Main
         scaledTopGameView.viewport.position.x = 0.f;
 
         {
-            const float        scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
-            const sf::Vector2f scaledSize = gameScreenSize * scale;
+            const float     scale      = getAspectRatioScalingFactor(gameScreenSize, resolution);
+            const sf::Vec2f scaledSize = gameScreenSize * scale;
 
             gameBackgroundView                     = createScaledGameView(gameScreenSize, scaledSize);
             gameBackgroundView.viewport.position.x = 0.f;
@@ -9365,9 +9361,9 @@ struct Main
                 const float progress = cdLetterAppear.getProgressBounced(4000.f);
 
                 rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
-                                       .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
+                                       .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(progress)) /
                                                 profile.hudScale * 2.f,
-                                       .origin      = txLetter.getSize().toVector2f() / 2.f,
+                                       .origin      = txLetter.getSize().toVec2f() / 2.f,
                                        .textureRect = txLetter.getRect(),
                                        .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(progress) * 255.f))},
                             {.texture = &txLetter});
@@ -9380,9 +9376,9 @@ struct Main
                                                                      : 1.f;
 
             rtGame.draw(sf::Sprite{.position = resolution / 2.f / profile.hudScale,
-                                   .scale = sf::Vector2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
+                                   .scale    = sf::Vec2f{0.9f, 0.9f} * (0.35f + 0.65f * easeInOutQuint(textProgress)) /
                                             profile.hudScale * 1.45f,
-                                   .origin      = txLetterText.getSize().toVector2f() / 2.f,
+                                   .origin      = txLetterText.getSize().toVec2f() / 2.f,
                                    .textureRect = txLetterText.getRect(),
                                    .color = sf::Color::whiteMask(static_cast<U8>(easeInOutQuint(textProgress) * 255.f))},
                         {.texture = &txLetterText});
@@ -9424,7 +9420,7 @@ struct Main
         shaderPostProcess.setUniform(suPPLightness, profile.ppSLightness);
         shaderPostProcess.setUniform(suPPSharpness, profile.ppSSharpness);
 
-        window.setView({window.getSize().toVector2f() / 2.f, window.getSize().toVector2f()});
+        window.setView({window.getSize().toVec2f() / 2.f, window.getSize().toVec2f()});
 
         window.clear();
         window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});

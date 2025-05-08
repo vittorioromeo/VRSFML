@@ -36,10 +36,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         {
             const sf::SoundBuffer soundBufferCopy(soundBuffer); // NOLINT(performance-unnecessary-copy-initialization)
             CHECK(soundBufferCopy.getSamples() != nullptr);
-            CHECK(soundBufferCopy.getSampleCount() == 87798);
-            CHECK(soundBufferCopy.getSampleRate() == 44100);
+            CHECK(soundBufferCopy.getSampleCount() == 87'798);
+            CHECK(soundBufferCopy.getSampleRate() == 44'100);
             CHECK(soundBufferCopy.getChannelCount() == 1);
-            CHECK(soundBufferCopy.getDuration() == sf::microseconds(1990884));
+            CHECK(soundBufferCopy.getDuration() == sf::microseconds(1'990'884));
         }
 
         SECTION("Assignment")
@@ -47,10 +47,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
             sf::SoundBuffer soundBufferCopy = sf::SoundBuffer::loadFromFile("Audio/doodle_pop.ogg").value();
             soundBufferCopy                 = soundBuffer;
             CHECK(soundBufferCopy.getSamples() != nullptr);
-            CHECK(soundBufferCopy.getSampleCount() == 87798);
-            CHECK(soundBufferCopy.getSampleRate() == 44100);
+            CHECK(soundBufferCopy.getSampleCount() == 87'798);
+            CHECK(soundBufferCopy.getSampleRate() == 44'100);
             CHECK(soundBufferCopy.getChannelCount() == 1);
-            CHECK(soundBufferCopy.getDuration() == sf::microseconds(1990884));
+            CHECK(soundBufferCopy.getDuration() == sf::microseconds(1'990'884));
         }
     }
 
@@ -74,10 +74,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
                 const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
                 CHECK(soundBuffer.getSamples() != nullptr);
-                CHECK(soundBuffer.getSampleCount() == 87798);
-                CHECK(soundBuffer.getSampleRate() == 44100);
+                CHECK(soundBuffer.getSampleCount() == 87'798);
+                CHECK(soundBuffer.getSampleRate() == 44'100);
                 CHECK(soundBuffer.getChannelCount() == 1);
-                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+                CHECK(soundBuffer.getDuration() == sf::microseconds(1'990'884));
             }
         }
     }
@@ -95,10 +95,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
             const auto memory      = loadIntoMemory("Audio/ding.flac");
             const auto soundBuffer = sf::SoundBuffer::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(soundBuffer.getSamples() != nullptr);
-            CHECK(soundBuffer.getSampleCount() == 87798);
-            CHECK(soundBuffer.getSampleRate() == 44100);
+            CHECK(soundBuffer.getSampleCount() == 87'798);
+            CHECK(soundBuffer.getSampleRate() == 44'100);
             CHECK(soundBuffer.getChannelCount() == 1);
-            CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+            CHECK(soundBuffer.getDuration() == sf::microseconds(1'990'884));
         }
     }
 
@@ -107,10 +107,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         auto       stream      = sf::FileInputStream::open("Audio/ding.flac").value();
         const auto soundBuffer = sf::SoundBuffer::loadFromStream(stream).value();
         CHECK(soundBuffer.getSamples() != nullptr);
-        CHECK(soundBuffer.getSampleCount() == 87798);
-        CHECK(soundBuffer.getSampleRate() == 44100);
+        CHECK(soundBuffer.getSampleCount() == 87'798);
+        CHECK(soundBuffer.getSampleRate() == 44'100);
         CHECK(soundBuffer.getChannelCount() == 1);
-        CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+        CHECK(soundBuffer.getDuration() == sf::microseconds(1'990'884));
     }
 
     SECTION("saveToFile()")
@@ -133,10 +133,10 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
                 const auto soundBuffer = sf::SoundBuffer::loadFromFile(filename).value();
                 CHECK(soundBuffer.getSamples() != nullptr);
-                CHECK(soundBuffer.getSampleCount() == 87798);
-                CHECK(soundBuffer.getSampleRate() == 44100);
+                CHECK(soundBuffer.getSampleCount() == 87'798);
+                CHECK(soundBuffer.getSampleRate() == 44'100);
                 CHECK(soundBuffer.getChannelCount() == 1);
-                CHECK(soundBuffer.getDuration() == sf::microseconds(1990884));
+                CHECK(soundBuffer.getDuration() == sf::microseconds(1'990'884));
 
                 CHECK(filename.remove());
             }

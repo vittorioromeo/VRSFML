@@ -37,7 +37,7 @@
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -154,7 +154,7 @@ void Main::uiMakeTooltip(const bool small)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiMakeShrineOrCatTooltip(const sf::Vector2f mousePos)
+void Main::uiMakeShrineOrCatTooltip(const sf::Vec2f mousePos)
 {
     const auto* hoveredShrine = [&]() -> const Shrine*
     {
@@ -822,7 +822,7 @@ void Main::uiCenteredTextColored(const sf::Color color, const char* str, const f
 }
 
 ////////////////////////////////////////////////////////////
-sf::Vector2f Main::uiGetWindowPos() const
+sf::Vec2f Main::uiGetWindowPos() const
 {
     const float ratio = getAspectRatioScalingFactor(gameScreenSize, getResolution());
 
@@ -885,7 +885,7 @@ void Main::uiDrawExitPopup(const float newScalingFactor)
 
 
 ////////////////////////////////////////////////////////////
-void Main::uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
+void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
 {
     const bool asWitchAndBusy = pt->copycatCopiedCatType == CatType::Witch && (anyCatCopyHexed() || !pt->copyDolls.empty());
 
@@ -980,7 +980,7 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vector2f quickBarPos, Cat& copyCat)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiDrawQuickbarBackgroundSelector(const sf::Vector2f quickBarPos)
+void Main::uiDrawQuickbarBackgroundSelector(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "BackgroundSelectorPopup";
     static sf::base::U8   opacity    = 168u;
@@ -1034,7 +1034,7 @@ void Main::uiDrawQuickbarBackgroundSelector(const sf::Vector2f quickBarPos)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiDrawQuickbarBGMSelector(const sf::Vector2f quickBarPos)
+void Main::uiDrawQuickbarBGMSelector(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "MusicSelectorPopup";
     static sf::base::U8   opacity    = 168u;
@@ -1089,7 +1089,7 @@ void Main::uiDrawQuickbarBGMSelector(const sf::Vector2f quickBarPos)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiDrawQuickbarQuickSettings(const sf::Vector2f quickBarPos)
+void Main::uiDrawQuickbarQuickSettings(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "QuickSettingsPopup";
     static sf::base::U8   opacity    = 168u;
@@ -1192,7 +1192,7 @@ void Main::uiDrawQuickbarQuickSettings(const sf::Vector2f quickBarPos)
 }
 
 ////////////////////////////////////////////////////////////
-void Main::uiDrawQuickbarVolumeControls(const sf::Vector2f quickBarPos)
+void Main::uiDrawQuickbarVolumeControls(const sf::Vec2f quickBarPos)
 {
     constexpr const char* popupLabel = "VolumeSelectorPopup";
     static sf::base::U8   opacity    = 168u;
@@ -1236,7 +1236,7 @@ void Main::uiDrawQuickbar()
 
     const float xStart = lastUiSelectedTabIdx == 0 ? xStartOverlay : sf::base::min(xStartOverlay, uiGetWindowPos().x);
 
-    const sf::Vector2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
+    const sf::Vec2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
 
     ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {1.f, 1.f});
     ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, FLT_MAX));
@@ -1322,7 +1322,7 @@ struct ImGuiStyleScales
 };
 
 ////////////////////////////////////////////////////////////
-void Main::uiDraw(const sf::Vector2f mousePos)
+void Main::uiDraw(const sf::Vec2f mousePos)
 {
     ImGuiStyle& style = ImGui::GetStyle();
 
@@ -4442,7 +4442,7 @@ void Main::uiTabBarSettings()
 
             if (isUniqueCatType(catType))
             {
-                const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVector2i(), gameView);
+                const auto pos = window.mapPixelToCoords((getResolution() / 2.f).toVec2i(), gameView);
                 spawnSpecialCat(pos, catType);
             }
             else

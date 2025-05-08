@@ -31,7 +31,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         const sf::ConvexShape convex{{.pointCount = 15u}};
         CHECK(convex.getPointCount() == 15);
         for (sf::base::SizeT i = 0; i < convex.getPointCount(); ++i)
-            CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
+            CHECK(convex.getPoint(i) == sf::Vec2f{0, 0});
     }
 
     SECTION("Set point count")
@@ -40,7 +40,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         convex.setPointCount(42);
         CHECK(convex.getPointCount() == 42);
         for (sf::base::SizeT i = 0; i < convex.getPointCount(); ++i)
-            CHECK(convex.getPoint(i) == sf::Vector2f{0, 0});
+            CHECK(convex.getPoint(i) == sf::Vec2f{0, 0});
     }
 
     SECTION("Set point")
@@ -48,7 +48,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         sf::ConvexShape convex{{.pointCount = 0u}};
         convex.setPointCount(1);
         convex.setPoint(0, {3, 4});
-        CHECK(convex.getPoint(0) == sf::Vector2f{3, 4});
+        CHECK(convex.getPoint(0) == sf::Vec2f{3, 4});
     }
 
     SECTION(
@@ -88,7 +88,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
     {
         sf::ConvexShape convex{{.pointCount = 1u}};
         convex.setPoint(0, {1.f, 1.f});
-        CHECK(convex.getGeometricCenter() == sf::Vector2f(1.f, 1.f));
+        CHECK(convex.getGeometricCenter() == sf::Vec2f(1.f, 1.f));
     }
 
     SECTION("Geometric center for two points")
@@ -96,7 +96,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
         sf::ConvexShape convex{{.pointCount = 2u}};
         convex.setPoint(0, {0.f, 0.f});
         convex.setPoint(1, {4.f, 2.f});
-        CHECK(convex.getGeometricCenter() == sf::Vector2f(2.f, 1.f));
+        CHECK(convex.getGeometricCenter() == sf::Vec2f(2.f, 1.f));
     }
 
     SECTION("Geometric center for three points with a small area")
@@ -117,7 +117,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {-100.f, 0.f});
             convex.setPoint(1, {0.f, 0.f});
             convex.setPoint(2, {100.f, 1.f});
-            CHECK(convex.getGeometricCenter() == Approx(sf::Vector2f(0.f, 1.f / 3.f)));
+            CHECK(convex.getGeometricCenter() == Approx(sf::Vec2f(0.f, 1.f / 3.f)));
         }
 
         SECTION("Geometric center for aligned points with the two furthest apart not first and last")
@@ -127,7 +127,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(1, {-150.f, -150.f});
             convex.setPoint(2, {150.f, 150.f});
             convex.setPoint(3, {50.f, 50.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(0.f, 0.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(0.f, 0.f));
         }
 
         SECTION("Geometric center for aligned points increasing x and y")
@@ -136,7 +136,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {1.f, 1.f});
             convex.setPoint(1, {5.f, 3.f});
             convex.setPoint(2, {9.f, 5.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(5.f, 3.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(5.f, 3.f));
         }
 
         SECTION("Geometric center for aligned points increasing x, decreasing y")
@@ -145,7 +145,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {1.f, 5.f});
             convex.setPoint(1, {5.f, 3.f});
             convex.setPoint(2, {9.f, 1.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(5.f, 3.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(5.f, 3.f));
         }
 
         SECTION("Geometric center for aligned points decreasing x and y")
@@ -154,7 +154,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {9.f, 5.f});
             convex.setPoint(1, {5.f, 3.f});
             convex.setPoint(2, {1.f, 1.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(5.f, 3.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(5.f, 3.f));
         }
 
         SECTION("Geometric center for aligned points decreasing x, increasing y")
@@ -163,7 +163,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {9.f, 1.f});
             convex.setPoint(1, {5.f, 3.f});
             convex.setPoint(2, {1.f, 5.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(5.f, 3.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(5.f, 3.f));
         }
 
         SECTION("Geometric center for aligned points with the same x value")
@@ -172,7 +172,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {1.f, 2.f});
             convex.setPoint(1, {1.f, 3.f});
             convex.setPoint(2, {1.f, 1.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(1.f, 2.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(1.f, 2.f));
         }
 
         SECTION("Geometric center for aligned points with the same y value")
@@ -181,7 +181,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {2.f, 5.f});
             convex.setPoint(1, {3.f, 5.f});
             convex.setPoint(2, {1.f, 5.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(2.f, 5.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(2.f, 5.f));
         }
 
         SECTION("Geometric center for aligned points out of order")
@@ -190,7 +190,7 @@ TEST_CASE("[Graphics] sf::ConvexShape")
             convex.setPoint(0, {5.f, 3.f});
             convex.setPoint(1, {1.f, 5.f});
             convex.setPoint(2, {9.f, 1.f});
-            CHECK(convex.getGeometricCenter() == sf::Vector2f(5.f, 3.f));
+            CHECK(convex.getGeometricCenter() == sf::Vec2f(5.f, 3.f));
         }
     }
 }

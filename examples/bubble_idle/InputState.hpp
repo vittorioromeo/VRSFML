@@ -4,7 +4,7 @@
 #include "SFML/Window/Keyboard.hpp"
 #include "SFML/Window/Mouse.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -13,9 +13,9 @@
 ////////////////////////////////////////////////////////////
 struct InputState
 {
-    sf::base::Array<sf::base::Optional<sf::Vector2i>, 32> fingerPositions{};
+    sf::base::Array<sf::base::Optional<sf::Vec2i>, 32> fingerPositions{};
 
-    sf::Vector2i mousePosition;
+    sf::Vec2i mousePosition;
 
     sf::base::Array<bool, sf::Keyboard::KeyCount> keys{};
     sf::base::Array<bool, sf::Mouse::ButtonCount> buttons{};

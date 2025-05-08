@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Export.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 
 namespace sf
@@ -44,7 +44,7 @@ struct [[nodiscard]] SFML_WINDOW_API VideoMode
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    Vector2u     size;              //!< Video mode width and height, in pixels
+    Vec2u        size;              //!< Video mode width and height, in pixels
     unsigned int bitsPerPixel{32u}; //!< Video mode pixel depth, in bits per pixels
     float        pixelDensity{1.f}; //!< Video mode pixel density multiplier
     float        refreshRate{60.f}; //!< Video mode refresh rate, in Hz

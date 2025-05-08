@@ -22,7 +22,7 @@ struct SFMLmainWindow
 
         sprite.origin = sprite.getLocalBounds().getCenter();
         sprite.scale *= 0.3f;
-        sprite.position = sf::Vector2f(renderWindow.getSize()) / 2.f;
+        sprite.position = sf::Vec2f(renderWindow.getSize()) / 2.f;
 
         text.setFillColor(sf::Color::White);
     }

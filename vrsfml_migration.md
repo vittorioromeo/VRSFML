@@ -49,7 +49,7 @@ window.setVerticalSyncEnabled(true);
 
 //
 // AFTER (VRSFML)
-sf::RenderWindow window({.size = gameSize.toVector2u(),
+sf::RenderWindow window({.size = gameSize.toVec2u(),
                          .bitsPerPixel = 32u,
                          .title = "SFML Tennis",
                          .resizable = false,
@@ -420,3 +420,9 @@ TODO P0: `makeDPIScaledRenderWindow`, also helper DPI getter functions
 ## Windows are not closable anymore
 
 TODO P0: isOpen is gone, use an optional
+
+
+
+## Vector -> Vec rename
+
+TODO P0:

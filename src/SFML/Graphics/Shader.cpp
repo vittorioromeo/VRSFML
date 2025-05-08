@@ -21,8 +21,8 @@
 #include "SFML/System/InputStream.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
-#include "SFML/System/Vector2.hpp"
-#include "SFML/System/Vector3.hpp"
+#include "SFML/System/Vec2.hpp"
+#include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
@@ -155,17 +155,17 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-// Transforms an array of 2D vectors into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vector2f* vectorArray, sf::base::SizeT length)
+// Transforms an array of vec2s into a contiguous array of scalars
+[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vec2f* vecArray, sf::base::SizeT length)
 {
-    const sf::base::SizeT vectorSize = 2;
+    constexpr sf::base::SizeT vecSize = 2u;
 
-    sf::base::Vector<float> contiguous(vectorSize * length);
+    sf::base::Vector<float> contiguous(vecSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
-        contiguous[vectorSize * i]     = vectorArray[i].x;
-        contiguous[vectorSize * i + 1] = vectorArray[i].y;
+        contiguous[vecSize * i]     = vecArray[i].x;
+        contiguous[vecSize * i + 1] = vecArray[i].y;
     }
 
     return contiguous;
@@ -173,18 +173,18 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-// Transforms an array of 3D vectors into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vector3f* vectorArray, sf::base::SizeT length)
+// Transforms an array of vec3s into a contiguous array of scalars
+[[nodiscard]] sf::base::Vector<float> flatten(const sf::Vec3f* vecArray, sf::base::SizeT length)
 {
-    const sf::base::SizeT vectorSize = 3;
+    constexpr sf::base::SizeT vecSize = 3u;
 
-    sf::base::Vector<float> contiguous(vectorSize * length);
+    sf::base::Vector<float> contiguous(vecSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
-        contiguous[vectorSize * i]     = vectorArray[i].x;
-        contiguous[vectorSize * i + 1] = vectorArray[i].y;
-        contiguous[vectorSize * i + 2] = vectorArray[i].z;
+        contiguous[vecSize * i]     = vecArray[i].x;
+        contiguous[vecSize * i + 1] = vecArray[i].y;
+        contiguous[vecSize * i + 2] = vecArray[i].z;
     }
 
     return contiguous;
@@ -192,19 +192,19 @@ struct [[nodiscard]] BufferSlice
 
 
 ////////////////////////////////////////////////////////////
-// Transforms an array of 4D vectors into a contiguous array of scalars
-[[nodiscard]] sf::base::Vector<float> flatten(const sf::Glsl::Vec4* vectorArray, sf::base::SizeT length)
+// Transforms an array of vec4s into a contiguous array of scalars
+[[nodiscard]] sf::base::Vector<float> flatten(const sf::Glsl::Vec4* vecArray, sf::base::SizeT length)
 {
-    const sf::base::SizeT vectorSize = 4;
+    constexpr sf::base::SizeT vecSize = 4u;
 
-    sf::base::Vector<float> contiguous(vectorSize * length);
+    sf::base::Vector<float> contiguous(vecSize * length);
 
     for (sf::base::SizeT i = 0; i < length; ++i)
     {
-        contiguous[vectorSize * i]     = vectorArray[i].x;
-        contiguous[vectorSize * i + 1] = vectorArray[i].y;
-        contiguous[vectorSize * i + 2] = vectorArray[i].z;
-        contiguous[vectorSize * i + 3] = vectorArray[i].w;
+        contiguous[vecSize * i]     = vecArray[i].x;
+        contiguous[vecSize * i + 1] = vecArray[i].y;
+        contiguous[vecSize * i + 2] = vecArray[i].z;
+        contiguous[vecSize * i + 3] = vecArray[i].w;
     }
 
     return contiguous;
@@ -685,27 +685,27 @@ void Shader::setUniformArray(UniformLocation location, const float* scalarArray,
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vectorArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec2* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vectorArray, length);
+    base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform2fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vectorArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec3* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vectorArray, length);
+    base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform3fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }
 
 
 ////////////////////////////////////////////////////////////
-void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vectorArray, base::SizeT length)
+void Shader::setUniformArray(UniformLocation location, const Glsl::Vec4* vecArray, base::SizeT length)
 {
-    base::Vector<float> contiguous = flatten(vectorArray, length);
+    base::Vector<float> contiguous = flatten(vecArray, length);
     const UniformBinder binder{m_impl->shaderProgram};
     glCheck(glUniform4fv(location.m_value, static_cast<GLsizei>(length), contiguous.data()));
 }

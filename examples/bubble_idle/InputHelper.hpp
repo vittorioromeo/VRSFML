@@ -4,7 +4,7 @@
 
 #include "SFML/Window/Event.hpp"
 
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Optional.hpp"
 
@@ -91,20 +91,20 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vector2i getFingerPosition(const unsigned int finger) const
+    [[nodiscard, gnu::pure]] sf::Vec2i getFingerPosition(const unsigned int finger) const
     {
         SFML_BASE_ASSERT(m_currentInputState.fingerPositions[finger].hasValue());
         return *m_currentInputState.fingerPositions[finger];
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vector2i getMousePosition() const
+    [[nodiscard, gnu::pure]] sf::Vec2i getMousePosition() const
     {
         return m_currentInputState.mousePosition;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::pure]] sf::Vector2i getMousePositionDelta() const
+    [[nodiscard, gnu::pure]] sf::Vec2i getMousePositionDelta() const
     {
         return m_currentInputState.mousePosition - m_previousInputState.mousePosition;
     }

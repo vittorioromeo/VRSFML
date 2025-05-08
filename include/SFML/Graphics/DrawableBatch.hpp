@@ -354,7 +354,7 @@ private:
     VertexSpan drawTriangleFanShapeFromPoints(base::SizeT nPoints,
                                               const auto& descriptor,
                                               auto&&      pointFn,
-                                              Vector2f    centerOffset = {});
+                                              Vec2f       centerOffset = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

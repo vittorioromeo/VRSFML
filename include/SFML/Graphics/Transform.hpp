@@ -9,7 +9,7 @@
 
 #include "SFML/System/Angle.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/FastSinCos.hpp"
@@ -28,9 +28,9 @@ struct [[nodiscard]] Transform
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(const Vector2f position,
-                                                                                    const Vector2f scale,
-                                                                                    const Vector2f origin)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(const Vec2f position,
+                                                                                    const Vec2f scale,
+                                                                                    const Vec2f origin)
     {
         return {/* a00 */ scale.x,
                 /* a01 */ 0.f,
@@ -46,11 +46,11 @@ struct [[nodiscard]] Transform
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(
-        const Vector2f position,
-        const Vector2f scale,
-        const Vector2f origin,
-        const float    sine,
-        const float    cosine)
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin,
+        const float sine,
+        const float cosine)
     {
         SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
         SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -122,8 +122,8 @@ struct [[nodiscard]] Transform
     ///
     /// These two statements are equivalent:
     /// \code
-    /// sf::Vector2f transformedPoint = matrix.transformPoint(point);
-    /// sf::Vector2f transformedPoint = matrix * point;
+    /// sf::Vec2f transformedPoint = matrix.transformPoint(point);
+    /// sf::Vec2f transformedPoint = matrix * point;
     /// \endcode
     ///
     /// \param point Point to transform
@@ -131,7 +131,7 @@ struct [[nodiscard]] Transform
     /// \return Transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector2f transformPoint(const Vector2f point) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec2f transformPoint(const Vec2f point) const
     {
         return {a00 * point.x + a01 * point.y + a02, a10 * point.x + a11 * point.y + a12};
     }
@@ -153,18 +153,18 @@ struct [[nodiscard]] Transform
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr FloatRect transformRect(const FloatRect& rectangle) const
     {
-        const Vector2f p0 = transformPoint(rectangle.position);
+        const Vec2f p0 = transformPoint(rectangle.position);
 
-        // Transformed offset vector for the X-direction side
-        const Vector2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
+        // Transformed offset vec2 for the X-direction side
+        const Vec2f dx = {a00 * rectangle.size.x, a10 * rectangle.size.x};
 
-        // Transformed offset vector for the Y-direction side
-        const Vector2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
+        // Transformed offset vec2 for the Y-direction side
+        const Vec2f dy = {a01 * rectangle.size.y, a11 * rectangle.size.y};
 
         // Calculate other corners relative to `p0`
-        const Vector2f p1 = p0 + dy;
-        const Vector2f p2 = p0 + dx;
-        const Vector2f p3 = p2 + dy; // Or `p1 + dx`
+        const Vec2f p1 = p0 + dy;
+        const Vec2f p2 = p0 + dx;
+        const Vec2f p3 = p2 + dy; // Or `p1 + dx`
 
         // Compute the bounding rectangle of the transformed points
         const float minX = SFML_BASE_MIN(SFML_BASE_MIN(p0.x, p1.x), SFML_BASE_MIN(p2.x, p3.x));
@@ -229,7 +229,7 @@ struct [[nodiscard]] Transform
     /// \return New transformed point
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Vector2f operator*(const Transform& lhs, Vector2f rhs)
+    [[nodiscard, gnu::always_inline, gnu::pure]] friend constexpr Vec2f operator*(const Transform& lhs, Vec2f rhs)
     {
         return lhs.transformPoint(rhs);
     }
@@ -266,7 +266,7 @@ struct [[nodiscard]] Transform
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.translate(sf::Vector2f{100, 200}).rotate(sf::degrees(45));
+    /// transform.translate(sf::Vec2f{100, 200}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param offset Translation offset to apply
@@ -276,7 +276,7 @@ struct [[nodiscard]] Transform
     /// \see `rotate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& translate(const Vector2f offset)
+    [[gnu::always_inline]] constexpr Transform& translate(const Vec2f offset)
     {
         // clang-format off
         const Transform translation(1.f, 0.f, offset.x,
@@ -329,7 +329,7 @@ struct [[nodiscard]] Transform
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.rotate(sf::degrees(90), sf::Vector2f{8, 3}).translate(sf::Vector2f{50, 20});
+    /// transform.rotate(sf::degrees(90), sf::Vec2f{8, 3}).translate(sf::Vec2f{50, 20});
     /// \endcode
     ///
     /// \param angle Rotation angle
@@ -340,7 +340,7 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `scale`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle, const Vector2f center)
+    [[gnu::always_inline]] constexpr Transform& rotate(const Angle angle, const Vec2f center)
     {
         const auto [sine, cosine] = base::fastSinCos(angle.wrapUnsigned().asRadians());
 
@@ -360,7 +360,7 @@ struct [[nodiscard]] Transform
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scaleBy(sf::Vector2f{2, 1}).rotate(sf::degrees(45));
+    /// transform.scaleBy(sf::Vec2f{2, 1}).rotate(sf::degrees(45));
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -370,7 +370,7 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vector2f factors)
+    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vec2f factors)
     {
         // clang-format off
         const Transform scaling(factors.x, 0.f,       0.f,
@@ -393,7 +393,7 @@ struct [[nodiscard]] Transform
     /// can be chained.
     /// \code
     /// sf::Transform transform;
-    /// transform.scaleBy(sf::Vector2f{2, 1}, sf::Vector2f{8, 3}).rotate(45);
+    /// transform.scaleBy(sf::Vec2f{2, 1}, sf::Vec2f{8, 3}).rotate(45);
     /// \endcode
     ///
     /// \param factors Scaling factors
@@ -404,7 +404,7 @@ struct [[nodiscard]] Transform
     /// \see `translate`, `rotate`
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vector2f factors, const Vector2f center)
+    [[gnu::always_inline]] constexpr Transform& scaleBy(const Vec2f factors, const Vec2f center)
     {
         // clang-format off
         const Transform scaling(factors.x, 0.f,       center.x * (1.f - factors.x),
@@ -479,7 +479,7 @@ inline constexpr Transform Transform::Identity{};
 /// sf::Transform transform = translation * rotation;
 ///
 /// // use the result to transform stuff...
-/// sf::Vector2f point = transform.transformPoint({10, 20});
+/// sf::Vec2f point = transform.transformPoint({10, 20});
 /// sf::FloatRect rect = transform.transformRect(sf::FloatRect({0, 0}, {10, 100}));
 /// \endcode
 ///

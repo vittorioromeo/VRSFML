@@ -23,7 +23,7 @@
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
@@ -72,10 +72,10 @@ int main()
     //
     //
     // Set up window
-    constexpr sf::Vector2f windowSize{1680.f, 1050.f};
+    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
 
     sf::RenderWindow window({
-        .size      = windowSize.toVector2u(),
+        .size      = windowSize.toVec2u(),
         .title     = "Vittorio's SFML fork: batching example",
         .resizable = false,
         .vsync     = false,
@@ -127,7 +127,7 @@ int main()
         sf::Text        text;
         sf::CircleShape circleShape;
         sf::Sprite      sprite;
-        sf::Vector2f    velocity;
+        sf::Vec2f       velocity;
         float           torque;
     };
 
@@ -169,7 +169,7 @@ int main()
                      .radius           = getRndFloat(3.f, 8.f),
                      .pointCount       = getRndUInt(3u, 8u)}},
                 sf::Sprite{.textureRect = textureRect},
-                sf::Vector2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
+                sf::Vec2f{getRndFloat(-2.5f, 2.5f), getRndFloat(-2.5f, 2.5f)},
                 getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
@@ -325,7 +325,7 @@ int main()
                 if ((sprite.position.y > windowSize.y && velocity.y > 0.f) || (sprite.position.y < 0.f && velocity.y < 0.f))
                     velocity.y = -velocity.y;
 
-                text.position = sprite.position - sf::Vector2f{0.f, 250.f * sprite.scale.x};
+                text.position = sprite.position - sf::Vec2f{0.f, 250.f * sprite.scale.x};
 
                 circleShape.position = sprite.position;
                 circleShape.rotation = sprite.rotation;

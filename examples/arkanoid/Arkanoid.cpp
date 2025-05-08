@@ -18,33 +18,33 @@
 #include <cmath>
 #include <cstddef>
 
-constexpr sf::Vector2f resolution{800.f, 600.f};
+constexpr sf::Vec2f resolution{800.f, 600.f};
 
 class Game
 {
 private:
-    static constexpr float        ballSpeed{3.f};
-    static constexpr float        playerSpeed{6.f};
-    static constexpr sf::Vector2f brickSize{50.f, 24.f};
+    static constexpr float     ballSpeed{3.f};
+    static constexpr float     playerSpeed{6.f};
+    static constexpr sf::Vec2f brickSize{50.f, 24.f};
 
     sf::CircleShape m_ball;
-    sf::Vector2f    m_ballVelocity;
+    sf::Vec2f       m_ballVelocity;
 
     sf::RectangleShape m_player;
-    sf::Vector2f       m_playerVelocity;
+    sf::Vec2f          m_playerVelocity;
 
     std::vector<sf::RectangleShape> m_bricks;
 
     void createBrickGrid()
     {
-        constexpr sf::Vector2f offset{50.f, 50.f};
+        constexpr sf::Vec2f offset{50.f, 50.f};
 
         constexpr std::size_t nBricksPerRow = 13;
         constexpr std::size_t nRows         = 4;
 
         constexpr float spacing = 120.f / 14.f;
 
-        sf::Vector2f next{0.f, 0.f};
+        sf::Vec2f next{0.f, 0.f};
 
         for (std::size_t y = 0; y < nRows; ++y)
         {
@@ -229,7 +229,7 @@ int main()
     //
     // Set up window
     auto window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVector2u(),
+        {.size            = resolution.toVec2u(),
          .title           = "Arkanoid",
          .resizable       = true,
          .vsync           = true,

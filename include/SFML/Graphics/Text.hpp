@@ -17,7 +17,7 @@
 #include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
-#include "SFML/System/Vector2.hpp"
+#include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/EnumClassBitwiseOps.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -417,7 +417,7 @@ public:
     /// \return Position of the character
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Vector2f findCharacterPos(base::SizeT index) const;
+    [[nodiscard]] Vec2f findCharacterPos(base::SizeT index) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity

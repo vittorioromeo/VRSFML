@@ -21,18 +21,18 @@ namespace sf
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-class [[nodiscard]] Vector3
+class [[nodiscard]] Vec3
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Length of the vector <i><b>(floating-point)</b></i>.
+    /// \brief Length of the vec3 <i><b>(floating-point)</b></i>.
     ///
     /// If you are not interested in the actual length, but only in comparisons, consider using `lengthSquared()`.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr T length() const
     {
-        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vector3::length() is only supported for floating point types");
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec3::length() is only supported for floating point types");
 
         // don't use std::hypot because of slow performance
         return base::sqrt(x * x + y * y + z * z);
@@ -40,7 +40,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Square of vector's length.
+    /// \brief Square of vec3's length.
     ///
     /// Suitable for comparisons, more efficient than `length()`.
     ///
@@ -54,36 +54,35 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Vector with same direction but length 1 <i><b>(floating-point)</b></i>.
     ///
-    /// \pre `*this` is no zero vector.
+    /// \pre `*this` is no zero vec3.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vector3 normalized() const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_SYSTEM_API constexpr Vec3 normalized() const
     {
-        static_assert(SFML_BASE_IS_FLOATING_POINT(T),
-                      "Vector3::normalized() is only supported for floating point types");
+        static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec3::normalized() is only supported for floating point types");
 
-        SFML_BASE_ASSERT(*this != Vector3<T>() && "Vector3::normalized() cannot normalize a zero vector");
+        SFML_BASE_ASSERT(*this != Vec3<T>() && "Vec3::normalized() cannot normalize a zero vec3");
         return (*this) / length();
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Dot product of two 3D vectors.
+    /// \brief Dot product of two vec3s.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vector3& rhs) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr T dot(const Vec3& rhs) const
     {
         return x * rhs.x + y * rhs.y + z * rhs.z;
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Cross product of two 3D vectors.
+    /// \brief Cross product of two vec3s.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 cross(const Vector3& rhs) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 cross(const Vec3& rhs) const
     {
-        return Vector3<T>((y * rhs.z) - (z * rhs.y), (z * rhs.x) - (x * rhs.z), (x * rhs.y) - (y * rhs.x));
+        return Vec3<T>((y * rhs.z) - (z * rhs.y), (z * rhs.x) - (x * rhs.z), (x * rhs.y) - (y * rhs.x));
     }
 
 
@@ -96,10 +95,9 @@ public:
     /// This operation is also known as the Hadamard or Schur product.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseMul(
-        const Vector3& rhs) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 componentWiseMul(const Vec3& rhs) const
     {
-        return Vector3<T>(x * rhs.x, y * rhs.y, z * rhs.z);
+        return Vec3<T>(x * rhs.x, y * rhs.y, z * rhs.z);
     }
 
 
@@ -113,83 +111,82 @@ public:
     /// \pre Neither component of `rhs` is zero.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vector3 componentWiseDiv(
-        const Vector3& rhs) const
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] SFML_API_EXPORT constexpr Vec3 componentWiseDiv(const Vec3& rhs) const
     {
-        SFML_BASE_ASSERT(rhs.x != 0 && "Vector3::componentWiseDiv() cannot divide by 0 (x coordinate)");
-        SFML_BASE_ASSERT(rhs.y != 0 && "Vector3::componentWiseDiv() cannot divide by 0 (y coordinate)");
-        SFML_BASE_ASSERT(rhs.z != 0 && "Vector3::componentWiseDiv() cannot divide by 0 (z coordinate)");
+        SFML_BASE_ASSERT(rhs.x != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (x coordinate)");
+        SFML_BASE_ASSERT(rhs.y != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (y coordinate)");
+        SFML_BASE_ASSERT(rhs.z != 0 && "Vec3::componentWiseDiv() cannot divide by 0 (z coordinate)");
 
-        return Vector3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
+        return Vec3<T>(x / rhs.x, y / rhs.y, z / rhs.z);
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief Convert to another `Vector3` of type `OtherVector3`
+    /// \brief Convert to another `Vec3` of type `OtherVec3`
     ///
-    /// `OtherVector3` must be a `Vector3<...>` type.
+    /// `OtherVec3` must be a `Vec3<...>` type.
     ///
     ////////////////////////////////////////////////////////////
-    template <typename OtherVector3>
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVector3 to() const
+    template <typename OtherVec3>
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr OtherVec3 to() const
     {
-        using ValueType = decltype(OtherVector3{}.x);
-        return Vector3<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y), static_cast<ValueType>(z)};
+        using ValueType = decltype(OtherVec3{}.x);
+        return Vec3<ValueType>{static_cast<ValueType>(x), static_cast<ValueType>(y), static_cast<ValueType>(z)};
     }
 
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of binary `operator==`
     ///
-    /// This operator compares strict equality between two vectors.
+    /// This operator compares strict equality between two vec3s.
     ///
     /// \param rhs Right operand
     ///
     /// \return `true` if `lhs` is equal to `rhs`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vector3<T>& rhs) const = default;
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr bool operator==(const Vec3<T>& rhs) const = default;
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    T x{}; //!< X coordinate of the vector
-    T y{}; //!< Y coordinate of the vector
-    T z{}; //!< Z coordinate of the vector
+    T x{}; //!< X coordinate of the vec3
+    T y{}; //!< Y coordinate of the vec3
+    T z{}; //!< Z coordinate of the vec3
 };
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of unary `operator-`
 ///
 /// \param lhs Vector to negate
 ///
-/// \return Member-wise opposite of the vector
+/// \return Member-wise opposite of the vec3
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& lhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator-(const Vec3<T>& lhs)
 {
-    return Vector3<T>(-lhs.x, -lhs.y, -lhs.z);
+    return Vec3<T>(-lhs.x, -lhs.y, -lhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator+=`
 ///
-/// This operator performs a member-wise addition of both vectors,
+/// This operator performs a member-wise addition of both vec3s,
 /// and assigns the result to `lhs`.
 ///
-/// \param lhs  Left operand (a vector)
-/// \param rhs Right operand (a vector)
+/// \param lhs  Left operand (a vec3)
+/// \param rhs Right operand (a vec3)
 ///
 /// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator+=(Vector3<T>& lhs, const Vector3<T>& rhs)
+[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator+=(Vec3<T>& lhs, const Vec3<T>& rhs)
 {
     lhs.x += rhs.x;
     lhs.y += rhs.y;
@@ -200,20 +197,20 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator-=`
 ///
-/// This operator performs a member-wise subtraction of both vectors,
+/// This operator performs a member-wise subtraction of both vec3s,
 /// and assigns the result to `lhs`.
 ///
-/// \param lhs  Left operand (a vector)
-/// \param rhs Right operand (a vector)
+/// \param lhs  Left operand (a vec3)
+/// \param rhs Right operand (a vec3)
 ///
 /// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator-=(Vector3<T>& lhs, const Vector3<T>& rhs)
+[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator-=(Vec3<T>& lhs, const Vec3<T>& rhs)
 {
     lhs.x -= rhs.x;
     lhs.y -= rhs.y;
@@ -224,90 +221,88 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator+`
 ///
-/// \param lhs  Left operand (a vector)
-/// \param rhs Right operand (a vector)
+/// \param lhs  Left operand (a vec3)
+/// \param rhs Right operand (a vec3)
 ///
-/// \return Member-wise addition of both vectors
+/// \return Member-wise addition of both vec3s
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator+(const Vector3<T>& lhs,
-                                                                                          const Vector3<T>& rhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator+(const Vec3<T>& lhs, const Vec3<T>& rhs)
 {
-    return Vector3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
+    return Vec3<T>(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator-`
 ///
-/// \param lhs  Left operand (a vector)
-/// \param rhs Right operand (a vector)
+/// \param lhs  Left operand (a vec3)
+/// \param rhs Right operand (a vec3)
 ///
-/// \return Member-wise subtraction of both vectors
+/// \return Member-wise subtraction of both vec3s
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator-(const Vector3<T>& lhs,
-                                                                                          const Vector3<T>& rhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator-(const Vec3<T>& lhs, const Vec3<T>& rhs)
 {
-    return Vector3<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
+    return Vec3<T>(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator*`
 ///
-/// \param lhs  Left operand (a vector)
+/// \param lhs  Left operand (a vec3)
 /// \param rhs Right operand (a scalar value)
 ///
 /// \return Member-wise multiplication by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(const Vector3<T>& lhs, const T rhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator*(const Vec3<T>& lhs, const T rhs)
 {
-    return Vector3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
+    return Vec3<T>(lhs.x * rhs, lhs.y * rhs, lhs.z * rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator*`
 ///
 /// \param lhs  Left operand (a scalar value)
-/// \param rhs Right operand (a vector)
+/// \param rhs Right operand (a vec3)
 ///
 /// \return Member-wise multiplication by `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator*(const T lhs, const Vector3<T>& rhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator*(const T lhs, const Vec3<T>& rhs)
 {
-    return Vector3<T>(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs);
+    return Vec3<T>(rhs.x * lhs, rhs.y * lhs, rhs.z * lhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator*=`
 ///
 /// This operator performs a member-wise multiplication by `rhs`,
 /// and assigns the result to `lhs`.
 ///
-/// \param lhs  Left operand (a vector)
+/// \param lhs  Left operand (a vec3)
 /// \param rhs Right operand (a scalar value)
 ///
 /// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator*=(Vector3<T>& lhs, const T rhs)
+[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator*=(Vec3<T>& lhs, const T rhs)
 {
     lhs.x *= rhs;
     lhs.y *= rhs;
@@ -318,41 +313,41 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator/`
 ///
-/// \param lhs  Left operand (a vector)
+/// \param lhs  Left operand (a vec3)
 /// \param rhs Right operand (a scalar value)
 ///
 /// \return Member-wise division by `rhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vector3<T> operator/(const Vector3<T>& lhs, const T rhs)
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] constexpr Vec3<T> operator/(const Vec3<T>& lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vector3::operator/ cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vec3::operator/ cannot divide by 0");
 
-    return Vector3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
+    return Vec3<T>(lhs.x / rhs, lhs.y / rhs, lhs.z / rhs);
 }
 
 
 ////////////////////////////////////////////////////////////
-/// \relates Vector3
+/// \relates Vec3
 /// \brief Overload of binary `operator/=`
 ///
 /// This operator performs a member-wise division by `rhs`,
 /// and assigns the result to `lhs`.
 ///
-/// \param lhs  Left operand (a vector)
+/// \param lhs  Left operand (a vec3)
 /// \param rhs Right operand (a scalar value)
 ///
 /// \return Reference to `lhs`
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] constexpr Vector3<T>& operator/=(Vector3<T>& lhs, const T rhs)
+[[gnu::always_inline, gnu::flatten]] constexpr Vec3<T>& operator/=(Vec3<T>& lhs, const T rhs)
 {
-    SFML_BASE_ASSERT(rhs != 0 && "Vector3::operator/= cannot divide by 0");
+    SFML_BASE_ASSERT(rhs != 0 && "Vec3::operator/= cannot divide by 0");
 
     lhs.x /= rhs;
     lhs.y /= rhs;
@@ -362,8 +357,8 @@ template <typename T>
 }
 
 // Aliases for the most common types
-using Vector3i = Vector3<int>;
-using Vector3f = Vector3<float>;
+using Vec3i = Vec3<int>;
+using Vec3f = Vec3<float>;
 
 } // namespace sf
 
@@ -371,19 +366,19 @@ using Vector3f = Vector3<float>;
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
 ////////////////////////////////////////////////////////////
-extern template class sf::Vector3<float>;
-extern template class sf::Vector3<double>;
-extern template class sf::Vector3<long double>;
-extern template class sf::Vector3<bool>;
-extern template class sf::Vector3<int>;
-extern template class sf::Vector3<unsigned int>;
+extern template class sf::Vec3<float>;
+extern template class sf::Vec3<double>;
+extern template class sf::Vec3<long double>;
+extern template class sf::Vec3<bool>;
+extern template class sf::Vec3<int>;
+extern template class sf::Vec3<unsigned int>;
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::Vector3
+/// \class sf::Vec3
 /// \ingroup system
 ///
-/// `sf::Vector3` is a simple class that defines a mathematical
+/// `sf::Vec3` is a simple class that defines a mathematical
 /// vector with three coordinates (x, y and z). It can be used to
 /// represent anything that has three dimensions: a size, a point,
 /// a velocity, etc.
@@ -396,30 +391,30 @@ extern template class sf::Vector3<unsigned int>;
 /// results cannot be represented accurately with integers.
 /// The method documentation mentions "(floating-point)" in those cases.
 ///
-/// You generally don't have to care about the templated form (`sf::Vector3<T>`),
+/// You generally don't have to care about the templated form (`sf::Vec3<T>`),
 /// the most common specializations have special type aliases:
-/// \li `sf::Vector3<float>` is `sf::Vector3f`
-/// \li `sf::Vector3<int>` is `sf::Vector3i`
+/// \li `sf::Vec3<float>` is `sf::Vec3f`
+/// \li `sf::Vec3<int>` is `sf::Vec3i`
 ///
-/// The `sf::Vector3` class has a small and simple interface, its x, y and z members
+/// The `sf::Vec3` class has a small and simple interface, its x, y and z members
 /// can be accessed directly (there are no accessors like `setX()`, `getX()`).
 ///
 /// Usage example:
 /// \code
-/// sf::Vector3f v(16.5f, 24.f, -3.2f);
+/// sf::Vec3f v(16.5f, 24.f, -3.2f);
 /// v.x = 18.2f;
 /// float y = v.y;
 ///
-/// sf::Vector3f w = v * 5.f;
-/// sf::Vector3f u;
+/// sf::Vec3f w = v * 5.f;
+/// sf::Vec3f u;
 /// u = v + w;
 ///
 /// float s = v.dot(w);
-/// sf::Vector3f t = v.cross(w);
+/// sf::Vec3f t = v.cross(w);
 ///
 /// bool different = (v != u);
 /// \endcode
 ///
-/// Note: for 2-dimensional vectors, see `sf::Vector2`.
+/// Note: for 2-dimensional vectors, see `sf::Vec2`.
 ///
 ////////////////////////////////////////////////////////////
