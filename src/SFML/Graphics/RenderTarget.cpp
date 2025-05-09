@@ -1435,7 +1435,8 @@ void RenderTarget::cleanupDraw(const RenderStates& states)
 ////////////////////////////////////////////////////////////
 void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const base::SizeT firstVertex, const base::SizeT vertexCount)
 {
-    ++m_currentDrawStats.drawCalls;
+    m_currentDrawStats.drawCalls += 1u;
+    m_currentDrawStats.drawnVertices += vertexCount;
 
     glCheck(glDrawArrays(/*     primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                          /* first vertex index */ static_cast<GLint>(firstVertex),
@@ -1446,7 +1447,8 @@ void RenderTarget::invokePrimitiveDrawCall(const PrimitiveType type, const base:
 ////////////////////////////////////////////////////////////
 void RenderTarget::invokePrimitiveDrawCallIndexed(const PrimitiveType type, const base::SizeT indexCount, const base::SizeT indexOffset)
 {
-    ++m_currentDrawStats.drawCalls;
+    m_currentDrawStats.drawCalls += 1u;
+    m_currentDrawStats.drawnVertices += indexCount;
 
     glCheck(glDrawElements(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                            /*    index count */ static_cast<GLsizei>(indexCount),
@@ -1466,7 +1468,8 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
     priv::err() << "FATAL ERROR: `glDrawElementsBaseVertex` only available in OpenGL ES 3.2+ (unsupported)";
     base::abort();
 #else
-    ++m_currentDrawStats.drawCalls;
+    m_currentDrawStats.drawCalls += 1u;
+    m_currentDrawStats.drawnVertices += indexCount;
 
     glCheck(glDrawElementsBaseVertex(/* primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
                                      /*    index count */ static_cast<GLsizei>(indexCount),
