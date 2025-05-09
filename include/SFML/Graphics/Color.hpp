@@ -7,6 +7,8 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Export.hpp"
 
+#include "SFML/Base/AssertAndAssume.hpp"
+#include "SFML/Base/Builtins/Unreachable.hpp"
 #include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
@@ -34,6 +36,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
         return {255u, 255u, 255u, alpha};
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Construct a fully black color with a given alpha
     ///
@@ -49,6 +52,10 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from 32-bit unsigned integer
     ///
+    /// The RGBA components are packed in the integer, with R in the
+    /// most significant byte and A in the least significant byte.
+    /// For example, `0xFF0000FF` represents an opaque red color.
+    ///
     /// \param color Number containing the RGBA components (in that order)
     ///
     ////////////////////////////////////////////////////////////
@@ -62,7 +69,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Color in HSL color model (hue, saturation, lightness)
     ///
     ////////////////////////////////////////////////////////////
     struct HSL
@@ -76,63 +83,77 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ////////////////////////////////////////////////////////////
     /// \brief Construct the color from HSLA components
     ///
-    /// \param hue        Hue component (angle in degrees)
-    /// \param saturation Saturation component (from 0 to 1)
-    /// \param lightness  Lightness component (from 0 to 1)
-    /// \param alpha      Alpha component (0 to 255)
+    /// \param hsl HSL components of the color.
+    ///            - `hsl.hue` is an angle in degrees; it will be normalized to the `[0, 360)` range.
+    ///            - `hsl.saturation` is a ratio, typically `[0, 1]`; it will be clamped to this range.
+    ///            - `hsl.lightness` is a ratio, typically `[0, 1]`; it will be clamped to this range.
+    ///
+    /// \param alpha Alpha component (0 to 255)
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] static constexpr Color fromHSLA(HSL hsl, const base::U8 alpha = 255u)
     {
         auto& [hue, saturation, lightness] = hsl;
 
-        hue = base::positiveRemainder(hue, 360.f);
+        hue        = base::positiveRemainder(hue, 360.f);
+        saturation = SFML_BASE_CLAMP(saturation, 0.f, 1.f);
+        lightness  = SFML_BASE_CLAMP(lightness, 0.f, 1.f);
 
-        const auto clampBetweenZeroAndOne = [](float value) -> float
-        { return value < 0.f ? 0.f : (value > 1.f ? 1.f : value); };
-
-        saturation = clampBetweenZeroAndOne(saturation);
-        lightness  = clampBetweenZeroAndOne(lightness);
-
-        // `maxChroma` and `minChroma` define the range for each color component
-        // `maxChroma` is the upper bound, `minChroma` is the lower bound
-        const float maxChroma = lightness < 0.5f ? lightness * (1 + saturation)
-                                                 : lightness + saturation - lightness * saturation;
-        const float minChroma = 2 * lightness - maxChroma;
-
-        const auto hueToRGB = [&](float normalizedHue) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> float
+        if (saturation == 0.f)
         {
-            if (normalizedHue < 0.f)
-                normalizedHue += 1.f;
+            // NOLINTBEGIN(bugprone-incorrect-roundings)
+            const auto gray = static_cast<base::U8>(lightness * 255.f + 0.5f);
+            // NOLINTEND(bugprone-incorrect-roundings)
+            return {gray, gray, gray, alpha};
+        }
 
-            if (normalizedHue > 1.f)
-                normalizedHue -= 1.f;
+        // Uses standard HSL to RGB conversion intermediate values C, X, m
+        const float c = (1.f - SFML_BASE_MATH_FABSF(2.f * lightness - 1.f)) * saturation;
+        const float x = c * (1.f - SFML_BASE_MATH_FABSF(base::positiveRemainder(hue / 60.f, 2.f) - 1.f));
+        const float m = lightness - c / 2.f;
 
-            if (normalizedHue < 1.f / 6.f)
-                return minChroma + (maxChroma - minChroma) * 6.f * normalizedHue;
+        float rPrime = 0.f;
+        float gPrime = 0.f;
+        float bPrime = 0.f;
 
-            if (normalizedHue < 1.f / 2.f)
-                return maxChroma;
+        // Uses hue segments (0-5) and a switch statement
+        const int hueSegment = static_cast<int>(hue / 60.f); // Result is [0, 5] due to hue normalization
+        SFML_BASE_ASSERT_AND_ASSUME(hueSegment >= 0 && hueSegment <= 5);
 
-            if (normalizedHue < 2.f / 3.f)
-                return minChroma + (maxChroma - minChroma) * (2.f / 3.f - normalizedHue) * 6.f;
+        // clang-format off
+        switch (hueSegment)
+        {
+            case 0: rPrime = c;   gPrime = x;   bPrime = 0.f; break;
+            case 1: rPrime = x;   gPrime = c;   bPrime = 0.f; break;
+            case 2: rPrime = 0.f; gPrime = c;   bPrime = x;   break;
+            case 3: rPrime = 0.f; gPrime = x;   bPrime = c;   break;
+            case 4: rPrime = x;   gPrime = 0.f; bPrime = c;   break;
+            case 5: rPrime = c;   gPrime = 0.f; bPrime = x;   break;
 
-            return minChroma;
-        };
-
-        const float normalizedHue = hue / 360.f;
+            default:
+                SFML_BASE_UNREACHABLE();
+        }
+        // clang-format on
 
         // NOLINTBEGIN(bugprone-incorrect-roundings)
-        return {static_cast<base::U8>(hueToRGB(normalizedHue + 1.f / 3.f) * 255.f + 0.5f),
-                static_cast<base::U8>(hueToRGB(normalizedHue) * 255 + 0.5f),
-                static_cast<base::U8>(hueToRGB(normalizedHue - 1.f / 3.f) * 255.f + 0.5f),
+        return {static_cast<base::U8>((rPrime + m) * 255.f + 0.5f),
+                static_cast<base::U8>((gPrime + m) * 255.f + 0.5f),
+                static_cast<base::U8>((bPrime + m) * 255.f + 0.5f),
                 alpha};
         // NOLINTEND(bugprone-incorrect-roundings)
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Converts the current RGB color to its HSL (Hue, Saturation, Lightness) representation.
+    ///
+    /// The alpha component of the `sf::Color` is not included in the HSL representation
+    /// returned by this function.
+    /// - `hue` will be in the range `[0, 360)`. For achromatic colors (grays), hue is 0.
+    /// - `saturation` will be in the range `[0, 1]`.
+    /// - `lightness` will be in the range `[0, 1]`.
+    ///
+    /// \return HSL representation of the color.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr HSL toHSL() const
@@ -141,43 +162,36 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
         const float gNorm = static_cast<float>(g) / 255.f;
         const float bNorm = static_cast<float>(b) / 255.f;
 
-        const float max    = SFML_BASE_MAX(SFML_BASE_MAX(rNorm, gNorm), bNorm);
-        const float min    = SFML_BASE_MIN(SFML_BASE_MIN(rNorm, gNorm), bNorm);
-        const float chroma = max - min;
+        const float maxVal = SFML_BASE_MAX(SFML_BASE_MAX(rNorm, gNorm), bNorm);
+        const float minVal = SFML_BASE_MIN(SFML_BASE_MIN(rNorm, gNorm), bNorm);
+        const float chroma = maxVal - minVal;
 
-        float hue = 0.f;
-        if (chroma != 0.f)
-        {
-            if (max == rNorm)
-                hue = (gNorm - bNorm) / chroma;
-            else if (max == gNorm)
-                hue = (bNorm - rNorm) / chroma + 2.f;
-            else
-                hue = (rNorm - gNorm) / chroma + 4.f;
+        if (chroma == 0.f)
+            return {0.f, 0.f, maxVal};
 
-            hue *= 60.f;
+        const float lightness = (maxVal + minVal) / 2.f;
+        SFML_BASE_ASSERT(lightness != 0.f && lightness != 1.f);
 
-            if (hue < 0.f)
-                hue += 360.f;
-        }
+        float hue = (maxVal == rNorm   ? (gNorm - bNorm) / chroma
+                     : maxVal == gNorm ? (bNorm - rNorm) / chroma + 2.f
+                                       : (rNorm - gNorm) / chroma + 4.f);
 
-        const float lightness = (max + min) / 2.f;
+        hue *= 60.f;
 
-        float saturation = 0.f;
-        if (chroma != 0.f)
-        {
-            if (lightness == 0.f || lightness == 1.f)
-                saturation = 0.f;
-            else
-                saturation = chroma / (1.f - SFML_BASE_MATH_FABSF(2.f * lightness - 1.f));
-        }
+        if (hue < 0.f)
+            hue += 360.f;
 
-        return {hue, saturation, lightness};
+        return {hue, chroma / (1.f - SFML_BASE_MATH_FABSF(2.f * lightness - 1.f)), lightness};
     }
 
 
     ////////////////////////////////////////////////////////////
     /// \brief Retrieve the color as a 32-bit unsigned integer
+    ///
+    /// The RGBA components are packed into the integer, with R in the
+    /// most significant byte and A in the least significant byte.
+    /// For example, an opaque red color `(255, 0, 0, 255)` would be
+    /// represented as `0xFF0000FF`.
     ///
     /// \return Color represented as a 32-bit unsigned integer
     ///
@@ -189,9 +203,57 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Create a new color from the current one with the red component changed
+    ///
+    /// \param red New red component for the color (0 to 255).
+    ///
+    /// \return A new `sf::Color` instance with the modified red component,
+    ///         while G, B, and A components remain the same as the original color.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRed(const base::U8 red) const
+    {
+        return {red, g, b, a};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new color from the current one with the green component changed
+    ///
+    /// \param green New green component for the color (0 to 255).
+    ///
+    /// \return A new `sf::Color` instance with the modified green component,
+    ///         while R, B, and A components remain the same as the original color.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withGreen(const base::U8 green) const
+    {
+        return {r, green, b, a};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new color from the current one with the blue component changed
+    ///
+    /// \param blue New blue component for the color (0 to 255).
+    ///
+    /// \return A new `sf::Color` instance with the modified blue component,
+    ///         while R, G, and A components remain the same as the original color.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withBlue(const base::U8 blue) const
+    {
+        return {r, g, blue, a};
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Create a new color from the current one with the alpha component changed
     ///
-    /// \param alpha Alpha component (0 to 255)
+    /// \param alpha New alpha component for the color (0 to 255).
+    ///
+    /// \return A new `sf::Color` instance with the modified alpha component,
+    ///         while R, G, and B components remain the same as the original color.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withAlpha(const base::U8 alpha) const
@@ -200,26 +262,41 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     }
 
 
-    // TODO P1: withRed, withGreen, withBlue
-
-
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Creates a new color by rotating the hue of the current color by a given angle.
+    ///
+    /// This function converts the color to HSL, adds the `degrees` offset to the hue
+    /// (normalized to `[0, 360)`), and then converts back to RGB.
+    /// Saturation, lightness, and alpha components remain unchanged.
+    ///
+    /// \param degrees The angle in degrees to rotate the hue by. Positive values rotate
+    ///                counter-clockwise (e.g., red towards yellow), negative values clockwise.
+    ///
+    /// \return A new `sf::Color` instance with the rotated hue.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withRotatedHue(const float degrees) const
     {
         auto hsl = toHSL();
         hsl.hue  = base::positiveRemainder(hsl.hue + degrees, 360.f);
-        return Color::fromHSLA(hsl, a);
+        return fromHSLA(hsl, a);
     }
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Creates a new color by setting the saturation of the current color to a new value.
+    ///
+    /// This function converts the color to HSL, sets the saturation to the provided value
+    /// (clamped to `[0, 1]`), and then converts back to RGB.
+    /// Hue, lightness, and alpha components remain unchanged.
+    ///
+    /// \param saturation The new saturation value, typically in the range `[0, 1]`.
+    ///                   Values outside this range will be clamped.
+    ///
+    /// \return A new `sf::Color` instance with the modified saturation.
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Color withSaturation(const float saturation) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withSaturation(const float saturation) const
     {
         auto hsl       = toHSL();
         hsl.saturation = SFML_BASE_CLAMP(saturation, 0.f, 1.f);
@@ -228,10 +305,19 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Creates a new color by setting the lightness of the current color to a new value.
+    ///
+    /// This function converts the color to HSL, sets the lightness to the provided value
+    /// (clamped to `[0, 1]`), and then converts back to RGB.
+    /// Hue, saturation, and alpha components remain unchanged.
+    ///
+    /// \param lightness The new lightness value, typically in the range `[0, 1]`.
+    ///                  Values outside this range will be clamped.
+    ///
+    /// \return A new `sf::Color` instance with the modified lightness.
     ///
     ////////////////////////////////////////////////////////////
-    constexpr Color withLightness(const float lightness) const
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr Color withLightness(const float lightness) const
     {
         auto hsl      = toHSL();
         hsl.lightness = SFML_BASE_CLAMP(lightness, 0.f, 1.f);
@@ -240,16 +326,55 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Constructs a `sf::Color` object from a 4D vector.
+    ///
+    /// The vector's components (x, y, z, w) are assumed to be floating-point values
+    /// in the range `[0, 1]` and correspond to R, G, B, A respectively.
+    /// Values outside this range will be clamped. Each component is then scaled
+    /// by 255 and rounded to the nearest integer to fit into `base::U8`.
+    ///
+    /// \tparam TVec4 The type of the 4D vector (e.g., `sf::Vector4f`).
+    ///               It must have public `x, y, z, w` members.
+    /// \param vec The 4D vector to convert from. Its components `vec.x`, `vec.y`,
+    ///            `vec.z`, `vec.w` map to R, G, B, A.
+    ///
+    /// \return A `sf::Color` instance corresponding to the vector.
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVec4>
-    static constexpr Color fromVec4(const TVec4& vec)
+    [[nodiscard, gnu::always_inline, gnu::pure]] static constexpr Color fromVec4(const TVec4& vec)
     {
         const auto convert = []<typename T>(const T value)
         { return static_cast<base::U8>(SFML_BASE_CLAMP(value * T{255}, T{0}, T{255})); };
 
         return {convert(vec.x), convert(vec.y), convert(vec.z), convert(vec.w)};
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Converts the color to a 4D vector of a specified type `TVec4`.
+    ///
+    /// The components of the vector (x, y, z, w) will be floating-point values
+    /// in the range `[0, 1]`. These correspond to the R, G, B, A components
+    /// of the `sf::Color`, respectively, each divided by 255.0 to normalize them.
+    ///
+    /// \tparam TVec4 The type of the 4D vector to create (e.g., `sf::Vector4f`).
+    ///                It must have public `x, y, z, w` members or be constructible
+    ///                from four values of `decltype(TVec4{}.x)`.
+    ///
+    /// \return A `TVec4` instance representing the color, with `TVec4.x` as R,
+    ///         `TVec4.y` as G, `TVec4.z` as B, and `TVec4.w` as A.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename TVec4>
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr TVec4 toVec4() const
+    {
+        using DimType = decltype(TVec4{}.x);
+
+        return {static_cast<DimType>(r) / DimType{255},
+                static_cast<DimType>(g) / DimType{255},
+                static_cast<DimType>(b) / DimType{255},
+                static_cast<DimType>(a) / DimType{255}};
     }
 
 
@@ -264,22 +389,6 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::const]] constexpr bool operator==(const Color& rhs) const = default;
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs, range [0, 1], xyzw
-    ///
-    ////////////////////////////////////////////////////////////
-    template <typename TVec4>
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr TVec4 toVec4() const
-    {
-        using DimType = decltype(TVec4{}.x);
-
-        return {static_cast<DimType>(r) / DimType{255},
-                static_cast<DimType>(g) / DimType{255},
-                static_cast<DimType>(b) / DimType{255},
-                static_cast<DimType>(a) / DimType{255}};
-    }
 
 
     ////////////////////////////////////////////////////////////
@@ -394,7 +503,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator+(const Color lhs, const Color rhs)
 {
-    const auto clampedAdd = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+    const auto clampedAdd = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const int intResult = int{l} + int{r};
         return static_cast<base::U8>(intResult < 255 ? intResult : 255);
@@ -419,7 +528,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator-(const Color lhs, const Color rhs)
 {
-    const auto clampedSub = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+    const auto clampedSub = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const int intResult = int{l} - int{r};
         return static_cast<base::U8>(intResult > 0 ? intResult : 0);
@@ -446,7 +555,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API Color
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::const]] constexpr Color operator*(const Color lhs, const Color rhs)
 {
-    const auto scaledMul = [](base::U8 l, base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
+    const auto scaledMul = [](const base::U8 l, const base::U8 r) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN -> base::U8
     {
         const auto uint16Result = static_cast<base::U16>(base::U16{l} * base::U16{r});
         return static_cast<base::U8>(uint16Result / 255u);
