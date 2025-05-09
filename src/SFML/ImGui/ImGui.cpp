@@ -35,6 +35,7 @@
 #include "SFML/Base/Builtins/Strlen.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -125,42 +126,42 @@ namespace sf::ImGui
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr ImColor toImColor(Color c)
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr ImColor toImColor(const Color c)
 {
     return {static_cast<int>(c.r), static_cast<int>(c.g), static_cast<int>(c.b), static_cast<int>(c.a)};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr ImVec2 toImVec2(Vec2f v)
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr ImVec2 toImVec2(const Vec2f v)
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr Vec2f toSfVec2f(ImVec2 v)
+[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vec2f toSfVec2f(const ImVec2 v)
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ImVec2 getTopLeftAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] ImVec2 getTopLeftAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ImVec2 getDownRightAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] ImVec2 getDownRightAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiKey(Keyboard::Key code)
+[[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiKey(const Keyboard::Key code)
 {
     // clang-format off
     switch (code)
@@ -280,7 +281,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiMod(Keyboard::Key code)
+[[nodiscard, gnu::const]] constexpr ImGuiKey keycodeToImGuiMod(const Keyboard::Key code)
 {
     switch (code)
     {
@@ -305,7 +306,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(unsigned int glTextureHandle)
+[[nodiscard]] ImTextureID convertGLTextureHandleToImTextureID(const unsigned int glTextureHandle)
 {
     ImTextureID textureID{};
     SFML_BASE_MEMCPY(&textureID, &glTextureHandle, sizeof(unsigned int));
@@ -359,6 +360,7 @@ struct [[nodiscard]] TriggerInfo
 
 ////////////////////////////////////////////////////////////
 constexpr unsigned int nullJoystickId = Joystick::MaxCount;
+
 
 ////////////////////////////////////////////////////////////
 [[nodiscard]] unsigned int getConnectedJoystickId()
@@ -1071,6 +1073,8 @@ struct ImGuiContext::Impl
     ImGuiPerWindowContext* currentPerWindowContext = nullptr;
     std::string            clipboardText;
 
+    bool movedFrom = false;
+
     ////////////////////////////////////////////////////////////
     void updateMouseCursor(Window& window) const
     {
@@ -1087,17 +1091,92 @@ struct ImGuiContext::Impl
 
         currentPerWindowContext->updateMouseCursor(window, cursor);
     }
+
+    ////////////////////////////////////////////////////////////
+    explicit Impl() = default;
+
+    ////////////////////////////////////////////////////////////
+    Impl(const ImGuiContext&)            = delete;
+    Impl& operator=(const ImGuiContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    Impl(Impl&& rhs) noexcept :
+    perWindowContexts{SFML_BASE_MOVE(rhs.perWindowContexts)},
+    currentPerWindowContext{rhs.currentPerWindowContext},
+    clipboardText{SFML_BASE_MOVE(rhs.clipboardText)},
+    movedFrom{rhs.movedFrom}
+    {
+        rhs.movedFrom = true;
+    }
+
+    ////////////////////////////////////////////////////////////
+    Impl& operator=(Impl&& rhs) noexcept
+    {
+        if (this == &rhs)
+            return *this;
+
+        perWindowContexts       = SFML_BASE_MOVE(rhs.perWindowContexts);
+        currentPerWindowContext = rhs.currentPerWindowContext;
+        clipboardText           = SFML_BASE_MOVE(rhs.clipboardText);
+        movedFrom               = rhs.movedFrom;
+
+        rhs.movedFrom = true;
+
+        return *this;
+    }
 };
 
 
 ////////////////////////////////////////////////////////////
-ImGuiContext::ImGuiContext() = default;
+base::Optional<ImGuiContext> ImGuiContext::create(RenderWindow& window, const bool loadDefaultFont)
+{
+    base::Optional<ImGuiContext> result{base::inPlace, base::PassKey<ImGuiContext>{}}; // Use a single local variable for NRVO
+    if (result->init(window, window, loadDefaultFont))
+        return result;
+
+    sf::priv::err() << "Failed to create ImGui context from RenderWindow";
+    result.reset();
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<ImGuiContext> ImGuiContext::create(Window& window, RenderTarget& target, const bool loadDefaultFont)
+{
+    base::Optional<ImGuiContext> result{base::inPlace, base::PassKey<ImGuiContext>{}}; // Use a single local variable for NRVO
+    if (result->init(window, target, loadDefaultFont))
+        return result;
+
+    sf::priv::err() << "Failed to create ImGui context from Window and RenderTarget";
+    result.reset();
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<ImGuiContext> ImGuiContext::create(Window& window, const Vec2f displaySize, const bool loadDefaultFont)
+{
+    base::Optional<ImGuiContext> result{base::inPlace, base::PassKey<ImGuiContext>{}}; // Use a single local variable for NRVO
+    if (result->init(window, displaySize, loadDefaultFont))
+        return result;
+
+    sf::priv::err() << "Failed to create ImGui context from Window and display size";
+    result.reset();
+    return result;
+}
+
+
+////////////////////////////////////////////////////////////
+ImGuiContext::ImGuiContext(base::PassKey<ImGuiContext>&&)
+{
+}
 
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::~ImGuiContext()
 {
-    shutdown();
+    if (!m_impl->movedFrom)
+        shutdown();
 }
 
 
@@ -1137,13 +1216,13 @@ bool ImGuiContext::init(Window& window, Vec2f displaySize, bool loadDefaultFont)
     return m_impl->currentPerWindowContext->init(displaySize,
                                                  loadDefaultFont,
 
-                                                 [](void* /*userData*/, const char* text)
+                                                 [](void* /* userData */, const char* text)
     {
         if (!Clipboard::setString(StringUtfUtils::fromUtf8(text, text + SFML_BASE_STRLEN(text))))
             sf::priv::err() << "Failed to set clipboard text from ImGui";
     },
 
-                                                 [](void* /*userData*/)
+                                                 [](void* /* userData */)
     {
         auto tmp = Clipboard::getString().toUtf8<std::u8string>();
         clipboardTextPtr->assign(tmp.begin(), tmp.end());
