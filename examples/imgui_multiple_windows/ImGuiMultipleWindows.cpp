@@ -16,12 +16,11 @@
 
 int main()
 {
-    auto                    graphicsContext = sf::GraphicsContext::create().value();
-    sf::ImGui::ImGuiContext imGuiContext;
+    auto graphicsContext = sf::GraphicsContext::create().value();
 
     sf::RenderWindow window({.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
-    if (!imGuiContext.init(window))
-        return -1;
+
+    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
 
     sf::base::Optional<sf::RenderWindow>
         childWindow(sf::base::inPlace,
