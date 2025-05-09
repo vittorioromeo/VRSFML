@@ -30,12 +30,17 @@ set(SDL_SENSOR OFF)
 set(SDL_STORAGE OFF)
 set(SDL_TRAY OFF)
 
-CPMAddPackage(
-    NAME sdl
-    GITHUB_REPOSITORY vittorioromeo/SDL
-    GIT_TAG b43cca1a2ecbddf83dc0888d4f8c3a7c733368c1
-    SYSTEM TRUE
-)
+if(EXISTS "${PROJECT_SOURCE_DIR}/../SDL/CMakeLists.txt")
+    message(STATUS "Found local SDL dependency. Adding it from ../SDL.")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/../SDL" sdl)
+else()
+    CPMAddPackage(
+        NAME sdl
+        GITHUB_REPOSITORY vittorioromeo/SDL
+        GIT_TAG 110bac25ce473b82ca4f9b53c8bd5336467ed6a0
+        SYSTEM TRUE
+    )
+endif()
 
 get_property(sdl3_include_dirs TARGET SDL_uclibc PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
 set_property(TARGET SDL_uclibc PROPERTY INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${sdl3_include_dirs}")
