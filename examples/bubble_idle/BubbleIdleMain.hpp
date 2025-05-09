@@ -7867,20 +7867,22 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::RenderWindow makeWindow()
     {
-        const sf::Vec2u newResolution = getNewResolution();
+        const sf::Vec2u desktopResolution = sf::VideoModeUtils::getDesktopMode().size;
+        const sf::Vec2u newResolution     = getNewResolution();
 
-        const bool takesAllScreen = newResolution == sf::VideoModeUtils::getDesktopMode().size;
+        const bool takesAllScreen = newResolution == desktopResolution;
 
-        return sf::RenderWindow{
-            {.size            = newResolution,
-             .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
-             .fullscreen      = !profile.windowed,
-             .resizable       = !takesAllScreen,
-             .closable        = !takesAllScreen,
-             .hasTitlebar     = !takesAllScreen,
-             .vsync           = profile.vsync,
-             .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
-             .contextSettings = contextSettings}};
+        return sf::RenderWindow{{
+            .size            = newResolution,
+            .title           = "BubbleByte " BUBBLEBYTE_VERSION_STR,
+            .fullscreen      = !profile.windowed,
+            .resizable       = !takesAllScreen,
+            .closable        = !takesAllScreen,
+            .hasTitlebar     = !takesAllScreen,
+            .vsync           = profile.vsync,
+            .frametimeLimit  = sf::base::clamp(profile.frametimeLimit, 60u, 144u),
+            .contextSettings = contextSettings,
+        }};
     }
 
     ////////////////////////////////////////////////////////////
@@ -7889,6 +7891,27 @@ struct Main
         const sf::Vec2u newResolution = getNewResolution();
 
         window = makeWindow();
+
+        recreateImGuiRenderTexture(newResolution);
+        recreateGameRenderTexture(newResolution);
+
+        dpiScalingFactor = window.getWindowDisplayScale();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void resizeWindow()
+    {
+        const sf::Vec2u desktopResolution = sf::VideoModeUtils::getDesktopMode().size;
+        const sf::Vec2u newResolution     = getNewResolution();
+
+        const bool takesAllScreen = newResolution == desktopResolution;
+
+        window.setResizable(!takesAllScreen);
+        window.setHasTitlebar(!takesAllScreen);
+        window.setSize(newResolution);
+
+        if (!takesAllScreen)
+            window.setPosition(((desktopResolution - newResolution) / 2u).toVec2i());
 
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);

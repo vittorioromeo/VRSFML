@@ -97,6 +97,30 @@ bool touchIndexPool[32]{}; // Keeps track of which finger indices are in use
 
 
 ////////////////////////////////////////////////////////////
+bool setWindowNonExclusiveFullscreenIfNeeded(const bool hasTitlebar, const sf::Vec2u size, SDL_Window* sdlWindowPtr)
+{
+#ifdef SFML_SYSTEM_WINDOWS
+    {
+        // See https://github.com/libsdl-org/SDL/issues/12791
+
+        const auto desktopModeSize = sf::VideoModeUtils::getDesktopMode().size;
+        if (!hasTitlebar && size == desktopModeSize)
+        {
+            void* hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindowPtr),
+                                                SDL_PROP_WINDOW_WIN32_HWND_POINTER,
+                                                nullptr);
+
+            sf::priv::setWindowBorderless(hwnd, size.x, size.y);
+            return true;
+        }
+    }
+#endif
+
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
 ankerl::unordered_dense::map<SDL_FingerID, TouchInfo> touchMap;
 
 
@@ -472,18 +496,29 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
         }
         else
         {
-            VideoMode videoMode{windowSettings.size, windowSettings.bitsPerPixel};
+            // TODO P0: get refresh rate from user
+
+            SFML_BASE_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
+            const auto bestFullscreenMode = VideoModeUtils::getFullscreenModes()[0];
+
+            VideoMode videoMode{windowSettings.size, windowSettings.bitsPerPixel, bestFullscreenMode.pixelDensity, bestFullscreenMode.refreshRate};
 
             // Make sure that the chosen video mode is compatible
             if (!videoMode.isValid())
             {
-                err() << "The requested video mode is not available, switching to a valid mode";
+                const auto streamVideoMode = [](auto& os, const VideoMode& mode)
+                {
+                    os << "{ size: { " << mode.size.x << ", " << mode.size.y << " }, bitsPerPixel: " << mode.bitsPerPixel
+                       << ", pixelDensity: " << mode.pixelDensity << ", refreshRate: " << mode.refreshRate << " }";
+                };
 
-                SFML_BASE_ASSERT(!VideoModeUtils::getFullscreenModes().empty() && "No video modes available");
-                videoMode = VideoModeUtils::getFullscreenModes()[0];
+                err(/* multiLine */ true) << "The requested video mode (";
+                streamVideoMode(err(/* multiLine */ true), videoMode);
+                err(/* multiLine */ true) << ") is not available, switching to a valid mode";
 
-                err() << "  VideoMode: { size: { " << videoMode.size.x << ", " << videoMode.size.y
-                      << " }, bitsPerPixel: " << videoMode.bitsPerPixel << " }";
+                err(/* multiLine */ true) << "Selected video mode (";
+                streamVideoMode(err(/* multiLine */ true), bestFullscreenMode);
+                err(/* multiLine */ true) << ")";
             }
         }
     }
@@ -511,24 +546,11 @@ base::UniquePtr<SDLWindowImpl> SDLWindowImpl::create(WindowSettings windowSettin
                                             static_cast<void*>(sdlWindowPtr),
                                             /* isExternal */ false};
 
-#ifdef SFML_SYSTEM_WINDOWS
-    {
-        // See https://github.com/libsdl-org/SDL/issues/12791
-
-        const auto desktopModeSize = sf::VideoModeUtils::getDesktopMode().size;
-        if (!windowSettings.hasTitlebar && !windowSettings.fullscreen && windowSettings.size == desktopModeSize)
-        {
-            void* hwnd = SDL_GetPointerProperty(SDL_GetWindowProperties(sdlWindowPtr),
-                                                SDL_PROP_WINDOW_WIN32_HWND_POINTER,
-                                                nullptr);
-
-            priv::setWindowBorderless(hwnd, windowSettings.size.x, windowSettings.size.y);
-        }
-    }
-#endif
 
     if (windowSettings.fullscreen)
         SDLWindowImplImpl::fullscreenWindow = windowImplPtr;
+    else
+        SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(windowSettings.hasTitlebar, windowSettings.size, sdlWindowPtr);
 
     return base::UniquePtr<SDLWindowImpl>{windowImplPtr};
 }
@@ -847,6 +869,9 @@ void SDLWindowImpl::setSize(const Vec2u size)
 {
     SFML_BASE_ASSERT(m_impl->sdlWindow);
     getSDLLayerSingleton().setWindowSize(*m_impl->sdlWindow, size);
+
+    if (!isFullscreen())
+        SDLWindowImplImpl::setWindowNonExclusiveFullscreenIfNeeded(hasTitlebar(), getSize(), m_impl->sdlWindow);
 }
 
 
