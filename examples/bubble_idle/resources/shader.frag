@@ -52,14 +52,15 @@ vec3 hsv2rgb(vec3 c)
 ////////////////////////////////////////////////////////////
 vec3 rotateHueRGB(vec3 color, float angle_degrees)
 {
-    float angle_radians = angle_degrees * (3.14159265359 / 180.0);
+    const float SQRT3 = 1.73205080757; // sqrt(3.0)
+
+    float angle_radians = radians(angle_degrees);
     float c             = cos(angle_radians);
     float s             = sin(angle_radians);
-    float sqrt3         = sqrt(3.0); // Approximately 1.732
 
     float k0 = (1.0 + 2.0 * c) / 3.0;
-    float k1 = (1.0 - c - sqrt3 * s) / 3.0;
-    float k2 = (1.0 - c + sqrt3 * s) / 3.0;
+    float k1 = (1.0 - c - SQRT3 * s) / 3.0;
+    float k2 = (1.0 - c + SQRT3 * s) / 3.0;
 
     vec3 newColor;
     newColor.r = k0 * color.r + k1 * color.g + k2 * color.b;
@@ -133,7 +134,7 @@ void main()
 
         // Generate iridescent color pattern
         vec2 patternCoord = centeredUV * 10.0;
-        vec3 iridescence = 0.25 +
+        vec3 iridescence  = 0.25 +
                            0.5 * cos(u_time * 2.0 + distance * 25.0 + float(sf_v_color.b) * 100.0 + vec3(0.0, 2.0, 4.0)) +
                            (0.45 * sin(u_time * 3.0 + float(sf_v_color.b) * 100.0 + patternCoord.y + patternCoord.x));
         iridescence *= edgeFactor * u_edgeFactorStrength; // Stronger at edges
@@ -149,9 +150,7 @@ void main()
     }
 
     // Apply hue shift
-    vec3 hsv   = rgb2hsv(finalColor);
-    hsv.x      = mod(hsv.x + sf_v_color.b, 360.0);
-    finalColor = hsv2rgb(hsv);
+    finalColor = rotateHueRGB(finalColor, float(sf_v_color.b) * 360.0);
 
     // Proper alpha premultiplication
     if (u_bubbleEffect)
