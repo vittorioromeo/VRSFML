@@ -96,7 +96,8 @@ public:
     ////////////////////////////////////////////////////////////
     struct DrawStatistics
     {
-        unsigned int drawCalls{0u}; //!< Number of draw calls
+        unsigned int drawCalls{0u};     //!< Number of draw calls
+        base::SizeT  drawnVertices{0u}; //!< Number of vertices drawn
     };
 
     ////////////////////////////////////////////////////////////
