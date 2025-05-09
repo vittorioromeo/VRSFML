@@ -42,4 +42,6 @@ struct [[nodiscard]] WindowSettings
     ContextSettings contextSettings{};        //!< Additional settings for the underlying OpenGL context
 };
 
+// TODO P0: add refresh rate and other fields
+
 } // namespace sf
