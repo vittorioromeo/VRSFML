@@ -77,6 +77,16 @@ public:
     virtual void setVerticalSyncEnabled(bool enabled) = 0;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether vertical synchronization is enabled
+    ///
+    /// \return `true` if vertical synchronization is enabled, `false` otherwise
+    ///
+    /// \see setVerticalSyncEnabled
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] virtual bool isVerticalSyncEnabled() const = 0;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Perform various initializations after the context construction
     /// \param requestedSettings Requested settings during context creation
     ///
