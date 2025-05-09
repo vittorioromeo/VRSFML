@@ -91,7 +91,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 
     //
     // Initialize built-in texture
-    auto texture = Texture::loadFromImage(*Image::create({1u, 1u}, Color::White));
+    auto texture = Texture::loadFromImage(*Image::create({2u, 2u}, Color::White));
     if (!texture.hasValue())
         return fail("built-in texture initialization failure");
 
