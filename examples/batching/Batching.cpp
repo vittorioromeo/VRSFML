@@ -84,9 +84,7 @@ int main()
     //
     //
     // Set up imgui
-    sf::ImGui::ImGuiContext imGuiContext;
-    if (!imGuiContext.init(window))
-        return -1;
+    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
 
     //
     //
@@ -568,6 +566,9 @@ int main()
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
 
+        ////////////////////////////////////////////////////////////
+        // Display step
+        ////////////////////////////////////////////////////////////
         // ---
         clock.restart();
         {

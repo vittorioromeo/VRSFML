@@ -408,6 +408,11 @@ int main()
 
     //
     //
+    // Set up imgui
+    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+
+    //
+    //
     // Set up game and simulation loop
     Game game{window};
 

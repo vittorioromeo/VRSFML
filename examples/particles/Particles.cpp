@@ -74,9 +74,7 @@ int main()
     //
     //
     // Set up imgui
-    sf::ImGui::ImGuiContext imGuiContext;
-    if (!imGuiContext.init(window))
-        return -1;
+    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
 
     //
     //

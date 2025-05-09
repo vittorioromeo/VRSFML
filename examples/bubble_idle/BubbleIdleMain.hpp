@@ -462,17 +462,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui context
-    sf::ImGui::ImGuiContext imGuiContext;
-    bool                    imGuiInit{[&]
-    {
-        if (!imGuiContext.init(window))
-        {
-            sf::cOut() << "Error: ImGui context initialization failed\n";
-            return false;
-        }
-
-        return true;
-    }()};
+    sf::ImGui::ImGuiContext imGuiContext = sf::ImGui::ImGuiContext::create(window).value(); // TODO P0: fix move semantics
 
     ////////////////////////////////////////////////////////////
     // Exiting status

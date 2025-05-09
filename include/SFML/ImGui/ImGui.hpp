@@ -16,6 +16,8 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
+#include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PassKey.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -32,16 +34,27 @@ class Texture;
 class Window;
 } // namespace sf
 
+
 namespace sf::ImGui
 {
 class [[nodiscard]] SFML_IMGUI_API ImGuiContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Constructor
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ImGuiContext();
+    [[nodiscard]] static base::Optional<ImGuiContext> create(RenderWindow& window, bool loadDefaultFont = true);
+    [[nodiscard]] static base::Optional<ImGuiContext> create(Window& window, RenderTarget& target, bool loadDefaultFont = true);
+    [[nodiscard]] static base::Optional<ImGuiContext> create(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
+    [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
+    [[nodiscard]] bool init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -73,13 +86,6 @@ public:
     ////////////////////////////////////////////////////////////
     ImGuiContext& operator=(ImGuiContext&&) noexcept;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -224,8 +230,19 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool wasLastInputTouch() const;
 
+    ////////////////////////////////////////////////////////////
+    /// \private
+    ///
+    /// \brief Constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit ImGuiContext(base::PassKey<ImGuiContext>&&);
+
 private:
-    // Shuts down all ImGui contexts
+    ////////////////////////////////////////////////////////////
+    /// \brief Shuts down all ImGui contexts
+    ///
+    ////////////////////////////////////////////////////////////
     void shutdown();
 
     struct Impl;

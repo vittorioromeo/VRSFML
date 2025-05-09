@@ -485,4 +485,12 @@ void Image::flipVertically()
     }
 }
 
+
+////////////////////////////////////////////////////////////
+void Image::rotateHue(const float degrees)
+{
+    applyTransformation([degrees](const unsigned int, const unsigned int, const Color color)
+    { return color.withRotatedHue(degrees); });
+}
+
 } // namespace sf
