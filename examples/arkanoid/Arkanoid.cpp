@@ -176,7 +176,7 @@ public:
     {
         //
         // Ball movement
-        m_ball.position = m_ball.position + m_ballVelocity;
+        m_ball.position += m_ballVelocity;
 
         //
         // Ball collisions
@@ -195,7 +195,7 @@ public:
 
         //
         // Player movement
-        m_player.position = m_player.position + m_playerVelocity;
+        m_player.position += m_playerVelocity;
 
         //
         // Player collision versus boundaries
