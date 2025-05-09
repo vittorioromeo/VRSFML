@@ -233,6 +233,61 @@ public:
     void flipVertically();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Apply a custom transformation to each pixel of the image
+    ///
+    /// This function iterates over all the pixels of the image and
+    /// applies the provided callable `f` to each one.
+    ///
+    /// The callable `f` must take three arguments: the x-coordinate
+    /// of the pixel (`unsigned int`), the y-coordinate of the pixel
+    /// (`unsigned int`), and the current `sf::Color` of the pixel.
+    ///
+    /// It must return an `sf::Color` which will be the new color of that pixel.
+    ///
+    /// \param f A callable (e.g., lambda function) that takes
+    ///          `(unsigned int x, unsigned int y, sf::Color color)`
+    ///          and returns `sf::Color`.
+    ///
+    ////////////////////////////////////////////////////////////
+    template <typename Func>
+    void applyTransformation(Func&& f)
+    {
+        SFML_BASE_ASSERT(!m_pixels.empty());
+
+        base::U8* ptr = m_pixels.data();
+
+        for (unsigned int y = 0u; y < m_size.y; ++y)
+            for (unsigned int x = 0u; x < m_size.x; ++x)
+            {
+                const Color currentColor{ptr[0], ptr[1], ptr[2], ptr[3]};
+                const auto [newR, newG, newB, newA] = f(x, y, currentColor);
+
+                *ptr++ = newR;
+                *ptr++ = newG;
+                *ptr++ = newB;
+                *ptr++ = newA;
+            }
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Rotate the hue of the image
+    ///
+    /// This function applies a hue rotation to each pixel of the image.
+    ///
+    /// The rotation is done in degrees, and the value must be
+    /// between 0 and 360. A value of 0 means no rotation, while
+    /// a value of 360 means a full rotation (which is equivalent to 0).
+    /// The rotation is done in the HSL color space.
+    ///
+    /// The function uses the `Color::withRotatedHue` method to
+    /// perform the rotation.
+    ///
+    /// \param degrees The angle in degrees to rotate the hue.
+    ///
+    ////////////////////////////////////////////////////////////
+    void rotateHue(float degrees);
+
+    ////////////////////////////////////////////////////////////
     /// \private
     ///
     /// \brief Directly initialize data members
