@@ -1,4 +1,7 @@
 #include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
+#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
+
+#include "SFML/ImGui/ImGui.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
@@ -16,6 +19,7 @@
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/StarShapeData.hpp"
+#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
@@ -26,14 +30,21 @@
 #include "SFML/Window/Keyboard.hpp"
 
 #include "SFML/System/Angle.hpp"
+#include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
+#include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
 #include "ExampleUtils.hpp"
 
+#include <iostream>
+
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include <imgui.h>
+
 #include <algorithm>
 #include <initializer_list>
-#include <iostream>
+#include <string>
 #include <vector>
 
 #include <cmath>
@@ -43,27 +54,185 @@
 ////////////////////////////////////////////////////////////
 constexpr sf::Vec2f resolution{1016.f, 1016.f};
 
-
 ////////////////////////////////////////////////////////////
-class Game
+class ExampleShapes
 {
 private:
     ////////////////////////////////////////////////////////////
     sf::RenderWindow& m_window;
-    float             m_time = 0.f;
+    const sf::Font&   m_font;
 
     ////////////////////////////////////////////////////////////
-    sf::TextureAtlas m_textureAtlas{sf::Texture::create({2048u, 2048u}, {.smooth = true}).value()};
+    float m_time  = 0.f;
+    float m_phase = 0.f;
 
     ////////////////////////////////////////////////////////////
-    const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
+    [[nodiscard]] auto applyCommonSettings(const sf::Vec2f currentOffset, auto shapeData)
+    {
+        const auto fillColor = sf::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
+
+        shapeData.position += currentOffset;
+        shapeData.position += {64.f, 64.f};
+
+        shapeData.fillColor        = fillColor;
+        shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
+        shapeData.outlineThickness = std::abs(4.f * std::sin(m_time * 0.05f + m_phase));
+
+        shapeData.rotation = sf::degrees(std::fmod(m_time * 1.f + m_phase * 45.f, 360.f));
+
+        shapeData.textureRect = {
+            .position = {0.f, 0.f},
+            .size     = {1.f, 1.f},
+        };
+
+        return shapeData;
+    }
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_bunnyTexureRects[2] = {
-        addImgToAtlas("resources/bunny0.png"),
-        addImgToAtlas("resources/bunny1.png"),
-    };
+    void drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
+    {
+        m_window.draw(applyCommonSettings(currentOffset, shapeData), {.texture = &m_font.getTexture()});
 
+        m_window.draw(m_font,
+                      sf::TextData{
+                          .position         = shapeData.position + currentOffset,
+                          .string           = label,
+                          .characterSize    = 16,
+                          .outlineColor     = sf::Color::Black,
+                          .outlineThickness = 2.f,
+                      });
+
+        m_phase += 0.1f;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getPhasedValue(const float timeMultiplier, const float phaseMultiplier) const
+    {
+        return std::abs(std::sin(m_time * timeMultiplier + m_phase * phaseMultiplier));
+    }
+
+    ////////////////////////////////////////////////////////////
+    void drawAllShapes(const sf::Vec2f offset)
+    {
+        drawShape(offset,
+                  "Circle",
+                  sf::CircleShapeData{
+                      .position   = {32.f, 32.f},
+                      .origin     = {64.f, 64.f},
+                      .radius     = 64.f,
+                      .pointCount = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.04f, 2.f)),
+                  });
+
+        drawShape(offset,
+                  "Ellipse",
+                  sf::EllipseShapeData{
+                      .position         = {196.f, 32.f},
+                      .origin           = {64.f, 32.f},
+                      .horizontalRadius = 64.f,
+                      .verticalRadius   = 32.f,
+                      .pointCount       = 3u + static_cast<unsigned int>(29.f * getPhasedValue(0.06f, 3.5f)),
+                  });
+
+        drawShape(offset,
+                  "PieSlice",
+                  sf::PieSliceShapeData{
+                      .position   = {364.f, 32.f},
+                      .origin     = {64.f, 64.f},
+                      .radius     = 64.f,
+                      .startAngle = sf::degrees(0.f),
+                      .sweepAngle = sf::degrees((360.f * getPhasedValue(0.1f, 2.f))),
+                      .pointCount = 32u,
+                  });
+
+        drawShape(offset,
+                  "Rectangle",
+                  sf::RectangleShapeData{
+                      .position = {32.f, 196.f},
+                      .origin   = {64.f, 32.f},
+                      .size     = {128.f, 64.f},
+                  });
+
+        drawShape(offset,
+                  "RoundedRectangle",
+                  sf::RoundedRectangleShapeData{
+                      .position         = {196.f, 196.f},
+                      .origin           = {64.f, 32.f},
+                      .size             = {128.f, 64.f},
+                      .cornerRadius     = 3.f + (29.f * getPhasedValue(0.1f, 1.5f)),
+                      .cornerPointCount = 16u,
+                  });
+
+        drawShape(offset,
+                  "RingPieSlice",
+                  sf::RingPieSliceShapeData{
+                      .position    = {364.f, 196.f},
+                      .origin      = {64.f, 64.f},
+                      .outerRadius = 64.f,
+                      .innerRadius = 32.f + (16.f * getPhasedValue(0.2f, 0.75f)),
+                      .startAngle  = sf::degrees(0.f),
+                      .sweepAngle  = sf::degrees((360.f * getPhasedValue(0.1f, 2.0f))),
+                      .pointCount  = 32u,
+                  });
+
+        drawShape(offset,
+                  "Ring",
+                  sf::RingShapeData{
+                      .position    = {364.f, 364.f},
+                      .origin      = {64.f, 64.f},
+                      .outerRadius = 64.f,
+                      .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                      .pointCount  = 30u,
+                  });
+
+        drawShape(offset,
+                  "Star",
+                  sf::StarShapeData{
+                      .position    = {32.f, 364.f},
+                      .origin      = {64.f, 64.f},
+                      .outerRadius = 64.f,
+                      .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                      .pointCount  = 3u + static_cast<unsigned int>(10.f * getPhasedValue(0.1f, 2.f)),
+                  });
+
+        drawShape(offset,
+                  "Arrow",
+                  sf::ArrowShapeData{
+                      .position    = {196.f, 364.f},
+                      .origin      = {(64.f + 48.f) / 2.f, 0.f},
+                      .shaftLength = 64.f,
+                      .shaftWidth  = 32.f + (32.f * getPhasedValue(0.04f, 2.f)),
+                      .headLength  = 48.f,
+                      .headWidth   = 96.f - (64.f * getPhasedValue(0.06f, 3.f)),
+                  });
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    explicit ExampleShapes(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(const float deltaTimeMs)
+    {
+        m_time += deltaTimeMs;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw()
+    {
+        m_phase = 0.f;
+
+        for (const auto offset : {sf::Vec2f{0.f, 0.f}, {492.f, 0.f}, {0.f, 492.f}, {492.f, 492.f}})
+            drawAllShapes(offset);
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+class ExampleBunnyMark
+{
+private:
     ////////////////////////////////////////////////////////////
     struct Bunny
     {
@@ -73,182 +242,102 @@ private:
         float     scale{};
     };
 
+    ////////////////////////////////////////////////////////////
+    sf::RenderWindow&       m_window;
+    const sf::Font&         m_font;
+    const sf::TextureAtlas& m_textureAtlas;
+    const sf::FloatRect (&m_bunnyTextureRects)[8];
+
+    ////////////////////////////////////////////////////////////
+    float m_time = 0.f;
+
+    ////////////////////////////////////////////////////////////
     std::vector<Bunny> m_bunnies;
+    std::size_t        m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rng{/* seed */ 1234};
 
     ////////////////////////////////////////////////////////////
-    std::size_t m_activeExample = 0u;
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::FloatRect addImgToAtlas(const sf::Path& path)
+    [[nodiscard]] static std::string toDigitSeparatedString(const std::size_t value)
     {
-        return m_textureAtlas.add(sf::Image::loadFromFile(path).value()).value();
+        std::string s = std::to_string(value);
+
+        for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
+            s.insert(static_cast<std::size_t>(i), ".");
+
+        return s;
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    explicit ExampleBunnyMark(sf::RenderWindow&       window,
+                              const sf::Font&         font,
+                              const sf::TextureAtlas& textureAtlas,
+                              const sf::FloatRect (&bunnyTextureRects)[8]) :
+    m_window{window},
+    m_font{font},
+    m_textureAtlas{textureAtlas},
+    m_bunnyTextureRects{bunnyTextureRects}
+    {
     }
 
     ////////////////////////////////////////////////////////////
-    void exampleImmediateShapeDrawing()
+    void update(const float deltaTimeMs)
     {
-        float phase = 0.f;
+        m_time += deltaTimeMs;
 
-        auto applyCommonSettings = [&](const sf::Vec2f currentOffset, auto shapeData)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
+            m_bunnyTargetCount += 1000;
+        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
+            m_bunnyTargetCount -= 1000;
+
+        m_bunnyTargetCount = std::clamp(m_bunnyTargetCount, std::size_t{1000}, std::size_t{2'500'000});
+
+        if (m_bunnies.size() < m_bunnyTargetCount)
         {
-            const auto fillColor = sf::Color::Red.withRotatedHue(m_time + phase * 65.f);
+            m_bunnies.reserve(m_bunnyTargetCount);
 
-            shapeData.position += currentOffset;
-            shapeData.position += {64.f, 64.f};
-
-            shapeData.fillColor        = fillColor;
-            shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
-            shapeData.outlineThickness = std::abs(4.f * std::sin(m_time * 0.05f + phase));
-
-            shapeData.rotation = sf::degrees(std::fmod(m_time * 1.f + phase * 45.f, 360.f));
-
-            phase += 0.1f;
-
-            return shapeData;
-        };
-
-        auto drawShape = [&](const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
-        {
-            m_window.draw(applyCommonSettings(currentOffset, shapeData));
-
-            m_window.draw(m_font,
-                          sf::TextData{
-                              .position         = shapeData.position + currentOffset,
-                              .string           = label,
-                              .characterSize    = 16,
-                              .outlineColor     = sf::Color::Black,
-                              .outlineThickness = 2.f,
-                          });
-        };
-
-        for (const auto offset : {sf::Vec2f{0.f, 0.f}, {492.f, 0.f}, {0.f, 492.f}, {492.f, 492.f}})
-        {
-            drawShape(offset,
-                      "Circle",
-                      sf::CircleShapeData{
-                          .position   = {32.f, 32.f},
-                          .origin     = {64.f, 64.f},
-                          .radius     = 64.f,
-                          .pointCount = 3u +
-                                        static_cast<unsigned int>(29.f * std::abs(std::sin(m_time * 0.04f + phase * 2.f))),
-                      });
-
-            drawShape(offset,
-                      "Ellipse",
-                      sf::EllipseShapeData{
-                          .position         = {196.f, 32.f},
-                          .origin           = {64.f, 32.f},
-                          .horizontalRadius = 64.f,
-                          .verticalRadius   = 32.f,
-                          .pointCount       = 3u + static_cast<unsigned int>(
-                                                 29.f * std::abs(std::sin(m_time * 0.06f + phase * 3.5f))),
-                      });
-
-            drawShape(offset,
-                      "PieSlice",
-                      sf::PieSliceShapeData{
-                          .position   = {364.f, 32.f},
-                          .origin     = {64.f, 64.f},
-                          .radius     = 64.f,
-                          .startAngle = sf::degrees(0.f),
-                          .sweepAngle = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 2.f)))),
-                          .pointCount = 32u,
-                      });
-
-            drawShape(offset,
-                      "Rectangle",
-                      sf::RectangleShapeData{
-                          .position = {32.f, 196.f},
-                          .origin   = {64.f, 32.f},
-                          .size     = {128.f, 64.f},
-                      });
-
-            drawShape(offset,
-                      "RoundedRectangle",
-                      sf::RoundedRectangleShapeData{
-                          .position         = {196.f, 196.f},
-                          .origin           = {64.f, 32.f},
-                          .size             = {128.f, 64.f},
-                          .cornerRadius     = 3.f + (29.f * std::abs(std::sin(m_time * 0.1f + phase * 1.5f))),
-                          .cornerPointCount = 16u,
-                      });
-
-            drawShape(offset,
-                      "RingPieSlice",
-                      sf::RingPieSliceShapeData{
-                          .position    = {364.f, 196.f},
-                          .origin      = {64.f, 64.f},
-                          .outerRadius = 64.f,
-                          .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.2f + phase * 0.75f))),
-                          .startAngle  = sf::degrees(0.f),
-                          .sweepAngle  = sf::degrees((360.f * std::abs(std::sin(m_time * 0.1f + phase * 2.0f)))),
-                          .pointCount  = 32u,
-                      });
-
-            drawShape(offset,
-                      "Ring",
-                      sf::RingShapeData{
-                          .position    = {364.f, 364.f},
-                          .origin      = {64.f, 64.f},
-                          .outerRadius = 64.f,
-                          .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.25f + phase * 2.f))),
-                          .pointCount  = 30u,
-                      });
-
-            drawShape(offset,
-                      "Star",
-                      sf::StarShapeData{
-                          .position    = {32.f, 364.f},
-                          .origin      = {64.f, 64.f},
-                          .outerRadius = 64.f,
-                          .innerRadius = 32.f + (16.f * std::abs(std::sin(m_time * 0.25f + phase * 2.f))),
-                          .pointCount = 3u + static_cast<unsigned int>(10.f * std::abs(std::sin(m_time * 0.1f + phase * 2.f))),
-                      });
-
-            drawShape(offset,
-                      "Arrow",
-                      sf::ArrowShapeData{
-                          .position    = {196.f, 364.f},
-                          .origin      = {(64.f + 48.f) / 2.f, 0.f},
-                          .shaftLength = 64.f,
-                          .shaftWidth  = 32.f + (32.f * std::abs(std::sin(m_time * 0.04f + phase * 2.f))),
-                          .headLength  = 48.f,
-                          .headWidth   = 96.f - (64.f * std::abs(std::sin(m_time * 0.06f + phase * 3.f))),
-                      });
-        }
-    }
-
-    ////////////////////////////////////////////////////////////
-    void exampleBunnymark()
-    {
-        static std::size_t bunnyTargetCount = 100'000;
-
-        if (m_bunnies.size() < bunnyTargetCount)
-        {
-            m_bunnies.reserve(bunnyTargetCount);
-
-            for (std::size_t i = m_bunnies.size(); i < bunnyTargetCount; ++i)
+            for (std::size_t i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
             {
                 m_bunnies.emplace_back(
                     /* position */ m_rng.getVec2f(resolution),
                     /* velocity */ m_rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}),
                     /* rotation */ sf::radians(m_rng.getF(0.f, sf::base::tau)),
-                    /*    scale */ m_rng.getF(0.1f, 0.9f));
+                    /*    scale */ m_rng.getF(0.25f, 0.5f));
             }
         }
-        else if (m_bunnies.size() > bunnyTargetCount)
+        else if (m_bunnies.size() > m_bunnyTargetCount)
         {
-            m_bunnies.resize(bunnyTargetCount);
+            m_bunnies.resize(m_bunnyTargetCount);
         }
-
-        std::size_t i = 0u;
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
-            const auto& txr = m_bunnyTexureRects[i % 2u];
+            position += velocity * deltaTimeMs;
+
+            if (position.x < 0.f)
+                position.x = resolution.x;
+            else if (position.x > resolution.x)
+                position.x = 0.f;
+
+            if (position.y < 0.f)
+                position.y = resolution.y;
+            else if (position.y > resolution.y)
+                position.y = 0.f;
+
+            rotation += sf::radians(0.05f * deltaTimeMs);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw()
+    {
+        std::size_t i = 0;
+
+        for (auto& [position, velocity, rotation, scale] : m_bunnies)
+        {
+            const auto& txr = m_bunnyTextureRects[i % 8u];
 
             m_window.draw(
                 sf::Sprite{
@@ -261,32 +350,7 @@ private:
                 {.texture = &m_textureAtlas.getTexture()});
 
             ++i;
-
-            position += velocity;
-
-            if (position.x < 0.f)
-                position.x = resolution.x;
-            else if (position.x > resolution.x)
-                position.x = 0.f;
-
-            if (position.y < 0.f)
-                position.y = resolution.y;
-            else if (position.y > resolution.y)
-                position.y = 0.f;
-
-            rotation += sf::radians(0.05f);
         }
-
-        const auto toDigitSeparatedString = [](const std::size_t value) -> std::string
-        {
-            std::string s = std::to_string(value);
-
-            for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
-                s.insert(static_cast<std::size_t>(i), ".");
-
-            return s;
-        };
-
 
         const auto digitSeparatedBunnyCount = toDigitSeparatedString(m_bunnies.size());
 
@@ -336,19 +400,109 @@ private:
                           .outlineColor     = sf::Color::Black,
                           .outlineThickness = 2.f,
                       });
+    }
+};
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right))
-            bunnyTargetCount += 1000;
-        else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
-            bunnyTargetCount -= 1000;
+////////////////////////////////////////////////////////////
+class Game
+{
+private:
+    ////////////////////////////////////////////////////////////
+    sf::GraphicsContext&     m_graphicsContext;
+    sf::RenderWindow&        m_window;
+    sf::ImGui::ImGuiContext& m_imGuiContext;
 
-        bunnyTargetCount = std::clamp(bunnyTargetCount, std::size_t{1000}, std::size_t{2'500'000});
+    ////////////////////////////////////////////////////////////
+    sf::Clock m_clock;
+    sf::Clock m_fpsClock;
+
+    ////////////////////////////////////////////////////////////
+    Sampler m_samplesEventMs{/* capacity */ 64u};
+    Sampler m_samplesUpdateMs{/* capacity */ 64u};
+    Sampler m_samplesImGuiMs{/* capacity */ 64u};
+    Sampler m_samplesDrawMs{/* capacity */ 64u};
+    Sampler m_samplesDisplayMs{/* capacity */ 64u};
+    Sampler m_samplesFPS{/* capacity */ 64u};
+
+    ////////////////////////////////////////////////////////////
+    unsigned int    m_lastFrameDrawCallCount = 0u;
+    sf::base::SizeT m_lastFrameDrawnVertices = 0u;
+
+    ////////////////////////////////////////////////////////////
+    sf::TextureAtlas m_textureAtlas{sf::Texture::create({2048u, 2048u}, {.smooth = true}).value()};
+
+    ////////////////////////////////////////////////////////////
+    const sf::FloatRect m_txrWhiteDot = m_textureAtlas.add(m_graphicsContext.getBuiltInWhiteDotTexture()).value();
+
+    ////////////////////////////////////////////////////////////
+    const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
+
+    ////////////////////////////////////////////////////////////
+    const sf::FloatRect m_bunnyTextureRects[8] = {
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 0.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 45.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 90.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 135.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 180.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 225.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 270.f),
+        addImgToAtlasWithRotatedHue("resources/bunny0.png", 315.f),
+    };
+
+    ////////////////////////////////////////////////////////////
+    ExampleShapes    m_exampleShapes{m_window, m_font};
+    ExampleBunnyMark m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
+
+    ////////////////////////////////////////////////////////////
+    std::size_t m_activeExample = 0u;
+
+    ////////////////////////////////////////////////////////////
+    void clearSamples()
+    {
+        m_samplesEventMs.clear();
+        m_samplesUpdateMs.clear();
+        m_samplesImGuiMs.clear();
+        m_samplesDrawMs.clear();
+        m_samplesDisplayMs.clear();
+        m_samplesFPS.clear();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void plotSamples(const char* label, const char* unit, const Sampler& samples, float upperBound)
+    {
+        ImGui::PlotLines(label,
+                         samples.data(),
+                         static_cast<int>(samples.size()),
+                         0,
+                         (std::to_string(samples.getAverage()) + unit).c_str(),
+                         0.f,
+                         upperBound,
+                         ImVec2{256.f, 32.f});
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::FloatRect addImgToAtlas(const sf::Path& path)
+    {
+        return m_textureAtlas.add(sf::Image::loadFromFile(path).value()).value();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::FloatRect addImgToAtlasWithRotatedHue(const sf::Path& path, const float hueDegrees)
+    {
+        auto img = sf::Image::loadFromFile(path).value();
+        img.rotateHue(hueDegrees);
+        return m_textureAtlas.add(img).value();
     }
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit Game(sf::RenderWindow& window) : m_window{window}
+    explicit Game(sf::GraphicsContext& graphicsContext, sf::RenderWindow& window, sf::ImGui::ImGuiContext& imGuiContext) :
+    m_graphicsContext{graphicsContext},
+    m_window{window},
+    m_imGuiContext{imGuiContext}
     {
+        std::cout << m_txrWhiteDot.position.x << " " << m_txrWhiteDot.position.y << " " << m_txrWhiteDot.size.x << " "
+                  << m_txrWhiteDot.size.y << "\n";
     }
 
     ////////////////////////////////////////////////////////////
@@ -356,8 +510,16 @@ public:
     {
         while (true)
         {
+            ////////////////////////////////////////////////////////////
+            // Event handling
+            ////////////////////////////////////////////////////////////
+            // ---
+            m_clock.restart();
+
             while (sf::base::Optional event = m_window.pollEvent())
             {
+                m_imGuiContext.processEvent(m_window, *event);
+
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return true;
 
@@ -369,17 +531,91 @@ public:
                         m_activeExample = ((m_activeExample + 1u) % 2u);
             }
 
-            m_time += 0.1f;
+            m_samplesEventMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////
+            // Update step
+            ////////////////////////////////////////////////////////////
+            // ---
+            m_clock.restart();
+
+            const auto  deltaTime   = m_fpsClock.restart();
+            const float deltaTimeMs = deltaTime.asSeconds() * 1000.f;
+
+            if (m_activeExample == 0u)
+                m_exampleShapes.update(deltaTimeMs * 0.01f);
+            else if (m_activeExample == 1u)
+                m_exampleBunnyMark.update(deltaTimeMs * 0.01f);
+
+            m_samplesUpdateMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////
+            // ImGui step
+            ////////////////////////////////////////////////////////////
+            // ---
+            m_clock.restart();
+
+            m_imGuiContext.update(m_window, deltaTime);
+
+            ImGui::Begin("Granita Showcase", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+            // ImGui::SetWindowSize({420.f, 490.f});
+
+            plotSamples("Update", " ms", m_samplesUpdateMs, 64.f);
+            plotSamples("Draw", " ms", m_samplesDrawMs, 64.f);
+            plotSamples("FPS", " FPS", m_samplesFPS, 360.f);
+            // plotSamples("Events", " ms", m_samplesEventMs, 64.f);
+            // plotSamples("ImGui", " ms", m_samplesImGuiMs, 64.f);
+            plotSamples("Display", " ms", m_samplesDisplayMs, 64.f);
+
+            ImGui::Spacing();
+            ImGui::Text("Draw calls: %u", m_lastFrameDrawCallCount);
+            ImGui::Text("Drawn vertices: %zu", m_lastFrameDrawnVertices);
+
+            ImGui::End();
+
+            m_samplesImGuiMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////
+            // Draw step
+            ////////////////////////////////////////////////////////////
+            // ---
+            m_clock.restart();
 
             m_window.clear();
 
             if (m_activeExample == 0u)
-                exampleImmediateShapeDrawing();
+                m_exampleShapes.draw();
             else if (m_activeExample == 1u)
-                exampleBunnymark();
+                m_exampleBunnyMark.draw();
 
-            const auto result = m_window.display();
-            std::cout << result.drawCalls << " draw calls\r";
+            m_samplesDrawMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            ////////////////////////////////////////////////////////////
+            // Display step
+            ////////////////////////////////////////////////////////////
+            // ---
+            m_clock.restart();
+            {
+                m_imGuiContext.render(m_window);
+
+                const auto [drawCalls, drawnVertices] = m_window.display();
+
+                m_lastFrameDrawCallCount = drawCalls;
+                m_lastFrameDrawnVertices = drawnVertices;
+            }
+            m_samplesDisplayMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
+            // ---
+            ////////////////////////////////////////////////////////////
+
+            m_samplesFPS.record(1.f / m_fpsClock.getElapsedTime().asSeconds());
         }
 
         return true;
@@ -414,7 +650,7 @@ int main()
     //
     //
     // Set up game and simulation loop
-    Game game{window};
+    Game game{graphicsContext, window, imGuiContext};
 
     if (!game.run())
         return 1;
