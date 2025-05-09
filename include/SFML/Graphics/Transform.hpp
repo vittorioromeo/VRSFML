@@ -28,9 +28,10 @@ struct [[nodiscard]] Transform
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(const Vec2f position,
-                                                                                    const Vec2f scale,
-                                                                                    const Vec2f origin)
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform from(
+        const Vec2f position,
+        const Vec2f scale,
+        const Vec2f origin)
     {
         return {/* a00 */ scale.x,
                 /* a01 */ 0.f,
@@ -45,7 +46,7 @@ struct [[nodiscard]] Transform
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] static constexpr Transform from(
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] static constexpr Transform from(
         const Vec2f position,
         const Vec2f scale,
         const Vec2f origin,
