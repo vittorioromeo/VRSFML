@@ -159,4 +159,20 @@ void SDLGlContext::setVerticalSyncEnabled(const bool enabled)
         err() << "Failed to set vertical sync: " << SDL_GetError();
 }
 
+
+////////////////////////////////////////////////////////////
+bool SDLGlContext::isVerticalSyncEnabled() const
+{
+    int interval{};
+
+    if (!SDL_GL_GetSwapInterval(&interval))
+    {
+        err() << "Failed to get vertical sync: " << SDL_GetError();
+        return false;
+    }
+
+    return interval != 0;
+}
+
+
 } // namespace sf::priv

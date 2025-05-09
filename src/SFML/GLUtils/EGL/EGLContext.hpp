@@ -97,6 +97,9 @@ public:
     void setVerticalSyncEnabled(bool enabled) override;
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isVerticalSyncEnabled() const override;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Create the context
     ///
     /// \param shared       Context to share the new one with (can be a null pointer)

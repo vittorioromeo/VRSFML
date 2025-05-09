@@ -128,6 +128,13 @@ void Window::setVerticalSyncEnabled(bool enabled)
 
 
 ////////////////////////////////////////////////////////////
+bool Window::isVerticalSyncEnabled() const
+{
+    return m_impl->glContext->isVerticalSyncEnabled();
+}
+
+
+////////////////////////////////////////////////////////////
 void Window::setFramerateLimit(unsigned int limit)
 {
     m_impl->frameTimeLimit = limit > 0 ? seconds(1.f / static_cast<float>(limit)) : Time{};

@@ -112,6 +112,14 @@ public:
     void setVerticalSyncEnabled(bool enabled);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Check whether vertical synchronization is enabled
+    ///
+    /// \return `true` if vertical synchronization is enabled, `false` otherwise
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isVerticalSyncEnabled() const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Limit the framerate to a maximum fixed frequency
     ///
     /// If a limit is set, the window will use a small delay after
