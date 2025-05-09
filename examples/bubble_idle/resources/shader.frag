@@ -46,6 +46,31 @@ vec3 hsv2rgb(vec3 c)
 }
 
 ////////////////////////////////////////////////////////////
+// Rotates hue in RGB space
+// color: input vec3 color (components in [0,1])
+// angle_degrees: rotation angle in degrees
+////////////////////////////////////////////////////////////
+vec3 rotateHueRGB(vec3 color, float angle_degrees)
+{
+    float angle_radians = angle_degrees * (3.14159265359 / 180.0);
+    float c             = cos(angle_radians);
+    float s             = sin(angle_radians);
+    float sqrt3         = sqrt(3.0); // Approximately 1.732
+
+    float k0 = (1.0 + 2.0 * c) / 3.0;
+    float k1 = (1.0 - c - sqrt3 * s) / 3.0;
+    float k2 = (1.0 - c + sqrt3 * s) / 3.0;
+
+    vec3 newColor;
+    newColor.r = k0 * color.r + k1 * color.g + k2 * color.b;
+    newColor.g = k2 * color.r + k0 * color.g + k1 * color.b;
+    newColor.b = k1 * color.r + k2 * color.g + k0 * color.b;
+
+    newColor = clamp(newColor, 0.0, 1.0);
+    return newColor;
+}
+
+////////////////////////////////////////////////////////////
 void main()
 {
     vec4 texColor = texture(sf_u_texture, sf_v_texCoord);
