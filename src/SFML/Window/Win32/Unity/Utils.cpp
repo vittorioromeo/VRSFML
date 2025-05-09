@@ -9,6 +9,8 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Win32/WindowsHeader.hpp" // used
 
+#include "SFML/Base/Assert.hpp"
+
 #include <string>
 
 
@@ -38,6 +40,8 @@ std::string getErrorString(DWORD error)
 ////////////////////////////////////////////////////////////
 void setWindowBorderless(void* const hwnd, const unsigned int width, const unsigned int height)
 {
+    SFML_BASE_ASSERT(hwnd != nullptr);
+
     auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
 
     SetWindowLongPtr(hwndPtr, GWL_STYLE, WS_OVERLAPPED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS);
