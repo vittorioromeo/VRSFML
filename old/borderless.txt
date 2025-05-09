@@ -1,0 +1,128 @@
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#include "SFML/Window/Win32/Utils.hpp"
+#include "SFML/Window/WindowSettings.hpp"
+
+#include "SFML/System/String.hpp"
+#include "SFML/System/Win32/WindowsHeader.hpp" // used
+
+#include "SFML/Base/Assert.hpp"
+
+#include <string>
+
+#include <cstddef>
+
+
+namespace sf::priv
+{
+////////////////////////////////////////////////////////////
+std::string getErrorString(DWORD error)
+{
+    PTCHAR buffer = nullptr;
+    if (FormatMessage(FORMAT_MESSAGE_MAX_WIDTH_MASK | FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,
+                      nullptr,
+                      error,
+                      0,
+                      reinterpret_cast<PTCHAR>(&buffer),
+                      0,
+                      nullptr) == 0)
+    {
+        return "Unknown error.";
+    }
+
+    const sf::String message = buffer;
+    LocalFree(buffer);
+    return message.toAnsiString<std::string>();
+}
+
+#define STYLE_BASIC               (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
+#define STYLE_FULLSCREEN          (WS_POPUP | WS_MINIMIZEBOX)
+#define STYLE_BORDERLESS          (WS_POPUP | WS_MINIMIZEBOX)
+#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define STYLE_NORMAL              (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define STYLE_RESIZABLE           (WS_THICKFRAME | WS_MAXIMIZEBOX)
+#define STYLE_MASK                (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
+
+////////////////////////////////////////////////////////////
+static DWORD getWindowStyle(bool fullscreen, bool hasTitlebar, bool resizable)
+{
+    DWORD style = 0;
+
+    if (fullscreen)
+    {
+        style |= STYLE_FULLSCREEN;
+    }
+    else
+    {
+        if (!hasTitlebar)
+        {
+            style |= STYLE_BORDERLESS_WINDOWED;
+        }
+        else
+        {
+            style |= STYLE_NORMAL;
+        }
+
+        /* The WS_MAXIMIZEBOX style flag needs to be retained for as long as the window is maximized,
+         * or restoration from minimized can fail, and leaving maximized can result in an odd size.
+         */
+        if (resizable)
+        {
+            if (hasTitlebar)
+            {
+                style |= STYLE_RESIZABLE;
+            }
+        }
+    }
+
+    return style;
+}
+
+////////////////////////////////////////////////////////////
+void setWindowBorderless(
+    const bool         borderless,
+    bool               fullscreen,
+    bool               hasTitlebar,
+    bool               resizable,
+    void* const        hwnd,
+    int                posX,
+    int                posY,
+    const unsigned int width,
+    const unsigned int height)
+{
+    SFML_BASE_ASSERT(hwnd != nullptr);
+    auto* hwndPtr = reinterpret_cast<HWND>(hwnd);
+
+    int styleFlags = getWindowStyle(fullscreen, hasTitlebar, resizable);
+
+    // int styleFlags = WS_OVERLAPPED | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+
+    if (borderless)
+        styleFlags |= WS_OVERLAPPED;
+    else
+        styleFlags &= ~WS_OVERLAPPED;
+
+    SetWindowLongPtr(hwndPtr, GWL_STYLE, styleFlags);
+    SetWindowLongPtr(hwndPtr, GWL_EXSTYLE, borderless ? WS_EX_APPWINDOW : 0);
+
+    if (borderless)
+    {
+        SetWindowPos(hwndPtr,
+                     HWND_TOP,
+                     0,
+                     0,
+                     static_cast<int>(width),
+                     static_cast<int>(height),
+                     SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+    }
+    else
+    {
+        SetWindowPos(hwndPtr, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED | SWP_NOOWNERZORDER | SWP_SHOWWINDOW);
+    }
+}
+
+} // namespace sf::priv
