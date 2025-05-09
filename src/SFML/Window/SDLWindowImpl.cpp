@@ -950,6 +950,43 @@ float SDLWindowImpl::getWindowDisplayScale() const
 
 
 ////////////////////////////////////////////////////////////
+bool SDLWindowImpl::isFullscreen() const
+{
+    return SDL_GetWindowFlags(m_impl->sdlWindow) & SDL_WINDOW_FULLSCREEN;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SDLWindowImpl::isResizable() const
+{
+    return SDL_GetWindowFlags(m_impl->sdlWindow) & SDL_WINDOW_RESIZABLE;
+}
+
+
+////////////////////////////////////////////////////////////
+bool SDLWindowImpl::hasTitlebar() const
+{
+    return !(SDL_GetWindowFlags(m_impl->sdlWindow) & SDL_WINDOW_BORDERLESS);
+}
+
+
+////////////////////////////////////////////////////////////
+void SDLWindowImpl::setResizable(const bool resizable)
+{
+    if (!SDL_SetWindowResizable(m_impl->sdlWindow, resizable))
+        err() << "Failed to set window resizable: " << SDL_GetError();
+}
+
+
+////////////////////////////////////////////////////////////
+void SDLWindowImpl::setHasTitlebar(const bool hasTitleBar)
+{
+    if (!SDL_SetWindowBordered(m_impl->sdlWindow, hasTitleBar))
+        err() << "Failed to set window titlebar: " << SDL_GetError();
+}
+
+
+////////////////////////////////////////////////////////////
 WindowHandle SDLWindowImpl::getNativeHandle() const
 {
     const auto props = SDL_GetWindowProperties(m_impl->sdlWindow);
