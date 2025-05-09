@@ -243,6 +243,8 @@ struct EglContext::Impl
     EGLContext context{EGL_NO_CONTEXT}; //!< The internal EGL context
     EGLSurface surface{EGL_NO_SURFACE}; //!< The internal EGL surface
     EGLConfig  config{};                //!< The internal EGL config
+
+    bool vsyncEnabled{true}; //!< Whether vertical sync is enabled or not (on by default)
 };
 
 
@@ -375,7 +377,15 @@ void EglContext::setVerticalSyncEnabled([[maybe_unused]] bool enabled)
 {
 #ifndef SFML_SYSTEM_EMSCRIPTEN
     eglCheck(eglSwapInterval(m_impl->display, enabled));
+    m_impl->vsyncEnabled = enabled;
 #endif
+}
+
+
+////////////////////////////////////////////////////////////
+bool EglContext::isVerticalSyncEnabled() const
+{
+    return m_impl->vsyncEnabled;
 }
 
 
