@@ -294,4 +294,39 @@ base::Optional<Event> WindowBase::filterEvent(const base::Optional<Event> event)
     return event;
 }
 
+
+////////////////////////////////////////////////////////////
+bool WindowBase::isFullscreen() const
+{
+    return m_impl->isFullscreen();
+}
+
+
+////////////////////////////////////////////////////////////
+bool WindowBase::isResizable() const
+{
+    return m_impl->isResizable();
+}
+
+
+////////////////////////////////////////////////////////////
+bool WindowBase::hasTitlebar() const
+{
+    return m_impl->hasTitlebar();
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowBase::setResizable(const bool resizable)
+{
+    m_impl->setResizable(resizable);
+}
+
+
+////////////////////////////////////////////////////////////
+void WindowBase::setHasTitlebar(const bool hasTitleBar)
+{
+    m_impl->setHasTitlebar(hasTitleBar);
+}
+
 } // namespace sf
