@@ -349,7 +349,7 @@ public:
     ///
     /// \param loop True to play in loop, false to play once
     ///
-    /// \see getLoop
+    /// \see isLooping
     ///
     ////////////////////////////////////////////////////////////
     void setLooping(bool loop);
@@ -545,7 +545,7 @@ public:
     ///
     /// \return `true` if the sound is looping, `false` otherwise
     ///
-    /// \see setLoop
+    /// \see setLooping
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isLooping() const;
