@@ -9,11 +9,10 @@
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
+#include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
-
-#include "SFML/System/IO.hpp"
 
 
 namespace
@@ -29,9 +28,9 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 
     // Display sound information
     sf::cOut() << "killdeer.wav:" << '\n'
-              << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
-              << " " << buffer.getSampleRate() << " samples / sec" << '\n'
-              << " " << buffer.getChannelCount() << " channels" << '\n';
+               << " " << buffer.getDuration().asSeconds() << " seconds" << '\n'
+               << " " << buffer.getSampleRate() << " samples / sec" << '\n'
+               << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
     sf::Sound sound(buffer);
@@ -62,9 +61,9 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 
     // Display music information
     sf::cOut() << filename << ":" << '\n'
-              << " " << music.getDuration().asSeconds() << " seconds" << '\n'
-              << " " << music.getSampleRate() << " samples / sec" << '\n'
-              << " " << music.getChannelCount() << " channels" << '\n';
+               << " " << music.getDuration().asSeconds() << " seconds" << '\n'
+               << " " << music.getSampleRate() << " samples / sec" << '\n'
+               << " " << music.getChannelCount() << " channels" << '\n';
 
     // Play it
     music.play(playbackDevice);
