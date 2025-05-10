@@ -59,6 +59,17 @@ struct MiniaudioUtils::SoundBase::Impl
 
 
 ////////////////////////////////////////////////////////////
+void MiniaudioUtils::SoundBase::transferToPlaybackDevice(PlaybackDevice&                    newPlaybackDevice,
+                                                         PlaybackDevice::ResourceEntryIndex newIndex)
+{
+    impl->playbackDevice     = &newPlaybackDevice;
+    impl->resourceEntryIndex = newIndex;
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
+}
+
+
+////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                         thePlaybackDevice,
                                      const void*                             dataSourceVTable,
                                      PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc) :
@@ -78,15 +89,7 @@ impl(thePlaybackDevice)
                                                                       [](void*           ptr,
                                                                          PlaybackDevice& newPlaybackDevice,
                                                                          PlaybackDevice::ResourceEntryIndex newIndex)
-    {
-        static_cast<SoundBase*>(ptr)->impl->playbackDevice     = &newPlaybackDevice;
-        static_cast<SoundBase*>(ptr)->impl->resourceEntryIndex = newIndex;
-
-        SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice,
-                                       SoundBase,
-                                       static_cast<SoundBase*>(ptr),
-                                       static_cast<SoundBase*>(ptr)->impl->playbackDevice);
-    });
+    { static_cast<SoundBase*>(ptr)->transferToPlaybackDevice(newPlaybackDevice, newIndex); });
 
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
 }
