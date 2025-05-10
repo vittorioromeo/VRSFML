@@ -30,9 +30,7 @@ namespace sf
 struct Sound::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl(Sound* theOwner) : owner(theOwner)
-    {
-    }
+    explicit Impl() = default;
 
     ////////////////////////////////////////////////////////////
     void initialize()
@@ -91,7 +89,7 @@ struct Sound::Impl
         impl.cursor += static_cast<base::SizeT>(sampleCount);
 
         // If we are looping and at the end of the sound, set the cursor back to the start
-        if (impl.owner->isLooping() && (impl.cursor >= buffer->getSampleCount()))
+        if (impl.mustLoop && (impl.cursor >= buffer->getSampleCount()))
             impl.cursor = 0;
 
         return MA_SUCCESS;
@@ -171,15 +169,15 @@ struct Sound::Impl
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    Sound*                                          owner;     //!< Owning `Sound` object
     base::SizeT                                     cursor{};  //!< The current playing position
     const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
     SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
+    bool                                            mustLoop{false}; //!< Whether the sound must loop or not
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer) : m_impl(base::makeUnique<Impl>(this))
+Sound::Sound(const SoundBuffer& buffer) : m_impl(base::makeUnique<Impl>())
 {
     setBuffer(buffer);
 
@@ -189,7 +187,7 @@ Sound::Sound(const SoundBuffer& buffer) : m_impl(base::makeUnique<Impl>(this))
 
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-redundant-member-init)
-Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(base::makeUnique<Impl>(this))
+Sound::Sound(const Sound& rhs) : SoundSource(rhs), m_impl(base::makeUnique<Impl>())
 {
     SFML_BASE_ASSERT(rhs.m_impl != nullptr);
 
@@ -246,9 +244,6 @@ Sound::Sound(Sound&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
         m_impl->buffer->attachSound(this);
     }
 
-    // Update self-referential owner pointer.
-    m_impl->owner = this;
-
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
 }
 
@@ -270,9 +265,6 @@ Sound& Sound::operator=(Sound&& rhs) noexcept
         m_impl->buffer->detachSound(&rhs);
         m_impl->buffer->attachSound(this);
     }
-
-    // Update self-referential owner pointer.
-    m_impl->owner = this;
 
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, m_impl->buffer);
     return *this;
@@ -296,6 +288,8 @@ Sound::~Sound()
 void Sound::play(PlaybackDevice& playbackDevice)
 {
     SFML_BASE_ASSERT(m_impl != nullptr);
+
+    m_impl->mustLoop = isLooping();
 
     if (!m_impl->soundBase.hasValue())
     {
@@ -453,6 +447,16 @@ Sound::Status Sound::getStatus() const
     SFML_BASE_ASSERT(m_impl != nullptr);
 
     return m_impl->status;
+}
+
+
+////////////////////////////////////////////////////////////
+void Sound::setLooping(const bool loop)
+{
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
+    m_impl->mustLoop = loop;
+    SoundSource::setLooping(loop);
 }
 
 
