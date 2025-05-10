@@ -474,6 +474,19 @@ void Sound::detachBuffer()
 
 
 ////////////////////////////////////////////////////////////
+void Sound::detachBufferWithoutSignalling()
+{
+    SFML_BASE_ASSERT(m_impl != nullptr);
+
+    // First stop the sound in case it is playing
+    stop();
+
+    // Detach the buffer without signalling the sound buffer
+    m_impl->buffer = nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
 void* Sound::getSound() const
 {
     SFML_BASE_ASSERT(m_impl != nullptr);

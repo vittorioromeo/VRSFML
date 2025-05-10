@@ -214,12 +214,12 @@ VertexBuffer& VertexBuffer::operator=(const VertexBuffer& rhs)
 
 
 ////////////////////////////////////////////////////////////
-void VertexBuffer::swap(VertexBuffer& right) noexcept
+void VertexBuffer::swap(VertexBuffer& rhs) noexcept
 {
-    std::swap(m_size, right.m_size);
-    std::swap(m_buffer, right.m_buffer);
-    std::swap(m_primitiveType, right.m_primitiveType);
-    std::swap(m_usage, right.m_usage);
+    std::swap(m_size, rhs.m_size);
+    std::swap(m_buffer, rhs.m_buffer);
+    std::swap(m_primitiveType, rhs.m_primitiveType);
+    std::swap(m_usage, rhs.m_usage);
 }
 
 

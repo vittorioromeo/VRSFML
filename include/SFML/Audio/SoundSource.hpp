@@ -568,7 +568,7 @@ public:
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    SoundSource& operator=(const SoundSource& right);
+    SoundSource& operator=(const SoundSource& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Start or resume playing the sound source

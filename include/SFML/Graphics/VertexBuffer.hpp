@@ -208,7 +208,7 @@ public:
     /// \param right Instance to swap with
     ///
     ////////////////////////////////////////////////////////////
-    void swap(VertexBuffer& right) noexcept;
+    void swap(VertexBuffer& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the vertex buffer.
