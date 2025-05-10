@@ -201,6 +201,15 @@ private:
     void detachBuffer();
 
     ////////////////////////////////////////////////////////////
+    /// \brief Forcibly detach sound from its internal buffer
+    ///
+    /// Does not signal the soundbuffer that the sound is no longer using it,
+    /// Used in the destructor of `SoundBuffer` to prevent iterator invalidation.
+    ///
+    ////////////////////////////////////////////////////////////
+    void detachBufferWithoutSignalling();
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
     ///
     /// \return The sound object

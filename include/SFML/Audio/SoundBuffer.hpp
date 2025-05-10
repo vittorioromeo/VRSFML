@@ -223,7 +223,7 @@ public:
     /// \return Reference to self
     ///
     ////////////////////////////////////////////////////////////
-    SoundBuffer& operator=(const SoundBuffer& right);
+    SoundBuffer& operator=(const SoundBuffer& rhs);
 
 private:
     friend Sound;
@@ -258,18 +258,6 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<SoundBuffer> initialize(InputSoundFile& file);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Update the internal buffer with the cached audio samples
-    ///
-    /// \param channelCount Number of channels
-    /// \param sampleRate   Sample rate (number of samples per second)
-    /// \param channelMap   Map of position in sample frame to sound channel
-    ///
-    /// \return `true` on success, `false` if any error happened
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool update(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
     /// \brief Add a sound to the list of sounds that use this buffer

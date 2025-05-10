@@ -387,18 +387,17 @@ Shader::Shader(Shader&& source) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-Shader& Shader::operator=(Shader&& right) noexcept
+Shader& Shader::operator=(Shader&& rhs) noexcept
 {
-    // Make sure we aren't moving ourselves.
-    if (&right == this)
+    if (&rhs == this)
         return *this;
 
     destroyProgramIfNeeded(m_impl->shaderProgram);
 
-    // Move the contents of right.
-    m_impl->shaderProgram  = base::exchange(right.m_impl->shaderProgram, 0u);
-    m_impl->currentTexture = base::exchange(right.m_impl->currentTexture, -1);
-    m_impl->textures       = SFML_BASE_MOVE(right.m_impl->textures);
+    // Move the contents of rhs.
+    m_impl->shaderProgram  = base::exchange(rhs.m_impl->shaderProgram, 0u);
+    m_impl->currentTexture = base::exchange(rhs.m_impl->currentTexture, -1);
+    m_impl->textures       = SFML_BASE_MOVE(rhs.m_impl->textures);
 
     return *this;
 }

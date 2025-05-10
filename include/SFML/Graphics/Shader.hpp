@@ -111,7 +111,7 @@ public:
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    Shader& operator=(Shader&& right) noexcept;
+    Shader& operator=(Shader&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

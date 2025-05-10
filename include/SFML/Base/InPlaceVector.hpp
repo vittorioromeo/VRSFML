@@ -172,7 +172,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(const SizeT targetCapacity)
+    [[gnu::always_inline]] void reserve([[maybe_unused]] const SizeT targetCapacity)
     {
         SFML_BASE_ASSERT(targetCapacity <= N);
         // no-op, just for compatibility
@@ -180,7 +180,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserveMore(const SizeT n)
+    [[gnu::always_inline]] void reserveMore([[maybe_unused]] const SizeT n)
     {
         SFML_BASE_ASSERT(m_size + n <= N);
         // no-op, just for compatibility

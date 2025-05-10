@@ -121,24 +121,23 @@ Texture::~Texture()
 
 
 ////////////////////////////////////////////////////////////
-Texture::Texture(Texture&& right) noexcept :
-m_size(base::exchange(right.m_size, {})),
-m_texture(base::exchange(right.m_texture, 0u)),
-m_isSmooth(base::exchange(right.m_isSmooth, false)),
-m_sRgb(base::exchange(right.m_sRgb, false)),
-m_wrapMode(base::exchange(right.m_wrapMode, TextureWrapMode::Clamp)),
-m_fboAttachment(base::exchange(right.m_fboAttachment, false)),
-m_hasMipmap(base::exchange(right.m_hasMipmap, false)),
-m_cacheId(base::exchange(right.m_cacheId, 0u))
+Texture::Texture(Texture&& rhs) noexcept :
+m_size(base::exchange(rhs.m_size, {})),
+m_texture(base::exchange(rhs.m_texture, 0u)),
+m_isSmooth(base::exchange(rhs.m_isSmooth, false)),
+m_sRgb(base::exchange(rhs.m_sRgb, false)),
+m_wrapMode(base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
+m_fboAttachment(base::exchange(rhs.m_fboAttachment, false)),
+m_hasMipmap(base::exchange(rhs.m_hasMipmap, false)),
+m_cacheId(base::exchange(rhs.m_cacheId, 0u))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-Texture& Texture::operator=(Texture&& right) noexcept
+Texture& Texture::operator=(Texture&& rhs) noexcept
 {
-    // Catch self-moving.
-    if (&right == this)
+    if (&rhs == this)
         return *this;
 
     // Destroy the OpenGL texture
@@ -151,14 +150,14 @@ Texture& Texture::operator=(Texture&& right) noexcept
     }
 
     // Move old to new.
-    m_size          = base::exchange(right.m_size, {});
-    m_texture       = base::exchange(right.m_texture, 0u);
-    m_isSmooth      = base::exchange(right.m_isSmooth, false);
-    m_sRgb          = base::exchange(right.m_sRgb, false);
-    m_wrapMode      = base::exchange(right.m_wrapMode, TextureWrapMode::Clamp);
-    m_fboAttachment = base::exchange(right.m_fboAttachment, false);
-    m_hasMipmap     = base::exchange(right.m_hasMipmap, false);
-    m_cacheId       = base::exchange(right.m_cacheId, 0u);
+    m_size          = base::exchange(rhs.m_size, {});
+    m_texture       = base::exchange(rhs.m_texture, 0u);
+    m_isSmooth      = base::exchange(rhs.m_isSmooth, false);
+    m_sRgb          = base::exchange(rhs.m_sRgb, false);
+    m_wrapMode      = base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp);
+    m_fboAttachment = base::exchange(rhs.m_fboAttachment, false);
+    m_hasMipmap     = base::exchange(rhs.m_hasMipmap, false);
+    m_cacheId       = base::exchange(rhs.m_cacheId, 0u);
 
     return *this;
 }
@@ -753,9 +752,9 @@ unsigned int Texture::getMaximumSize()
 
 
 ////////////////////////////////////////////////////////////
-Texture& Texture::operator=(const Texture& right)
+Texture& Texture::operator=(const Texture& rhs)
 {
-    Texture temp(right);
+    Texture temp(rhs);
 
     swap(temp);
 
@@ -764,16 +763,16 @@ Texture& Texture::operator=(const Texture& right)
 
 
 ////////////////////////////////////////////////////////////
-void Texture::swap(Texture& right) noexcept
+void Texture::swap(Texture& rhs) noexcept
 {
-    std::swap(m_size, right.m_size);
-    std::swap(m_texture, right.m_texture);
-    std::swap(m_isSmooth, right.m_isSmooth);
-    std::swap(m_sRgb, right.m_sRgb);
-    std::swap(m_wrapMode, right.m_wrapMode);
-    std::swap(m_fboAttachment, right.m_fboAttachment);
-    std::swap(m_hasMipmap, right.m_hasMipmap);
-    std::swap(m_cacheId, right.m_cacheId);
+    std::swap(m_size, rhs.m_size);
+    std::swap(m_texture, rhs.m_texture);
+    std::swap(m_isSmooth, rhs.m_isSmooth);
+    std::swap(m_sRgb, rhs.m_sRgb);
+    std::swap(m_wrapMode, rhs.m_wrapMode);
+    std::swap(m_fboAttachment, rhs.m_fboAttachment);
+    std::swap(m_hasMipmap, rhs.m_hasMipmap);
+    std::swap(m_cacheId, rhs.m_cacheId);
 }
 
 
