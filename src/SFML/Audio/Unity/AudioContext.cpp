@@ -87,29 +87,6 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
     return true;
 }
 
-
-////////////////////////////////////////////////////////////
-template <typename F>
-[[nodiscard]] bool forAllMADeviceInfos(ma_context& maContext, F&& func)
-{
-    sf::base::Vector<ma_device_info> maDeviceInfoVector; // Use a single local variable for NRVO
-
-    ma_device_info* maDeviceInfosPtr{};
-    ma_uint32       maDeviceInfoCount{};
-
-    // Get the playback devices
-    if (const ma_result result = ma_context_get_devices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount, nullptr, nullptr);
-        result != MA_SUCCESS)
-        return sf::priv::MiniaudioUtils::fail("get audio playback devices", result);
-
-    maDeviceInfoVector.reserve(maDeviceInfoCount);
-
-    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
-        func(maDeviceInfosPtr[i]);
-
-    return true;
-}
-
 } // namespace
 
 

@@ -9,9 +9,9 @@
 
 #include "SFML/Audio/SoundChannel.hpp"
 
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/InitializerList.hpp" // used
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
 
 
 namespace sf
@@ -99,7 +99,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    base::Vector<SoundChannel> m_channels;
+    base::InPlaceVector<SoundChannel, SoundChannelCount> m_channels{};
 };
 
 } // namespace sf
