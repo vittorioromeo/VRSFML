@@ -15,6 +15,7 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtins/OffsetOf.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/MinMax.hpp"
 
@@ -23,29 +24,83 @@
 
 namespace sf::priv
 {
+////////////////////////////////////////////////////////////
 struct MiniaudioUtils::SoundBase::Impl
 {
+    ////////////////////////////////////////////////////////////
+    struct EffectNode
+    {
+        ma_node_base base{};
+        ma_uint32    channelCount{};
+    };
+
+    ////////////////////////////////////////////////////////////
     explicit Impl(PlaybackDevice& thePlaybackDevice) :
     dataSourceBase{}, // must be first member!
     playbackDevice(&thePlaybackDevice)
     {
     }
 
-    struct EffectNode
+    ////////////////////////////////////////////////////////////
+    static void nodeOnProcess(ma_node* const      node,
+                              const float** const framesIn,
+                              ma_uint32* const    frameCountIn,
+                              float** const       framesOut,
+                              ma_uint32* const    frameCountOut)
     {
-        ma_node_base base{};
-        SoundBase*   impl{};
-        ma_uint32    channelCount{};
+        Impl& impl = *(reinterpret_cast<Impl*>(static_cast<char*>(node) - SFML_BASE_OFFSETOF(Impl, effectNode)));
+
+        // Assuming that `onProcess` is never called after the destructor of `SoundBase` is finished
+        SFML_BASE_ASSERT(!impl.effectNodeUninitialized);
+        impl.processEffect(framesIn, *frameCountIn, framesOut, *frameCountOut);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void processEffect(const float** const framesIn, base::U32& frameCountIn, float** const framesOut, base::U32& frameCountOut) const
+    {
+        // If a processor is set, call it
+        if (effectProcessor)
+        {
+            if (!framesIn)
+                frameCountIn = 0;
+
+            effectProcessor(framesIn ? framesIn[0] : nullptr, frameCountIn, framesOut[0], frameCountOut, effectNode.channelCount);
+            return;
+        }
+
+        // Otherwise just pass the data through 1:1
+        if (framesIn == nullptr)
+        {
+            frameCountIn  = 0;
+            frameCountOut = 0;
+            return;
+        }
+
+        const auto toProcess = base::min(frameCountIn, frameCountOut);
+        SFML_BASE_MEMCPY(framesOut[0], framesIn[0], toProcess * effectNode.channelCount * sizeof(float));
+        frameCountIn  = toProcess;
+        frameCountOut = toProcess;
+    }
+
+    ////////////////////////////////////////////////////////////
+    static inline constexpr ma_node_vtable effectNodeVTable{
+        .onProcess                    = &nodeOnProcess,
+        .onGetRequiredInputFrameCount = nullptr,
+        .inputBusCount                = 1,
+        .outputBusCount               = 1,
+        .flags                        = MA_NODE_FLAG_CONTINUOUS_PROCESSING | MA_NODE_FLAG_ALLOW_NULL_INPUT,
     };
 
+    ////////////////////////////////////////////////////////////
     ma_data_source_base dataSourceBase{}; //!< The struct that makes this object a miniaudio data source (must be first member)
 
     PlaybackDevice* playbackDevice;
 
-    ma_node_vtable effectNodeVTable{}; //!< Vtable of the effect node
-    EffectNode     effectNode;         //!< The engine node that performs effect processing
+    EffectNode effectNode; //!< The engine node that performs effect processing
+
     base::InPlaceVector<ma_channel, MA_CHANNEL_POSITION_COUNT>
-                    soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
+        soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
+
     ma_sound        sound{};         //!< The sound
     EffectProcessor effectProcessor; //!< The effect processor
 
@@ -59,20 +114,19 @@ struct MiniaudioUtils::SoundBase::Impl
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::transferToPlaybackDevice(PlaybackDevice&                    newPlaybackDevice,
-                                                         PlaybackDevice::ResourceEntryIndex newIndex)
+void MiniaudioUtils::SoundBase::transferToPlaybackDevice(PlaybackDevice&                          newPlaybackDevice,
+                                                         const PlaybackDevice::ResourceEntryIndex newIndex)
 {
     impl->playbackDevice     = &newPlaybackDevice;
     impl->resourceEntryIndex = newIndex;
-
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
 }
 
 
 ////////////////////////////////////////////////////////////
-MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                         thePlaybackDevice,
-                                     const void*                             dataSourceVTable,
-                                     PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc) :
+MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                               thePlaybackDevice,
+                                     const void* const                             dataSourceVTable,
+                                     const PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc) :
 impl(thePlaybackDevice)
 {
     // Set this object up as a miniaudio data source
@@ -116,9 +170,7 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     auto* engine = static_cast<ma_engine*>(impl->playbackDevice->getMAEngine());
 
     // Initialize the sound
-    ma_sound_config soundConfig;
-
-    soundConfig                      = ma_sound_config_init();
+    ma_sound_config soundConfig      = ma_sound_config_init();
     soundConfig.pDataSource          = this;
     soundConfig.pEndCallbackUserData = this;
     soundConfig.endCallback          = endCallback;
@@ -127,31 +179,17 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
         return fail("initialize sound", result);
 
     // Initialize the custom effect node
-    impl->effectNodeVTable.onProcess =
-        [](ma_node* node, const float** framesIn, ma_uint32* frameCountIn, float** framesOut, ma_uint32* frameCountOut)
-    {
-        // Assuming that `onProcess` is never called after the destructor of `SoundBase` is finished
-        SFML_BASE_ASSERT(!static_cast<Impl::EffectNode*>(node)->impl->impl->effectNodeUninitialized);
+    const auto nodeChannelCount = ma_engine_get_channels(engine);
 
-        static_cast<Impl::EffectNode*>(node)->impl->processEffect(framesIn, *frameCountIn, framesOut, *frameCountOut);
-    };
-
-    impl->effectNodeVTable.onGetRequiredInputFrameCount = nullptr;
-    impl->effectNodeVTable.inputBusCount                = 1;
-    impl->effectNodeVTable.outputBusCount               = 1;
-    impl->effectNodeVTable.flags = MA_NODE_FLAG_CONTINUOUS_PROCESSING | MA_NODE_FLAG_ALLOW_NULL_INPUT;
-
-    const auto     nodeChannelCount = ma_engine_get_channels(engine);
-    ma_node_config nodeConfig       = ma_node_config_init();
-    nodeConfig.vtable               = &impl->effectNodeVTable;
-    nodeConfig.pInputChannels       = &nodeChannelCount;
-    nodeConfig.pOutputChannels      = &nodeChannelCount;
+    ma_node_config nodeConfig  = ma_node_config_init();
+    nodeConfig.vtable          = &Impl::effectNodeVTable;
+    nodeConfig.pInputChannels  = &nodeChannelCount;
+    nodeConfig.pOutputChannels = &nodeChannelCount;
 
     if (const ma_result result = ma_node_init(ma_engine_get_node_graph(engine), &nodeConfig, nullptr, &impl->effectNode);
         result != MA_SUCCESS)
         return fail("initialize effect node", result);
 
-    impl->effectNode.impl         = this;
     impl->effectNode.channelCount = nodeChannelCount;
 
     // Route the sound through the effect node depending on whether an effect processor is set
@@ -173,42 +211,7 @@ void MiniaudioUtils::SoundBase::deinitialize()
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::processEffect(const float** framesIn,
-                                              base::U32&    frameCountIn,
-                                              float**       framesOut,
-                                              base::U32&    frameCountOut) const
-{
-    // If a processor is set, call it
-    if (impl->effectProcessor)
-    {
-        if (!framesIn)
-            frameCountIn = 0;
-
-        impl->effectProcessor(framesIn ? framesIn[0] : nullptr,
-                              frameCountIn,
-                              framesOut[0],
-                              frameCountOut,
-                              impl->effectNode.channelCount);
-        return;
-    }
-
-    // Otherwise just pass the data through 1:1
-    if (framesIn == nullptr)
-    {
-        frameCountIn  = 0;
-        frameCountOut = 0;
-        return;
-    }
-
-    const auto toProcess = base::min(frameCountIn, frameCountOut);
-    SFML_BASE_MEMCPY(framesOut[0], framesIn[0], toProcess * impl->effectNode.channelCount * sizeof(float));
-    frameCountIn  = toProcess;
-    frameCountOut = toProcess;
-}
-
-
-////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::connectEffect(bool connect)
+bool MiniaudioUtils::SoundBase::connectEffect(bool connect)
 {
     auto* engine = static_cast<ma_engine*>(impl->playbackDevice->getMAEngine());
 
@@ -217,19 +220,13 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
         // Attach the custom effect node output to our engine endpoint
         if (const ma_result result = ma_node_attach_output_bus(&impl->effectNode, 0, ma_engine_get_endpoint(engine), 0);
             result != MA_SUCCESS)
-        {
-            fail("attach effect node output to endpoint", result);
-            return;
-        }
+            return fail("attach effect node output to endpoint", result);
     }
     else
     {
         // Detach the custom effect node output from our engine endpoint
         if (const ma_result result = ma_node_detach_output_bus(&impl->effectNode, 0); result != MA_SUCCESS)
-        {
-            fail("detach effect node output from endpoint", result);
-            return;
-        }
+            return fail("detach effect node output from endpoint", result);
     }
 
     // Attach the sound output to the custom effect node or the engine endpoint
@@ -238,10 +235,9 @@ void MiniaudioUtils::SoundBase::connectEffect(bool connect)
                                                            connect ? &impl->effectNode : ma_engine_get_endpoint(engine),
                                                            0);
         result != MA_SUCCESS)
-    {
-        fail("attach sound node output to effect node", result);
-        return;
-    }
+        return fail("attach sound node output to effect node", result);
+
+    return true;
 }
 
 
@@ -260,7 +256,7 @@ void MiniaudioUtils::SoundBase::clearSoundChannelMap()
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::addToSoundChannelMap(base::U8 maChannel)
+void MiniaudioUtils::SoundBase::addToSoundChannelMap(const base::U8 maChannel)
 {
     impl->soundChannelMap.pushBack(maChannel);
 }
@@ -282,7 +278,7 @@ void MiniaudioUtils::SoundBase::setAndConnectEffectProcessor(EffectProcessor eff
 
 
 ////////////////////////////////////////////////////////////
-base::U8 MiniaudioUtils::soundChannelToMiniaudioChannel(SoundChannel soundChannel)
+base::U8 MiniaudioUtils::soundChannelToMiniaudioChannel(const SoundChannel soundChannel)
 {
     switch (soundChannel)
     {
@@ -316,7 +312,7 @@ base::U8 MiniaudioUtils::soundChannelToMiniaudioChannel(SoundChannel soundChanne
 
 
 ////////////////////////////////////////////////////////////
-SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(base::U8 soundChannel)
+SoundChannel MiniaudioUtils::miniaudioChannelToSoundChannel(const base::U8 soundChannel)
 {
     const ma_channel maChannel{soundChannel};
 
@@ -367,7 +363,7 @@ Time MiniaudioUtils::getPlayingOffset(ma_sound& sound)
 
 
 ////////////////////////////////////////////////////////////
-base::U64 MiniaudioUtils::getFrameIndex(ma_sound& sound, Time timeOffset)
+base::U64 MiniaudioUtils::getFrameIndex(ma_sound& sound, const Time timeOffset)
 {
     ma_uint32 sampleRate{};
 
@@ -385,7 +381,7 @@ base::U64 MiniaudioUtils::getFrameIndex(ma_sound& sound, Time timeOffset)
 
 
 ////////////////////////////////////////////////////////////
-bool MiniaudioUtils::fail(const char* what, int maResult)
+bool MiniaudioUtils::fail(const char* const what, const int maResult)
 {
     err() << "Failed to " << what << ": " << ma_result_description(static_cast<ma_result>(maResult));
     return false;
