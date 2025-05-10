@@ -46,8 +46,7 @@ struct SoundBase
     [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
     void               deinitialize();
 
-    void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut) const;
-    void connectEffect(bool connect);
+    bool connectEffect(bool connect);
 
     ma_sound& getSound();
 
