@@ -1,6 +1,7 @@
 #pragma once
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -15,7 +16,7 @@ namespace sf
 /// incorrectly when using spatialization.
 ///
 ////////////////////////////////////////////////////////////
-enum class [[nodiscard]] SoundChannel
+enum class [[nodiscard]] SoundChannel : unsigned char
 {
     Unspecified,
     Mono,
@@ -37,6 +38,13 @@ enum class [[nodiscard]] SoundChannel
     TopBackLeft,
     TopBackRight,
     TopBackCenter
+};
+
+////////////////////////////////////////////////////////////
+enum : unsigned int
+{
+    /// Total number of possible sound channels, including unspecified
+    SoundChannelCount = static_cast<unsigned int>(SoundChannel::TopBackCenter) + 1u
 };
 
 } // namespace sf
