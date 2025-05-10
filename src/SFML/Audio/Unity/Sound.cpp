@@ -53,7 +53,7 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    static void onEnd(void* userData, ma_sound* soundPtr)
+    static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
         auto& impl  = *static_cast<Impl*>(userData);
         impl.status = Status::Stopped;
@@ -64,36 +64,55 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    [[nodiscard]] static ma_result read(ma_data_source* const dataSource,
+                                        void* const           framesOut,
+                                        const ma_uint64       frameCount,
+                                        ma_uint64* const      framesRead)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
 
+        *framesRead = 0u;
+
         if (buffer == nullptr)
             return MA_NO_DATA_AVAILABLE;
 
+        const ma_uint32 channelCount = buffer->getChannelCount();
+        SFML_BASE_ASSERT(channelCount > 0u);
+
+        const ma_uint64 totalBufferSamples = buffer->getSampleCount();
+        const ma_uint64 totalBufferFrames  = totalBufferSamples / channelCount;
+
+        // If cursor is already at or beyond the end of the buffer, either loop or exit
+        if (impl.cursor >= totalBufferFrames)
+        {
+            if (impl.mustLoop)
+                impl.cursor = 0u;
+            else
+                return MA_SUCCESS;
+        }
+
         // Determine how many frames we can read
-        *framesRead = base::min(frameCount,
-                                static_cast<ma_uint64>((buffer->getSampleCount() - impl.cursor) / buffer->getChannelCount()));
+        *framesRead = base::min(frameCount, static_cast<ma_uint64>(totalBufferFrames - impl.cursor));
 
         // Copy the samples to the output
         const auto sampleCount = *framesRead * buffer->getChannelCount();
 
         SFML_BASE_MEMCPY(framesOut,
-                         buffer->getSamples() + impl.cursor,
+                         buffer->getSamples() + impl.cursor * buffer->getChannelCount(),
                          static_cast<base::SizeT>(sampleCount) * sizeof(buffer->getSamples()[0]));
 
-        impl.cursor += static_cast<base::SizeT>(sampleCount);
+        impl.cursor += *framesRead;
 
         // If we are looping and at the end of the sound, set the cursor back to the start
-        if (impl.mustLoop && (impl.cursor >= buffer->getSampleCount()))
-            impl.cursor = 0;
+        if (impl.mustLoop && impl.cursor >= totalBufferFrames)
+            impl.cursor = 0u;
 
         return MA_SUCCESS;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    [[nodiscard]] static ma_result seek(ma_data_source* const dataSource, const ma_uint64 frameIndex)
     {
         auto&       impl   = *static_cast<Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -101,19 +120,19 @@ struct Sound::Impl
         if (buffer == nullptr)
             return MA_NO_DATA_AVAILABLE;
 
-        impl.cursor = static_cast<base::SizeT>(frameIndex * buffer->getChannelCount());
+        impl.cursor = static_cast<base::SizeT>(frameIndex);
 
         return MA_SUCCESS;
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static ma_result getFormat(
-        ma_data_source* dataSource,
-        ma_format*      format,
-        ma_uint32*      channels,
-        ma_uint32*      sampleRate,
-        ma_channel*,
-        base::SizeT)
+        ma_data_source* const dataSource,
+        ma_format* const      format,
+        ma_uint32* const      channels,
+        ma_uint32* const      sampleRate,
+        ma_channel* const,
+        const base::SizeT)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -127,7 +146,7 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    [[nodiscard]] static ma_result getCursor(ma_data_source* const dataSource, ma_uint64* const cursor)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -135,13 +154,13 @@ struct Sound::Impl
         if (buffer == nullptr)
             return MA_NO_DATA_AVAILABLE;
 
-        *cursor = impl.cursor / buffer->getChannelCount();
+        *cursor = impl.cursor;
 
         return MA_SUCCESS;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result getLength(ma_data_source* dataSource, ma_uint64* length)
+    [[nodiscard]] static ma_result getLength(ma_data_source* const dataSource, ma_uint64* const length)
     {
         const auto& impl   = *static_cast<const Impl*>(dataSource);
         const auto* buffer = impl.buffer;
@@ -155,7 +174,7 @@ struct Sound::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    [[nodiscard]] static ma_result setLooping(ma_data_source* const /* dataSource */, const ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }
@@ -166,7 +185,7 @@ struct Sound::Impl
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    base::SizeT                                     cursor{};  //!< The current playing position
+    base::SizeT                                     cursor{};  //!< The current playing position (in frames)
     const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
     SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
     bool                                            mustLoop{false}; //!< Whether the sound must loop or not
@@ -385,7 +404,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
 
 
 ////////////////////////////////////////////////////////////
-void Sound::setPlayingOffset(Time playingOffset)
+void Sound::setPlayingOffset(const Time playingOffset)
 {
     SFML_BASE_ASSERT(m_impl != nullptr);
 
@@ -399,8 +418,7 @@ void Sound::setPlayingOffset(Time playingOffset)
 
     const auto frameIndex = ma_uint64{priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->getSound(), playingOffset)};
 
-    if (m_impl->buffer != nullptr)
-        m_impl->cursor = static_cast<base::SizeT>(frameIndex * m_impl->buffer->getChannelCount());
+    m_impl->cursor = static_cast<base::SizeT>(frameIndex);
 }
 
 
