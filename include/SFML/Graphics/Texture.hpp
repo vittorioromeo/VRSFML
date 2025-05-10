@@ -85,13 +85,13 @@ public:
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    Texture(Texture&&) noexcept;
+    Texture(Texture&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    Texture& operator=(Texture&&) noexcept;
+    Texture& operator=(Texture&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Create the texture
@@ -419,7 +419,7 @@ public:
     /// \param right Instance to swap with
     ///
     ////////////////////////////////////////////////////////////
-    void swap(Texture& right) noexcept;
+    void swap(Texture& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the underlying OpenGL handle of the texture.

@@ -377,27 +377,27 @@ Time SoundSource::getPlayingOffset() const
 
 
 ////////////////////////////////////////////////////////////
-SoundSource& SoundSource::operator=(const SoundSource& right)
+SoundSource& SoundSource::operator=(const SoundSource& rhs)
 {
     // Assign the sound attributes
-    setPitch(right.getPitch());
-    setPan(right.getPan());
-    setVolume(right.getVolume());
-    setSpatializationEnabled(right.isSpatializationEnabled());
-    setPosition(right.getPosition());
-    setDirection(right.getDirection());
-    setCone(right.getCone());
-    setVelocity(right.getVelocity());
-    setDopplerFactor(right.getDopplerFactor());
-    setRelativeToListener(right.isRelativeToListener());
-    setMinDistance(right.getMinDistance());
-    setMaxDistance(right.getMaxDistance());
-    setMinGain(right.getMinGain());
-    setMaxGain(right.getMaxGain());
-    setAttenuation(right.getAttenuation());
-    setEffectProcessor(right.getEffectProcessor());
-    setLooping(right.isLooping());
-    setPlayingOffset(right.getPlayingOffset());
+    setPitch(rhs.getPitch());
+    setPan(rhs.getPan());
+    setVolume(rhs.getVolume());
+    setSpatializationEnabled(rhs.isSpatializationEnabled());
+    setPosition(rhs.getPosition());
+    setDirection(rhs.getDirection());
+    setCone(rhs.getCone());
+    setVelocity(rhs.getVelocity());
+    setDopplerFactor(rhs.getDopplerFactor());
+    setRelativeToListener(rhs.isRelativeToListener());
+    setMinDistance(rhs.getMinDistance());
+    setMaxDistance(rhs.getMaxDistance());
+    setMinGain(rhs.getMinGain());
+    setMaxGain(rhs.getMaxGain());
+    setAttenuation(rhs.getAttenuation());
+    setEffectProcessor(rhs.getEffectProcessor());
+    setLooping(rhs.isLooping());
+    setPlayingOffset(rhs.getPlayingOffset());
 
     return *this;
 }
