@@ -1,0 +1,386 @@
+
+    #include <algorithm> // For std::generate_n
+    #include <chrono>
+    #include <iostream>
+    #include <numeric> // For std::iota and std::accumulate
+    #include <random>  // For random numbers
+    #include <vector>  // For std::vector as a baseline, and for std::accumulate
+
+    // Assuming SFML base headers are accessible
+    // You might need to adjust paths or provide the content if compiling standalone
+    #include "SFML/Base/InPlaceVector.hpp"
+    #include "SFML/Base/Vector.hpp"
+// VectorUtils.hpp is included by Vector.hpp and InPlaceVector.hpp
+
+// --- Dummy Obj and counters (not strictly needed for int, but keeps structure if you change type) ---
+namespace
+{
+int defaultCtorCount_dummy = 0;
+// ... other counters if testing non-trivial types ...
+void resetCounters_dummy()
+{
+    defaultCtorCount_dummy = 0; /* ... */
+}
+struct DummyObj
+{
+    int value;
+    DummyObj() : value(0)
+    {
+        ++defaultCtorCount_dummy;
+    }
+    DummyObj(int v) : value(v)
+    {
+    }
+    // Add other special members if TItem is complex and you want to track them
+};
+} // namespace
+
+
+// --- Benchmark Parameters ---
+const size_t BENCH_N_CAPACITY    = 1000; // Capacity N for InPlaceVector
+const size_t BENCH_ELEMENT_COUNT = 1000; // Number of elements to work with in tests
+const int    BENCH_REPETITIONS   = 100;  // Number of times to repeat each specific operation for averaging
+const int    BENCH_OUTER_LOOPS   = 5;    // Number of times to run the entire benchmark suite
+
+// Helper to prevent optimization out by "using" the value
+volatile int g_volatile_sink = 0;
+
+// --- Timer Utility ---
+template <typename Func, typename... Args>
+long long time_it_ns(Func func, Args&&... args)
+{
+    auto start = std::chrono::high_resolution_clock::now();
+    func(std::forward<Args>(args)...);
+    auto end = std::chrono::high_resolution_clock::now();
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+// --- Test Functions ---
+
+// 1. Construction (empty)
+template <typename VecType>
+void test_construction_empty(long long& total_ns)
+{
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        auto    start = std::chrono::high_resolution_clock::now();
+        VecType v;
+        g_volatile_sink += reinterpret_cast<uintptr_t>(&v) % 2; // Use the object
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    }
+}
+
+// 2. Construction (with initial size, default value)
+template <typename VecType>
+void test_construction_sized(long long& total_ns)
+{
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        auto    start = std::chrono::high_resolution_clock::now();
+        VecType v(BENCH_ELEMENT_COUNT); // Default construct elements
+        if (!v.empty())
+            g_volatile_sink += v[0];
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    }
+}
+
+// 3. push_back / emplaceBack
+template <typename VecType>
+void test_push_back(long long& total_ns, bool use_reserve_for_dynamic)
+{
+    using ItemType = typename VecType::value_type;
+
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        VecType v;
+        if constexpr (std::is_same_v<VecType, sf::base::Vector<ItemType>>)
+        {
+            if (use_reserve_for_dynamic)
+            {
+                v.reserve(BENCH_ELEMENT_COUNT);
+            }
+        }
+        auto start = std::chrono::high_resolution_clock::now();
+        for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+        {
+            if constexpr(std::is_same_v<VecType, std::vector<ItemType>>)
+            {
+                v.emplace_back(static_cast<ItemType>(j));
+            }
+            else
+            {
+                v.emplaceBack(static_cast<ItemType>(j));
+            }
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        if (!v.empty())
+            g_volatile_sink += v[0];
+    }
+}
+
+// 4. Iteration (read-only sum)
+template <typename Vec>
+void test_iteration(long long& total_ns, const Vec& v_const)
+{
+    using ItemType = typename Vec::value_type;
+    // Create a non-const copy for the timed part if needed, or operate on const.
+    // For read-only iteration, operating on const is fine.
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        ItemType sum   = 0; // Assuming ItemType is numeric or has operator+=
+        auto     start = std::chrono::high_resolution_clock::now();
+        for (const auto& item : v_const)
+        {
+            sum += item;
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        g_volatile_sink += sum;
+    }
+}
+
+// 5. operator[] access (read-only sum)
+template <typename Vec>
+void test_operator_square_bracket(long long& total_ns, const Vec& v_const)
+{
+    using ItemType = typename Vec::value_type;
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        ItemType sum   = 0;
+        auto     start = std::chrono::high_resolution_clock::now();
+        for (sf::base::SizeT j = 0; j < v_const.size(); ++j)
+        {
+            sum += v_const[j];
+        }
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        g_volatile_sink += sum;
+    }
+}
+
+// 6. erase (single element from middle)
+template <typename Vec>
+void test_erase_middle(long long& total_ns)
+{
+    using ItemType = typename Vec::value_type;
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        Vec v;
+        if constexpr (std::is_same_v<Vec, sf::base::Vector<ItemType>>)
+        {
+            v.reserve(BENCH_ELEMENT_COUNT); // Pre-reserve to avoid measuring realloc during setup
+        }
+        for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+        {
+            if constexpr(std::is_same_v<Vec, std::vector<ItemType>>)
+            {
+                v.emplace_back(static_cast<ItemType>(j));
+            }
+            else
+            {
+                v.emplaceBack(static_cast<ItemType>(j));
+            }
+        }
+        if (v.empty())
+            continue; // Should not happen if BENCH_ELEMENT_COUNT > 0
+
+        auto start = std::chrono::high_resolution_clock::now();
+        v.erase(v.begin() + v.size() / 2);
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        if (!v.empty())
+            g_volatile_sink += v[0];
+    }
+}
+
+// 7. clear
+template <typename Vec>
+void test_clear(long long& total_ns)
+{
+    using ItemType = typename Vec::value_type;
+    for (int i = 0; i < BENCH_REPETITIONS; ++i)
+    {
+        Vec v;
+        if constexpr (std::is_same_v<Vec, sf::base::Vector<ItemType>>)
+        {
+            v.reserve(BENCH_ELEMENT_COUNT);
+        }
+        for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+        {
+            if constexpr(std::is_same_v<Vec, std::vector<ItemType>>)
+            {
+                v.emplace_back(static_cast<ItemType>(j));
+            }
+            else
+            {
+                v.emplaceBack(static_cast<ItemType>(j));
+            }
+        }
+        if (v.empty())
+            continue;
+
+        auto start = std::chrono::high_resolution_clock::now();
+        v.clear();
+        auto end = std::chrono::high_resolution_clock::now();
+        total_ns += std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        g_volatile_sink += v.size(); // Use the result
+    }
+}
+
+
+// Typedef for ItemType to easily change it
+using ItemType = int;
+
+
+int main()
+{
+    std::cout << "Benchmarking with N=" << BENCH_N_CAPACITY << ", ElementCount=" << BENCH_ELEMENT_COUNT
+              << ", Repetitions=" << BENCH_REPETITIONS << ", OuterLoops=" << BENCH_OUTER_LOOPS << std::endl;
+    std::cout << "Times are average per operation in nanoseconds (ns)." << std::endl;
+    std::cout << "---" << std::endl;
+
+    for (int outer_loop = 0; outer_loop < BENCH_OUTER_LOOPS; ++outer_loop)
+    {
+        std::cout << "\n--- Outer Loop " << outer_loop + 1 << "/" << BENCH_OUTER_LOOPS << " ---" << std::endl;
+
+        long long sf_vector_time, inplace_vector_time, std_vector_time;
+
+        // --- sf::base::Vector ---
+        std::cout << "\n[sf::base::Vector<int>]" << std::endl;
+
+        sf_vector_time = 0;
+        test_construction_empty<sf::base::Vector<ItemType>>(sf_vector_time);
+        std::cout << "Construction (empty):        " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        sf_vector_time = 0;
+        test_construction_sized<sf::base::Vector<ItemType>>(sf_vector_time);
+        std::cout << "Construction (sized):        " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        sf_vector_time = 0;
+        test_push_back<sf::base::Vector<ItemType>>(sf_vector_time, false);
+        std::cout << "PushBack (no reserve):       " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        sf_vector_time = 0;
+        test_push_back<sf::base::Vector<ItemType>>(sf_vector_time, true);
+        std::cout << "PushBack (with reserve):     " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        { // Iteration and operator[] need a pre-filled vector
+            sf::base::Vector<ItemType> v_filled;
+            v_filled.reserve(BENCH_ELEMENT_COUNT);
+            for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+                v_filled.emplaceBack(static_cast<ItemType>(j));
+
+            sf_vector_time = 0;
+            test_iteration(sf_vector_time, v_filled);
+            std::cout << "Iteration (sum):             " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            sf_vector_time = 0;
+            test_operator_square_bracket(sf_vector_time, v_filled);
+            std::cout << "Operator[] (sum):          " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+        }
+
+        sf_vector_time = 0;
+        test_erase_middle<sf::base::Vector<ItemType>>(sf_vector_time);
+        std::cout << "Erase (middle):              " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        sf_vector_time = 0;
+        test_clear<sf::base::Vector<ItemType>>(sf_vector_time);
+        std::cout << "Clear:                       " << sf_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+
+        // --- sf::base::InPlaceVector ---
+        std::cout << "\n[sf::base::InPlaceVector<int, " << BENCH_N_CAPACITY << ">]" << std::endl;
+        if (BENCH_ELEMENT_COUNT > BENCH_N_CAPACITY)
+        {
+            std::cout << "Skipping InPlaceVector tests where BENCH_ELEMENT_COUNT > BENCH_N_CAPACITY" << std::endl;
+        }
+        else
+        {
+            inplace_vector_time = 0;
+            test_construction_empty<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            std::cout << "Construction (empty):        " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            inplace_vector_time = 0;
+            test_construction_sized<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            std::cout << "Construction (sized):        " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            inplace_vector_time = 0;
+            // No 'reserve' concept for InPlaceVector in the same way
+            test_push_back<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time, false);
+            std::cout << "PushBack:                    " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            {
+                sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY> ipv_filled;
+                for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+                    ipv_filled.emplaceBack(static_cast<ItemType>(j));
+
+                inplace_vector_time = 0;
+                test_iteration(inplace_vector_time, ipv_filled);
+                std::cout << "Iteration (sum):             " << inplace_vector_time / BENCH_REPETITIONS << " ns"
+                          << std::endl;
+
+                inplace_vector_time = 0;
+                test_operator_square_bracket(inplace_vector_time, ipv_filled);
+                std::cout << "Operator[] (sum):          " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+            }
+
+            inplace_vector_time = 0;
+            test_erase_middle<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            std::cout << "Erase (middle):              " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            inplace_vector_time = 0;
+            test_clear<sf::base::InPlaceVector<ItemType, BENCH_N_CAPACITY>>(inplace_vector_time);
+            std::cout << "Clear:                       " << inplace_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+        }
+
+        // --- std::vector (as baseline) ---
+        std::cout << "\n[std::vector<int>]" << std::endl;
+
+        std_vector_time = 0;
+        test_construction_empty<std::vector<ItemType>>(std_vector_time);
+        std::cout << "Construction (empty):        " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        std_vector_time = 0;
+        test_construction_sized<std::vector<ItemType>>(std_vector_time);
+        std::cout << "Construction (sized):        " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        std_vector_time = 0;
+        test_push_back<std::vector<ItemType>>(std_vector_time, false);
+        std::cout << "PushBack (no reserve):       " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        std_vector_time = 0;
+        test_push_back<std::vector<ItemType>>(std_vector_time, true);
+        std::cout << "PushBack (with reserve):     " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        {
+            std::vector<ItemType> stdv_filled;
+            stdv_filled.reserve(BENCH_ELEMENT_COUNT);
+            for (size_t j = 0; j < BENCH_ELEMENT_COUNT; ++j)
+                stdv_filled.emplace_back(static_cast<ItemType>(j));
+
+            std_vector_time = 0;
+            test_iteration(std_vector_time, stdv_filled);
+            std::cout << "Iteration (sum):             " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+            std_vector_time = 0;
+            test_operator_square_bracket(std_vector_time, stdv_filled);
+            std::cout << "Operator[] (sum):          " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+        }
+
+        std_vector_time = 0;
+        test_erase_middle<std::vector<ItemType>>(std_vector_time);
+        std::cout << "Erase (middle):              " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+
+        std_vector_time = 0;
+        test_clear<std::vector<ItemType>>(std_vector_time);
+        std::cout << "Clear:                       " << std_vector_time / BENCH_REPETITIONS << " ns" << std::endl;
+    }
+
+    // Use g_volatile_sink to ensure optimizer doesn't remove computations
+    std::cout << "\n(Volatile sink: " << g_volatile_sink << ", to prevent over-optimization)" << std::endl;
+
+    return 0;
+}
