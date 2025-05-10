@@ -37,6 +37,12 @@ struct SoundBase
 
     ~SoundBase();
 
+    SoundBase(const SoundBase&) = delete;
+    SoundBase(SoundBase&&)      = delete;
+
+    SoundBase& operator=(const SoundBase&) = delete;
+    SoundBase& operator=(SoundBase&&)      = delete;
+
     [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
     void               deinitialize();
 
