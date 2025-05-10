@@ -57,6 +57,8 @@ struct SoundBase
 
     void setAndConnectEffectProcessor(EffectProcessor effectProcessor);
 
+    void transferToPlaybackDevice(PlaybackDevice& newPlaybackDevice, PlaybackDevice::ResourceEntryIndex newIndex);
+
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
