@@ -20,11 +20,10 @@
 #include <string>
 
 #include <cstddef>
-#include <cstdint>
 
 
-constexpr std::uint8_t clientAudioData   = 1;
-constexpr std::uint8_t clientEndOfStream = 2;
+constexpr sf::base::U8 clientAudioData   = 1;
+constexpr sf::base::U8 clientEndOfStream = 2;
 
 
 ////////////////////////////////////////////////////////////
@@ -80,12 +79,12 @@ private:
     /// \see SoundRecorder::onProcessSamples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool onProcessSamples(const std::int16_t* samples, std::size_t sampleCount) override
+    [[nodiscard]] bool onProcessSamples(const sf::base::I16* samples, sf::base::SizeT sampleCount) override
     {
         // Pack the audio samples into a network packet
         sf::Packet packet;
         packet << clientAudioData;
-        packet.append(samples, sampleCount * sizeof(std::int16_t));
+        packet.append(samples, sampleCount * sizeof(sf::base::I16));
 
         // Send the audio packet to the server
         return m_socket.send(packet) == sf::Socket::Status::Done;

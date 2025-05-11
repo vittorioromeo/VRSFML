@@ -232,7 +232,7 @@ void main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         render.clear();
@@ -278,7 +278,7 @@ int main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         window.clear();
@@ -338,7 +338,7 @@ int main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         window.clear();
@@ -413,14 +413,14 @@ int main()
         renderTextures[2]{sf::RenderTexture::create(screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value(),
                           sf::RenderTexture::create(screenSize, sf::ContextSettings{0, 0, 4 /* AA level*/}).value()};
 
-    std::vector<sf::Vertex> vertexArrays[2];
+    sf::base::Vector<sf::Vertex> vertexArrays[2];
 
     while (true)
     {
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         window.clear();
@@ -514,7 +514,7 @@ int main()
         while (sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         for (int i = 0; i < 20; ++i)
@@ -546,7 +546,7 @@ int main()
         window.setTitle(oss.str());
     }
 
-    return EXIT_SUCCESS;
+    return 0;
 }
 
     #else
@@ -573,7 +573,7 @@ int main()
 
     renderTexture.clear();
 
-    for (std::size_t i = 0; i < 100'000; ++i)
+    for (sf::base::SizeT i = 0; i < 100'000; ++i)
     {
         text.setOutlineThickness(static_cast<float>(5 + (i % 2)));
         renderTexture.draw(text);

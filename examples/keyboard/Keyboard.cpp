@@ -28,21 +28,18 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Round.hpp"
+#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include "ExampleUtils.hpp"
 
-#include <cstddef>
-#include <cstdio>
 
 #ifdef SFML_SYSTEM_IOS
     #include <SFML/Main.hpp>
 #endif
-
-#include <array>
-#include <vector>
-
-#include <cassert>
-#include <cmath>
 
 
 namespace
@@ -607,21 +604,21 @@ public:
             {
                 for (const auto& [scancode, size, marginRight] : cells)
                 {
-                    assert(!scancodesInMatrix[static_cast<std::size_t>(scancode)]);
-                    scancodesInMatrix[static_cast<std::size_t>(scancode)] = true;
+                    SFML_BASE_ASSERT(!scancodesInMatrix[static_cast<sf::base::SizeT>(scancode)]);
+                    scancodesInMatrix[static_cast<sf::base::SizeT>(scancode)] = true;
                 }
             }
 
             // TODO P1: restore?
-            // assert(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
+            // SFML_BASE_ASSERT(scancodesInMatrix.size() == sf::Keyboard::ScancodeCount);
         }
 
         // Initialize keys color and label
         forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
         {
-            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+            const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
 
-            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
                 m_triangles[6u * scancodeIndex + vertexIndex]
                     .color = sf::Keyboard::delocalize(sf::Keyboard::localize(scancode)) != scancode
                                  ? sf::Color::Red
@@ -641,8 +638,8 @@ public:
                 label.setCharacterSize(label.getCharacterSize() - 2);
 
             const sf::FloatRect bounds = label.getLocalBounds();
-            label.origin               = {std::round(bounds.position.x + bounds.size.x / 2.f),
-                                          std::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
+            label.origin               = {sf::base::round(bounds.position.x + bounds.size.x / 2.f),
+                                          sf::base::round(static_cast<float>(label.getCharacterSize()) / 2.f)};
         });
     }
 
@@ -652,12 +649,12 @@ public:
         if (const auto* keyPressed = event.getIf<sf::Event::KeyPressed>())
         {
             if (keyPressed->scancode != sf::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<std::size_t>(keyPressed->scancode)] = 1.f;
+                m_moveFactors[static_cast<sf::base::SizeT>(keyPressed->scancode)] = 1.f;
         }
         else if (const auto* keyReleased = event.getIf<sf::Event::KeyReleased>())
         {
             if (keyReleased->scancode != sf::Keyboard::Scan::Unknown)
-                m_moveFactors[static_cast<std::size_t>(keyReleased->scancode)] = -1.f;
+                m_moveFactors[static_cast<sf::base::SizeT>(keyReleased->scancode)] = -1.f;
         }
     }
 
@@ -667,14 +664,14 @@ public:
         static constexpr sf::Time transitionDuration = sf::milliseconds(200);
         for (float& factor : m_moveFactors)
         {
-            const float absoluteChange = std::min(std::abs(factor), frameTime / transitionDuration);
+            const float absoluteChange = sf::base::min(sf::base::fabs(factor), frameTime / transitionDuration);
             factor += factor > 0.f ? -absoluteChange : absoluteChange;
         }
 
         // Update vertices positions from m_moveFactors and opacity from real-time keyboard state
         forEachKey([this](sf::Keyboard::Scancode scancode, const sf::FloatRect& rect)
         {
-            const auto scancodeIndex = static_cast<std::size_t>(scancode);
+            const auto scancodeIndex = static_cast<sf::base::SizeT>(scancode);
 
             static constexpr sf::Vec2f square[]{
                 {0.f, 0.f},
@@ -686,11 +683,11 @@ public:
             static constexpr unsigned int cornerIndexes[]{0u, 1u, 3u, 3u, 1u, 2u};
 
             const float     moveFactor = m_moveFactors[scancodeIndex];
-            const sf::Vec2f move(0.f, 2.f * moveFactor * (1.f - std::abs(moveFactor)) * padding);
+            const sf::Vec2f move(0.f, 2.f * moveFactor * (1.f - sf::base::fabs(moveFactor)) * padding);
 
             const bool pressed = sf::Keyboard::isKeyPressed(scancode);
 
-            for (std::size_t vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
+            for (sf::base::SizeT vertexIndex = 0u; vertexIndex < 6u; ++vertexIndex)
             {
                 sf::Vertex&                vertex = m_triangles[6u * scancodeIndex + vertexIndex];
                 const sf::Vec2f&           corner = square[cornerIndexes[vertexIndex]];
@@ -753,17 +750,17 @@ private:
 
     struct Row
     {
-        Row(std::vector<Cell> theCells, float marginBottomRatio = 0.f) :
-        cells(std::move(theCells)),
+        Row(sf::base::Vector<Cell> theCells, float marginBottomRatio = 0.f) :
+        cells(SFML_BASE_MOVE(theCells)),
         marginBottom(marginBottomRatio * keySize)
         {
         }
 
-        std::vector<Cell> cells;
-        float             marginBottom;
+        sf::base::Vector<Cell> cells;
+        float                  marginBottom;
     };
 
-    const std::array<Row, 9> m_matrix{{
+    const sf::base::Array<Row, 9> m_matrix{{
         {{{sf::Keyboard::Scan::Escape, 1},
           {sf::Keyboard::Scan::F1},
           {sf::Keyboard::Scan::F2},
@@ -911,9 +908,9 @@ private:
           {sf::Keyboard::Scan::LaunchMediaSelect}}},
     }};
 
-    std::vector<sf::Vertex>                        m_triangles{sf::Keyboard::ScancodeCount * 6};
-    std::vector<sf::Text>                          m_labels;
-    std::array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
+    sf::base::Vector<sf::Vertex>                        m_triangles{sf::Keyboard::ScancodeCount * 6};
+    sf::base::Vector<sf::Text>                          m_labels;
+    sf::base::Array<float, sf::Keyboard::ScancodeCount> m_moveFactors{};
 };
 
 
@@ -936,7 +933,7 @@ public:
     void update(sf::Time frameTime)
     {
         const float ratio = m_remaining / duration;
-        const float alpha = std::max(0.f, ratio * (2.f - ratio)) * 0.5f;
+        const float alpha = sf::base::max(0.f, ratio * (2.f - ratio)) * 0.5f;
 
         sf::Color color = getOutlineColor();
         color.a         = static_cast<sf::base::U8>(255 * alpha);
@@ -1145,7 +1142,7 @@ int main()
         textEnteredText.update(frameTime);
         {
             sf::String text = "isKeyPressed(sf::Keyboard::Key)\n\n";
-            for (std::size_t keyIndex = 0u; keyIndex < sf::Keyboard::KeyCount; ++keyIndex)
+            for (sf::base::SizeT keyIndex = 0u; keyIndex < sf::Keyboard::KeyCount; ++keyIndex)
             {
                 const auto key = static_cast<sf::Keyboard::Key>(keyIndex);
                 if (sf::Keyboard::isKeyPressed(key))
@@ -1167,5 +1164,5 @@ int main()
         window.display();
     }
 
-    return EXIT_SUCCESS;
+    return 0;
 }

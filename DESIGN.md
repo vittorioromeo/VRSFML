@@ -34,7 +34,7 @@
             imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
         }
 
         // Updates the ImGui state and sets `window` as the active ImGui window
@@ -293,7 +293,7 @@
         {
             while (const sf::base::Optional event = window.pollEvent())
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                    return EXIT_SUCCESS; // `window.close()` does not exist anymore, just return
+                    return 0; // `window.close()` does not exist anymore, just return
         }
     }
 

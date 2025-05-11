@@ -1,3 +1,6 @@
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 #include "Aliases.hpp"
 #include "BubbleIdleMain.hpp"
 #include "BubbleType.hpp"
@@ -49,13 +52,13 @@
 #include "SFML/Base/ScopeGuard.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
 
 #include <string>
-#include <vector>
 
 #include <cmath>
 #include <cstdio>
@@ -414,9 +417,9 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     auto* animState = static_cast<AnimState*>(storage->GetVoidPtr(animStateId));
     if (animState == nullptr)
     {
-        static std::vector<sf::base::UniquePtr<AnimState>> animStateStorage;
+        static sf::base::Vector<sf::base::UniquePtr<AnimState>> animStateStorage;
 
-        animState = animStateStorage.emplace_back(sf::base::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
+        animState = animStateStorage.emplaceBack(sf::base::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
         storage->SetVoidPtr(animStateId, animState);
     }
 
@@ -652,7 +655,7 @@ bool Main::makePSVButtonExByCurrency(
 
         if (&availability == &pt->prestigePoints && times == 1u)
         {
-            undoPPPurchase.emplace_back([&psv, &availability, times, cost]
+            undoPPPurchase.emplaceBack([&psv, &availability, times, cost]
             {
                 psv.nPurchases -= times;
                 availability += cost;
@@ -707,7 +710,7 @@ bool Main::uiCheckPurchasability(const char* label, const bool disabled)
 
         if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
         {
-            purchaseUnlockedEffects.push_back({
+            purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
                 .countdown      = Countdown{.value = 1000.f},
                 .arrowCountdown = Countdown{.value = 2000.f},
@@ -759,7 +762,7 @@ bool Main::makePurchasableButtonOneTimeByCurrency(
 
         if (&availability == &pt->prestigePoints && cost > 0u)
         {
-            undoPPPurchase.emplace_back([&availability, &done, cost]
+            undoPPPurchase.emplaceBack([&availability, &done, cost]
             {
                 done = false;
                 availability += cost;
@@ -1431,7 +1434,7 @@ void Main::uiDpsMeter()
 
     uiSetFontScale(0.75f);
 
-    static thread_local std::vector<float> sampleBuffer(60);
+    static thread_local sf::base::Vector<float> sampleBuffer(60);
     samplerMoneyPerSecond.writeSamplesInOrder(sampleBuffer.data());
 
     const auto average = static_cast<MoneyType>(samplerMoneyPerSecond.getAverage());
@@ -1703,7 +1706,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 
         if (!anyPurchaseUnlockedEffectWithSameLabel && !anyPurchaseUnlockedEffectWithSameY)
         {
-            purchaseUnlockedEffects.push_back({
+            purchaseUnlockedEffects.pushBack({
                 .widgetLabel    = label,
                 .countdown      = Countdown{.value = 1000.f},
                 .arrowCountdown = Countdown{.value = 2000.f},
@@ -2578,7 +2581,7 @@ void Main::uiTabBarPrestige()
             SFML_BASE_ASSERT(!undoPPPurchase.empty());
 
             undoPPPurchase.back()();
-            undoPPPurchase.pop_back();
+            undoPPPurchase.popBack();
 
             done = false;
         }
@@ -4480,7 +4483,7 @@ void Main::uiTabBarSettings()
         {
             victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
             victoryTC->restart();
-            delayedActions.emplace_back(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
+            delayedActions.emplaceBack(Countdown{.value = 7000.f}, [this] { playSound(sounds.letterchime); });
         }
 
         if (ImGui::Button("Do Tip"))
@@ -4723,3 +4726,5 @@ void Main::gameLoopUpdateNotificationQueue(const float deltaTimeMs)
     // pop front
     notificationQueue.erase(notificationQueue.begin());
 }
+
+#pragma GCC diagnostic pop

@@ -80,7 +80,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[nodiscard, gnu::always_inline]] T* allocate(const SizeT capacity)
+[[nodiscard, gnu::always_inline]] inline T* allocate(const SizeT capacity)
 {
     return capacity == 0u ? nullptr : static_cast<T*>(::operator new(capacity * sizeof(T), std::align_val_t{alignof(T)}));
 }
@@ -88,7 +88,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline]] void deallocate(T* const p, const SizeT /* capacity */) noexcept
+[[gnu::always_inline]] inline void deallocate(T* const p, const SizeT /* capacity */) noexcept
 {
     ::operator delete(p, std::align_val_t{alignof(T)});
 }
@@ -96,7 +96,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] T* eraseImpl(T* begin, T* end, T* const it)
+[[gnu::always_inline, gnu::flatten]] inline T* eraseImpl(T* begin, T* end, T* const it)
 {
     SFML_BASE_ASSERT(it >= begin && it < end);
 
@@ -135,7 +135,7 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] T* eraseRangeImpl(T* begin, T* end, T* const first, T* const last)
+[[gnu::always_inline, gnu::flatten]] inline T* eraseRangeImpl(T* begin, T* end, T* const first, T* const last)
 {
     SFML_BASE_ASSERT(first >= begin && first <= end);
     SFML_BASE_ASSERT(last >= begin && last <= end);

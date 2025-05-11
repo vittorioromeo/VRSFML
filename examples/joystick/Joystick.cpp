@@ -18,10 +18,11 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
+#include "SFML/Base/Array.hpp"
+#include "SFML/Base/Clamp.hpp"
+
 #include "ExampleUtils.hpp"
 
-#include <algorithm>
-#include <array>
 #include <string>
 #include <unordered_map>
 
@@ -55,7 +56,7 @@ int main()
     float               threshold = 0.1f;
 
     // Axes labels in as strings
-    const std::array<std::string, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
+    const sf::base::Array<std::string, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
 
     // Helper to set text entries to a specified value
     const auto set = [&](const std::string& label, const auto& value)
@@ -189,7 +190,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, window))
                 continue;
@@ -223,7 +224,7 @@ int main()
 
         // Update threshold if the user wants to change it
         // clang-format off
-        const float newThreshold = std::clamp(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)   ? threshold + 0.1f
+        const float newThreshold = sf::base::clamp(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)   ? threshold + 0.1f
                                             : sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ? threshold - 0.1f
                                             : threshold,
                                         0.1f, 100.f);

@@ -124,7 +124,7 @@ int main(int, char**)
         while (const sf::base::Optional event = active ? window.pollEvent() : window.waitEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (const auto* resized = event->getIf<sf::Event::Resized>())
             {

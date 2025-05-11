@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <string_view>
 
 
 namespace hg::Steam
@@ -39,14 +39,14 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(std::size_t idx);
-    bool isAchievementUnlocked(std::size_t idx);
+    bool unlockAchievement(sf::base::SizeT idx);
+    bool isAchievementUnlocked(sf::base::SizeT idx);
 
-    bool setRichPresenceInGame(std::string_view levelNameFormat);
+    bool setRichPresenceInGame(sf::base::StringView levelNameFormat);
 
-    bool               setAndStoreStat(std::string_view name, int data);
-    [[nodiscard]] bool getAchievement(bool* out, std::string_view name);
-    [[nodiscard]] bool getStat(int* out, std::string_view name);
+    bool               setAndStoreStat(sf::base::StringView name, int data);
+    [[nodiscard]] bool getAchievement(bool* out, sf::base::StringView name);
+    [[nodiscard]] bool getStat(int* out, sf::base::StringView name);
 
     bool updateHardcodedAchievements();
 

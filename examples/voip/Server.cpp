@@ -16,18 +16,19 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include <mutex>
-#include <string>
-#include <vector>
+#include <string> // used
 
-#include <cstdint>
 #include <cstring>
 
 
-constexpr std::uint8_t serverAudioData   = 1;
-constexpr std::uint8_t serverEndOfStream = 2;
+constexpr sf::base::U8 serverAudioData   = 1;
+constexpr sf::base::U8 serverEndOfStream = 2;
 
 
 ////////////////////////////////////////////////////////////
@@ -114,8 +115,9 @@ private:
         // (don't forget that we run in two separate threads)
         {
             const std::lock_guard lock(m_mutex);
-            m_tempBuffer.assign(m_samples.begin() + static_cast<std::vector<std::int16_t>::difference_type>(m_offset),
-                                m_samples.end());
+            m_tempBuffer.assignRange(m_samples.begin() +
+                                         static_cast<sf::base::Vector<sf::base::I16>::difference_type>(m_offset),
+                                     m_samples.end());
         }
 
         // Fill audio data to pass to the stream
@@ -134,7 +136,7 @@ private:
     ////////////////////////////////////////////////////////////
     void onSeek(sf::Time timeOffset) override
     {
-        m_offset = static_cast<std::size_t>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1000;
+        m_offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1000;
     }
 
     ////////////////////////////////////////////////////////////
@@ -151,21 +153,23 @@ private:
                 break;
 
             // Extract the message ID
-            std::uint8_t id = 0;
+            sf::base::U8 id = 0;
             packet >> id;
 
             if (id == serverAudioData)
             {
                 // Extract audio samples from the packet, and append it to our samples buffer
-                const std::size_t sampleCount = (packet.getDataSize() - 1) / sizeof(std::int16_t);
+                const sf::base::SizeT sampleCount = (packet.getDataSize() - 1) / sizeof(sf::base::I16);
 
                 // Don't forget that the other thread can access the sample array at any time
                 // (so we protect any operation on it with the mutex)
                 {
                     const std::lock_guard lock(m_mutex);
                     const auto*           begin = static_cast<const char*>(packet.getData()) + 1;
-                    const auto*           end   = begin + sampleCount * sizeof(std::int16_t);
-                    m_samples.insert(m_samples.end(), begin, end);
+                    const auto*           end   = begin + sampleCount * sizeof(sf::base::I16);
+
+                    for (const auto* it = begin; it != end; ++it)
+                        m_tempBuffer.emplaceBack(*it);
                 }
             }
             else if (id == serverEndOfStream)
@@ -186,13 +190,13 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    sf::TcpListener           m_listener;
-    sf::TcpSocket             m_client;
-    std::recursive_mutex      m_mutex;
-    std::vector<std::int16_t> m_samples;
-    std::vector<std::int16_t> m_tempBuffer;
-    std::size_t               m_offset{};
-    bool                      m_hasFinished{};
+    sf::TcpListener                 m_listener;
+    sf::TcpSocket                   m_client;
+    std::recursive_mutex            m_mutex;
+    sf::base::Vector<sf::base::I16> m_samples;
+    sf::base::Vector<sf::base::I16> m_tempBuffer;
+    sf::base::SizeT                 m_offset{};
+    bool                            m_hasFinished{};
 };
 
 

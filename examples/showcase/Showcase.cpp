@@ -35,6 +35,10 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
+
 #include "ExampleUtils.hpp"
 
 #include <iostream>
@@ -42,10 +46,8 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include <algorithm>
 #include <initializer_list>
 #include <string>
-#include <vector>
 
 #include <cmath>
 #include <cstddef>
@@ -252,19 +254,19 @@ private:
     float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
-    std::vector<Bunny> m_bunnies;
-    std::size_t        m_bunnyTargetCount = 100'000u;
+    sf::base::Vector<Bunny> m_bunnies;
+    sf::base::SizeT         m_bunnyTargetCount = 100'000u;
 
     ////////////////////////////////////////////////////////////
     RNGFast m_rng{/* seed */ 1234};
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static std::string toDigitSeparatedString(const std::size_t value)
+    [[nodiscard]] static std::string toDigitSeparatedString(const sf::base::SizeT value)
     {
         std::string s = std::to_string(value);
 
         for (int i = static_cast<int>(s.size()) - 3; i > 0; i -= 3)
-            s.insert(static_cast<std::size_t>(i), ".");
+            s.insert(static_cast<sf::base::SizeT>(i), ".");
 
         return s;
     }
@@ -292,15 +294,15 @@ public:
         else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left))
             m_bunnyTargetCount -= 1000;
 
-        m_bunnyTargetCount = std::clamp(m_bunnyTargetCount, std::size_t{1000}, std::size_t{2'500'000});
+        m_bunnyTargetCount = sf::base::clamp(m_bunnyTargetCount, sf::base::SizeT{1000}, sf::base::SizeT{2'500'000});
 
         if (m_bunnies.size() < m_bunnyTargetCount)
         {
             m_bunnies.reserve(m_bunnyTargetCount);
 
-            for (std::size_t i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
+            for (sf::base::SizeT i = m_bunnies.size(); i < m_bunnyTargetCount; ++i)
             {
-                m_bunnies.emplace_back(
+                m_bunnies.emplaceBack(
                     /* position */ m_rng.getVec2f(resolution),
                     /* velocity */ m_rng.getVec2f({-1.f, -1.f}, {1.f, 1.f}),
                     /* rotation */ sf::radians(m_rng.getF(0.f, sf::base::tau)),
@@ -333,7 +335,7 @@ public:
     ////////////////////////////////////////////////////////////
     void draw()
     {
-        std::size_t i = 0;
+        sf::base::SizeT i = 0;
 
         for (auto& [position, velocity, rotation, scale] : m_bunnies)
         {
@@ -363,9 +365,9 @@ public:
                                                 .outlineThickness = 4.f,
                                             });
 
-        for (std::size_t j = 0u; j < vertices.size(); j += 4u)
+        for (sf::base::SizeT j = 0u; j < vertices.size(); j += 4u)
         {
-            const std::size_t outlineIndependentIndex = j % (vertices.size() / 2u);
+            const sf::base::SizeT outlineIndependentIndex = j % (vertices.size() / 2u);
 
             if (outlineIndependentIndex >= digitSeparatedBunnyCount.size() * 4u)
             {
@@ -495,7 +497,7 @@ private:
     ExampleAudio     m_exampleAudio{m_window, m_font};
 
     ////////////////////////////////////////////////////////////
-    std::size_t m_activeExample = 2u;
+    sf::base::SizeT m_activeExample = 2u;
 
     ////////////////////////////////////////////////////////////
     void clearSamples()

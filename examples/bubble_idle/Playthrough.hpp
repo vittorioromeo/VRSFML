@@ -23,8 +23,6 @@
 
 #include "SFML/Base/Math/Pow.hpp"
 
-#include <vector>
-
 
 ////////////////////////////////////////////////////////////
 struct BubbleIgnoreFlags
@@ -217,12 +215,12 @@ struct Playthrough
 
     //
     // Object state
-    std::vector<Bubble>     bubbles;
-    std::vector<Cat>        cats;
-    std::vector<Shrine>     shrines;
-    std::vector<Doll>       dolls;
-    std::vector<Doll>       copyDolls;
-    std::vector<HellPortal> hellPortals;
+    sf::base::Vector<Bubble>     bubbles;
+    sf::base::Vector<Cat>        cats;
+    sf::base::Vector<Shrine>     shrines;
+    sf::base::Vector<Doll>       dolls;
+    sf::base::Vector<Doll>       copyDolls;
+    sf::base::Vector<HellPortal> hellPortals;
 
     //
     // Shrines
@@ -275,7 +273,7 @@ struct Playthrough
         shrines.reserve(nShrineTypes);
 
         for (SizeT i = 0u; i < nShrineTypes; ++i)
-            shrines.push_back({
+            shrines.pushBack({
                 .position              = (gameScreenSize / 2.f).addX(gameScreenSize.x * static_cast<float>(i + 1u)),
                 .tcActivation          = {},
                 .tcDeath               = {},

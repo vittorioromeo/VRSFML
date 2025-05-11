@@ -15,7 +15,8 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include <vector>
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,11 +38,11 @@ int main()
 
     sf::cOut() << "Found " << playbackDeviceHandles.size() << " playback devices:\n";
 
-    std::vector<sf::PlaybackDevice> playbackDevices;
+    sf::base::Vector<sf::PlaybackDevice> playbackDevices;
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
         sf::cOut() << "  - " << deviceHandle.getName() << '\n';
-        playbackDevices.emplace_back(deviceHandle);
+        playbackDevices.emplaceBack(deviceHandle);
     }
 
     // Load resources
@@ -60,12 +61,12 @@ int main()
     sf::SoundSource* const sources[]{&sound, &music0, &music1, &music2};
 
     // Play multiple sources simultaneously on separate playback devices
-    for (std::size_t i = 0u; i < playbackDevices.size(); ++i)
+    for (sf::base::SizeT i = 0u; i < playbackDevices.size(); ++i)
         sources[i % 4]->play(playbackDevices[i]);
 
     // Keep program alive while sounds are playing and display spinning icon
-    const char  messageIcons[]{'-', '\\', '|', '/'};
-    std::size_t messageIconIndex = 0u;
+    const char      messageIcons[]{'-', '\\', '|', '/'};
+    sf::base::SizeT messageIconIndex = 0u;
 
     const auto anySourcePlaying = [&]
     {

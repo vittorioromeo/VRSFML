@@ -1,5 +1,8 @@
 #pragma once
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 // #define BUBBLEBYTE_NO_AUDIO 1
 
 #include "Achievements.hpp"
@@ -114,7 +117,6 @@
 #include <random>
 #include <string>
 #include <utility>
-#include <vector>
 
 #include <cctype>
 #include <cmath>
@@ -132,7 +134,7 @@
 #endif
 
 
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////<
 inline bool debugMode = false;
 
 ////////////////////////////////////////////////////////////
@@ -523,7 +525,7 @@ struct Main
         sf::base::FixedFunction<void(), 128> action;
     };
 
-    std::vector<DelayedAction> delayedActions;
+    sf::base::Vector<DelayedAction> delayedActions;
 
     ////////////////////////////////////////////////////////////
     // Background and ImGui render textures
@@ -964,11 +966,11 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Particles
-    std::vector<Particle>     particles;          // World space
-    std::vector<TextParticle> textParticles;      // World space
-    std::vector<Particle>     spentCoinParticles; // HUD space
-    std::vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
-    std::vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
+    sf::base::Vector<Particle>     particles;          // World space
+    sf::base::Vector<TextParticle> textParticles;      // World space
+    sf::base::Vector<Particle>     spentCoinParticles; // HUD space
+    sf::base::Vector<Particle>     hudBottomParticles; // HUD space, drawn below ImGui
+    sf::base::Vector<Particle>     hudTopParticles;    // HUD space, drawn on top of ImGui
 
     struct EarnedCoinParticle
     {
@@ -976,7 +978,7 @@ struct Main
         Timer     progress;
     };
 
-    std::vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
+    sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space
 
     ////////////////////////////////////////////////////////////
     // Random number generation
@@ -1083,12 +1085,12 @@ struct Main
     // Cat dragging state
     float                         catDragPressDuration{0.f};
     sf::base::Optional<sf::Vec2f> catDragOrigin;
-    std::vector<Cat*>             draggedCats;
+    sf::base::Vector<Cat*>        draggedCats;
     Cat*                          catToPlace{nullptr};
 
     ////////////////////////////////////////////////////////////
     // Touch state
-    std::vector<sf::base::Optional<sf::Vec2f>> fingerPositions;
+    sf::base::Vector<sf::base::Optional<sf::Vec2f>> fingerPositions;
 
     ////////////////////////////////////////////////////////////
     // Splash screen state
@@ -1163,8 +1165,8 @@ struct Main
         std::string content;
     };
 
-    std::vector<NotificationData> notificationQueue;
-    TargetedCountdown             notificationCountdown{.startingValue = 750.f};
+    sf::base::Vector<NotificationData> notificationQueue;
+    TargetedCountdown                  notificationCountdown{.startingValue = 750.f};
 
     ////////////////////////////////////////////////////////////
     // FPS counter
@@ -1181,7 +1183,7 @@ struct Main
         int         type;
     };
 
-    std::vector<PurchaseUnlockedEffect>             purchaseUnlockedEffects;
+    sf::base::Vector<PurchaseUnlockedEffect>        purchaseUnlockedEffects;
     ankerl::unordered_dense::map<std::string, bool> btnWasDisabled;
 
     ////////////////////////////////////////////////////////////
@@ -1246,8 +1248,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // PP purchase undo
-    std::vector<sf::base::FixedFunction<void(), 128>> undoPPPurchase;
-    Countdown                                         undoPPPurchaseTimer;
+    sf::base::Vector<sf::base::FixedFunction<void(), 128>> undoPPPurchase;
+    Countdown                                              undoPPPurchaseTimer;
 
     ////////////////////////////////////////////////////////////
     void saveMainPlaythroughToFile()
@@ -1335,7 +1337,7 @@ struct Main
                                   const float        speedMult,
                                   const float        opacity = 1.f)
     {
-        return particles.emplace_back(
+        return particles.emplaceBack(
             ParticleData{
                 .position      = position,
                 .velocity      = rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * speedMult,
@@ -1347,7 +1349,7 @@ struct Main
                 .rotation      = rngFast.getF(0.f, sf::base::tau),
                 .torque        = rngFast.getF(-0.002f, 0.002f),
             },
-            0.f,
+            sf::base::U8{0u},
             particleType);
     }
 
@@ -1357,7 +1359,7 @@ struct Main
         if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
             return false;
 
-        spentCoinParticles.emplace_back(particleData, 0u, ParticleType::Coin);
+        spentCoinParticles.emplaceBack(particleData, sf::base::U8{0u}, ParticleType::Coin);
         return true;
     }
 
@@ -1367,7 +1369,7 @@ struct Main
         if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
             return;
 
-        hudTopParticles.emplace_back(particleData, hueToByte(hue), particleType);
+        hudTopParticles.emplaceBack(particleData, hueToByte(hue), particleType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1376,7 +1378,7 @@ struct Main
         if (!profile.showParticles || !hudCullingBoundaries.isInside(particleData.position))
             return;
 
-        hudBottomParticles.emplace_back(particleData, hueToByte(hue), particleType);
+        hudBottomParticles.emplaceBack(particleData, hueToByte(hue), particleType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1385,7 +1387,7 @@ struct Main
         if (!profile.showParticles || !profile.showCoinParticles || !hudCullingBoundaries.isInside(startPosition))
             return false;
 
-        earnedCoinParticles.emplace_back(startPosition);
+        earnedCoinParticles.emplaceBack(startPosition);
         return true;
     }
 
@@ -1396,7 +1398,7 @@ struct Main
             return;
 
         // TODO P2: consider optimizing this pattern by just returning the emplaced particle and having the caller set the data
-        particles.emplace_back(particleData, hueToByte(hue), particleType);
+        particles.emplaceBack(particleData, hueToByte(hue), particleType);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1670,7 +1672,7 @@ struct Main
 
         catToPlace = nullptr;
 
-        return pt->cats.emplace_back(Cat{
+        return pt->cats.emplaceBack(Cat{
             .position    = pos,
             .cooldown    = {.value = getComputedCooldownByCatTypeOrCopyCat(catType)},
             .pawPosition = pos,
@@ -1692,7 +1694,7 @@ struct Main
             catToPlace = &newCat;
 
             draggedCats.clear();
-            draggedCats.push_back(&newCat);
+            draggedCats.pushBack(&newCat);
 
             newCat.position    = lastMousePos;
             newCat.pawPosition = lastMousePos;
@@ -2485,20 +2487,20 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] int pickSelectedIndex(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    [[nodiscard]] int pickSelectedIndex(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
     {
         const auto selectedIndexU = static_cast<sf::base::SizeT>(selectedIndex);
         return selectedIndexU < entries.size() ? entries[selectedIndexU].index : 0;
     }
 
     ////////////////////////////////////////////////////////////
-    void selectBackground(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    void selectBackground(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
     {
         profile.selectedBackground = pickSelectedIndex(entries, selectedIndex);
     }
 
     ////////////////////////////////////////////////////////////
-    void selectBGM(const std::vector<SelectorEntry>& entries, const int selectedIndex)
+    void selectBGM(const sf::base::Vector<SelectorEntry>& entries, const int selectedIndex)
     {
         profile.selectedBGM = pickSelectedIndex(entries, selectedIndex);
     }
@@ -2526,8 +2528,8 @@ struct Main
     ////////////////////////////////////////////////////////////
     struct SelectorData
     {
-        std::vector<SelectorEntry> entries;
-        int                        selectedIndex = -1;
+        sf::base::Vector<SelectorEntry> entries;
+        int                             selectedIndex = -1;
     };
 
     ////////////////////////////////////////////////////////////
@@ -2536,19 +2538,19 @@ struct Main
         static thread_local SelectorData data;
         data.entries.clear();
 
-        data.entries.emplace_back(0, "Default");
+        data.entries.emplaceBack(0, "Default");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
-            data.entries.emplace_back(1, "Ritual Circle");
+            data.entries.emplaceBack(1, "Ritual Circle");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            data.entries.emplace_back(2, "The Wise One");
+            data.entries.emplaceBack(2, "The Wise One");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
-            data.entries.emplace_back(3, "Click N Chill");
+            data.entries.emplaceBack(3, "Click N Chill");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
-            data.entries.emplace_back(4, "Use More Cat");
+            data.entries.emplaceBack(4, "Use More Cat");
 
         if (data.selectedIndex == -1)
         {
@@ -2571,28 +2573,28 @@ struct Main
         static thread_local SelectorData data;
         data.entries.clear();
 
-        data.entries.emplace_back(0, "Default");
+        data.entries.emplaceBack(0, "Default");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Witch)])
-            data.entries.emplace_back(1, "Swamp");
+            data.entries.emplaceBack(1, "Swamp");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Wizard)])
-            data.entries.emplace_back(2, "Observatory");
+            data.entries.emplaceBack(2, "Observatory");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Mouse)])
-            data.entries.emplace_back(3, "Aim Labs");
+            data.entries.emplaceBack(3, "Aim Labs");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Engi)])
-            data.entries.emplace_back(4, "Factory");
+            data.entries.emplaceBack(4, "Factory");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Repulso)])
-            data.entries.emplace_back(5, "Wind Tunnel");
+            data.entries.emplaceBack(5, "Wind Tunnel");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Attracto)])
-            data.entries.emplace_back(6, "Magnetosphere");
+            data.entries.emplaceBack(6, "Magnetosphere");
 
         if (pt->perm.shrineCompletedOnceByCatType[asIdx(CatType::Copy)])
-            data.entries.emplace_back(7, "Auditorium");
+            data.entries.emplaceBack(7, "Auditorium");
 
         if (data.selectedIndex == -1)
         {
@@ -2684,7 +2686,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     TextParticle& makeRewardTextParticle(const sf::Vec2f position)
     {
-        return textParticles.emplace_back(TextParticle{
+        return textParticles.emplaceBack(TextParticle{
             {.position      = {position.x, position.y - 10.f},
              .velocity      = rngFast.getVec2f({-0.1f, -1.65f}, {0.1f, -1.35f}) * 0.395f,
              .scale         = sf::base::clamp(1.f + 0.1f * static_cast<float>(combo + 1) / 1.75f, 1.f, 3.f) * 0.5f,
@@ -3008,7 +3010,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateScrolling(const float deltaTimeMs, const std::vector<sf::Vec2f>& downFingers)
+    void gameLoopUpdateScrolling(const float deltaTimeMs, const sf::base::Vector<sf::Vec2f>& downFingers)
     {
         // Reset map scrolling
         if (keyDown(sf::Keyboard::Key::LShift) || (downFingers.size() != 2u && !mBtnDown(getRMB(), /* penetrateUI */ true)))
@@ -3066,7 +3068,7 @@ struct Main
 
                 for (SizeT i = 0; i < times; ++i)
                 {
-                    auto& bubble = pt->bubbles.emplace_back(makeRandomBubble(*pt, rng, pt->getMapLimit(), boundaries.y));
+                    auto& bubble = pt->bubbles.emplaceBack(makeRandomBubble(*pt, rng, pt->getMapLimit(), boundaries.y));
                     const auto bPos = bubble.position;
 
                     if (repulsoBuffActive)
@@ -3083,7 +3085,7 @@ struct Main
                 for (SizeT i = 0; i < times; ++i)
                 {
                     const auto bPos = pt->bubbles.back().position;
-                    pt->bubbles.pop_back();
+                    pt->bubbles.popBack();
 
                     spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
                     playReversePopAt(bPos);
@@ -3119,7 +3121,7 @@ struct Main
                     std::swap(*rightmostIt, pt->cats.back());
 
                 const auto cPos = pt->cats.back().position;
-                pt->cats.pop_back();
+                pt->cats.popBack();
 
                 spawnParticle({.position      = cPos.addY(29.f),
                                .velocity      = {0.f, 0.f},
@@ -3140,7 +3142,7 @@ struct Main
             if (!pt->shrines.empty())
             {
                 const auto cPos = pt->shrines.back().position;
-                pt->shrines.pop_back();
+                pt->shrines.popBack();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
@@ -3149,7 +3151,7 @@ struct Main
             if (!pt->dolls.empty())
             {
                 const auto cPos = pt->dolls.back().position;
-                pt->dolls.pop_back();
+                pt->dolls.popBack();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
@@ -3158,7 +3160,7 @@ struct Main
             if (!pt->copyDolls.empty())
             {
                 const auto cPos = pt->copyDolls.back().position;
-                pt->copyDolls.pop_back();
+                pt->copyDolls.popBack();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
@@ -3167,7 +3169,7 @@ struct Main
             if (!pt->hellPortals.empty())
             {
                 const auto cPos = pt->hellPortals.back().position;
-                pt->hellPortals.pop_back();
+                pt->hellPortals.popBack();
 
                 spawnParticles(24, cPos, ParticleType::Star, 1.f, 0.5f);
                 playReversePopAt(cPos);
@@ -3198,7 +3200,7 @@ struct Main
             for (SizeT i = 0; i < times; ++i)
             {
                 const auto bPos = pt->bubbles.back().position;
-                pt->bubbles.pop_back();
+                pt->bubbles.popBack();
 
                 spawnParticles(8, bPos, ParticleType::Bubble, 0.5f, 0.5f);
                 playReversePopAt(bPos);
@@ -3318,12 +3320,12 @@ struct Main
         const auto sqAttractoRange = pt->getComputedSquaredRangeByCatType(CatType::Attracto);
         const auto attractoRange   = SFML_BASE_MATH_SQRTF(sqAttractoRange);
 
-        static thread_local std::vector<Bubble*> bombs;
+        static thread_local sf::base::Vector<Bubble*> bombs;
         bombs.clear();
 
         for (Bubble& bubble : pt->bubbles)
             if (bubble.type == BubbleType::Bomb)
-                bombs.push_back(&bubble);
+                bombs.pushBack(&bubble);
 
         const auto attract = [&](const sf::Vec2f pos, Bubble& bubble)
         {
@@ -3652,7 +3654,7 @@ struct Main
         {
             const auto portalPos = getCatRangeCenter(cat);
 
-            pt->hellPortals.push_back({
+            pt->hellPortals.pushBack({
                 .position = portalPos,
                 .life     = Countdown{.value = 1750.f},
                 .catIdx   = static_cast<sf::base::SizeT>(&cat - pt->cats.data()),
@@ -3767,7 +3769,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */, Cat& cat, std::vector<Doll>& dollsToUse)
+    void gameLoopUpdateCatActionWitchImpl(const float /* deltaTimeMs */, Cat& cat, sf::base::Vector<Doll>& dollsToUse)
     {
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
         const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
@@ -3874,7 +3876,7 @@ struct Main
 
             for (SizeT i = 0u; i < nDollsToSpawn; ++i)
             {
-                auto& d = dollsToUse.emplace_back(
+                auto& d = dollsToUse.emplaceBack(
                     Doll{.position      = pickDollPosition(),
                          .wobbleRadians = rng.getF(0.f, sf::base::tau),
                          .buffPower     = buffPower,
@@ -4750,7 +4752,7 @@ struct Main
                 if (!dragRect.contains(cat.position))
                     continue;
 
-                draggedCats.push_back(&cat);
+                draggedCats.pushBack(&cat);
             }
 
             playSound(sounds.grab);
@@ -4789,12 +4791,12 @@ struct Main
                 const auto pivotCatIdx = pickDragPivotCatIndex();
                 Cat&       pivotCat    = *draggedCats[pivotCatIdx];
 
-                static thread_local std::vector<sf::Vec2f> relativeCatPositions;
+                static thread_local sf::base::Vector<sf::Vec2f> relativeCatPositions;
                 relativeCatPositions.clear();
                 relativeCatPositions.reserve(draggedCats.size());
 
                 for (const Cat* cat : draggedCats)
-                    relativeCatPositions.push_back(cat->position - pivotCat.position);
+                    relativeCatPositions.pushBack(cat->position - pivotCat.position);
 
                 pivotCat.position = exponentialApproach(pivotCat.position, mousePos + sf::Vec2f{-10.f, 13.f}, deltaTimeMs, 25.f);
 
@@ -4837,7 +4839,7 @@ struct Main
                 if (catDragPressDuration >= profile.catDragPressDuration)
                 {
                     draggedCats.clear();
-                    draggedCats.push_back(hoveredCat);
+                    draggedCats.pushBack(hoveredCat);
 
                     if (hoveredCat->type == CatType::Duck)
                     {
@@ -5098,8 +5100,8 @@ struct Main
 
                             victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
                             victoryTC->restart();
-                            delayedActions.emplace_back(Countdown{.value = 7000.f},
-                                                        [this] { playSound(sounds.letterchime); });
+                            delayedActions.emplaceBack(Countdown{.value = 7000.f},
+                                                       [this] { playSound(sounds.letterchime); });
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
@@ -5141,7 +5143,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void collectDollImpl(Doll& d, const std::vector<Doll>& dollsToUse)
+    void collectDollImpl(Doll& d, const sf::base::Vector<Doll>& dollsToUse)
     {
         SFML_BASE_ASSERT(!d.tcDeath.hasValue());
 
@@ -5241,7 +5243,7 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
-    void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mousePos, std::vector<Doll>& dollsToUse, Cat* hexedCat)
+    void gameLoopUpdateDollsImpl(const float deltaTimeMs, const sf::Vec2f mousePos, sf::base::Vector<Doll>& dollsToUse, Cat* hexedCat)
     {
         const bool copy = &dollsToUse == &pt->copyDolls;
 
@@ -5495,7 +5497,7 @@ struct Main
         std::snprintf(fmtBuffer, sizeof(fmtBuffer), format, args...);
 #pragma GCC diagnostic pop
 
-        notificationQueue.emplace_back(title, std::string{fmtBuffer});
+        notificationQueue.emplaceBack(title, std::string{fmtBuffer});
     }
 
     ////////////////////////////////////////////////////////////
@@ -8843,10 +8845,10 @@ struct Main
 
         //
         // Number of fingers
-        std::vector<sf::Vec2f> downFingers;
+        sf::base::Vector<sf::Vec2f> downFingers;
         for (const auto maybeFinger : fingerPositions)
             if (maybeFinger.hasValue())
-                downFingers.push_back(*maybeFinger);
+                downFingers.pushBack(*maybeFinger);
 
         //
         // Map scrolling via keyboard and touch
@@ -9272,7 +9274,7 @@ struct Main
                 const float offset = 64.f;
                 const auto portalPos = rng.getVec2f({offset, offset}, {pt->getMapLimit() - offset, boundaries.y - offset});
 
-                pt->hellPortals.push_back({
+                pt->hellPortals.pushBack({
                     .position = portalPos,
                     .life     = Countdown{.value = 1750.f},
                     .catIdx   = 100'000u, // invalid
@@ -9374,7 +9376,7 @@ struct Main
             if (victoryTC->updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
             {
                 cdLetterAppear.value = 4000.f;
-                delayedActions.emplace_back(Countdown{.value = 4000.f}, [this] { playSound(sounds.paper); });
+                delayedActions.emplaceBack(Countdown{.value = 4000.f}, [this] { playSound(sounds.paper); });
             }
 
             if (victoryTC->isDone())
@@ -9536,3 +9538,5 @@ struct Main
                 return;
     }
 };
+
+#pragma GCC diagnostic pop
