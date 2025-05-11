@@ -43,8 +43,24 @@ public:
     ////////////////////////////////////////////////////////////
     NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
     {
-        // Set the sound parameters
-        initialize(1, 44'100, {sf::SoundChannel::Mono});
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getChannelCount() const override
+    {
+        return 1;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getSampleRate() const override
+    {
+        return 44'100;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::ChannelMap getChannelMap() const override
+    {
+        return {sf::SoundChannel::Mono};
     }
 
     ////////////////////////////////////////////////////////////

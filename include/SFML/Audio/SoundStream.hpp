@@ -10,10 +10,10 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundSource.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -53,16 +53,28 @@ public:
     ~SoundStream() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    SoundStream(SoundStream&&) noexcept;
+    SoundStream(const SoundStream&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    SoundStream& operator=(SoundStream&&) noexcept;
+    SoundStream& operator=(const SoundStream&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream(SoundStream&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    SoundStream& operator=(SoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Start or resume playing the audio stream
@@ -109,7 +121,7 @@ public:
     /// \return Number of channels
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const;
+    [[nodiscard]] virtual unsigned int getChannelCount() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the stream sample rate of the stream
@@ -120,7 +132,7 @@ public:
     /// \return Sample rate, in number of samples per second
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const;
+    [[nodiscard]] virtual unsigned int getSampleRate() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the map of position in sample frame to sound channel
@@ -131,7 +143,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ChannelMap getChannelMap() const;
+    [[nodiscard]] virtual ChannelMap getChannelMap() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the stream (stopped, paused, playing)
@@ -187,23 +199,6 @@ protected:
     [[nodiscard]] explicit SoundStream();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Define the audio stream parameters
-    ///
-    /// This function must be called by derived classes as soon
-    /// as they know the audio settings of the stream to play.
-    /// Any attempt to manipulate the stream (`play()`, ...) before
-    /// calling this function will fail.
-    /// It can be called multiple times if the settings of the
-    /// audio stream change, but only when the stream is stopped.
-    ///
-    /// \param channelCount Number of channels of the stream
-    /// \param sampleRate   Sample rate, in samples per second
-    /// \param channelMap   Map of position in sample frame to sound channel
-    ///
-    ////////////////////////////////////////////////////////////
-    void initialize(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
     ///
     /// This function must be overridden by derived classes to provide
@@ -248,7 +243,7 @@ protected:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    // TODO P1: probably needs to go in SoundBase to support transferring
+    // TODO P0: probably needs to go in SoundBase to support transferring, test
     PlaybackDevice* m_lastPlaybackDevice{nullptr}; //!< Last used playback device
 
 private:
@@ -264,8 +259,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
-    // TODO P0: needs address stability, but memory should be reusable
+    base::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
 };
 
 } // namespace sf

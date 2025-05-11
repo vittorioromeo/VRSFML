@@ -23,7 +23,7 @@
     /* NOLINTNEXTLINE(readability-redundant-member-init) */                                   \
     ::sf::Angle rotation{}; /*!< Orientation of the object */                                 \
                                                                                               \
-    using sfPrivSwallowSemicolon0 = void
+    static_assert(true)
 
 
 ////////////////////////////////////////////////////////////
@@ -37,4 +37,4 @@
     /* NOLINTNEXTLINE(readability-redundant-member-init) */                                   \
     ::sf::AutoWrapAngle rotation{}; /*!< Orientation of the object */                         \
                                                                                               \
-    using sfPrivSwallowSemicolon1 = void
+    static_assert(true)

@@ -17,6 +17,7 @@
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundStream.hpp"
@@ -103,10 +104,10 @@ private:
 class Surround : public Effect
 {
 public:
-    explicit Surround(sf::Listener& listener, sf::Music&& music) :
+    explicit Surround(sf::Listener& listener, sf::MusicSource& musicSource) :
     Effect("Surround / Attenuation"),
     m_listener(listener),
-    m_music(std::move(music))
+    m_music(musicSource)
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 
@@ -164,12 +165,12 @@ private:
 class PitchVolume : public Effect
 {
 public:
-    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
     Effect("Pitch / Volume"),
     m_listener(listener),
     m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
     m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}}),
-    m_music(std::move(music))
+    m_music(musicSource)
     {
         // Set the music to loop
         m_music.setLooping(true);
@@ -235,7 +236,7 @@ private:
 class Attenuation : public Effect
 {
 public:
-    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
+    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
     Effect("Attenuation"),
     m_listener(listener),
     m_text(font,
@@ -244,7 +245,7 @@ public:
                         "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within "
                         "outer cone, volume is linearly interpolated between inner and outer volumes.",
             .characterSize = 18u}),
-    m_music(std::move(music))
+    m_music(musicSource)
     {
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
@@ -349,7 +350,21 @@ public:
     m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
     m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
     {
-        sf::SoundStream::initialize(1, sampleRate, {sf::SoundChannel::Mono});
+    }
+
+    [[nodiscard]] unsigned int getChannelCount() const override
+    {
+        return 1;
+    }
+
+    [[nodiscard]] unsigned int getSampleRate() const override
+    {
+        return sampleRate;
+    }
+
+    [[nodiscard]] sf::ChannelMap getChannelMap() const override
+    {
+        return {sf::SoundChannel::Mono};
     }
 
     void update(float /*time*/, float x, float y) override
@@ -492,8 +507,21 @@ public:
 
         // Set attenuation to a nice value
         setAttenuation(0.05f);
+    }
 
-        sf::SoundStream::initialize(1, sampleRate, {sf::SoundChannel::Mono});
+    [[nodiscard]] unsigned int getChannelCount() const override
+    {
+        return 1;
+    }
+
+    [[nodiscard]] unsigned int getSampleRate() const override
+    {
+        return sampleRate;
+    }
+
+    [[nodiscard]] sf::ChannelMap getChannelMap() const override
+    {
+        return {sf::SoundChannel::Mono};
     }
 
     void update(float time, float x, float y) override
@@ -626,10 +654,10 @@ public:
     }
 
 protected:
-    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::Music&& music, std::string name) :
+    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource, std::string name) :
     Effect(std::move(name)),
     m_listener(listener),
-    m_music(std::move(music)),
+    m_music(musicSource),
     m_enabledText(font, {.string = "Processing: Enabled"}),
     m_instructions(font, {.string = "Press Space to enable/disable processing"})
     {
@@ -753,8 +781,8 @@ protected:
 ////////////////////////////////////////////////////////////
 struct HighPassFilter : BiquadFilter
 {
-    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
-    BiquadFilter(listener, font, std::move(music), "High-pass Filter")
+    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    BiquadFilter(listener, font, musicSource, "High-pass Filter")
     {
         static constexpr auto cutoffFrequency = 2000.f;
 
@@ -776,8 +804,8 @@ struct HighPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct LowPassFilter : BiquadFilter
 {
-    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
-    BiquadFilter(listener, font, std::move(music), "Low-pass Filter")
+    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    BiquadFilter(listener, font, musicSource, "Low-pass Filter")
     {
         static constexpr auto cutoffFrequency = 500.f;
 
@@ -799,8 +827,8 @@ struct LowPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct Echo : Processing
 {
-    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
-    Processing(listener, font, std::move(music), "Echo")
+    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    Processing(listener, font, musicSource, "Echo")
     {
         static constexpr auto delay = 0.2f;
         static constexpr auto decay = 0.75f;
@@ -861,8 +889,8 @@ struct Echo : Processing
 class Reverb : public Processing
 {
 public:
-    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::Music&& music) :
-    Processing(listener, font, std::move(music), "Reverb")
+    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    Processing(listener, font, musicSource, "Reverb")
     {
         static constexpr auto sustain = 0.7f; // [0.f; 1.f]
 
@@ -1061,18 +1089,18 @@ int main()
     sf::Listener listener;
 
     // Helper function to open a new instance of the music file
-    const auto openMusic = [&] { return sf::Music::openFromFile(musicPath).value(); };
+    auto musicSource = sf::MusicSource::openFromFile(musicPath).value();
 
     // Create the effects
-    Surround       surroundEffect(listener, openMusic());
-    PitchVolume    pitchVolumeEffect(listener, font, openMusic());
-    Attenuation    attenuationEffect(listener, font, openMusic());
+    Surround       surroundEffect(listener, musicSource);
+    PitchVolume    pitchVolumeEffect(listener, font, musicSource);
+    Attenuation    attenuationEffect(listener, font, musicSource);
     Tone           toneEffect(listener, font);
     Doppler        dopplerEffect(listener, font);
-    HighPassFilter highPassFilterEffect(listener, font, openMusic());
-    LowPassFilter  lowPassFilterEffect(listener, font, openMusic());
-    Echo           echoEffect(listener, font, openMusic());
-    Reverb         reverbEffect(listener, font, openMusic());
+    HighPassFilter highPassFilterEffect(listener, font, musicSource);
+    LowPassFilter  lowPassFilterEffect(listener, font, musicSource);
+    Echo           echoEffect(listener, font, musicSource);
+    Reverb         reverbEffect(listener, font, musicSource);
 
     const std::array<Effect*, 9> effects{&surroundEffect,
                                          &pitchVolumeEffect,

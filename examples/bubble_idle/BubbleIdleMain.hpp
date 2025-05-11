@@ -69,6 +69,7 @@
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -495,7 +496,19 @@ struct Main
     sf::base::SizeT currentBGMBufferIdx = 0u; // which one of the two buffers is "current"
     Countdown       bgmTransition;            // fade in/out timer
 
-    sf::base::Array<sf::base::Optional<sf::Music>, 2u> bgmBuffers{sf::base::nullOpt, sf::base::nullOpt}; // for smooth fade
+    struct BGMBuffer
+    {
+        sf::MusicSource musicSource;
+        sf::Music       music;
+
+        explicit BGMBuffer(sf::MusicSource&& theMusicSource) :
+        musicSource{SFML_BASE_MOVE(theMusicSource)},
+        music{musicSource}
+        {
+        }
+    };
+
+    sf::base::Array<sf::base::Optional<BGMBuffer>, 2u> bgmBuffers{sf::base::nullOpt, sf::base::nullOpt}; // for smooth fade
 
     ////////////////////////////////////////////////////////////
     // Sound management
@@ -1919,15 +1932,13 @@ struct Main
         bgmTransition.value = 1000.f;
 
         auto& optNextMusic = getNextBGMBuffer();
+        optNextMusic.emplace(sf::MusicSource::openFromFile(bgmPaths[index]).value());
 
-        optNextMusic = sf::Music::openFromFile(bgmPaths[index]);
-        SFML_BASE_ASSERT(optNextMusic.hasValue());
-
-        optNextMusic->setVolume(0.f);
-        optNextMusic->setLooping(true);
-        optNextMusic->setAttenuation(0.f);
-        optNextMusic->setSpatializationEnabled(false);
-        optNextMusic->play(playbackDevice);
+        optNextMusic->music.setVolume(0.f);
+        optNextMusic->music.setLooping(true);
+        optNextMusic->music.setAttenuation(0.f);
+        optNextMusic->music.setSpatializationEnabled(false);
+        optNextMusic->music.play(playbackDevice);
 #else
         (void)index;
         (void)force;
@@ -1948,13 +1959,13 @@ struct Main
     };
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<sf::Music>& getCurrentBGMBuffer()
+    sf::base::Optional<BGMBuffer>& getCurrentBGMBuffer()
     {
         return bgmBuffers[currentBGMBufferIdx % 2u];
     }
 
     ////////////////////////////////////////////////////////////
-    sf::base::Optional<sf::Music>& getNextBGMBuffer()
+    sf::base::Optional<BGMBuffer>& getNextBGMBuffer()
     {
         return bgmBuffers[(currentBGMBufferIdx + 1u) % 2u];
     }
@@ -8251,16 +8262,16 @@ struct Main
         {
             SFML_BASE_ASSERT(optNextMusic.hasValue());
 
-            const auto processMusic = [&](sf::base::Optional<sf::Music>& optMusic, const float transitionMult)
+            const auto processMusic = [&](sf::base::Optional<BGMBuffer>& optMusic, const float transitionMult)
             {
                 if (!optMusic.hasValue())
                     return;
 
-                optMusic->setPosition(listener.position);
-                optMusic->setVolume(profile.musicVolume / 100.f * volumeMult * transitionMult);
+                optMusic->music.setPosition(listener.position);
+                optMusic->music.setVolume(profile.musicVolume / 100.f * volumeMult * transitionMult);
 
                 if (sounds.countPlayingPooled(sounds.prestige) > 0u)
-                    optMusic->setVolume(0.f);
+                    optMusic->music.setVolume(0.f);
             };
 
             processMusic(optCurrentMusic, bgmTransition.getInvProgress(1000.f));
@@ -8274,16 +8285,16 @@ struct Main
         }
         else
         {
-            const auto processMusic = [&](sf::base::Optional<sf::Music>& optMusic)
+            const auto processMusic = [&](sf::base::Optional<BGMBuffer>& optMusic)
             {
                 if (!optMusic.hasValue())
                     return;
 
-                optMusic->setPosition(listener.position);
-                optMusic->setVolume(profile.musicVolume / 100.f * volumeMult);
+                optMusic->music.setPosition(listener.position);
+                optMusic->music.setVolume(profile.musicVolume / 100.f * volumeMult);
 
                 if (sounds.countPlayingPooled(sounds.prestige) > 0u)
-                    optMusic->setVolume(0.f);
+                    optMusic->music.setVolume(0.f);
             };
 
             processMusic(optCurrentMusic);
