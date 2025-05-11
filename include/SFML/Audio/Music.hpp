@@ -31,6 +31,7 @@ class Time;
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 class SFML_AUDIO_API Music : public SoundStream
 {
 public:
@@ -280,6 +281,7 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: needs address stability, but memory should be reusable
 };
 
 } // namespace sf
@@ -321,7 +323,7 @@ private:
 ///
 /// // Create an audio context and get the default playback device
 /// auto audioContext = sf::AudioContext::create().value();
-/// auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+/// auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 ///
 /// // Play it
 /// music.play(playbackDevice);

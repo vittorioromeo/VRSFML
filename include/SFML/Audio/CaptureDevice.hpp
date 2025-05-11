@@ -9,7 +9,6 @@
 
 #include "SFML/Audio/ChannelMap.hpp"
 
-#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -23,7 +22,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class AudioContext;
 class CaptureDeviceHandle;
 class SoundRecorder;
 } // namespace sf
@@ -41,13 +39,13 @@ public:
     /// \return Capture device on success, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<CaptureDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static base::Optional<CaptureDevice> createDefault();
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    explicit CaptureDevice(AudioContext& audioContext, const CaptureDeviceHandle& deviceHandle);
+    explicit CaptureDevice(const CaptureDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -169,11 +167,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: needs address stability, but memory should be reusable
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
     SFML_DEFINE_LIFETIME_DEPENDEE(CaptureDevice, SoundRecorder);
 };
 

@@ -70,13 +70,13 @@ public:
     /// \brief Returns the built-in shader
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Shader& getBuiltInShader() const;
+    [[nodiscard]] static Shader& getBuiltInShader();
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns the built-in 1x1 white texture
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Texture& getBuiltInWhiteDotTexture() const;
+    [[nodiscard]] static Texture& getBuiltInWhiteDotTexture();
 
     ////////////////////////////////////////////////////////////
     /// \brief Returns `true` if a `GraphicsContext` is installed

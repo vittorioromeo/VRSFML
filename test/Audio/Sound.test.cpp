@@ -21,18 +21,18 @@
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, sf::SoundBuffer&&));
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Sound, const sf::SoundBuffer&&));
-        STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::Sound));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_MOVE_ASSIGNABLE(sf::Sound));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Sound));
         STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Sound));
     }
 
@@ -45,55 +45,6 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         CHECK(!sound.isLooping());
         CHECK(sound.getPlayingOffset() == sf::Time{});
         CHECK(sound.getStatus() == sf::Sound::Status::Stopped);
-    }
-
-    SECTION("Copy semantics")
-    {
-        const sf::Sound sound(soundBuffer);
-
-        SECTION("Construction")
-        {
-            const sf::Sound soundCopy(sound); // NOLINT(performance-unnecessary-copy-initialization)
-            CHECK(&soundCopy.getBuffer() == &soundBuffer);
-            CHECK(!soundCopy.isLooping());
-            CHECK(soundCopy.getPlayingOffset() == sf::Time{});
-            CHECK(soundCopy.getStatus() == sf::Sound::Status::Stopped);
-        }
-
-        SECTION("Assignment")
-        {
-            const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-            sf::Sound             soundCopy(otherSoundBuffer);
-            soundCopy = sound;
-            CHECK(&soundCopy.getBuffer() == &soundBuffer);
-            CHECK(!soundCopy.isLooping());
-            CHECK(soundCopy.getPlayingOffset() == sf::Time{});
-            CHECK(soundCopy.getStatus() == sf::Sound::Status::Stopped);
-        }
-    }
-
-    SECTION("Move construction")
-    {
-        sf::Sound src(soundBuffer);
-        sf::Sound dst = SFML_BASE_MOVE(src);
-
-        CHECK(&dst.getBuffer() == &soundBuffer);
-        CHECK(!dst.isLooping());
-        CHECK(dst.getPlayingOffset() == sf::Time{});
-        CHECK(dst.getStatus() == sf::Sound::Status::Stopped);
-    }
-
-    SECTION("Move assignment")
-    {
-        sf::Sound src(soundBuffer);
-        sf::Sound dst(soundBuffer);
-
-        dst = SFML_BASE_MOVE(src);
-
-        CHECK(&dst.getBuffer() == &soundBuffer);
-        CHECK(!dst.isLooping());
-        CHECK(dst.getPlayingOffset() == sf::Time{});
-        CHECK(dst.getStatus() == sf::Sound::Status::Stopped);
     }
 
     SECTION("Set/get buffer")
@@ -158,11 +109,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             badStruct0.emplace();
             CHECK(!guard.fatalErrorTriggered());
 
-            const BadStruct badStruct1 = SFML_BASE_MOVE(badStruct0.value());
-            CHECK(!guard.fatalErrorTriggered());
-
             badStruct0.reset();
-            CHECK(guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered());
         }
     }
 #endif

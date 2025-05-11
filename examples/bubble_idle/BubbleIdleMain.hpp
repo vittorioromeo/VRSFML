@@ -356,7 +356,7 @@ struct Main
 // Audio context and playback device
 #ifndef BUBBLEBYTE_NO_AUDIO
     sf::AudioContext   audioContext{sf::AudioContext::create().value()};
-    sf::PlaybackDevice playbackDevice{sf::PlaybackDevice::createDefault(audioContext).value()};
+    sf::PlaybackDevice playbackDevice{sf::PlaybackDevice::createDefault().value()};
 #endif
 
     ////////////////////////////////////////////////////////////
@@ -626,7 +626,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // Texture atlas rects
-    sf::FloatRect txrWhiteDot{textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value()};
+    sf::FloatRect txrWhiteDot{textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value()};
     sf::FloatRect txrBubble{addImgResourceToAtlas("bubble2.png")};
     sf::FloatRect txrBubbleStar{addImgResourceToAtlas("bubble3.png")};
     sf::FloatRect txrBubbleNova{addImgResourceToAtlas("bubble4.png")};

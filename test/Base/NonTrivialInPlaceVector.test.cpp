@@ -617,6 +617,28 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         CHECK(tv[3].value == 40);
         CHECK(tv[4].value == 50);
     }
+
+    SECTION("Non-movable and non-trivially-copyable")
+    {
+        struct NonMovable
+        {
+            NonMovable() = default;
+
+            ~NonMovable() // NOLINT(modernize-use-equals-default)
+            {
+            }
+
+            NonMovable(const NonMovable&) = delete;
+            NonMovable(NonMovable&&)      = delete;
+
+            NonMovable& operator=(const NonMovable&) = delete;
+            NonMovable& operator=(NonMovable&&)      = delete;
+        };
+
+        sf::base::InPlaceVector<NonMovable, 5> tv;
+        tv.emplaceBack();
+        CHECK(tv.size() == 1);
+    }
 }
 
 } // namespace

@@ -28,18 +28,18 @@ struct StringMaker<char16_t>
 template <typename T>
 struct StringMaker<std::basic_string<T>>
 {
-    static doctest::String convert(const std::basic_string<T>&)
+    static doctest::String convert(const std::basic_string<T>& s)
     {
-        return ""; // TODO P3:
+        return reinterpret_cast<const char*>(s.c_str()); // TODO P3:
     }
 };
 
 template <typename T>
 struct StringMaker<std::basic_string_view<T>>
 {
-    static doctest::String convert(const std::basic_string_view<T>&)
+    static doctest::String convert(const std::basic_string_view<T>& s)
     {
-        return ""; // TODO P3:
+        return reinterpret_cast<const char*>(s.data()); // TODO P3:
     }
 };
 

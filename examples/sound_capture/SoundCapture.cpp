@@ -2,7 +2,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioContextUtils.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -17,7 +16,6 @@
 #include "SFML/System/Time.hpp"
 
 #include <string>
-#include <vector>
 
 #include <cstdlib>
 
@@ -32,7 +30,7 @@ int main()
     auto audioContext = sf::AudioContext::create().value();
 
     // Get the available capture devices
-    auto deviceHandles = sf::AudioContextUtils::getAvailableCaptureDeviceHandles(audioContext);
+    auto deviceHandles = sf::AudioContext::getAvailableCaptureDeviceHandles();
 
     // Check if any device can capture audio
     if (deviceHandles.empty())
@@ -78,7 +76,7 @@ int main()
     sf::SoundBufferRecorder recorder;
 
     // Create the capture device
-    sf::CaptureDevice captureDevice(audioContext, deviceHandles[deviceIndex]);
+    sf::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
 
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
     if (!recorder.start(captureDevice, sampleRate))
@@ -122,7 +120,7 @@ int main()
     else
     {
         // Create the default playback device
-        auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+        auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
         // Create a sound instance and play it
         sf::Sound sound(buffer);
