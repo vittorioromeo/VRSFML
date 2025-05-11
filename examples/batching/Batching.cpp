@@ -97,7 +97,7 @@ int main()
     //
     //
     // Add white dot to atlas
-    const auto whiteDotAtlasRect = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+    const auto whiteDotAtlasRect = textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     //
     //

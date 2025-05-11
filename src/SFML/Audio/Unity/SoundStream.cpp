@@ -30,7 +30,7 @@ namespace sf
 struct SoundStream::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl(SoundStream* theOwner) : owner(theOwner)
+    explicit Impl(SoundStream* const theOwner) : owner(theOwner)
     {
     }
 

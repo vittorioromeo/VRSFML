@@ -10,11 +10,9 @@
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
-#include "SFML/System/LifetimeDependee.hpp"
-
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,9 +20,10 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class AudioContextUtils;
 class CaptureDevice;
+class CaptureDeviceHandle;
 class PlaybackDevice;
+class PlaybackDeviceHandle;
 } // namespace sf
 
 
@@ -71,22 +70,69 @@ public:
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API AudioContext& operator=(AudioContext&& rhs) noexcept;
-
-private:
-    friend AudioContextUtils;
-    friend CaptureDevice;
-    friend PlaybackDevice;
+    SFML_AUDIO_API AudioContext& operator=(AudioContext&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// Implementation detail, returns a pointer to the miniaudio
-    /// context. This pointer is used in the playback and capture
-    /// device implementations to initialize the miniaudio devices.
+    /// \brief Check if the audio context is installed
+    ///
+    /// Installation can be done by calling `create` early in
+    /// your program (e.g. in `main`).
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API void* getMAContext() const;
+    [[nodiscard]] static bool isInstalled();
 
-public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a list of handles to all available audio playback devices
+    ///
+    /// This function returns a vector of strings containing
+    /// handles to all available audio playback devices.
+    ///
+    /// If no devices are available, this function will return
+    /// an empty vector.
+    ///
+    /// \return A vector containing the device handles or an empty vector if no devices are available
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a handle to the default audio playback device
+    ///
+    /// This function returns a handle to the default audio
+    /// playback device. If none is available, `base::nullOpt` is
+    /// returned instead.
+    ///
+    /// \return The handle to the default audio playback device
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SFML_AUDIO_API base::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a list of handles to all available audio capture devices
+    ///
+    /// This function returns a vector of strings containing
+    /// handles to all available audio capture devices.
+    ///
+    /// If no devices are available, this function will return
+    /// an empty vector.
+    ///
+    /// \return A vector containing the device handles or an empty vector if no devices are available
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SFML_AUDIO_API base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get a handle to the default audio capture device
+    ///
+    /// This function returns a handle to the default audio
+    /// capture device. If none is available, `base::nullOpt` is
+    /// returned instead.
+    ///
+    /// \return The handle to the default audio capture device
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] static SFML_AUDIO_API base::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+
     ////////////////////////////////////////////////////////////
     /// \private
     ///
@@ -96,17 +142,16 @@ public:
     [[nodiscard]] SFML_AUDIO_API explicit AudioContext(base::PassKey<AudioContext>&&);
 
 private:
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+    friend CaptureDevice;
+    friend PlaybackDevice;
 
     ////////////////////////////////////////////////////////////
-    // Lifetime tracking
+    /// Implementation detail, returns a pointer to the miniaudio
+    /// context. This pointer is used in the playback and capture
+    /// device implementations to initialize the miniaudio devices.
+    ///
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, CaptureDevice);
-    SFML_DEFINE_LIFETIME_DEPENDEE(AudioContext, PlaybackDevice);
+    [[nodiscard]] SFML_AUDIO_API static void* getMAContext();
 };
 
 } // namespace sf

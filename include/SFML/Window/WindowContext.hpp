@@ -96,7 +96,10 @@ public:
     WindowContext& operator=(WindowContext&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Check if the window context is installed
+    ///
+    /// Installation can be done by calling `create` early in
+    /// your program (e.g. in `main`).
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isInstalled();

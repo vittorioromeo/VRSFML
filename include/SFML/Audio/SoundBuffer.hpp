@@ -33,6 +33,8 @@ class Time;
 
 namespace sf
 {
+// TODO P0: should this have move operations?
+
 ////////////////////////////////////////////////////////////
 /// \brief Storage for audio samples defining a sound
 ///

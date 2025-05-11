@@ -25,7 +25,7 @@ int main()
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
     // ...rest of your application...
 }
@@ -169,7 +169,7 @@ int main()
 {
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
     // Load sounds
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
@@ -424,5 +424,17 @@ TODO P0: isOpen is gone, use an optional
 
 
 ## Vector -> Vec rename
+
+TODO P0:
+
+
+
+## Sound is non-movable
+
+TODO P0:
+
+
+
+## Music is non-movable
 
 TODO P0:

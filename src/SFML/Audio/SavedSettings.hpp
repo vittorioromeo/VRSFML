@@ -33,25 +33,25 @@ struct SavedSettings
 #endif
         ;
 
+    Listener::Cone cone{radians(6.283185f), radians(6.283185f), 1.f};
+
+    Vec3f position{0.f, 0.f, 0.f};
+    Vec3f direction{0.f, 0.f, -1.f};
+    Vec3f velocity{0.f, 0.f, 0.f};
     float pitch{1.f};
     float pan{0.f};
     float volume{1.f};
-    bool  spatializationEnabled{true};
-    Vec3f position{0.f, 0.f, 0.f};
-    Vec3f direction{0.f, 0.f, -1.f};
     float directionalAttenuationFactor{1.f};
-    Vec3f velocity{0.f, 0.f, 0.f};
     float dopplerFactor{1.f};
-    int   positioning{0 /* ma_positioning_absolute */};
     float minDistance{1.f};
     float maxDistance{floatMax};
     float minGain{0.f};
     float maxGain{1.f};
     float rollOff{1.f};
+    int   positioning{0 /* ma_positioning_absolute */};
     bool  playing{false};
     bool  looping{false};
-
-    Listener::Cone cone{radians(6.283185f), radians(6.283185f), 1.f};
+    bool  spatializationEnabled{true};
 
     ////////////////////////////////////////////////////////////
     explicit SavedSettings() = default;
