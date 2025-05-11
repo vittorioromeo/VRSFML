@@ -23,11 +23,6 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/Optional.hpp"
 
-#include <vector>
-
-#include <cstddef>
-#include <cstdio>
-
 
 ////////////////////////////////////////////////////////////
 /// Main
@@ -99,25 +94,25 @@ int main()
         float      torque;
     };
 
-    std::vector<Entity> entities;
+    sf::base::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const std::size_t n)
+    const auto populateEntities = [&](const sf::base::SizeT n)
     {
         entities.clear();
         entities.reserve(n);
 
-        for (std::size_t i = 0u; i < n; ++i)
+        for (sf::base::SizeT i = 0u; i < n; ++i)
         {
-            const std::size_t    type        = i % 6u;
-            const sf::FloatRect& textureRect = spriteTextureRects[type];
+            const sf::base::SizeT type        = i % 6u;
+            const sf::FloatRect&  textureRect = spriteTextureRects[type];
 
-            auto& [text, sprite, torque] = entities.emplace_back(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
-                                                                          {.string           = "abcdefABCDEF",
-                                                                           .fillColor        = sf::Color::Black,
-                                                                           .outlineColor     = sf::Color::White,
-                                                                           .outlineThickness = 5.f}},
-                                                                 sf::Sprite{.textureRect = textureRect},
-                                                                 getRndFloat(-0.05f, 0.05f));
+            auto& [text, sprite, torque] = entities.emplaceBack(sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
+                                                                         {.string           = "abcdefABCDEF",
+                                                                          .fillColor        = sf::Color::Black,
+                                                                          .outlineColor     = sf::Color::White,
+                                                                          .outlineThickness = 5.f}},
+                                                                sf::Sprite{.textureRect = textureRect},
+                                                                getRndFloat(-0.05f, 0.05f));
 
             sprite.origin   = textureRect.size / 2.f;
             sprite.rotation = sf::radians(getRndFloat(0.f, sf::base::tau));
@@ -152,7 +147,7 @@ int main()
     sf::cOut() << "OpenGL ES detected, using CPU storage-backed batching\n";
     sf::CPUDrawableBatch drawableBatch;
 #endif
-    populateEntities(static_cast<std::size_t>(numEntities));
+    populateEntities(static_cast<sf::base::SizeT>(numEntities));
     drawableBatch.position = drawableBatch.origin = windowSize / 2.f;
 
     sf::Clock  clock;

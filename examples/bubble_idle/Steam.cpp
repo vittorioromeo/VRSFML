@@ -17,9 +17,9 @@
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 #include "SFML/Base/UniquePtr.hpp"
-
-#include <string_view>
 
 #include <cstdio>
 #include <cstring>
@@ -86,7 +86,7 @@ public:
     bool m_initialized;
     bool m_gotStats;
 
-    ankerl::unordered_dense::set<std::size_t> m_unlockedAchievements;
+    ankerl::unordered_dense::set<sf::base::SizeT> m_unlockedAchievements;
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-offsetof"
@@ -122,14 +122,14 @@ public:
     bool runCallbacks();
 
     bool storeStats();
-    bool unlockAchievement(std::size_t idx);
-    bool isAchievementUnlocked(std::size_t idx);
+    bool unlockAchievement(sf::base::SizeT idx);
+    bool isAchievementUnlocked(sf::base::SizeT idx);
 
-    bool setRichPresenceInGame(std::string_view levelNameFormat);
+    bool setRichPresenceInGame(sf::base::StringView levelNameFormat);
 
-    bool                                   setAndStoreStat(std::string_view name, int data);
-    [[nodiscard]] bool                     getAchievement(bool* out, std::string_view name);
-    [[nodiscard]] bool                     getStat(int* out, std::string_view name);
+    bool                                   setAndStoreStat(sf::base::StringView name, int data);
+    [[nodiscard]] bool                     getAchievement(bool* out, sf::base::StringView name);
+    [[nodiscard]] bool                     getStat(int* out, sf::base::StringView name);
     [[nodiscard]] sf::base::Optional<bool> isAchievementUnlocked(const char* name);
 
     bool updateHardcodedAchievements();
@@ -244,7 +244,7 @@ bool SteamManager::SteamManagerImpl::storeStats()
     return true;
 }
 
-bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
+bool SteamManager::SteamManagerImpl::unlockAchievement(sf::base::SizeT idx)
 {
     if (!m_initialized)
     {
@@ -276,7 +276,7 @@ bool SteamManager::SteamManagerImpl::unlockAchievement(std::size_t idx)
     return storeStats();
 }
 
-bool SteamManager::SteamManagerImpl::isAchievementUnlocked(std::size_t idx)
+bool SteamManager::SteamManagerImpl::isAchievementUnlocked(sf::base::SizeT idx)
 {
     if (!m_initialized)
     {
@@ -302,7 +302,7 @@ bool SteamManager::SteamManagerImpl::isAchievementUnlocked(std::size_t idx)
     return unlocked;
 }
 
-bool SteamManager::SteamManagerImpl::setRichPresenceInGame(std::string_view levelNameFormat)
+bool SteamManager::SteamManagerImpl::setRichPresenceInGame(sf::base::StringView levelNameFormat)
 {
     if (!m_initialized)
     {
@@ -313,7 +313,7 @@ bool SteamManager::SteamManagerImpl::setRichPresenceInGame(std::string_view leve
            SteamFriends()->SetRichPresence("steam_display", "#InGame");
 }
 
-bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int data)
+bool SteamManager::SteamManagerImpl::setAndStoreStat(sf::base::StringView name, int data)
 {
     if (!m_initialized)
     {
@@ -334,7 +334,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int 
     return storeStats();
 }
 
-[[nodiscard]] bool SteamManager::SteamManagerImpl::getAchievement(bool* out, std::string_view name)
+[[nodiscard]] bool SteamManager::SteamManagerImpl::getAchievement(bool* out, sf::base::StringView name)
 {
     if (!m_initialized || !m_gotStats)
     {
@@ -350,7 +350,7 @@ bool SteamManager::SteamManagerImpl::setAndStoreStat(std::string_view name, int 
     return true;
 }
 
-[[nodiscard]] bool SteamManager::SteamManagerImpl::getStat(int* out, std::string_view name)
+[[nodiscard]] bool SteamManager::SteamManagerImpl::getStat(int* out, sf::base::StringView name)
 {
     if (!m_initialized || !m_gotStats)
     {
@@ -480,32 +480,32 @@ bool SteamManager::storeStats()
     return impl().storeStats();
 }
 
-bool SteamManager::unlockAchievement(std::size_t idx)
+bool SteamManager::unlockAchievement(sf::base::SizeT idx)
 {
     return impl().unlockAchievement(idx);
 }
 
-bool SteamManager::isAchievementUnlocked(std::size_t idx)
+bool SteamManager::isAchievementUnlocked(sf::base::SizeT idx)
 {
     return impl().isAchievementUnlocked(idx);
 }
 
-bool SteamManager::setRichPresenceInGame(std::string_view levelNameFormat)
+bool SteamManager::setRichPresenceInGame(sf::base::StringView levelNameFormat)
 {
     return impl().setRichPresenceInGame(levelNameFormat);
 }
 
-bool SteamManager::setAndStoreStat(std::string_view name, int data)
+bool SteamManager::setAndStoreStat(sf::base::StringView name, int data)
 {
     return impl().setAndStoreStat(name, data);
 }
 
-[[nodiscard]] bool SteamManager::getAchievement(bool* out, std::string_view name)
+[[nodiscard]] bool SteamManager::getAchievement(bool* out, sf::base::StringView name)
 {
     return impl().getAchievement(out, name);
 }
 
-[[nodiscard]] bool SteamManager::getStat(int* out, std::string_view name)
+[[nodiscard]] bool SteamManager::getStat(int* out, sf::base::StringView name)
 {
     return impl().getStat(out, name);
 }

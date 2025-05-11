@@ -2,6 +2,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/IO.hpp"
+
+#include "SFML/Base/IntTypes.hpp"
 #define GLAD_VULKAN_IMPLEMENTATION
 #include <vulkan.h>
 
@@ -22,15 +24,15 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
 
-#include <array>
 #include <limits>
-#include <string_view>
-#include <vector>
 
 #include <cmath>
-#include <cstdint>
 #include <cstring>
 
 
@@ -172,9 +174,9 @@ GLADapiproc getVulkanFunction(const char* name)
 VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
     VkDebugReportFlagsEXT,
     VkDebugReportObjectTypeEXT,
-    std::uint64_t,
-    std::size_t,
-    std::int32_t,
+    uint64_t, // cannot use base here due to mismatch on unix
+    sf::base::SizeT,
+    int32_t, // cannot use base here due to mismatch on unix
     const char*,
     const char* pMessage,
     void*)
@@ -342,10 +344,10 @@ public:
     {
         // Swapchain teardown procedure
         for (VkFence fence : fences)
-            vkWaitForFences(device, 1, &fence, VK_TRUE, std::numeric_limits<std::uint64_t>::max());
+            vkWaitForFences(device, 1, &fence, VK_TRUE, std::numeric_limits<sf::base::U64>::max());
 
         if (!commandBuffers.empty())
-            vkFreeCommandBuffers(device, commandPool, static_cast<std::uint32_t>(commandBuffers.size()), commandBuffers.data());
+            vkFreeCommandBuffers(device, commandPool, static_cast<sf::base::U32>(commandBuffers.size()), commandBuffers.data());
 
         commandBuffers.clear();
 
@@ -426,9 +428,9 @@ public:
         }
 
         // Retrieve the available instance layers
-        std::uint32_t objectCount = 0;
+        sf::base::U32 objectCount = 0;
 
-        std::vector<VkLayerProperties> layers;
+        sf::base::Vector<VkLayerProperties> layers;
 
         if (vkEnumerateInstanceLayerProperties(&objectCount, nullptr) != VK_SUCCESS)
         {
@@ -445,7 +447,7 @@ public:
         }
 
         // Activate the layers we are interested in
-        std::vector<const char*> validationLayers;
+        sf::base::Vector<const char*> validationLayers;
 
         for (VkLayerProperties& layer : layers)
         {
@@ -460,23 +462,23 @@ public:
             // -- VK_LAYER_GOOGLE_unique_objects
             // These layers perform error checking and warn about bad or sub-optimal Vulkan API usage
             // VK_LAYER_LUNARG_monitor appends an FPS counter to the window title
-            if (std::string_view(layer.layerName) == "VK_LAYER_LUNARG_standard_validation")
+            if (sf::base::StringView(layer.layerName) == "VK_LAYER_LUNARG_standard_validation")
             {
-                validationLayers.push_back("VK_LAYER_LUNARG_standard_validation");
+                validationLayers.pushBack("VK_LAYER_LUNARG_standard_validation");
             }
-            else if (std::string_view(layer.layerName) == "VK_LAYER_LUNARG_monitor")
+            else if (sf::base::StringView(layer.layerName) == "VK_LAYER_LUNARG_monitor")
             {
-                validationLayers.push_back("VK_LAYER_LUNARG_monitor");
+                validationLayers.pushBack("VK_LAYER_LUNARG_monitor");
             }
         }
 
         // Retrieve the extensions we need to enable in order to use Vulkan with SFML
-        std::vector<const char*> requiredExtensions;
+        sf::base::Vector<const char*> requiredExtensions;
 
         for (const char* e : sf::Vulkan::getGraphicsRequiredInstanceExtensions())
-            requiredExtensions.push_back(e);
+            requiredExtensions.pushBack(e);
 
-        requiredExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+        requiredExtensions.pushBack(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
         // Register our application information
         VkApplicationInfo applicationInfo  = VkApplicationInfo();
@@ -490,9 +492,9 @@ public:
         VkInstanceCreateInfo instanceCreateInfo    = VkInstanceCreateInfo();
         instanceCreateInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instanceCreateInfo.pApplicationInfo        = &applicationInfo;
-        instanceCreateInfo.enabledLayerCount       = static_cast<std::uint32_t>(validationLayers.size());
+        instanceCreateInfo.enabledLayerCount       = static_cast<sf::base::U32>(validationLayers.size());
         instanceCreateInfo.ppEnabledLayerNames     = validationLayers.data();
-        instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtensions.size());
+        instanceCreateInfo.enabledExtensionCount   = static_cast<sf::base::U32>(requiredExtensions.size());
         instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
         // Try to create a Vulkan instance with debug report enabled
@@ -501,9 +503,9 @@ public:
         // If an extension is missing, try disabling debug report
         if (result == VK_ERROR_EXTENSION_NOT_PRESENT)
         {
-            requiredExtensions.pop_back();
+            requiredExtensions.popBack();
 
-            instanceCreateInfo.enabledExtensionCount   = static_cast<std::uint32_t>(requiredExtensions.size());
+            instanceCreateInfo.enabledExtensionCount   = static_cast<sf::base::U32>(requiredExtensions.size());
             instanceCreateInfo.ppEnabledExtensionNames = requiredExtensions.data();
 
             result = vkCreateInstance(&instanceCreateInfo, nullptr, &instance);
@@ -561,9 +563,9 @@ public:
         }
 
         // Retrieve list of GPUs
-        std::uint32_t objectCount = 0;
+        sf::base::U32 objectCount = 0;
 
-        std::vector<VkPhysicalDevice> devices;
+        sf::base::Vector<VkPhysicalDevice> devices;
 
         if (vkEnumeratePhysicalDevices(instance, &objectCount, nullptr) != VK_SUCCESS)
         {
@@ -587,7 +589,7 @@ public:
             VkPhysicalDeviceProperties deviceProperties;
             vkGetPhysicalDeviceProperties(dev, &deviceProperties);
 
-            std::vector<VkExtensionProperties> extensions;
+            sf::base::Vector<VkExtensionProperties> extensions;
 
             if (vkEnumerateDeviceExtensionProperties(dev, nullptr, &objectCount, nullptr) != VK_SUCCESS)
             {
@@ -607,7 +609,7 @@ public:
 
             for (VkExtensionProperties& extension : extensions)
             {
-                if (std::string_view(extension.extensionName) == VK_KHR_SWAPCHAIN_EXTENSION_NAME)
+                if (sf::base::StringView(extension.extensionName) == VK_KHR_SWAPCHAIN_EXTENSION_NAME)
                 {
                     supportsSwapchain = true;
                     break;
@@ -683,9 +685,9 @@ public:
     void setupLogicalDevice()
     {
         // Select a queue family that supports graphics operations and surface presentation
-        std::uint32_t objectCount = 0;
+        sf::base::U32 objectCount = 0;
 
-        std::vector<VkQueueFamilyProperties> queueFamilyProperties;
+        sf::base::Vector<VkQueueFamilyProperties> queueFamilyProperties;
 
         vkGetPhysicalDeviceQueueFamilyProperties(gpu, &objectCount, nullptr);
 
@@ -693,15 +695,15 @@ public:
 
         vkGetPhysicalDeviceQueueFamilyProperties(gpu, &objectCount, queueFamilyProperties.data());
 
-        for (std::size_t i = 0; i < queueFamilyProperties.size(); ++i)
+        for (sf::base::SizeT i = 0; i < queueFamilyProperties.size(); ++i)
         {
             VkBool32 surfaceSupported = VK_FALSE;
 
-            vkGetPhysicalDeviceSurfaceSupportKHR(gpu, static_cast<std::uint32_t>(i), surface, &surfaceSupported);
+            vkGetPhysicalDeviceSurfaceSupportKHR(gpu, static_cast<sf::base::U32>(i), surface, &surfaceSupported);
 
             if ((queueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) && (surfaceSupported == VK_TRUE))
             {
-                queueFamilyIndex.emplace(static_cast<std::uint32_t>(i));
+                queueFamilyIndex.emplace(static_cast<sf::base::U32>(i));
                 break;
             }
         }
@@ -750,9 +752,9 @@ public:
     void setupSwapchain()
     {
         // Select a surface format that supports RGBA color format
-        std::uint32_t objectCount = 0;
+        sf::base::U32 objectCount = 0;
 
-        std::vector<VkSurfaceFormatKHR> surfaceFormats;
+        sf::base::Vector<VkSurfaceFormatKHR> surfaceFormats;
 
         if (vkGetPhysicalDeviceSurfaceFormatsKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
         {
@@ -797,7 +799,7 @@ public:
         }
 
         // Select a swapchain present mode
-        std::vector<VkPresentModeKHR> presentModes;
+        sf::base::Vector<VkPresentModeKHR> presentModes;
 
         if (vkGetPhysicalDeviceSurfacePresentModesKHR(gpu, surface, &objectCount, nullptr) != VK_SUCCESS)
         {
@@ -871,7 +873,7 @@ public:
     void setupSwapchainImages()
     {
         // Retrieve swapchain images
-        std::uint32_t objectCount = 0;
+        sf::base::U32 objectCount = 0;
 
         if (vkGetSwapchainImagesKHR(device, swapchain, &objectCount, nullptr) != VK_SUCCESS)
         {
@@ -903,7 +905,7 @@ public:
         imageViewCreateInfo.subresourceRange.layerCount     = 1;
 
         // Create an image view for each swapchain image
-        for (std::size_t i = 0; i < swapchainImages.size(); ++i)
+        for (sf::base::SizeT i = 0; i < swapchainImages.size(); ++i)
         {
             imageViewCreateInfo.image = swapchainImages[i];
 
@@ -930,8 +932,8 @@ public:
                 return;
             }
 
-            const auto                 fileSize = file->getSize().value();
-            std::vector<std::uint32_t> buffer(fileSize / sizeof(std::uint32_t));
+            const auto                      fileSize = file->getSize().value();
+            sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
             {
@@ -939,7 +941,7 @@ public:
                 return;
             }
 
-            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(std::uint32_t);
+            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &vertexShaderModule) != VK_SUCCESS)
@@ -958,8 +960,8 @@ public:
                 return;
             }
 
-            const auto                 fileSize = file->getSize().value();
-            std::vector<std::uint32_t> buffer(fileSize / sizeof(std::uint32_t));
+            const auto                      fileSize = file->getSize().value();
+            sf::base::Vector<sf::base::U32> buffer(fileSize / sizeof(sf::base::U32));
 
             if (file->read(buffer.data(), fileSize) != file->getSize())
             {
@@ -967,7 +969,7 @@ public:
                 return;
             }
 
-            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(std::uint32_t);
+            shaderModuleCreateInfo.codeSize = buffer.size() * sizeof(sf::base::U32);
             shaderModuleCreateInfo.pCode    = buffer.data();
 
             if (vkCreateShaderModule(device, &shaderModuleCreateInfo, nullptr, &fragmentShaderModule) != VK_SUCCESS)
@@ -1255,7 +1257,7 @@ public:
         framebufferCreateInfo.height                  = swapchainExtent.height;
         framebufferCreateInfo.layers                  = 1;
 
-        for (std::size_t i = 0; i < swapchainFramebuffers.size(); ++i)
+        for (sf::base::SizeT i = 0; i < swapchainFramebuffers.size(); ++i)
         {
             // Each framebuffer consists of a corresponding swapchain image and the shared depth image
             VkImageView attachments[] = {swapchainImageViews[i], depthImageView};
@@ -1314,7 +1316,7 @@ public:
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties();
         vkGetPhysicalDeviceMemoryProperties(gpu, &memoryProperties);
 
-        std::uint32_t memoryType = 0;
+        sf::base::U32 memoryType = 0;
 
         for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
@@ -1410,7 +1412,7 @@ public:
     void setupVertexBuffer()
     {
         // clang-format off
-        constexpr std::array vertexData = {
+        constexpr sf::base::Array vertexData = {
             // X      Y      Z     R     G     B     A     U     V
             -0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 1.f, 0.f,
              0.5f, -0.5f,  0.5f, 1.f, 0.f, 0.f, 1.f, 0.f, 0.f,
@@ -1502,7 +1504,7 @@ public:
     void setupIndexBuffer()
     {
         // clang-format off
-        constexpr std::array<std::uint16_t, 36> indexData = {
+        constexpr sf::base::Array<sf::base::U16, 36> indexData = {
             0,  1,  2,
             2,  3,  0,
 
@@ -1581,10 +1583,10 @@ public:
     void setupUniformBuffers()
     {
         // Create a uniform buffer for every frame that might be in flight to prevent clobbering
-        for (std::size_t i = 0; i < swapchainImages.size(); ++i)
+        for (sf::base::SizeT i = 0; i < swapchainImages.size(); ++i)
         {
-            uniformBuffers.push_back({});
-            uniformBuffersMemory.push_back({});
+            uniformBuffers.pushBack({});
+            uniformBuffersMemory.pushBack({});
 
             // The uniform buffer will be host visible and coherent since we use it for streaming data every frame
             if (!createBuffer(sizeof(Matrix) * 3,
@@ -1600,8 +1602,8 @@ public:
     }
 
     // Helper to create a generic image with the specified size, format, usage and memory flags
-    bool createImage(std::uint32_t         width,
-                     std::uint32_t         height,
+    bool createImage(sf::base::U32         width,
+                     sf::base::U32         height,
                      VkFormat              format,
                      VkImageTiling         tiling,
                      VkImageUsageFlags     usage,
@@ -1637,7 +1639,7 @@ public:
         VkPhysicalDeviceMemoryProperties memoryProperties = VkPhysicalDeviceMemoryProperties();
         vkGetPhysicalDeviceMemoryProperties(gpu, &memoryProperties);
 
-        std::uint32_t memoryType = 0;
+        sf::base::U32 memoryType = 0;
 
         for (; memoryType < memoryProperties.memoryTypeCount; ++memoryType)
         {
@@ -1835,7 +1837,7 @@ public:
         }
 
         // Copy the image data into the buffer
-        std::memcpy(ptr, imageData.getPixelsPtr(), static_cast<std::size_t>(imageSize));
+        std::memcpy(ptr, imageData.getPixelsPtr(), static_cast<sf::base::SizeT>(imageSize));
 
         // Unmap the buffer
         vkUnmapMemory(device, stagingBufferMemory);
@@ -2153,17 +2155,17 @@ public:
 
         descriptorPoolSizes[0]                 = VkDescriptorPoolSize();
         descriptorPoolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorPoolSizes[0].descriptorCount = static_cast<std::uint32_t>(swapchainImages.size());
+        descriptorPoolSizes[0].descriptorCount = static_cast<sf::base::U32>(swapchainImages.size());
 
         descriptorPoolSizes[1]                 = VkDescriptorPoolSize();
         descriptorPoolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptorPoolSizes[1].descriptorCount = static_cast<std::uint32_t>(swapchainImages.size());
+        descriptorPoolSizes[1].descriptorCount = static_cast<sf::base::U32>(swapchainImages.size());
 
         VkDescriptorPoolCreateInfo descriptorPoolCreateInfo = VkDescriptorPoolCreateInfo();
         descriptorPoolCreateInfo.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptorPoolCreateInfo.poolSizeCount              = 2;
         descriptorPoolCreateInfo.pPoolSizes                 = descriptorPoolSizes;
-        descriptorPoolCreateInfo.maxSets                    = static_cast<std::uint32_t>(swapchainImages.size());
+        descriptorPoolCreateInfo.maxSets                    = static_cast<sf::base::U32>(swapchainImages.size());
 
         // Create the descriptor pool
         if (vkCreateDescriptorPool(device, &descriptorPoolCreateInfo, nullptr, &descriptorPool) != VK_SUCCESS)
@@ -2177,12 +2179,12 @@ public:
     void setupDescriptorSets()
     {
         // Allocate a descriptor set for each frame in flight
-        std::vector<VkDescriptorSetLayout> descriptorSetLayouts(swapchainImages.size(), descriptorSetLayout);
+        sf::base::Vector<VkDescriptorSetLayout> descriptorSetLayouts(swapchainImages.size(), descriptorSetLayout);
 
         VkDescriptorSetAllocateInfo descriptorSetAllocateInfo = VkDescriptorSetAllocateInfo();
         descriptorSetAllocateInfo.sType                       = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         descriptorSetAllocateInfo.descriptorPool              = descriptorPool;
-        descriptorSetAllocateInfo.descriptorSetCount          = static_cast<std::uint32_t>(swapchainImages.size());
+        descriptorSetAllocateInfo.descriptorSetCount          = static_cast<sf::base::U32>(swapchainImages.size());
         descriptorSetAllocateInfo.pSetLayouts                 = descriptorSetLayouts.data();
 
         descriptorSets.resize(swapchainImages.size());
@@ -2196,7 +2198,7 @@ public:
         }
 
         // For every descriptor set, set up the bindings to our uniform buffer and texture sampler
-        for (std::size_t i = 0; i < descriptorSets.size(); ++i)
+        for (sf::base::SizeT i = 0; i < descriptorSets.size(); ++i)
         {
             VkWriteDescriptorSet writeDescriptorSets[2];
 
@@ -2246,7 +2248,7 @@ public:
         commandBufferAllocateInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         commandBufferAllocateInfo.commandPool                 = commandPool;
         commandBufferAllocateInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        commandBufferAllocateInfo.commandBufferCount          = static_cast<std::uint32_t>(commandBuffers.size());
+        commandBufferAllocateInfo.commandBufferCount          = static_cast<sf::base::U32>(commandBuffers.size());
 
         // Allocate the command buffers from our command pool
         if (vkAllocateCommandBuffers(device, &commandBufferAllocateInfo, commandBuffers.data()) != VK_SUCCESS)
@@ -2290,7 +2292,7 @@ public:
         commandBufferBeginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
         // Set up the command buffers for each frame in flight
-        for (std::size_t i = 0; i < commandBuffers.size(); ++i)
+        for (sf::base::SizeT i = 0; i < commandBuffers.size(); ++i)
         {
             // Begin the command buffer
             if (vkBeginCommandBuffer(commandBuffers[i], &commandBufferBeginInfo) != VK_SUCCESS)
@@ -2347,26 +2349,26 @@ public:
         semaphoreCreateInfo.sType                 = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
         // Create a semaphore to track when an swapchain image is available for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
+        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
-            imageAvailableSemaphores.push_back({});
+            imageAvailableSemaphores.pushBack({});
 
             if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS)
             {
-                imageAvailableSemaphores.pop_back();
+                imageAvailableSemaphores.popBack();
                 vulkanAvailable = false;
                 return;
             }
         }
 
         // Create a semaphore to track when rendering is complete for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
+        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
-            renderFinishedSemaphores.push_back({});
+            renderFinishedSemaphores.pushBack({});
 
             if (vkCreateSemaphore(device, &semaphoreCreateInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS)
             {
-                renderFinishedSemaphores.pop_back();
+                renderFinishedSemaphores.popBack();
                 vulkanAvailable = false;
                 return;
             }
@@ -2382,13 +2384,13 @@ public:
         fenceCreateInfo.flags             = VK_FENCE_CREATE_SIGNALED_BIT;
 
         // Create a fence to track when queue submission is complete for each frame in flight
-        for (std::size_t i = 0; i < maxFramesInFlight; ++i)
+        for (sf::base::SizeT i = 0; i < maxFramesInFlight; ++i)
         {
-            fences.push_back({});
+            fences.pushBack({});
 
             if (vkCreateFence(device, &fenceCreateInfo, nullptr, &fences[i]) != VK_SUCCESS)
             {
-                fences.pop_back();
+                fences.popBack();
                 vulkanAvailable = false;
                 return;
             }
@@ -2453,16 +2455,16 @@ public:
 
     void draw()
     {
-        std::uint32_t imageIndex = 0;
+        sf::base::U32 imageIndex = 0;
 
         // If the objects we need to submit this frame are still pending, wait here
-        vkWaitForFences(device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<std::uint64_t>::max());
+        vkWaitForFences(device, 1, &fences[currentFrame], VK_TRUE, std::numeric_limits<sf::base::U64>::max());
 
         {
             // Get the next image in the swapchain
             const VkResult result = vkAcquireNextImageKHR(device,
                                                           swapchain,
-                                                          std::numeric_limits<std::uint64_t>::max(),
+                                                          std::numeric_limits<sf::base::U64>::max(),
                                                           imageAvailableSemaphores[currentFrame],
                                                           VK_NULL_HANDLE,
                                                           &imageIndex);
@@ -2578,14 +2580,14 @@ private:
     VkDebugReportCallbackEXT          debugReportCallback{};
     VkSurfaceKHR                      surface{};
     VkPhysicalDevice                  gpu{};
-    sf::base::Optional<std::uint32_t> queueFamilyIndex;
+    sf::base::Optional<sf::base::U32> queueFamilyIndex;
     VkDevice                          device{};
     VkQueue                           queue{};
     VkSurfaceFormatKHR                swapchainFormat{};
     VkExtent2D                        swapchainExtent{};
     VkSwapchainKHR                    swapchain{};
-    std::vector<VkImage>              swapchainImages;
-    std::vector<VkImageView>          swapchainImageViews;
+    sf::base::Vector<VkImage>         swapchainImages;
+    sf::base::Vector<VkImageView>     swapchainImageViews;
     VkFormat                          depthFormat{VK_FORMAT_UNDEFINED};
     VkImage                           depthImage{};
     VkDeviceMemory                    depthImageMemory{};
@@ -2597,24 +2599,24 @@ private:
     VkPipelineLayout                  pipelineLayout{};
     VkRenderPass                      renderPass{};
     VkPipeline                        graphicsPipeline{};
-    std::vector<VkFramebuffer>        swapchainFramebuffers;
+    sf::base::Vector<VkFramebuffer>   swapchainFramebuffers;
     VkCommandPool                     commandPool{};
     VkBuffer                          vertexBuffer{};
     VkDeviceMemory                    vertexBufferMemory{};
     VkBuffer                          indexBuffer{};
     VkDeviceMemory                    indexBufferMemory{};
-    std::vector<VkBuffer>             uniformBuffers;
-    std::vector<VkDeviceMemory>       uniformBuffersMemory;
+    sf::base::Vector<VkBuffer>        uniformBuffers;
+    sf::base::Vector<VkDeviceMemory>  uniformBuffersMemory;
     VkImage                           textureImage{};
     VkDeviceMemory                    textureImageMemory{};
     VkImageView                       textureImageView{};
     VkSampler                         textureSampler{};
     VkDescriptorPool                  descriptorPool{};
-    std::vector<VkDescriptorSet>      descriptorSets;
-    std::vector<VkCommandBuffer>      commandBuffers;
-    std::vector<VkSemaphore>          imageAvailableSemaphores;
-    std::vector<VkSemaphore>          renderFinishedSemaphores;
-    std::vector<VkFence>              fences;
+    sf::base::Vector<VkDescriptorSet> descriptorSets;
+    sf::base::Vector<VkCommandBuffer> commandBuffers;
+    sf::base::Vector<VkSemaphore>     imageAvailableSemaphores;
+    sf::base::Vector<VkSemaphore>     renderFinishedSemaphores;
+    sf::base::Vector<VkFence>         fences;
     // NOLINTEND(readability-identifier-naming)
 };
 

@@ -498,11 +498,13 @@ bool RenderTexture::setActive(bool active)
 ////////////////////////////////////////////////////////////
 RenderTarget::DrawStatistics RenderTexture::display()
 {
+    RenderTarget::DrawStatistics result{}; // Use a single local variable for NRVO
+
     // Perform a RenderTarget-only activation if we are using FBOs
     if (!RenderTarget::setActive())
-        return {};
+        return result;
 
-    const auto result = RenderTarget::flush();
+    result = RenderTarget::flush();
     RenderTarget::syncGPUEndFrame();
 
     // Update the target texture

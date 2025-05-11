@@ -12,10 +12,9 @@
 #include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <string> // used
-
-#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////
@@ -46,8 +45,8 @@ void runTcpServer(unsigned short port)
     sf::cOut() << "Message sent to the client: \"" << out << '"' << sf::endL;
 
     // Receive a message back from the client
-    char        in[128];
-    std::size_t received = 0;
+    char            in[128];
+    sf::base::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
     sf::cOut() << "Answer received from the client: \"" << in << '"' << sf::endL;
@@ -81,8 +80,8 @@ void runTcpClient(unsigned short port)
     sf::cOut() << "Connected to server " << sf::IpAddressUtils::toString(server.value()) << sf::endL;
 
     // Receive a message from the server
-    char        in[128];
-    std::size_t received = 0;
+    char            in[128];
+    sf::base::SizeT received = 0;
     if (socket.receive(in, sizeof(in), received) != sf::Socket::Status::Done)
         return;
     sf::cOut() << "Message received from the server: \"" << in << '"' << sf::endL;

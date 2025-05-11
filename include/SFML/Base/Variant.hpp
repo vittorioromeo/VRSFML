@@ -97,14 +97,11 @@ private:
         max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
 
-    enum : bool
-    {
-        triviallyDestructible      = (sf::base::isTriviallyDestructible<Alternatives> && ...),
-        triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...),
-        triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...),
-        triviallyCopyAssignable    = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...),
-        triviallyMoveAssignable    = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...)
-    };
+    static inline constexpr bool triviallyDestructible = (sf::base::isTriviallyDestructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...);
+    static inline constexpr bool triviallyCopyAssignable = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...);
+    static inline constexpr bool triviallyMoveAssignable = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...);
 
     using index_type = unsigned char; // Support up to 255 alternatives
 
@@ -245,7 +242,7 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
-        requires(!static_cast<bool>(triviallyCopyConstructible))
+        requires(!triviallyCopyConstructible)
     : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
@@ -255,11 +252,11 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
-        requires(static_cast<bool>(triviallyCopyConstructible))
+        requires(triviallyCopyConstructible)
     = default;
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
-        requires(!static_cast<bool>(triviallyMoveConstructible))
+        requires(!triviallyMoveConstructible)
     : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
@@ -269,21 +266,21 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
-        requires(static_cast<bool>(triviallyMoveConstructible))
+        requires(triviallyMoveConstructible)
     = default;
 
     [[gnu::always_inline]] ~tinyvariant()
-        requires(!static_cast<bool>(triviallyDestructible))
+        requires(!triviallyDestructible)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
     }
 
     [[gnu::always_inline]] ~tinyvariant()
-        requires(static_cast<bool>(triviallyDestructible))
+        requires(triviallyDestructible)
     = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
-        requires(!static_cast<bool>(triviallyCopyAssignable))
+        requires(!triviallyCopyAssignable)
     {
         if (this == &rhs)
             return *this;
@@ -300,11 +297,11 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
-        requires(static_cast<bool>(triviallyCopyAssignable))
+        requires(triviallyCopyAssignable)
     = default;
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
-        requires(!static_cast<bool>(triviallyMoveAssignable))
+        requires(!triviallyMoveAssignable)
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
 
@@ -319,7 +316,7 @@ public:
     }
 
     [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
-        requires(static_cast<bool>(triviallyMoveAssignable))
+        requires(triviallyMoveAssignable)
     = default;
 
     template <typename T>

@@ -93,6 +93,22 @@ void from_json(const nlohmann::json& j, Optional<T>& p)
         p.emplace(j.get<T>());
 }
 
+
+// `to_json` is not needed for `Vector` because `nlohmann::json`
+// has a catch-all overload for container-like types.
+
+
+////////////////////////////////////////////////////////////
+template <typename T>
+void from_json(const nlohmann::json& j, Vector<T>& p)
+{
+    p.clear();
+    p.reserve(j.size());
+
+    for (const auto& item : j)
+        p.emplaceBack(item.get<T>());
+}
+
 } // namespace sf::base
 
 

@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Shader.hpp"
 
+#include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -24,18 +25,19 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
-#include <array>
 #include <random>
 #include <string>
-#include <vector>
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 
 
@@ -64,8 +66,8 @@ class Pixelate : public Effect
 {
 public:
     explicit Pixelate(sf::Texture&& texture, sf::Shader&& shader) :
-    m_texture(std::move(texture)),
-    m_shader(std::move(shader)),
+    m_texture(SFML_BASE_MOVE(texture)),
+    m_shader(SFML_BASE_MOVE(shader)),
     m_ulTexture(m_shader.getUniformLocation("sf_u_texture").value()),
     m_ulPixelThreshold(m_shader.getUniformLocation("pixel_threshold").value())
     {
@@ -133,7 +135,7 @@ public:
                              "In hac habitasse platea dictumst. Etiam fringilla est id odio dapibus sit amet semper dui "
                              "laoreet.\n",
             .characterSize = 22u}),
-    m_shader(std::move(shader)),
+    m_shader(SFML_BASE_MOVE(shader)),
     m_ulWavePhase(m_shader.getUniformLocation("wave_phase").value()),
     m_ulWaveAmplitude(m_shader.getUniformLocation("wave_amplitude").value()),
     m_ulBlurRadius(m_shader.getUniformLocation("blur_radius").value())
@@ -172,7 +174,7 @@ public:
     }
 
     explicit StormBlink(sf::Shader&& shader) :
-    m_shader(std::move(shader)),
+    m_shader(SFML_BASE_MOVE(shader)),
     m_ulStormPosition(m_shader.getUniformLocation("storm_position").value()),
     m_ulStormInnerRadius(m_shader.getUniformLocation("storm_inner_radius").value()),
     m_ulStormTotalRadius(m_shader.getUniformLocation("storm_total_radius").value()),
@@ -180,7 +182,7 @@ public:
     {
         std::uniform_real_distribution<float>        xDistribution(0, 800);
         std::uniform_real_distribution<float>        yDistribution(0, 600);
-        std::uniform_int_distribution<std::uint16_t> colorDistribution(0, 255);
+        std::uniform_int_distribution<sf::base::U16> colorDistribution(0, 255);
 
         // Create the points
         for (int i = 0; i < 40'000; ++i)
@@ -188,21 +190,21 @@ public:
             const auto x = xDistribution(rng);
             const auto y = yDistribution(rng);
 
-            const auto r = static_cast<std::uint8_t>(colorDistribution(rng));
-            const auto g = static_cast<std::uint8_t>(colorDistribution(rng));
-            const auto b = static_cast<std::uint8_t>(colorDistribution(rng));
+            const auto r = static_cast<sf::base::U8>(colorDistribution(rng));
+            const auto g = static_cast<sf::base::U8>(colorDistribution(rng));
+            const auto b = static_cast<sf::base::U8>(colorDistribution(rng));
 
-            m_points.push_back({{x, y}, {r, g, b}});
+            m_points.emplaceBack(sf::Vec2f{x, y}, sf::Color{r, g, b});
         }
     }
 
 private:
-    std::vector<sf::Vertex>     m_points;
-    sf::Shader                  m_shader;
-    sf::Shader::UniformLocation m_ulStormPosition;
-    sf::Shader::UniformLocation m_ulStormInnerRadius;
-    sf::Shader::UniformLocation m_ulStormTotalRadius;
-    sf::Shader::UniformLocation m_ulBlinkAlpha;
+    sf::base::Vector<sf::Vertex> m_points;
+    sf::Shader                   m_shader;
+    sf::Shader::UniformLocation  m_ulStormPosition;
+    sf::Shader::UniformLocation  m_ulStormInnerRadius;
+    sf::Shader::UniformLocation  m_ulStormTotalRadius;
+    sf::Shader::UniformLocation  m_ulBlinkAlpha;
 };
 
 
@@ -246,10 +248,10 @@ public:
     }
 
     explicit Edge(sf::RenderTexture&& surface, sf::Texture&& backgroundTexture, sf::Texture&& entityTexture, sf::Shader&& shader) :
-    m_surface(std::move(surface)),
-    m_backgroundTexture(std::move(backgroundTexture)),
-    m_entityTexture(std::move(entityTexture)),
-    m_shader(std::move(shader)),
+    m_surface(SFML_BASE_MOVE(surface)),
+    m_backgroundTexture(SFML_BASE_MOVE(backgroundTexture)),
+    m_entityTexture(SFML_BASE_MOVE(entityTexture)),
+    m_shader(SFML_BASE_MOVE(shader)),
     m_ulEdgeThreshold(m_shader.getUniformLocation("edge_threshold").value())
     {
     }
@@ -281,7 +283,7 @@ public:
         m_transform.rotate(sf::degrees(x * 360.f));
 
         // Adjust billboard size to scale between 25 and 75
-        const float size = 25 + std::abs(y) * 50;
+        const float size = 25 + sf::base::fabs(y) * 50;
 
         // Update the shader parameter
         m_shader.setUniform(m_ulSize, sf::Vec2f{size, size});
@@ -299,13 +301,13 @@ public:
     }
 
     explicit Geometry(sf::Texture&& logoTexture, sf::Shader&& shader) :
-    m_logoTexture(std::move(logoTexture)),
-    m_shader(std::move(shader)),
+    m_logoTexture(SFML_BASE_MOVE(logoTexture)),
+    m_shader(SFML_BASE_MOVE(shader)),
     m_ulSize(m_shader.getUniformLocation("size").value()),
     m_pointCloud(10'000)
     {
         // Move the points in the point cloud to random positions
-        for (std::size_t i = 0; i < 10'000; ++i)
+        for (sf::base::SizeT i = 0; i < 10'000; ++i)
         {
             // Spread the coordinates from -480 to +480 so they'll always fill the viewport at 800x600
             std::uniform_real_distribution<float> positionDistribution(-480.f, 480.f);
@@ -314,11 +316,11 @@ public:
     }
 
 private:
-    sf::Texture                 m_logoTexture;
-    sf::Transform               m_transform;
-    sf::Shader                  m_shader;
-    sf::Shader::UniformLocation m_ulSize;
-    std::vector<sf::Vertex>     m_pointCloud;
+    sf::Texture                  m_logoTexture;
+    sf::Transform                m_transform;
+    sf::Shader                   m_shader;
+    sf::Shader::UniformLocation  m_ulSize;
+    sf::base::Vector<sf::Vertex> m_pointCloud;
 };
 
 
@@ -336,7 +338,7 @@ sf::base::Optional<Pixelate> tryLoadPixelate()
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
-    return sf::base::makeOptional<Pixelate>(std::move(*texture), std::move(*shader));
+    return sf::base::makeOptional<Pixelate>(SFML_BASE_MOVE(*texture), SFML_BASE_MOVE(*shader));
 }
 
 sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
@@ -345,7 +347,7 @@ sf::base::Optional<WaveBlur> tryLoadWaveBlur(const sf::Font& font)
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
-    return sf::base::makeOptional<WaveBlur>(font, std::move(*shader));
+    return sf::base::makeOptional<WaveBlur>(font, SFML_BASE_MOVE(*shader));
 }
 
 sf::base::Optional<StormBlink> tryLoadStormBlink()
@@ -354,7 +356,7 @@ sf::base::Optional<StormBlink> tryLoadStormBlink()
     if (!shader.hasValue())
         return sf::base::nullOpt;
 
-    return sf::base::makeOptional<StormBlink>(std::move(*shader));
+    return sf::base::makeOptional<StormBlink>(SFML_BASE_MOVE(*shader));
 }
 
 sf::base::Optional<Edge> tryLoadEdge()
@@ -388,10 +390,10 @@ sf::base::Optional<Edge> tryLoadEdge()
 
     shader->setUniform(shader->getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
 
-    return sf::base::makeOptional<Edge>(std::move(*surface),
-                                        std::move(*backgroundTexture),
-                                        std::move(*entityTexture),
-                                        std::move(*shader));
+    return sf::base::makeOptional<Edge>(SFML_BASE_MOVE(*surface),
+                                        SFML_BASE_MOVE(*backgroundTexture),
+                                        SFML_BASE_MOVE(*entityTexture),
+                                        SFML_BASE_MOVE(*shader));
 }
 
 sf::base::Optional<Geometry> tryLoadGeometry()
@@ -419,7 +421,7 @@ sf::base::Optional<Geometry> tryLoadGeometry()
     // Set the render resolution (used for proper scaling)
     shader->setUniform(shader->getUniformLocation("resolution").value(), sf::Vec2f{800, 600});
 
-    return sf::base::makeOptional<Geometry>(std::move(*logoTexture), std::move(*shader));
+    return sf::base::makeOptional<Geometry>(SFML_BASE_MOVE(*logoTexture), SFML_BASE_MOVE(*shader));
 }
 
 } // namespace
@@ -444,17 +446,17 @@ int main()
     sf::base::Optional edgeEffect       = tryLoadEdge();
     sf::base::Optional geometryEffect   = tryLoadGeometry();
 
-    const std::array<Effect*, 5> effects{pixelateEffect.asPtr(),
-                                         waveBlurEffect.asPtr(),
-                                         stormBlinkEffect.asPtr(),
-                                         edgeEffect.asPtr(),
-                                         geometryEffect.asPtr()};
+    const sf::base::Array<Effect*, 5> effects{pixelateEffect.asPtr(),
+                                              waveBlurEffect.asPtr(),
+                                              stormBlinkEffect.asPtr(),
+                                              edgeEffect.asPtr(),
+                                              geometryEffect.asPtr()};
 
-    const std::array<std::string, 5>
+    const sf::base::Array<std::string, 5>
         effectNames{"Pixelate", "Wave + Blur", "Storm + Blink", "Edge Post-effect", "Geometry Shader Billboards"};
 
     // Index of currently selected effect
-    std::size_t current = 0;
+    sf::base::SizeT current = 0u;
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile("resources/text-background.png").value();
@@ -497,7 +499,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, window))
                 continue;

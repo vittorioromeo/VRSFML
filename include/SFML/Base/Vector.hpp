@@ -126,7 +126,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
+    [[nodiscard]] explicit(false) Vector(const std::initializer_list<TItem> iList) : Vector(iList.begin(), iList.end())
     {
     }
 
@@ -352,7 +352,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename T>
+    template <typename T = TItem>
     [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
     {
         reserveMore(1);

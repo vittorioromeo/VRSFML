@@ -274,9 +274,9 @@ public:
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLength == T{0} &&
-                                                             "Vec2::clampMinLength() cannot clamp zero vec2 to a "
-                                                             "positive minimum length");
+        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLength == T{0}) &&
+                         "Vec2::clampMinLength() cannot clamp zero vec2 to a "
+                         "positive minimum length");
 
         if (currentLengthSquared >= minLength * minLength)
             return *this;
@@ -310,9 +310,9 @@ public:
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLengthSquared == T{0} &&
-                                                             "Vec2::clampMinLengthSquared() cannot clamp zero "
-                                                             "vec2 to a positive minimum squared length");
+        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
+                         "Vec2::clampMinLengthSquared() cannot clamp zero "
+                         "vec2 to a positive minimum squared length");
 
         if (currentLengthSquared >= minLengthSquared)
             return *this;
@@ -347,9 +347,9 @@ public:
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLength == T{0} &&
-                                                             "Vec2::clampLength() cannot clamp zero vec2 to a "
-                                                             "positive minimum length");
+        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLength == T{0}) &&
+                         "Vec2::clampLength() cannot clamp zero vec2 to a "
+                         "positive minimum length");
 
         const T minLengthSquared = minLength * minLength;
         const T maxLengthSquared = maxLength * maxLength;
@@ -401,9 +401,9 @@ public:
 
         const T currentLengthSquared = lengthSquared();
 
-        SFML_BASE_ASSERT(currentLengthSquared != T{0} || minLengthSquared == T{0} &&
-                                                             "Vec2::clampLengthSquared() cannot clamp zero vec2 "
-                                                             "to a positive minimum squared length");
+        SFML_BASE_ASSERT((currentLengthSquared != T{0} || minLengthSquared == T{0}) &&
+                         "Vec2::clampLengthSquared() cannot clamp zero vec2 "
+                         "to a positive minimum squared length");
 
         if (currentLengthSquared >= minLengthSquared && currentLengthSquared <= maxLengthSquared)
             return *this;

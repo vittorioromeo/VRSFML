@@ -32,7 +32,7 @@ set(SDL_TRAY OFF)
 
 if(EXISTS "${PROJECT_SOURCE_DIR}/../SDL/CMakeLists.txt")
     message(STATUS "Found local SDL dependency. Adding it from ../SDL.")
-    add_subdirectory("${PROJECT_SOURCE_DIR}/../SDL" sdl)
+    add_subdirectory("${PROJECT_SOURCE_DIR}/../SDL" sdl SYSTEM)
 else()
     CPMAddPackage(
         NAME sdl

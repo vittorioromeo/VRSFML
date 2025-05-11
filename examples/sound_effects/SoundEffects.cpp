@@ -33,18 +33,18 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
-#include <array>
 #include <limits>
 #include <string>
-#include <vector>
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 
 
@@ -89,7 +89,7 @@ public:
     }
 
 protected:
-    explicit Effect(std::string name) : m_name(std::move(name))
+    explicit Effect(std::string name) : m_name(SFML_BASE_MOVE(name))
     {
     }
 
@@ -375,8 +375,9 @@ public:
         m_currentAmplitude.setString("Amplitude: " + std::to_string(m_amplitude));
         m_currentFrequency.setString("Frequency: " + std::to_string(m_frequency) + " Hz");
 
-        m_currentType.setString(std::string{"Wave Type: "} +
-                                std::array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<std::size_t>(m_type)]);
+        m_currentType.setString(
+            std::string{"Wave Type: "} +
+            sf::base::Array{"Sine", "Square", "Triangle", "Sawtooth"}[static_cast<sf::base::SizeT>(m_type)]);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -407,9 +408,9 @@ public:
     void handleKey(sf::Keyboard::Key key) override
     {
         if (key == sf::Keyboard::Key::Down)
-            m_type = static_cast<Type>((static_cast<std::size_t>(m_type) + 1) % 4u); // Forward
+            m_type = static_cast<Type>((static_cast<sf::base::SizeT>(m_type) + 1) % 4u); // Forward
         else if (key == sf::Keyboard::Key::Up)
-            m_type = static_cast<Type>((static_cast<std::size_t>(m_type) - 1) % 4u); // Reverse
+            m_type = static_cast<Type>((static_cast<sf::base::SizeT>(m_type) - 1) % 4u); // Reverse
     }
 
 private:
@@ -449,7 +450,7 @@ private:
                 }
             }
 
-            m_sampleBuffer[i] = static_cast<std::int16_t>(std::lround(value * std::numeric_limits<std::int16_t>::max()));
+            m_sampleBuffer[i] = static_cast<sf::base::I16>(std::lround(value * std::numeric_limits<sf::base::I16>::max()));
             m_time += timePerSample;
         }
 
@@ -464,7 +465,7 @@ private:
         // It doesn't make sense to seek in a tone generator
     }
 
-    enum class Type : std::size_t
+    enum class Type : sf::base::SizeT
     {
         Sine,
         Square,
@@ -472,17 +473,17 @@ private:
         Sawtooth
     };
 
-    static constexpr unsigned int sampleRate{44'100};
-    static constexpr std::size_t  chunkSize{sampleRate / 100};
-    static constexpr float        timePerSample{1.f / float{sampleRate}};
+    static constexpr unsigned int    sampleRate{44'100};
+    static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
+    static constexpr float           timePerSample{1.f / float{sampleRate}};
 
     sf::Listener& m_listener;
 
-    std::vector<std::int16_t> m_sampleBuffer = std::vector<std::int16_t>(chunkSize, 0);
-    Type                      m_type{Type::Triangle};
-    float                     m_amplitude{0.05f};
-    float                     m_frequency{220};
-    float                     m_time{};
+    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
+    Type                            m_type{Type::Triangle};
+    float                           m_amplitude{0.05f};
+    float                           m_frequency{220};
+    float                           m_time{};
 
     sf::Text m_instruction;
     sf::Text m_currentType;
@@ -576,7 +577,7 @@ private:
         {
             const auto value = m_amplitude * 2 * (m_time / period - std::floor(0.5f + m_time / period));
 
-            m_sampleBuffer[i] = static_cast<std::int16_t>(std::lround(value * std::numeric_limits<std::int16_t>::max()));
+            m_sampleBuffer[i] = static_cast<sf::base::I16>(std::lround(value * std::numeric_limits<sf::base::I16>::max()));
             m_time += timePerSample;
         }
 
@@ -591,16 +592,16 @@ private:
         // It doesn't make sense to seek in a tone generator
     }
 
-    static constexpr unsigned int sampleRate{44'100};
-    static constexpr std::size_t  chunkSize{sampleRate / 100};
-    static constexpr float        timePerSample{1.f / float{sampleRate}};
+    static constexpr unsigned int    sampleRate{44'100};
+    static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
+    static constexpr float           timePerSample{1.f / float{sampleRate}};
 
     sf::Listener& m_listener;
 
-    std::vector<std::int16_t> m_sampleBuffer = std::vector<std::int16_t>(chunkSize, 0);
-    float                     m_amplitude{0.05f};
-    float                     m_frequency{220};
-    float                     m_time{};
+    sf::base::Vector<sf::base::I16> m_sampleBuffer = sf::base::Vector<sf::base::I16>(chunkSize, 0);
+    float                           m_amplitude{0.05f};
+    float                           m_frequency{220};
+    float                           m_time{};
 
     float           m_velocity{0.f};
     float           m_factor{1.f};
@@ -655,7 +656,7 @@ public:
 
 protected:
     explicit Processing(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource, std::string name) :
-    Effect(std::move(name)),
+    Effect(SFML_BASE_MOVE(name)),
     m_listener(listener),
     m_music(musicSource),
     m_enabledText(font, {.string = "Processing: Enabled"}),
@@ -733,11 +734,13 @@ protected:
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
         m_music.setEffectProcessor(
-            [coefficients, &enabled = m_enabled, state = std::vector<State>()](const float*  inputFrames,
-                                                                               unsigned int& inputFrameCount,
-                                                                               float*        outputFrames,
-                                                                               unsigned int& outputFrameCount,
-                                                                               unsigned int  frameChannelCount) mutable
+            [coefficients,
+             &enabled = m_enabled,
+             state    = sf::base::Vector<State>()](const float*  inputFrames,
+                                                unsigned int& inputFrameCount,
+                                                float*        outputFrames,
+                                                unsigned int& outputFrameCount,
+                                                unsigned int  frameChannelCount) mutable
         {
             // IMPORTANT: The channel count of the audio engine currently sourcing data from this sound
             // will always be provided in frameChannelCount, this can be different from the channel count
@@ -846,7 +849,7 @@ struct Echo : Processing
         m_music.setEffectProcessor(
             [delayInFrames,
              &enabled = m_enabled,
-             buffer   = std::vector<float>(),
+             buffer   = sf::base::Vector<float>(),
              cursor   = 0u](const float*  inputFrames,
                           unsigned int& inputFrameCount,
                           float*        outputFrames,
@@ -901,7 +904,7 @@ public:
         // associated lambda are destroyed
         m_music.setEffectProcessor(
             [sampleRate = m_music.getSampleRate(),
-             filters    = std::vector<ReverbFilter<float>>(),
+             filters    = sf::base::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
                                    float*        outputFrames,
@@ -913,7 +916,7 @@ public:
             // of the audio source so make sure to size your buffers according to the engine and not the source
             // Ensure we have as many filter objects as the audio engine has channels
             while (filters.size() < frameChannelCount)
-                filters.emplace_back(sampleRate, sustain);
+                filters.emplaceBack(sampleRate, sustain);
 
             for (auto frame = 0u; frame < outputFrameCount; ++frame)
             {
@@ -937,7 +940,7 @@ private:
     class AllPassFilter
     {
     public:
-        AllPassFilter(std::size_t delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
+        AllPassFilter(sf::base::SizeT delay, float theGain) : m_buffer(delay, {}), m_gain(theGain)
         {
         }
 
@@ -951,16 +954,16 @@ private:
         }
 
     private:
-        std::vector<T> m_buffer;
-        std::size_t    m_cursor{};
-        const float    m_gain{};
+        sf::base::Vector<T> m_buffer;
+        sf::base::SizeT     m_cursor{};
+        const float         m_gain{};
     };
 
     template <typename T>
     class FIRFilter
     {
     public:
-        explicit FIRFilter(std::vector<float> taps) : m_taps(std::move(taps))
+        explicit FIRFilter(sf::base::Vector<float> taps) : m_taps(SFML_BASE_MOVE(taps))
         {
         }
 
@@ -978,9 +981,9 @@ private:
         }
 
     private:
-        const std::vector<float> m_taps;
-        std::vector<T>           m_buffer = std::vector<T>(m_taps.size(), {});
-        std::size_t              m_cursor{};
+        const sf::base::Vector<float> m_taps;
+        sf::base::Vector<T>           m_buffer = sf::base::Vector<T>(m_taps.size(), {});
+        sf::base::SizeT               m_cursor{};
     };
 
     template <typename T>
@@ -1022,12 +1025,12 @@ private:
         }
 
     private:
-        AllPassFilter<T>  m_allPass[4];
-        FIRFilter<T>      m_fir;
-        std::vector<T>    m_buffer;
-        std::size_t       m_cursor{};
-        const std::size_t m_interval{m_buffer.size() / 3};
-        const float       m_feedbackGain{};
+        AllPassFilter<T>      m_allPass[4];
+        FIRFilter<T>          m_fir;
+        sf::base::Vector<T>   m_buffer;
+        sf::base::SizeT       m_cursor{};
+        const sf::base::SizeT m_interval{m_buffer.size() / 3};
+        const float           m_feedbackGain{};
     };
 };
 
@@ -1069,21 +1072,21 @@ int main()
     auto audioContext          = sf::AudioContext::create().value();
     auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
 
-    std::size_t currentPlaybackDeviceIndex = 0;
+    sf::base::SizeT currentPlaybackDeviceIndex = 0;
 
-    std::vector<sf::PlaybackDevice> playbackDevices;
+    sf::base::Vector<sf::PlaybackDevice> playbackDevices;
     playbackDevices.reserve(playbackDeviceHandles.size());
 
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
-        playbackDevices.emplace_back(deviceHandle);
+        playbackDevices.emplaceBack(deviceHandle);
 
         if (deviceHandle.isDefault())
             currentPlaybackDeviceIndex = playbackDevices.size() - 1;
     }
 
     const auto getCurrentPlaybackDevice = [&]() -> sf::PlaybackDevice&
-    { return playbackDevices.at(currentPlaybackDeviceIndex); };
+    { return playbackDevices[currentPlaybackDeviceIndex]; };
 
     // TODO P1: docs
     sf::Listener listener;
@@ -1102,17 +1105,18 @@ int main()
     Echo           echoEffect(listener, font, musicSource);
     Reverb         reverbEffect(listener, font, musicSource);
 
-    const std::array<Effect*, 9> effects{&surroundEffect,
-                                         &pitchVolumeEffect,
-                                         &attenuationEffect,
-                                         &toneEffect,
-                                         &dopplerEffect,
-                                         &highPassFilterEffect,
-                                         &lowPassFilterEffect,
-                                         &echoEffect,
-                                         &reverbEffect};
+    const sf::base::Array<Effect*, 9>
+        effects{&surroundEffect,
+                &pitchVolumeEffect,
+                &attenuationEffect,
+                &toneEffect,
+                &dopplerEffect,
+                &highPassFilterEffect,
+                &lowPassFilterEffect,
+                &echoEffect,
+                &reverbEffect};
 
-    std::size_t current = 0;
+    sf::base::SizeT current = 0;
 
     effects[current]->start(getCurrentPlaybackDevice());
 
@@ -1158,7 +1162,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, window))
                 continue;
@@ -1202,7 +1206,7 @@ int main()
                     // F1 key: change playback device
                     case sf::Keyboard::Key::F1:
                     {
-                        std::size_t newPlaybackDeviceIndex{};
+                        sf::base::SizeT newPlaybackDeviceIndex{};
 
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
@@ -1211,12 +1215,12 @@ int main()
                         // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)
                         {
-                            std::vector<sf::PlaybackDevice> newPlaybackDevices;
+                            sf::base::Vector<sf::PlaybackDevice> newPlaybackDevices;
                             newPlaybackDevices.reserve(newPlaybackDeviceHandles.size());
 
                             for (const sf::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
                             {
-                                newPlaybackDevices.emplace_back(deviceHandle);
+                                newPlaybackDevices.emplaceBack(deviceHandle);
 
                                 if (deviceHandle.isDefault())
                                     newPlaybackDeviceIndex = newPlaybackDevices.size() - 1;
@@ -1227,14 +1231,14 @@ int main()
                             getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
                             effects[current]->start(newPlaybackDevice);
 
-                            playbackDeviceHandles = std::move(newPlaybackDeviceHandles);
-                            playbackDevices       = std::move(newPlaybackDevices);
+                            playbackDeviceHandles = SFML_BASE_MOVE(newPlaybackDeviceHandles);
+                            playbackDevices       = SFML_BASE_MOVE(newPlaybackDevices);
                         }
                         else
                         {
                             newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
 
-                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices.at(newPlaybackDeviceIndex);
+                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
                             getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
                         }
 

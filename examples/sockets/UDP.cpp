@@ -11,10 +11,9 @@
 #include "SFML/System/IO.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #include <string>
-
-#include <cstddef>
 
 
 ////////////////////////////////////////////////////////////
@@ -33,7 +32,7 @@ void runUdpServer(unsigned short port)
 
     // Wait for a message
     char                              in[128];
-    std::size_t                       received = 0;
+    sf::base::SizeT                   received = 0;
     sf::base::Optional<sf::IpAddress> sender;
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)
@@ -77,7 +76,7 @@ void runUdpClient(unsigned short port)
 
     // Receive an answer from anyone (but most likely from the server)
     char                              in[128];
-    std::size_t                       received = 0;
+    sf::base::SizeT                   received = 0;
     sf::base::Optional<sf::IpAddress> sender;
     unsigned short                    senderPort = 0;
     if (socket.receive(in, sizeof(in), received, sender, senderPort) != sf::Socket::Status::Done)

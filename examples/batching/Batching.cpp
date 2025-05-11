@@ -30,6 +30,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 
@@ -38,11 +39,8 @@
 
 #include <latch>
 #include <string>
-#include <vector>
 
-#include <cstddef>
 #include <cstdio>
-#include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
@@ -129,13 +127,13 @@ int main()
         float           torque;
     };
 
-    std::vector<Entity> entities;
+    sf::base::Vector<Entity> entities;
 
-    const auto populateEntities = [&](const std::size_t n)
+    const auto populateEntities = [&](const sf::base::SizeT n)
     {
         if (n < entities.size())
         {
-            entities.erase(entities.begin() + static_cast<std::ptrdiff_t>(n), entities.end());
+            entities.erase(entities.begin() + static_cast<sf::base::PtrDiffT>(n), entities.end());
             return;
         }
 
@@ -145,14 +143,14 @@ int main()
         char                  labelBuffer[64]{};
         constexpr const char* names[]{"Elephant", "Giraffe", "Monkey", "Pig", "Rabbit", "Snake"};
 
-        for (std::size_t i = 0u; i < n; ++i)
+        for (sf::base::SizeT i = 0u; i < n; ++i)
         {
-            const std::size_t    type        = i % 6u;
-            const sf::FloatRect& textureRect = spriteTextureRects[type];
+            const sf::base::SizeT type        = i % 6u;
+            const sf::FloatRect&  textureRect = spriteTextureRects[type];
 
             std::snprintf(labelBuffer, 64, "%s #%zu", names[type], (i / (type + 1u)) + 1u);
 
-            auto& [text, circleShape, sprite, velocity, torque] = entities.emplace_back(
+            auto& [text, circleShape, sprite, velocity, torque] = entities.emplaceBack(
                 sf::Text{i % 2u == 0u ? fontTuffy : fontMouldyCheese,
                          {.string           = labelBuffer,
                           .fillColor        = sf::Color::Black,
@@ -188,7 +186,7 @@ int main()
     //
     // Get hardware constants
     const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
-    constexpr auto cacheLineSize = static_cast<std::size_t>(sf::base::hardwareDestructiveInterferenceSize);
+    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -208,18 +206,18 @@ int main()
 #endif
         ;
 
-    auto          batchType                = BatchType::Disabled;
-    auto          autobatchType            = defaultBatchType;
-    sf::base::U64 autoBatchVertexThreshold = 32'768u;
-    bool          drawSprites              = true;
-    bool          drawText                 = true;
-    bool          drawShapes               = true;
-    bool          multithreadedUpdate      = false;
-    bool          multithreadedDraw        = false;
-    sf::base::U64 nWorkers                 = nMaxWorkers;
-    int           numEntities              = 500;
-    std::size_t   drawnVertices            = 0u;
-    unsigned int  nDrawCalls               = 0u;
+    auto            batchType                = BatchType::Disabled;
+    auto            autobatchType            = defaultBatchType;
+    sf::base::U64   autoBatchVertexThreshold = 32'768u;
+    bool            drawSprites              = true;
+    bool            drawText                 = true;
+    bool            drawShapes               = true;
+    bool            multithreadedUpdate      = false;
+    bool            multithreadedDraw        = false;
+    sf::base::U64   nWorkers                 = nMaxWorkers;
+    int             numEntities              = 500;
+    sf::base::SizeT drawnVertices            = 0u;
+    unsigned int    nDrawCalls               = 0u;
 
     //
     //
@@ -234,8 +232,8 @@ int main()
         using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    std::vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
-    std::vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
+    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(nMaxWorkers);
+    sf::base::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(nMaxWorkers);
 
     //
     //
@@ -244,16 +242,16 @@ int main()
 
     const auto doInBatches = [&](auto&& f)
     {
-        const std::size_t entitiesPerBatch = entities.size() / nWorkers;
+        const sf::base::SizeT entitiesPerBatch = entities.size() / nWorkers;
 
-        std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
+        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
 
-        for (std::size_t i = 0u; i < nWorkers; ++i)
+        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const std::size_t batchStartIdx = i * entitiesPerBatch;
-                const std::size_t batchEndIdx   = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
+                const sf::base::SizeT batchStartIdx = i * entitiesPerBatch;
+                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? entities.size() : (i + 1u) * entitiesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -278,7 +276,7 @@ int main()
     //
     //
     // Set up initial simulation state
-    populateEntities(static_cast<std::size_t>(numEntities));
+    populateEntities(static_cast<sf::base::SizeT>(numEntities));
 
     //
     //
@@ -298,7 +296,7 @@ int main()
                 imGuiContext.processEvent(window, *event);
 
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                    return EXIT_SUCCESS;
+                    return 0;
             }
         }
         samplesEventMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
@@ -337,9 +335,9 @@ int main()
             else
             {
                 doInBatches(
-                    [&](const std::size_t /* iBatch */, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
+                    [&](const sf::base::SizeT /* iBatch */, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
                 {
-                    for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         updateEntity(entities[i]);
                 });
             }
@@ -427,7 +425,7 @@ int main()
 
             if (ImGui::Button("Repopulate") && numEntities > 0)
             {
-                populateEntities(static_cast<std::size_t>(numEntities));
+                populateEntities(static_cast<sf::base::SizeT>(numEntities));
                 clearSamples();
             }
 
@@ -469,7 +467,7 @@ int main()
         {
             window.clear();
 
-            const auto drawEntity = [&](const Entity& entity, std::size_t& drawnVertexCounter, auto&& drawFn)
+            const auto drawEntity = [&](const Entity& entity, sf::base::SizeT& drawnVertexCounter, auto&& drawFn)
             {
                 if (drawSprites)
                 {
@@ -498,13 +496,14 @@ int main()
                     batch.clear();
 
                 // Initialize per-worker drawn vertex counts
-                std::vector<std::size_t> totalChunkDrawnVertices(nMaxWorkers);
+                sf::base::Vector<sf::base::SizeT> totalChunkDrawnVertices(nMaxWorkers);
 
-                doInBatches([&](const std::size_t iBatch, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
+                doInBatches(
+                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
                 {
-                    std::size_t chunkDrawnVertices = 0u; // avoid false sharing
+                    sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
 
-                    for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         drawEntity(entities[i],
                                    chunkDrawnVertices,
                                    [&](const auto& drawable, const auto&...) { batchesArray[iBatch].add(drawable); });
@@ -557,7 +556,7 @@ int main()
                 const sf::base::SizeT     reservationSize           = maxEntitiesPerBatch * maxQuadsPerEntityEstimate;
 
                 // Must reserve in advance as reserving is not thread-safe
-                for (std::size_t iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
                     gpuDrawableBatches[iBatch].reserveQuads(reservationSize);
 
                 doMultithreadedDraw(gpuDrawableBatches);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -67,7 +68,7 @@ public:
         }
 
         // Initialize latch for the asynchronous tasks only.
-        std::latch latch{static_cast<std::ptrdiff_t>(nWorkers - 1u)};
+        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers - 1u)};
 
         // Process the first chunk on the main thread.
         {
@@ -85,7 +86,7 @@ public:
             if (start >= numObjects)
             {
                 // If there is no work for this task, decrement the latch for each missing task.
-                latch.count_down(static_cast<std::ptrdiff_t>(nWorkers - iWorker));
+                latch.count_down(static_cast<sf::base::PtrDiffT>(nWorkers - iWorker));
                 break;
             }
 

@@ -13,12 +13,12 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/String.hpp"
 
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
+
 #include "ExampleUtils.hpp"
 
 #include <string>
-#include <vector>
-
-#include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
@@ -47,14 +47,14 @@ int main()
     sf::Text mousePosition(font, {.position = {400.f, 300.f}, .characterSize = 20u, .fillColor = sf::Color::White});
     sf::Text mouseRawMovement(font, {.characterSize = 20u, .fillColor = sf::Color::White});
 
-    std::vector<std::string> log;
+    sf::base::Vector<std::string> log;
 
     while (true)
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize, window))
                 continue;
@@ -67,7 +67,7 @@ int main()
 
             if (const auto* const mouseMovedRaw = event->getIf<sf::Event::MouseMovedRaw>())
             {
-                log.emplace_back("Mouse Movement: " + vec2ToString(mouseMovedRaw->delta));
+                log.emplaceBack("Mouse Movement: " + vec2ToString(mouseMovedRaw->delta));
 
                 if (log.size() > 24u)
                     log.erase(log.begin());
@@ -77,7 +77,7 @@ int main()
         window.clear();
         window.draw(mousePosition);
 
-        for (std::size_t i = 0u; i < log.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < log.size(); ++i)
         {
             mouseRawMovement.position = {50.f, static_cast<float>(i * 20) + 50.f};
             mouseRawMovement.setString(log[i]);

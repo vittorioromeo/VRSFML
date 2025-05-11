@@ -25,19 +25,18 @@
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
 #define STB_PERLIN_IMPLEMENTATION
 #include <stb_perlin.h>
 
-#include <array>
 #include <atomic>
-#include <vector>
 
 #include <cmath>
-#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 
@@ -131,7 +130,7 @@ float getMoisture(sf::Vec2u position)
 ////////////////////////////////////////////////////////////
 sf::Color colorFromFloats(float r, float g, float b)
 {
-    return {static_cast<std::uint8_t>(r), static_cast<std::uint8_t>(g), static_cast<std::uint8_t>(b)};
+    return {static_cast<sf::base::U8>(r), static_cast<sf::base::U8>(g), static_cast<sf::base::U8>(b)};
 }
 
 sf::Color getLowlandsTerrainColor(float moisture)
@@ -176,7 +175,7 @@ sf::Color getHighlandsTerrainColor(float elevation, float moisture)
                                                               128 + (56 * (moisture - 0.6f) / 0.4f),
                                                               144 - (9 * (moisture - 0.6f) / 0.4f));
 
-    const float factor = std::min((elevation - 0.4f) / 0.1f, 1.f);
+    const float factor = sf::base::min((elevation - 0.4f) / 0.1f, 1.f);
 
     return colorFromFloats(lowlandsColor.r * (1.f - factor) + color.r * factor,
                            lowlandsColor.g * (1.f - factor) + color.g * factor,
@@ -193,11 +192,11 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 {
     const sf::Color highlandsColor = getHighlandsTerrainColor(elevation, moisture);
 
-    const float factor = std::min((elevation - snowcapHeight) / 0.05f, 1.f);
+    const float factor = sf::base::min((elevation - snowcapHeight) / 0.05f, 1.f);
 
-    return {static_cast<std::uint8_t>(highlandsColor.r * (1.f - factor) + 255 * factor),
-            static_cast<std::uint8_t>(highlandsColor.g * (1.f - factor) + 255 * factor),
-            static_cast<std::uint8_t>(highlandsColor.b * (1.f - factor) + 255 * factor)};
+    return {static_cast<sf::base::U8>(highlandsColor.r * (1.f - factor) + 255 * factor),
+            static_cast<sf::base::U8>(highlandsColor.g * (1.f - factor) + 255 * factor),
+            static_cast<sf::base::U8>(highlandsColor.b * (1.f - factor) + 255 * factor)};
 }
 
 
@@ -209,17 +208,17 @@ sf::Color getSnowcapTerrainColor(float elevation, float moisture)
 sf::Color getTerrainColor(float elevation, float moisture)
 {
     if (elevation < 0.11f)
-        return {0, 0, static_cast<std::uint8_t>(elevation / 0.11f * 74.f + 181.f)};
+        return {0, 0, static_cast<sf::base::U8>(elevation / 0.11f * 74.f + 181.f)};
 
     if (elevation < 0.14f)
-        return {static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
-                static_cast<std::uint8_t>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+        return {static_cast<sf::base::U8>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+                static_cast<sf::base::U8>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
                 255};
 
     if (elevation < 0.16f)
-        return {static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<std::uint8_t>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
-                static_cast<std::uint8_t>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
+        return {static_cast<sf::base::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
+                static_cast<sf::base::U8>((elevation - 0.14f) * 128.f / 0.02f + 48.f),
+                static_cast<sf::base::U8>(127.f + (0.16f - elevation) * 128.f / 0.02f)};
 
     if (elevation < 0.17f)
         return {240, 230, 140};
@@ -279,14 +278,14 @@ sf::Vertex computeVertex(sf::Vec2u position)
 /// the vertex buffer when done.
 ///
 ////////////////////////////////////////////////////////////
-void processWorkItem(std::vector<sf::Vertex>& vertices, sf::Vertex* const targetBuffer, const unsigned int index)
+void processWorkItem(sf::base::Vector<sf::Vertex>& vertices, sf::Vertex* const targetBuffer, const unsigned int index)
 {
     const unsigned int rowStart = rowBlockSize * index;
 
     if (rowStart >= resolution.y)
         return;
 
-    const unsigned int rowEnd   = std::min(rowStart + rowBlockSize, resolution.y);
+    const unsigned int rowEnd   = sf::base::min(rowStart + rowBlockSize, resolution.y);
     const unsigned int rowCount = rowEnd - rowStart;
 
     for (unsigned int y = rowStart; y < rowEnd; ++y)
@@ -351,7 +350,7 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
     for (unsigned int i = 0u; i < blockCount; ++i)
         threadPool.post([buffer, i]
         {
-            static thread_local std::vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
+            static thread_local sf::base::Vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
             processWorkItem(vertices, buffer, i);
 
             pendingTasks.fetch_sub(1u, std::memory_order::release);
@@ -407,7 +406,7 @@ int main()
     sf::VertexBuffer terrain(sf::PrimitiveType::Triangles, sf::VertexBuffer::Usage::Static);
 
     // Staging buffer for our terrain data that we will upload to our VertexBuffer
-    std::vector<sf::Vertex> terrainStagingBuffer;
+    sf::base::Vector<sf::Vertex> terrainStagingBuffer;
 
     // Create a thread pool
     sf::base::ThreadPool threadPool{sf::base::ThreadPool::getHardwareWorkerCount()};
@@ -429,7 +428,7 @@ int main()
     statusText.position = (windowSize.toVec2f() - statusText.getLocalBounds().size) / 2.f;
 
     // Set up an array of pointers to our settings for arrow navigation
-    constexpr std::array<Setting, 9> settings = {
+    constexpr sf::base::Array<Setting, 9> settings = {
         {{"perlinFrequency", &perlinFrequency},
          {"perlinFrequencyBase", &perlinFrequencyBase},
          {"heightBase", &heightBase},
@@ -440,7 +439,7 @@ int main()
          {"heightFlatten", &heightFlatten},
          {"lightFactor", &lightFactor}}};
 
-    std::size_t currentSetting = 0;
+    sf::base::SizeT currentSetting = 0;
 
     sf::OutStringStream oss;
     sf::Clock           clock;
@@ -451,7 +450,7 @@ int main()
         while (const sf::base::Optional event = window.pollEvent())
         {
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
-                return EXIT_SUCCESS;
+                return 0;
 
             if (handleAspectRatioAwareResize(*event, windowSize.toVec2f(), window))
                 continue;
@@ -496,7 +495,7 @@ int main()
                 if (!terrain.update(terrainStagingBuffer.data()))
                 {
                     sf::cErr() << "Failed to update vertex buffer" << sf::endL;
-                    return EXIT_SUCCESS;
+                    return 0;
                 }
 
                 bufferUploadPending = false;
@@ -512,7 +511,7 @@ int main()
             << "perlinOctaves:  " << perlinOctaves << "\n\n"
             << "Use the arrow keys to change the values.\nUse the return key to regenerate the terrain.\n\n";
 
-        for (std::size_t i = 0; i < settings.size(); ++i)
+        for (sf::base::SizeT i = 0; i < settings.size(); ++i)
             oss << ((i == currentSetting) ? ">>  " : "       ") << settings[i].name << ":  " << *(settings[i].value)
                 << '\n';
 
