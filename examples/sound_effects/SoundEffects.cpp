@@ -14,7 +14,6 @@
 #include "SFML/Graphics/Transform.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioContextUtils.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -34,6 +33,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
@@ -1039,7 +1039,7 @@ int main()
     // Create the playback device and listener
     // TODO P1: docs
     auto audioContext          = sf::AudioContext::create().value();
-    auto playbackDeviceHandles = sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(audioContext);
+    auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
 
     std::size_t currentPlaybackDeviceIndex = 0;
 
@@ -1048,7 +1048,7 @@ int main()
 
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
-        playbackDevices.emplace_back(audioContext, deviceHandle);
+        playbackDevices.emplace_back(deviceHandle);
 
         if (deviceHandle.isDefault())
             currentPlaybackDeviceIndex = playbackDevices.size() - 1;
@@ -1178,8 +1178,7 @@ int main()
 
                         // We need to query the list every time we want to change
                         // since new devices could have been added in the mean time
-                        auto newPlaybackDeviceHandles = sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(
-                            audioContext);
+                        auto newPlaybackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
 
                         // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)
@@ -1189,7 +1188,7 @@ int main()
 
                             for (const sf::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
                             {
-                                newPlaybackDevices.emplace_back(audioContext, deviceHandle);
+                                newPlaybackDevices.emplace_back(deviceHandle);
 
                                 if (deviceHandle.isDefault())
                                     newPlaybackDeviceIndex = newPlaybackDevices.size() - 1;

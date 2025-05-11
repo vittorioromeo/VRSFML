@@ -33,12 +33,32 @@
 
 #include <stb_image.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
+#define STB_IMAGE_WRITE_STATIC
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include <stb_image_write.h>
+
+#pragma GCC diagnostic pop
+
 
 namespace
 {
 ////////////////////////////////////////////////////////////
+// stb_image callback for constructing a buffer
+void bufferFromCallback(void* const context, void* const data, int size)
+{
+    const auto* const source = static_cast<sf::base::U8*>(data);
+    auto* const       dest   = static_cast<sf::base::Vector<sf::base::U8>*>(context);
+
+    dest->emplaceRange(source, static_cast<sf::base::SizeT>(size));
+}
+
+////////////////////////////////////////////////////////////
 // stb_image callbacks that operate on a sf::InputStream
-int read(void* user, char* data, int size)
+int read(void* const user, char* const data, int size)
 {
     auto&                    stream = *static_cast<sf::InputStream*>(user);
     const sf::base::Optional count  = stream.read(data, static_cast<sf::base::SizeT>(size));
@@ -47,7 +67,7 @@ int read(void* user, char* data, int size)
 
 
 ////////////////////////////////////////////////////////////
-void skip(void* user, int size)
+void skip(void* const user, int size)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     if (!stream.seek(stream.tell().value() + static_cast<sf::base::SizeT>(size)).hasValue())
@@ -56,7 +76,7 @@ void skip(void* user, int size)
 
 
 ////////////////////////////////////////////////////////////
-int eof(void* user)
+int eof(void* const user)
 {
     auto& stream = *static_cast<sf::InputStream*>(user);
     return stream.tell().value() >= stream.getSize().value();
@@ -67,7 +87,7 @@ int eof(void* user)
 // Deleter for STB pointers
 struct StbDeleter
 {
-    void operator()(stbi_uc* image) const
+    void operator()(stbi_uc* const image) const
     {
         stbi_image_free(image);
     }
@@ -491,6 +511,94 @@ void Image::rotateHue(const float degrees)
 {
     applyTransformation([degrees](const unsigned int, const unsigned int, const Color color)
     { return color.withRotatedHue(degrees); });
+}
+
+
+////////////////////////////////////////////////////////////
+bool Image::saveToFile(const Path& filename) const
+{
+    // Extract the extension
+    const Path extension     = filename.extension();
+    const auto convertedSize = m_size.toVec2i();
+
+    // Callback to write to output stream
+    auto writeStdOfstream = [](void* context, void* data, int size)
+    {
+        auto& file = *static_cast<OutFileStream*>(context);
+        if (file)
+            file.write(static_cast<const char*>(data), static_cast<base::PtrDiffT>(size));
+    };
+
+    // Deduce the image type from its extension
+    if (extension == ".bmp")
+    {
+        // BMP format
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_bmp_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data()) && file)
+            return true;
+    }
+    else if (extension == ".tga")
+    {
+        // TGA format
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_tga_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data()) && file)
+            return true;
+    }
+    else if (extension == ".png")
+    {
+        // PNG format
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_png_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0) && file)
+            return true;
+    }
+    else if (extension == ".jpg" || extension == ".jpeg")
+    {
+        // JPG format
+        OutFileStream file(filename.c_str(), FileOpenMode::bin);
+        if (stbi_write_jpg_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90) && file)
+            return true;
+    }
+    else
+    {
+        priv::err() << "Image file extension " << extension << " not supported\n";
+    }
+
+    priv::err() << "Failed to save image\n" << priv::PathDebugFormatter{filename};
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Vector<base::U8> Image::saveToMemory(SaveFormat format) const
+{
+    // Choose function based on format
+    const auto convertedSize = m_size.toVec2i();
+
+    base::Vector<base::U8> buffer; // Use a single local variable for NRVO
+
+    if (format == SaveFormat::BMP)
+    {
+        if (stbi_write_bmp_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer; // Non-empty
+    }
+    else if (format == SaveFormat::TGA)
+    {
+        if (stbi_write_tga_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data()))
+            return buffer; // Non-empty
+    }
+    else if (format == SaveFormat::PNG)
+    {
+        if (stbi_write_png_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 0))
+            return buffer; // Non-empty
+    }
+    else if (format == SaveFormat::JPG)
+    {
+        if (stbi_write_jpg_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
+            return buffer; // Non-empty
+    }
+
+    SFML_BASE_ASSERT(false);
+    return buffer;
 }
 
 } // namespace sf

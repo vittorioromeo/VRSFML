@@ -6,24 +6,25 @@ int main()
 
 #else
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/Window/Window.hpp"
+    ////////////////////////////////////////////////////////////
+    // Headers
+    ////////////////////////////////////////////////////////////
+    #include "SFML/Window/Window.hpp"
 
-#include "SFML/System/Angle.hpp"
-#include "SFML/System/Clock.hpp"
-#include "SFML/System/Time.hpp"
+    #include "SFML/System/Angle.hpp"
+    #include "SFML/System/Clock.hpp"
+    #include "SFML/System/Time.hpp"
 
-#include <X11/Xlib.h>
-#define GLAD_GL_IMPLEMENTATION
-#include <gl.h>
+    #include <X11/Xlib.h>
+    #define GLAD_GL_IMPLEMENTATION
+    #include "SFML/System/IO.hpp"
 
-#include <array>
-#include "SFML/System/IO.hpp"
+    #include <gl.h>
 
-#include <cmath>
-#include <cstdlib>
+    #include <array>
+
+    #include <cmath>
+    #include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
@@ -46,11 +47,11 @@ int main()
     // Setup OpenGL states
     // Set color and depth clear value
 
-#ifdef SFML_OPENGL_ES
+    #ifdef SFML_OPENGL_ES
     glClearDepthf(1.f);
-#else
+    #else
     glClearDepth(1.f);
-#endif
+    #endif
 
     glClearColor(0.f, 0.5f, 0.5f, 0.f);
 
@@ -245,7 +246,7 @@ int main()
         }
 
         // Load OpenGL or OpenGL ES entry points using glad
-        windowContext.loadGLEntryPointsViaGLAD();
+        sf::WindowContext::loadGLEntryPointsViaGLAD();
 
         // Initialize our views
         if (!initialize(sfmlView1))

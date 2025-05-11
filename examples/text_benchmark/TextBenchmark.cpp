@@ -309,7 +309,7 @@ int main()
     const auto sfmlLogoImage     = sf::Image::loadFromFile("resources/sfml_logo.png").value();
     const auto sfmlLogoAtlasRect = textureAtlas.add(sfmlLogoImage).value();
 
-    const auto whiteDotAtlasRect = textureAtlas.add(graphicsContext.getBuiltInWhiteDotTexture()).value();
+    const auto whiteDotAtlasRect = textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     sf::Sprite sfmlLogo(sfmlLogoAtlasRect);
 

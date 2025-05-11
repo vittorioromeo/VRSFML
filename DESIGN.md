@@ -97,8 +97,8 @@
     // For each hardware playback device, create a SFML playback device
     std::vector<sf::PlaybackDevice> playbackDevices;
     for (const sf::PlaybackDeviceHandle& deviceHandle :
-         sf::AudioContextUtils::getAvailablePlaybackDeviceHandles(audioContext))
-        playbackDevices.emplace_back(audioContext, deviceHandle);
+         sf::AudioContext::getAvailablePlaybackDeviceHandles())
+        playbackDevices.emplace_back(deviceHandle);
 
     // Play multiple sources simultaneously on separate playback devices
     for (base::SizeT i = 0u; i < playbackDevices.size(); ++i)

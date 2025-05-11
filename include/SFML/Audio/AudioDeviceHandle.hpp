@@ -17,7 +17,6 @@
 namespace sf
 {
 class AudioContext;
-class AudioContextUtils;
 class CaptureDevice;
 class CaptureDeviceHandle;
 class PlaybackDevice;
@@ -111,14 +110,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<AudioContext>&&, const void* maDeviceInfo);
-
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief Create a device handle from miniaudio device info (passkey)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioDeviceHandle(base::PassKey<AudioContextUtils>&&, const void* maDeviceInfo);
 
     ////////////////////////////////////////////////////////////
     /// \private

@@ -134,14 +134,14 @@ GraphicsContext::~GraphicsContext()
 
 
 ////////////////////////////////////////////////////////////
-Shader& GraphicsContext::getBuiltInShader() const
+Shader& GraphicsContext::getBuiltInShader()
 {
     return ensureInstalled().builtInShader;
 }
 
 
 ////////////////////////////////////////////////////////////
-Texture& GraphicsContext::getBuiltInWhiteDotTexture() const
+Texture& GraphicsContext::getBuiltInWhiteDotTexture()
 {
     return ensureInstalled().builtInWhiteDotTexture;
 }

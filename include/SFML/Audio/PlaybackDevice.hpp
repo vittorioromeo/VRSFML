@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/Optional.hpp"
@@ -24,10 +23,8 @@ struct SoundBase;
 
 namespace sf
 {
-class AudioContext;
 class PlaybackDeviceHandle;
 class Sound;
-class SoundStream;
 struct Listener;
 } // namespace sf
 
@@ -39,18 +36,18 @@ class SFML_AUDIO_API PlaybackDevice
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create the default playback device from `audioContext`
+    /// \brief Create the default playback device
     ///
     /// \return Playback device on success, `sf::nullOpt` otherwise
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<PlaybackDevice> createDefault(AudioContext& audioContext);
+    [[nodiscard]] static base::Optional<PlaybackDevice> createDefault();
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& deviceHandle);
+    [[nodiscard]] explicit PlaybackDevice(const PlaybackDeviceHandle& deviceHandle);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -144,11 +141,11 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: needs address stability, but memory should be reusable
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(AudioContext);
     SFML_DEFINE_LIFETIME_DEPENDEE(PlaybackDevice, SoundBase);
 };
 

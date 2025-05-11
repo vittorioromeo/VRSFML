@@ -265,6 +265,7 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: needs address stability, but memory should be reusable
 };
 
 } // namespace sf

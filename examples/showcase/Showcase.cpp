@@ -403,12 +403,52 @@ public:
     }
 };
 
+
+////////////////////////////////////////////////////////////
+class ExampleAudio
+{
+    // TODO P0: implement
+
+private:
+    ////////////////////////////////////////////////////////////
+    sf::RenderWindow& m_window;
+    const sf::Font&   m_font;
+
+    ////////////////////////////////////////////////////////////
+    float m_time = 0.f;
+
+public:
+    ////////////////////////////////////////////////////////////
+    explicit ExampleAudio(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(const float deltaTimeMs)
+    {
+        m_time += deltaTimeMs;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void imgui()
+    {
+        ImGui::Begin("Audio Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::End();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw()
+    {
+    }
+};
+
+
 ////////////////////////////////////////////////////////////
 class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::GraphicsContext&     m_graphicsContext;
     sf::RenderWindow&        m_window;
     sf::ImGui::ImGuiContext& m_imGuiContext;
 
@@ -432,7 +472,7 @@ private:
     sf::TextureAtlas m_textureAtlas{sf::Texture::create({2048u, 2048u}, {.smooth = true}).value()};
 
     ////////////////////////////////////////////////////////////
-    const sf::FloatRect m_txrWhiteDot = m_textureAtlas.add(m_graphicsContext.getBuiltInWhiteDotTexture()).value();
+    const sf::FloatRect m_txrWhiteDot = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     ////////////////////////////////////////////////////////////
     const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
@@ -452,9 +492,10 @@ private:
     ////////////////////////////////////////////////////////////
     ExampleShapes    m_exampleShapes{m_window, m_font};
     ExampleBunnyMark m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
+    ExampleAudio     m_exampleAudio{m_window, m_font};
 
     ////////////////////////////////////////////////////////////
-    std::size_t m_activeExample = 0u;
+    std::size_t m_activeExample = 2u;
 
     ////////////////////////////////////////////////////////////
     void clearSamples()
@@ -496,8 +537,7 @@ private:
 
 public:
     ////////////////////////////////////////////////////////////
-    explicit Game(sf::GraphicsContext& graphicsContext, sf::RenderWindow& window, sf::ImGui::ImGuiContext& imGuiContext) :
-    m_graphicsContext{graphicsContext},
+    explicit Game(sf::RenderWindow& window, sf::ImGui::ImGuiContext& imGuiContext) :
     m_window{window},
     m_imGuiContext{imGuiContext}
     {
@@ -528,7 +568,7 @@ public:
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
                     if (eKeyPressed->code == sf::Keyboard::Key::Space)
-                        m_activeExample = ((m_activeExample + 1u) % 2u);
+                        m_activeExample = ((m_activeExample + 1u) % 3u);
             }
 
             m_samplesEventMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
@@ -548,6 +588,8 @@ public:
                 m_exampleShapes.update(deltaTimeMs * 0.01f);
             else if (m_activeExample == 1u)
                 m_exampleBunnyMark.update(deltaTimeMs * 0.01f);
+            else if (m_activeExample == 2u)
+                m_exampleAudio.update(deltaTimeMs * 0.01f);
 
             m_samplesUpdateMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---
@@ -577,6 +619,9 @@ public:
 
             ImGui::End();
 
+            if (m_activeExample == 2u)
+                m_exampleAudio.imgui();
+
             m_samplesImGuiMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---
             ////////////////////////////////////////////////////////////
@@ -593,6 +638,8 @@ public:
                 m_exampleShapes.draw();
             else if (m_activeExample == 1u)
                 m_exampleBunnyMark.draw();
+            else if (m_activeExample == 2u)
+                m_exampleAudio.draw();
 
             m_samplesDrawMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---
@@ -645,12 +692,12 @@ int main()
     //
     //
     // Set up imgui
-    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value(); // TODO P0: use same pattern as other contexts
 
     //
     //
     // Set up game and simulation loop
-    Game game{graphicsContext, window, imGuiContext};
+    Game game{window, imGuiContext};
 
     if (!game.run())
         return 1;

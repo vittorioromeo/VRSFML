@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioContextUtils.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
@@ -47,10 +46,9 @@ struct CaptureDevice::Impl
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    [[nodiscard]] explicit Impl(AudioContext& theAudioContext,
-                                // NOLINTNEXTLINE(modernize-pass-by-value)
-                                const CaptureDeviceHandle& theDeviceHandle) :
-    audioContext(&theAudioContext),
+    [[nodiscard]] explicit Impl(
+        // NOLINTNEXTLINE(modernize-pass-by-value)
+        const CaptureDeviceHandle& theDeviceHandle) :
     captureDeviceHandle(theDeviceHandle)
     {
     }
@@ -76,7 +74,7 @@ struct CaptureDevice::Impl
         captureDeviceConfig.capture.format   = ma_format_s16;
         captureDeviceConfig.sampleRate       = sampleRate;
 
-        if (const auto result = ma_device_init(static_cast<ma_context*>(audioContext->getMAContext()),
+        if (const auto result = ma_device_init(static_cast<ma_context*>(sf::AudioContext::getMAContext()),
                                                &captureDeviceConfig,
                                                &maDevice);
             result != MA_SUCCESS)
@@ -88,7 +86,6 @@ struct CaptureDevice::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    AudioContext*           audioContext;                   //!< Audio context
     CaptureDeviceHandle     captureDeviceHandle;            //!< Capture device handle
     ma_uint32               channelCount{1u};               //!< Number of recording channels
     ma_uint32               sampleRate{44'100u};            //!< Sample rate
@@ -103,25 +100,23 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<CaptureDevice> CaptureDevice::createDefault(AudioContext& audioContext)
+base::Optional<CaptureDevice> CaptureDevice::createDefault()
 {
-    base::Optional defaultCaptureDeviceHandle = AudioContextUtils::getDefaultCaptureDeviceHandle(audioContext);
+    base::Optional defaultCaptureDeviceHandle = AudioContext::getDefaultCaptureDeviceHandle();
 
     if (!defaultCaptureDeviceHandle.hasValue())
         return base::nullOpt;
 
-    return base::makeOptional<CaptureDevice>(audioContext, *defaultCaptureDeviceHandle);
+    return base::makeOptional<CaptureDevice>(*defaultCaptureDeviceHandle);
 }
 
 
 ////////////////////////////////////////////////////////////
-CaptureDevice::CaptureDevice(AudioContext& audioContext, const CaptureDeviceHandle& playbackDeviceHandle) :
-m_impl(base::makeUnique<Impl>(audioContext, playbackDeviceHandle))
+CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) :
+m_impl(base::makeUnique<Impl>(playbackDeviceHandle))
 {
     if (!m_impl->initialize())
         priv::err() << "Failed to initialize the capture device";
-
-    SFML_UPDATE_LIFETIME_DEPENDANT(AudioContext, CaptureDevice, this, m_impl->audioContext);
 }
 
 

@@ -5,15 +5,21 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
+#include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
 #include "SFML/System/Err.hpp"
 
+#include "SFML/Base/Abort.hpp"
+#include "SFML/Base/Macros.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
+
+#include <atomic>
 
 
 namespace
@@ -87,18 +93,44 @@ void maLogCallback(void*, ma_uint32 level, const char* message)
     return true;
 }
 
-} // namespace
 
-
-namespace sf
-{
 ////////////////////////////////////////////////////////////
-struct AudioContext::Impl
+template <typename THandle, typename F>
+sf::base::Vector<THandle> getAvailableDeviceHandles(sf::base::PassKey<sf::AudioContext>&& passKey,
+                                                    ma_context&                           maContext,
+                                                    const char*                           type,
+                                                    F&&                                   fMAContextGetDevices)
+{
+    sf::base::Vector<THandle> deviceHandles; // Use a single local variable for NRVO
+
+    ma_device_info* maDeviceInfosPtr{};
+    ma_uint32       maDeviceInfoCount{};
+
+    // Get the Capture devices
+    if (const ma_result result = fMAContextGetDevices(&maContext, &maDeviceInfosPtr, &maDeviceInfoCount);
+        result != MA_SUCCESS)
+    {
+        sf::priv::err() << "Failed to get audio " << type << " devices: " << ma_result_description(result);
+
+        return deviceHandles; // Empty device handle vector
+    }
+
+    deviceHandles.reserve(maDeviceInfoCount);
+
+    for (ma_uint32 i = 0u; i < maDeviceInfoCount; ++i)
+        deviceHandles.emplaceBack(SFML_BASE_MOVE(passKey), &maDeviceInfosPtr[i]);
+
+    return deviceHandles;
+}
+
+
+////////////////////////////////////////////////////////////
+struct AudioContextImpl
 {
     ma_log     maLog;     //!< miniaudio log (one per program)
     ma_context maContext; //!< miniaudio context (one per program)
 
-    ~Impl()
+    ~AudioContextImpl()
     {
         ma_context_uninit(&maContext);
         ma_log_uninit(&maLog);
@@ -107,50 +139,134 @@ struct AudioContext::Impl
 
 
 ////////////////////////////////////////////////////////////
+constinit sf::base::Optional<AudioContextImpl> installedAudioContext;
+constinit std::atomic<unsigned int>            audioContextRC{0u};
+
+
+////////////////////////////////////////////////////////////
+AudioContextImpl& ensureInstalled()
+{
+    if (!installedAudioContext.hasValue()) [[unlikely]]
+    {
+        sf::priv::err() << "`sf::AudioContext` not installed -- did you forget to create one in `main`?";
+        sf::base::abort();
+    }
+
+    return *installedAudioContext;
+}
+
+} // namespace
+
+
+namespace sf
+{
+////////////////////////////////////////////////////////////
 base::Optional<AudioContext> AudioContext::create()
 {
-    base::Optional<AudioContext> result(base::inPlace, base::PassKey<AudioContext>{}); // Use a single local variable for NRVO
-
-    if (!tryCreateMALog(result->m_impl->maLog))
+    const auto fail = [](const char* what)
     {
-        // Error message generated in called function.
-        result.reset();
-        return result;
-    }
+        priv::err() << "Error creating `sf::AudioContext`: " << what;
+        return base::nullOpt;
+    };
 
-    if (!tryCreateMAContext(result->m_impl->maLog, result->m_impl->maContext))
-    {
-        // Error message generated in called function.
-        result.reset();
-        return result;
-    }
+    //
+    // Ensure audio context is not already installed
+    if (installedAudioContext.hasValue())
+        return fail("an `sf::AudioContext` object already exists");
 
-    return result;
+    auto& ac = installedAudioContext.emplace();
+
+    if (!tryCreateMALog(ac.maLog))
+        return base::nullOpt; // Error message generated in called function.
+
+    if (!tryCreateMAContext(ac.maLog, ac.maContext))
+        return base::nullOpt; // Error message generated in called function.
+
+    return base::makeOptional<AudioContext>(base::PassKey<AudioContext>{});
 }
 
 
 ////////////////////////////////////////////////////////////
-void* AudioContext::getMAContext() const
+void* AudioContext::getMAContext()
 {
-    return &m_impl->maContext;
+    return &ensureInstalled().maContext;
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(base::PassKey<AudioContext>&&) : m_impl(base::makeUnique<Impl>())
+AudioContext::AudioContext(base::PassKey<AudioContext>&&)
+{
+    audioContextRC.fetch_add(1u, std::memory_order::relaxed);
+}
+
+
+////////////////////////////////////////////////////////////
+AudioContext::AudioContext(AudioContext&&) noexcept : AudioContext(base::PassKey<AudioContext>{})
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::~AudioContext() = default;
+AudioContext::~AudioContext()
+{
+    if (audioContextRC.fetch_sub(1u, std::memory_order::relaxed) > 1u)
+        return;
+
+    installedAudioContext.reset();
+}
 
 
 ////////////////////////////////////////////////////////////
-AudioContext::AudioContext(AudioContext&& rhs) noexcept = default;
+base::Vector<PlaybackDeviceHandle> AudioContext::getAvailablePlaybackDeviceHandles()
+{
+    ensureInstalled();
+
+    return getAvailableDeviceHandles<PlaybackDeviceHandle> //
+        (base::PassKey<AudioContext>{},
+         *static_cast<ma_context*>(AudioContext::getMAContext()),
+         "playback",
+         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
+    { return ma_context_get_devices(maContext, maDeviceInfosPtr, maDeviceInfoCount, nullptr, nullptr); });
+}
 
 
 ////////////////////////////////////////////////////////////
-AudioContext& AudioContext::operator=(AudioContext&& rhs) noexcept = default;
+base::Optional<PlaybackDeviceHandle> AudioContext::getDefaultPlaybackDeviceHandle()
+{
+    ensureInstalled();
+
+    for (const PlaybackDeviceHandle& deviceHandle : getAvailablePlaybackDeviceHandles())
+        if (deviceHandle.isDefault())
+            return base::makeOptional(deviceHandle);
+
+    return base::nullOpt;
+}
+
+
+////////////////////////////////////////////////////////////
+base::Vector<CaptureDeviceHandle> AudioContext::getAvailableCaptureDeviceHandles()
+{
+    ensureInstalled();
+
+    return getAvailableDeviceHandles<CaptureDeviceHandle> //
+        (base::PassKey<AudioContext>{},
+         *static_cast<ma_context*>(AudioContext::getMAContext()),
+         "capture",
+         [](ma_context* maContext, ma_device_info** maDeviceInfosPtr, ma_uint32* maDeviceInfoCount)
+    { return ma_context_get_devices(maContext, nullptr, nullptr, maDeviceInfosPtr, maDeviceInfoCount); });
+}
+
+
+////////////////////////////////////////////////////////////
+base::Optional<CaptureDeviceHandle> AudioContext::getDefaultCaptureDeviceHandle()
+{
+    ensureInstalled();
+
+    for (const CaptureDeviceHandle& deviceHandle : getAvailableCaptureDeviceHandles())
+        if (deviceHandle.isDefault())
+            return base::makeOptional(deviceHandle);
+
+    return base::nullOpt;
+}
 
 } // namespace sf

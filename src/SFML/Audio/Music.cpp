@@ -22,7 +22,9 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr sf::Time samplesToTime(unsigned int sampleRate, unsigned int channelCount, sf::base::U64 samples)
+[[nodiscard]] constexpr sf::Time samplesToTime(const unsigned int  sampleRate,
+                                               const unsigned int  channelCount,
+                                               const sf::base::U64 samples)
 {
     // Make sure we don't divide by 0
     if (sampleRate == 0u || channelCount == 0u)
@@ -33,7 +35,9 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] constexpr sf::base::U64 timeToSamples(unsigned int sampleRate, unsigned int channelCount, sf::Time position)
+[[nodiscard]] constexpr sf::base::U64 timeToSamples(const unsigned int sampleRate,
+                                                    const unsigned int channelCount,
+                                                    const sf::Time     position)
 {
     // Always ROUND, no unchecked truncation, hence the addition in the numerator.
     // This avoids most precision errors arising from "samples => Time => samples" conversions
@@ -93,7 +97,7 @@ Music& Music::operator=(Music&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Music> Music::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile, const char* errorContext)
+base::Optional<Music> Music::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile, const char* const errorContext)
 {
     if (!optFile.hasValue())
     {
@@ -113,7 +117,7 @@ base::Optional<Music> Music::openFromFile(const Path& filename)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Music> Music::openFromMemory(const void* data, base::SizeT sizeInBytes)
+base::Optional<Music> Music::openFromMemory(const void* const data, const base::SizeT sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
@@ -188,7 +192,7 @@ bool Music::onGetData(SoundStream::Chunk& data)
 
 
 ////////////////////////////////////////////////////////////
-void Music::onSeek(Time timeOffset)
+void Music::onSeek(const Time timeOffset)
 {
     const std::lock_guard lock(m_impl->mutex);
     m_impl->file.seek(timeOffset);
@@ -234,7 +238,7 @@ Music::TimeSpan Music::getLoopPoints() const
 
 
 ////////////////////////////////////////////////////////////
-void Music::setLoopPoints(TimeSpan timePoints)
+void Music::setLoopPoints(const TimeSpan timePoints)
 {
     const auto sampleRate       = getSampleRate();
     const auto channelCount     = getChannelCount();

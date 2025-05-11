@@ -1042,7 +1042,7 @@ int main()
 {
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
     // Create the graphics context
     auto graphicsContext = sf::GraphicsContext::create().value();

@@ -350,6 +350,7 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: does this need address stability?
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

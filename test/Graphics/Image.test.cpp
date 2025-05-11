@@ -1,7 +1,5 @@
 #include "SFML/Graphics/Image.hpp"
 
-#include "SFML/Graphics/ImageUtils.hpp"
-
 // Other 1st party headers
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -190,8 +188,7 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("Successful load")
         {
-            const auto memory = sf::ImageUtils::saveToMemory(sf::Image::create({24, 24}, sf::Color::Green).value(),
-                                                             sf::ImageUtils::SaveFormat::PNG);
+            const auto memory = sf::Image::create({24, 24}, sf::Color::Green).value().saveToMemory(sf::Image::SaveFormat::PNG);
 
             const auto image = sf::Image::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(image.getSize() == sf::Vec2u{24, 24});
@@ -218,14 +215,14 @@ TEST_CASE("[Graphics] sf::Image")
 
         SECTION("No extension")
         {
-            CHECK(!sf::ImageUtils::saveToFile(image, "wheresmyextension"));
-            CHECK(!sf::ImageUtils::saveToFile(image, "pls/add/extension"));
+            CHECK(!image.saveToFile("wheresmyextension"));
+            CHECK(!image.saveToFile("pls/add/extension"));
         }
 
         SECTION("Invalid extension")
         {
-            CHECK(!sf::ImageUtils::saveToFile(image, "test.ps"));
-            CHECK(!sf::ImageUtils::saveToFile(image, "test.foo"));
+            CHECK(!image.saveToFile("test.ps"));
+            CHECK(!image.saveToFile("test.foo"));
         }
 
         SECTION("Successful save")
@@ -233,7 +230,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To .bmp")
             {
                 auto filename = sf::Path::tempDirectoryPath() / "test.bmp";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -245,7 +242,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To .tga")
             {
                 auto filename = sf::Path::tempDirectoryPath() / "test.tga";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -257,7 +254,7 @@ TEST_CASE("[Graphics] sf::Image")
             SECTION("To .png")
             {
                 auto filename = sf::Path::tempDirectoryPath() / "test.png";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -270,7 +267,7 @@ TEST_CASE("[Graphics] sf::Image")
             {
                 // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
                 auto filename = sf::Path::tempDirectoryPath() / U"test-ñ.png";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -283,7 +280,7 @@ TEST_CASE("[Graphics] sf::Image")
             {
                 // small n with acute accent, from Polish, outside of Latin 1 codepage
                 auto filename = sf::Path::tempDirectoryPath() / U"test-ń.png";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -296,7 +293,7 @@ TEST_CASE("[Graphics] sf::Image")
             {
                 // CJK symbol for Sun, outside of any European language codepage
                 auto filename = sf::Path::tempDirectoryPath() / U"test-日.png";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -309,7 +306,7 @@ TEST_CASE("[Graphics] sf::Image")
             {
                 // snail emoji, outside of Unicode Basic Multilingual Plane
                 auto filename = sf::Path::tempDirectoryPath() / U"test-🐌.png";
-                CHECK(sf::ImageUtils::saveToFile(image, filename));
+                CHECK(image.saveToFile(filename));
 
                 const auto loadedImage = sf::Image::loadFromFile(filename).value();
                 CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
@@ -332,7 +329,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To bmp")
             {
-                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::BMP);
+                output = image.saveToMemory(sf::Image::SaveFormat::BMP);
                 REQUIRE(output.size() == 1146);
                 CHECK(output[0] == 66);
                 CHECK(output[1] == 77);
@@ -346,7 +343,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To tga")
             {
-                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::TGA);
+                output = image.saveToMemory(sf::Image::SaveFormat::TGA);
                 REQUIRE(output.size() == 98);
                 CHECK(output[0] == 0);
                 CHECK(output[1] == 0);
@@ -356,7 +353,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("To png")
             {
-                output = sf::ImageUtils::saveToMemory(image, sf::ImageUtils::SaveFormat::PNG);
+                output = image.saveToMemory(sf::Image::SaveFormat::PNG);
                 REQUIRE(output.size() == 92);
                 CHECK(output[0] == 137);
                 CHECK(output[1] == 80);

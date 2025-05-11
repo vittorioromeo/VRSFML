@@ -34,7 +34,7 @@ protected:
 TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault(audioContext).value();
+    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 
     SECTION("Type traits")
     {

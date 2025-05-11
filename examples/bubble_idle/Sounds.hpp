@@ -1,6 +1,5 @@
 #pragma once
 
-#include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -10,8 +9,7 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-
-#include <vector>
+#include "SFML/Base/InPlaceVector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -98,7 +96,10 @@ struct Sounds
     LoadedSound letterchime{"letterchime.ogg"};
 
     ////////////////////////////////////////////////////////////
-    std::vector<sf::Sound> soundsBeingPlayed;
+    static inline constexpr sf::base::SizeT maxSounds = 256u;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::InPlaceVector<sf::Sound, maxSounds> soundsBeingPlayed;
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -227,24 +228,31 @@ struct Sounds
         if (countPlayingPooled(ls) >= maxOverlap)
             return false;
 
-        const auto it = sf::base::findIf( //
+        auto* const it = sf::base::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
             [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
 
         if (it != soundsBeingPlayed.end())
         {
-            *it = ls.asSound(); // assigment does not reallocate `m_impl`
+            it->setBuffer(ls.getBuffer());
+            it->copySettings(ls.asSound());
             it->play(playbackDevice);
 
             return true;
         }
 
+        if (soundsBeingPlayed.size() >= maxSounds)
+            return false;
+
         // TODO P2 (lib): to sf base, also not needed
         // std::erase_if(soundsBeingPlayed,
         //               [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
 
-        soundsBeingPlayed.emplace_back(ls.asSound()).play(playbackDevice);
+        auto& emplaced = soundsBeingPlayed.emplaceBack(ls.asBuffer());
+        emplaced.copySettings(ls.asSound());
+        emplaced.play(playbackDevice);
+
         return true;
     }
 };

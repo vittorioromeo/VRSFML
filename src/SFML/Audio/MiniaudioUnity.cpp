@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 // NOLINTBEGIN(bugprone-suspicious-include)
 #include "SFML/Audio/Unity/AudioContext.cpp"
-#include "SFML/Audio/Unity/AudioContextUtils.cpp"
 #include "SFML/Audio/Unity/AudioDeviceHandle.cpp"
 #include "SFML/Audio/Unity/CaptureDevice.cpp"
 #include "SFML/Audio/Unity/Miniaudio.cpp"

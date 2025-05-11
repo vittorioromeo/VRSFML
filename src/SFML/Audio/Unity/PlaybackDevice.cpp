@@ -5,14 +5,12 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioContextUtils.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 
 #include "SFML/System/Err.hpp"
-#include "SFML/System/LifetimeDependant.hpp"
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Assert.hpp"
@@ -40,10 +38,9 @@ struct PlaybackDevice::Impl
     }
 
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
-    explicit Impl(AudioContext& theAudioContext,
-                  // NOLINTNEXTLINE(modernize-pass-by-value)
-                  const PlaybackDeviceHandle& thePlaybackDeviceHandle) :
-    audioContext(&theAudioContext),
+    explicit Impl(
+        // NOLINTNEXTLINE(modernize-pass-by-value)
+        const PlaybackDeviceHandle& thePlaybackDeviceHandle) :
     playbackDeviceHandle(thePlaybackDeviceHandle)
     {
     }
@@ -56,7 +53,7 @@ struct PlaybackDevice::Impl
 
     [[nodiscard]] bool initialize()
     {
-        auto& maContext = *static_cast<ma_context*>(audioContext->getMAContext());
+        auto& maContext = *static_cast<ma_context*>(sf::AudioContext::getMAContext());
 
         // Initialize miniaudio device
         {
@@ -87,7 +84,6 @@ struct PlaybackDevice::Impl
         return true;
     }
 
-    AudioContext*        audioContext; //!< The audio context (used to get the MA context and for lifetime tracking)
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
     base::Vector<ResourceEntry> resources;      //!< Registered resources
@@ -99,25 +95,23 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<PlaybackDevice> PlaybackDevice::createDefault(AudioContext& audioContext)
+base::Optional<PlaybackDevice> PlaybackDevice::createDefault()
 {
-    base::Optional defaultPlaybackDeviceHandle = AudioContextUtils::getDefaultPlaybackDeviceHandle(audioContext);
+    base::Optional defaultPlaybackDeviceHandle = AudioContext::getDefaultPlaybackDeviceHandle();
 
     if (!defaultPlaybackDeviceHandle.hasValue())
         return base::nullOpt;
 
-    return base::makeOptional<PlaybackDevice>(audioContext, *defaultPlaybackDeviceHandle);
+    return base::makeOptional<PlaybackDevice>(*defaultPlaybackDeviceHandle);
 }
 
 
 ////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(AudioContext& audioContext, const PlaybackDeviceHandle& playbackDeviceHandle) :
-m_impl(base::makeUnique<Impl>(audioContext, playbackDeviceHandle))
+PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) :
+m_impl(base::makeUnique<Impl>(playbackDeviceHandle))
 {
     if (!m_impl->initialize())
         priv::err() << "Failed to initialize the playback device";
-
-    SFML_UPDATE_LIFETIME_DEPENDANT(AudioContext, PlaybackDevice, this, m_impl->audioContext);
 }
 
 

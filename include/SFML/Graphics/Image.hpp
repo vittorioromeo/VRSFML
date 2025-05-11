@@ -19,11 +19,18 @@
 #include "SFML/Base/Vector.hpp"
 
 
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 namespace sf
 {
 class InputStream;
 class Path;
+} // namespace sf
 
+
+namespace sf
+{
 ////////////////////////////////////////////////////////////
 /// \brief Class for loading, manipulating and saving images
 ///
@@ -288,6 +295,42 @@ public:
     void rotateHue(float degrees);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Save an image to a file on disk
+    ///
+    /// The format of the image is automatically deduced from
+    /// the extension. The supported image formats are bmp, png,
+    /// tga and jpg. The destination file is overwritten
+    /// if it already exists. This function fails if the image is empty.
+    ///
+    /// \param image Image to save
+    /// \param filename Path of the file to save
+    ///
+    /// \return `true` if saving was successful
+    ///
+    /// \see create, loadFromFile, loadFromMemory
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool saveToFile(const Path& filename) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Save an image to a buffer in memory
+    ///
+    /// The format of the image must be specified.
+    /// The supported image formats are bmp, png, tga and jpg.
+    /// This function fails if the image is empty, or if
+    /// the format was invalid.
+    ///
+    /// \param image Image to save
+    /// \param format Encoding format to use
+    ///
+    /// \return Buffer with encoded data if saving was successful, `base::nullOpt` otherwise
+    ///
+    /// \see create, loadFromFile, loadFromMemory, saveToFile
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] base::Vector<base::U8> saveToMemory(SaveFormat format) const;
+
+    ////////////////////////////////////////////////////////////
     /// \private
     ///
     /// \brief Directly initialize data members
@@ -347,7 +390,7 @@ private:
 /// image.setPixel({0, 0}, color);
 ///
 /// // Save the image to a file
-/// if (!sf::ImageUtils::saveToFile(image, "result.png"))
+/// if (!image.saveToFile("result.png"))
 ///     return -1;
 /// \endcode
 ///
