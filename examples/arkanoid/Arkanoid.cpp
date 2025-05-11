@@ -10,13 +10,12 @@
 
 #include "SFML/System/RectUtils.hpp"
 
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
+
 #include "ExampleUtils.hpp"
 
-#include <utility>
-#include <vector>
-
-#include <cmath>
-#include <cstddef>
 
 constexpr sf::Vec2f resolution{800.f, 600.f};
 
@@ -33,24 +32,24 @@ private:
     sf::RectangleShape m_player;
     sf::Vec2f          m_playerVelocity;
 
-    std::vector<sf::RectangleShape> m_bricks;
+    sf::base::Vector<sf::RectangleShape> m_bricks;
 
     void createBrickGrid()
     {
         constexpr sf::Vec2f offset{50.f, 50.f};
 
-        constexpr std::size_t nBricksPerRow = 13;
-        constexpr std::size_t nRows         = 4;
+        constexpr sf::base::SizeT nBricksPerRow = 13;
+        constexpr sf::base::SizeT nRows         = 4;
 
         constexpr float spacing = 120.f / 14.f;
 
         sf::Vec2f next{0.f, 0.f};
 
-        for (std::size_t y = 0; y < nRows; ++y)
+        for (sf::base::SizeT y = 0; y < nRows; ++y)
         {
-            for (std::size_t x = 0; x < nBricksPerRow; ++x)
+            for (sf::base::SizeT x = 0; x < nBricksPerRow; ++x)
             {
-                m_bricks.emplace_back(
+                m_bricks.emplaceBack(
                     sf::RectangleShapeData{.position         = offset + next,
                                            .origin           = brickSize / 2.f,
                                            .fillColor        = sf::Color::DarkGreen,
@@ -79,13 +78,13 @@ private:
         const float overlapTop{ballBounds.getBottom() - brickBounds.getTop()};
         const float overlapBottom{brickBounds.getBottom() - ballBounds.getTop()};
 
-        const bool ballFromLeft(std::abs(overlapLeft) < std::abs(overlapRight));
-        const bool ballFromTop(std::abs(overlapTop) < std::abs(overlapBottom));
+        const bool ballFromLeft(sf::base::fabs(overlapLeft) < sf::base::fabs(overlapRight));
+        const bool ballFromTop(sf::base::fabs(overlapTop) < sf::base::fabs(overlapBottom));
 
         const float minOverlapX{ballFromLeft ? overlapLeft : overlapRight};
         const float minOverlapY{ballFromTop ? overlapTop : overlapBottom};
 
-        if (std::abs(minOverlapX) < std::abs(minOverlapY))
+        if (sf::base::fabs(minOverlapX) < sf::base::fabs(minOverlapY))
             m_ballVelocity.x = ballFromLeft ? -ballSpeed : ballSpeed;
         else
             m_ballVelocity.y = ballFromTop ? -ballSpeed : ballSpeed;
@@ -141,12 +140,12 @@ private:
 
     void updateBallCollisionsAgainstBricks()
     {
-        for (auto it = m_bricks.begin(); it != m_bricks.end(); ++it)
+        for (auto* it = m_bricks.begin(); it != m_bricks.end(); ++it)
         {
             if (performBallBrickCollisionResolution(*it))
             {
-                std::swap(*it, m_bricks.back());
-                m_bricks.pop_back();
+                sf::base::swap(*it, m_bricks.back());
+                m_bricks.popBack();
                 break;
             }
         }

@@ -846,9 +846,8 @@ VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, cons
 
     m_impl->cpuAutoBatch.clear();
 
-    const auto result = m_impl->cpuAutoBatch.add(shapeData);
-    immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states);
-    return result;
+    SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
+    return m_impl->cpuAutoBatch.add(shapeData);
 }
 
 
@@ -877,11 +876,10 @@ VertexSpan RenderTarget::draw(const Font& font, const TextData& textData, Render
 
     SFML_BASE_ASSERT(m_impl->cpuAutoBatch.getNumVertices() == 0u);
 
-    m_impl->cpuAutoBatch.clear();
+    SFML_BASE_SCOPE_GUARD({ immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states); });
 
-    const auto result = m_impl->cpuAutoBatch.add(font, textData);
-    immediateDrawDrawableBatch(m_impl->cpuAutoBatch, states);
-    return result;
+    m_impl->cpuAutoBatch.clear();
+    return m_impl->cpuAutoBatch.add(font, textData);
 }
 
 

@@ -33,6 +33,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
@@ -96,7 +97,7 @@
 
     vm->DetachCurrentThread();
 
-    return EXIT_SUCCESS;
+    return 0;
 }
 
 
@@ -126,35 +127,35 @@ namespace sf::ImGui
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr ImColor toImColor(const Color c)
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr ImColor toImColor(const Color c)
 {
     return {static_cast<int>(c.r), static_cast<int>(c.g), static_cast<int>(c.b), static_cast<int>(c.a)};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr ImVec2 toImVec2(const Vec2f v)
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr ImVec2 toImVec2(const Vec2f v)
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] constexpr Vec2f toSfVec2f(const ImVec2 v)
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr Vec2f toSfVec2f(const ImVec2 v)
 {
     return {v.x, v.y};
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] ImVec2 getTopLeftAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] inline ImVec2 getTopLeftAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position);
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] ImVec2 getDownRightAbsolute(const FloatRect& rect)
+[[nodiscard, gnu::always_inline]] inline ImVec2 getDownRightAbsolute(const FloatRect& rect)
 {
     return toImVec2(toSfVec2f(::ImGui::GetCursorScreenPos()) + rect.position + rect.size);
 }
@@ -502,7 +503,7 @@ struct [[nodiscard]] ImGuiPerWindowContext
         }
 
         ::ImGui::GetIO().Fonts->SetTexID(convertGLTextureHandleToImTextureID(newTexture->getNativeHandle()));
-        fontTexture = std::move(newTexture);
+        fontTexture = SFML_BASE_MOVE(newTexture);
 
         return true;
     }

@@ -39,8 +39,6 @@
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 
-#include <cstdint>
-
 
 namespace
 {
@@ -53,7 +51,7 @@ namespace
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] int seekCallback(std::uint64_t offset, void* data) // cannot use base here due to mismatch on unix
+[[nodiscard]] int seekCallback(uint64_t offset, void* data) // cannot use base here due to mismatch on unix
 {
     auto*                    stream   = static_cast<sf::InputStream*>(data);
     const sf::base::Optional position = stream->seek(static_cast<sf::base::SizeT>(offset));

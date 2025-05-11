@@ -42,13 +42,13 @@ int main()
     // List the available capture device handles
     sf::cOut() << "Available capture devices:\n\n";
 
-    for (std::size_t i = 0u; i < deviceHandles.size(); ++i)
+    for (sf::base::SizeT i = 0u; i < deviceHandles.size(); ++i)
         sf::cOut() << i << ": " << deviceHandles[i].getName() << '\n';
 
     sf::cOut() << '\n';
 
     // Choose the capture device
-    std::size_t deviceIndex = 0;
+    sf::base::SizeT deviceIndex = 0;
 
     if (deviceHandles.size() > 1)
     {

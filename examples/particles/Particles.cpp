@@ -30,17 +30,16 @@
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/PtrDiffT.hpp"
+#include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
 #include <latch>
 #include <string>
-#include <vector>
-
-#include <cstddef>
-#include <cstdio>
 
 
 ////////////////////////////////////////////////////////////
@@ -121,7 +120,7 @@ int main()
         float torque;
     };
 
-    std::vector<ParticleAoS> particlesAoS;
+    sf::base::Vector<ParticleAoS> particlesAoS;
 
     //
     //
@@ -145,7 +144,7 @@ int main()
     //
     // Get hardware constants
     const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
-    constexpr auto cacheLineSize = static_cast<std::size_t>(sf::base::hardwareDestructiveInterferenceSize);
+    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
 
     //
     //
@@ -191,26 +190,26 @@ int main()
         using sf::PersistentGPUDrawableBatch::PersistentGPUDrawableBatch;
     };
 
-    std::vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
-    std::vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
+    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
+    sf::base::Vector<AlignedGPUDrawableBatch> gpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
 
     //
     //
     // Set up thread pool
     sf::base::ThreadPool pool(nMaxWorkers);
 
-    const auto doInBatches = [&](const std::size_t nParticlesTotal, auto&& f)
+    const auto doInBatches = [&](const sf::base::SizeT nParticlesTotal, auto&& f)
     {
-        const std::size_t particlesPerBatch = nParticlesTotal / nWorkers;
+        const sf::base::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
 
-        std::latch latch{static_cast<std::ptrdiff_t>(nWorkers)};
+        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
 
-        for (std::size_t i = 0u; i < nWorkers; ++i)
+        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
         {
             pool.post([&, i]
             {
-                const std::size_t batchStartIdx = i * particlesPerBatch;
-                const std::size_t batchEndIdx   = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+                const sf::base::SizeT batchStartIdx = i * particlesPerBatch;
+                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
 
                 f(i, batchStartIdx, batchEndIdx);
 
@@ -249,7 +248,7 @@ int main()
         );
     };
 
-    const auto populateParticlesAoS = [&](const std::size_t n)
+    const auto populateParticlesAoS = [&](const sf::base::SizeT n)
     {
         if (n < particlesAoS.size())
         {
@@ -259,12 +258,12 @@ int main()
 
         particlesAoS.reserve(n);
 
-        for (std::size_t i = particlesAoS.size(); i < n; ++i)
+        for (sf::base::SizeT i = particlesAoS.size(); i < n; ++i)
             pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-            { particlesAoS.emplace_back(args...); });
+            { particlesAoS.emplaceBack(args...); });
     };
 
-    const auto populateParticlesSoA = [&](const std::size_t n)
+    const auto populateParticlesSoA = [&](const sf::base::SizeT n)
     {
         if (n < particlesSoA.getSize())
         {
@@ -274,11 +273,11 @@ int main()
 
         particlesSoA.reserve(n);
 
-        for (std::size_t i = particlesSoA.getSize(); i < n; ++i)
+        for (sf::base::SizeT i = particlesSoA.getSize(); i < n; ++i)
             pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { particlesSoA.pushBack(args...); });
     };
 
-    const auto populateParticles = [&](const std::size_t n)
+    const auto populateParticles = [&](const sf::base::SizeT n)
     {
         if (useSoA)
             populateParticlesSoA(n);
@@ -286,7 +285,7 @@ int main()
             populateParticlesAoS(n);
     };
 
-    populateParticles(static_cast<std::size_t>(numEntities));
+    populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
     //
     //
@@ -334,8 +333,8 @@ int main()
                 {
                     if (destroyBySwapping)
                     {
-                        std::size_t n = particlesAoS.size();
-                        std::size_t i = 0;
+                        sf::base::SizeT n = particlesAoS.size();
+                        sf::base::SizeT i = 0;
 
                         while (i < n)
                         {
@@ -359,7 +358,7 @@ int main()
                 }
             }
 
-            populateParticles(static_cast<std::size_t>(numEntities));
+            populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
             const auto updateParticle =
                 [&](sf::Vec2f&      position,
@@ -428,18 +427,18 @@ int main()
                 {
                     if (unifiedSoAProcessing)
                     {
-                        doInBatches(static_cast<std::size_t>(numEntities),
-                                    [&](const std::size_t /* iBatch */,
-                                        const std::size_t batchStartIdx,
-                                        const std::size_t batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        doInBatches(static_cast<sf::base::SizeT>(numEntities),
+                                    [&](const sf::base::SizeT /* iBatch */,
+                                        const sf::base::SizeT batchStartIdx,
+                                        const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                         { particlesSoA.withAllSubRange(batchStartIdx, batchEndIdx, updateParticle); });
                     }
                     else
                     {
-                        doInBatches(static_cast<std::size_t>(numEntities),
-                                    [&](const std::size_t /* iBatch */,
-                                        const std::size_t batchStartIdx,
-                                        const std::size_t batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                        doInBatches(static_cast<sf::base::SizeT>(numEntities),
+                                    [&](const sf::base::SizeT /* iBatch */,
+                                        const sf::base::SizeT batchStartIdx,
+                                        const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                         {
                             particlesSoA.withSubRange<1, 2>(batchStartIdx,
                                                             batchEndIdx,
@@ -475,11 +474,12 @@ int main()
                 }
                 else
                 {
-                    doInBatches(static_cast<std::size_t>(numEntities),
-                                [&](const std::size_t /* iBatch */, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
-                                    SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+                    doInBatches(static_cast<sf::base::SizeT>(numEntities),
+                                [&](const sf::base::SizeT /* iBatch */,
+                                    const sf::base::SizeT batchStartIdx,
+                                    const sf::base::SizeT batchEndIdx) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                     {
-                        for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                        for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         {
                             ParticleAoS& p = particlesAoS[i];
 
@@ -558,7 +558,7 @@ int main()
             ImGui::EndDisabled();
 
             if (ImGui::Checkbox("Use SoA", &useSoA))
-                populateParticles(static_cast<std::size_t>(numEntities));
+                populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
             ImGui::Checkbox("Unified SoA processing", &unifiedSoAProcessing);
             ImGui::Checkbox("Destroy/recreate particles", &destroyParticles);
@@ -576,7 +576,7 @@ int main()
             ImGui::Text("Number of entities:");
 
             if (ImGui::InputInt("##InputInt", &numEntities))
-                populateParticles(static_cast<std::size_t>(numEntities));
+                populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
             ImGui::NewLine();
 
@@ -627,7 +627,7 @@ int main()
                     sf::RenderStates{.texture = &textureAtlas.getTexture()});
             };
 
-            const auto drawNthParticle = [&](const std::size_t& i, auto&& drawFn)
+            const auto drawNthParticle = [&](const sf::base::SizeT& i, auto&& drawFn)
             {
                 if (useSoA)
                 {
@@ -647,10 +647,10 @@ int main()
                 for (auto& batch : batchesArray)
                     batch.clear();
 
-                doInBatches(static_cast<std::size_t>(numEntities),
-                            [&](const std::size_t iBatch, const std::size_t batchStartIdx, const std::size_t batchEndIdx)
+                doInBatches(static_cast<sf::base::SizeT>(numEntities),
+                            [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
                 {
-                    for (std::size_t i = batchStartIdx; i < batchEndIdx; ++i)
+                    for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
                         drawNthParticle(i,
                                         [&](const auto& drawable, const auto&...) { batchesArray[iBatch].add(drawable); });
                 });
@@ -664,7 +664,7 @@ int main()
                 cpuDrawableBatches[0].clear();
                 gpuDrawableBatches[0].clear();
 
-                for (std::size_t i = 0u; i < static_cast<std::size_t>(numEntities); ++i)
+                for (sf::base::SizeT i = 0u; i < static_cast<sf::base::SizeT>(numEntities); ++i)
                     drawNthParticle(i,
                                     [&](const auto& drawable, const auto&... args)
                     {
@@ -688,8 +688,8 @@ int main()
             else if (batchType == BatchType::GPUStorage)
             {
                 // Must reserve in advance as reserving is not thread-safe
-                for (std::size_t iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
-                    gpuDrawableBatches[iBatch].reserveQuads(static_cast<std::size_t>(numEntities) / nWorkers * 2u);
+                for (sf::base::SizeT iBatch = 0u; iBatch < nMaxWorkers; ++iBatch)
+                    gpuDrawableBatches[iBatch].reserveQuads(static_cast<sf::base::SizeT>(numEntities) / nWorkers * 2u);
 
                 doMultithreadedDraw(gpuDrawableBatches);
             }

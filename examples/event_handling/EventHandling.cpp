@@ -14,12 +14,13 @@
 #include "SFML/System/String.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
 
 #include <string>
-#include <vector>
 
 
 namespace
@@ -111,7 +112,7 @@ public:
         sf::base::Optional<std::string> operator()(const T&)
         {
             // All unhandled events will end up here
-            // application.m_log.emplace_back("Other Event");
+            // application.m_log.emplaceBack("Other Event");
             return sf::base::nullOpt;
         }
 
@@ -134,7 +135,7 @@ public:
 
             if (const auto* keyPress = event->getIf<sf::Event::KeyPressed>())
             {
-                m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress->scancode));
+                m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress->scancode));
 
                 // When the enter key is pressed, switch to the next handler type
                 if (keyPress->code == sf::Keyboard::Key::Enter)
@@ -145,20 +146,20 @@ public:
             }
             else if (const auto* mouseMoved = event->getIf<sf::Event::MouseMoved>())
             {
-                m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved->position));
+                m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved->position));
             }
             else if (event->is<sf::Event::MouseButtonPressed>())
             {
-                m_log.emplace_back("Mouse Pressed");
+                m_log.emplaceBack("Mouse Pressed");
             }
             else if (const auto* touchBegan = event->getIf<sf::Event::TouchBegan>())
             {
-                m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan->position));
+                m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan->position));
             }
             else
             {
                 // All unhandled events will end up here
-                // m_log.emplace_back("Other Event");
+                // m_log.emplaceBack("Other Event");
             }
         }
     }
@@ -172,7 +173,7 @@ public:
         while (const sf::base::Optional event = m_window.pollEvent())
         {
             if (sf::base::Optional logMessage = event->visit(Visitor(*this)))
-                m_log.emplace_back(std::move(*logMessage));
+                m_log.emplaceBack(SFML_BASE_MOVE(*logMessage));
         }
     }
 
@@ -184,7 +185,7 @@ public:
         m_window.pollAndHandleEvents([&](sf::Event::Closed) { m_mustClose = true; },
                                      [&](const sf::Event::KeyPressed& keyPress)
         {
-            m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
+            m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress.scancode));
 
             // When the enter key is pressed, switch to the next handler type
             if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -194,13 +195,13 @@ public:
             }
         },
                                      [&](const sf::Event::MouseMoved& mouseMoved)
-        { m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
-                                     [&](const sf::Event::MouseButtonPressed&) { m_log.emplace_back("Mouse Pressed"); },
+        { m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved.position)); },
+                                     [&](const sf::Event::MouseButtonPressed&) { m_log.emplaceBack("Mouse Pressed"); },
                                      [&](const sf::Event::TouchBegan& touchBegan)
-        { m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position)); });
+        { m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position)); });
 
         // To handle unhandled events, just add the following lambda to the set of handlers
-        // [&](const auto&) { m_log.emplace_back("Other Event"); }
+        // [&](const auto&) { m_log.emplaceBack("Other Event"); }
     }
 
     ////////////////////////////////////////////////////////////
@@ -219,7 +220,7 @@ public:
             }
             else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
             {
-                m_log.emplace_back("Key Pressed: " + scancodeToString(event.scancode));
+                m_log.emplaceBack("Key Pressed: " + scancodeToString(event.scancode));
 
                 // When the enter key is pressed, switch to the next handler type
                 if (event.code == sf::Keyboard::Key::Enter)
@@ -230,20 +231,20 @@ public:
             }
             else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
             {
-                m_log.emplace_back("Mouse Moved: " + vec2ToString(event.position));
+                m_log.emplaceBack("Mouse Moved: " + vec2ToString(event.position));
             }
             else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
             {
-                m_log.emplace_back("Mouse Pressed");
+                m_log.emplaceBack("Mouse Pressed");
             }
             else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
             {
-                m_log.emplace_back("Touch Began: " + vec2ToString(event.position));
+                m_log.emplaceBack("Touch Began: " + vec2ToString(event.position));
             }
             else
             {
                 // All unhandled events will end up here
-                // m_log.emplace_back("Other Event");
+                // m_log.emplaceBack("Other Event");
             }
         });
     }
@@ -292,7 +293,7 @@ public:
             // Draw the contents of the log to the window
             m_window.clear();
 
-            for (std::size_t i = 0; i < m_log.size(); ++i)
+            for (sf::base::SizeT i = 0u; i < m_log.size(); ++i)
             {
                 m_logText.position = {50.f, static_cast<float>(i * 20) + 50.f};
                 m_logText.setString(m_log[i]);
@@ -317,7 +318,7 @@ public:
 
     void handle(const sf::Event::KeyPressed& keyPress)
     {
-        m_log.emplace_back("Key Pressed: " + scancodeToString(keyPress.scancode));
+        m_log.emplaceBack("Key Pressed: " + scancodeToString(keyPress.scancode));
 
         // When the enter key is pressed, switch to the next handler type
         if (keyPress.code == sf::Keyboard::Key::Enter)
@@ -329,24 +330,24 @@ public:
 
     void handle(const sf::Event::MouseMoved& mouseMoved)
     {
-        m_log.emplace_back("Mouse Moved: " + vec2ToString(mouseMoved.position));
+        m_log.emplaceBack("Mouse Moved: " + vec2ToString(mouseMoved.position));
     }
 
     void handle(const sf::Event::MouseButtonPressed&)
     {
-        m_log.emplace_back("Mouse Pressed");
+        m_log.emplaceBack("Mouse Pressed");
     }
 
     void handle(const sf::Event::TouchBegan& touchBegan)
     {
-        m_log.emplace_back("Touch Began: " + vec2ToString(touchBegan.position));
+        m_log.emplaceBack("Touch Began: " + vec2ToString(touchBegan.position));
     }
 
     template <typename T>
     void handle(const T&)
     {
         // All unhandled events will end up here
-        // m_log.emplace_back("Other Event");
+        // m_log.emplaceBack("Other Event");
     }
 
 private:
@@ -375,9 +376,9 @@ private:
     sf::Text m_handlerText{m_font, {.string = "Current Handler: Classic", .characterSize = 24u}};
     sf::Text m_instructions{m_font, {.string = "Press Enter to change handler type", .characterSize = 24u}};
 
-    std::vector<std::string> m_log;
-    HandlerType              m_handlerType{HandlerType::Classic};
-    bool                     m_mustClose{false};
+    sf::base::Vector<std::string> m_log;
+    HandlerType                   m_handlerType{HandlerType::Classic};
+    bool                          m_mustClose{false};
 };
 
 
