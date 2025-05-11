@@ -54,14 +54,60 @@ struct SoundBuffer::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(const SoundBuffer& copy)
+SoundBuffer::SoundBuffer(const SoundBuffer& rhs)
 {
     // Don't copy the attached soundlist
-    m_impl->samples  = copy.m_impl->samples;
-    m_impl->duration = copy.m_impl->duration;
+    m_impl->samples  = rhs.m_impl->samples;
+    m_impl->duration = rhs.m_impl->duration;
 
     // Update the internal buffer with the new samples
-    m_impl->update(copy.getChannelCount(), copy.getSampleRate(), copy.getChannelMap());
+    m_impl->update(rhs.getChannelCount(), rhs.getSampleRate(), rhs.getChannelMap());
+}
+
+
+////////////////////////////////////////////////////////////
+SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs)
+{
+    if (this == &rhs)
+        return *this;
+
+    SoundBuffer temp(rhs);
+
+    using std::swap;
+
+    swap(m_impl->samples, temp.m_impl->samples);
+    swap(m_impl->sampleRate, temp.m_impl->sampleRate);
+    swap(m_impl->channelMap, temp.m_impl->channelMap);
+    swap(m_impl->duration, temp.m_impl->duration);
+    swap(m_impl->sounds, temp.m_impl->sounds); // swap soundlist too, so that they are detached when temp is destroyed
+
+    return *this;
+}
+
+
+////////////////////////////////////////////////////////////
+SoundBuffer::SoundBuffer(SoundBuffer&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
+{
+    for (Sound* soundPtr : m_impl->sounds)
+        soundPtr->setBuffer(*this);
+}
+
+
+////////////////////////////////////////////////////////////
+SoundBuffer& SoundBuffer::operator=(SoundBuffer&& rhs) noexcept
+{
+    if (this == &rhs)
+        return *this;
+
+    for (Sound* soundPtr : m_impl->sounds)
+        soundPtr->detachBuffer();
+
+    m_impl = SFML_BASE_MOVE(rhs.m_impl);
+
+    for (Sound* soundPtr : m_impl->sounds)
+        soundPtr->setBuffer(*this);
+
+    return *this;
 }
 
 
@@ -205,26 +251,6 @@ ChannelMap SoundBuffer::getChannelMap() const
 Time SoundBuffer::getDuration() const
 {
     return m_impl->duration;
-}
-
-
-////////////////////////////////////////////////////////////
-SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs)
-{
-    if (this == &rhs)
-        return *this;
-
-    SoundBuffer temp(rhs);
-
-    using std::swap;
-
-    swap(m_impl->samples, temp.m_impl->samples);
-    swap(m_impl->sampleRate, temp.m_impl->sampleRate);
-    swap(m_impl->channelMap, temp.m_impl->channelMap);
-    swap(m_impl->duration, temp.m_impl->duration);
-    swap(m_impl->sounds, temp.m_impl->sounds); // swap soundlist too, so that they are detached when temp is destroyed
-
-    return *this;
 }
 
 

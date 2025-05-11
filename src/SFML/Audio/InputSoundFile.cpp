@@ -209,45 +209,40 @@ Time InputSoundFile::getDuration() const
 
 
 ////////////////////////////////////////////////////////////
-Time InputSoundFile::getTimeOffset() const
+Time InputSoundFile::getTimeOffset(const base::U64 sampleOffset) const
 {
     // Make sure we don't divide by 0
     if (m_channelMap.isEmpty() || m_sampleRate == 0u)
         return Time{};
 
-    SFML_BASE_ASSERT(m_sampleOffset % m_channelMap.getSize() == 0u);
-    const auto sampleOffsetPerChannel = m_sampleOffset / m_channelMap.getSize();
+    SFML_BASE_ASSERT(sampleOffset % m_channelMap.getSize() == 0u);
+    const auto sampleOffsetPerChannel = sampleOffset / m_channelMap.getSize();
 
     return microseconds(static_cast<base::I64>(sampleOffsetPerChannel * 1'000'000 / m_sampleRate));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::U64 InputSoundFile::getSampleOffset() const
-{
-    return m_sampleOffset;
-}
-
-
-////////////////////////////////////////////////////////////
-void InputSoundFile::seek(base::U64 sampleOffset)
+base::U64 InputSoundFile::seek(base::U64 sampleOffset)
 {
     SFML_BASE_ASSERT(m_reader != nullptr);
 
-    if (!m_channelMap.isEmpty())
-    {
-        // The reader handles an overrun gracefully, but we
-        // pre-check to keep our known position consistent
-        m_sampleOffset = base::min(sampleOffset / m_channelMap.getSize() * m_channelMap.getSize(), m_sampleCount);
-        m_reader->seek(m_sampleOffset);
-    }
+    if (m_channelMap.isEmpty())
+        return 0u;
+
+    // The reader handles an overrun gracefully, but we
+    // pre-check to keep our known position consistent
+    const auto clampedSampleOffset = base::min(sampleOffset / m_channelMap.getSize() * m_channelMap.getSize(), m_sampleCount);
+    m_reader->seek(clampedSampleOffset);
+    return clampedSampleOffset;
 }
 
 
 ////////////////////////////////////////////////////////////
-void InputSoundFile::seek(Time timeOffset)
+base::U64 InputSoundFile::seek(Time timeOffset)
 {
-    seek(static_cast<base::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
+    return seek(
+        static_cast<base::SizeT>(timeOffset.asSeconds() * static_cast<float>(m_sampleRate)) * m_channelMap.getSize());
 }
 
 
@@ -256,10 +251,11 @@ base::U64 InputSoundFile::read(base::I16* samples, base::U64 maxCount)
 {
     SFML_BASE_ASSERT(m_reader != nullptr);
 
-    base::U64 readSamples = 0;
+    base::U64 readSamples = 0u;
+
     if (samples && maxCount)
         readSamples = m_reader->read(samples, maxCount);
-    m_sampleOffset += readSamples;
+
     return readSamples;
 }
 

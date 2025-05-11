@@ -83,12 +83,8 @@ LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LifetimeDependee::LifetimeDependee(LifetimeDependee&& rhs) noexcept :
-m_dependeeName(rhs.m_dependeeName),
-m_dependantName(rhs.m_dependantName)
+LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 {
-    SFML_BASE_PLACEMENT_NEW(m_dependantCount)
-    AtomicUInt(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order::relaxed));
-
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
     // if it wasn't `0u` when the move occurred.
 
@@ -120,8 +116,6 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-    asAtomicUInt(m_dependantCount)
-        .store(asAtomicUInt(rhs.m_dependantCount).load(std::memory_order::relaxed), std::memory_order::relaxed);
 
     // See rationale in move constructor for not resetting `rhs.m_dependantCount`.
 

@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -23,24 +24,40 @@
 ////////////////////////////////////////////////////////////
 int main()
 {
-    // Create sound sources
-    auto      soundBuffer = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
-    sf::Sound sound(soundBuffer);
-
-    auto music0 = sf::Music::openFromFile("resources/doodle_pop.ogg").value();
-    auto music1 = sf::Music::openFromFile("resources/ding.flac").value();
-    auto music2 = sf::Music::openFromFile("resources/ding.mp3").value();
-
-    // Store all source sources together for convenience
-    sf::SoundSource* const sources[]{&sound, &music0, &music1, &music2};
-
     // Create the audio context
     auto audioContext = sf::AudioContext::create().value();
 
     // For each hardware playback device, create a SFML playback device
+    const auto playbackDeviceHandles = sf::AudioContext::getAvailablePlaybackDeviceHandles();
+    if (playbackDeviceHandles.empty())
+    {
+        sf::cErr() << "No playback devices found.\n";
+        return 1;
+    }
+
+    sf::cOut() << "Found " << playbackDeviceHandles.size() << " playback devices:\n";
+
     std::vector<sf::PlaybackDevice> playbackDevices;
-    for (const sf::PlaybackDeviceHandle& deviceHandle : sf::AudioContext::getAvailablePlaybackDeviceHandles())
+    for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
+    {
+        sf::cOut() << "  - " << deviceHandle.getName() << '\n';
         playbackDevices.emplace_back(deviceHandle);
+    }
+
+    // Load resources
+    auto soundBuffer  = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
+    auto musicSource0 = sf::MusicSource::openFromFile("resources/doodle_pop.ogg").value();
+    auto musicSource1 = sf::MusicSource::openFromFile("resources/ding.flac").value();
+    auto musicSource2 = sf::MusicSource::openFromFile("resources/ding.mp3").value();
+
+    // Create sound sources
+    sf::Sound sound(soundBuffer);
+    sf::Music music0(musicSource0);
+    sf::Music music1(musicSource1);
+    sf::Music music2(musicSource2);
+
+    // Store all source sources together for convenience
+    sf::SoundSource* const sources[]{&sound, &music0, &music1, &music2};
 
     // Play multiple sources simultaneously on separate playback devices
     for (std::size_t i = 0u; i < playbackDevices.size(); ++i)

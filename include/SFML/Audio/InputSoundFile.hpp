@@ -151,18 +151,12 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Get the read offset of the file in time
     ///
+    /// \param sampleOffset Index of the sample to convert to time
+    ///
     /// \return Time position
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getTimeOffset() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the read offset of the file in samples
-    ///
-    /// \return Sample position
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U64 getSampleOffset() const;
+    [[nodiscard]] Time getTimeOffset(base::U64 sampleOffset) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given sample offset
@@ -180,8 +174,10 @@ public:
     ///
     /// \param sampleOffset Index of the sample to jump to, relative to the beginning
     ///
+    /// \return New sample offset after seeking
+    ///
     ////////////////////////////////////////////////////////////
-    void seek(base::U64 sampleOffset);
+    [[nodiscard]] base::U64 seek(base::U64 sampleOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current read position to the given time offset
@@ -194,8 +190,10 @@ public:
     ///
     /// \param timeOffset Time to jump to, relative to the beginning
     ///
+    /// \return New sample offset after seeking
+    ///
     ////////////////////////////////////////////////////////////
-    void seek(Time timeOffset);
+    [[nodiscard]] base::U64 seek(Time timeOffset);
 
     ////////////////////////////////////////////////////////////
     /// \brief Read audio samples from the open file
@@ -245,10 +243,9 @@ private:
     ////////////////////////////////////////////////////////////
     base::UniquePtr<SoundFileReader> m_reader; //!< Reader that handles I/O on the file's format
     base::UniquePtr<InputStream, StreamDeleter> m_stream{nullptr, false}; //!< Input stream used to access the file's data
-    base::U64    m_sampleOffset{};                                        //!< Sample Read Position
-    base::U64    m_sampleCount{};                                         //!< Total number of samples in the file
-    unsigned int m_sampleRate{};                                          //!< Number of samples per second
-    ChannelMap   m_channelMap; //!< The map of position in sample frame to sound channel
+    /* logically const */ base::U64    m_sampleCount{};                   //!< Total number of samples in the file
+    /* logically const */ unsigned int m_sampleRate{};                    //!< Number of samples per second
+    /* logically const */ ChannelMap   m_channelMap; //!< The map of position in sample frame to sound channel
 };
 
 } // namespace sf
