@@ -69,6 +69,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
 
+    SECTION("Sound buffer move")
+    {
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+        const sf::Sound sound(soundBufferA);
+        CHECK(&sound.getBuffer() == &soundBufferA);
+        CHECK(!sound.isLooping());
+        CHECK(sound.getPlayingOffset() == sf::Time{});
+        CHECK(sound.getStatus() == sf::Sound::Status::Stopped);
+
+        soundBufferB = SFML_BASE_MOVE(soundBufferA);
+        CHECK(&sound.getBuffer() == &soundBufferB);
+    }
+
 #ifdef SFML_ENABLE_LIFETIME_TRACKING
     SECTION("Lifetime tracking")
     {
@@ -110,6 +125,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             CHECK(!guard.fatalErrorTriggered());
 
             badStruct0.reset();
+            CHECK(!guard.fatalErrorTriggered());
+        }
+
+        SECTION("Dependee move assignment")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            auto sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::Sound s0(sb0);
+            CHECK(!guard.fatalErrorTriggered());
+
+            sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             CHECK(!guard.fatalErrorTriggered());
         }
     }

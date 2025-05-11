@@ -10,11 +10,11 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundStream.hpp"
 
+#include "SFML/System/LifetimeDependant.hpp"
+
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/PassKey.hpp"
-#include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -22,10 +22,8 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class InputSoundFile;
-class InputStream;
-class Path;
 class Time;
+class MusicSource;
 } // namespace sf
 
 
@@ -36,157 +34,42 @@ class SFML_AUDIO_API Music : public SoundStream
 {
 public:
     ////////////////////////////////////////////////////////////
+    /// \brief Construct the music from a music source
+    ///
+    /// \param musicSource Music source to stream data from
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] explicit Music(MusicSource& musicSource);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
     ~Music() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    Music(Music&&) noexcept;
+    Music(const Music&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    Music& operator=(Music&&) noexcept;
+    Music& operator=(const Music&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open a music source from an audio file
-    ///
-    /// This function doesn't start playing the music (use `play`
-    /// to do so).
-    ///
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather
-    /// streamed continuously, the file must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed
-    /// and until all active `sf::Music` objects linked to this
-    /// `sf::Music` instance are destroyed.
-    ///
-    /// \param filename Path of the music file to open
-    ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
-    ///
-    /// \see `openFromMemory`, `openFromStream`
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Music> openFromFile(const Path& filename);
+    Music(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Open a music from an audio file in memory
-    ///
-    /// This function doesn't start playing the music (use `play`
-    /// to do so).
-    ///
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather streamed
-    /// continuously, the `data` buffer must remain accessible until
-    /// the `sf::Music` object loads a new music or is destroyed. That is,
-    /// you can't deallocate the buffer right after calling this function.
-    ///
-    /// \param data        Pointer to the file data in memory
-    /// \param sizeInBytes Size of the data to load, in bytes
-    ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
-    ///
-    /// \see `openFromFile`, `openFromStream`
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Music> openFromMemory(const void* data, base::SizeT sizeInBytes);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Open a music from an audio file in a custom stream
-    ///
-    /// This function doesn't start playing the music (use `play`
-    /// to do so).
-    ///
-    /// See the documentation of `sf::InputSoundFile` for the list
-    /// of supported formats.
-    ///
-    /// \warning Since the music is not loaded at once but rather
-    /// streamed continuously, the `stream` must remain accessible
-    /// until the `sf::Music` object loads a new music or is destroyed.
-    ///
-    /// \param stream Source stream to read from
-    ///
-    /// \return Music source if loading succeeded, `base::nullOpt` if it failed
-    ///
-    /// \see `openFromFile`, `openFromMemory`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Music> openFromStream(InputStream& stream);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the total duration of the music
-    ///
-    /// \return Music duration
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getDuration() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Return the number of channels of the stream
-    ///
-    /// 1 channel means a mono sound, 2 means stereo, etc.
-    ///
-    /// \return Number of channels
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the stream sample rate of the stream
-    ///
-    /// The sample rate is the number of audio samples played per
-    /// second. The higher, the better the quality.
-    ///
-    /// \return Sample rate, in number of samples per second
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the map of position in sample frame to sound channel
-    ///
-    /// This is used to map a sample in the sample stream to a
-    /// position during spatialization.
-    ///
-    /// \return Map of position in sample frame to sound channel
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] ChannelMap getChannelMap() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the total number of audio samples in the source file
-    ///
-    /// \return Number of samples
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::U64 getSampleCount() const;
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Try opening the music file from an optional input sound file
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<Music> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
-                                                                         const char*                      errorContext);
-
-public:
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief Initialize the internal state after loading a new music
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Music(base::PassKey<Music>&&, InputSoundFile&& file);
+    Music& operator=(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure template defining a time range
@@ -241,6 +124,38 @@ public:
     ////////////////////////////////////////////////////////////
     void setLoopPoints(TimeSpan timePoints);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Return the number of channels of the music source
+    ///
+    /// 1 channel means a mono sound, 2 means stereo, etc.
+    ///
+    /// \return Number of channels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getChannelCount() const override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the stream sample rate of the music source
+    ///
+    /// The sample rate is the number of audio samples played per
+    /// second. The higher, the better the quality.
+    ///
+    /// \return Sample rate, in number of samples per second
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] unsigned int getSampleRate() const override;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the map of position in sample frame to sound channel
+    ///
+    /// This is used to map a sample in the sample stream to a
+    /// position during spatialization.
+    ///
+    /// \return Map of position in sample frame to sound channel
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::ChannelMap getChannelMap() const override;
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
@@ -279,9 +194,15 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
-    // TODO P0: needs address stability, but memory should be reusable
+    base::Vector<base::I16> m_samples;      //!< Temporary buffer of samples
+    Span<base::U64>         m_loopSpan;     //!< Loop range Specifier
+    MusicSource*            m_musicSource;  //!< The music source
+    base::U64               m_sampleOffset; //!< Current offset in the stream
+
+    ////////////////////////////////////////////////////////////
+    // Lifetime tracking
+    ////////////////////////////////////////////////////////////
+    SFML_DEFINE_LIFETIME_DEPENDANT(MusicSource);
 };
 
 } // namespace sf
@@ -312,18 +233,21 @@ private:
 ///
 /// Usage example:
 /// \code
-/// // Open a music from an audio file
-/// auto music = sf::Music::openFromFile("music.ogg").value();
+/// // Create an audio context and get the default playback device
+/// auto audioContext = sf::AudioContext::create().value();
+/// auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+///
+/// // Open a music source from an audio file
+/// auto musicSource = sf::MusicSource::openFromFile("music.ogg").value();
+///
+/// // Create a music stream from the music source
+/// sf::Music music(musicSource);
 ///
 /// // Change some parameters
 /// music.setPosition({0, 1, 10}); // change its 3D position
 /// music.setPitch(2);             // increase the pitch
 /// music.setVolume(0.5f);         // reduce the volume (50%)
 /// music.setLooping(true);        // make it loop
-///
-/// // Create an audio context and get the default playback device
-/// auto audioContext = sf::AudioContext::create().value();
-/// auto playbackDevice = sf::PlaybackDevice::createDefault().value();
 ///
 /// // Play it
 /// music.play(playbackDevice);

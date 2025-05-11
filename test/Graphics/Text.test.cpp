@@ -255,6 +255,21 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             t1 = SFML_BASE_MOVE(t0);
             t0.reset();
         }
+
+        SECTION("Dependee move assignment")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            auto sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::Text s0(sb0, {});
+            CHECK(!guard.fatalErrorTriggered());
+
+            sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+            CHECK(!guard.fatalErrorTriggered());
+        }
     }
 #endif
 }

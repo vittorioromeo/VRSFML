@@ -50,15 +50,16 @@ private:
 } // namespace sf::priv
 
     // NOLINTBEGIN(bugprone-macro-parentheses)
-    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)                                               \
-        friend dependantType;                                                                                        \
-        mutable ::sf::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType{#dependeeType, #dependantType}; \
-        using sfPrivSwallowSemicolon##dependantType##dependeeType = void
+    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependeeType, dependantType)               \
+        friend dependantType;                                                        \
+        mutable ::sf::priv::LifetimeDependee m_sfPrivLifetimeDependee##dependantType \
+        {                                                                            \
+            #dependeeType, #dependantType                                            \
+        }
 // NOLINTEND(bugprone-macro-parentheses)
 
 #else // SFML_ENABLE_LIFETIME_TRACKING
 
-    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType) \
-        using sfPrivSwallowSemicolon##dependantType##dependeeType = void
+    #define SFML_DEFINE_LIFETIME_DEPENDEE(dependantType, dependeeType) static_assert(true)
 
 #endif // SFML_ENABLE_LIFETIME_TRACKING

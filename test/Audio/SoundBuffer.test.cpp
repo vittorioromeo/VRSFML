@@ -23,9 +23,9 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundBuffer));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundBuffer));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundBuffer));
         STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::SoundBuffer));
-        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundBuffer));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundBuffer));
     }
 
     SECTION("Copy semantics")
@@ -52,6 +52,31 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
             CHECK(soundBufferCopy.getChannelCount() == 1);
             CHECK(soundBufferCopy.getDuration() == sf::microseconds(1'990'884));
         }
+    }
+
+    SECTION("Move construction")
+    {
+        auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+        const sf::SoundBuffer soundBufferMove(SFML_BASE_MOVE(soundBuffer));
+        CHECK(soundBufferMove.getSamples() != nullptr);
+        CHECK(soundBufferMove.getSampleCount() == 87'798);
+        CHECK(soundBufferMove.getSampleRate() == 44'100);
+        CHECK(soundBufferMove.getChannelCount() == 1);
+        CHECK(soundBufferMove.getDuration() == sf::microseconds(1'990'884));
+    }
+
+    SECTION("Move assignmment")
+    {
+        auto soundBuffer     = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferMove = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+        soundBufferMove = SFML_BASE_MOVE(soundBuffer);
+        CHECK(soundBufferMove.getSamples() != nullptr);
+        CHECK(soundBufferMove.getSampleCount() == 87'798);
+        CHECK(soundBufferMove.getSampleRate() == 44'100);
+        CHECK(soundBufferMove.getChannelCount() == 1);
+        CHECK(soundBufferMove.getDuration() == sf::microseconds(1'990'884));
     }
 
     SECTION("loadFromFile()")

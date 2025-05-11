@@ -5,6 +5,7 @@
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -57,15 +58,16 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 {
     // Load an ogg music file
-    auto music = sf::Music::openFromFile("resources" / filename).value();
+    auto musicSource = sf::MusicSource::openFromFile("resources" / filename).value();
 
     // Display music information
     sf::cOut() << filename << ":" << '\n'
-               << " " << music.getDuration().asSeconds() << " seconds" << '\n'
-               << " " << music.getSampleRate() << " samples / sec" << '\n'
-               << " " << music.getChannelCount() << " channels" << '\n';
+               << " " << musicSource.getDuration().asSeconds() << " seconds" << '\n'
+               << " " << musicSource.getSampleRate() << " samples / sec" << '\n'
+               << " " << musicSource.getChannelCount() << " channels" << '\n';
 
     // Play it
+    sf::Music music(musicSource);
     music.play(playbackDevice);
 
     // Loop while the music is playing
@@ -80,6 +82,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 
     sf::cOut() << '\n' << sf::endL;
 }
+
 } // namespace
 
 

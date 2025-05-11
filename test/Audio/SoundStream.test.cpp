@@ -19,6 +19,21 @@ class TestSoundStream : public sf::SoundStream
 public:
     explicit TestSoundStream() = default;
 
+    [[nodiscard]] unsigned int getChannelCount() const override
+    {
+        return 0;
+    }
+
+    [[nodiscard]] unsigned int getSampleRate() const override
+    {
+        return 0;
+    }
+
+    [[nodiscard]] sf::ChannelMap getChannelMap() const override
+    {
+        return {};
+    }
+
 protected:
     [[nodiscard]] bool onGetData(Chunk& /* data */) override
     {
@@ -29,6 +44,7 @@ protected:
     {
     }
 };
+
 } // namespace
 
 TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
@@ -42,7 +58,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
         STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundStream));
         STATIC_CHECK(!SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundStream));
         STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_CONSTRUCTIBLE(sf::SoundStream));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundStream));
+        STATIC_CHECK(!SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundStream));
         STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::SoundStream));
     }
 

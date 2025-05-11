@@ -49,4 +49,4 @@
         return lhs = (lhs & rhs);                                                                                              \
     }                                                                                                                          \
                                                                                                                                \
-    using sfPrivSwallowSemicolonBitwiseOps = void
+    static_assert(true)

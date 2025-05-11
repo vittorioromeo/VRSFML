@@ -37,9 +37,8 @@ private:
 } // namespace sf::priv
 
     // NOLINTBEGIN(bugprone-macro-parentheses)
-    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType)                               \
-        mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType; \
-        using sfPrivSwallowSemicolon##dependantType = void
+    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) \
+        mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType
 
     #define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, thisPtr, dependantMemberPtr) \
         thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
@@ -48,7 +47,7 @@ private:
 
 #else // SFML_ENABLE_LIFETIME_TRACKING
 
-    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) using sfPrivSwallowSemicolon##dependantType = void
+    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) static_assert(true)
 
     #define SFML_UPDATE_LIFETIME_DEPENDANT(...) (void)0
 

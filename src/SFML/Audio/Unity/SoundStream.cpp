@@ -42,6 +42,8 @@ struct SoundStream::Impl
         if (!soundBase->initialize(&onEnd))
             priv::err() << "Failed to initialize SoundStream::Impl";
 
+        const auto channelMap = owner->getChannelMap();
+
         // Because we are providing a custom data source, we have to provide the channel map ourselves
         if (channelMap.isEmpty())
         {
@@ -94,12 +96,14 @@ struct SoundStream::Impl
         // Push the samples to miniaudio
         if (!impl.sampleBuffer.empty())
         {
+            const auto channelCount = impl.owner->getChannelCount();
+
             // Determine how many frames we can read
             *framesRead = base::min(frameCount,
                                     static_cast<ma_uint64>(
-                                        (impl.sampleBuffer.size() - impl.sampleBufferCursor) / impl.channelCount));
+                                        (impl.sampleBuffer.size() - impl.sampleBufferCursor) / channelCount));
 
-            const auto sampleCount = *framesRead * impl.channelCount;
+            const auto sampleCount = *framesRead * channelCount;
 
             // Copy the samples to the output
             SFML_BASE_MEMCPY(framesOut,
@@ -138,14 +142,16 @@ struct SoundStream::Impl
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
+        const auto channelCount = impl.owner->getChannelCount();
+        const auto sampleRate   = impl.owner->getSampleRate();
+
         impl.streaming = true;
         impl.sampleBuffer.clear();
         impl.sampleBufferCursor = 0;
-        impl.samplesProcessed   = frameIndex * impl.channelCount;
+        impl.samplesProcessed   = frameIndex * channelCount;
 
-        const Time offset = impl.sampleRate == 0
-                                ? Time{}
-                                : seconds(static_cast<float>(frameIndex) / static_cast<float>(impl.sampleRate));
+        const Time offset = sampleRate == 0 ? Time{}
+                                            : seconds(static_cast<float>(frameIndex) / static_cast<float>(sampleRate));
 
         impl.owner->onSeek(offset);
         return MA_SUCCESS;
@@ -154,18 +160,21 @@ struct SoundStream::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static ma_result getFormat(
         ma_data_source* dataSource,
-        ma_format*      format,
-        ma_uint32*      channels,
-        ma_uint32*      sampleRate,
+        ma_format*      outFormat,
+        ma_uint32*      outChannels,
+        ma_uint32*      outSampleRate,
         ma_channel*,
         base::SizeT)
     {
         const auto& impl = *static_cast<const Impl*>(dataSource);
 
+        const auto channelCount = impl.owner->getChannelCount();
+        const auto sampleRate   = impl.owner->getSampleRate();
+
         // If we don't have valid values yet, initialize with defaults so sound creation doesn't fail
-        *format     = ma_format_s16;
-        *channels   = impl.channelCount ? impl.channelCount : 1;
-        *sampleRate = impl.sampleRate ? impl.sampleRate : 44'100;
+        *outFormat     = ma_format_s16;
+        *outChannels   = channelCount ? channelCount : 1;
+        *outSampleRate = sampleRate ? sampleRate : 44'100;
 
         return MA_SUCCESS;
     }
@@ -174,7 +183,10 @@ struct SoundStream::Impl
     [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
-        *cursor    = impl.channelCount ? impl.samplesProcessed / impl.channelCount : 0;
+
+        const auto channelCount = impl.owner->getChannelCount();
+
+        *cursor = channelCount ? impl.samplesProcessed / channelCount : 0;
 
         return MA_SUCCESS;
     }
@@ -204,66 +216,19 @@ struct SoundStream::Impl
     base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
     base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
-    unsigned int            channelCount{};       //!< Number of channels (1 = mono, 2 = stereo, ...)
-    unsigned int            sampleRate{};         //!< Frequency (samples / second)
-    ChannelMap              channelMap;           //!< The map of position in sample frame to sound channel
     bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
     SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
 ////////////////////////////////////////////////////////////
-SoundStream::SoundStream() : m_impl(base::makeUnique<Impl>(this))
+SoundStream::SoundStream() : m_impl(this)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 SoundStream::~SoundStream() = default;
-
-
-////////////////////////////////////////////////////////////
-SoundStream::SoundStream(SoundStream&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
-{
-    // Update self-referential owner pointer.
-    m_impl->owner = this;
-}
-
-
-////////////////////////////////////////////////////////////
-SoundStream& SoundStream::operator=(SoundStream&& rhs) noexcept
-{
-    if (this != &rhs)
-    {
-        m_impl = SFML_BASE_MOVE(rhs.m_impl);
-
-        // Update self-referential owner pointer.
-        m_impl->owner = this;
-    }
-
-    return *this;
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundStream::initialize(unsigned int channelCount, unsigned int sampleRate, const ChannelMap& channelMap)
-{
-    m_impl->channelCount     = channelCount;
-    m_impl->sampleRate       = sampleRate;
-    m_impl->channelMap       = channelMap;
-    m_impl->samplesProcessed = 0;
-
-    if (m_impl->soundBase.hasValue())
-    {
-        m_impl->soundBase->deinitialize();
-        m_impl->initialize();
-
-        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
-        applyStoredSettings(m_impl->soundBase->getSound());
-        setEffectProcessor(getEffectProcessor());
-        setPlayingOffset(getPlayingOffset());
-    }
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -330,27 +295,6 @@ void SoundStream::stop()
 
 
 ////////////////////////////////////////////////////////////
-unsigned int SoundStream::getChannelCount() const
-{
-    return m_impl->channelCount;
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int SoundStream::getSampleRate() const
-{
-    return m_impl->sampleRate;
-}
-
-
-////////////////////////////////////////////////////////////
-ChannelMap SoundStream::getChannelMap() const
-{
-    return m_impl->channelMap;
-}
-
-
-////////////////////////////////////////////////////////////
 SoundStream::Status SoundStream::getStatus() const
 {
     return m_impl->status;
@@ -365,7 +309,7 @@ void SoundStream::setPlayingOffset(Time playingOffset)
     if (!m_impl->soundBase.hasValue())
         return;
 
-    if (m_impl->sampleRate == 0)
+    if (getSampleRate() == 0)
         return;
 
     if (m_impl->soundBase->getSound().pDataSource == nullptr || m_impl->soundBase->getSound().engineNode.pEngine == nullptr)
@@ -376,16 +320,16 @@ void SoundStream::setPlayingOffset(Time playingOffset)
     m_impl->streaming = true;
     m_impl->sampleBuffer.clear();
     m_impl->sampleBufferCursor = 0;
-    m_impl->samplesProcessed   = frameIndex * m_impl->channelCount;
+    m_impl->samplesProcessed   = frameIndex * getChannelCount();
 
-    onSeek(seconds(static_cast<float>(frameIndex) / static_cast<float>(m_impl->sampleRate)));
+    onSeek(seconds(static_cast<float>(frameIndex) / static_cast<float>(getSampleRate())));
 }
 
 
 ////////////////////////////////////////////////////////////
 Time SoundStream::getPlayingOffset() const
 {
-    if (m_impl->channelCount == 0 || m_impl->sampleRate == 0)
+    if (getChannelCount() == 0 || getSampleRate() == 0)
         return Time{};
 
     return SoundSource::getPlayingOffset();
@@ -418,7 +362,8 @@ void* SoundStream::getSound() const
     if (!m_impl->soundBase.hasValue())
         return nullptr;
 
-    return &m_impl->soundBase->getSound();
+    // TODO P0: const bs
+    return &const_cast<SoundStream*>(this)->m_impl->soundBase->getSound();
 }
 
 } // namespace sf
