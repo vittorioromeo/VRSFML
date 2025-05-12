@@ -26,7 +26,7 @@
 
 TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 {
-    auto audioContext   = sf::AudioContext::create().value();
+    auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     SECTION("Type traits")
@@ -204,4 +204,81 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
+
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+    SECTION("Lifetime tracking")
+    {
+        SECTION("Return local from function")
+        {
+            const auto badFunction = []
+            {
+                auto localMusicSource = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
+                return sf::Music(localMusicSource);
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            badFunction();
+
+            CHECK(guard.fatalErrorTriggered());
+        }
+
+        SECTION("Move struct holding both dependee and dependant")
+        {
+            struct BadStruct
+            {
+                explicit BadStruct() :
+                memberMusicSource{sf::MusicSource::openFromFile("Audio/ding.mp3").value()},
+                memberSound{memberMusicSource}
+                {
+                }
+
+                sf::MusicSource memberMusicSource;
+                sf::Music       memberSound;
+            };
+
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::base::Optional<BadStruct> badStruct0;
+            badStruct0.emplace();
+            CHECK(!guard.fatalErrorTriggered());
+
+            badStruct0.reset();
+            CHECK(!guard.fatalErrorTriggered());
+        }
+
+        SECTION("Dependee move assignment")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            auto sb0 = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::Music s0(sb0);
+            CHECK(!guard.fatalErrorTriggered());
+
+            sb0 = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
+            CHECK(!guard.fatalErrorTriggered());
+        }
+
+        SECTION("Dependee destroyed before dependant")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            auto optDependee = sf::MusicSource::openFromFile("Audio/ding.mp3");
+            CHECK(optDependee.hasValue());
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::Music s0(*optDependee);
+            CHECK(!guard.fatalErrorTriggered());
+
+            optDependee.reset();
+            CHECK(guard.fatalErrorTriggered());
+        }
+    }
+#endif
 }
