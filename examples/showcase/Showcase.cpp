@@ -23,7 +23,10 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
+#include "SFML/Audio/ActiveMusic.hpp"
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
@@ -434,8 +437,8 @@ private:
     sf::base::InPlaceVector<sf::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::Sound, 32> m_activeSounds;
-    sf::base::Optional<sf::Music>          m_activeMusic;
+    sf::base::InPlaceVector<sf::base::Optional<sf::AudioSample>, 32> m_activeSounds;
+    sf::base::Optional<sf::ActiveMusic>                              m_activeMusic;
 
     ////////////////////////////////////////////////////////////
     void refreshPlaybackDevices()
@@ -486,19 +489,17 @@ public:
                 auto* const it = sf::base::findIf( //
                     m_activeSounds.begin(),
                     m_activeSounds.end(),
-                    [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
+                    [](const sf::base::Optional<sf::AudioSample>& sound)
+                { return !sound.hasValue() || !sound->isPlaying(); });
 
                 if (it != m_activeSounds.end())
                 {
-                    it->setBuffer(m_sbByteMeow);
-                    it->play(playbackDevice);
+                    it->reset();
+                    it->emplace(playbackDevice, m_sbByteMeow, sf::AudioSettings{});
                 }
 
                 if (m_activeSounds.size() < 32u)
-                {
-                    auto& sound = m_activeSounds.emplaceBack(m_sbByteMeow);
-                    sound.play(playbackDevice);
-                }
+                    m_activeSounds.emplaceBack(sf::base::inPlace, playbackDevice, m_sbByteMeow, sf::AudioSettings{});
             }
 
             ImGui::SameLine();
@@ -507,9 +508,9 @@ public:
             if (ImGui::Button(buttonLabel))
             {
                 if (!m_activeMusic.hasValue())
-                    m_activeMusic.emplace(m_msBGMWizard);
-
-                m_activeMusic->play(playbackDevice);
+                    m_activeMusic.emplace(playbackDevice, m_msBGMWizard, sf::AudioSettings{});
+                else
+                    m_activeMusic->resume();
             }
 
             ++i;
@@ -517,7 +518,6 @@ public:
 
         if (ImGui::Button("Refresh playback devices"))
             refreshPlaybackDevices();
-
 
         ImGui::SameLine();
 
@@ -531,8 +531,18 @@ public:
 
         if (ImGui::Button("Stop Music"))
         {
-            if (m_activeMusic.hasValue())
-                m_activeMusic->stop();
+            m_activeMusic.reset();
+        }
+
+        static bool x = false;
+        if (ImGui::Button("Switch Music Source"))
+        {
+            if (x)
+                m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwizard.mp3").value();
+            else
+                m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwitch.mp3").value();
+
+            x = !x;
         }
 
         ImGui::End();

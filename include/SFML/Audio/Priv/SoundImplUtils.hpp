@@ -45,7 +45,7 @@ struct SoundImplUtils
             self.m_impl->soundBase.emplace(playbackDevice, &TSelf::Impl::vtable);
             self.m_impl->initialize();
 
-            self.applySavedSettings(self.m_impl->soundBase->getSound());
+            self.applyAudioSettings(self.m_impl->soundBase->getSound());
             self.setEffectProcessor(self.getEffectProcessor());
             self.setPlayingOffset(self.getPlayingOffset());
         }

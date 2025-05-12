@@ -27,6 +27,7 @@ class InputSoundFile;
 class InputStream;
 class Path;
 class Time;
+class ActiveMusic;
 class Music;
 } // namespace sf
 
@@ -226,11 +227,13 @@ private:
     ////////////////////////////////////////////////////////////
     struct Impl;
     base::UniquePtr<Impl> m_impl; //!< Implementation details
+    // TODO P0: can the uptr be avoided here? the problem is the mutex
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_LIFETIME_DEPENDEE(MusicSource, Music);
+    SFML_DEFINE_LIFETIME_DEPENDEE(MusicSource, ActiveMusic);
 };
 
 } // namespace sf

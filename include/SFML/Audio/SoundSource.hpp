@@ -626,7 +626,7 @@ protected:
     /// \brief Apply the stored settings onto `sound`
     ///
     ////////////////////////////////////////////////////////////
-    void applySavedSettings(ma_sound& sound) const;
+    void applyAudioSettings(ma_sound& sound) const;
 
 private:
     ////////////////////////////////////////////////////////////

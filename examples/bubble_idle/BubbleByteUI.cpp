@@ -53,6 +53,7 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
+#include "SFML/Base/FloatMax.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -127,7 +128,7 @@ void Main::uiPopButtonColors()
 ////////////////////////////////////////////////////////////
 void Main::uiBeginTooltip(const float width)
 {
-    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(width, 0), ImVec2(width, SFML_BASE_FLOAT_MAX));
 
     ImGui::BeginTooltip();
     ImGui::PushFont(fontImGuiMouldyCheese);
@@ -950,7 +951,8 @@ void Main::uiDrawQuickbarCopyCat(const sf::Vec2f quickBarPos, Cat& copyCat)
                     copyCat.cooldown.value = pt->getComputedCooldownByCatType(pt->copycatCopiedCatType);
                     copyCat.hits           = 0u;
 
-                    sounds.smokebomb.setPosition({copyCat.position.x, copyCat.position.y});
+                    sounds.smokebomb.settings.position = {copyCat.position.x, copyCat.position.y};
+                    sounds.smokebomb.settings.position = {copyCat.position.x, copyCat.position.y};
                     playSound(sounds.smokebomb);
 
                     for (sf::base::SizeT iP = 0u; iP < 8u; ++iP)
@@ -1243,7 +1245,7 @@ void Main::uiDrawQuickbar()
     const sf::Vec2f quickBarPos{xStart - 15.f, getResolution().y - 15.f};
 
     ImGui::SetNextWindowPos({quickBarPos.x, quickBarPos.y}, 0, {1.f, 1.f});
-    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(0.f, 0.f), ImVec2(SFML_BASE_FLOAT_MAX, SFML_BASE_FLOAT_MAX));
 
     ImGui::Begin("##quickmenu",
                  nullptr,
@@ -1448,7 +1450,7 @@ void Main::uiDpsMeter()
                      0,
                      avgBuffer,
                      0.f,
-                     FLT_MAX,
+                     SFML_BASE_FLOAT_MAX,
                      ImVec2(dpsMeterSize.x - 15.f * dpsMeterScale, dpsMeterSize.y - 17.f * dpsMeterScale));
 
     ImGui::End();
