@@ -1,6 +1,7 @@
 #include "BubbleIdleMain.hpp"
 
 #include "SFML/Base/Builtins/Strcmp.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -23,9 +24,10 @@ int main(int argc, const char** argv)
     steamMgr.requestStatsAndAchievements();
     steamMgr.runCallbacks();
 
-    Main{steamMgr}.run();
+    // Using a heap-allocation here because `Main` exceeds the stack size
+    sf::base::makeUnique<Main>(steamMgr)->run();
 #else
-    Main{}.run();
+    sf::base::makeUnique<Main>()->run();
 #endif
 }
 
