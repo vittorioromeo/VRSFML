@@ -41,7 +41,7 @@ public:
     /// \brief Enumeration of the sound source states
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Status
+    enum class [[nodiscard]] Status : unsigned char
     {
         Stopped, //!< Sound is not playing
         Paused,  //!< Sound is paused
@@ -367,7 +367,7 @@ public:
     /// \see getPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setPlayingOffset(Time playingOffset);
+    virtual void setPlayingOffset(Time playingOffset) = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the pitch of the sound
@@ -558,7 +558,7 @@ public:
     /// \see setPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Time getPlayingOffset() const;
+    [[nodiscard]] virtual Time getPlayingOffset() const = 0;
 
     ////////////////////////////////////////////////////////////
     /// \brief Overload of assignment operator

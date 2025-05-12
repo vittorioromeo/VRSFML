@@ -187,7 +187,8 @@ struct Sound::Impl
     base::SizeT                                     cursor{};  //!< The current playing position (in frames)
     const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
     SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
-    bool                                            mustLoop{false}; //!< Whether the sound must loop or not
+    void* lastUsedPlaybackDeviceStableAddress{nullptr};                                   //!< Last used playback device
+    bool  mustLoop{false}; //!< Whether the sound must loop or not
 };
 
 
@@ -213,7 +214,11 @@ Sound::~Sound()
 ////////////////////////////////////////////////////////////
 void Sound::play(PlaybackDevice& playbackDevice)
 {
-    m_impl->mustLoop = isLooping();
+    if (m_impl->lastUsedPlaybackDeviceStableAddress != playbackDevice.getStableAddress())
+        m_impl->soundBase.reset();
+
+    m_impl->lastUsedPlaybackDeviceStableAddress = playbackDevice.getStableAddress();
+    m_impl->mustLoop                            = isLooping();
 
     if (!m_impl->soundBase.hasValue())
     {
@@ -322,8 +327,6 @@ void Sound::copySettings(const Sound& rhs)
 ////////////////////////////////////////////////////////////
 void Sound::setPlayingOffset(const Time playingOffset)
 {
-    SoundSource::setPlayingOffset(playingOffset);
-
     if (!m_impl->soundBase.hasValue())
         return;
 
@@ -358,10 +361,12 @@ const SoundBuffer& Sound::getBuffer() const
 ////////////////////////////////////////////////////////////
 Time Sound::getPlayingOffset() const
 {
-    if (m_impl->buffer == nullptr || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0)
+    if (m_impl->buffer == nullptr || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0 ||
+        !m_impl->soundBase.hasValue())
         return Time{};
 
-    return SoundSource::getPlayingOffset();
+    // TODO P0: const bs
+    return priv::MiniaudioUtils::getPlayingOffset(const_cast<Sound*>(this)->m_impl->soundBase->getSound());
 }
 
 

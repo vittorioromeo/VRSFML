@@ -42,7 +42,7 @@ public:
     /// good compromise.
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Usage
+    enum class [[nodiscard]] Usage : unsigned char
     {
         Stream,  //!< Constantly changing data
         Dynamic, //!< Occasionally changing data

@@ -200,10 +200,7 @@ void Music::setLoopPoints(const TimeSpan timePoints)
 
     // Resume
     if (oldStatus == Status::Playing)
-    {
-        SFML_BASE_ASSERT(m_lastPlaybackDevice != nullptr);
-        play(*m_lastPlaybackDevice);
-    }
+        resumeOnLastPlaybackDevice();
 }
 
 
