@@ -217,7 +217,8 @@ struct SoundStream::Impl
     base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
-    SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
+    void*                   lastUsedPlaybackDeviceStableAddress{nullptr}; //!< Last used playback device
+    SoundSource::Status     status{SoundSource::Status::Stopped};         //!< The status
 };
 
 
@@ -234,7 +235,10 @@ SoundStream::~SoundStream() = default;
 ////////////////////////////////////////////////////////////
 void SoundStream::play(PlaybackDevice& playbackDevice)
 {
-    m_lastPlaybackDevice = &playbackDevice;
+    if (m_impl->lastUsedPlaybackDeviceStableAddress != playbackDevice.getStableAddress())
+        m_impl->soundBase.reset();
+
+    m_impl->lastUsedPlaybackDeviceStableAddress = playbackDevice.getStableAddress();
 
     if (!m_impl->soundBase.hasValue())
     {
@@ -247,16 +251,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
         setPlayingOffset(getPlayingOffset());
     }
 
-    if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time{});
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("start playing sound stream", result);
-        return;
-    }
-
-    m_impl->status = Status::Playing;
+    resumeOnLastPlaybackDevice();
 }
 
 
@@ -304,8 +299,6 @@ SoundStream::Status SoundStream::getStatus() const
 ////////////////////////////////////////////////////////////
 void SoundStream::setPlayingOffset(Time playingOffset)
 {
-    SoundSource::setPlayingOffset(playingOffset);
-
     if (!m_impl->soundBase.hasValue())
         return;
 
@@ -329,10 +322,11 @@ void SoundStream::setPlayingOffset(Time playingOffset)
 ////////////////////////////////////////////////////////////
 Time SoundStream::getPlayingOffset() const
 {
-    if (getChannelCount() == 0 || getSampleRate() == 0)
+    if (getChannelCount() == 0 || getSampleRate() == 0 || !m_impl->soundBase.hasValue())
         return Time{};
 
-    return SoundSource::getPlayingOffset();
+    // TODO P0: const bs
+    return priv::MiniaudioUtils::getPlayingOffset(const_cast<SoundStream*>(this)->m_impl->soundBase->getSound());
 }
 
 
@@ -353,6 +347,24 @@ base::Optional<base::U64> SoundStream::onLoop()
 {
     onSeek(Time{});
     return base::makeOptional(base::U64{0});
+}
+
+
+////////////////////////////////////////////////////////////
+void SoundStream::resumeOnLastPlaybackDevice()
+{
+    SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
+
+    if (m_impl->status == Status::Playing) // TODO P0: misleading, change API to add a "resume" function
+        setPlayingOffset(Time{});
+
+    if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
+    {
+        priv::MiniaudioUtils::fail("start playing sound stream", result);
+        return;
+    }
+
+    m_impl->status = Status::Playing;
 }
 
 

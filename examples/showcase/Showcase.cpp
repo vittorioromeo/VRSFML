@@ -24,6 +24,11 @@
 #include "SFML/Graphics/TextureAtlas.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -35,7 +40,9 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
@@ -50,7 +57,7 @@
 #include <string>
 
 #include <cmath>
-#include <cstddef>
+#include <cstdio>
 
 
 ////////////////////////////////////////////////////////////
@@ -419,10 +426,35 @@ private:
     ////////////////////////////////////////////////////////////
     float m_time = 0.f;
 
+    ////////////////////////////////////////////////////////////
+    sf::SoundBuffer m_sbByteMeow  = sf::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
+    sf::MusicSource m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwizard.mp3").value();
+
+    ////////////////////////////////////////////////////////////
+    sf::base::Vector<sf::PlaybackDevice> m_playbackDevices;
+
+    ////////////////////////////////////////////////////////////
+    sf::base::InPlaceVector<sf::Sound, 32> m_activeSounds;
+    sf::base::Optional<sf::Music>          m_activeMusic;
+
+    ////////////////////////////////////////////////////////////
+    void refreshPlaybackDevices()
+    {
+        // Sounds and musics must be destroyed *before* playback devices
+        m_activeSounds.clear();
+        m_activeMusic.reset();
+
+        m_playbackDevices.clear();
+
+        for (const auto& playbackDeviceHandle : sf::AudioContext::getAvailablePlaybackDeviceHandles())
+            m_playbackDevices.emplaceBack(playbackDeviceHandle);
+    }
+
 public:
     ////////////////////////////////////////////////////////////
     explicit ExampleAudio(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
     {
+        refreshPlaybackDevices();
     }
 
     ////////////////////////////////////////////////////////////
@@ -435,6 +467,73 @@ public:
     void imgui()
     {
         ImGui::Begin("Audio Settings", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("Playback devices:");
+
+        sf::base::SizeT i = 0u;
+        for (auto& playbackDevice : m_playbackDevices)
+        {
+            ImGui::Text("%s", playbackDevice.getName());
+            ImGui::SameLine();
+            ImGui::Text("%s", playbackDevice.isDefault() ? "(default)" : "");
+            ImGui::SameLine();
+
+            char buttonLabel[64];
+
+            std::snprintf(buttonLabel, sizeof(buttonLabel), "Play Sound##%zu", i);
+            if (ImGui::Button(buttonLabel))
+            {
+                auto* const it = sf::base::findIf( //
+                    m_activeSounds.begin(),
+                    m_activeSounds.end(),
+                    [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
+
+                if (it != m_activeSounds.end())
+                {
+                    it->setBuffer(m_sbByteMeow);
+                    it->play(playbackDevice);
+                }
+
+                if (m_activeSounds.size() < 32u)
+                {
+                    auto& sound = m_activeSounds.emplaceBack(m_sbByteMeow);
+                    sound.play(playbackDevice);
+                }
+            }
+
+            ImGui::SameLine();
+
+            std::snprintf(buttonLabel, sizeof(buttonLabel), "Play Music##%zu", i);
+            if (ImGui::Button(buttonLabel))
+            {
+                if (!m_activeMusic.hasValue())
+                    m_activeMusic.emplace(m_msBGMWizard);
+
+                m_activeMusic->play(playbackDevice);
+            }
+
+            ++i;
+        }
+
+        if (ImGui::Button("Refresh playback devices"))
+            refreshPlaybackDevices();
+
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Pause Music"))
+        {
+            if (m_activeMusic.hasValue())
+                m_activeMusic->pause();
+        }
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Stop Music"))
+        {
+            if (m_activeMusic.hasValue())
+                m_activeMusic->stop();
+        }
 
         ImGui::End();
     }

@@ -33,7 +33,7 @@ public:
         /// \brief Enumerate the available HTTP methods for a request
         ///
         ////////////////////////////////////////////////////////////
-        enum class Method
+        enum class Method : unsigned char
         {
             Get,   //!< Request in get mode, standard method to retrieve a page
             Post,  //!< Request in post mode, usually to send data to a page

@@ -38,7 +38,7 @@ public:
     /// \brief Enumeration of transfer modes
     ///
     ////////////////////////////////////////////////////////////
-    enum class TransferMode
+    enum class TransferMode : unsigned char
     {
         Binary, //!< Binary mode (file is transferred as a sequence of bytes)
         Ascii,  //!< Text mode using ASCII encoding
