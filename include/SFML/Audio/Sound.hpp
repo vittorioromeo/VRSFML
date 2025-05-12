@@ -26,6 +26,12 @@ class Time;
 } // namespace sf
 
 
+namespace sf::priv
+{
+struct SoundImplUtils;
+} // namespace sf::priv
+
+
 namespace sf
 {
 ////////////////////////////////////////////////////////////
@@ -194,23 +200,16 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Status getStatus() const override;
 
+protected:
     ////////////////////////////////////////////////////////////
-    /// \brief Set whether or not the sound should loop after reaching the end
-    ///
-    /// If set, the sound will restart from beginning after
-    /// reaching the end and so on, until it is stopped or
-    /// setLooping(false) is called.
-    /// The default looping state for sound is false.
-    ///
-    /// \param loop True to play in loop, false to play once
-    ///
-    /// \see isLooping
+    /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void setLooping(bool loop);
+    void resumeOnLastPlaybackDevice();
 
 private:
     friend class SoundBuffer;
+    friend priv::SoundImplUtils;
 
     ////////////////////////////////////////////////////////////
     /// \brief Detach sound from its internal buffer

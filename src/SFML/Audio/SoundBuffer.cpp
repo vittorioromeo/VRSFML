@@ -114,6 +114,8 @@ SoundBuffer& SoundBuffer::operator=(SoundBuffer&& rhs) noexcept
 ////////////////////////////////////////////////////////////
 SoundBuffer::~SoundBuffer()
 {
+    SFML_BASE_ASSERT(m_impl->sounds.empty() && "SoundBuffer destructor called while sounds are still attached");
+
     // To prevent the iterator from becoming invalid, we need to prevent
     // the sound from calling `detachBuffer` on the sound buffer
     for (Sound* soundPtr : m_impl->sounds)

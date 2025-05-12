@@ -8,6 +8,8 @@ if (NOT SFML_OS_EMSCRIPTEN)
     else()
         set(STEAM_LIB "${CMAKE_CURRENT_SOURCE_DIR}/libsteam_api.so")
     endif()
+
+    add_definitions(-DBUBBLEBYTE_USE_STEAMWORKS=1)
 else()
     set(SRC BubbleIdle.cpp Serialization.cpp BubbleByteUI.cpp)
     set(STEAM_LIB "")

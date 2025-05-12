@@ -642,8 +642,6 @@ public:
     m_window{window},
     m_imGuiContext{imGuiContext}
     {
-        std::cout << m_txrWhiteDot.position.x << " " << m_txrWhiteDot.position.y << " " << m_txrWhiteDot.size.x << " "
-                  << m_txrWhiteDot.size.y << "\n";
     }
 
     ////////////////////////////////////////////////////////////

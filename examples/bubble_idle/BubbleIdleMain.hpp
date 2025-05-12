@@ -125,10 +125,6 @@
 
 
 ////////////////////////////////////////////////////////////
-#ifndef SFML_SYSTEM_EMSCRIPTEN
-    #define BUBBLEBYTE_USE_STEAMWORKS 1
-#endif
-
 #ifdef BUBBLEBYTE_USE_STEAMWORKS
     #include "Steam.hpp"
 #endif

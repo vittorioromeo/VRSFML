@@ -13,13 +13,9 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Vec3.hpp"
 
-#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
-
-#include <mutex>
 
 
 namespace sf
@@ -84,9 +80,6 @@ struct PlaybackDevice::Impl
 
     PlaybackDeviceHandle playbackDeviceHandle; //!< Playback device handle, can be retieved from the playback device
 
-    base::Vector<ResourceEntry> resources;      //!< Registered resources
-    std::mutex                  resourcesMutex; //!< The mutex guarding the registered resources
-
     ma_device maDevice; //!< miniaudio playback device (one per hardware device)
     ma_engine maEngine; //!< miniaudio engine (one per hardware device, for effects/spatialization)
 };
@@ -102,37 +95,6 @@ PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle)
 
 ////////////////////////////////////////////////////////////
 PlaybackDevice::~PlaybackDevice() = default;
-
-
-////////////////////////////////////////////////////////////
-void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
-{
-    if (&other == this)
-        return;
-
-    const std::lock_guard lock(m_impl->resourcesMutex);
-
-    // Deinitialize all audio resources from self
-    for (ResourceEntry& entry : m_impl->resources)
-    {
-        // Skip inactive resources
-        if (entry.resource == nullptr)
-            continue;
-
-        entry.deinitializeFunc(entry.resource);
-
-        const ResourceEntryIndex otherEntryIndex = other.registerResource(entry.resource,
-                                                                          entry.deinitializeFunc,
-                                                                          entry.reinitializeFunc,
-                                                                          entry.transferFunc);
-
-        entry.transferFunc(entry.resource, other, otherEntryIndex);
-        entry.reinitializeFunc(entry.resource);
-
-        // Mark resource as inactive (can be recycled)
-        entry.resource = nullptr;
-    }
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -181,48 +143,6 @@ const char* PlaybackDevice::getName() const
 bool PlaybackDevice::isDefault() const
 {
     return m_impl->playbackDeviceHandle.isDefault();
-}
-
-
-////////////////////////////////////////////////////////////
-PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
-    void*                       resource,
-    ResourceEntry::InitFunc     deinitializeFunc,
-    ResourceEntry::InitFunc     reinitializeFunc,
-    ResourceEntry::TransferFunc transferFunc)
-{
-    const std::lock_guard lock(m_impl->resourcesMutex);
-
-    for (ResourceEntryIndex i = 0; i < static_cast<PlaybackDevice::ResourceEntryIndex>(m_impl->resources.size()); ++i)
-    {
-        // Skip active resources
-        if (m_impl->resources[i].resource != nullptr)
-            continue;
-
-        // Reuse first inactive recyclable resource
-        m_impl->resources[i] = {resource, deinitializeFunc, reinitializeFunc, transferFunc};
-        return i;
-    }
-
-    // Add a new resource slot
-    m_impl->resources.emplaceBack(resource, deinitializeFunc, reinitializeFunc, transferFunc);
-    return static_cast<PlaybackDevice::ResourceEntryIndex>(m_impl->resources.size()) - 1;
-}
-
-
-////////////////////////////////////////////////////////////
-void PlaybackDevice::unregisterResource(ResourceEntryIndex resourceEntryIndex)
-{
-    const std::lock_guard lock(m_impl->resourcesMutex);
-
-    SFML_BASE_ASSERT(m_impl->resources.size() > resourceEntryIndex && //
-                     "Attempted to unregister audio resource with invalid index");
-
-    SFML_BASE_ASSERT(m_impl->resources[resourceEntryIndex].resource != nullptr && //
-                     "Attempted to unregister previously erased audio resource");
-
-    // Mark resource as inactive (can be recycled)
-    m_impl->resources[resourceEntryIndex].resource = nullptr;
 }
 
 
