@@ -123,26 +123,6 @@ public:
     void stop() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Set the source buffer containing the audio data to play
-    ///
-    /// It is important to note that the sound buffer is not copied,
-    /// thus the `sf::SoundBuffer` instance must remain alive as long
-    /// as it is attached to the sound.
-    ///
-    /// \param buffer Sound buffer to attach to the sound
-    ///
-    /// \see `getBuffer`
-    ///
-    ////////////////////////////////////////////////////////////
-    void setBuffer(const SoundBuffer& buffer);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Disallow setting from a temporary sound buffer
-    ///
-    ////////////////////////////////////////////////////////////
-    void setBuffer(const SoundBuffer&& buffer) = delete;
-
-    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -210,24 +190,6 @@ protected:
 private:
     friend class SoundBuffer;
     friend priv::SoundImplUtils;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Detach sound from its internal buffer
-    ///
-    /// This allows the sound buffer to temporarily detach the
-    /// sounds that use it when the sound buffer gets updated.
-    ///
-    ////////////////////////////////////////////////////////////
-    void detachBuffer();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Forcibly detach sound from its internal buffer
-    ///
-    /// Does not signal the soundbuffer that the sound is no longer using it,
-    /// Used in the destructor of `SoundBuffer` to prevent iterator invalidation.
-    ///
-    ////////////////////////////////////////////////////////////
-    void detachBufferWithoutSignalling();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object

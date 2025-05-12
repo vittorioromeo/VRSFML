@@ -93,7 +93,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 int main()
 {
     // Create an audio context and get the default playback device
-    auto audioContext   = sf::AudioContext::create().value();
+    auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Play a sound

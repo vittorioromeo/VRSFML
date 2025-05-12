@@ -27,6 +27,7 @@ class InputSoundFile;
 class InputStream;
 class Path;
 class Sound;
+class AudioSample;
 class Time;
 } // namespace sf
 
@@ -266,31 +267,16 @@ private:
     [[nodiscard]] static base::Optional<SoundBuffer> initialize(InputSoundFile& file);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Add a sound to the list of sounds that use this buffer
-    ///
-    /// \param sound Sound instance to attach
-    ///
-    ////////////////////////////////////////////////////////////
-    void attachSound(Sound* sound) const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Remove a sound from the list of sounds that use this buffer
-    ///
-    /// \param sound Sound instance to detach
-    ///
-    ////////////////////////////////////////////////////////////
-    void detachSound(Sound* sound) const;
-
-    ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 192> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, Sound);
+    SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, AudioSample);
 };
 
 } // namespace sf
