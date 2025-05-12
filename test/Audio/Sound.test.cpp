@@ -142,6 +142,22 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             CHECK(!guard.fatalErrorTriggered());
         }
+
+        SECTION("Dependee destroyed before dependant")
+        {
+            const sf::priv::LifetimeDependee::TestingModeGuard guard;
+            CHECK(!guard.fatalErrorTriggered());
+
+            auto optDependee = sf::SoundBuffer::loadFromFile("Audio/ding.flac");
+            CHECK(optDependee.hasValue());
+            CHECK(!guard.fatalErrorTriggered());
+
+            sf::Sound s0(*optDependee);
+            CHECK(!guard.fatalErrorTriggered());
+
+            optDependee.reset();
+            CHECK(guard.fatalErrorTriggered());
+        }
     }
 #endif
 }
