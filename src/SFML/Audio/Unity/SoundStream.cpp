@@ -246,7 +246,7 @@ void SoundStream::play(PlaybackDevice& playbackDevice)
         m_impl->initialize();
 
         SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
-        applyStoredSettings(m_impl->soundBase->getSound());
+        applySavedSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
     }
@@ -331,14 +331,14 @@ Time SoundStream::getPlayingOffset() const
 
 
 ////////////////////////////////////////////////////////////
-void SoundStream::setEffectProcessor(EffectProcessor effectProcessor)
+void SoundStream::setEffectProcessor(const EffectProcessor& effectProcessor)
 {
     SoundSource::setEffectProcessor(effectProcessor);
 
     if (!m_impl->soundBase.hasValue())
         return;
 
-    m_impl->soundBase->setAndConnectEffectProcessor(SFML_BASE_MOVE(effectProcessor));
+    m_impl->soundBase->setAndConnectEffectProcessor(effectProcessor);
 }
 
 

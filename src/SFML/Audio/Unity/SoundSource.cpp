@@ -212,9 +212,9 @@ void SoundSource::setAttenuation(const float attenuation)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setEffectProcessor(EffectProcessor effectProcessor)
+void SoundSource::setEffectProcessor(const EffectProcessor& effectProcessor)
 {
-    m_impl->effectProcessor = SFML_BASE_MOVE(effectProcessor);
+    m_impl->effectProcessor = effectProcessor;
 }
 
 
@@ -347,9 +347,8 @@ float SoundSource::getAttenuation() const
 
 
 ////////////////////////////////////////////////////////////
-EffectProcessor SoundSource::getEffectProcessor() const
+const EffectProcessor& SoundSource::getEffectProcessor() const
 {
-    // NOLINTNEXTLINE(modernize-return-braced-init-list)
     return m_impl->effectProcessor;
 }
 
@@ -364,7 +363,9 @@ bool SoundSource::isLooping() const
 ////////////////////////////////////////////////////////////
 SoundSource& SoundSource::operator=(const SoundSource& rhs)
 {
-    // Assign the sound attributes
+    if (this == &rhs)
+        return *this;
+
     setPitch(rhs.getPitch());
     setPan(rhs.getPan());
     setVolume(rhs.getVolume());
@@ -389,7 +390,7 @@ SoundSource& SoundSource::operator=(const SoundSource& rhs)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::applyStoredSettings(ma_sound& sound) const
+void SoundSource::applySavedSettings(ma_sound& sound) const
 {
     m_impl->savedSettings.applyOnto(sound);
 }
