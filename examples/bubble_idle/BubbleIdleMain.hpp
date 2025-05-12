@@ -359,7 +359,7 @@ struct Main
 // Audio context and playback device
 #ifndef BUBBLEBYTE_NO_AUDIO
     sf::AudioContext   audioContext{sf::AudioContext::create().value()};
-    sf::PlaybackDevice playbackDevice{sf::PlaybackDevice::createDefault().value()};
+    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 #endif
 
     ////////////////////////////////////////////////////////////

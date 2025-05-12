@@ -35,6 +35,7 @@
 
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -1074,7 +1075,7 @@ int main()
 
     sf::base::SizeT currentPlaybackDeviceIndex = 0;
 
-    sf::base::Vector<sf::PlaybackDevice> playbackDevices;
+    sf::base::InPlaceVector<sf::PlaybackDevice, 8> playbackDevices;
     playbackDevices.reserve(playbackDeviceHandles.size());
 
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)

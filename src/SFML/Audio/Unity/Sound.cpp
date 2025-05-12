@@ -187,8 +187,8 @@ struct Sound::Impl
     base::SizeT                                     cursor{};  //!< The current playing position (in frames)
     const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
     SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
-    void* lastUsedPlaybackDeviceStableAddress{nullptr};                                   //!< Last used playback device
-    bool  mustLoop{false}; //!< Whether the sound must loop or not
+    void*                                           lastUsedPlaybackDevice{nullptr};      //!< Last used playback device
+    bool                                            mustLoop{false}; //!< Whether the sound must loop or not
 };
 
 
@@ -214,11 +214,11 @@ Sound::~Sound()
 ////////////////////////////////////////////////////////////
 void Sound::play(PlaybackDevice& playbackDevice)
 {
-    if (m_impl->lastUsedPlaybackDeviceStableAddress != playbackDevice.getStableAddress())
+    if (m_impl->lastUsedPlaybackDevice != &playbackDevice)
         m_impl->soundBase.reset();
 
-    m_impl->lastUsedPlaybackDeviceStableAddress = playbackDevice.getStableAddress();
-    m_impl->mustLoop                            = isLooping();
+    m_impl->lastUsedPlaybackDevice = &playbackDevice;
+    m_impl->mustLoop               = isLooping();
 
     if (!m_impl->soundBase.hasValue())
     {

@@ -25,7 +25,7 @@ int main()
 
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // ...rest of your application...
 }
@@ -169,7 +169,7 @@ int main()
 {
     // Create an audio context and get the default playback device
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Load sounds
     const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();

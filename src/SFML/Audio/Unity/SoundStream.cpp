@@ -217,8 +217,8 @@ struct SoundStream::Impl
     base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
-    void*                   lastUsedPlaybackDeviceStableAddress{nullptr}; //!< Last used playback device
-    SoundSource::Status     status{SoundSource::Status::Stopped};         //!< The status
+    void*                   lastUsedPlaybackDevice{nullptr};      //!< Last used playback device
+    SoundSource::Status     status{SoundSource::Status::Stopped}; //!< The status
 };
 
 
@@ -235,10 +235,10 @@ SoundStream::~SoundStream() = default;
 ////////////////////////////////////////////////////////////
 void SoundStream::play(PlaybackDevice& playbackDevice)
 {
-    if (m_impl->lastUsedPlaybackDeviceStableAddress != playbackDevice.getStableAddress())
+    if (m_impl->lastUsedPlaybackDevice != &playbackDevice)
         m_impl->soundBase.reset();
 
-    m_impl->lastUsedPlaybackDeviceStableAddress = playbackDevice.getStableAddress();
+    m_impl->lastUsedPlaybackDevice = &playbackDevice;
 
     if (!m_impl->soundBase.hasValue())
     {

@@ -120,7 +120,7 @@ int main()
     else
     {
         // Create the default playback device
-        auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+        sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Create a sound instance and play it
         sf::Sound sound(buffer);
