@@ -25,6 +25,7 @@ namespace sf
 {
 class PlaybackDeviceHandle;
 class Sound;
+class SoundStream;
 struct Listener;
 } // namespace sf
 
@@ -85,10 +86,30 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool updateListener(const Listener& listener);
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the name of the device
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const char* getName() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns `true` if the device is a default one
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isDefault() const;
+
 private:
     // Friends
     using SoundBase = priv::MiniaudioUtils::SoundBase;
     friend SoundBase;
+    friend Sound;
+    friend SoundStream;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Returns the stable address of the playback device (heap-allocated)
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] void* getStableAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal representation of a resource entry handle
@@ -140,8 +161,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
-    // TODO P0: needs address stability, but memory should be reusable
+    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

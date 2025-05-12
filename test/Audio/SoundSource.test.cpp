@@ -2,6 +2,8 @@
 
 #include "SFML/Audio/PlaybackDevice.hpp"
 
+#include "SFML/System/Time.hpp"
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
@@ -32,6 +34,18 @@ class SoundSource : public sf::SoundSource
     {
         return {};
     }
+
+    void setPlayingOffset(sf::Time playingOffset) override
+    {
+        m_playingOffset = playingOffset;
+    }
+
+    [[nodiscard]] sf::Time getPlayingOffset() const override
+    {
+        return m_playingOffset;
+    }
+
+    sf::Time m_playingOffset;
 
 public:
     [[nodiscard]] Status getStatus() const override

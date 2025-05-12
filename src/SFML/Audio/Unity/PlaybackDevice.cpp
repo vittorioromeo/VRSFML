@@ -194,6 +194,27 @@ void PlaybackDevice::transferResourcesTo(PlaybackDevice& other)
 
 
 ////////////////////////////////////////////////////////////
+const char* PlaybackDevice::getName() const
+{
+    return m_impl->playbackDeviceHandle.getName();
+}
+
+
+////////////////////////////////////////////////////////////
+bool PlaybackDevice::isDefault() const
+{
+    return m_impl->playbackDeviceHandle.isDefault();
+}
+
+
+////////////////////////////////////////////////////////////
+void* PlaybackDevice::getStableAddress() const
+{
+    return m_impl.get();
+}
+
+
+////////////////////////////////////////////////////////////
 PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
     void*                       resource,
     ResourceEntry::InitFunc     deinitializeFunc,

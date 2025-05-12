@@ -267,6 +267,20 @@ const ChannelMap& CaptureDevice::getChannelMap() const
 
 
 ////////////////////////////////////////////////////////////
+const char* CaptureDevice::getName() const
+{
+    return m_impl->captureDeviceHandle.getName();
+}
+
+
+////////////////////////////////////////////////////////////
+bool CaptureDevice::isDefault() const
+{
+    return m_impl->captureDeviceHandle.isDefault();
+}
+
+
+////////////////////////////////////////////////////////////
 void CaptureDevice::setProcessSamplesFunc(SoundRecorder* soundRecorder, ProcessSamplesFunc processSamplesFunc)
 {
     m_impl->soundRecorder      = soundRecorder;

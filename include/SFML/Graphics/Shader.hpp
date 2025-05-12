@@ -43,7 +43,7 @@ public:
     /// \brief Types of shaders
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] Type
+    enum class [[nodiscard]] Type : unsigned char
     {
         Vertex,   //!< %Vertex shader
         Geometry, //!< Geometry shader

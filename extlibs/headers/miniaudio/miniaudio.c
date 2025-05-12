@@ -65363,7 +65363,7 @@ MA_API ma_result ma_sound_seek_to_pcm_frame(ma_sound* pSound, ma_uint64 frameInd
     return MA_SUCCESS;
 }
 
-MA_API ma_result ma_sound_get_data_format(ma_sound* pSound, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap)
+MA_API ma_result ma_sound_get_data_format(const ma_sound* pSound, ma_format* pFormat, ma_uint32* pChannels, ma_uint32* pSampleRate, ma_channel* pChannelMap, size_t channelMapCap)
 {
     if (pSound == NULL) {
         return MA_INVALID_ARGS;
@@ -65396,7 +65396,7 @@ MA_API ma_result ma_sound_get_data_format(ma_sound* pSound, ma_format* pFormat, 
     }
 }
 
-MA_API ma_result ma_sound_get_cursor_in_pcm_frames(ma_sound* pSound, ma_uint64* pCursor)
+MA_API ma_result ma_sound_get_cursor_in_pcm_frames(const ma_sound* pSound, ma_uint64* pCursor)
 {
     ma_uint64 seekTarget;
 
@@ -65432,7 +65432,7 @@ MA_API ma_result ma_sound_get_length_in_pcm_frames(ma_sound* pSound, ma_uint64* 
     return ma_data_source_get_length_in_pcm_frames(pSound->pDataSource, pLength);
 }
 
-MA_API ma_result ma_sound_get_cursor_in_seconds(ma_sound* pSound, float* pCursor)
+MA_API ma_result ma_sound_get_cursor_in_seconds(const ma_sound* pSound, float* pCursor)
 {
     ma_result result;
     ma_uint64 cursorInPCMFrames;

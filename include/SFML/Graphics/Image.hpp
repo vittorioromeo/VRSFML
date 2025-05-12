@@ -42,7 +42,7 @@ public:
     /// \brief Supported image saving formats
     ///
     ////////////////////////////////////////////////////////////
-    enum class [[nodiscard]] SaveFormat
+    enum class [[nodiscard]] SaveFormat : unsigned char
     {
         BMP,
         TGA,

@@ -23,7 +23,6 @@ struct SoundSource::Impl
 {
     priv::SavedSettings savedSettings;
     EffectProcessor     effectProcessor{};
-    Time                playingOffset;
 };
 
 
@@ -230,13 +229,6 @@ void SoundSource::setLooping(bool loop)
 
 
 ////////////////////////////////////////////////////////////
-void SoundSource::setPlayingOffset(Time playingOffset)
-{
-    m_impl->playingOffset = playingOffset;
-}
-
-
-////////////////////////////////////////////////////////////
 float SoundSource::getPitch() const
 {
     return m_impl->savedSettings.pitch;
@@ -366,13 +358,6 @@ EffectProcessor SoundSource::getEffectProcessor() const
 bool SoundSource::isLooping() const
 {
     return m_impl->savedSettings.looping;
-}
-
-
-////////////////////////////////////////////////////////////
-Time SoundSource::getPlayingOffset() const
-{
-    return m_impl->playingOffset;
 }
 
 
