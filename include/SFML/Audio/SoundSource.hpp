@@ -337,7 +337,7 @@ public:
     /// \param effectProcessor The effect processor to attach to this sound, attach an empty processor to disable processing
     ///
     ////////////////////////////////////////////////////////////
-    virtual void setEffectProcessor(EffectProcessor effectProcessor);
+    virtual void setEffectProcessor(const EffectProcessor& effectProcessor);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set whether or not the sound should loop after reaching the end
@@ -538,7 +538,7 @@ public:
     /// \see setEffectProcessor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] EffectProcessor getEffectProcessor() const;
+    [[nodiscard]] const EffectProcessor& getEffectProcessor() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Tell whether or not the sound is in loop mode
@@ -626,7 +626,7 @@ protected:
     /// \brief Apply the stored settings onto `sound`
     ///
     ////////////////////////////////////////////////////////////
-    void applyStoredSettings(ma_sound& sound) const;
+    void applySavedSettings(ma_sound& sound) const;
 
 private:
     ////////////////////////////////////////////////////////////
