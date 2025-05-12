@@ -270,9 +270,9 @@ void MiniaudioUtils::SoundBase::refreshSoundChannelMap()
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::setAndConnectEffectProcessor(EffectProcessor effectProcessor)
+void MiniaudioUtils::SoundBase::setAndConnectEffectProcessor(const EffectProcessor& effectProcessor)
 {
-    impl->effectProcessor = SFML_BASE_MOVE(effectProcessor);
+    impl->effectProcessor = effectProcessor;
     connectEffect(bool{impl->effectProcessor});
 }
 

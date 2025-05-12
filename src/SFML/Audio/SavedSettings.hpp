@@ -52,6 +52,7 @@ struct SavedSettings
     bool  playing{false};
     bool  looping{false};
     bool  spatializationEnabled{true};
+    // TODO P0: also save cursor?
 
     ////////////////////////////////////////////////////////////
     explicit SavedSettings() = default;

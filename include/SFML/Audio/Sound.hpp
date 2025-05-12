@@ -166,7 +166,7 @@ public:
     /// \param effectProcessor The effect processor to attach to this sound, attach an empty processor to disable processing
     ///
     ////////////////////////////////////////////////////////////
-    void setEffectProcessor(EffectProcessor effectProcessor) override;
+    void setEffectProcessor(const EffectProcessor& effectProcessor) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the audio buffer attached to the sound

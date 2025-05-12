@@ -226,7 +226,7 @@ void Sound::play(PlaybackDevice& playbackDevice)
         m_impl->initialize();
 
         SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
-        applyStoredSettings(m_impl->soundBase->getSound());
+        applySavedSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
     }
@@ -304,7 +304,7 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         m_impl->initialize();
 
         SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
-        applyStoredSettings(m_impl->soundBase->getSound());
+        applySavedSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
     }
@@ -340,7 +340,7 @@ void Sound::setPlayingOffset(const Time playingOffset)
 
 
 ////////////////////////////////////////////////////////////
-void Sound::setEffectProcessor(EffectProcessor effectProcessor)
+void Sound::setEffectProcessor(const EffectProcessor& effectProcessor)
 {
     SoundSource::setEffectProcessor(effectProcessor);
 

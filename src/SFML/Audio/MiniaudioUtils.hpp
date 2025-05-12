@@ -54,7 +54,7 @@ struct SoundBase
     void addToSoundChannelMap(base::U8 maChannel);
     void refreshSoundChannelMap();
 
-    void setAndConnectEffectProcessor(EffectProcessor effectProcessor);
+    void setAndConnectEffectProcessor(const EffectProcessor& effectProcessor);
 
     void transferToPlaybackDevice(PlaybackDevice& newPlaybackDevice, PlaybackDevice::ResourceEntryIndex newIndex);
 
