@@ -1,14 +1,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/ActiveSoundSource.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/AudioSample.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
-#include "SFML/Audio/SoundSource.hpp"
 
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
@@ -52,17 +52,19 @@ int main()
     auto musicSource2 = sf::MusicSource::openFromFile("resources/ding.mp3").value();
 
     // Create sound sources
-    sf::Sound sound(soundBuffer);
-    sf::Music music0(musicSource0);
-    sf::Music music1(musicSource1);
-    sf::Music music2(musicSource2);
+    sf::AudioSample                     sound(playbackDevices[0], soundBuffer, sf::AudioSettings{});
+    sf::base::Optional<sf::ActiveMusic> music0;
+    sf::base::Optional<sf::ActiveMusic> music1;
+    sf::base::Optional<sf::ActiveMusic> music2;
 
-    // Store all source sources together for convenience
-    sf::SoundSource* const sources[]{&sound, &music0, &music1, &music2};
+    if (playbackDevices.size() > 1u)
+        music0.emplace(playbackDevices[1], musicSource0, sf::AudioSettings{});
 
-    // Play multiple sources simultaneously on separate playback devices
-    for (sf::base::SizeT i = 0u; i < playbackDevices.size(); ++i)
-        sources[i % 4]->play(playbackDevices[i]);
+    if (playbackDevices.size() > 2u)
+        music1.emplace(playbackDevices[2], musicSource1, sf::AudioSettings{});
+
+    if (playbackDevices.size() > 3u)
+        music2.emplace(playbackDevices[3], musicSource2, sf::AudioSettings{});
 
     // Keep program alive while sounds are playing and display spinning icon
     const char      messageIcons[]{'-', '\\', '|', '/'};
@@ -70,11 +72,10 @@ int main()
 
     const auto anySourcePlaying = [&]
     {
-        for (const sf::SoundSource* source : sources)
-            if (source->getStatus() == sf::SoundSource::Status::Playing)
-                return true;
-
-        return false;
+        return sound.isPlaying() ||                          //
+               (music0.hasValue() && music0->isPlaying()) || //
+               (music1.hasValue() && music1->isPlaying()) || //
+               (music2.hasValue() && music2->isPlaying());
     };
 
     while (anySourcePlaying())

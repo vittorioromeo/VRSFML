@@ -1,10 +1,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/Sound.hpp"
-
+#include "SFML/Audio/ActiveMusic.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
@@ -34,11 +34,10 @@ void playSound(sf::PlaybackDevice& playbackDevice)
                << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
-    sf::Sound sound(buffer);
-    sound.play(playbackDevice);
+    sf::AudioSample sound(playbackDevice, buffer, sf::AudioSettings{});
 
     // Loop while the sound is playing
-    while (sound.getStatus() == sf::Sound::Status::Playing)
+    while (sound.isPlaying())
     {
         // Leave some CPU time for other processes
         sf::sleep(sf::milliseconds(100));
@@ -67,11 +66,10 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
                << " " << musicSource.getChannelCount() << " channels" << '\n';
 
     // Play it
-    sf::Music music(musicSource);
-    music.play(playbackDevice);
+    sf::ActiveMusic music(playbackDevice, musicSource, sf::AudioSettings{});
 
     // Loop while the music is playing
-    while (music.getStatus() == sf::Music::Status::Playing)
+    while (music.isPlaying())
     {
         // Leave some CPU time for other processes
         sf::sleep(sf::milliseconds(100));
