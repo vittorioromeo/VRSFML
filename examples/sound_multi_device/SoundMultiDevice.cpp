@@ -15,8 +15,8 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ int main()
 
     sf::cOut() << "Found " << playbackDeviceHandles.size() << " playback devices:\n";
 
-    sf::base::Vector<sf::PlaybackDevice> playbackDevices;
+    sf::base::InPlaceVector<sf::PlaybackDevice, 8> playbackDevices;
     for (const sf::PlaybackDeviceHandle& deviceHandle : playbackDeviceHandles)
     {
         sf::cOut() << "  - " << deviceHandle.getName() << '\n';

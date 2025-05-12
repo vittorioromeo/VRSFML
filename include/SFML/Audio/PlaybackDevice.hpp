@@ -9,8 +9,7 @@
 
 #include "SFML/System/LifetimeDependee.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -37,14 +36,6 @@ class SFML_AUDIO_API PlaybackDevice
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create the default playback device
-    ///
-    /// \return Playback device on success, `sf::nullOpt` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<PlaybackDevice> createDefault();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
@@ -57,16 +48,28 @@ public:
     ~PlaybackDevice();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    PlaybackDevice(PlaybackDevice&&) noexcept;
+    PlaybackDevice(const PlaybackDevice&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    PlaybackDevice& operator=(PlaybackDevice&&) noexcept;
+    PlaybackDevice& operator=(const PlaybackDevice&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    PlaybackDevice(PlaybackDevice&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    PlaybackDevice& operator=(PlaybackDevice&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Transfer all active audio resources to `other`
@@ -104,12 +107,6 @@ private:
     friend SoundBase;
     friend Sound;
     friend SoundStream;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Returns the stable address of the playback device (heap-allocated)
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] void* getStableAddress() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Internal representation of a resource entry handle
@@ -155,13 +152,13 @@ private:
     /// \brief Gets the internal miniaudio engine pointer
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] void* getMAEngine() const;
+    [[nodiscard]] void* getMAEngine();
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+    base::InPlacePImpl<Impl, 8192> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

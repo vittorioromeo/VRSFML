@@ -100,18 +100,6 @@ struct CaptureDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<CaptureDevice> CaptureDevice::createDefault()
-{
-    base::Optional defaultCaptureDeviceHandle = AudioContext::getDefaultCaptureDeviceHandle();
-
-    if (!defaultCaptureDeviceHandle.hasValue())
-        return base::nullOpt;
-
-    return base::makeOptional<CaptureDevice>(*defaultCaptureDeviceHandle);
-}
-
-
-////////////////////////////////////////////////////////////
 CaptureDevice::CaptureDevice(const CaptureDeviceHandle& playbackDeviceHandle) :
 m_impl(base::makeUnique<Impl>(playbackDeviceHandle))
 {
@@ -129,14 +117,6 @@ CaptureDevice::~CaptureDevice()
     SFML_BASE_ASSERT(!ma_device_is_started(&m_impl->maDevice) &&
                      "The miniaudio capture device must be stopped before destroying the capture device");
 }
-
-
-////////////////////////////////////////////////////////////
-CaptureDevice::CaptureDevice(CaptureDevice&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-CaptureDevice& CaptureDevice::operator=(CaptureDevice&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////

@@ -12,7 +12,6 @@
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
@@ -34,14 +33,6 @@ class SFML_AUDIO_API CaptureDevice
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create the default capture device from `audioContext`
-    ///
-    /// \return Capture device on success, `sf::nullOpt` otherwise
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<CaptureDevice> createDefault();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
@@ -54,16 +45,28 @@ public:
     ~CaptureDevice();
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    CaptureDevice(CaptureDevice&&) noexcept;
+    CaptureDevice(const CaptureDevice&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment
+    /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    CaptureDevice& operator=(CaptureDevice&&) noexcept;
+    CaptureDevice& operator=(const CaptureDevice&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    CaptureDevice(CaptureDevice&&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    CaptureDevice& operator=(CaptureDevice&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the device handle

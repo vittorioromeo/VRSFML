@@ -235,7 +235,7 @@ private:
 /// \code
 /// // Create an audio context and get the default playback device
 /// auto audioContext = sf::AudioContext::create().value();
-/// auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+/// sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 ///
 /// // Open a music source from an audio file
 /// auto musicSource = sf::MusicSource::openFromFile("music.ogg").value();

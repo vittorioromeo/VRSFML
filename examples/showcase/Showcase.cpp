@@ -431,7 +431,7 @@ private:
     sf::MusicSource m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwizard.mp3").value();
 
     ////////////////////////////////////////////////////////////
-    sf::base::Vector<sf::PlaybackDevice> m_playbackDevices;
+    sf::base::InPlaceVector<sf::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
     sf::base::InPlaceVector<sf::Sound, 32> m_activeSounds;

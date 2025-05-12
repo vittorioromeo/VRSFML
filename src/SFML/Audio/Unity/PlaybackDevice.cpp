@@ -15,8 +15,6 @@
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <miniaudio.h>
@@ -95,20 +93,7 @@ struct PlaybackDevice::Impl
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<PlaybackDevice> PlaybackDevice::createDefault()
-{
-    base::Optional defaultPlaybackDeviceHandle = AudioContext::getDefaultPlaybackDeviceHandle();
-
-    if (!defaultPlaybackDeviceHandle.hasValue())
-        return base::nullOpt;
-
-    return base::makeOptional<PlaybackDevice>(*defaultPlaybackDeviceHandle);
-}
-
-
-////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) :
-m_impl(base::makeUnique<Impl>(playbackDeviceHandle))
+PlaybackDevice::PlaybackDevice(const PlaybackDeviceHandle& playbackDeviceHandle) : m_impl(playbackDeviceHandle)
 {
     if (!m_impl->initialize())
         priv::err() << "Failed to initialize the playback device";
@@ -117,14 +102,6 @@ m_impl(base::makeUnique<Impl>(playbackDeviceHandle))
 
 ////////////////////////////////////////////////////////////
 PlaybackDevice::~PlaybackDevice() = default;
-
-
-////////////////////////////////////////////////////////////
-PlaybackDevice::PlaybackDevice(PlaybackDevice&& rhs) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-PlaybackDevice& PlaybackDevice::operator=(PlaybackDevice&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -208,13 +185,6 @@ bool PlaybackDevice::isDefault() const
 
 
 ////////////////////////////////////////////////////////////
-void* PlaybackDevice::getStableAddress() const
-{
-    return m_impl.get();
-}
-
-
-////////////////////////////////////////////////////////////
 PlaybackDevice::ResourceEntryIndex PlaybackDevice::registerResource(
     void*                       resource,
     ResourceEntry::InitFunc     deinitializeFunc,
@@ -257,7 +227,7 @@ void PlaybackDevice::unregisterResource(ResourceEntryIndex resourceEntryIndex)
 
 
 ////////////////////////////////////////////////////////////
-void* PlaybackDevice::getMAEngine() const
+void* PlaybackDevice::getMAEngine()
 {
     return &m_impl->maEngine;
 }

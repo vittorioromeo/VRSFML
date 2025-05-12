@@ -21,7 +21,7 @@
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
     auto audioContext   = sf::AudioContext::create().value();
-    auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     SECTION("Type traits")
     {

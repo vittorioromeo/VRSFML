@@ -28,8 +28,8 @@ int main()
     if (who == 's')
     {
         // Create an audio context and get the default playback device
-        auto audioContext   = sf::AudioContext::create().value();
-        auto playbackDevice = sf::PlaybackDevice::createDefault().value();
+        auto               audioContext = sf::AudioContext::create().value();
+        sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Run as a server
         doServer(playbackDevice, port);
@@ -37,8 +37,8 @@ int main()
     else
     {
         // Create an audio context and get the default capture device
-        auto audioContext  = sf::AudioContext::create().value();
-        auto captureDevice = sf::CaptureDevice::createDefault().value();
+        auto              audioContext = sf::AudioContext::create().value();
+        sf::CaptureDevice captureDevice{sf::AudioContext::getDefaultCaptureDeviceHandle().value()};
 
         // Run as a client
         doClient(captureDevice, port);
