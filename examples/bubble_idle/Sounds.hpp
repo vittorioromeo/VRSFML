@@ -1,5 +1,7 @@
 #pragma once
 
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -10,35 +12,23 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
 struct Sounds
 {
     ////////////////////////////////////////////////////////////
-    struct LoadedSound : private sf::SoundBuffer, public sf::Sound // TODO P2: eww
+    struct LoadedSound
     {
         ////////////////////////////////////////////////////////////
+        sf::SoundBuffer   buffer;
+        sf::AudioSettings settings;
+
+        ////////////////////////////////////////////////////////////
         explicit LoadedSound(const sf::Path& filename) :
-        sf::SoundBuffer(sf::SoundBuffer::loadFromFile("resources/" / filename).value()),
-        sf::Sound(static_cast<const sf::SoundBuffer&>(*this))
+        buffer(sf::SoundBuffer::loadFromFile("resources/" / filename).value())
         {
-        }
-
-        ////////////////////////////////////////////////////////////
-        LoadedSound(const LoadedSound&) = delete;
-        LoadedSound(LoadedSound&&)      = delete;
-
-        ////////////////////////////////////////////////////////////
-        const sf::Sound& asSound() const
-        {
-            return *this;
-        }
-
-        ////////////////////////////////////////////////////////////
-        const sf::SoundBuffer& asBuffer() const
-        {
-            return *this;
         }
     };
 
@@ -99,7 +89,7 @@ struct Sounds
     static inline constexpr sf::base::SizeT maxSounds = 256u;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::Sound, maxSounds> soundsBeingPlayed;
+    sf::base::InPlaceVector<sf::base::Optional<sf::AudioSample>, maxSounds> soundsBeingPlayed;
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -110,22 +100,22 @@ struct Sounds
         {
             if (!volumeOnly)
             {
-                sound.setAttenuation(0.003f * attenuationMult);
-                sound.setSpatializationEnabled(true);
+                sound.settings.rollOff               = 0.003f * attenuationMult;
+                sound.settings.spatializationEnabled = true;
             }
 
-            sound.setVolume(volumeMult);
+            sound.settings.volume = volumeMult;
         };
 
         const auto setupUISound = [&](auto& sound)
         {
             if (!volumeOnly)
             {
-                sound.setAttenuation(0.f);
-                sound.setSpatializationEnabled(false);
+                sound.settings.rollOff               = 0.f;
+                sound.settings.spatializationEnabled = false;
             }
 
-            sound.setVolume(volumeMult);
+            sound.settings.volume = volumeMult;
         };
 
         setupWorldSound(pop);
@@ -181,13 +171,13 @@ struct Sounds
         setupUISound(paper);
         setupUISound(letterchime);
 
-        scratch.setVolume(volumeMult * 0.35f);
-        buy.setVolume(volumeMult * 0.75f);
-        explosion.setVolume(volumeMult * 0.75f);
-        coin.setVolume(volumeMult * 0.50f);
-        buffon.setVolume(volumeMult * 0.65f);
-        buffoff.setVolume(volumeMult * 0.65f);
-        shine3.setVolume(volumeMult * 0.25f);
+        scratch.settings.volume   = volumeMult * 0.35f;
+        buy.settings.volume       = volumeMult * 0.75f;
+        explosion.settings.volume = volumeMult * 0.75f;
+        coin.settings.volume      = volumeMult * 0.50f;
+        buffon.settings.volume    = volumeMult * 0.65f;
+        buffoff.settings.volume   = volumeMult * 0.65f;
+        shine3.settings.volume    = volumeMult * 0.25f;
     }
 
     ////////////////////////////////////////////////////////////
@@ -203,9 +193,14 @@ struct Sounds
     ////////////////////////////////////////////////////////////
     void stopPlayingAll(const LoadedSound& ls)
     {
-        for (sf::Sound& sound : soundsBeingPlayed)
-            if (sound.getStatus() == sf::Sound::Status::Playing && &sound.getBuffer() == &ls.asBuffer())
-                sound.stop();
+        for (sf::base::Optional<sf::AudioSample>& sound : soundsBeingPlayed)
+        {
+            if (!sound.hasValue())
+                continue;
+
+            if (sound->isPlaying() && &sound->getBuffer() == &ls.buffer)
+                sound.reset();
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -213,9 +208,14 @@ struct Sounds
     {
         sf::base::SizeT acc = 0u;
 
-        for (const sf::Sound& sound : soundsBeingPlayed)
-            if (sound.getStatus() == sf::Sound::Status::Playing && &sound.getBuffer() == &ls.asBuffer())
+        for (const sf::base::Optional<sf::AudioSample>& sound : soundsBeingPlayed)
+        {
+            if (!sound.hasValue())
+                continue;
+
+            if (sound->isPlaying() && &sound->getBuffer() == &ls.buffer)
                 ++acc;
+        }
 
         return acc;
     }
@@ -231,14 +231,12 @@ struct Sounds
         auto* const it = sf::base::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
-            [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
+            [](const sf::base::Optional<sf::AudioSample>& sound) { return !sound.hasValue() || !sound->isPlaying(); });
 
         if (it != soundsBeingPlayed.end())
         {
-            it->setBuffer(ls.getBuffer());
-            it->copySettings(ls.asSound());
-            it->play(playbackDevice);
-
+            it->reset();
+            it->emplace(playbackDevice, ls.buffer, ls.settings);
             return true;
         }
 
@@ -249,10 +247,7 @@ struct Sounds
         // std::erase_if(soundsBeingPlayed,
         //               [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
 
-        auto& emplaced = soundsBeingPlayed.emplaceBack(ls.asBuffer());
-        emplaced.copySettings(ls.asSound());
-        emplaced.play(playbackDevice);
-
+        soundsBeingPlayed.emplaceBack(sf::base::inPlace, playbackDevice, ls.buffer, ls.settings);
         return true;
     }
 };

@@ -1,5 +1,9 @@
 #pragma once
 
+#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
+
+#include "SFML/Base/FloatMax.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -99,6 +103,7 @@
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FixedFunction.hpp"
+#include "SFML/Base/FloatMax.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
@@ -497,11 +502,11 @@ struct Main
     struct BGMBuffer
     {
         sf::MusicSource musicSource;
-        sf::Music       music;
+        sf::ActiveMusic music;
 
-        explicit BGMBuffer(sf::MusicSource&& theMusicSource) :
+        explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicSource&& theMusicSource) :
         musicSource{SFML_BASE_MOVE(theMusicSource)},
-        music{musicSource}
+        music{playbackDevice, musicSource, sf::AudioSettings{}}
         {
         }
     };
@@ -1660,8 +1665,8 @@ struct Main
             }
         }();
 
-        sounds.purrmeow.setPosition({pos.x, pos.y});
-        sounds.purrmeow.setPitch(meowPitch);
+        sounds.purrmeow.settings.position = {pos.x, pos.y};
+        sounds.purrmeow.settings.pitch    = meowPitch;
         playSound(sounds.purrmeow);
 
         spawnParticles(32, pos, ParticleType::Star, 0.5f, 0.75f);
@@ -1930,13 +1935,12 @@ struct Main
         bgmTransition.value = 1000.f;
 
         auto& optNextMusic = getNextBGMBuffer();
-        optNextMusic.emplace(sf::MusicSource::openFromFile(bgmPaths[index]).value());
+        optNextMusic.emplace(playbackDevice, sf::MusicSource::openFromFile(bgmPaths[index]).value());
 
         optNextMusic->music.setVolume(0.f);
         optNextMusic->music.setLooping(true);
         optNextMusic->music.setAttenuation(0.f);
         optNextMusic->music.setSpatializationEnabled(false);
-        optNextMusic->music.play(playbackDevice);
 #else
         (void)index;
         (void)force;
@@ -2077,7 +2081,7 @@ struct Main
 
         // Find the position closest to the centroid
         sf::base::SizeT closestIndex       = 0u;
-        float           minDistanceSquared = FLT_MAX;
+        float           minDistanceSquared = SFML_BASE_FLOAT_MAX;
 
         for (sf::base::SizeT i = 0u; i < draggedCats.size(); ++i)
         {
@@ -2163,7 +2167,7 @@ struct Main
         const auto range       = getComputedRangeByCatTypeOrCopyCat(wizardCat.type);
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
-        sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
+        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
         playSound(sounds.cast0);
 
         spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
@@ -2196,7 +2200,7 @@ struct Main
     {
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
-        sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
+        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
         playSound(sounds.cast0);
 
         spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
@@ -2218,7 +2222,7 @@ struct Main
 
         if (castSuccessful)
         {
-            sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
+            sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
             playSound(sounds.cast0);
 
             spawnParticlesNoGravity(256,
@@ -2237,7 +2241,7 @@ struct Main
         }
         else
         {
-            sounds.failcast.setPosition({wizardCat.position.x, wizardCat.position.y});
+            sounds.failcast.settings.position = {wizardCat.position.x, wizardCat.position.y};
             playSound(sounds.failcast);
         }
 
@@ -2250,7 +2254,7 @@ struct Main
     {
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(wizardCat.type);
 
-        sounds.cast0.setPosition({wizardCat.position.x, wizardCat.position.y});
+        sounds.cast0.settings.position = {wizardCat.position.x, wizardCat.position.y};
         playSound(sounds.cast0);
 
         spawnParticlesNoGravity(256, wizardCat.position, ParticleType::Star, rngFast.getF(0.25f, 1.25f), rngFast.getF(0.5f, 3.f));
@@ -2727,7 +2731,7 @@ struct Main
     ////////////////////////////////////////////////////////////
     void doExplosion(Bubble& bubble)
     {
-        sounds.explosion.setPosition({bubble.position.x, bubble.position.y});
+        sounds.explosion.settings.position = {bubble.position.x, bubble.position.y};
         playSound(sounds.explosion);
 
         spawnParticles(16, bubble.position, ParticleType::Fire, 3.f, 1.f);
@@ -2909,18 +2913,18 @@ struct Main
             if ((!profile.accumulatingCombo || !pt->comboPurchased || !byPlayerClick) && !collectedByShrine &&
                 spawnEarnedCoinParticle(hudPos))
             {
-                sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
-                                              getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
+                sounds.coindelay.settings.position = {getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
+                                                      getViewCenter().y - gameScreenSize.y / 2.f + 25.f};
 
-                sounds.coindelay.setPitch(1.f);
-                sounds.coindelay.setVolume(profile.sfxVolume / 100.f * 0.5f);
+                sounds.coindelay.settings.pitch  = 1.f;
+                sounds.coindelay.settings.volume = profile.sfxVolume / 100.f * 0.5f;
 
                 playSound(sounds.coindelay, /* maxOverlap */ 64);
             }
         }
 
-        sounds.pop.setPosition({bubble.position.x, bubble.position.y});
-        sounds.pop.setPitch(remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f));
+        sounds.pop.settings.position = {bubble.position.x, bubble.position.y};
+        sounds.pop.settings.pitch    = remap(static_cast<float>(xCombo), 1, 10, 1.f, 2.f);
 
         playSound(sounds.pop, popSoundOverlap ? 255u : 1u);
 
@@ -3043,7 +3047,7 @@ struct Main
         const auto playReversePopAt = [this](const sf::Vec2f position)
         {
             // TODO P2: refactor into function for any sound and reuse
-            sounds.reversePop.setPosition({position.x, position.y});
+            sounds.reversePop.settings.position = {position.x, position.y};
             playSound(sounds.reversePop, /* maxOverlap */ 1u);
         };
 
@@ -3379,7 +3383,7 @@ struct Main
             for (Shrine& shrine : pt->shrines)
                 if (shrine.type == ShrineType::Automation && shrine.isInRange(clickPos))
                 {
-                    sounds.failpop.setPosition({clickPos.x, clickPos.y});
+                    sounds.failpop.settings.position = {clickPos.x, clickPos.y};
                     playSound(sounds.failpop);
 
                     return ControlFlow::Break;
@@ -3588,7 +3592,7 @@ struct Main
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (firstBubble->position - cat.position).angle() + sf::degrees(45);
 
-            sounds.shine2.setPosition({firstBubble->position.x, firstBubble->position.y});
+            sounds.shine2.settings.position = {firstBubble->position.x, firstBubble->position.y};
             playSound(sounds.shine2);
         }
         else
@@ -3607,7 +3611,7 @@ struct Main
             cat.pawOpacity  = 255.f;
             cat.pawRotation = (b->position - cat.position).angle() + sf::degrees(45);
 
-            sounds.shine.setPosition({b->position.x, b->position.y});
+            sounds.shine.settings.position = {b->position.x, b->position.y};
             playSound(sounds.shine);
         }
 
@@ -3641,7 +3645,7 @@ struct Main
             bombIdxToCatIdx[bubbleIdx] = catIdx;
 
             bubble.velocity.y += rng.getF(0.1f, 0.2f);
-            sounds.makeBomb.setPosition({bubble.position.x, bubble.position.y});
+            sounds.makeBomb.settings.position = {bubble.position.x, bubble.position.y};
             playSound(sounds.makeBomb);
 
             spawnParticles(8, bubble.position, ParticleType::Fire, 1.25f, 0.35f);
@@ -3656,7 +3660,7 @@ struct Main
                 .catIdx   = static_cast<sf::base::SizeT>(&cat - pt->cats.data()),
             });
 
-            sounds.makeBomb.setPosition({portalPos.x, portalPos.y});
+            sounds.makeBomb.settings.position = {portalPos.x, portalPos.y};
             playSound(sounds.portalon);
         }
 
@@ -3674,7 +3678,7 @@ struct Main
         if (cat.astroState.hasValue() || pt->disableAstrocatFlight)
             return;
 
-        sounds.launch.setPosition({cx, cy});
+        sounds.launch.settings.position = {cx, cy};
         playSound(sounds.launch);
 
         ++cat.hits;
@@ -3728,7 +3732,7 @@ struct Main
         if (isCatBeingDragged(cat))
             stopDraggingCat(cat);
 
-        sounds.soulsteal.setPosition({cat.position.x, cat.position.y});
+        sounds.soulsteal.settings.position = {cat.position.x, cat.position.y};
         playSound(sounds.soulsteal);
 
         screenShakeAmount = 3.5f;
@@ -3962,7 +3966,7 @@ struct Main
                 std::snprintf(tp.buffer, sizeof(tp.buffer), "+%llu WP", wisdomReward);
             }
 
-            sounds.absorb.setPosition({bubble.position.x, bubble.position.y});
+            sounds.absorb.settings.position = {bubble.position.x, bubble.position.y};
             playSound(sounds.absorb, /* maxOverlap */ 1u);
 
             spawnParticlesWithHue(230.f, 16, bubble.position, ParticleType::Star, 0.5f, 0.35f);
@@ -4057,7 +4061,7 @@ struct Main
 
             spawnParticles(8, otherCat.getDrawPosition(profile.enableCatBobbing), ParticleType::Cog, 0.25f, 0.5f);
 
-            sounds.maintenance.setPosition({otherCat.position.x, otherCat.position.y});
+            sounds.maintenance.settings.position = {otherCat.position.x, otherCat.position.y};
             playSound(sounds.maintenance, /* maxOverlap */ 1u);
 
             otherCat.boostCountdown.value = 1500.f;
@@ -4275,7 +4279,7 @@ struct Main
 
                     if (sounds.countPlayingPooled(soundRitualEnd) == 0u)
                     {
-                        soundRitualEnd.setPosition({cat.position.x, cat.position.y});
+                        soundRitualEnd.settings.position = {cat.position.x, cat.position.y};
 
                         if (profile.playWitchRitualSounds)
                             playSound(soundRitualEnd);
@@ -4286,7 +4290,7 @@ struct Main
                 {
                     if (cat.cooldown.value > 100.f && sounds.countPlayingPooled(soundRitual) == 0u)
                     {
-                        soundRitual.setPosition({cat.position.x, cat.position.y});
+                        soundRitual.settings.position = {cat.position.x, cat.position.y};
 
                         if (profile.playWitchRitualSounds)
                             playSound(soundRitual);
@@ -4476,7 +4480,7 @@ struct Main
 
                 if (particleTimer >= 3.f && !cat.isCloseToStartX())
                 {
-                    sounds.rocket.setPosition({cx, cy});
+                    sounds.rocket.settings.position = {cx, cy};
                     playSound(sounds.rocket, /* maxOverlap */ 1u);
 
                     spawnParticles(1, drawPosition + sf::Vec2f{56.f, 45.f}, ParticleType::Fire, 1.5f, 0.25f, 0.65f);
@@ -4839,7 +4843,7 @@ struct Main
 
                     if (hoveredCat->type == CatType::Duck)
                     {
-                        sounds.quack.setPosition({hoveredCat->position.x, hoveredCat->position.y});
+                        sounds.quack.settings.position = {hoveredCat->position.x, hoveredCat->position.y};
                         playSound(sounds.quack);
                     }
                     else
@@ -4868,7 +4872,7 @@ struct Main
                 shrine.tcActivation.emplace(TargetedCountdown{.startingValue = 2000.f});
                 shrine.tcActivation->restart();
 
-                sounds.earthquakeFast.setPosition({shrine.position.x, shrine.position.y});
+                sounds.earthquakeFast.settings.position = {shrine.position.x, shrine.position.y};
                 playSound(sounds.earthquakeFast);
 
                 screenShakeAmount = 4.5f;
@@ -4943,7 +4947,7 @@ struct Main
 
                         if (bubble.rotation >= sf::base::tau)
                         {
-                            sounds.absorb.setPosition({bubble.position.x, bubble.position.y});
+                            sounds.absorb.settings.position = {bubble.position.x, bubble.position.y};
                             playSound(sounds.absorb, /* maxOverlap */ 1u);
 
                             turnBubbleNormal(bubble);
@@ -4979,7 +4983,7 @@ struct Main
                     shrine.tcDeath.emplace(TargetedCountdown{.startingValue = 5000.f});
                     shrine.tcDeath->restart();
 
-                    sounds.earthquake.setPosition({shrine.position.x, shrine.position.y});
+                    sounds.earthquake.settings.position = {shrine.position.x, shrine.position.y};
                     playSound(sounds.earthquake);
 
                     screenShakeAmount = 4.5f;
@@ -5005,7 +5009,7 @@ struct Main
                                     static_cast<float>(shrine.collectedReward) * 1.5f);
                                 addMoney(unsealedReward);
 
-                                sounds.kaching.setPosition({shrine.position.x, shrine.position.y});
+                                sounds.kaching.settings.position = {shrine.position.x, shrine.position.y};
                                 playSound(sounds.kaching);
 
                                 if (profile.showTextParticles)
@@ -5216,12 +5220,12 @@ struct Main
                           /* hue */ 0.f,
                           ParticleType::CatSoul);
 
-            sounds.soulreturn.setPosition({d.position.x, d.position.y});
+            sounds.soulreturn.settings.position = {d.position.x, d.position.y};
             playSound(sounds.soulreturn);
         }
         else
         {
-            sounds.hex.setPosition({d.position.x, d.position.y});
+            sounds.hex.settings.position = {d.position.x, d.position.y};
             playSound(sounds.hex);
         }
     }
@@ -5333,7 +5337,7 @@ struct Main
         {
             if (hp.life.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
             {
-                sounds.makeBomb.setPosition({hp.position.x, hp.position.y});
+                sounds.makeBomb.settings.position = {hp.position.x, hp.position.y};
                 playSound(sounds.portaloff);
             }
 
@@ -7816,7 +7820,7 @@ struct Main
         {
             if (getCharSound(tipString[tipCharIdx]))
             {
-                sounds.byteSpeak.setPitch(1.6f);
+                sounds.byteSpeak.settings.pitch = 1.6f;
                 playSound(sounds.byteSpeak, /* maxOverlap */ 1u);
             }
 
@@ -8012,10 +8016,10 @@ struct Main
                 {
                     earnedCoinParticles.back().startPosition += rngFast.getVec2f({-25.f, -25.f}, {25.f, 25.f});
 
-                    sounds.coindelay.setPosition({getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
-                                                  getViewCenter().y - gameScreenSize.y / 2.f + 25.f});
-                    sounds.coindelay.setPitch(0.8f + static_cast<float>(iComboAccReward) * 0.04f);
-                    sounds.coindelay.setVolume(profile.sfxVolume / 100.f);
+                    sounds.coindelay.settings.position = {getViewCenter().x - gameScreenSize.x / 2.f + 25.f,
+                                                          getViewCenter().y - gameScreenSize.y / 2.f + 25.f};
+                    sounds.coindelay.settings.pitch    = 0.8f + static_cast<float>(iComboAccReward) * 0.04f;
+                    sounds.coindelay.settings.volume   = profile.sfxVolume / 100.f;
 
                     playSound(sounds.coindelay, /* maxOverlap */ 64);
                 }
@@ -8026,8 +8030,8 @@ struct Main
             {
                 ++iComboAccStarReward;
 
-                sounds.shine3.setPosition({mousePos.x, mousePos.y});
-                sounds.shine3.setPitch(0.75f + static_cast<float>(iComboAccStarReward) * 0.075f);
+                sounds.shine3.settings.position = {mousePos.x, mousePos.y};
+                sounds.shine3.settings.pitch    = 0.75f + static_cast<float>(iComboAccStarReward) * 0.075f;
                 playSound(sounds.shine3);
 
                 spawnParticle(ParticleData{.position      = mousePos,
@@ -9276,7 +9280,7 @@ struct Main
                     .catIdx   = 100'000u, // invalid
                 });
 
-                sounds.makeBomb.setPosition({portalPos.x, portalPos.y});
+                sounds.makeBomb.settings.position = {portalPos.x, portalPos.y};
                 playSound(sounds.portalon);
             }
         }

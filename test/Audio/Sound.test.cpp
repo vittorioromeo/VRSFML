@@ -47,12 +47,10 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         CHECK(sound.getStatus() == sf::Sound::Status::Stopped);
     }
 
-    SECTION("Set/get buffer")
+    SECTION("Get buffer")
     {
-        const sf::SoundBuffer otherSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        sf::Sound             sound(soundBuffer);
-        sound.setBuffer(otherSoundBuffer);
-        CHECK(&sound.getBuffer() == &otherSoundBuffer);
+        sf::Sound sound(soundBuffer);
+        CHECK(&sound.getBuffer() == &soundBuffer);
     }
 
     SECTION("Set/get loop")
@@ -80,8 +78,42 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         CHECK(sound.getPlayingOffset() == sf::Time{});
         CHECK(sound.getStatus() == sf::Sound::Status::Stopped);
 
+        soundBufferB = SFML_BASE_MOVE(soundBufferA); // TODO P0: this mistkae should be detected
+        CHECK(&sound.getBuffer() == &soundBufferA);
+    }
+
+    SECTION("Multiple sounds and buffers -- copy")
+    {
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+        const sf::Sound soundA(soundBufferA);
+        const sf::Sound soundB(soundBufferB);
+
+        CHECK(&soundA.getBuffer() == &soundBufferA);
+        CHECK(&soundB.getBuffer() == &soundBufferB);
+
+        soundBufferB = soundBufferA;
+
+        CHECK(&soundA.getBuffer() == &soundBufferA);
+        CHECK(&soundB.getBuffer() == &soundBufferB);
+    }
+
+    SECTION("Multiple sounds and buffers")
+    {
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+        const sf::Sound soundA(soundBufferA);
+        const sf::Sound soundB(soundBufferB);
+
+        CHECK(&soundA.getBuffer() == &soundBufferA);
+        CHECK(&soundB.getBuffer() == &soundBufferB);
+
         soundBufferB = SFML_BASE_MOVE(soundBufferA);
-        CHECK(&sound.getBuffer() == &soundBufferB);
+
+        CHECK(&soundA.getBuffer() == &soundBufferB);
+        CHECK(&soundB.getBuffer() == &soundBufferB);
     }
 
 #ifdef SFML_ENABLE_LIFETIME_TRACKING

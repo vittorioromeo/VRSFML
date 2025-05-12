@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/OutputSoundFile.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -13,7 +14,6 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -48,79 +48,27 @@ struct SoundBuffer::Impl
     unsigned int            sampleRate{44'100};             //!< Number of samples per second
     ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
     Time                    duration;                       //!< Sound duration
-
-    mutable ankerl::unordered_dense::set<Sound*> sounds; //!< Soundlist of buffer users
 };
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(const SoundBuffer& rhs)
-{
-    // Don't copy the attached soundlist
-    m_impl->samples  = rhs.m_impl->samples;
-    m_impl->duration = rhs.m_impl->duration;
-
-    // Update the internal buffer with the new samples
-    m_impl->update(rhs.getChannelCount(), rhs.getSampleRate(), rhs.getChannelMap());
-}
+SoundBuffer::SoundBuffer(const SoundBuffer& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs)
-{
-    if (this == &rhs)
-        return *this;
-
-    SoundBuffer temp(rhs);
-
-    using std::swap;
-
-    swap(m_impl->samples, temp.m_impl->samples);
-    swap(m_impl->sampleRate, temp.m_impl->sampleRate);
-    swap(m_impl->channelMap, temp.m_impl->channelMap);
-    swap(m_impl->duration, temp.m_impl->duration);
-    swap(m_impl->sounds, temp.m_impl->sounds); // swap soundlist too, so that they are detached when temp is destroyed
-
-    return *this;
-}
+SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs) = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(SoundBuffer&& rhs) noexcept : m_impl(SFML_BASE_MOVE(rhs.m_impl))
-{
-    for (Sound* soundPtr : m_impl->sounds)
-        soundPtr->setBuffer(*this);
-}
+SoundBuffer::SoundBuffer(SoundBuffer&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer& SoundBuffer::operator=(SoundBuffer&& rhs) noexcept
-{
-    if (this == &rhs)
-        return *this;
-
-    for (Sound* soundPtr : m_impl->sounds)
-        soundPtr->detachBuffer();
-
-    m_impl = SFML_BASE_MOVE(rhs.m_impl);
-
-    for (Sound* soundPtr : m_impl->sounds)
-        soundPtr->setBuffer(*this);
-
-    return *this;
-}
+SoundBuffer& SoundBuffer::operator=(SoundBuffer&& rhs) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::~SoundBuffer()
-{
-    SFML_BASE_ASSERT(m_impl->sounds.empty() && "SoundBuffer destructor called while sounds are still attached");
-
-    // To prevent the iterator from becoming invalid, we need to prevent
-    // the sound from calling `detachBuffer` on the sound buffer
-    for (Sound* soundPtr : m_impl->sounds)
-        soundPtr->detachBufferWithoutSignalling();
-}
+SoundBuffer::~SoundBuffer() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -260,6 +208,8 @@ Time SoundBuffer::getDuration() const
 SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr) :
 m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)))
 {
+    SFML_BASE_ASSERT(m_impl->sampleRate > 0u);
+    SFML_BASE_ASSERT(m_impl->channelMap.getSize() > 0u);
 }
 
 
@@ -274,20 +224,6 @@ base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
         return base::nullOpt;
 
     return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundBuffer::attachSound(Sound* sound) const
-{
-    m_impl->sounds.insert(sound);
-}
-
-
-////////////////////////////////////////////////////////////
-void SoundBuffer::detachSound(Sound* sound) const
-{
-    m_impl->sounds.erase(sound);
 }
 
 } // namespace sf

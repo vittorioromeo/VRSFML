@@ -4,14 +4,13 @@
 
 #include "SFML/System/Time.hpp"
 
+#include "SFML/Base/FloatMax.hpp"
+
 #include <Doctest.hpp>
 
 #include <AudioUtil.hpp>
 #include <CommonTraits.hpp>
 #include <SystemUtil.hpp>
-
-#include <cfloat>
-#include <climits>
 
 
 namespace
@@ -71,7 +70,7 @@ public:
     CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);       \
     CHECK(!(xSoundSource).isRelativeToListener());                        \
     CHECK((xSoundSource).getMinDistance() == 1.f);                        \
-    CHECK((xSoundSource).getMaxDistance() == FLT_MAX);                    \
+    CHECK((xSoundSource).getMaxDistance() == SFML_BASE_FLOAT_MAX);        \
     CHECK((xSoundSource).getMinGain() == 0);                              \
     CHECK((xSoundSource).getMaxGain() == 1.f);                            \
     CHECK((xSoundSource).getAttenuation() == 1.f);                        \
