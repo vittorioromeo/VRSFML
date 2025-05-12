@@ -1,0 +1,18 @@
+#pragma once
+#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+
+
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
+#ifndef __FLT_MAX__
+    #include <cfloat>
+#endif
+
+
+////////////////////////////////////////////////////////////
+#ifdef __FLT_MAX__
+    #define SFML_BASE_FLOAT_MAX __FLT_MAX__
+#else
+    #define SFML_BASE_FLOAT_MAX FLT_MAX
+#endif
