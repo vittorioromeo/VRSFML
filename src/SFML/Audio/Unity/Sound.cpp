@@ -8,16 +8,15 @@
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Priv/SoundImplUtils.hpp"
 #include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 #include "SFML/Audio/SoundSource.hpp"
 
-#include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 
 #include <miniaudio.h>
@@ -29,26 +28,15 @@ namespace sf
 struct Sound::Impl
 {
     ////////////////////////////////////////////////////////////
+    explicit Impl(Sound& theOwner) : owner(theOwner)
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
     void initialize()
     {
-        SFML_BASE_ASSERT(soundBase.hasValue());
-
-        if (!soundBase->initialize(&onEnd))
-            priv::err() << "Failed to initialize Sound::Impl";
-
-        // Because we are providing a custom data source, we have to provide the channel map ourselves
-        if (buffer == nullptr || buffer->getChannelMap().isEmpty())
-        {
-            soundBase->getSound().engineNode.spatializer.pChannelMapIn = nullptr;
-            return;
-        }
-
-        soundBase->clearSoundChannelMap();
-
-        for (const SoundChannel channel : buffer->getChannelMap())
-            soundBase->addToSoundChannelMap(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
-
-        soundBase->refreshSoundChannelMap();
+        SFML_BASE_ASSERT(buffer != nullptr);
+        priv::SoundImplUtils::implInitializeImpl(*this, buffer->getChannelMap());
     }
 
     ////////////////////////////////////////////////////////////
@@ -85,7 +73,7 @@ struct Sound::Impl
         // If cursor is already at or beyond the end of the buffer, either loop or exit
         if (impl.cursor >= totalBufferFrames)
         {
-            if (impl.mustLoop)
+            if (impl.owner.isLooping())
                 impl.cursor = 0u;
             else
                 return MA_SUCCESS;
@@ -104,7 +92,7 @@ struct Sound::Impl
         impl.cursor += *framesRead;
 
         // If we are looping and at the end of the sound, set the cursor back to the start
-        if (impl.mustLoop && impl.cursor >= totalBufferFrames)
+        if (impl.owner.isLooping() && impl.cursor >= totalBufferFrames)
             impl.cursor = 0u;
 
         return MA_SUCCESS;
@@ -184,16 +172,17 @@ struct Sound::Impl
     static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
 
     base::Optional<priv::MiniaudioUtils::SoundBase> soundBase; //!< Sound base, needs to be first member
-    base::SizeT                                     cursor{};  //!< The current playing position (in frames)
-    const SoundBuffer*                              buffer{};  //!< Sound buffer bound to the source
-    SoundSource::Status                             status{SoundSource::Status::Stopped}; //!< The status
-    void*                                           lastUsedPlaybackDevice{nullptr};      //!< Last used playback device
-    bool                                            mustLoop{false}; //!< Whether the sound must loop or not
+
+    Sound&              owner;                                //!< Owning `Sound` object
+    base::SizeT         cursor{};                             //!< The current playing position (in frames)
+    const SoundBuffer*  buffer{};                             //!< Sound buffer bound to the source
+    SoundSource::Status status{SoundSource::Status::Stopped}; //!< The status
+    void*               lastUsedPlaybackDevice{nullptr};      //!< Last used playback device
 };
 
 
 ////////////////////////////////////////////////////////////
-Sound::Sound(const SoundBuffer& buffer)
+Sound::Sound(const SoundBuffer& buffer) : m_impl(*this)
 {
     setBuffer(buffer);
 
@@ -214,67 +203,85 @@ Sound::~Sound()
 ////////////////////////////////////////////////////////////
 void Sound::play(PlaybackDevice& playbackDevice)
 {
-    if (m_impl->lastUsedPlaybackDevice != &playbackDevice)
-        m_impl->soundBase.reset();
+    priv::SoundImplUtils::playImpl(*this, playbackDevice);
+}
 
-    m_impl->lastUsedPlaybackDevice = &playbackDevice;
-    m_impl->mustLoop               = isLooping();
 
-    if (!m_impl->soundBase.hasValue())
-    {
-        m_impl->soundBase.emplace(playbackDevice, &Impl::vtable, [](void* ptr) { static_cast<Impl*>(ptr)->initialize(); });
-        m_impl->initialize();
-
-        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
-        applySavedSettings(m_impl->soundBase->getSound());
-        setEffectProcessor(getEffectProcessor());
-        setPlayingOffset(getPlayingOffset());
-    }
-
-    if (m_impl->status == Status::Playing)
-        setPlayingOffset(Time{});
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("start playing sound", result);
-        return;
-    }
-
-    m_impl->status = Status::Playing;
+////////////////////////////////////////////////////////////
+void Sound::resumeOnLastPlaybackDevice()
+{
+    priv::SoundImplUtils::resumeOnLastPlaybackDeviceImpl(*this);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sound::pause()
 {
-    if (!m_impl->soundBase.hasValue())
-        return;
-
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("pause playing sound", result);
-        return;
-    }
-
-    if (m_impl->status == Status::Playing)
-        m_impl->status = Status::Paused;
+    priv::SoundImplUtils::pauseImpl(*this);
 }
 
 
 ////////////////////////////////////////////////////////////
 void Sound::stop()
 {
-    if (!m_impl->soundBase.hasValue())
+    priv::SoundImplUtils::stopImpl(*this);
+}
+
+
+////////////////////////////////////////////////////////////
+void Sound::setPlayingOffset(const Time playingOffset)
+{
+    const auto frameIndex = priv::SoundImplUtils::setPlayingOffsetImpl(*this, playingOffset);
+    if (!frameIndex.hasValue())
         return;
 
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase->getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("stop playing sound", result);
-        return;
-    }
+    m_impl->cursor = static_cast<base::SizeT>(*frameIndex);
+}
 
-    setPlayingOffset(Time{});
-    m_impl->status = Status::Stopped;
+
+////////////////////////////////////////////////////////////
+Time Sound::getPlayingOffset() const
+{
+    if (m_impl->buffer == nullptr)
+        return Time{};
+
+    return priv::SoundImplUtils::getPlayingOffsetImpl(*this, m_impl->buffer->getChannelCount(), m_impl->buffer->getSampleRate());
+}
+
+
+////////////////////////////////////////////////////////////
+Sound::Status Sound::getStatus() const
+{
+    return m_impl->status;
+}
+
+
+////////////////////////////////////////////////////////////
+void* Sound::getSound() const
+{
+    // TODO P0: const bs
+    return m_impl->soundBase.hasValue() ? &const_cast<Sound*>(this)->m_impl->soundBase->getSound() : nullptr;
+}
+
+
+////////////////////////////////////////////////////////////
+void Sound::setEffectProcessor(const EffectProcessor& effectProcessor)
+{
+    SoundSource::setEffectProcessor(effectProcessor);
+
+    if (m_impl->soundBase.hasValue())
+        m_impl->soundBase->setAndConnectEffectProcessor(effectProcessor);
+}
+
+
+////////////////////////////////////////////////////////////
+void Sound::copySettings(const Sound& rhs)
+{
+    if (this == &rhs)
+        return;
+
+    // Delegate to base class, which copies all the sound attributes
+    SoundSource::operator=(rhs);
 }
 
 
@@ -303,7 +310,6 @@ void Sound::setBuffer(const SoundBuffer& buffer)
         m_impl->soundBase->deinitialize();
         m_impl->initialize();
 
-        SFML_BASE_ASSERT(m_impl->soundBase.hasValue());
         applySavedSettings(m_impl->soundBase->getSound());
         setEffectProcessor(getEffectProcessor());
         setPlayingOffset(getPlayingOffset());
@@ -314,74 +320,9 @@ void Sound::setBuffer(const SoundBuffer& buffer)
 
 
 ////////////////////////////////////////////////////////////
-void Sound::copySettings(const Sound& rhs)
-{
-    if (this == &rhs)
-        return;
-
-    // Delegate to base class, which copies all the sound attributes
-    SoundSource::operator=(rhs);
-}
-
-
-////////////////////////////////////////////////////////////
-void Sound::setPlayingOffset(const Time playingOffset)
-{
-    if (!m_impl->soundBase.hasValue())
-        return;
-
-    if (m_impl->soundBase->getSound().pDataSource == nullptr || m_impl->soundBase->getSound().engineNode.pEngine == nullptr)
-        return;
-
-    const auto frameIndex = ma_uint64{priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase->getSound(), playingOffset)};
-
-    m_impl->cursor = static_cast<base::SizeT>(frameIndex);
-}
-
-
-////////////////////////////////////////////////////////////
-void Sound::setEffectProcessor(const EffectProcessor& effectProcessor)
-{
-    SoundSource::setEffectProcessor(effectProcessor);
-
-    if (!m_impl->soundBase.hasValue())
-        return;
-
-    m_impl->soundBase->setAndConnectEffectProcessor(SFML_BASE_MOVE(effectProcessor));
-}
-
-
-////////////////////////////////////////////////////////////
 const SoundBuffer& Sound::getBuffer() const
 {
     return *m_impl->buffer;
-}
-
-
-////////////////////////////////////////////////////////////
-Time Sound::getPlayingOffset() const
-{
-    if (m_impl->buffer == nullptr || m_impl->buffer->getChannelCount() == 0 || m_impl->buffer->getSampleRate() == 0 ||
-        !m_impl->soundBase.hasValue())
-        return Time{};
-
-    // TODO P0: const bs
-    return priv::MiniaudioUtils::getPlayingOffset(const_cast<Sound*>(this)->m_impl->soundBase->getSound());
-}
-
-
-////////////////////////////////////////////////////////////
-Sound::Status Sound::getStatus() const
-{
-    return m_impl->status;
-}
-
-
-////////////////////////////////////////////////////////////
-void Sound::setLooping(const bool loop)
-{
-    m_impl->mustLoop = loop;
-    SoundSource::setLooping(loop);
 }
 
 
@@ -408,17 +349,6 @@ void Sound::detachBufferWithoutSignalling()
 
     // Detach the buffer without signalling the sound buffer
     m_impl->buffer = nullptr;
-}
-
-
-////////////////////////////////////////////////////////////
-void* Sound::getSound() const
-{
-    if (!m_impl->soundBase.hasValue())
-        return nullptr;
-
-    // TODO P0: const bs
-    return &const_cast<Sound*>(this)->m_impl->soundBase->getSound();
 }
 
 } // namespace sf

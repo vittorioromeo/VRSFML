@@ -7,7 +7,6 @@
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/SavedSettings.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -104,29 +103,12 @@ struct MiniaudioUtils::SoundBase::Impl
     ma_sound        sound{};         //!< The sound
     EffectProcessor effectProcessor; //!< The effect processor
 
-    PlaybackDevice::ResourceEntryIndex resourceEntryIndex{static_cast<PlaybackDevice::ResourceEntryIndex>(
-        -1)}; //!< Index of the resource entry registered with the PlaybackDevice
-
-    SavedSettings savedSettings; //!< Saved settings used to restore ma_sound state in case we need to recreate it
-
     [[maybe_unused]] bool effectNodeUninitialized{}; //!< Failsafe debug boolean to check if `onProcess` is called after destruction
 };
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::transferToPlaybackDevice(PlaybackDevice&                          newPlaybackDevice,
-                                                         const PlaybackDevice::ResourceEntryIndex newIndex)
-{
-    impl->playbackDevice     = &newPlaybackDevice;
-    impl->resourceEntryIndex = newIndex;
-    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
-}
-
-
-////////////////////////////////////////////////////////////
-MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&                               thePlaybackDevice,
-                                     const void* const                             dataSourceVTable,
-                                     const PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc) :
+MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice& thePlaybackDevice, const void* const dataSourceVTable) :
 impl(thePlaybackDevice)
 {
     // Set this object up as a miniaudio data source
@@ -136,15 +118,6 @@ impl(thePlaybackDevice)
     if (const ma_result result = ma_data_source_init(&config, &impl->dataSourceBase); result != MA_SUCCESS)
         fail("initialize audio data source", result);
 
-    impl->resourceEntryIndex = impl->playbackDevice->registerResource(this,
-                                                                      [](void* ptr)
-    { static_cast<SoundBase*>(ptr)->deinitialize(); },
-                                                                      reinitializeFunc,
-                                                                      [](void*           ptr,
-                                                                         PlaybackDevice& newPlaybackDevice,
-                                                                         PlaybackDevice::ResourceEntryIndex newIndex)
-    { static_cast<SoundBase*>(ptr)->transferToPlaybackDevice(newPlaybackDevice, newIndex); });
-
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, impl->playbackDevice);
 }
 
@@ -152,8 +125,6 @@ impl(thePlaybackDevice)
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
-    impl->playbackDevice->unregisterResource(impl->resourceEntryIndex);
-
     ma_sound_uninit(&impl->sound);
 
     ma_node_uninit(&impl->effectNode, nullptr);
@@ -195,7 +166,6 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
     // Route the sound through the effect node depending on whether an effect processor is set
     connectEffect(bool{impl->effectProcessor});
 
-    impl->savedSettings.applyOnto(impl->sound);
     return true;
 }
 
@@ -203,8 +173,6 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 ////////////////////////////////////////////////////////////
 void MiniaudioUtils::SoundBase::deinitialize()
 {
-    impl->savedSettings = SavedSettings{impl->sound};
-
     ma_sound_uninit(&impl->sound);
     ma_node_uninit(&impl->effectNode, nullptr);
 }
