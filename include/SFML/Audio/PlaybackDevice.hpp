@@ -72,12 +72,6 @@ public:
     PlaybackDevice& operator=(PlaybackDevice&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Transfer all active audio resources to `other`
-    ///
-    ////////////////////////////////////////////////////////////
-    void transferResourcesTo(PlaybackDevice& other);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Get the device handle
     ///
     ////////////////////////////////////////////////////////////
@@ -107,46 +101,6 @@ private:
     friend SoundBase;
     friend Sound;
     friend SoundStream;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Internal representation of a resource entry handle
-    ///
-    ////////////////////////////////////////////////////////////
-    using ResourceEntryIndex = unsigned int;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Tracks the lifetime of an audio resource and enables
-    ///        transferring
-    ///
-    ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] ResourceEntry
-    {
-        using InitFunc     = void (*)(void*);
-        using TransferFunc = void (*)(void*, PlaybackDevice&, ResourceEntryIndex);
-
-        void* resource{};
-
-        InitFunc deinitializeFunc{};
-        InitFunc reinitializeFunc{};
-
-        TransferFunc transferFunc{};
-    };
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Registers an audio resource with the playback device
-    ///        and returns a handle to it
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] ResourceEntryIndex registerResource(void*                       resource,
-                                                      ResourceEntry::InitFunc     deinitializeFunc,
-                                                      ResourceEntry::InitFunc     reinitializeFunc,
-                                                      ResourceEntry::TransferFunc transferFunc);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Unregisters a audio resource from the playback device
-    ///
-    ////////////////////////////////////////////////////////////
-    void unregisterResource(ResourceEntryIndex resourceEntryIndex);
 
     ////////////////////////////////////////////////////////////
     /// \brief Gets the internal miniaudio engine pointer

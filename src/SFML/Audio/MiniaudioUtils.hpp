@@ -31,9 +31,7 @@ namespace sf::priv::MiniaudioUtils
 {
 struct SoundBase
 {
-    explicit SoundBase(PlaybackDevice&                         thePlaybackDevice,
-                       const void*                             dataSourceVTable,
-                       PlaybackDevice::ResourceEntry::InitFunc reinitializeFunc);
+    explicit SoundBase(PlaybackDevice& thePlaybackDevice, const void* dataSourceVTable);
 
     ~SoundBase();
 
@@ -55,8 +53,6 @@ struct SoundBase
     void refreshSoundChannelMap();
 
     void setAndConnectEffectProcessor(const EffectProcessor& effectProcessor);
-
-    void transferToPlaybackDevice(PlaybackDevice& newPlaybackDevice, PlaybackDevice::ResourceEntryIndex newIndex);
 
     ////////////////////////////////////////////////////////////
     // Member data

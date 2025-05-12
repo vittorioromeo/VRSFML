@@ -20,7 +20,7 @@
 
 TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 {
-    auto audioContext   = sf::AudioContext::create().value();
+    auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     SECTION("Type traits")
@@ -65,7 +65,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
     SECTION("Set/get playing offset")
     {
         sf::Sound sound(soundBuffer);
-        sound.setPlayingOffset(sf::seconds(10));
+        sound.setPlayingOffset(sf::seconds(10)); // TODO P0: i think this must be stored in SoundSource as well?
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
 
