@@ -13,14 +13,16 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
+#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/ActiveSoundSource.hpp"
+#include "SFML/Audio/ActiveSoundStream.hpp"
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
-#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -82,8 +84,8 @@ public:
     virtual void update(float time, float x, float y)                          = 0;
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 
-    virtual void start(sf::PlaybackDevice&) = 0;
-    virtual void stop()                     = 0;
+    virtual void start(sf::PlaybackDevice&, sf::MusicSource&) = 0;
+    virtual void stop()                                       = 0;
 
     virtual void handleKey([[maybe_unused]] sf::Keyboard::Key key)
     {
@@ -105,24 +107,15 @@ private:
 class Surround : public Effect
 {
 public:
-    explicit Surround(sf::Listener& listener, sf::MusicSource& musicSource) :
-    Effect("Surround / Attenuation"),
-    m_listener(listener),
-    m_music(musicSource)
+    explicit Surround(sf::Listener& listener) : Effect("Surround / Attenuation"), m_listener(listener)
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
-
-        // Set the music to loop
-        m_music.setLooping(true);
-
-        // Set attenuation to a nice value
-        m_music.setAttenuation(0.04f);
     }
 
     void update(float /*time*/, float x, float y) override
     {
         m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
+        m_music->setPosition({m_position.x, m_position.y, 0.f});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -135,7 +128,7 @@ public:
         target.draw(m_soundShape, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
@@ -143,20 +136,25 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.play(playbackDevice);
+        m_music.emplace(playbackDevice,
+                        musicSource,
+                        sf::AudioSettings{
+                            .rollOff = 0.04f,
+                            .looping = true,
+                        });
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_music.reset();
     }
 
 private:
-    sf::Listener&   m_listener;
-    sf::CircleShape m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape m_soundShape{{.radius = 20.f}};
-    sf::Vec2f       m_position;
-    sf::Music       m_music;
+    sf::Listener&                       m_listener;
+    sf::CircleShape                     m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape                     m_soundShape{{.radius = 20.f}};
+    sf::Vec2f                           m_position;
+    sf::base::Optional<sf::ActiveMusic> m_music;
 };
 
 
@@ -166,24 +164,12 @@ private:
 class PitchVolume : public Effect
 {
 public:
-    explicit PitchVolume(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    explicit PitchVolume(sf::Listener& listener, const sf::Font& font) :
     Effect("Pitch / Volume"),
     m_listener(listener),
     m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
-    m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}}),
-    m_music(musicSource)
+    m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}})
     {
-        // Set the music to loop
-        m_music.setLooping(true);
-
-        // We don't care about attenuation in this effect
-        m_music.setAttenuation(0.f);
-
-        // Set initial pitch
-        m_music.setPitch(m_pitch);
-
-        // Set initial volume
-        m_music.setVolume(m_volume / 100.f);
     }
 
     void update(float /*time*/, float x, float y) override
@@ -191,8 +177,8 @@ public:
         m_pitch  = sf::base::clamp(2.f * x, 0.f, 2.f);
         m_volume = sf::base::clamp(100.f * (1.f - y), 0.f, 100.f);
 
-        m_music.setPitch(m_pitch);
-        m_music.setVolume(m_volume / 100.f);
+        m_music->setPitch(m_pitch);
+        m_music->setVolume(m_volume / 100.f);
 
         m_pitchText.setString("Pitch: " + std::to_string(m_pitch));
         m_volumeText.setString("Volume: " + std::to_string(m_volume));
@@ -204,7 +190,7 @@ public:
         target.draw(m_volumeText, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
     {
         // We set the listener position back to the default
         // so that the music is right on top of the listener
@@ -213,21 +199,28 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.play(playbackDevice);
+        m_music.emplace(playbackDevice,
+                        musicSource,
+                        sf::AudioSettings{
+                            .pitch   = m_pitch,
+                            .volume  = m_volume / 100.f,
+                            .rollOff = 0.f,
+                            .looping = true,
+                        });
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_music.reset();
     }
 
 private:
-    sf::Listener& m_listener;
-    float         m_pitch{1.f};
-    float         m_volume{100.f};
-    sf::Text      m_pitchText;
-    sf::Text      m_volumeText;
-    sf::Music     m_music;
+    sf::Listener&                       m_listener;
+    float                               m_pitch{1.f};
+    float                               m_volume{100.f};
+    sf::Text                            m_pitchText;
+    sf::Text                            m_volumeText;
+    sf::base::Optional<sf::ActiveMusic> m_music;
 };
 
 
@@ -237,7 +230,7 @@ private:
 class Attenuation : public Effect
 {
 public:
-    explicit Attenuation(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
+    explicit Attenuation(sf::Listener& listener, const sf::Font& font) :
     Effect("Attenuation"),
     m_listener(listener),
     m_text(font,
@@ -245,9 +238,38 @@ public:
             .string   = "Attenuation factor dampens full volume of sound while within inner cone based on distance to "
                         "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within "
                         "outer cone, volume is linearly interpolated between inner and outer volumes.",
-            .characterSize = 18u}),
-    m_music(musicSource)
+            .characterSize = 18u})
     {
+    }
+
+    void update(float /*time*/, float x, float y) override
+    {
+        m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
+        m_music->setPosition({m_position.x, m_position.y, 0.f});
+    }
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
+    {
+        auto statesCopy(states);
+
+        statesCopy.transform = sf::Transform::Identity;
+        statesCopy.transform.translate(m_position);
+
+        target.draw(m_soundConeOuter, statesCopy);
+        target.draw(m_soundConeInner, statesCopy);
+        target.draw(m_soundShape, statesCopy);
+        target.draw(m_listenerShape, states);
+        target.draw(m_text, states);
+    }
+
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
+    {
+        // Synchronize listener audio position with graphical position
+        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
+
+        if (!playbackDevice.updateListener(m_listener))
+            sf::cErr() << "Failed to update listener\n";
+
         // Sound cone parameters
         static constexpr auto coneHeight     = windowHeight * 2.f;
         static constexpr auto outerConeAngle = sf::degrees(120.f);
@@ -270,53 +292,19 @@ public:
         makeCone(m_soundConeOuter, outerConeAngle);
         makeCone(m_soundConeInner, innerConeAngle);
 
-        // Set the music to loop
-        m_music.setLooping(true);
-
-        // Set attenuation factor
-        m_music.setAttenuation(m_attenuation);
-
-        // Set direction to face "downwards"
-        m_music.setDirection({0.f, 1.f, 0.f});
-
-        // Set cone
-        m_music.setCone({innerConeAngle, outerConeAngle, 0.f});
-    }
-
-    void update(float /*time*/, float x, float y) override
-    {
-        m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
-    }
-
-    void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-    {
-        auto statesCopy(states);
-
-        statesCopy.transform = sf::Transform::Identity;
-        statesCopy.transform.translate(m_position);
-
-        target.draw(m_soundConeOuter, statesCopy);
-        target.draw(m_soundConeInner, statesCopy);
-        target.draw(m_soundShape, statesCopy);
-        target.draw(m_listenerShape, states);
-        target.draw(m_text, states);
-    }
-
-    void start(sf::PlaybackDevice& playbackDevice) override
-    {
-        // Synchronize listener audio position with graphical position
-        m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
-
-        if (!playbackDevice.updateListener(m_listener))
-            sf::cErr() << "Failed to update listener\n";
-
-        m_music.play(playbackDevice);
+        m_music.emplace(playbackDevice,
+                        musicSource,
+                        sf::AudioSettings{
+                            .cone      = {innerConeAngle, outerConeAngle, 0.f},
+                            .direction = {0.f, 1.f, 0.f},
+                            .rollOff   = m_attenuation,
+                            .looping   = true,
+                        });
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_music.reset();
     }
 
 private:
@@ -329,7 +317,7 @@ private:
     sf::ConvexShape m_soundConeInner{{.position = {20.f, 20.f}, .fillColor = sf::Color::Cyan, .pointCount = 3u}};
     sf::Text        m_text;
     sf::Vec2f       m_position;
-    sf::Music       m_music;
+    sf::base::Optional<sf::ActiveMusic> m_music;
 
     float m_attenuation{0.01f};
 };
@@ -338,8 +326,84 @@ private:
 ////////////////////////////////////////////////////////////
 // Tone Generator
 ////////////////////////////////////////////////////////////
-class Tone : public sf::SoundStream, public Effect
+class Tone : public Effect
 {
+private:
+    enum class Type : sf::base::SizeT
+    {
+        Sine,
+        Square,
+        Triangle,
+        Sawtooth
+    };
+
+    struct ToneSoundStream : sf::ActiveSoundStream
+    {
+        Tone& tone;
+
+        ToneSoundStream(Tone&                 theTone,
+                        sf::PlaybackDevice&   playbackDevice,
+                        const sf::ChannelMap& channelMap,
+                        const unsigned int    theSampleRate) :
+        sf::ActiveSoundStream(playbackDevice, channelMap, theSampleRate),
+        tone(theTone)
+        {
+        }
+
+        bool onGetData(sf::ActiveSoundStream::Chunk& chunk) override
+        {
+            const auto period = 1.f / tone.m_frequency;
+
+            for (auto i = 0u; i < chunkSize; ++i)
+            {
+                auto value = 0.f;
+
+                switch (tone.m_type)
+                {
+                    case Type::Sine:
+                    {
+                        value = tone.m_amplitude * std::sin(2 * pi * tone.m_frequency * tone.m_time);
+                        break;
+                    }
+                    case Type::Square:
+                    {
+                        value = tone.m_amplitude * (2 * (2 * std::floor(tone.m_frequency * tone.m_time) -
+                                                         std::floor(2 * tone.m_frequency * tone.m_time)) +
+                                                    1);
+                        break;
+                    }
+                    case Type::Triangle:
+                    {
+                        value = 4 * tone.m_amplitude / period *
+                                    std::abs(std::fmod(((std::fmod((tone.m_time - period / 4), period)) + period), period) -
+                                             period / 2) -
+                                tone.m_amplitude;
+                        break;
+                    }
+                    case Type::Sawtooth:
+                    {
+                        value = tone.m_amplitude * 2 * (tone.m_time / period - std::floor(0.5f + tone.m_time / period));
+                        break;
+                    }
+                }
+
+                tone.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                    std::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                tone.m_time += timePerSample;
+            }
+
+            chunk.sampleCount = chunkSize;
+            chunk.samples     = tone.m_sampleBuffer.data();
+
+            return true;
+        }
+
+        void onSeek(sf::Time) override
+        {
+            // It doesn't make sense to seek in a tone generator
+        }
+    };
+
 public:
     explicit Tone(sf::Listener& listener, const sf::Font& font) :
     Effect("Tone Generator"),
@@ -351,21 +415,6 @@ public:
     m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
     m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
     {
-    }
-
-    [[nodiscard]] unsigned int getChannelCount() const override
-    {
-        return 1;
-    }
-
-    [[nodiscard]] unsigned int getSampleRate() const override
-    {
-        return sampleRate;
-    }
-
-    [[nodiscard]] sf::ChannelMap getChannelMap() const override
-    {
-        return {sf::SoundChannel::Mono};
     }
 
     void update(float /*time*/, float x, float y) override
@@ -389,7 +438,7 @@ public:
         target.draw(m_currentFrequency, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
     {
         // We set the listener position back to the default
         // so that the tone is right on top of the listener
@@ -398,12 +447,12 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        play(playbackDevice);
+        m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate);
     }
 
     void stop() override
     {
-        SoundStream::stop();
+        m_toneSoundStream.reset();
     }
 
     void handleKey(sf::Keyboard::Key key) override
@@ -415,65 +464,6 @@ public:
     }
 
 private:
-    bool onGetData(sf::SoundStream::Chunk& chunk) override
-    {
-        const auto period = 1.f / m_frequency;
-
-        for (auto i = 0u; i < chunkSize; ++i)
-        {
-            auto value = 0.f;
-
-            switch (m_type)
-            {
-                case Type::Sine:
-                {
-                    value = m_amplitude * std::sin(2 * pi * m_frequency * m_time);
-                    break;
-                }
-                case Type::Square:
-                {
-                    value = m_amplitude *
-                            (2 * (2 * std::floor(m_frequency * m_time) - std::floor(2 * m_frequency * m_time)) + 1);
-                    break;
-                }
-                case Type::Triangle:
-                {
-                    value = 4 * m_amplitude / period *
-                                std::abs(std::fmod(((std::fmod((m_time - period / 4), period)) + period), period) -
-                                         period / 2) -
-                            m_amplitude;
-                    break;
-                }
-                case Type::Sawtooth:
-                {
-                    value = m_amplitude * 2 * (m_time / period - std::floor(0.5f + m_time / period));
-                    break;
-                }
-            }
-
-            m_sampleBuffer[i] = static_cast<sf::base::I16>(std::lround(value * std::numeric_limits<sf::base::I16>::max()));
-            m_time += timePerSample;
-        }
-
-        chunk.sampleCount = chunkSize;
-        chunk.samples     = m_sampleBuffer.data();
-
-        return true;
-    }
-
-    void onSeek(sf::Time) override
-    {
-        // It doesn't make sense to seek in a tone generator
-    }
-
-    enum class Type : sf::base::SizeT
-    {
-        Sine,
-        Square,
-        Triangle,
-        Sawtooth
-    };
-
     static constexpr unsigned int    sampleRate{44'100};
     static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
     static constexpr float           timePerSample{1.f / float{sampleRate}};
@@ -490,14 +480,57 @@ private:
     sf::Text m_currentType;
     sf::Text m_currentAmplitude;
     sf::Text m_currentFrequency;
+
+    sf::base::Optional<ToneSoundStream> m_toneSoundStream;
 };
 
 
 ////////////////////////////////////////////////////////////
 // Dopper Shift Effect
 ////////////////////////////////////////////////////////////
-class Doppler : public sf::SoundStream, public Effect
+class Doppler : public Effect
 {
+private:
+    struct DopplerSoundStream : sf::ActiveSoundStream
+    {
+        Doppler& doppler;
+
+        DopplerSoundStream(Doppler&              theDoppler,
+                           sf::PlaybackDevice&   playbackDevice,
+                           const sf::ChannelMap& channelMap,
+                           const unsigned int    theSampleRate) :
+        sf::ActiveSoundStream(playbackDevice, channelMap, theSampleRate),
+        doppler(theDoppler)
+        {
+            setAttenuation(0.05f);
+        }
+
+        bool onGetData(sf::ActiveSoundStream::Chunk& chunk) override
+        {
+            const auto period = 1.f / doppler.m_frequency;
+
+            for (auto i = 0u; i < chunkSize; ++i)
+            {
+                const auto value = doppler.m_amplitude * 2 *
+                                   (doppler.m_time / period - std::floor(0.5f + doppler.m_time / period));
+
+                doppler.m_sampleBuffer[i] = static_cast<sf::base::I16>(
+                    std::lround(value * std::numeric_limits<sf::base::I16>::max()));
+                doppler.m_time += timePerSample;
+            }
+
+            chunk.sampleCount = chunkSize;
+            chunk.samples     = doppler.m_sampleBuffer.data();
+
+            return true;
+        }
+
+        void onSeek(sf::Time) override
+        {
+            // It doesn't make sense to seek in a tone generator
+        }
+    };
+
 public:
     explicit Doppler(sf::Listener& listener, const sf::Font& font) :
     Effect("Doppler Shift"),
@@ -506,24 +539,6 @@ public:
     m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
     {
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
-
-        // Set attenuation to a nice value
-        setAttenuation(0.05f);
-    }
-
-    [[nodiscard]] unsigned int getChannelCount() const override
-    {
-        return 1;
-    }
-
-    [[nodiscard]] unsigned int getSampleRate() const override
-    {
-        return sampleRate;
-    }
-
-    [[nodiscard]] sf::ChannelMap getChannelMap() const override
-    {
-        return {sf::SoundChannel::Mono};
     }
 
     void update(float time, float x, float y) override
@@ -536,9 +551,9 @@ public:
 
         m_position.x = std::fmod(time, 8.f) * windowWidth / 8.f;
 
-        setPosition({m_position.x, m_position.y, 0.f});
-        setVelocity({m_velocity, 0.f, 0.f});
-        setDopplerFactor(m_factor);
+        m_dopplerSoundStream->setPosition({m_position.x, m_position.y, 0.f});
+        m_dopplerSoundStream->setVelocity({m_velocity, 0.f, 0.f});
+        m_dopplerSoundStream->setDopplerFactor(m_factor);
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -553,7 +568,7 @@ public:
         target.draw(m_currentFactor, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
@@ -561,38 +576,15 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        play(playbackDevice);
+        m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate);
     }
 
     void stop() override
     {
-        SoundStream::stop();
+        m_dopplerSoundStream.reset();
     }
 
 private:
-    bool onGetData(sf::SoundStream::Chunk& chunk) override
-    {
-        const auto period = 1.f / m_frequency;
-
-        for (auto i = 0u; i < chunkSize; ++i)
-        {
-            const auto value = m_amplitude * 2 * (m_time / period - std::floor(0.5f + m_time / period));
-
-            m_sampleBuffer[i] = static_cast<sf::base::I16>(std::lround(value * std::numeric_limits<sf::base::I16>::max()));
-            m_time += timePerSample;
-        }
-
-        chunk.sampleCount = chunkSize;
-        chunk.samples     = m_sampleBuffer.data();
-
-        return true;
-    }
-
-    void onSeek(sf::Time) override
-    {
-        // It doesn't make sense to seek in a tone generator
-    }
-
     static constexpr unsigned int    sampleRate{44'100};
     static constexpr sf::base::SizeT chunkSize{sampleRate / 100};
     static constexpr float           timePerSample{1.f / float{sampleRate}};
@@ -612,6 +604,8 @@ private:
     sf::Vec2f       m_position;
     sf::Text        m_currentVelocity;
     sf::Text        m_currentFactor;
+
+    sf::base::Optional<DopplerSoundStream> m_dopplerSoundStream;
 };
 
 
@@ -624,7 +618,7 @@ public:
     void update([[maybe_unused]] float time, float x, float y) override
     {
         m_position = {windowWidth * x - 10.f, windowHeight * y - 10.f};
-        m_music.setPosition({m_position.x, m_position.y, 0.f});
+        m_music->setPosition({m_position.x, m_position.y, 0.f});
     }
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override
@@ -639,7 +633,7 @@ public:
         target.draw(m_instructions);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
@@ -647,19 +641,23 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.play(playbackDevice);
+        m_music.emplace(playbackDevice,
+                        musicSource,
+                        sf::AudioSettings{
+                            .rollOff = 0.f,
+                            .looping = true,
+                        });
     }
 
     void stop() override
     {
-        m_music.stop();
+        m_music.reset();
     }
 
 protected:
-    explicit Processing(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource, std::string name) :
+    explicit Processing(sf::Listener& listener, const sf::Font& font, std::string name) :
     Effect(SFML_BASE_MOVE(name)),
     m_listener(listener),
-    m_music(musicSource),
     m_enabledText(font, {.string = "Processing: Enabled"}),
     m_instructions(font, {.string = "Press Space to enable/disable processing"})
     {
@@ -667,12 +665,6 @@ protected:
 
         m_enabledText.position  = {windowWidth / 2.f - 120.f, windowHeight * 3.f / 4.f - 50.f};
         m_instructions.position = {windowWidth / 2.f - 250.f, windowHeight * 3.f / 4.f};
-
-        // Set the music to loop
-        m_music.setLooping(true);
-
-        // Set attenuation to a nice value
-        m_music.setAttenuation(0.f);
     }
 
 
@@ -681,7 +673,7 @@ protected:
     // Needs to be defined above `m_music` because it's used in the music's effect processor
     bool m_enabled{true};
 
-    sf::Music m_music;
+    sf::base::Optional<sf::ActiveMusic> m_music;
 
 private:
     void handleKey(sf::Keyboard::Key key) override
@@ -734,7 +726,7 @@ protected:
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
+        m_music->setEffectProcessor(
             [coefficients,
              &enabled = m_enabled,
              state    = sf::base::Vector<State>()](const float*  inputFrames,
@@ -785,12 +777,18 @@ protected:
 ////////////////////////////////////////////////////////////
 struct HighPassFilter : BiquadFilter
 {
-    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
-    BiquadFilter(listener, font, musicSource, "High-pass Filter")
+    explicit HighPassFilter(sf::Listener& listener, const sf::Font& font) :
+    BiquadFilter(listener, font, "High-pass Filter")
     {
+    }
+
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
+    {
+        BiquadFilter::start(playbackDevice, musicSource);
+
         static constexpr auto cutoffFrequency = 2000.f;
 
-        const auto c = std::tan(pi * cutoffFrequency / static_cast<float>(m_music.getSampleRate()));
+        const auto c = std::tan(pi * cutoffFrequency / static_cast<float>(musicSource.getSampleRate()));
 
         Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
                                   .a1 = -2.f * coefficients.a0,
@@ -808,12 +806,18 @@ struct HighPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct LowPassFilter : BiquadFilter
 {
-    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
-    BiquadFilter(listener, font, musicSource, "Low-pass Filter")
+    explicit LowPassFilter(sf::Listener& listener, const sf::Font& font) :
+    BiquadFilter(listener, font, "Low-pass Filter")
     {
+    }
+
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
+    {
+        BiquadFilter::start(playbackDevice, musicSource);
+
         static constexpr auto cutoffFrequency = 500.f;
 
-        const auto c = 1.f / std::tan(pi * cutoffFrequency / static_cast<float>(m_music.getSampleRate()));
+        const auto c = 1.f / std::tan(pi * cutoffFrequency / static_cast<float>(musicSource.getSampleRate()));
 
         Coefficients coefficients{.a0 = 1.f / (1.f + sqrt2 * c + std::pow(c, 2.f)),
                                   .a1 = 2.f * coefficients.a0,
@@ -831,15 +835,20 @@ struct LowPassFilter : BiquadFilter
 ////////////////////////////////////////////////////////////
 struct Echo : Processing
 {
-    explicit Echo(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
-    Processing(listener, font, musicSource, "Echo")
+    explicit Echo(sf::Listener& listener, const sf::Font& font) : Processing(listener, font, "Echo")
     {
+    }
+
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
+    {
+        Processing::start(playbackDevice, musicSource);
+
         static constexpr auto delay = 0.2f;
         static constexpr auto decay = 0.75f;
         static constexpr auto wet   = 0.8f;
         static constexpr auto dry   = 1.f;
 
-        const auto sampleRate    = m_music.getSampleRate();
+        const auto sampleRate    = musicSource.getSampleRate();
         const auto delayInFrames = static_cast<unsigned int>(static_cast<float>(sampleRate) * delay);
 
         // We use a mutable lambda to tie the lifetime of the state to the lambda itself
@@ -847,7 +856,7 @@ struct Echo : Processing
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
+        m_music->setEffectProcessor(
             [delayInFrames,
              &enabled = m_enabled,
              buffer   = sf::base::Vector<float>(),
@@ -893,9 +902,14 @@ struct Echo : Processing
 class Reverb : public Processing
 {
 public:
-    explicit Reverb(sf::Listener& listener, const sf::Font& font, sf::MusicSource& musicSource) :
-    Processing(listener, font, musicSource, "Reverb")
+    explicit Reverb(sf::Listener& listener, const sf::Font& font) : Processing(listener, font, "Reverb")
     {
+    }
+
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicSource& musicSource) override
+    {
+        Processing::start(playbackDevice, musicSource);
+
         static constexpr auto sustain = 0.7f; // [0.f; 1.f]
 
         // We use a mutable lambda to tie the lifetime of the state to the lambda itself
@@ -903,8 +917,8 @@ public:
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
-        m_music.setEffectProcessor(
-            [sampleRate = m_music.getSampleRate(),
+        m_music->setEffectProcessor(
+            [sampleRate = musicSource.getSampleRate(),
              filters    = sf::base::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
                                    unsigned int& inputFrameCount,
@@ -1096,15 +1110,15 @@ int main()
     auto musicSource = sf::MusicSource::openFromFile(musicPath).value();
 
     // Create the effects
-    Surround       surroundEffect(listener, musicSource);
-    PitchVolume    pitchVolumeEffect(listener, font, musicSource);
-    Attenuation    attenuationEffect(listener, font, musicSource);
+    Surround       surroundEffect(listener);
+    PitchVolume    pitchVolumeEffect(listener, font);
+    Attenuation    attenuationEffect(listener, font);
     Tone           toneEffect(listener, font);
     Doppler        dopplerEffect(listener, font);
-    HighPassFilter highPassFilterEffect(listener, font, musicSource);
-    LowPassFilter  lowPassFilterEffect(listener, font, musicSource);
-    Echo           echoEffect(listener, font, musicSource);
-    Reverb         reverbEffect(listener, font, musicSource);
+    HighPassFilter highPassFilterEffect(listener, font);
+    LowPassFilter  lowPassFilterEffect(listener, font);
+    Echo           echoEffect(listener, font);
+    Reverb         reverbEffect(listener, font);
 
     const sf::base::Array<Effect*, 9>
         effects{&surroundEffect,
@@ -1119,7 +1133,7 @@ int main()
 
     sf::base::SizeT current = 0;
 
-    effects[current]->start(getCurrentPlaybackDevice());
+    effects[current]->start(getCurrentPlaybackDevice(), musicSource);
 
     // Create the messages background
     const auto textBackgroundTexture = sf::Texture::loadFromFile(resourcesDir() / "text-background.png").value();
@@ -1182,7 +1196,7 @@ int main()
                         else
                             --current;
 
-                        effects[current]->start(getCurrentPlaybackDevice());
+                        effects[current]->start(getCurrentPlaybackDevice(), musicSource);
 
                         description.setString("Current effect: " + effects[current]->getName());
                         break;
@@ -1198,7 +1212,7 @@ int main()
                         else
                             ++current;
 
-                        effects[current]->start(getCurrentPlaybackDevice());
+                        effects[current]->start(getCurrentPlaybackDevice(), musicSource);
 
                         description.setString("Current effect: " + effects[current]->getName());
                         break;
@@ -1207,6 +1221,7 @@ int main()
                     // F1 key: change playback device
                     case sf::Keyboard::Key::F1:
                     {
+                        /*
                         sf::base::SizeT newPlaybackDeviceIndex{};
 
                         // We need to query the list every time we want to change
@@ -1243,9 +1258,9 @@ int main()
                             getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
                         }
 
-
                         currentPlaybackDeviceIndex = newPlaybackDeviceIndex;
                         playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
+                        */
                         break;
                     }
 
