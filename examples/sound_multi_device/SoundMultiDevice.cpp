@@ -5,6 +5,7 @@
 #include "SFML/Audio/ActiveSoundSource.hpp"
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"

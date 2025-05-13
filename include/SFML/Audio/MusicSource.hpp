@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/ChannelMap.hpp"
-
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/IntTypes.hpp"
@@ -23,12 +21,13 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class ActiveMusic;
+class ChannelMap;
 class InputSoundFile;
 class InputStream;
+class Music;
 class Path;
 class Time;
-class ActiveMusic;
-class Music;
 } // namespace sf
 
 

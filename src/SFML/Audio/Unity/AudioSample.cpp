@@ -215,31 +215,6 @@ bool AudioSample::pause()
 
 
 ////////////////////////////////////////////////////////////
-void AudioSample::applySettings(const AudioSettings& s)
-{
-    ma_sound* sound = &m_impl->soundBase.getSound();
-
-    ma_sound_set_cone(sound, s.cone.innerAngle.asRadians(), s.cone.outerAngle.asRadians(), s.cone.outerGain);
-    ma_sound_set_position(sound, s.position.x, s.position.y, s.position.z);
-    ma_sound_set_direction(sound, s.direction.x, s.direction.y, s.direction.z);
-    ma_sound_set_velocity(sound, s.velocity.x, s.velocity.y, s.velocity.z);
-    ma_sound_set_pitch(sound, s.pitch);
-    ma_sound_set_pan(sound, s.pan);
-    ma_sound_set_volume(sound, s.volume);
-    ma_sound_set_directional_attenuation_factor(sound, s.directionalAttenuationFactor);
-    ma_sound_set_doppler_factor(sound, s.dopplerFactor);
-    ma_sound_set_min_distance(sound, s.minDistance);
-    ma_sound_set_max_distance(sound, s.maxDistance);
-    ma_sound_set_min_gain(sound, s.minGain);
-    ma_sound_set_max_gain(sound, s.maxGain);
-    ma_sound_set_rolloff(sound, s.rollOff);
-    ma_sound_set_positioning(sound, static_cast<ma_positioning>(s.positioning));
-    ma_sound_set_looping(sound, s.looping);
-    ma_sound_set_spatialization_enabled(sound, s.spatializationEnabled);
-}
-
-
-////////////////////////////////////////////////////////////
 void AudioSample::setPlayingOffset(const Time playingOffset)
 {
     auto& sound = m_impl->soundBase.getSound();
@@ -254,7 +229,7 @@ void AudioSample::setPlayingOffset(const Time playingOffset)
 ////////////////////////////////////////////////////////////
 Time AudioSample::getPlayingOffset() const
 {
-    return priv::MiniaudioUtils::getPlayingOffset(getSound());
+    return priv::MiniaudioUtils::getPlayingOffset(getSoundBase().getSound());
 }
 
 
@@ -266,18 +241,10 @@ bool AudioSample::isPlaying() const
 
 
 ////////////////////////////////////////////////////////////
-ma_sound& AudioSample::getSound() const
+priv::MiniaudioUtils::SoundBase& AudioSample::getSoundBase() const
 {
     // TODO P0: const bs
-    return const_cast<AudioSample*>(this)->m_impl->soundBase.getSound();
-}
-
-
-////////////////////////////////////////////////////////////
-void AudioSample::setEffectProcessor(const EffectProcessor& effectProcessor)
-{
-    ActiveSoundSource::setEffectProcessor(effectProcessor);
-    m_impl->soundBase.setAndConnectEffectProcessor(effectProcessor);
+    return const_cast<AudioSample*>(this)->m_impl->soundBase;
 }
 
 

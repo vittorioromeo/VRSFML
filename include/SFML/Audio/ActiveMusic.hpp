@@ -8,8 +8,6 @@
 #include "SFML/Audio/Export.hpp"
 
 #include "SFML/Audio/ActiveSoundStream.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/ChannelMap.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 
@@ -23,6 +21,8 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+struct AudioSettings;
+class ChannelMap;
 class Time;
 class MusicSource;
 } // namespace sf
@@ -157,7 +157,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::ChannelMap getChannelMap() const;
+    [[nodiscard]] ChannelMap getChannelMap() const;
 
 protected:
     ////////////////////////////////////////////////////////////
