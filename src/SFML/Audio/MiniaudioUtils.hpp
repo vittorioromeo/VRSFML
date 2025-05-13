@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
@@ -53,6 +54,8 @@ struct SoundBase
     void refreshSoundChannelMap();
 
     void setAndConnectEffectProcessor(const EffectProcessor& effectProcessor);
+
+    void applyAudioSettings(const AudioSettings& audioSettings);
 
     ////////////////////////////////////////////////////////////
     // Member data

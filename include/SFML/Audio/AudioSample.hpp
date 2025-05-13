@@ -17,23 +17,13 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-struct ma_sound;
-
-
 namespace sf
 {
-class EffectProcessor;
 class PlaybackDevice;
 class SoundBuffer;
 class Time;
 struct AudioSettings;
 } // namespace sf
-
-
-namespace sf::priv
-{
-struct SoundImplUtils;
-} // namespace sf::priv
 
 
 namespace sf
@@ -117,12 +107,6 @@ public:
     bool pause() override;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void applySettings(const AudioSettings& s);
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
     ///
     /// The playing position can be changed when the sound is
@@ -136,17 +120,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setPlayingOffset(Time playingOffset) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the effect processor to be applied to the sound
-    ///
-    /// The effect processor is a callable that will be called
-    /// with sound data to be processed.
-    ///
-    /// \param effectProcessor The effect processor to attach to this sound, attach an empty processor to disable processing
-    ///
-    ////////////////////////////////////////////////////////////
-    void setEffectProcessor(const EffectProcessor& effectProcessor) override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the audio buffer attached to the sound
@@ -183,7 +156,6 @@ protected:
 
 private:
     friend class SoundBuffer;
-    friend priv::SoundImplUtils;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
@@ -191,7 +163,7 @@ private:
     /// \return The sound object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ma_sound& getSound() const override;
+    [[nodiscard]] priv::MiniaudioUtils::SoundBase& getSoundBase() const override;
 
     ////////////////////////////////////////////////////////////
     // Member data
