@@ -30,7 +30,6 @@
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Event.hpp"

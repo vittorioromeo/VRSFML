@@ -2,9 +2,7 @@
 
 #include "SFML/Audio/AudioSample.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Path.hpp"
