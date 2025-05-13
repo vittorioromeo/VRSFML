@@ -1,6 +1,4 @@
 #pragma once
-#include "AudioSettings.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -21,9 +19,6 @@
 ////////////////////////////////////////////////////////////
 // Forward declarations
 ////////////////////////////////////////////////////////////
-struct ma_sound;
-
-
 namespace sf
 {
 class EffectProcessor;
@@ -145,20 +140,6 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Time getPlayingOffset() const override;
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Set the effect processor to be applied to the sound
-    ///
-    /// The effect processor is a callable that will be called
-    /// with sound data to be processed.
-    ///
-    /// \param effectProcessor The effect processor to attach to this sound, attach an empty processor to disable processing
-    ///
-    ////////////////////////////////////////////////////////////
-    void setEffectProcessor(const EffectProcessor& effectProcessor) override;
-
-    // TODO P0:
-    void applySettings(const AudioSettings& s);
-
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
@@ -219,7 +200,7 @@ private:
     /// \return The sound object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ma_sound& getSound() const override;
+    [[nodiscard]] priv::MiniaudioUtils::SoundBase& getSoundBase() const override;
 
     ////////////////////////////////////////////////////////////
     // Member data
