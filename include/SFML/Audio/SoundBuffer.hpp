@@ -7,8 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/ChannelMap.hpp"
-
 #include "SFML/System/LifetimeDependee.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
@@ -23,11 +21,12 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class AudioSample;
+class ChannelMap;
 class InputSoundFile;
 class InputStream;
 class Path;
 class Sound;
-class AudioSample;
 class Time;
 } // namespace sf
 
@@ -124,9 +123,8 @@ public:
     ///
     /// \param samples      Pointer to the array of samples in memory
     /// \param sampleCount  Number of samples in the array
-    /// \param channelCount Number of channels (1 = mono, 2 = stereo, ...)
-    /// \param sampleRate   Sample rate (number of samples to play per second)
     /// \param channelMap   Map of position in sample frame to sound channel
+    /// \param sampleRate   Sample rate (number of samples to play per second)
     ///
     /// \return Sound buffer on success, `base::nullOpt` otherwise
     ///
@@ -136,9 +134,8 @@ public:
     [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamples(
         const base::I16*  samples,
         base::U64         sampleCount,
-        unsigned int      channelCount,
-        unsigned int      sampleRate,
-        const ChannelMap& channelMap);
+        const ChannelMap& channelMap,
+        unsigned int      sampleRate);
 
     ////////////////////////////////////////////////////////////
     /// \brief Save the sound buffer to an audio file
@@ -242,7 +239,10 @@ public:
     /// \brief Construct from vector of samples
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr);
+    [[nodiscard]] explicit SoundBuffer(base::PassKey<SoundBuffer>&&,
+                                       void*             samplesVectorPtr,
+                                       const ChannelMap& channelMap,
+                                       unsigned int      sampleRate);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -250,11 +250,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     template <typename TVector>
-    [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(
-        TVector&&         samples,
-        unsigned int      channelCount,
-        unsigned int      sampleRate,
-        const ChannelMap& channelMap);
+    [[nodiscard]] static base::Optional<SoundBuffer> loadFromSamplesImpl(TVector&&         samples,
+                                                                         const ChannelMap& channelMap,
+                                                                         unsigned int      sampleRate);
 
     ////////////////////////////////////////////////////////////
     /// \brief Initialize the internal state after loading a new sound

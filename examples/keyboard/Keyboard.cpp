@@ -14,8 +14,9 @@
 #include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/EventUtils.hpp"
@@ -1031,6 +1032,32 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
 } // namespace
 
 
+// TODO P0:
+class ReplayableSound
+{
+public:
+    ReplayableSound(const sf::SoundBuffer& buffer) : m_buffer(buffer)
+    {
+    }
+
+    void play(sf::PlaybackDevice& playbackDevice)
+    {
+        if (!m_sample.hasValue())
+        {
+            m_sample.emplace(playbackDevice, m_buffer, sf::AudioSettings{});
+            return;
+        }
+
+        m_sample->setPlayingOffset(sf::Time{});
+        m_sample->resume();
+    }
+
+private:
+    const sf::SoundBuffer&              m_buffer;
+    sf::base::Optional<sf::AudioSample> m_sample;
+};
+
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -1038,7 +1065,7 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
 int main()
 {
     // Create an audio context and get the default playback device
-    auto audioContext   = sf::AudioContext::create().value();
+    auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Create the graphics context
@@ -1061,9 +1088,9 @@ int main()
     const auto releasedSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
 
     // Create sound objects to play them upon keyboard events
-    sf::Sound errorSound(errorSoundBuffer);
-    sf::Sound pressedSound(pressedSoundBuffer);
-    sf::Sound releasedSound(releasedSoundBuffer);
+    ReplayableSound errorSound(errorSoundBuffer);
+    ReplayableSound pressedSound(pressedSoundBuffer);
+    ReplayableSound releasedSound(releasedSoundBuffer);
 
     // Open the font used for all texts
     const auto font = sf::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();

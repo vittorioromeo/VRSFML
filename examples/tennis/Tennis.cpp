@@ -15,8 +15,9 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Event.hpp"
@@ -55,6 +56,32 @@ sf::Path resourcesDir()
 } // namespace
 
 
+// TODO P0:
+class ReplayableSound
+{
+public:
+    ReplayableSound(const sf::SoundBuffer& buffer) : m_buffer(buffer)
+    {
+    }
+
+    void play(sf::PlaybackDevice& playbackDevice)
+    {
+        if (!m_sample.hasValue())
+        {
+            m_sample.emplace(playbackDevice, m_buffer, sf::AudioSettings{});
+            return;
+        }
+
+        m_sample->setPlayingOffset(sf::Time{});
+        m_sample->resume();
+    }
+
+private:
+    const sf::SoundBuffer&              m_buffer;
+    sf::base::Optional<sf::AudioSample> m_sample;
+};
+
+
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -83,12 +110,12 @@ int main()
     });
 
     // Create an audio context and get the default playback device
-    auto audioContext   = sf::AudioContext::create().value();
+    auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
     // Load the sounds used in the game
-    const auto ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::Sound  ballSound(ballSoundBuffer);
+    const auto      ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
+    ReplayableSound ballSound(ballSoundBuffer);
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
