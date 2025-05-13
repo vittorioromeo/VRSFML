@@ -2,10 +2,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 #include "SFML/Audio/SoundBufferRecorder.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
@@ -72,11 +73,11 @@ int main()
     sf::cOut() << "Press enter to start recording audio";
     sf::cIn().ignore(10'000, '\n');
 
-    // Here we'll use an integrated custom recorder, which saves the captured data into a sound buffer
-    sf::SoundBufferRecorder recorder;
-
     // Create the capture device
     sf::CaptureDevice captureDevice(deviceHandles[deviceIndex]);
+
+    // Here we'll use an integrated custom recorder, which saves the captured data into a sound buffer
+    sf::SoundBufferRecorder recorder;
 
     // Audio capture is done in a separate thread, so we can block the main thread while it is capturing
     if (!recorder.start(captureDevice, sampleRate))
@@ -123,11 +124,10 @@ int main()
         sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Create a sound instance and play it
-        sf::Sound sound(buffer);
-        sound.play(playbackDevice);
+        sf::AudioSample sound(playbackDevice, buffer, sf::AudioSettings{});
 
         // Wait until finished
-        while (sound.getStatus() == sf::Sound::Status::Playing)
+        while (sound.isPlaying())
         {
             // Display the playing position
             sf::cOut() << "\rPlaying... " << sound.getPlayingOffset().asSeconds() << " sec        ";

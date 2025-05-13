@@ -7,7 +7,6 @@
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/OutputSoundFile.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -25,28 +24,23 @@ namespace sf
 struct SoundBuffer::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl() = default;
-
-    ////////////////////////////////////////////////////////////
-    explicit Impl(base::Vector<base::I16>&& theSamples) : samples(SFML_BASE_MOVE(theSamples))
+    // NOLINTNEXTLINE(modernize-pass-by-value)
+    explicit Impl(base::Vector<base::I16>&& theSamples, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
+    samples(SFML_BASE_MOVE(theSamples)),
+    channelMap(theChannelMap),
+    sampleRate(theSampleRate)
     {
-    }
+        SFML_BASE_ASSERT(channelMap.getSize() > 0u);
+        SFML_BASE_ASSERT(sampleRate > 0u);
 
-    ////////////////////////////////////////////////////////////
-    void update(const unsigned int theChannelCount, const unsigned int theSampleRate, const ChannelMap& theChannelMap)
-    {
-        SFML_BASE_ASSERT(theChannelCount > 0u && theSampleRate > 0u && (theChannelMap.getSize() == theChannelCount));
-
-        sampleRate = theSampleRate;
-        channelMap = theChannelMap;
-        duration   = seconds(
-            static_cast<float>(samples.size()) / static_cast<float>(sampleRate) / static_cast<float>(theChannelCount));
+        duration = seconds(static_cast<float>(samples.size()) / static_cast<float>(sampleRate) /
+                           static_cast<float>(channelMap.getSize()));
     }
 
     ////////////////////////////////////////////////////////////
     base::Vector<base::I16> samples;                        //!< Samples buffer
-    unsigned int            sampleRate{44'100};             //!< Number of samples per second
     ChannelMap              channelMap{SoundChannel::Mono}; //!< The map of position in sample frame to sound channel
+    unsigned int            sampleRate{44'100};             //!< Number of samples per second
     Time                    duration;                       //!< Sound duration
 };
 
@@ -106,44 +100,33 @@ base::Optional<SoundBuffer> SoundBuffer::loadFromStream(InputStream& stream)
 
 ////////////////////////////////////////////////////////////
 template <typename TVector>
-base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(
-    TVector&&          samples,
-    const unsigned int channelCount,
-    const unsigned int sampleRate,
-    const ChannelMap&  channelMap)
+base::Optional<SoundBuffer> SoundBuffer::loadFromSamplesImpl(TVector&&          samples,
+                                                             const ChannelMap&  channelMap,
+                                                             const unsigned int sampleRate)
 {
-    base::Optional<SoundBuffer> soundBuffer; // Use a single local variable for NRVO
-
-    if (channelCount == 0u || sampleRate == 0u || channelMap.isEmpty())
+    if (channelMap.isEmpty() || sampleRate == 0u)
     {
         priv::err() << "Failed to load sound buffer from samples ("
                     << "array: " << samples.data() << ", "
                     << "count: " << samples.size() << ", "
-                    << "channels: " << channelCount << ", "
+                    << "channels: " << channelMap.getSize() << ", "
                     << "samplerate: " << sampleRate << ")";
 
-        return soundBuffer; // Empty optional
+        return base::nullOpt; // Empty optional
     }
 
     // Take ownership of the audio samples
-    soundBuffer.emplace(base::PassKey<SoundBuffer>{}, &samples);
-
-    // Update the internal buffer with the new samples
-    soundBuffer->m_impl->update(channelCount, sampleRate, channelMap);
-
-    return soundBuffer;
+    return base::makeOptional<SoundBuffer>(base::PassKey<SoundBuffer>{}, &samples, channelMap, sampleRate);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(
-    const base::I16*  samples,
-    base::U64         sampleCount,
-    unsigned int      channelCount,
-    unsigned int      sampleRate,
-    const ChannelMap& channelMap)
+base::Optional<SoundBuffer> SoundBuffer::loadFromSamples(const base::I16*   samples,
+                                                         const base::U64    sampleCount,
+                                                         const ChannelMap&  channelMap,
+                                                         const unsigned int sampleRate)
 {
-    return loadFromSamplesImpl(base::Vector<base::I16>(samples, samples + sampleCount), channelCount, sampleRate, channelMap);
+    return loadFromSamplesImpl(base::Vector<base::I16>(samples, samples + sampleCount), channelMap, sampleRate);
 }
 
 
@@ -205,11 +188,9 @@ Time SoundBuffer::getDuration() const
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr) :
-m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)))
+SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr, const ChannelMap& channelMap, unsigned int sampleRate) :
+m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)), channelMap, sampleRate)
 {
-    SFML_BASE_ASSERT(m_impl->sampleRate > 0u);
-    SFML_BASE_ASSERT(m_impl->channelMap.getSize() > 0u);
 }
 
 
@@ -223,7 +204,7 @@ base::Optional<SoundBuffer> SoundBuffer::initialize(InputSoundFile& file)
     if (file.read(samples.data(), sampleCount) != sampleCount)
         return base::nullOpt;
 
-    return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelCount(), file.getSampleRate(), file.getChannelMap());
+    return loadFromSamplesImpl(SFML_BASE_MOVE(samples), file.getChannelMap(), file.getSampleRate());
 }
 
 } // namespace sf

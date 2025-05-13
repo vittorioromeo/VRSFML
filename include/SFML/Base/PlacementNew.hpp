@@ -2,12 +2,6 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
-////////////////////////////////////////////////////////////
-// Headers
-////////////////////////////////////////////////////////////
-#include "SFML/Base/SizeT.hpp"
-
-
 namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
@@ -19,7 +13,7 @@ struct PNewMarker
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr void* operator new(sf::base::SizeT,
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr void* operator new(decltype(sizeof(int)),
                                                                                   sf::base::priv::PNewMarker,
                                                                                   void* ptr) noexcept
 {

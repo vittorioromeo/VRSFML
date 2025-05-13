@@ -8,13 +8,12 @@
 #include "SFML/Base/Launder.hpp"
 #include "SFML/Base/MaxAlignT.hpp"
 #include "SFML/Base/PlacementNew.hpp"
-#include "SFML/Base/SizeT.hpp"
 
 
 namespace sf::base
 {
 ////////////////////////////////////////////////////////////
-template <typename T, SizeT BufferSize>
+template <typename T, decltype(sizeof(int)) BufferSize>
 class InPlacePImpl
 {
 private:

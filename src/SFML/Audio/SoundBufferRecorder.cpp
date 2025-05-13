@@ -69,9 +69,8 @@ bool SoundBufferRecorder::onStop(CaptureDevice& captureDevice)
 
     m_impl->buffer = sf::SoundBuffer::loadFromSamples(m_impl->samples.data(),
                                                       m_impl->samples.size(),
-                                                      captureDevice.getChannelCount(),
-                                                      captureDevice.getSampleRate(),
-                                                      captureDevice.getChannelMap());
+                                                      captureDevice.getChannelMap(),
+                                                      captureDevice.getSampleRate());
 
     if (!m_impl->buffer.hasValue())
     {
