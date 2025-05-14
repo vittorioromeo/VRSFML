@@ -15,7 +15,7 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -89,7 +89,7 @@ int main()
 
     // Load the sounds used in the game
     const auto      ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    sf::AudioSample ballSound(playbackDevice, ballSoundBuffer, sf::AudioSettings{});
+    sf::Sound ballSound(playbackDevice, ballSoundBuffer, sf::AudioSettings{});
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();

@@ -5,7 +5,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/InputSoundFile.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
@@ -20,7 +20,7 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct MusicSource::Impl
+struct MusicReader::Impl
 {
     InputSoundFile       file;  //!< Input sound file
     std::recursive_mutex mutex; //!< Mutex protecting the data
@@ -32,26 +32,26 @@ struct MusicSource::Impl
 
 
 ////////////////////////////////////////////////////////////
-MusicSource::MusicSource(base::PassKey<MusicSource>&&, InputSoundFile&& file) :
+MusicReader::MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file) :
 m_impl(base::makeUnique<Impl>(SFML_BASE_MOVE(file)))
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicSource::~MusicSource() = default;
+MusicReader::~MusicReader() = default;
 
 
 ////////////////////////////////////////////////////////////
-MusicSource::MusicSource(MusicSource&&) noexcept = default;
+MusicReader::MusicReader(MusicReader&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-MusicSource& MusicSource::operator=(MusicSource&&) noexcept = default;
+MusicReader& MusicReader::operator=(MusicReader&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicSource> MusicSource::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+base::Optional<MusicReader> MusicReader::tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
                                                                    const char* const                errorContext)
 {
     if (!optFile.hasValue())
@@ -60,68 +60,68 @@ base::Optional<MusicSource> MusicSource::tryOpenFromInputSoundFile(base::Optiona
         return base::nullOpt;
     }
 
-    return base::makeOptional<MusicSource>(base::PassKey<MusicSource>{}, SFML_BASE_MOVE(*optFile));
+    return base::makeOptional<MusicReader>(base::PassKey<MusicReader>{}, SFML_BASE_MOVE(*optFile));
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicSource> MusicSource::openFromFile(const Path& filename)
+base::Optional<MusicReader> MusicReader::openFromFile(const Path& filename)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromFile(filename), "file");
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicSource> MusicSource::openFromMemory(const void* const data, const base::SizeT sizeInBytes)
+base::Optional<MusicReader> MusicReader::openFromMemory(const void* const data, const base::SizeT sizeInBytes)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromMemory(data, sizeInBytes), "memory");
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<MusicSource> MusicSource::openFromStream(InputStream& stream)
+base::Optional<MusicReader> MusicReader::openFromStream(InputStream& stream)
 {
     return tryOpenFromInputSoundFile(InputSoundFile::openFromStream(stream), "stream");
 }
 
 
 ////////////////////////////////////////////////////////////
-Time MusicSource::getDuration() const
+Time MusicReader::getDuration() const
 {
     return m_impl->file.getDuration();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int MusicSource::getChannelCount() const
+unsigned int MusicReader::getChannelCount() const
 {
     return m_impl->file.getChannelCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int MusicSource::getSampleRate() const
+unsigned int MusicReader::getSampleRate() const
 {
     return m_impl->file.getSampleRate();
 }
 
 
 ////////////////////////////////////////////////////////////
-ChannelMap MusicSource::getChannelMap() const
+ChannelMap MusicReader::getChannelMap() const
 {
     return m_impl->file.getChannelMap();
 }
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] base::U64 MusicSource::getSampleCount() const
+[[nodiscard]] base::U64 MusicReader::getSampleCount() const
 {
     return m_impl->file.getSampleCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-MusicSource::SeekAndReadResult MusicSource::seekAndRead(const base::U64  sampleOffset,
+MusicReader::SeekAndReadResult MusicReader::seekAndRead(const base::U64  sampleOffset,
                                                         base::I16* const samples,
                                                         const base::U64  maxCount)
 {

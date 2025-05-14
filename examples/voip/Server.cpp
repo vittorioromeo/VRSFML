@@ -3,7 +3,9 @@
 ////////////////////////////////////////////////////////////
 #include "Server.hpp"
 
+#include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 #include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/Network/IpAddressUtils.hpp"
@@ -42,33 +44,18 @@ public:
     /// Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    NetworkAudioStream() : m_listener(/* isBlocking */ true), m_client(/* isBlocking */ true)
+    NetworkAudioStream(sf::PlaybackDevice& playbackDevice) :
+    sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u},
+    m_listener(/* isBlocking */ true),
+    m_client(/* isBlocking */ true)
     {
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const override
-    {
-        return 1;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const override
-    {
-        return 44'100;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::ChannelMap getChannelMap() const override
-    {
-        return {sf::SoundChannel::Mono};
     }
 
     ////////////////////////////////////////////////////////////
     /// Run the server, stream audio data from the client
     ///
     ////////////////////////////////////////////////////////////
-    void start(sf::PlaybackDevice& playbackDevice, unsigned short port)
+    void start(unsigned short port)
     {
         if (!m_hasFinished)
         {
@@ -84,7 +71,7 @@ public:
                        << sf::endL;
 
             // Start playback
-            play(playbackDevice);
+            play();
 
             // Start receiving audio data
             receiveLoop();
@@ -92,7 +79,7 @@ public:
         else
         {
             // Start playback
-            play(playbackDevice);
+            play();
         }
     }
 
@@ -136,7 +123,7 @@ private:
     ////////////////////////////////////////////////////////////
     void onSeek(sf::Time timeOffset) override
     {
-        m_offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * getSampleRate() * getChannelCount() / 1000;
+        m_offset = static_cast<sf::base::SizeT>(timeOffset.asMilliseconds()) * 44'100 * 1 / 1000;
     }
 
     ////////////////////////////////////////////////////////////
@@ -208,11 +195,11 @@ private:
 void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
 {
     // Build an audio stream to play sound data as it is received through the network
-    NetworkAudioStream audioStream;
-    audioStream.start(playbackDevice, port);
+    NetworkAudioStream audioStream(playbackDevice);
+    audioStream.start(port);
 
     // Loop until the sound playback is finished
-    while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
+    while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
         sf::sleep(sf::milliseconds(100));
@@ -225,10 +212,10 @@ void doServer(sf::PlaybackDevice& playbackDevice, unsigned short port)
     sf::cIn().ignore(10'000, '\n');
 
     // Replay the sound (just to make sure replaying the received data is OK)
-    audioStream.play(playbackDevice);
+    audioStream.play();
 
     // Loop until the sound playback is finished
-    while (audioStream.getStatus() != sf::SoundStream::Status::Stopped)
+    while (audioStream.isPlaying())
     {
         // Leave some CPU time for other threads
         sf::sleep(sf::milliseconds(100));

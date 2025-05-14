@@ -4,10 +4,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ActiveMusic.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/Music.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
@@ -52,13 +52,13 @@ namespace
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-ActiveMusic::ActiveMusic(PlaybackDevice& playbackDevice, MusicSource& musicSource, const AudioSettings& audioSettings) :
-ActiveSoundStream(playbackDevice, musicSource.getChannelMap(), musicSource.getSampleRate()),
-m_loopSpan{0u, musicSource.getSampleCount()},
-m_musicSource(&musicSource),
+Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings) :
+SoundStream(playbackDevice, musicReader.getChannelMap(), musicReader.getSampleRate()),
+m_loopSpan{0u, musicReader.getSampleCount()},
+m_musicSource(&musicReader),
 m_sampleOffset{0u}
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(MusicSource, ActiveMusic, this, m_musicSource);
+    SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, this, m_musicSource);
 
     // TODO P0: needed???
     applyAudioSettings(audioSettings);
@@ -68,11 +68,11 @@ m_sampleOffset{0u}
 
 
 ////////////////////////////////////////////////////////////
-ActiveMusic::~ActiveMusic() = default;
+Music::~Music() = default;
 
 
 ////////////////////////////////////////////////////////////
-bool ActiveMusic::onGetData(ActiveSoundStream::Chunk& data)
+bool Music::onGetData(SoundStream::Chunk& data)
 {
     // Resize the internal buffer so that it can contain 1 second of audio samples
     m_samples.resize(getSampleRate() * getChannelCount());
@@ -81,7 +81,7 @@ bool ActiveMusic::onGetData(ActiveSoundStream::Chunk& data)
     const base::U64 loopEnd = m_loopSpan.offset + m_loopSpan.length;
 
     // If the loop end is enabled and imminent, request less data.
-    // This will trip an "onLoop()" call from the underlying ActiveSoundStream,
+    // This will trip an "onLoop()" call from the underlying SoundStream,
     // and we can then take action.
     if (isLooping() && (m_loopSpan.length != 0) && (m_sampleOffset <= loopEnd) && (m_sampleOffset + toFill > loopEnd))
         toFill = static_cast<base::SizeT>(loopEnd - m_sampleOffset);
@@ -102,15 +102,15 @@ bool ActiveMusic::onGetData(ActiveSoundStream::Chunk& data)
 
 
 ////////////////////////////////////////////////////////////
-void ActiveMusic::onSeek(const Time timeOffset)
+void Music::onSeek(const Time timeOffset)
 {
     m_sampleOffset = timeToSamples(getSampleRate(), getChannelCount(), timeOffset);
 }
 
 
 ////////////////////////////////////////////////////////////
-// Called by underlying ActiveSoundStream so we can determine where to loop.
-base::Optional<base::U64> ActiveMusic::onLoop()
+// Called by underlying SoundStream so we can determine where to loop.
+base::Optional<base::U64> Music::onLoop()
 {
     if (isLooping() && (m_loopSpan.length != 0) && (m_sampleOffset == m_loopSpan.offset + m_loopSpan.length))
     {
@@ -132,7 +132,7 @@ base::Optional<base::U64> ActiveMusic::onLoop()
 
 
 ////////////////////////////////////////////////////////////
-ActiveMusic::TimeSpan ActiveMusic::getLoopPoints() const
+Music::TimeSpan Music::getLoopPoints() const
 {
     const auto sampleRate   = getSampleRate();
     const auto channelCount = getChannelCount();
@@ -143,7 +143,7 @@ ActiveMusic::TimeSpan ActiveMusic::getLoopPoints() const
 
 
 ////////////////////////////////////////////////////////////
-void ActiveMusic::setLoopPoints(const TimeSpan timePoints)
+void Music::setLoopPoints(const TimeSpan timePoints)
 {
     const auto sampleRate   = getSampleRate();
     const auto channelCount = getChannelCount();
@@ -159,7 +159,7 @@ void ActiveMusic::setLoopPoints(const TimeSpan timePoints)
     // Check our state. This averts a divide-by-zero.
     if (fileChannelCount == 0u)
     {
-        priv::err() << "ActiveMusic is not in a valid state to assign Loop Points.";
+        priv::err() << "Music is not in a valid state to assign Loop Points.";
         return;
     }
 
@@ -214,21 +214,21 @@ void ActiveMusic::setLoopPoints(const TimeSpan timePoints)
 
 
 ////////////////////////////////////////////////////////////
-unsigned int ActiveMusic::getChannelCount() const
+unsigned int Music::getChannelCount() const
 {
     return m_musicSource->getChannelCount();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int ActiveMusic::getSampleRate() const
+unsigned int Music::getSampleRate() const
 {
     return m_musicSource->getSampleRate();
 }
 
 
 ////////////////////////////////////////////////////////////
-sf::ChannelMap ActiveMusic::getChannelMap() const
+sf::ChannelMap Music::getChannelMap() const
 {
     return m_musicSource->getChannelMap();
 }

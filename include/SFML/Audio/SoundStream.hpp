@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/ActiveSoundSource.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -33,7 +33,7 @@ namespace sf
 /// \brief Abstract base class for streamed audio sources
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API ActiveSoundStream : public ActiveSoundSource
+class SFML_AUDIO_API SoundStream : public priv::MiniaudioSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -50,31 +50,31 @@ public:
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~ActiveSoundStream() override;
+    ~SoundStream() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundStream(const ActiveSoundStream&) = delete;
+    SoundStream(const SoundStream&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundStream& operator=(const ActiveSoundStream&) = delete;
+    SoundStream& operator=(const SoundStream&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundStream(ActiveSoundStream&&) = delete;
+    SoundStream(SoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundStream& operator=(ActiveSoundStream&&) = delete;
+    SoundStream& operator=(SoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the stream
@@ -98,7 +98,7 @@ protected:
     /// This constructor is only meant to be called by derived classes.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ActiveSoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, unsigned int sampleRate);
+    [[nodiscard]] explicit SoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, unsigned int sampleRate);
 
     ////////////////////////////////////////////////////////////
     /// \brief Request a new chunk of audio samples from the stream source
@@ -162,7 +162,7 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::ActiveSoundStream
+/// \class sf::SoundStream
 /// \ingroup audio
 ///
 /// Unlike audio buffers (see `sf::SoundBuffer`), audio streams
@@ -176,7 +176,7 @@ private:
 /// or files that would take a lot of time to be received
 /// (sounds played over the network).
 ///
-/// `sf::ActiveSoundStream` is a base class that doesn't care about the
+/// `sf::SoundStream` is a base class that doesn't care about the
 /// stream source, which is left to the derived class. SFML provides
 /// a built-in specialization for big files (see `sf::Music`).
 /// No network stream source is provided, but you can write your own
@@ -186,7 +186,7 @@ private:
 /// \li `onGetData` fills a new chunk of audio data to be played
 /// \li `onSeek` changes the current playing position in the source
 ///
-/// It is important to note that each ActiveSoundStream is played in its
+/// It is important to note that each SoundStream is played in its
 /// own separate thread, so that the streaming loop doesn't block the
 /// rest of the program. In particular, the `onGetData` and `onSeek`
 /// virtual functions may sometimes be called from this separate thread.
@@ -195,7 +195,7 @@ private:
 ///
 /// Usage example:
 /// \code
-/// class CustomStream : public sf::ActiveSoundStream
+/// class CustomStream : public sf::SoundStream
 /// {
 /// public:
 ///
