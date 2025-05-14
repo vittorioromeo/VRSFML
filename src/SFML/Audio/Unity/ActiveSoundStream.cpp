@@ -6,11 +6,10 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/ActiveSoundSource.hpp"
 #include "SFML/Audio/ActiveSoundStream.hpp"
-#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
-#include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundBase.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
@@ -31,40 +30,39 @@ namespace sf
 struct ActiveSoundStream::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl(PlaybackDevice&    playbackDevice,
+    explicit Impl(PlaybackDevice&    thePlaybackDevice,
                   ActiveSoundStream& theOwner,
-                  const ChannelMap&  channelMap, // NOLINT(modernize-pass-by-value)
-                  const unsigned int sampleRate) :
-    soundBase(playbackDevice, &Impl::vtable),
+                  const ChannelMap&  theChannelMap, // NOLINT(modernize-pass-by-value)
+                  const unsigned int theSampleRate) :
+    soundBase(thePlaybackDevice, &Impl::vtable, channelMap),
     owner(theOwner),
-    channelMap(channelMap),
-    sampleRate(sampleRate)
+    channelMap(theChannelMap),
+    sampleRate(theSampleRate)
     {
         if (!soundBase.initialize(&onEnd))
         {
-            priv::err() << "Failed to initialize audio sample::Impl";
+            priv::err() << "Failed to initialize sound base";
             return;
         }
-
-        // TODO P0: setchannelmap?
-        for (const SoundChannel channel : channelMap)
-            soundBase.addToSoundChannelMap(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
     }
 
     ////////////////////////////////////////////////////////////
-    static void onEnd(void* userData, ma_sound* soundPtr)
+    static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
-        auto& impl     = *static_cast<Impl*>(userData);
-        impl.streaming = true;
-        impl.playing   = false;
+        auto& impl           = *static_cast<Impl*>(userData);
+        impl.streaming       = true;
+        impl.owner.m_playing = false;
 
         // Seek back to the start of the sound when it finishes playing
-        if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
+        if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result read(ma_data_source* dataSource, void* framesOut, ma_uint64 frameCount, ma_uint64* framesRead)
+    [[nodiscard]] static ma_result read(ma_data_source* const dataSource,
+                                        void* const           framesOut,
+                                        const ma_uint64       frameCount,
+                                        ma_uint64* const      framesRead)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -128,7 +126,7 @@ struct ActiveSoundStream::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result seek(ma_data_source* dataSource, ma_uint64 frameIndex)
+    [[nodiscard]] static ma_result seek(ma_data_source* const dataSource, const ma_uint64 frameIndex)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -140,7 +138,7 @@ struct ActiveSoundStream::Impl
 
         impl.streaming = true;
         impl.sampleBuffer.clear();
-        impl.sampleBufferCursor = 0;
+        impl.sampleBufferCursor = 0u;
         impl.samplesProcessed   = frameIndex * channelCount;
 
         const Time offset = seconds(static_cast<float>(frameIndex) / static_cast<float>(sampleRate));
@@ -175,7 +173,7 @@ struct ActiveSoundStream::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result getCursor(ma_data_source* dataSource, ma_uint64* cursor)
+    [[nodiscard]] static ma_result getCursor(ma_data_source* const dataSource, ma_uint64* const cursor)
     {
         auto& impl = *static_cast<Impl*>(dataSource);
 
@@ -183,19 +181,18 @@ struct ActiveSoundStream::Impl
         SFML_BASE_ASSERT(channelCount > 0u);
 
         *cursor = impl.samplesProcessed / channelCount;
-
         return MA_SUCCESS;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result getLength(ma_data_source*, ma_uint64* length)
+    [[nodiscard]] static ma_result getLength(ma_data_source* const, ma_uint64* const length)
     {
         *length = 0;
         return MA_NOT_IMPLEMENTED;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static ma_result setLooping(ma_data_source* /* dataSource */, ma_bool32 /* looping */)
+    [[nodiscard]] static ma_result setLooping(ma_data_source* const /* dataSource */, const ma_bool32 /* looping */)
     {
         return MA_SUCCESS;
     }
@@ -203,7 +200,7 @@ struct ActiveSoundStream::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0};
+    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0u};
 
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
@@ -214,57 +211,21 @@ struct ActiveSoundStream::Impl
     base::SizeT             sampleBufferCursor{}; //!< The current read position in the temporary sample buffer
     base::U64               samplesProcessed{};   //!< Number of samples processed since beginning of the stream
     bool                    streaming{true};      //!< `true` if we are still streaming samples from the source
-    bool                    playing{false};       //!< Whether the sound is playing
 };
 
 
 ////////////////////////////////////////////////////////////
+// TODO P0: take audiosettings?
 ActiveSoundStream::ActiveSoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, const unsigned int sampleRate) :
 m_impl(playbackDevice, *this, channelMap, sampleRate)
 {
     SFML_BASE_ASSERT(channelMap.getSize() > 0u);
     SFML_BASE_ASSERT(sampleRate > 0u);
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("start playing audio stream", result);
-        return;
-    }
-
-    m_impl->playing = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 ActiveSoundStream::~ActiveSoundStream() = default;
-
-
-////////////////////////////////////////////////////////////
-bool ActiveSoundStream::resume()
-{
-    if (m_impl->playing)
-        return true;
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-        return priv::MiniaudioUtils::fail("start playing audio stream", result);
-
-    m_impl->playing = true;
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////
-bool ActiveSoundStream::pause()
-{
-    if (!m_impl->playing)
-        return true;
-
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-        return priv::MiniaudioUtils::fail("stop playing audio stream", result);
-
-    m_impl->playing = false;
-    return true;
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -277,7 +238,7 @@ void ActiveSoundStream::setPlayingOffset(Time playingOffset)
     SFML_BASE_ASSERT(sound.pDataSource != nullptr);
     SFML_BASE_ASSERT(sound.engineNode.pEngine != nullptr);
 
-    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase.getSound(), playingOffset);
+    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase.getSound(), playingOffset).value();
 
     m_impl->streaming = true;
     m_impl->sampleBuffer.clear();
@@ -285,20 +246,6 @@ void ActiveSoundStream::setPlayingOffset(Time playingOffset)
     m_impl->samplesProcessed   = frameIndex * m_impl->channelMap.getSize();
 
     onSeek(seconds(static_cast<float>(frameIndex) / static_cast<float>(m_impl->sampleRate)));
-}
-
-
-////////////////////////////////////////////////////////////
-Time ActiveSoundStream::getPlayingOffset() const
-{
-    return priv::MiniaudioUtils::getPlayingOffset(getSoundBase().getSound());
-}
-
-
-////////////////////////////////////////////////////////////
-bool ActiveSoundStream::isPlaying() const
-{
-    return m_impl->playing;
 }
 
 

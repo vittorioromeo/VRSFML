@@ -177,4 +177,108 @@ template <typename T>
     return currWritePtr;
 }
 
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_ACCESSORS(vectorType)                                                    \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept             \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(i < size());                                                                                \
+        return *(data() + i);                                                                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(i < size());                                                                                \
+        return *(data() + i);                                                                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* begin() noexcept                               \
+    {                                                                                                                \
+        return data();                                                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* begin() const noexcept                   \
+    {                                                                                                                \
+        return data();                                                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* end() noexcept                                 \
+    {                                                                                                                \
+        return data() + size();                                                                                      \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* end() const noexcept                     \
+    {                                                                                                                \
+        return data() + size();                                                                                      \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cbegin() const noexcept                  \
+    {                                                                                                                \
+        return data();                                                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept                    \
+    {                                                                                                                \
+        return data() + size();                                                                                      \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept                               \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(size() > 0u);                                                                               \
+        return *data();                                                                                              \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept                   \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(size() > 0u);                                                                               \
+        return *data();                                                                                              \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept                                \
+    {                                                                                                                \
+        return this->operator[](size() - 1u);                                                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept                    \
+    {                                                                                                                \
+        return this->operator[](size() - 1u);                                                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept                                         \
+    {                                                                                                                \
+        return size() == 0u;                                                                                         \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard]] bool operator==(const vectorType& rhs) const                                                       \
+    {                                                                                                                \
+        if (this == &rhs)                                                                                            \
+            return true;                                                                                             \
+                                                                                                                     \
+        const SizeT lhsSize = size();                                                                                \
+                                                                                                                     \
+        if (lhsSize != rhs.size())                                                                                   \
+            return false;                                                                                            \
+                                                                                                                     \
+        for (SizeT i = 0u; i < lhsSize; ++i)                                                                         \
+            if (operator[](i) != rhs.operator[](i))                                                                  \
+                return false;                                                                                        \
+                                                                                                                     \
+        return true;                                                                                                 \
+    }                                                                                                                \
+                                                                                                                     \
+    [[nodiscard]] bool operator!=(const vectorType& rhs) const                                                       \
+    {                                                                                                                \
+        return !(*this == rhs);                                                                                      \
+    }                                                                                                                \
+                                                                                                                     \
+    /* NOLINTNEXTLINE(bugprone-macro-parentheses) */                                                                 \
+    [[gnu::always_inline]] friend void swap(vectorType& lhs, vectorType& rhs) noexcept                               \
+    {                                                                                                                \
+        lhs.swap(rhs);                                                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    static_assert(true)
+
+
 } // namespace sf::base::priv::VectorUtils

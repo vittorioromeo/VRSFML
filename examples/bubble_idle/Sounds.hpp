@@ -87,7 +87,7 @@ struct Sounds
     static inline constexpr sf::base::SizeT maxSounds = 256u;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::base::Optional<sf::AudioSample>, maxSounds> soundsBeingPlayed;
+    sf::base::InPlaceVector<sf::AudioSample, maxSounds> soundsBeingPlayed;
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -191,13 +191,10 @@ struct Sounds
     ////////////////////////////////////////////////////////////
     void stopPlayingAll(const LoadedSound& ls)
     {
-        for (sf::base::Optional<sf::AudioSample>& sound : soundsBeingPlayed)
+        for (sf::AudioSample& sound : soundsBeingPlayed)
         {
-            if (!sound.hasValue())
-                continue;
-
-            if (sound->isPlaying() && &sound->getBuffer() == &ls.buffer)
-                sound.reset();
+            if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
+                sound.stop();
         }
     }
 
@@ -206,12 +203,9 @@ struct Sounds
     {
         sf::base::SizeT acc = 0u;
 
-        for (const sf::base::Optional<sf::AudioSample>& sound : soundsBeingPlayed)
+        for (const sf::AudioSample& sound : soundsBeingPlayed)
         {
-            if (!sound.hasValue())
-                continue;
-
-            if (sound->isPlaying() && &sound->getBuffer() == &ls.buffer)
+            if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 ++acc;
         }
 
@@ -229,23 +223,27 @@ struct Sounds
         auto* const it = sf::base::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
-            [](const sf::base::Optional<sf::AudioSample>& sound) { return !sound.hasValue() || !sound->isPlaying(); });
+            [](const sf::AudioSample& sound) { return !sound.isPlaying(); });
 
         if (it != soundsBeingPlayed.end())
         {
-            it->reset();
-            it->emplace(playbackDevice, ls.buffer, ls.settings);
+            SFML_BASE_ASSERT(&it->getPlaybackDevice() == &playbackDevice);
+
+            if (&it->getBuffer() == &ls.buffer)
+            {
+                it->applyAudioSettings(ls.settings);
+                it->play();
+                return true;
+            }
+
+            soundsBeingPlayed.reEmplaceByIterator(it, playbackDevice, ls.buffer, ls.settings).play();
             return true;
         }
 
         if (soundsBeingPlayed.size() >= maxSounds)
             return false;
 
-        // TODO P2 (lib): to sf base, also not needed
-        // std::erase_if(soundsBeingPlayed,
-        //               [](const sf::Sound& sound) { return sound.getStatus() == sf::Sound::Status::Stopped; });
-
-        soundsBeingPlayed.emplaceBack(sf::base::inPlace, playbackDevice, ls.buffer, ls.settings);
+        soundsBeingPlayed.emplaceBack(playbackDevice, ls.buffer, ls.settings).play();
         return true;
     }
 };

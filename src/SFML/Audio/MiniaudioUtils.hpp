@@ -5,14 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
 
-#include "SFML/System/LifetimeDependant.hpp"
-
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Optional.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -24,55 +20,17 @@ using ma_sound_end_proc = void (*)(void*, ma_sound*);
 
 namespace sf
 {
-class EffectProcessor;
 class Time;
 } // namespace sf
 
+
 namespace sf::priv::MiniaudioUtils
 {
-struct SoundBase
-{
-    explicit SoundBase(PlaybackDevice& thePlaybackDevice, const void* dataSourceVTable);
-
-    ~SoundBase();
-
-    SoundBase(const SoundBase&) = delete;
-    SoundBase(SoundBase&&)      = delete;
-
-    SoundBase& operator=(const SoundBase&) = delete;
-    SoundBase& operator=(SoundBase&&)      = delete;
-
-    [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
-    void               deinitialize();
-
-    bool connectEffect(bool connect);
-
-    ma_sound& getSound();
-
-    void clearSoundChannelMap();
-    void addToSoundChannelMap(base::U8 maChannel);
-    void refreshSoundChannelMap();
-
-    void setAndConnectEffectProcessor(const EffectProcessor& effectProcessor);
-
-    void applyAudioSettings(const AudioSettings& audioSettings);
-
-    ////////////////////////////////////////////////////////////
-    // Member data
-    ////////////////////////////////////////////////////////////
-    struct Impl;
-    base::InPlacePImpl<Impl, 2048> impl; //!< Implementation details
-
-    ////////////////////////////////////////////////////////////
-    // Lifetime tracking
-    ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(PlaybackDevice);
-};
-
-[[nodiscard]] base::U8     soundChannelToMiniaudioChannel(SoundChannel soundChannel);
-[[nodiscard]] SoundChannel miniaudioChannelToSoundChannel(base::U8 soundChannel);
-[[nodiscard]] Time         getPlayingOffset(ma_sound& sound);
-[[nodiscard]] base::U64    getFrameIndex(ma_sound& sound, Time timeOffset);
-[[gnu::cold]] bool         fail(const char* what, int maResult);
+////////////////////////////////////////////////////////////
+[[nodiscard]] base::U8                  soundChannelToMiniaudioChannel(SoundChannel soundChannel);
+[[nodiscard]] SoundChannel              miniaudioChannelToSoundChannel(base::U8 soundChannel);
+[[nodiscard]] base::Optional<Time>      getPlayingOffset(ma_sound& sound);
+[[nodiscard]] base::Optional<base::U64> getFrameIndex(ma_sound& sound, Time timeOffset);
+[[gnu::cold]] bool                      fail(const char* what, int maResult);
 
 } // namespace sf::priv::MiniaudioUtils
