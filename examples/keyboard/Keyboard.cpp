@@ -1032,32 +1032,6 @@ sf::String textEventDescription(const sf::Event::TextEntered& textEntered)
 } // namespace
 
 
-// TODO P0:
-class ReplayableSound
-{
-public:
-    ReplayableSound(const sf::SoundBuffer& buffer) : m_buffer(buffer)
-    {
-    }
-
-    void play(sf::PlaybackDevice& playbackDevice)
-    {
-        if (!m_sample.hasValue())
-        {
-            m_sample.emplace(playbackDevice, m_buffer, sf::AudioSettings{});
-            return;
-        }
-
-        m_sample->setPlayingOffset(sf::Time{});
-        m_sample->resume();
-    }
-
-private:
-    const sf::SoundBuffer&              m_buffer;
-    sf::base::Optional<sf::AudioSample> m_sample;
-};
-
-
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -1088,9 +1062,9 @@ int main()
     const auto releasedSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
 
     // Create sound objects to play them upon keyboard events
-    ReplayableSound errorSound(errorSoundBuffer);
-    ReplayableSound pressedSound(pressedSoundBuffer);
-    ReplayableSound releasedSound(releasedSoundBuffer);
+    sf::AudioSample errorSound(playbackDevice, errorSoundBuffer, sf::AudioSettings{});
+    sf::AudioSample pressedSound(playbackDevice, pressedSoundBuffer, sf::AudioSettings{});
+    sf::AudioSample releasedSound(playbackDevice, releasedSoundBuffer, sf::AudioSettings{});
 
     // Open the font used for all texts
     const auto font = sf::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();
@@ -1129,12 +1103,12 @@ int main()
                 if (somethingIsOdd(*keyPressed))
                 {
                     keyPressedText.shine(sf::Color::Red);
-                    errorSound.play(playbackDevice);
+                    errorSound.play();
                 }
                 else
                 {
                     keyPressedText.shine(sf::Color::Green);
-                    pressedSound.play(playbackDevice);
+                    pressedSound.play();
                 }
             }
             if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>())
@@ -1143,12 +1117,12 @@ int main()
                 if (somethingIsOdd(*keyReleased))
                 {
                     keyReleasedText.shine(sf::Color::Red);
-                    errorSound.play(playbackDevice);
+                    errorSound.play();
                 }
                 else
                 {
                     keyReleasedText.shine(sf::Color::Green);
-                    releasedSound.play(playbackDevice);
+                    releasedSound.play();
                 }
             }
             if (const auto* textEntered = event->getIf<sf::Event::TextEntered>())

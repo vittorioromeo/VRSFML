@@ -14,13 +14,9 @@
 #include "SFML/Audio/Unity/AudioSample.cpp"
 #include "SFML/Audio/Unity/AudioSettings.cpp"
 #include "SFML/Audio/Unity/CaptureDevice.cpp"
-#include "SFML/Audio/Unity/InactiveSoundSource.cpp"
 #include "SFML/Audio/Unity/Miniaudio.cpp"
 #include "SFML/Audio/Unity/MiniaudioUtils.cpp"
 #include "SFML/Audio/Unity/PlaybackDevice.cpp"
-#include "SFML/Audio/Unity/Sound.cpp"
 #include "SFML/Audio/Unity/SoundFileReaderWav.cpp"
 #include "SFML/Audio/Unity/SoundRecorder.cpp"
-#include "SFML/Audio/Unity/SoundSource.cpp"
-#include "SFML/Audio/Unity/SoundStream.cpp"
 // NOLINTEND(bugprone-suspicious-include)

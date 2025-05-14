@@ -85,6 +85,8 @@ void Text::setFont(const Font& font)
 
     m_font               = &font;
     m_geometryNeedUpdate = true;
+
+    SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_font);
 }
 
 

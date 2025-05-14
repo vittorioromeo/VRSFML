@@ -61,7 +61,7 @@ m_sampleOffset{0u}
     SFML_UPDATE_LIFETIME_DEPENDANT(MusicSource, ActiveMusic, this, m_musicSource);
 
     // TODO P0: needed???
-    applySettings(audioSettings);
+    applyAudioSettings(audioSettings);
     setEffectProcessor(getEffectProcessor());
     setPlayingOffset(getPlayingOffset());
 }

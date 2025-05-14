@@ -8,7 +8,6 @@
 #include "SFML/Audio/Export.hpp"
 
 #include "SFML/Audio/ActiveSoundSource.hpp"
-#include "SFML/Audio/ChannelMap.hpp"
 
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
@@ -21,16 +20,11 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
+class ChannelMap;
 class EffectProcessor;
 class PlaybackDevice;
 class Time;
 } // namespace sf
-
-
-namespace sf::priv
-{
-struct SoundImplUtils;
-} // namespace sf::priv
 
 
 namespace sf
@@ -83,39 +77,6 @@ public:
     ActiveSoundStream& operator=(ActiveSoundStream&&) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Start or resume playing the audio stream
-    ///
-    /// This function starts the stream if it was stopped, resumes
-    /// it if it was paused, and restarts it from the beginning if
-    /// it was already playing.
-    /// This function uses its own thread so that it doesn't block
-    /// the rest of the program while the stream is played.
-    /// ActiveActive
-    /// \see `pause`, `stop`
-    ///
-    ////////////////////////////////////////////////////////////
-    bool resume() override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Pause the audio stream
-    ///
-    /// This function pauses the stream if it was playing,
-    /// otherwise (stream already paused or stopped) it has no effect.
-    ///
-    /// \see `play`, `stop`
-    ///
-    ////////////////////////////////////////////////////////////
-    bool pause() override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current status of the sound (stopped, paused, playing)
-    ///
-    /// \return Current status of the sound
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isPlaying() const override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the stream
     ///
     /// The playing position can be changed when the stream is
@@ -129,16 +90,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     void setPlayingOffset(Time playingOffset) override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current playing position of the stream
-    ///
-    /// \return Current playing position, from the beginning of the stream
-    ///
-    /// \see `setPlayingOffset`
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const override;
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -192,8 +143,6 @@ protected:
     [[nodiscard]] virtual base::Optional<base::U64> onLoop();
 
 private:
-    friend priv::SoundImplUtils;
-
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
     ///

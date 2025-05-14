@@ -27,7 +27,6 @@
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSample.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -44,13 +43,12 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
-
-#include <iostream>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -436,8 +434,8 @@ private:
     sf::base::InPlaceVector<sf::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::base::Optional<sf::AudioSample>, 32> m_activeSounds;
-    sf::base::Optional<sf::ActiveMusic>                              m_activeMusic;
+    sf::base::InPlaceVector<sf::AudioSample, 32> m_activeSounds;
+    sf::base::Optional<sf::ActiveMusic>          m_activeMusic;
 
     ////////////////////////////////////////////////////////////
     void refreshPlaybackDevices()
@@ -488,17 +486,18 @@ public:
                 auto* const it = sf::base::findIf( //
                     m_activeSounds.begin(),
                     m_activeSounds.end(),
-                    [](const sf::base::Optional<sf::AudioSample>& sound)
-                { return !sound.hasValue() || !sound->isPlaying(); });
+                    [](const sf::AudioSample& sound) { return !sound.isPlaying(); });
 
                 if (it != m_activeSounds.end())
                 {
-                    it->reset();
-                    it->emplace(playbackDevice, m_sbByteMeow, sf::AudioSettings{});
+                    if (&it->getPlaybackDevice() == &playbackDevice)
+                        it->play();
+                    else
+                        m_activeSounds.reEmplaceByIterator(it, playbackDevice, m_sbByteMeow, sf::AudioSettings{}).play();
                 }
 
                 if (m_activeSounds.size() < 32u)
-                    m_activeSounds.emplaceBack(sf::base::inPlace, playbackDevice, m_sbByteMeow, sf::AudioSettings{});
+                    m_activeSounds.emplaceBack(playbackDevice, m_sbByteMeow, sf::AudioSettings{}).play();
             }
 
             ImGui::SameLine();

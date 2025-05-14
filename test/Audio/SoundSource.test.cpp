@@ -1,6 +1,6 @@
-#include "SFML/Audio/SoundSource.hpp"
-
+#include "SFML/Audio/ActiveSoundSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundBase.hpp"
 
 #include "SFML/System/Time.hpp"
 
@@ -15,42 +15,20 @@
 
 namespace
 {
-class SoundSource : public sf::SoundSource
+////////////////////////////////////////////////////////////
+class TestSoundSource : public sf::ActiveSoundSource
 {
-    void play(sf::PlaybackDevice&) override
-    {
-    }
-
-    void pause() override
-    {
-    }
-
-    void stop() override
-    {
-    }
-
-    [[nodiscard]] void* getSound() const override
-    {
-        return {};
-    }
-
-    void setPlayingOffset(sf::Time playingOffset) override
-    {
-        m_playingOffset = playingOffset;
-    }
-
-    [[nodiscard]] sf::Time getPlayingOffset() const override
-    {
-        return m_playingOffset;
-    }
-
-    sf::Time m_playingOffset;
-
 public:
-    [[nodiscard]] Status getStatus() const override
+    void setPlayingOffset(sf::Time) override
     {
-        return {};
     }
+
+    [[nodiscard]] sf::priv::MiniaudioUtils::SoundBase& getSoundBase() const override
+    {
+        return soundBase;
+    }
+
+    sf::priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 };
 
 } // namespace
@@ -74,40 +52,40 @@ public:
     CHECK((xSoundSource).getMinGain() == 0);                              \
     CHECK((xSoundSource).getMaxGain() == 1.f);                            \
     CHECK((xSoundSource).getAttenuation() == 1.f);                        \
-    CHECK((xSoundSource).getStatus() == sf::SoundSource::Status::Stopped);
+    CHECK((xSoundSource).getStatus() == sf::ActiveSoundSource::Status::Stopped);
 
-TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
+TEST_CASE("[Audio] sf::ActiveSoundSource" * doctest::skip(skipAudioDeviceTests))
 {
     SECTION("Type traits")
     {
-        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::SoundSource));
-        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::SoundSource));
-        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::SoundSource));
-        STATIC_CHECK(!SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::SoundSource));
-        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::SoundSource));
-        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::SoundSource));
-        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::SoundSource));
+        STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::ActiveSoundSource));
+        STATIC_CHECK(!SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::ActiveSoundSource));
+        STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::ActiveSoundSource));
+        STATIC_CHECK(!SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::ActiveSoundSource));
+        STATIC_CHECK(SFML_BASE_IS_MOVE_ASSIGNABLE(sf::ActiveSoundSource));
+        STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::ActiveSoundSource));
+        STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::ActiveSoundSource));
     }
 
     SECTION("Construction")
     {
-        const SoundSource soundSource;
+        const TestSoundSource soundSource;
         SFML_TEST_CHECK_DEFAULT_VALUES(soundSource);
     }
 
     SECTION("Copy semantics")
     {
-        const SoundSource soundSource;
+        const TestSoundSource soundSource;
 
         SECTION("Construction")
         {
-            const SoundSource soundSourceCopy(soundSource); // NOLINT(performance-unnecessary-copy-initialization)
+            const TestSoundSource soundSourceCopy(soundSource); // NOLINT(performance-unnecessary-copy-initialization)
             SFML_TEST_CHECK_DEFAULT_VALUES(soundSourceCopy);
         }
 
         SECTION("Assignment")
         {
-            SoundSource soundSourceCopy;
+            TestSoundSource soundSourceCopy;
             soundSourceCopy = soundSource;
             SFML_TEST_CHECK_DEFAULT_VALUES(soundSourceCopy);
         }
@@ -115,14 +93,14 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get pitch")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
         soundSource.setPitch(42.f);
         CHECK(soundSource.getPitch() == 42.f);
     }
 
     SECTION("Set/get pan")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setPan(1.f);
         CHECK(soundSource.getPan() == 1.f);
@@ -130,7 +108,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get volume")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setVolume(0.f);
         CHECK(soundSource.getVolume() == 0.f);
@@ -144,7 +122,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get spatialization enabled")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setSpatializationEnabled(true);
         CHECK(soundSource.isSpatializationEnabled());
@@ -152,7 +130,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get position")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setPosition({1, 2, 3});
         CHECK(soundSource.getPosition() == sf::Vec3f{1, 2, 3});
@@ -160,7 +138,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get direction")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setDirection({4, 5, 6});
         CHECK(soundSource.getDirection() == sf::Vec3f{4, 5, 6});
@@ -168,7 +146,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get cone")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setCone({sf::radians(1), sf::radians(2), 3});
         CHECK(soundSource.getCone().innerAngle == sf::radians(1));
@@ -178,7 +156,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get velocity")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setVelocity({7, 8, 9});
         CHECK(soundSource.getVelocity() == sf::Vec3f{7, 8, 9});
@@ -186,7 +164,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get doppler factor")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setDopplerFactor(1);
         CHECK(soundSource.getDopplerFactor() == 1);
@@ -194,7 +172,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get directional attenuation factor")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setDirectionalAttenuationFactor(1);
         CHECK(soundSource.getDirectionalAttenuationFactor() == 1);
@@ -202,7 +180,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get relative to listener")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setRelativeToListener(true);
         CHECK(soundSource.isRelativeToListener());
@@ -210,7 +188,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get min distance")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setMinDistance(12.34f);
         CHECK(soundSource.getMinDistance() == 12.34f);
@@ -218,7 +196,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get max distance")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setMaxDistance(12.34f);
         CHECK(soundSource.getMaxDistance() == 12.34f);
@@ -226,7 +204,7 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get min gain")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setMinGain(12.34f);
         CHECK(soundSource.getMinGain() == 12.34f);
@@ -234,14 +212,14 @@ TEST_CASE("[Audio] sf::SoundSource" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Set/get max gain")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
         soundSource.setMaxGain(12.34f);
         CHECK(soundSource.getMaxGain() == 12.34f);
     }
 
     SECTION("Set/get attenuation")
     {
-        SoundSource soundSource;
+        TestSoundSource soundSource;
 
         soundSource.setAttenuation(10);
         CHECK(soundSource.getAttenuation() == 10);

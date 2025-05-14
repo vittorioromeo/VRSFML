@@ -18,11 +18,13 @@
 #include "SFML/Audio/ActiveSoundStream.hpp"
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/Listener.hpp"
 #include "SFML/Audio/MusicSource.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/SoundChannel.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -136,12 +138,14 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.emplace(playbackDevice,
-                        musicSource,
-                        sf::AudioSettings{
-                            .rollOff = 0.04f,
-                            .looping = true,
-                        });
+        m_music
+            .emplace(playbackDevice,
+                     musicSource,
+                     sf::AudioSettings{
+                         .rollOff = 0.04f,
+                         .looping = true,
+                     })
+            .play();
     }
 
     void stop() override
@@ -199,14 +203,16 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.emplace(playbackDevice,
-                        musicSource,
-                        sf::AudioSettings{
-                            .pitch   = m_pitch,
-                            .volume  = m_volume / 100.f,
-                            .rollOff = 0.f,
-                            .looping = true,
-                        });
+        m_music
+            .emplace(playbackDevice,
+                     musicSource,
+                     sf::AudioSettings{
+                         .pitch   = m_pitch,
+                         .volume  = m_volume / 100.f,
+                         .rollOff = 0.f,
+                         .looping = true,
+                     })
+            .play();
     }
 
     void stop() override
@@ -292,14 +298,16 @@ public:
         makeCone(m_soundConeOuter, outerConeAngle);
         makeCone(m_soundConeInner, innerConeAngle);
 
-        m_music.emplace(playbackDevice,
-                        musicSource,
-                        sf::AudioSettings{
-                            .cone      = {innerConeAngle, outerConeAngle, 0.f},
-                            .direction = {0.f, 1.f, 0.f},
-                            .rollOff   = m_attenuation,
-                            .looping   = true,
-                        });
+        m_music
+            .emplace(playbackDevice,
+                     musicSource,
+                     sf::AudioSettings{
+                         .cone      = {innerConeAngle, outerConeAngle, 0.f},
+                         .direction = {0.f, 1.f, 0.f},
+                         .rollOff   = m_attenuation,
+                         .looping   = true,
+                     })
+            .play();
     }
 
     void stop() override
@@ -447,7 +455,7 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate);
+        m_toneSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
     }
 
     void stop() override
@@ -576,7 +584,7 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate);
+        m_dopplerSoundStream.emplace(*this, playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, sampleRate).play();
     }
 
     void stop() override
@@ -641,12 +649,14 @@ public:
         if (!playbackDevice.updateListener(m_listener))
             sf::cErr() << "Failed to update listener\n";
 
-        m_music.emplace(playbackDevice,
-                        musicSource,
-                        sf::AudioSettings{
-                            .rollOff = 0.f,
-                            .looping = true,
-                        });
+        m_music
+            .emplace(playbackDevice,
+                     musicSource,
+                     sf::AudioSettings{
+                         .rollOff = 0.f,
+                         .looping = true,
+                     })
+            .play();
     }
 
     void stop() override
@@ -1221,7 +1231,6 @@ int main()
                     // F1 key: change playback device
                     case sf::Keyboard::Key::F1:
                     {
-                        /*
                         sf::base::SizeT newPlaybackDeviceIndex{};
 
                         // We need to query the list every time we want to change
@@ -1231,36 +1240,36 @@ int main()
                         // TODO P1: cleanup
                         if (playbackDeviceHandles != newPlaybackDeviceHandles)
                         {
-                            sf::base::Vector<sf::PlaybackDevice> newPlaybackDevices;
-                            newPlaybackDevices.reserve(newPlaybackDeviceHandles.size());
+                            effects[current]->stop();
+                            playbackDevices.clear();
 
                             for (const sf::PlaybackDeviceHandle& deviceHandle : newPlaybackDeviceHandles)
                             {
-                                newPlaybackDevices.emplaceBack(deviceHandle);
+                                playbackDevices.emplaceBack(deviceHandle);
 
                                 if (deviceHandle.isDefault())
-                                    newPlaybackDeviceIndex = newPlaybackDevices.size() - 1;
+                                    newPlaybackDeviceIndex = playbackDevices.size() - 1;
                             }
 
-                            sf::PlaybackDevice& newPlaybackDevice = newPlaybackDevices[newPlaybackDeviceIndex];
+                            sf::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
 
-                            getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
-                            effects[current]->start(newPlaybackDevice);
+                            effects[current]->stop();
+                            effects[current]->start(newPlaybackDevice, musicSource);
 
                             playbackDeviceHandles = SFML_BASE_MOVE(newPlaybackDeviceHandles);
-                            playbackDevices       = SFML_BASE_MOVE(newPlaybackDevices);
                         }
                         else
                         {
                             newPlaybackDeviceIndex = (currentPlaybackDeviceIndex + 1) % playbackDevices.size();
 
                             sf::PlaybackDevice& newPlaybackDevice = playbackDevices[newPlaybackDeviceIndex];
-                            getCurrentPlaybackDevice().transferResourcesTo(newPlaybackDevice);
+
+                            effects[current]->stop();
+                            effects[current]->start(newPlaybackDevice, musicSource);
                         }
 
                         currentPlaybackDeviceIndex = newPlaybackDeviceIndex;
                         playbackDeviceText.setString("Current playback device: " + getCurrentDeviceName());
-                        */
                         break;
                     }
 

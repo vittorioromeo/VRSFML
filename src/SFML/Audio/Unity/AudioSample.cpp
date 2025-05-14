@@ -1,6 +1,5 @@
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
-// TODO P0: consider passing buffer in on .play and not storing it
 
 ////////////////////////////////////////////////////////////
 // Headers
@@ -8,9 +7,10 @@
 #include "SFML/Audio/ActiveSoundSource.hpp"
 #include "SFML/Audio/AudioSample.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/EffectProcessor.hpp"
+#include "SFML/Audio/ChannelMap.hpp" // used
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/SoundBase.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"
@@ -29,29 +29,25 @@ namespace sf
 struct AudioSample::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl(PlaybackDevice& playbackDevice, AudioSample& theOwner, const SoundBuffer& theBuffer) :
-    soundBase(playbackDevice, &Impl::vtable),
+    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioSample& theOwner, const SoundBuffer& theBuffer) :
+    soundBase(thePlaybackDevice, &Impl::vtable, theBuffer.getChannelMap()),
     owner(theOwner),
     buffer(theBuffer)
     {
         if (!soundBase.initialize(&onEnd))
         {
-            priv::err() << "Failed to initialize audio sample::Impl";
+            priv::err() << "Failed to initialize sound base";
             return;
         }
-
-        // TODO P0: setchannelmap?
-        for (const SoundChannel channel : buffer.getChannelMap())
-            soundBase.addToSoundChannelMap(priv::MiniaudioUtils::soundChannelToMiniaudioChannel(channel));
     }
 
     ////////////////////////////////////////////////////////////
     static void onEnd(void* const userData, ma_sound* const soundPtr)
     {
-        static_cast<Impl*>(userData)->playing = false;
+        static_cast<Impl*>(userData)->owner.m_playing = false;
 
         // Seek back to the start of the sound when it finishes playing
-        if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0); result != MA_SUCCESS)
+        if (const ma_result result = ma_sound_seek_to_pcm_frame(soundPtr, 0u); result != MA_SUCCESS)
             priv::MiniaudioUtils::fail("seek sound to frame 0", result);
     }
 
@@ -119,8 +115,8 @@ struct AudioSample::Impl
 
         // If we don't have valid values yet, initialize with defaults so sound creation doesn't fail
         *format     = ma_format_s16;
-        *channels   = impl.buffer.getChannelCount() ? impl.buffer.getChannelCount() : 1;
-        *sampleRate = impl.buffer.getSampleRate() ? impl.buffer.getSampleRate() : 44'100;
+        *channels   = impl.buffer.getChannelCount();
+        *sampleRate = impl.buffer.getSampleRate();
 
         return MA_SUCCESS;
     }
@@ -150,14 +146,13 @@ struct AudioSample::Impl
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, 0};
+    static inline constexpr ma_data_source_vtable vtable{read, seek, getFormat, getCursor, getLength, setLooping, /* flags */ 0u};
 
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
-    AudioSample&       owner;          //!< Owning `AudioSample` object
-    base::U64          cursor{};       //!< The current playing position (in frames)
-    const SoundBuffer& buffer;         //!< AudioSample buffer bound to the source
-    bool               playing{false}; //!< Whether the sound is playing
+    AudioSample&       owner;    //!< Owning `AudioSample` object
+    base::U64          cursor{}; //!< The current playing position (in frames)
+    const SoundBuffer& buffer;   //!< AudioSample buffer bound to the source
 };
 
 
@@ -168,50 +163,12 @@ m_impl(playbackDevice, *this, buffer)
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, AudioSample, this, (&m_impl->buffer));
 
     // TODO P0: needed???
-    applySettings(audioSettings);
-    setEffectProcessor(getEffectProcessor());
-    setPlayingOffset(getPlayingOffset());
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-    {
-        priv::MiniaudioUtils::fail("start playing audio sample", result);
-        return;
-    }
-
-    m_impl->playing = true;
+    applyAudioSettings(audioSettings);
 }
 
 
 ////////////////////////////////////////////////////////////
 AudioSample::~AudioSample() = default;
-
-
-////////////////////////////////////////////////////////////
-bool AudioSample::resume()
-{
-    if (m_impl->playing)
-        return true;
-
-    if (const ma_result result = ma_sound_start(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-        return priv::MiniaudioUtils::fail("start playing audio sample", result);
-
-    m_impl->playing = true;
-    return true;
-}
-
-
-////////////////////////////////////////////////////////////
-bool AudioSample::pause()
-{
-    if (!m_impl->playing)
-        return true;
-
-    if (const ma_result result = ma_sound_stop(&m_impl->soundBase.getSound()); result != MA_SUCCESS)
-        return priv::MiniaudioUtils::fail("stop playing audio sample", result);
-
-    m_impl->playing = false;
-    return true;
-}
 
 
 ////////////////////////////////////////////////////////////
@@ -222,21 +179,7 @@ void AudioSample::setPlayingOffset(const Time playingOffset)
     SFML_BASE_ASSERT(sound.pDataSource != nullptr);
     SFML_BASE_ASSERT(sound.engineNode.pEngine != nullptr);
 
-    m_impl->cursor = priv::MiniaudioUtils::getFrameIndex(sound, playingOffset);
-}
-
-
-////////////////////////////////////////////////////////////
-Time AudioSample::getPlayingOffset() const
-{
-    return priv::MiniaudioUtils::getPlayingOffset(getSoundBase().getSound());
-}
-
-
-////////////////////////////////////////////////////////////
-bool AudioSample::isPlaying() const
-{
-    return m_impl->playing;
+    m_impl->cursor = priv::MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 }
 
 
@@ -252,6 +195,13 @@ priv::MiniaudioUtils::SoundBase& AudioSample::getSoundBase() const
 const SoundBuffer& AudioSample::getBuffer() const
 {
     return m_impl->buffer;
+}
+
+
+////////////////////////////////////////////////////////////
+PlaybackDevice& AudioSample::getPlaybackDevice() const
+{
+    return *m_impl->soundBase.playbackDevice;
 }
 
 } // namespace sf

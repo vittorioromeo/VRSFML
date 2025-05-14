@@ -7,10 +7,12 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/InactiveSoundSource.hpp"
 #include "SFML/Audio/Listener.hpp"
 
+#include "SFML/System/Time.hpp"
 #include "SFML/System/Vec3.hpp"
+
+#include "SFML/Base/InPlacePImpl.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -20,7 +22,6 @@ namespace sf
 {
 struct AudioSettings;
 class EffectProcessor;
-class PlaybackDevice;
 class Time;
 } // namespace sf
 
@@ -37,7 +38,7 @@ namespace sf
 /// \brief Base class defining a sound's properties
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API ActiveSoundSource : public InactiveSoundSource
+class SFML_AUDIO_API ActiveSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -57,31 +58,31 @@ public:
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource(const ActiveSoundSource&) = default;
+    ActiveSoundSource(const ActiveSoundSource&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource(ActiveSoundSource&&) noexcept = default;
+    ActiveSoundSource(ActiveSoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource& operator=(const ActiveSoundSource& rhs) = default;
+    ActiveSoundSource& operator=(const ActiveSoundSource& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource& operator=(ActiveSoundSource&&) noexcept = default;
+    ActiveSoundSource& operator=(ActiveSoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~ActiveSoundSource() override = default;
+    virtual ~ActiveSoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pitch of the sound
@@ -353,10 +354,185 @@ public:
     void setLooping(bool loop);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the pitch of the sound
+    ///
+    /// \return Pitch of the sound
+    ///
+    /// \see `setPitch`
     ///
     ////////////////////////////////////////////////////////////
-    void applySettings(const AudioSettings& audioSettings);
+    [[nodiscard]] float getPitch() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the pan of the sound
+    ///
+    /// \return Pan of the sound
+    ///
+    /// \see `setPan`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getPan() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the volume of the sound
+    ///
+    /// \return Volume of the sound, in the range [0, 1]
+    ///
+    /// \see `setVolume`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getVolume() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell whether spatialization of the sound is enabled
+    ///
+    /// \return `true` if spatialization is enabled, `false` if it's disabled
+    ///
+    /// \see `setSpatializationEnabled`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isSpatializationEnabled() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the 3D position of the sound in the audio scene
+    ///
+    /// \return Position of the sound
+    ///
+    /// \see `setPosition`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vec3f getPosition() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the 3D direction of the sound in the audio scene
+    ///
+    /// \return Direction of the sound
+    ///
+    /// \see `setDirection`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vec3f getDirection() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the cone properties of the sound in the audio scene
+    ///
+    /// \return Cone properties of the sound
+    ///
+    /// \see `setCone`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Cone getCone() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the 3D velocity of the sound in the audio scene
+    ///
+    /// \return Velocity of the sound
+    ///
+    /// \see `setVelocity`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] Vec3f getVelocity() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the doppler factor of the sound
+    ///
+    /// \return Doppler factor of the sound
+    ///
+    /// \see `setDopplerFactor`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDopplerFactor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the directional attenuation factor of the sound
+    ///
+    /// \return Directional attenuation factor of the sound
+    ///
+    /// \see `setDirectionalAttenuationFactor`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDirectionalAttenuationFactor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell whether the sound's position is relative to the
+    ///        listener or is absolute
+    ///
+    /// \return `true` if the position is relative, `false` if it's absolute
+    ///
+    /// \see `setRelativeToListener`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isRelativeToListener() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the minimum distance of the sound
+    ///
+    /// \return Minimum distance of the sound
+    ///
+    /// \see `setMinDistance`, `getAttenuation`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getMinDistance() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the maximum distance of the sound
+    ///
+    /// \return Maximum distance of the sound
+    ///
+    /// \see `setMaxDistance`, `getAttenuation`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getMaxDistance() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the minimum gain of the sound
+    ///
+    /// \return Minimum gain of the sound
+    ///
+    /// \see `setMinGain`, `getAttenuation`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getMinGain() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the maximum gain of the sound
+    ///
+    /// \return Maximum gain of the sound
+    ///
+    /// \see `setMaxGain`, `getAttenuation`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getMaxGain() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the attenuation factor of the sound
+    ///
+    /// \return Attenuation factor of the sound
+    ///
+    /// \see `setAttenuation`, `getMinDistance`
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getAttenuation() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the effect processor of the sound
+    ///
+    /// \return Effect processor of the sound
+    ///
+    /// \see setEffectProcessor
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] const EffectProcessor& getEffectProcessor() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Tell whether or not the sound is in loop mode
+    ///
+    /// \return `true` if the sound is looping, `false` otherwise
+    ///
+    /// \see setLooping
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isLooping() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
@@ -381,7 +557,7 @@ public:
     /// \see setPlayingOffset
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual Time getPlayingOffset() const = 0;
+    [[nodiscard]] Time getPlayingOffset() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Start or resume playing the sound source
@@ -393,7 +569,7 @@ public:
     /// \see `pause`, `stop`
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool resume() = 0;
+    bool resume();
 
     ////////////////////////////////////////////////////////////
     /// \brief Pause the sound source
@@ -404,7 +580,7 @@ public:
     /// \see `play`, `stop`
     ///
     ////////////////////////////////////////////////////////////
-    virtual bool pause() = 0;
+    bool pause();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the current status of the sound (stopped, paused, playing)
@@ -412,7 +588,25 @@ public:
     /// \return Current status of the sound
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual bool isPlaying() const = 0;
+    [[nodiscard]] bool isPlaying() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    bool play(Time playingOffset = {});
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    bool stop();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void applyAudioSettings(const AudioSettings& settings);
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -423,6 +617,17 @@ protected:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit ActiveSoundSource() = default;
 
+    ////////////////////////////////////////////////////////////
+    /// \brief Apply the stored settings onto `sound`
+    ///
+    ////////////////////////////////////////////////////////////
+    void applySettingsAndEffectProcessorTo(priv::MiniaudioUtils::SoundBase& soundBase) const;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    bool m_playing{false}; //!< Is the sound currently playing?
+
 private:
     ////////////////////////////////////////////////////////////
     /// \brief Get the sound object
@@ -431,6 +636,12 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] virtual priv::MiniaudioUtils::SoundBase& getSoundBase() const = 0;
+
+    ////////////////////////////////////////////////////////////
+    // Member data
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
 };
 
 } // namespace sf
