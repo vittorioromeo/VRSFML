@@ -324,13 +324,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept
-    {
-        return m_data == m_endSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
     template <typename... Ts>
     [[gnu::always_inline]] TItem& unsafeEmplaceBack(Ts&&... xs)
     {
@@ -427,92 +420,10 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept
+    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
     {
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(i < size());
-
-        return *(m_data + i);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& operator[](const SizeT i) const noexcept
-    {
-        SFML_BASE_ASSERT(m_data != nullptr);
-        SFML_BASE_ASSERT(i < size());
-
-        return *(m_data + i);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* begin() noexcept
-    {
-        return m_data;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* begin() const noexcept
-    {
-        return m_data;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem* end() noexcept
-    {
-        return m_endSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* end() const noexcept
-    {
-        return m_endSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cbegin() const noexcept
-    {
-        return m_data;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept
-    {
-        return m_endSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
-    {
-        return this->operator[](0u);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
-    {
-        return this->operator[](0u);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
-    {
-        return this->operator[](size() - 1u);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
-    {
-        return this->operator[](size() - 1u);
+        SFML_BASE_ASSERT(newSize <= capacity());
+        m_endSize = m_data + newSize;
     }
 
 
@@ -524,40 +435,6 @@ public:
 
         if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))
             m_endSize->~TItem();
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeSetSize(SizeT newSize) noexcept
-    {
-        SFML_BASE_ASSERT(newSize <= capacity());
-        m_endSize = m_data + newSize;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool operator==(const Vector& rhs) const
-    {
-        if (this == &rhs)
-            return true;
-
-        const SizeT lhsSize = size();
-
-        if (lhsSize != rhs.size())
-            return false;
-
-        for (SizeT i = 0u; i < lhsSize; ++i)
-            if (m_data[i] != rhs.m_data[i])
-                return false;
-
-        return true;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool operator!=(const Vector& rhs) const
-    {
-        return !(*this == rhs);
     }
 
 
@@ -574,10 +451,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] friend void swap(Vector& lhs, Vector& rhs) noexcept
-    {
-        lhs.swap(rhs);
-    }
+    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_ACCESSORS(Vector);
 };
 
 } // namespace sf::base

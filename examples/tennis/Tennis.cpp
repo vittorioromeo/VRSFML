@@ -56,32 +56,6 @@ sf::Path resourcesDir()
 } // namespace
 
 
-// TODO P0:
-class ReplayableSound
-{
-public:
-    ReplayableSound(const sf::SoundBuffer& buffer) : m_buffer(buffer)
-    {
-    }
-
-    void play(sf::PlaybackDevice& playbackDevice)
-    {
-        if (!m_sample.hasValue())
-        {
-            m_sample.emplace(playbackDevice, m_buffer, sf::AudioSettings{});
-            return;
-        }
-
-        m_sample->setPlayingOffset(sf::Time{});
-        m_sample->resume();
-    }
-
-private:
-    const sf::SoundBuffer&              m_buffer;
-    sf::base::Optional<sf::AudioSample> m_sample;
-};
-
-
 ////////////////////////////////////////////////////////////
 /// Main
 ///
@@ -115,7 +89,7 @@ int main()
 
     // Load the sounds used in the game
     const auto      ballSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "ball.wav").value();
-    ReplayableSound ballSound(ballSoundBuffer);
+    sf::AudioSample ballSound(playbackDevice, ballSoundBuffer, sf::AudioSettings{});
 
     // Create the SFML logo texture:
     const auto sfmlLogoTexture = sf::Texture::loadFromFile(resourcesDir() / "sfml_logo.png").value();
@@ -273,13 +247,13 @@ int main()
 
             if (ball.position.y - ballRadius < 0.f)
             {
-                ballSound.play(playbackDevice);
+                ballSound.play();
                 ballAngle       = -ballAngle;
                 ball.position.y = ballRadius + 0.1f;
             }
             else if (ball.position.y + ballRadius > gameSize.y)
             {
-                ballSound.play(playbackDevice);
+                ballSound.play();
                 ballAngle       = -ballAngle;
                 ball.position.y = gameSize.y - ballRadius - 0.1f;
             }
@@ -298,7 +272,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play(playbackDevice);
+                ballSound.play();
                 ball.position.x = leftPaddle.position.x + ballRadius + paddleSize.x / 2 + 0.1f;
             }
 
@@ -313,7 +287,7 @@ int main()
                 else
                     ballAngle = sf::degrees(180) - ballAngle - sf::degrees(dist(rng));
 
-                ballSound.play(playbackDevice);
+                ballSound.play();
                 ball.position.x = rightPaddle.position.x - ballRadius - paddleSize.x / 2 - 0.1f;
             }
         }

@@ -82,31 +82,6 @@ public:
     AudioSample& operator=(AudioSample&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Start or resume playing the sound
-    ///
-    /// This function starts the stream if it was stopped, resumes
-    /// it if it was paused, and restarts it from beginning if it
-    /// was it already playing.
-    /// This function uses its own thread so that it doesn't block
-    /// the rest of the program while the sound is played.
-    ///
-    /// \see `pause`, `stop`
-    ///
-    ////////////////////////////////////////////////////////////
-    bool resume() override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Pause the sound
-    ///
-    /// This function pauses the sound if it was playing,
-    /// otherwise (sound already paused or stopped) it has no effect.
-    ///
-    /// \see `play`, `stop`
-    ///
-    ////////////////////////////////////////////////////////////
-    bool pause() override;
-
-    ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound
     ///
     /// The playing position can be changed when the sound is
@@ -122,6 +97,20 @@ public:
     void setPlayingOffset(Time playingOffset) override;
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the sound buffer to play
+    ///
+    /// This function replaces the current sound buffer with
+    /// the one provided in parameter. The sound buffer must
+    /// remain valid as long as the sound is using it.
+    ///
+    /// \param buffer New sound buffer to use
+    ///
+    /// \see `getBuffer`
+    ///
+    ////////////////////////////////////////////////////////////
+    void setBuffer(const SoundBuffer& buffer);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the audio buffer attached to the sound
     ///
     /// \return Sound buffer attached to the sound
@@ -130,22 +119,10 @@ public:
     [[nodiscard]] const SoundBuffer& getBuffer() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Get the current playing position of the sound
-    ///
-    /// \return Current playing position, from the beginning of the sound
-    ///
-    /// \see `setPlayingOffset`
+    /// \brief Get the playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Time getPlayingOffset() const override;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the current status of the sound (stopped, paused, playing)
-    ///
-    /// \return Current status of the sound
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool isPlaying() const override;
+    [[nodiscard]] PlaybackDevice& getPlaybackDevice() const;
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -199,7 +176,7 @@ private:
 ///
 /// In order to work, a sound must be given a buffer of audio
 /// data to play. Audio data (samples) is stored in `sf::SoundBuffer,`
-/// and attached to a sound when it is created or with the `setBuffer()` function.
+/// and attached to a sound when it is created.
 /// The buffer object attached to a sound must remain alive
 /// as long as the sound uses it. Note that multiple sounds
 /// can use the same sound buffer at the same time.
