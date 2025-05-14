@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 
 #include "SFML/Base/FloatMax.hpp"
@@ -75,7 +75,7 @@
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Listener.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
@@ -499,12 +499,12 @@ struct Main
 
     struct BGMBuffer
     {
-        sf::MusicSource musicSource;
-        sf::ActiveMusic music;
+        sf::MusicReader musicReader;
+        sf::Music music;
 
-        explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicSource&& theMusicSource) :
-        musicSource{SFML_BASE_MOVE(theMusicSource)},
-        music{playbackDevice, musicSource, sf::AudioSettings{}}
+        explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
+        musicReader{SFML_BASE_MOVE(theMusicSource)},
+        music{playbackDevice, musicReader, sf::AudioSettings{}}
         {
         }
     };
@@ -1933,7 +1933,7 @@ struct Main
         bgmTransition.value = 1000.f;
 
         auto& optNextMusic = getNextBGMBuffer();
-        optNextMusic.emplace(playbackDevice, sf::MusicSource::openFromFile(bgmPaths[index]).value());
+        optNextMusic.emplace(playbackDevice, sf::MusicReader::openFromFile(bgmPaths[index]).value());
 
         optNextMusic->music.setVolume(0.f);
         optNextMusic->music.setLooping(true);

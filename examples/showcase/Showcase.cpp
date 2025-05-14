@@ -23,11 +23,11 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
@@ -428,14 +428,14 @@ private:
 
     ////////////////////////////////////////////////////////////
     sf::SoundBuffer m_sbByteMeow  = sf::SoundBuffer::loadFromFile("resources/bytemeow.ogg").value();
-    sf::MusicSource m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwizard.mp3").value();
+    sf::MusicReader m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
 
     ////////////////////////////////////////////////////////////
     sf::base::InPlaceVector<sf::PlaybackDevice, 8> m_playbackDevices;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::AudioSample, 32> m_activeSounds;
-    sf::base::Optional<sf::ActiveMusic>          m_activeMusic;
+    sf::base::InPlaceVector<sf::Sound, 32> m_activeSounds;
+    sf::base::Optional<sf::Music>          m_activeMusic;
 
     ////////////////////////////////////////////////////////////
     void refreshPlaybackDevices()
@@ -486,7 +486,7 @@ public:
                 auto* const it = sf::base::findIf( //
                     m_activeSounds.begin(),
                     m_activeSounds.end(),
-                    [](const sf::AudioSample& sound) { return !sound.isPlaying(); });
+                    [](const sf::Sound& sound) { return !sound.isPlaying(); });
 
                 if (it != m_activeSounds.end())
                 {
@@ -536,9 +536,9 @@ public:
         if (ImGui::Button("Switch Music Source"))
         {
             if (x)
-                m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwizard.mp3").value();
+                m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwizard.mp3").value();
             else
-                m_msBGMWizard = sf::MusicSource::openFromFile("resources/bgmwitch.mp3").value();
+                m_msBGMWizard = sf::MusicReader::openFromFile("resources/bgmwitch.mp3").value();
 
             x = !x;
         }

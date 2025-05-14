@@ -15,6 +15,10 @@
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Time.hpp"
 
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+    #include "SFML/System/LifetimeDependee.hpp"
+#endif
+
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/Builtins/OffsetOf.hpp"
@@ -93,6 +97,8 @@ MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&   thePlaybackDevice,
 dataSourceBase{}, // must be first member!
 playbackDevice(&thePlaybackDevice)
 {
+    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, playbackDevice);
+
     setChannelMap(channelMap);
 
     // Set this object up as a miniaudio data source
@@ -101,14 +107,23 @@ playbackDevice(&thePlaybackDevice)
 
     if (const ma_result result = ma_data_source_init(&config, &dataSourceBase); result != MA_SUCCESS)
         fail("initialize audio data source", result);
-
-    SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, playbackDevice);
 }
 
 
 ////////////////////////////////////////////////////////////
 MiniaudioUtils::SoundBase::~SoundBase()
 {
+#ifdef SFML_ENABLE_LIFETIME_TRACKING
+    // Avoid undefined behavior when the destructor is called after the owning sound object
+    // fails a lifetime tracking test
+
+    if (priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("SoundBuffer") ||
+        priv::LifetimeDependee::TestingModeGuard::fatalErrorTriggered("MusicReader"))
+    {
+        return;
+    }
+#endif
+
     ma_sound_uninit(&sound);
 
     ma_node_uninit(&effectNode, nullptr);

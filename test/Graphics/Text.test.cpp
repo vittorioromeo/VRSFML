@@ -99,8 +99,9 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get font")
     {
-        sf::Text   text(font, {});
         const auto otherFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+
+        sf::Text text(font, {});
         text.setFont(otherFont);
         CHECK(&text.getFont() == &otherFont);
     }
@@ -208,12 +209,12 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
                 return sf::Text(localFont, {});
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             badFunction();
 
-            CHECK(guard.fatalErrorTriggered());
+            CHECK(guard.fatalErrorTriggered("Font"));
         }
 
         SECTION("Move struct holding both dependee and dependant")
@@ -230,18 +231,18 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
                 sf::Text memberText;
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             sf::base::Optional<BadStruct> badStruct0;
             badStruct0.emplace();
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             const BadStruct badStruct1 = SFML_BASE_MOVE(badStruct0.value());
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             badStruct0.reset();
-            CHECK(guard.fatalErrorTriggered());
+            CHECK(guard.fatalErrorTriggered("Font"));
         }
 
         SECTION("Optionals and move")
@@ -258,17 +259,17 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
         SECTION("Dependee move assignment")
         {
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             auto sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             sf::Text s0(sb0, {});
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("Font"));
 
             sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("Font"));
         }
     }
 #endif

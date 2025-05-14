@@ -17,7 +17,7 @@ class SFML_SYSTEM_API LifetimeDependee
 public:
     struct SFML_SYSTEM_API TestingModeGuard
     {
-        [[nodiscard]] TestingModeGuard();
+        [[nodiscard]] TestingModeGuard(const char* dependeeName);
         ~TestingModeGuard();
 
         TestingModeGuard(const TestingModeGuard&) = delete;
@@ -26,7 +26,7 @@ public:
         TestingModeGuard& operator=(const TestingModeGuard&) = delete;
         TestingModeGuard& operator=(TestingModeGuard&&)      = delete;
 
-        [[nodiscard]] static bool fatalErrorTriggered();
+        [[nodiscard]] static bool fatalErrorTriggered(const char* dependeeName);
     };
 
     explicit LifetimeDependee(const char* dependeeName, const char* dependantName);

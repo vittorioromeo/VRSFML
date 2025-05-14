@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/ActiveSoundStream.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 
@@ -24,55 +24,53 @@ namespace sf
 struct AudioSettings;
 class ChannelMap;
 class Time;
-class MusicSource;
+class MusicReader;
 } // namespace sf
 
 
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API ActiveMusic : public ActiveSoundStream
+class SFML_AUDIO_API Music : public SoundStream
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Construct the music from a music source
     ///
-    /// \param musicSource Music source to stream data from
+    /// \param musicReader Music source to stream data from
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ActiveMusic(PlaybackDevice&      playbackDevice,
-                                       MusicSource&         musicSource,
-                                       const AudioSettings& audioSettings);
+    [[nodiscard]] explicit Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~ActiveMusic() override;
+    ~Music() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveMusic(const ActiveMusic&) = delete;
+    Music(const Music&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveMusic& operator=(const ActiveMusic&) = delete;
+    Music& operator=(const Music&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveMusic(ActiveMusic&&) = delete;
+    Music(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveMusic& operator=(ActiveMusic&&) = delete;
+    Music& operator=(Music&&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Structure template defining a time range
@@ -199,20 +197,20 @@ private:
     ////////////////////////////////////////////////////////////
     base::Vector<base::I16> m_samples;      //!< Temporary buffer of samples
     Span<base::U64>         m_loopSpan;     //!< Loop range Specifier
-    MusicSource*            m_musicSource;  //!< The music source
+    MusicReader*            m_musicSource;  //!< The music source
     base::U64               m_sampleOffset; //!< Current offset in the stream
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDANT(MusicSource);
+    SFML_DEFINE_LIFETIME_DEPENDANT(MusicReader);
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::ActiveMusic
+/// \class sf::Music
 /// \ingroup audio
 ///
 /// Musics are sounds that are streamed rather than completely
@@ -222,9 +220,9 @@ private:
 /// you avoid saturating the memory and have almost no loading delay.
 /// This implies that the underlying resource (file, stream or
 /// memory buffer) must remain valid for the lifetime of the
-/// `sf::ActiveMusic` object.
+/// `sf::Music` object.
 ///
-/// Apart from that, a `sf::ActiveMusic` has almost the same features as
+/// Apart from that, a `sf::Music` has almost the same features as
 /// the `sf::SoundBuffer` / `sf::Sound` pair: you can play/pause/stop
 /// it, request its parameters (channels, sample rate), change
 /// the way it is played (pitch, volume, 3D position, ...), etc.
@@ -241,10 +239,10 @@ private:
 /// sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 ///
 /// // Open a music source from an audio file
-/// auto musicSource = sf::MusicSource::openFromFile("music.ogg").value();
+/// auto musicReader = sf::MusicReader::openFromFile("music.ogg").value();
 ///
 /// // Create a music stream from the music source
-/// sf::ActiveMusic music(musicSource);
+/// sf::Music music(musicReader);
 ///
 /// // Change some parameters
 /// music.setPosition({0, 1, 10}); // change its 3D position

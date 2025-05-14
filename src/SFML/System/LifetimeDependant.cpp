@@ -12,7 +12,9 @@
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(LifetimeDependee* dependee) noexcept : m_dependee(dependee)
+LifetimeDependant::LifetimeDependant(const char* const dependeeName, LifetimeDependee* dependee) noexcept :
+m_dependeeName(dependeeName),
+m_dependee(dependee)
 {
     addSelfAsDependant();
 }
@@ -26,13 +28,16 @@ LifetimeDependant::~LifetimeDependant()
 
 
 ////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(const LifetimeDependant& rhs) noexcept : LifetimeDependant(rhs.m_dependee)
+LifetimeDependant::LifetimeDependant(const LifetimeDependant& rhs) noexcept :
+LifetimeDependant(rhs.m_dependeeName, rhs.m_dependee)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
-LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept : m_dependee(rhs.m_dependee)
+LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept :
+m_dependeeName(rhs.m_dependeeName),
+m_dependee(rhs.m_dependee)
 {
     rhs.m_dependee = nullptr;
 }
@@ -44,7 +49,8 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
     if (&rhs == this)
         return *this;
 
-    m_dependee = rhs.m_dependee;
+    m_dependeeName = rhs.m_dependeeName;
+    m_dependee     = rhs.m_dependee;
     addSelfAsDependant();
 
     return *this;
@@ -54,7 +60,8 @@ LifetimeDependant& LifetimeDependant::operator=(const LifetimeDependant& rhs) no
 ////////////////////////////////////////////////////////////
 LifetimeDependant& LifetimeDependant::operator=(LifetimeDependant&& rhs) noexcept
 {
-    m_dependee = rhs.m_dependee;
+    m_dependeeName = rhs.m_dependeeName;
+    m_dependee     = rhs.m_dependee;
     return *this;
 }
 
@@ -71,7 +78,7 @@ void LifetimeDependant::update(LifetimeDependee* dependee) noexcept
 ////////////////////////////////////////////////////////////
 void LifetimeDependant::addSelfAsDependant()
 {
-    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered())
+    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered(m_dependeeName))
         m_dependee->addDependant();
 }
 
@@ -79,7 +86,7 @@ void LifetimeDependant::addSelfAsDependant()
 ////////////////////////////////////////////////////////////
 void LifetimeDependant::subSelfAsDependant()
 {
-    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered())
+    if (m_dependee != nullptr && !LifetimeDependee::TestingModeGuard::fatalErrorTriggered(m_dependeeName))
         m_dependee->subDependant();
 }
 

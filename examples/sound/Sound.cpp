@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ActiveMusic.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -34,7 +34,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
                << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
-    sf::AudioSample sound(playbackDevice, buffer, sf::AudioSettings{});
+    sf::Sound sound(playbackDevice, buffer, sf::AudioSettings{});
 
     // Loop while the sound is playing
     while (sound.isPlaying())
@@ -57,16 +57,16 @@ void playSound(sf::PlaybackDevice& playbackDevice)
 void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
 {
     // Load an ogg music file
-    auto musicSource = sf::MusicSource::openFromFile("resources" / filename).value();
+    auto musicReader = sf::MusicReader::openFromFile("resources" / filename).value();
 
     // Display music information
     sf::cOut() << filename << ":" << '\n'
-               << " " << musicSource.getDuration().asSeconds() << " seconds" << '\n'
-               << " " << musicSource.getSampleRate() << " samples / sec" << '\n'
-               << " " << musicSource.getChannelCount() << " channels" << '\n';
+               << " " << musicReader.getDuration().asSeconds() << " seconds" << '\n'
+               << " " << musicReader.getSampleRate() << " samples / sec" << '\n'
+               << " " << musicReader.getChannelCount() << " channels" << '\n';
 
     // Play it
-    sf::ActiveMusic music(playbackDevice, musicSource, sf::AudioSettings{});
+    sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
     // Loop while the music is playing
     while (music.isPlaying())
