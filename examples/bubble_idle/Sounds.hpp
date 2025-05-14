@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -87,7 +87,7 @@ struct Sounds
     static inline constexpr sf::base::SizeT maxSounds = 256u;
 
     ////////////////////////////////////////////////////////////
-    sf::base::InPlaceVector<sf::AudioSample, maxSounds> soundsBeingPlayed;
+    sf::base::InPlaceVector<sf::Sound, maxSounds> soundsBeingPlayed;
 
     ////////////////////////////////////////////////////////////
     void setupSounds(const bool volumeOnly, const float volumeMult)
@@ -191,7 +191,7 @@ struct Sounds
     ////////////////////////////////////////////////////////////
     void stopPlayingAll(const LoadedSound& ls)
     {
-        for (sf::AudioSample& sound : soundsBeingPlayed)
+        for (sf::Sound& sound : soundsBeingPlayed)
         {
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 sound.stop();
@@ -203,7 +203,7 @@ struct Sounds
     {
         sf::base::SizeT acc = 0u;
 
-        for (const sf::AudioSample& sound : soundsBeingPlayed)
+        for (const sf::Sound& sound : soundsBeingPlayed)
         {
             if (sound.isPlaying() && &sound.getBuffer() == &ls.buffer)
                 ++acc;
@@ -223,7 +223,7 @@ struct Sounds
         auto* const it = sf::base::findIf( //
             soundsBeingPlayed.begin(),
             soundsBeingPlayed.end(),
-            [](const sf::AudioSample& sound) { return !sound.isPlaying(); });
+            [](const sf::Sound& sound) { return !sound.isPlaying(); });
 
         if (it != soundsBeingPlayed.end())
         {

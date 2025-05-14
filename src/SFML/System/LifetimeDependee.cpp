@@ -10,6 +10,7 @@
 
     #include "SFML/Base/Abort.hpp"
     #include "SFML/Base/Assert.hpp"
+    #include "SFML/Base/Builtins/Strcmp.hpp"
     #include "SFML/Base/Launder.hpp"
     #include "SFML/Base/PlacementNew.hpp"
     #include "SFML/Base/StackTrace.hpp"
@@ -27,8 +28,9 @@ static_assert(alignof(AtomicUInt) == alignof(unsigned int));
 
 namespace
 {
-std::atomic<bool> lifetimeTrackingTestingMode{false};
-std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
+std::atomic<bool>        lifetimeTrackingTestingMode{false};
+std::atomic<bool>        lifetimeTrackingFatalErrorTriggered{false};
+std::atomic<const char*> lifetimeTrackingTestingDependeeName{nullptr};
 
 [[gnu::always_inline, gnu::const]] inline AtomicUInt& asAtomicUInt(char* ptr)
 {
@@ -41,9 +43,10 @@ std::atomic<bool> lifetimeTrackingFatalErrorTriggered{false};
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-LifetimeDependee::TestingModeGuard::TestingModeGuard()
+LifetimeDependee::TestingModeGuard::TestingModeGuard(const char* const dependeeName)
 {
     lifetimeTrackingTestingMode.store(true, std::memory_order::seq_cst);
+    lifetimeTrackingTestingDependeeName.store(dependeeName, std::memory_order::seq_cst);
 }
 
 
@@ -52,13 +55,15 @@ LifetimeDependee::TestingModeGuard::~TestingModeGuard()
 {
     lifetimeTrackingTestingMode.store(false, std::memory_order::seq_cst);
     lifetimeTrackingFatalErrorTriggered.store(false, std::memory_order::seq_cst);
+    lifetimeTrackingTestingDependeeName.store(nullptr, std::memory_order::seq_cst);
 }
 
 
 ////////////////////////////////////////////////////////////
-bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered()
+bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered(const char* const dependeeName)
 {
-    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order::seq_cst);
+    return lifetimeTrackingFatalErrorTriggered.load(std::memory_order::seq_cst) &&
+           SFML_BASE_STRCMP(lifetimeTrackingTestingDependeeName.load(std::memory_order::seq_cst), dependeeName) == 0;
 }
 
 
@@ -132,12 +137,6 @@ LifetimeDependee::~LifetimeDependee()
     if (finalCount == 0u)
         return;
 
-    if (lifetimeTrackingTestingMode)
-    {
-        lifetimeTrackingFatalErrorTriggered = true;
-        return;
-    }
-
     const auto toLowerStr = [](std::string s)
     {
         for (char& c : s)
@@ -157,6 +156,15 @@ LifetimeDependee::~LifetimeDependee()
 
     const auto dependeeNameLower  = toLowerStr(m_dependeeName);
     const auto dependantNameLower = toLowerStr(m_dependantName);
+
+    if (lifetimeTrackingTestingMode)
+    {
+        priv::err() << "LIFETIME TEST GUARD ERROR: a " << dependeeNameLower << " object was destroyed while existing "
+                    << dependantNameLower << " objects depended on it.";
+
+        lifetimeTrackingFatalErrorTriggered = true;
+        return;
+    }
 
     priv::err(true /* multiLine */) << "FATAL ERROR: a " << dependeeNameLower << " object was destroyed while existing "
                                     << dependantNameLower << " objects depended on it.\n\n";

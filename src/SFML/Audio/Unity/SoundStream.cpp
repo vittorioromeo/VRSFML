@@ -4,12 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ActiveSoundSource.hpp"
-#include "SFML/Audio/ActiveSoundStream.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBase.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"
@@ -27,14 +26,14 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct ActiveSoundStream::Impl
+struct SoundStream::Impl
 {
     ////////////////////////////////////////////////////////////
     explicit Impl(PlaybackDevice&    thePlaybackDevice,
-                  ActiveSoundStream& theOwner,
+                  SoundStream&       theOwner,
                   const ChannelMap&  theChannelMap, // NOLINT(modernize-pass-by-value)
                   const unsigned int theSampleRate) :
-    soundBase(thePlaybackDevice, &Impl::vtable, channelMap),
+    soundBase(thePlaybackDevice, &Impl::vtable, theChannelMap),
     owner(theOwner),
     channelMap(theChannelMap),
     sampleRate(theSampleRate)
@@ -204,7 +203,7 @@ struct ActiveSoundStream::Impl
 
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
-    ActiveSoundStream&      owner;                //!< Owning `ActiveSoundStream` object
+    SoundStream&            owner;                //!< Owning `SoundStream` object
     ChannelMap              channelMap;           //!< The channel map of the sound
     base::U64               sampleRate{};         //!< Number of samples per second
     base::Vector<base::I16> sampleBuffer;         //!< Our temporary sample buffer
@@ -216,7 +215,7 @@ struct ActiveSoundStream::Impl
 
 ////////////////////////////////////////////////////////////
 // TODO P0: take audiosettings?
-ActiveSoundStream::ActiveSoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, const unsigned int sampleRate) :
+SoundStream::SoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, const unsigned int sampleRate) :
 m_impl(playbackDevice, *this, channelMap, sampleRate)
 {
     SFML_BASE_ASSERT(channelMap.getSize() > 0u);
@@ -225,11 +224,11 @@ m_impl(playbackDevice, *this, channelMap, sampleRate)
 
 
 ////////////////////////////////////////////////////////////
-ActiveSoundStream::~ActiveSoundStream() = default;
+SoundStream::~SoundStream() = default;
 
 
 ////////////////////////////////////////////////////////////
-void ActiveSoundStream::setPlayingOffset(Time playingOffset)
+void SoundStream::setPlayingOffset(Time playingOffset)
 {
     SFML_BASE_ASSERT(m_impl->sampleRate > 0u);
 
@@ -250,15 +249,15 @@ void ActiveSoundStream::setPlayingOffset(Time playingOffset)
 
 
 ////////////////////////////////////////////////////////////
-priv::MiniaudioUtils::SoundBase& ActiveSoundStream::getSoundBase() const
+priv::MiniaudioUtils::SoundBase& SoundStream::getSoundBase() const
 {
     // TODO P0: const bs
-    return const_cast<ActiveSoundStream*>(this)->m_impl->soundBase;
+    return const_cast<SoundStream*>(this)->m_impl->soundBase;
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<base::U64> ActiveSoundStream::onLoop()
+base::Optional<base::U64> SoundStream::onLoop()
 {
     onSeek(Time{});
     return base::makeOptional(base::U64{0});

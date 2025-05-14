@@ -1,10 +1,11 @@
 #include "SFML/Audio/Music.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 
 // Other 1st party headers
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/FileInputStream.hpp"
 #include "SFML/System/Path.hpp"
@@ -59,7 +60,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Invalid file")
         {
-            CHECK(!sf::MusicSource::openFromFile("does/not/exist.wav").hasValue());
+            CHECK(!sf::MusicReader::openFromFile("does/not/exist.wav").hasValue());
         }
 
         SECTION("Valid file")
@@ -71,16 +72,16 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
                 const sf::Path filename = U"Audio/ding" + filenameSuffix + U".mp3";
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
-                auto musicSource = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-                CHECK(musicSource.getDuration() == sf::microseconds(1'990'884));
+                auto musicReader = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+                CHECK(musicReader.getDuration() == sf::microseconds(1'990'884));
 
-                sf::Music music(musicSource);
+                sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
                 const auto [offset, length] = music.getLoopPoints();
                 CHECK(offset == sf::Time{});
                 CHECK(length == sf::microseconds(1'990'884));
 
-                CHECK(music.getStatus() == sf::Music::Status::Stopped);
+                CHECK(!music.isPlaying());
                 CHECK(music.getPlayingOffset() == sf::Time{});
                 CHECK(!music.isLooping());
             }
@@ -94,25 +95,25 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Invalid buffer")
         {
-            CHECK(!sf::MusicSource::openFromMemory(memory.data(), memory.size()).hasValue());
+            CHECK(!sf::MusicReader::openFromMemory(memory.data(), memory.size()).hasValue());
         }
 
         SECTION("Valid buffer")
         {
             memory = loadIntoMemory("Audio/ding.flac");
 
-            auto musicSource = sf::MusicSource::openFromMemory(memory.data(), memory.size()).value();
-            CHECK(static_cast<const sf::MusicSource&>(musicSource).getDuration() == sf::microseconds(1'990'884));
-            CHECK(static_cast<const sf::MusicSource&>(musicSource).getChannelCount() == 1);
-            CHECK(static_cast<const sf::MusicSource&>(musicSource).getSampleRate() == 44'100);
+            auto musicReader = sf::MusicReader::openFromMemory(memory.data(), memory.size()).value();
+            CHECK(static_cast<const sf::MusicReader&>(musicReader).getDuration() == sf::microseconds(1'990'884));
+            CHECK(static_cast<const sf::MusicReader&>(musicReader).getChannelCount() == 1);
+            CHECK(static_cast<const sf::MusicReader&>(musicReader).getSampleRate() == 44'100);
 
-            sf::Music music(musicSource);
+            sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
             const auto [offset, length] = music.getLoopPoints();
             CHECK(offset == sf::Time{});
             CHECK(length == sf::microseconds(1'990'884));
 
-            CHECK(music.getStatus() == sf::Music::Status::Stopped);
+            CHECK(!music.isPlaying());
             CHECK(music.getPlayingOffset() == sf::Time{});
             CHECK(!music.isLooping());
         }
@@ -121,52 +122,52 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     SECTION("openFromStream()")
     {
         auto stream      = sf::FileInputStream::open("Audio/doodle_pop.ogg").value();
-        auto musicSource = sf::MusicSource::openFromStream(stream).value();
-        CHECK(static_cast<const sf::MusicSource&>(musicSource).getDuration() == sf::microseconds(24'002'176));
-        CHECK(static_cast<const sf::MusicSource&>(musicSource).getChannelCount() == 2);
-        CHECK(static_cast<const sf::MusicSource&>(musicSource).getSampleRate() == 44'100);
+        auto musicReader = sf::MusicReader::openFromStream(stream).value();
+        CHECK(static_cast<const sf::MusicReader&>(musicReader).getDuration() == sf::microseconds(24'002'176));
+        CHECK(static_cast<const sf::MusicReader&>(musicReader).getChannelCount() == 2);
+        CHECK(static_cast<const sf::MusicReader&>(musicReader).getSampleRate() == 44'100);
 
-        sf::Music music(musicSource);
+        sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
         const auto [offset, length] = music.getLoopPoints();
         CHECK(offset == sf::Time{});
         CHECK(length == sf::microseconds(24'002'176));
 
-        CHECK(music.getStatus() == sf::Music::Status::Stopped);
+        CHECK(!music.isPlaying());
         CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
 
     SECTION("play/pause/stop")
     {
-        auto musicSource = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
+        auto musicReader = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
 
-        sf::Music music(musicSource);
+        sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
         // Wait for background thread to start
-        music.play(playbackDevice);
-        while (music.getStatus() == sf::Music::Status::Stopped)
+        music.play();
+        while (!music.isPlaying())
             sf::sleep(sf::milliseconds(10));
-        CHECK(music.getStatus() == sf::Music::Status::Playing);
+        CHECK(music.isPlaying());
 
         // Wait for background thread to pause
         music.pause();
-        while (music.getStatus() == sf::Music::Status::Playing)
+        while (music.isPlaying())
             sf::sleep(sf::milliseconds(10));
-        CHECK(music.getStatus() == sf::Music::Status::Paused);
+        CHECK(!music.isPlaying());
 
         // Wait for background thread to stop
         music.stop();
-        while (music.getStatus() == sf::Music::Status::Paused)
+        while (music.isPlaying())
             sf::sleep(sf::milliseconds(10));
-        CHECK(music.getStatus() == sf::Music::Status::Stopped);
+        CHECK(!music.isPlaying());
     }
 
     SECTION("setLoopPoints()")
     {
-        auto musicSource = sf::MusicSource::openFromFile("Audio/killdeer.wav").value();
+        auto musicReader = sf::MusicReader::openFromFile("Audio/killdeer.wav").value();
 
-        sf::Music music(musicSource);
+        sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
 
         music.setLoopPoints({sf::seconds(1), sf::seconds(2)});
         CHECK(music.getChannelCount() == 1);
@@ -190,7 +191,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Offset too long")
         {
-            musicSource = sf::MusicSource::openFromFile("Audio/killdeer.wav").value();
+            musicReader = sf::MusicReader::openFromFile("Audio/killdeer.wav").value();
 
             music.setLoopPoints({sf::seconds(1000), sf::milliseconds(10)});
             const auto [offset, length] = music.getLoopPoints();
@@ -200,7 +201,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         CHECK(music.getChannelCount() == 1);
         CHECK(music.getSampleRate() == 22'050);
-        CHECK(music.getStatus() == sf::Music::Status::Stopped);
+        CHECK(!music.isPlaying());
         CHECK(music.getPlayingOffset() == sf::Time{});
         CHECK(!music.isLooping());
     }
@@ -210,74 +211,74 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
     {
         SECTION("Return local from function")
         {
-            const auto badFunction = []
+            const auto badFunction = [&playbackDevice]
             {
-                auto localMusicSource = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-                return sf::Music(localMusicSource);
+                auto localMusicSource = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+                return sf::Music(playbackDevice, localMusicSource, sf::AudioSettings{});
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
             badFunction();
 
-            CHECK(guard.fatalErrorTriggered());
+            CHECK(guard.fatalErrorTriggered("MusicReader"));
         }
 
         SECTION("Move struct holding both dependee and dependant")
         {
             struct BadStruct
             {
-                explicit BadStruct() :
-                memberMusicSource{sf::MusicSource::openFromFile("Audio/ding.mp3").value()},
-                memberSound{memberMusicSource}
+                explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
+                memberMusicSource{sf::MusicReader::openFromFile("Audio/ding.mp3").value()},
+                memberSound{thePlaybackDevice, memberMusicSource, sf::AudioSettings{}}
                 {
                 }
 
-                sf::MusicSource memberMusicSource;
+                sf::MusicReader memberMusicSource;
                 sf::Music       memberSound;
             };
 
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
             sf::base::Optional<BadStruct> badStruct0;
-            badStruct0.emplace();
-            CHECK(!guard.fatalErrorTriggered());
+            badStruct0.emplace(playbackDevice);
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
             badStruct0.reset();
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
         }
 
         SECTION("Dependee move assignment")
         {
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            auto sb0 = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-            CHECK(!guard.fatalErrorTriggered());
+            auto sb0 = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            sf::Music s0(sb0);
-            CHECK(!guard.fatalErrorTriggered());
+            sf::Music s0(playbackDevice, sb0, sf::AudioSettings{});
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            sb0 = sf::MusicSource::openFromFile("Audio/ding.mp3").value();
-            CHECK(!guard.fatalErrorTriggered());
+            sb0 = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
         }
 
         SECTION("Dependee destroyed before dependant")
         {
-            const sf::priv::LifetimeDependee::TestingModeGuard guard;
-            CHECK(!guard.fatalErrorTriggered());
+            const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            auto optDependee = sf::MusicSource::openFromFile("Audio/ding.mp3");
+            auto optDependee = sf::MusicReader::openFromFile("Audio/ding.mp3");
             CHECK(optDependee.hasValue());
-            CHECK(!guard.fatalErrorTriggered());
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            sf::Music s0(*optDependee);
-            CHECK(!guard.fatalErrorTriggered());
+            sf::Music s0(playbackDevice, *optDependee, sf::AudioSettings{});
+            CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
             optDependee.reset();
-            CHECK(guard.fatalErrorTriggered());
+            CHECK(guard.fatalErrorTriggered("MusicReader"));
         }
     }
 #endif

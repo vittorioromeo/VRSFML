@@ -32,13 +32,13 @@ struct SoundBase;
 } // namespace sf::priv::MiniaudioUtils
 
 
-namespace sf
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 /// \brief Base class defining a sound's properties
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API ActiveSoundSource
+class SFML_AUDIO_API MiniaudioSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -58,31 +58,31 @@ public:
     /// \brief Copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource(const ActiveSoundSource&);
+    MiniaudioSoundSource(const MiniaudioSoundSource&);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource(ActiveSoundSource&&) noexcept;
+    MiniaudioSoundSource(MiniaudioSoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource& operator=(const ActiveSoundSource& rhs);
+    MiniaudioSoundSource& operator=(const MiniaudioSoundSource& rhs);
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    ActiveSoundSource& operator=(ActiveSoundSource&&) noexcept;
+    MiniaudioSoundSource& operator=(MiniaudioSoundSource&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    virtual ~ActiveSoundSource();
+    virtual ~MiniaudioSoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the pitch of the sound
@@ -615,13 +615,13 @@ protected:
     /// This constructor is meant to be called by derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ActiveSoundSource() = default;
+    [[nodiscard]] explicit MiniaudioSoundSource() = default;
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply the stored settings onto `sound`
     ///
     ////////////////////////////////////////////////////////////
-    void applySettingsAndEffectProcessorTo(priv::MiniaudioUtils::SoundBase& soundBase) const;
+    void applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -635,7 +635,7 @@ private:
     /// \return The sound object
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] virtual priv::MiniaudioUtils::SoundBase& getSoundBase() const = 0;
+    [[nodiscard]] virtual MiniaudioUtils::SoundBase& getSoundBase() const = 0;
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -644,14 +644,14 @@ private:
     base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
 };
 
-} // namespace sf
+} // namespace sf::priv
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::ActiveSoundSource
+/// \class sf::priv::MiniaudioSoundSource
 /// \ingroup audio
 ///
-/// `sf::ActiveSoundSource` is not meant to be used directly, it
+/// `sf::priv::MiniaudioSoundSource` is not meant to be used directly, it
 /// only serves as a common base for all audio objects
 /// that can live in the audio environment.
 ///

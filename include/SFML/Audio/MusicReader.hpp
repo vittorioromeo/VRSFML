@@ -21,7 +21,6 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class ActiveMusic;
 class ChannelMap;
 class InputSoundFile;
 class InputStream;
@@ -34,38 +33,38 @@ class Time;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API MusicSource
+class SFML_AUDIO_API MusicReader
 {
 public:
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~MusicSource();
+    ~MusicReader();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    MusicSource(const MusicSource&) = delete;
+    MusicReader(const MusicReader&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    MusicSource& operator=(const MusicSource&) = delete;
+    MusicReader& operator=(const MusicReader&) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    MusicSource(MusicSource&& rhs) noexcept;
+    MusicReader(MusicReader&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    MusicSource& operator=(MusicSource&& rhs) noexcept;
+    MusicReader& operator=(MusicReader&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file
@@ -89,7 +88,7 @@ public:
     /// \see `openFromMemory`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicSource> openFromFile(const Path& filename);
+    [[nodiscard]] static base::Optional<MusicReader> openFromFile(const Path& filename);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file in memory
@@ -113,7 +112,7 @@ public:
     /// \see `openFromFile`, `openFromStream`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicSource> openFromMemory(const void* data, base::SizeT sizeInBytes);
+    [[nodiscard]] static base::Optional<MusicReader> openFromMemory(const void* data, base::SizeT sizeInBytes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Open a music source from an audio file in a custom stream
@@ -135,7 +134,7 @@ public:
     /// \see `openFromFile`, `openFromMemory`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicSource> openFromStream(InputStream& stream);
+    [[nodiscard]] static base::Optional<MusicReader> openFromStream(InputStream& stream);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the music source
@@ -207,7 +206,7 @@ public:
     /// \brief Initialize the internal state after loading a new music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit MusicSource(base::PassKey<MusicSource>&&, InputSoundFile&& file);
+    [[nodiscard]] explicit MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file);
 
 private:
     ////////////////////////////////////////////////////////////
@@ -217,7 +216,7 @@ private:
     /// \brief Try opening the music source from an optional input sound file
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<MusicSource> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
+    [[nodiscard]] static base::Optional<MusicReader> tryOpenFromInputSoundFile(base::Optional<InputSoundFile>&& optFile,
                                                                                const char* errorContext);
 
 
@@ -231,15 +230,14 @@ private:
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
-    SFML_DEFINE_LIFETIME_DEPENDEE(MusicSource, Music);
-    SFML_DEFINE_LIFETIME_DEPENDEE(MusicSource, ActiveMusic);
+    SFML_DEFINE_LIFETIME_DEPENDEE(MusicReader, Music);
 };
 
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::MusicSource
+/// \class sf::MusicReader
 /// \ingroup audio
 ///
 /// \see `sf::Music`

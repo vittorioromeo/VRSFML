@@ -441,6 +441,6 @@ TODO P0:
 
 
 
-## MusicSource, Music with its own buffer
+## MusicReader, Music with its own buffer
 
 TODO P0:

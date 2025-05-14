@@ -74,6 +74,8 @@
 
 <br>
 
+TODO P0: update
+
 - ➡️ **Support for simultaneous audio devices:**
     - Upstream SFML does not support simulataneous different audio devices -- only one playback device and one capture device can be active at any time.
     - This fork supports multiple different audio devices at the same time (see `multi_audio_device` example): this allows, for example, for game sounds to be played on speakers while multiplayer VOIP is played on headphones.

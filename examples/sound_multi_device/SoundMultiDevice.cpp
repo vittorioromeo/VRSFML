@@ -1,12 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ActiveMusic.hpp"
-#include "SFML/Audio/ActiveSoundSource.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/MusicSource.hpp"
+#include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -48,15 +47,15 @@ int main()
 
     // Load resources
     auto soundBuffer  = sf::SoundBuffer::loadFromFile("resources/killdeer.wav").value();
-    auto musicSource0 = sf::MusicSource::openFromFile("resources/doodle_pop.ogg").value();
-    auto musicSource1 = sf::MusicSource::openFromFile("resources/ding.flac").value();
-    auto musicSource2 = sf::MusicSource::openFromFile("resources/ding.mp3").value();
+    auto musicSource0 = sf::MusicReader::openFromFile("resources/doodle_pop.ogg").value();
+    auto musicSource1 = sf::MusicReader::openFromFile("resources/ding.flac").value();
+    auto musicSource2 = sf::MusicReader::openFromFile("resources/ding.mp3").value();
 
     // Create sound sources
-    sf::AudioSample                     sound(playbackDevices[0], soundBuffer, sf::AudioSettings{});
-    sf::base::Optional<sf::ActiveMusic> music0;
-    sf::base::Optional<sf::ActiveMusic> music1;
-    sf::base::Optional<sf::ActiveMusic> music2;
+    sf::Sound                     sound(playbackDevices[0], soundBuffer, sf::AudioSettings{});
+    sf::base::Optional<sf::Music> music0;
+    sf::base::Optional<sf::Music> music1;
+    sf::base::Optional<sf::Music> music2;
 
     if (playbackDevices.size() > 1u)
         music0.emplace(playbackDevices[1], musicSource0, sf::AudioSettings{});

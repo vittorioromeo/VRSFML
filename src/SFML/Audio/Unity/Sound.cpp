@@ -4,12 +4,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ActiveSoundSource.hpp"
-#include "SFML/Audio/AudioSample.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/ChannelMap.hpp" // used
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBase.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
@@ -26,10 +25,10 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-struct AudioSample::Impl
+struct Sound::Impl
 {
     ////////////////////////////////////////////////////////////
-    explicit Impl(PlaybackDevice& thePlaybackDevice, AudioSample& theOwner, const SoundBuffer& theBuffer) :
+    explicit Impl(PlaybackDevice& thePlaybackDevice, Sound& theOwner, const SoundBuffer& theBuffer) :
     soundBase(thePlaybackDevice, &Impl::vtable, theBuffer.getChannelMap()),
     owner(theOwner),
     buffer(theBuffer)
@@ -150,17 +149,17 @@ struct AudioSample::Impl
 
     priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
 
-    AudioSample&       owner;    //!< Owning `AudioSample` object
+    Sound&             owner;    //!< Owning `Sound` object
     base::U64          cursor{}; //!< The current playing position (in frames)
-    const SoundBuffer& buffer;   //!< AudioSample buffer bound to the source
+    const SoundBuffer& buffer;   //!< Sound buffer bound to the source
 };
 
 
 ////////////////////////////////////////////////////////////
-AudioSample::AudioSample(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings) :
+Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings) :
 m_impl(playbackDevice, *this, buffer)
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, AudioSample, this, (&m_impl->buffer));
+    SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, (&m_impl->buffer));
 
     // TODO P0: needed???
     applyAudioSettings(audioSettings);
@@ -168,11 +167,11 @@ m_impl(playbackDevice, *this, buffer)
 
 
 ////////////////////////////////////////////////////////////
-AudioSample::~AudioSample() = default;
+Sound::~Sound() = default;
 
 
 ////////////////////////////////////////////////////////////
-void AudioSample::setPlayingOffset(const Time playingOffset)
+void Sound::setPlayingOffset(const Time playingOffset)
 {
     auto& sound = m_impl->soundBase.getSound();
 
@@ -184,22 +183,22 @@ void AudioSample::setPlayingOffset(const Time playingOffset)
 
 
 ////////////////////////////////////////////////////////////
-priv::MiniaudioUtils::SoundBase& AudioSample::getSoundBase() const
+priv::MiniaudioUtils::SoundBase& Sound::getSoundBase() const
 {
     // TODO P0: const bs
-    return const_cast<AudioSample*>(this)->m_impl->soundBase;
+    return const_cast<Sound*>(this)->m_impl->soundBase;
 }
 
 
 ////////////////////////////////////////////////////////////
-const SoundBuffer& AudioSample::getBuffer() const
+const SoundBuffer& Sound::getBuffer() const
 {
     return m_impl->buffer;
 }
 
 
 ////////////////////////////////////////////////////////////
-PlaybackDevice& AudioSample::getPlaybackDevice() const
+PlaybackDevice& Sound::getPlaybackDevice() const
 {
     return *m_impl->soundBase.playbackDevice;
 }

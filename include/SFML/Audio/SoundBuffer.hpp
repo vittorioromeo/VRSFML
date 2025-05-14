@@ -21,7 +21,7 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-class AudioSample;
+class Sound;
 class ChannelMap;
 class InputSoundFile;
 class InputStream;
@@ -274,7 +274,6 @@ private:
     // Lifetime tracking
     ////////////////////////////////////////////////////////////
     SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, Sound);
-    SFML_DEFINE_LIFETIME_DEPENDEE(SoundBuffer, AudioSample);
 };
 
 } // namespace sf

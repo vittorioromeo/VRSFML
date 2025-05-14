@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/Export.hpp"
 
-#include "SFML/Audio/ActiveSoundSource.hpp"
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 
 #include "SFML/System/LifetimeDependant.hpp"
 
@@ -32,7 +32,7 @@ namespace sf
 /// \brief Regular sound that can be played in the audio environment
 ///
 ////////////////////////////////////////////////////////////
-class SFML_AUDIO_API AudioSample : public ActiveSoundSource
+class SFML_AUDIO_API Sound : public priv::MiniaudioSoundSource
 {
 public:
     ////////////////////////////////////////////////////////////
@@ -41,45 +41,43 @@ public:
     /// \param buffer Sound buffer containing the audio data to play with the sound
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit AudioSample(PlaybackDevice&      playbackDevice,
-                                       const SoundBuffer&   buffer,
-                                       const AudioSettings& audioSettings);
+    [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    ~AudioSample() override;
+    ~Sound() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
     ///
     ////////////////////////////////////////////////////////////
-    AudioSample(PlaybackDevice&, const SoundBuffer&& buffer, const AudioSettings& audioSettings) = delete;
+    Sound(PlaybackDevice&, const SoundBuffer&& buffer, const AudioSettings& audioSettings) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioSample(const AudioSample& rhs) = delete;
+    Sound(const Sound& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    AudioSample& operator=(const AudioSample& rhs) = delete;
+    Sound& operator=(const Sound& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move constructor
     ///
     ////////////////////////////////////////////////////////////
-    AudioSample(AudioSample&& rhs) = delete;
+    Sound(Sound&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted move assignment
     ///
     ////////////////////////////////////////////////////////////
-    AudioSample& operator=(AudioSample&& rhs) = delete;
+    Sound& operator=(Sound&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Change the current playing position of the sound

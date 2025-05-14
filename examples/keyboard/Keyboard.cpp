@@ -14,7 +14,7 @@
 #include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/AudioSample.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -1062,9 +1062,9 @@ int main()
     const auto releasedSoundBuffer = sf::SoundBuffer::loadFromFile(resourcesDir() / "mouserelease1.ogg").value();
 
     // Create sound objects to play them upon keyboard events
-    sf::AudioSample errorSound(playbackDevice, errorSoundBuffer, sf::AudioSettings{});
-    sf::AudioSample pressedSound(playbackDevice, pressedSoundBuffer, sf::AudioSettings{});
-    sf::AudioSample releasedSound(playbackDevice, releasedSoundBuffer, sf::AudioSettings{});
+    sf::Sound errorSound(playbackDevice, errorSoundBuffer, sf::AudioSettings{});
+    sf::Sound pressedSound(playbackDevice, pressedSoundBuffer, sf::AudioSettings{});
+    sf::Sound releasedSound(playbackDevice, releasedSoundBuffer, sf::AudioSettings{});
 
     // Open the font used for all texts
     const auto font = sf::Font::openFromFile(resourcesDir() / "Tuffy.ttf").value();

@@ -16,7 +16,7 @@ class LifetimeDependee;
 class SFML_SYSTEM_API LifetimeDependant
 {
 public:
-    explicit LifetimeDependant(LifetimeDependee* dependee = nullptr) noexcept;
+    explicit LifetimeDependant(const char* const dependeeName, LifetimeDependee* dependee = nullptr) noexcept;
     ~LifetimeDependant();
 
     LifetimeDependant(const LifetimeDependant& rhs) noexcept;
@@ -31,14 +31,18 @@ private:
     void addSelfAsDependant();
     void subSelfAsDependant();
 
+    const char*       m_dependeeName;
     LifetimeDependee* m_dependee;
 };
 
 } // namespace sf::priv
 
     // NOLINTBEGIN(bugprone-macro-parentheses)
-    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType) \
-        mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType
+    #define SFML_DEFINE_LIFETIME_DEPENDANT(dependantType)                              \
+        mutable ::sf::priv::LifetimeDependant m_sfPrivLifetimeDependant##dependantType \
+        {                                                                              \
+            #dependantType                                                             \
+        }
 
     #define SFML_UPDATE_LIFETIME_DEPENDANT(dependantType, dependeeType, thisPtr, dependantMemberPtr) \
         thisPtr->m_sfPrivLifetimeDependant##dependantType.update(                                    \
