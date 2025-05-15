@@ -44,7 +44,7 @@ class ImGuiWindowGuard
 {
 public:
     ////////////////////////////////////////////////////////////
-    explicit ImGuiWindowGuard(const Window& window);
+    explicit ImGuiWindowGuard();
 
     ////////////////////////////////////////////////////////////
     ~ImGuiWindowGuard();
@@ -92,7 +92,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void processEvent(const Event& event);
+    void processEvent(const Window& window, const Event& event);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -212,9 +212,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(RenderWindow& window, bool loadDefaultFont = true);
-    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
+    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(bool loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
