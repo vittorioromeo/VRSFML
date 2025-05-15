@@ -21,10 +21,10 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-struct AudioSettings;
-class ChannelMap;
-class Time;
 class MusicReader;
+class PlaybackDevice;
+class Time;
+struct AudioSettings;
 } // namespace sf
 
 
@@ -41,6 +41,14 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings);
+    [[nodiscard]] explicit Music(PlaybackDevice& playbackDevice, MusicReader& musicReader);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Disallow construction from a temporary music reader
+    ///
+    ////////////////////////////////////////////////////////////
+    Music(PlaybackDevice&, const MusicReader&& buffer, const AudioSettings& audioSettings) = delete;
+    Music(PlaybackDevice&, const MusicReader&& buffer)                                     = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
@@ -126,36 +134,10 @@ public:
     void setLoopPoints(TimeSpan timePoints);
 
     ////////////////////////////////////////////////////////////
-    /// \brief Return the number of channels of the music source
-    ///
-    /// 1 channel means a mono sound, 2 means stereo, etc.
-    ///
-    /// \return Number of channels
+    /// \brief Get the music reader attached to the music
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getChannelCount() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the stream sample rate of the music source
-    ///
-    /// The sample rate is the number of audio samples played per
-    /// second. The higher, the better the quality.
-    ///
-    /// \return Sample rate, in number of samples per second
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getSampleRate() const;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Get the map of position in sample frame to sound channel
-    ///
-    /// This is used to map a sample in the sample stream to a
-    /// position during spatialization.
-    ///
-    /// \return Map of position in sample frame to sound channel
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] ChannelMap getChannelMap() const;
+    [[nodiscard]] const MusicReader& getMusicReader() const;
 
 protected:
     ////////////////////////////////////////////////////////////
@@ -197,7 +179,7 @@ private:
     ////////////////////////////////////////////////////////////
     base::Vector<base::I16> m_samples;      //!< Temporary buffer of samples
     Span<base::U64>         m_loopSpan;     //!< Loop range Specifier
-    MusicReader*            m_musicSource;  //!< The music source
+    MusicReader&            m_musicReader;  //!< The music reader
     base::U64               m_sampleOffset; //!< Current offset in the stream
 
     ////////////////////////////////////////////////////////////

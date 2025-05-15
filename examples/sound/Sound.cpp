@@ -1,10 +1,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Sound.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
@@ -34,7 +35,7 @@ void playSound(sf::PlaybackDevice& playbackDevice)
                << " " << buffer.getChannelCount() << " channels" << '\n';
 
     // Create a sound instance and play it
-    sf::Sound sound(playbackDevice, buffer, sf::AudioSettings{});
+    sf::Sound sound(playbackDevice, buffer);
 
     // Loop while the sound is playing
     while (sound.isPlaying())
@@ -66,7 +67,7 @@ void playMusic(sf::PlaybackDevice& playbackDevice, const sf::Path& filename)
                << " " << musicReader.getChannelCount() << " channels" << '\n';
 
     // Play it
-    sf::Music music(playbackDevice, musicReader, sf::AudioSettings{});
+    sf::Music music(playbackDevice, musicReader);
 
     // Loop while the music is playing
     while (music.isPlaying())

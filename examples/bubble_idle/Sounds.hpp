@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Path.hpp"
@@ -98,7 +98,7 @@ struct Sounds
         {
             if (!volumeOnly)
             {
-                sound.settings.rollOff               = 0.003f * attenuationMult;
+                sound.settings.attenuation           = 0.003f * attenuationMult;
                 sound.settings.spatializationEnabled = true;
             }
 
@@ -109,7 +109,7 @@ struct Sounds
         {
             if (!volumeOnly)
             {
-                sound.settings.rollOff               = 0.f;
+                sound.settings.attenuation           = 0.f;
                 sound.settings.spatializationEnabled = false;
             }
 

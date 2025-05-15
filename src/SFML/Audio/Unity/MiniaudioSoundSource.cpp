@@ -4,6 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
@@ -22,6 +23,10 @@ struct MiniaudioSoundSource::Impl
     AudioSettings   audioSettings;
     EffectProcessor effectProcessor{};
 };
+
+
+////////////////////////////////////////////////////////////
+MiniaudioSoundSource::MiniaudioSoundSource() = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -132,7 +137,9 @@ void MiniaudioSoundSource::setDirectionalAttenuationFactor(const float direction
 ////////////////////////////////////////////////////////////
 void MiniaudioSoundSource::setRelativeToListener(const bool relativeToListener)
 {
-    m_impl->audioSettings.positioning = relativeToListener ? ma_positioning_relative : ma_positioning_absolute;
+    m_impl->audioSettings.positioning = relativeToListener ? AudioSettings::Positioning::Relative
+                                                           : AudioSettings::Positioning::Absolute;
+
     ma_sound_set_positioning(&getSoundBase().getSound(),
                              relativeToListener ? ma_positioning_relative : ma_positioning_absolute);
 }
@@ -173,7 +180,7 @@ void MiniaudioSoundSource::setMaxGain(const float maxGain)
 ////////////////////////////////////////////////////////////
 void MiniaudioSoundSource::setAttenuation(const float attenuation)
 {
-    m_impl->audioSettings.rollOff = attenuation;
+    m_impl->audioSettings.attenuation = attenuation;
     ma_sound_set_rolloff(&getSoundBase().getSound(), attenuation);
 }
 
@@ -269,7 +276,7 @@ float MiniaudioSoundSource::getDirectionalAttenuationFactor() const
 ////////////////////////////////////////////////////////////
 bool MiniaudioSoundSource::isRelativeToListener() const
 {
-    return m_impl->audioSettings.positioning == 1; // ma_positioning_relative TODO P0: use enum class
+    return m_impl->audioSettings.positioning == AudioSettings::Positioning::Relative;
 }
 
 
@@ -304,7 +311,7 @@ float MiniaudioSoundSource::getMaxGain() const
 ////////////////////////////////////////////////////////////
 float MiniaudioSoundSource::getAttenuation() const
 {
-    return m_impl->audioSettings.rollOff;
+    return m_impl->audioSettings.attenuation;
 }
 
 

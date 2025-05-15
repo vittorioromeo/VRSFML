@@ -251,26 +251,9 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] TItem*& reserveMore(const SizeT n)
+    [[gnu::always_inline, gnu::flatten]] TItem*& reserveMore([[maybe_unused]] const SizeT n)
     {
         return reserve(size() + n);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void assignRange(const TItem* const b, const TItem* const e)
-    {
-        SFML_BASE_ASSERT(b != nullptr);
-        SFML_BASE_ASSERT(e != nullptr);
-        SFML_BASE_ASSERT(b <= e);
-
-        const auto count = static_cast<SizeT>(e - b);
-
-        clear();
-        reserve(count);
-        priv::VectorUtils::copyRange(m_data, b, e);
-
-        m_endSize = m_data + count;
     }
 
 
@@ -283,21 +266,6 @@ public:
 
         priv::VectorUtils::copyRange(m_endSize, ptr, ptr + count);
         m_endSize += count;
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void emplaceRange(const TItem* const ptr, const SizeT count)
-    {
-        reserveMore(count);
-        unsafeEmplaceRange(ptr, count);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const Vector& rhs) noexcept
-    {
-        unsafeEmplaceRange(rhs.m_data, rhs.size());
     }
 
 
@@ -336,24 +304,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename... Ts>
-    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
-    {
-        reserveMore(1);
-        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename T = TItem>
-    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
-    {
-        reserveMore(1);
-        return unsafeEmplaceBack(static_cast<T&&>(x));
-    }
-
-
-    ////////////////////////////////////////////////////////////
     TItem* erase(TItem* const it)
     {
         const auto resultIt = priv::VectorUtils::eraseImpl(begin(), end(), it);
@@ -374,8 +324,7 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
-        m_endSize           = currWritePtr;
+        m_endSize = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
 
         // Return an iterator to the element that now occupies the position
         // where the first erased element (`first`) was. This is `first` itself,
@@ -393,15 +342,6 @@ public:
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
         (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)), ...);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename... TItems>
-    [[gnu::always_inline]] void pushBackMultiple(TItems&&... items)
-    {
-        reserveMore(sizeof...(items));
-        unsafePushBackMultiple(static_cast<TItems&&>(items)...);
     }
 
 
@@ -451,7 +391,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_ACCESSORS(Vector);
+    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(Vector);
 };
 
 } // namespace sf::base

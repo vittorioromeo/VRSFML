@@ -176,14 +176,6 @@ bool MiniaudioUtils::SoundBase::initialize(ma_sound_end_proc endCallback)
 
 
 ////////////////////////////////////////////////////////////
-void MiniaudioUtils::SoundBase::deinitialize()
-{
-    ma_sound_uninit(&sound);
-    ma_node_uninit(&effectNode, nullptr);
-}
-
-
-////////////////////////////////////////////////////////////
 bool MiniaudioUtils::SoundBase::connectEffect(const bool connect)
 {
     auto* engine = static_cast<ma_engine*>(playbackDevice->getMAEngine());
@@ -244,7 +236,7 @@ void MiniaudioUtils::SoundBase::applyAudioSettings(const AudioSettings& audioSet
     ma_sound_set_max_distance(&sound, s.maxDistance);
     ma_sound_set_min_gain(&sound, s.minGain);
     ma_sound_set_max_gain(&sound, s.maxGain);
-    ma_sound_set_rolloff(&sound, s.rollOff);
+    ma_sound_set_rolloff(&sound, s.attenuation);
     ma_sound_set_positioning(&sound, static_cast<ma_positioning>(s.positioning));
     ma_sound_set_looping(&sound, s.looping);
     ma_sound_set_spatialization_enabled(&sound, s.spatializationEnabled);

@@ -174,7 +174,7 @@ public:
     /// \return Map of position in sample frame to sound channel
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ChannelMap getChannelMap() const;
+    [[nodiscard]] const ChannelMap& getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total number of audio samples in the music source

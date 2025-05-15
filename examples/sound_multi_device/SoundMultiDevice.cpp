@@ -1,13 +1,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/IO.hpp"
@@ -52,19 +52,19 @@ int main()
     auto musicSource2 = sf::MusicReader::openFromFile("resources/ding.mp3").value();
 
     // Create sound sources
-    sf::Sound                     sound(playbackDevices[0], soundBuffer, sf::AudioSettings{});
+    sf::Sound                     sound(playbackDevices[0], soundBuffer);
     sf::base::Optional<sf::Music> music0;
     sf::base::Optional<sf::Music> music1;
     sf::base::Optional<sf::Music> music2;
 
     if (playbackDevices.size() > 1u)
-        music0.emplace(playbackDevices[1], musicSource0, sf::AudioSettings{});
+        music0.emplace(playbackDevices[1], musicSource0);
 
     if (playbackDevices.size() > 2u)
-        music1.emplace(playbackDevices[2], musicSource1, sf::AudioSettings{});
+        music1.emplace(playbackDevices[2], musicSource1);
 
     if (playbackDevices.size() > 3u)
-        music2.emplace(playbackDevices[3], musicSource2, sf::AudioSettings{});
+        music2.emplace(playbackDevices[3], musicSource2);
 
     // Keep program alive while sounds are playing and display spinning icon
     const char      messageIcons[]{'-', '\\', '|', '/'};

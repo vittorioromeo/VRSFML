@@ -29,36 +29,49 @@ class EffectProcessor;
 
 namespace sf::priv::MiniaudioUtils
 {
+////////////////////////////////////////////////////////////
 struct SoundBase
 {
+    ////////////////////////////////////////////////////////////
     explicit SoundBase(PlaybackDevice& thePlaybackDevice, const void* dataSourceVTable, const ChannelMap& channelMap);
+
+    ////////////////////////////////////////////////////////////
     ~SoundBase();
 
+    ////////////////////////////////////////////////////////////
     SoundBase(const SoundBase&) = delete;
     SoundBase(SoundBase&&)      = delete;
 
+    ////////////////////////////////////////////////////////////
     SoundBase& operator=(const SoundBase&) = delete;
     SoundBase& operator=(SoundBase&&)      = delete;
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool initialize(ma_sound_end_proc endCallback);
-    void               deinitialize();
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool connectEffect(bool connect);
 
+    ////////////////////////////////////////////////////////////
     ma_sound& getSound();
 
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setAndConnectEffectProcessor(const EffectProcessor& effectProcessor);
 
+    ////////////////////////////////////////////////////////////
     void applyAudioSettings(const AudioSettings& audioSettings);
 
+    ////////////////////////////////////////////////////////////
     static void nodeOnProcess(ma_node*      node,
                               const float** framesIn,
                               ma_uint32*    frameCountIn,
                               float**       framesOut,
                               ma_uint32*    frameCountOut);
 
+    ////////////////////////////////////////////////////////////
     void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut) const;
 
+    ////////////////////////////////////////////////////////////
     void setChannelMap(const ChannelMap& channelMap);
 
     ////////////////////////////////////////////////////////////
@@ -70,9 +83,10 @@ struct SoundBase
         .flags                        = MA_NODE_FLAG_CONTINUOUS_PROCESSING | MA_NODE_FLAG_ALLOW_NULL_INPUT,
     };
 
+    ////////////////////////////////////////////////////////////
     struct EffectNode
     {
-        ma_node_base base{};
+        ma_node_base base{}; // must be first member
         ma_uint32    channelCount{};
     };
 
@@ -85,8 +99,7 @@ struct SoundBase
 
     EffectNode effectNode; //!< The engine node that performs effect processing
 
-    base::InPlaceVector<ma_channel, MA_CHANNEL_POSITION_COUNT>
-        soundChannelMap; //!< The map of position in sample frame to sound channel (miniaudio channels)
+    base::InPlaceVector<ma_channel, MA_CHANNEL_POSITION_COUNT> soundChannelMap; //!< The map of position in sample frame to sound channel
 
     ma_sound        sound{};         //!< The sound
     EffectProcessor effectProcessor; //!< The effect processor
