@@ -15,9 +15,9 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PassKey.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -26,94 +26,42 @@
 namespace sf
 {
 class Event;
+class ImGuiContext;
 class RenderTarget;
 class RenderTexture;
 class RenderWindow;
-struct Sprite;
 class Texture;
 class Window;
+struct ImGuiContextImpl;
+struct Sprite;
 } // namespace sf
 
 
-namespace sf::ImGui
+namespace sf
 {
-class [[nodiscard]] SFML_IMGUI_API ImGuiContext
+////////////////////////////////////////////////////////////
+class ImGuiWindowGuard
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
+    explicit ImGuiWindowGuard(const Window& window);
+
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<ImGuiContext> create(RenderWindow& window, bool loadDefaultFont = true);
-    [[nodiscard]] static base::Optional<ImGuiContext> create(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] static base::Optional<ImGuiContext> create(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
+    ~ImGuiWindowGuard();
+
+    ////////////////////////////////////////////////////////////
+    ImGuiWindowGuard(const ImGuiWindowGuard&)            = delete;
+    ImGuiWindowGuard& operator=(const ImGuiWindowGuard&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    ImGuiWindowGuard(ImGuiWindowGuard&&) noexcept;
+    ImGuiWindowGuard& operator=(ImGuiWindowGuard&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(RenderWindow& window, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
-    [[nodiscard]] bool init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~ImGuiContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext(const ImGuiContext&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext& operator=(const ImGuiContext&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext(ImGuiContext&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext& operator=(ImGuiContext&&) noexcept;
-
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void processEvent(const Window& window, const Event& event);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void update(RenderWindow& window, Time dt);
-    void update(Window& window, RenderTarget& target, Time dt);
-    void update(Vec2i mousePos, Vec2f displaySize, Time dt);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void render(RenderWindow& window);
-    void render(RenderTarget& target);
-    void render();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    void shutdown(const Window& window);
+    void setActive();
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -144,7 +92,20 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    void setCurrentWindow(const Window& window);
+    void processEvent(const Event& event);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void update(RenderWindow& window, Time dt);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void render(RenderWindow& window);
+    void render(RenderTarget& target);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -224,11 +185,66 @@ public:
     ////////////////////////////////////////////////////////////
     void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
 
+
+private:
+    friend ImGuiContextImpl;
+    friend ImGuiContext;
+
+    ////////////////////////////////////////////////////////////
+    void initDefaultJoystickMapping();
+
+    ////////////////////////////////////////////////////////////
+    struct Impl;
+    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+};
+
+////////////////////////////////////////////////////////////
+class [[nodiscard]] SFML_IMGUI_API ImGuiContext
+{
+public:
+    ////////////////////////////////////////////////////////////
+    /// \brief Create a new audio context
+    ///
+    ////////////////////////////////////////////////////////////
+    static base::Optional<ImGuiContext> create();
+
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool wasLastInputTouch() const;
+    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(RenderWindow& window, bool loadDefaultFont = true);
+    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(Window& window, RenderTarget& target, bool loadDefaultFont = true);
+    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(Window& window, Vec2f displaySize, bool loadDefaultFont = true);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~ImGuiContext();
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ImGuiContext(const ImGuiContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted copy assignment
+    ///
+    ////////////////////////////////////////////////////////////
+    ImGuiContext& operator=(const ImGuiContext&) = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Move constructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ImGuiContext(ImGuiContext&&) noexcept;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Deleted move assignment operator
+    ///
+    ////////////////////////////////////////////////////////////
+    ImGuiContext& operator=(ImGuiContext&&) noexcept = delete;
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -237,16 +253,6 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit ImGuiContext(base::PassKey<ImGuiContext>&&);
-
-private:
-    ////////////////////////////////////////////////////////////
-    /// \brief Shuts down all ImGui contexts
-    ///
-    ////////////////////////////////////////////////////////////
-    void shutdown();
-
-    struct Impl;
-    base::InPlacePImpl<Impl, 128> m_impl; //!< Implementation details
 };
 
-} // namespace sf::ImGui
+} // namespace sf

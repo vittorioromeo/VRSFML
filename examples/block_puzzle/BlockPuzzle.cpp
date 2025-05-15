@@ -783,6 +783,21 @@ public:
 };
 
 ////////////////////////////////////////////////////////////
+class Game
+{
+private:
+    sf::RenderWindow m_window = makeDPIScaledRenderWindow(
+        {.size            = resolution.toVec2u(),
+         .title           = "Showcase",
+         .resizable       = true,
+         .vsync           = true,
+         .frametimeLimit  = 144u,
+         .contextSettings = {.antiAliasingLevel = 8u}});
+
+public:
+};
+
+////////////////////////////////////////////////////////////
 int main()
 {
     //
@@ -793,24 +808,13 @@ int main()
 
     //
     //
-    // Set up window
-    auto window = makeDPIScaledRenderWindow(
-        {.size            = resolution.toVec2u(),
-         .title           = "Showcase",
-         .resizable       = true,
-         .vsync           = true,
-         .frametimeLimit  = 144u,
-         .contextSettings = {.antiAliasingLevel = 8u}});
-
-    //
-    //
     // Set up imgui
     auto imGuiContext = sf::ImGuiContext::create(window).value(); // TODO P0: use same pattern as other contexts
 
     //
     //
     // Set up game and simulation loop
-    Game game{window, imGuiContext};
+    Game game;
 
     if (!game.run())
         return 1;
