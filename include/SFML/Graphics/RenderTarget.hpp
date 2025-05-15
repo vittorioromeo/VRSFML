@@ -911,7 +911,7 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
     [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
-        requires(requires { immediateDrawVertices(vertices.data(), vertices.size(), type, states); })
+        requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
     {
         drawVertices(vertices.data(), vertices.size(), type, states);
     }

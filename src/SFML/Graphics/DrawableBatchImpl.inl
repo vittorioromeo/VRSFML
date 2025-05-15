@@ -59,7 +59,7 @@ void generateRingVertices(const auto&           descriptor,
                           const sf::base::SizeT numArcPoints,
                           const float           startRadians,
                           const float           angleStep,
-                          const sf::Vec2f    invLocalBoundsSize,
+                          const sf::Vec2f       invLocalBoundsSize,
                           sf::Vertex* const     fillVertexPtr)
 {
     for (unsigned int i = 0u; i < numArcPoints; ++i)
@@ -71,19 +71,19 @@ void generateRingVertices(const auto&           descriptor,
                                                                                              descriptor.innerRadius);
 
         // Outer vertex of the pair
-        const sf::Vec2f ratioO = outerPoint.componentWiseMul(invLocalBoundsSize);
-        fillVertexPtr[2 * i + 0]  = {
-             .position  = transform.transformPoint(outerPoint),
-             .color     = descriptor.fillColor,
-             .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioO),
+        const sf::Vec2f ratioO   = outerPoint.componentWiseMul(invLocalBoundsSize);
+        fillVertexPtr[2 * i + 0] = {
+            .position  = transform.transformPoint(outerPoint),
+            .color     = descriptor.fillColor,
+            .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioO),
         };
 
         // Inner vertex of the pair
-        const sf::Vec2f ratioI = innerPoint.componentWiseMul(invLocalBoundsSize);
-        fillVertexPtr[2 * i + 1]  = {
-             .position  = transform.transformPoint(innerPoint),
-             .color     = descriptor.fillColor,
-             .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioI),
+        const sf::Vec2f ratioI   = innerPoint.componentWiseMul(invLocalBoundsSize);
+        fillVertexPtr[2 * i + 1] = {
+            .position  = transform.transformPoint(innerPoint),
+            .color     = descriptor.fillColor,
+            .texCoords = descriptor.textureRect.position + descriptor.textureRect.size.componentWiseMul(ratioI),
         };
     }
 }
@@ -362,7 +362,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     const base::SizeT nPoints,
     const auto&       descriptor,
     auto&&            pointFn,
-    const Vec2f    centerOffset)
+    const Vec2f       centerOffset)
 {
     if (nPoints < 3u) [[unlikely]]
         return {};
@@ -380,7 +380,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
 
     //
     // Update fill vertex positions and compute inside bounds
-    fillVertexPtr[1].position       = transform.transformPoint(pointFn(0u)); // first point
+    fillVertexPtr[1].position    = transform.transformPoint(pointFn(0u)); // first point
     sf::Vec2f fillBoundsPosition = fillVertexPtr[1].position;             // left and top
 
     float fillBoundsMaxX = fillVertexPtr[1].position.x; // right
@@ -540,9 +540,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
         return ShapeUtils::computePieSlicePointFromArcAngleStep(i,
                                                                 sdPieSlice.radius,
                                                                 arcAngleStep,
-                                                                sdPieSlice.startAngle.asRadians(),
-                                                                sdPieSlice.sweepAngle.asRadians(),
-                                                                sdPieSlice.pointCount);
+                                                                sdPieSlice.startAngle.asRadians());
     });
 }
 
