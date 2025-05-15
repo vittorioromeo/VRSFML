@@ -1,7 +1,7 @@
 #include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
 
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -82,7 +82,7 @@ int main()
     //
     //
     // Set up imgui
-    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+    auto imGuiContext = sf::ImGuiContext::create(window).value();
 
     //
     //

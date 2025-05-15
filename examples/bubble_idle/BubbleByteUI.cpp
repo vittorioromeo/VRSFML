@@ -22,7 +22,7 @@
 #include "Sounds.hpp"
 #include "Version.hpp"
 
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
@@ -1728,7 +1728,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 ////////////////////////////////////////////////////////////
 void Main::uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::TextureDrawParams& drawParams)
 {
-    imGuiContext.image(
+    windowImGuiGuard.image(
         sf::Sprite{
             .position    = drawParams.position,
             .scale       = drawParams.scale * profile.uiScale,
@@ -4689,11 +4689,11 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
             ImGui::PopFont();
         });
 
-    imGuiContext.setCurrentWindow(window);
+    windowImGuiGuard.setActive();
 
     rtImGui.setView(scaledHUDView);
     rtImGui.clear(sf::Color::Transparent);
-    imGuiContext.render(rtImGui);
+    windowImGuiGuard.render(rtImGui);
     rtImGui.display();
 
     rtGame.draw(rtImGui.getTexture(),

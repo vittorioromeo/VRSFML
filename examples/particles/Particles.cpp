@@ -2,7 +2,7 @@
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/SoA.hpp"     // TODO P1: avoid the relative path...?
 
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
@@ -73,7 +73,7 @@ int main()
     //
     //
     // Set up imgui
-    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+    auto imGuiContext = sf::ImGuiContext::create(window).value();
 
     //
     //

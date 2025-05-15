@@ -40,37 +40,37 @@ public:
     /// \brief Create a new audio context
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API static base::Optional<AudioContext> create();
+    static base::Optional<AudioContext> create();
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API ~AudioContext();
+    ~AudioContext();
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API AudioContext(const AudioContext& rhs) = delete;
+    AudioContext(const AudioContext& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy assignment
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API AudioContext& operator=(const AudioContext& rhs) = delete;
+    AudioContext& operator=(const AudioContext& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move constructor
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API AudioContext(AudioContext&& rhs) noexcept;
+    AudioContext(AudioContext&& rhs) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief Move assignment
     ///
     ////////////////////////////////////////////////////////////
-    SFML_AUDIO_API AudioContext& operator=(AudioContext&& rhs) = delete;
+    AudioContext& operator=(AudioContext&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Check if the audio context is installed
@@ -93,7 +93,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
+    [[nodiscard]] static base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio playback device
@@ -105,7 +105,7 @@ public:
     /// \return The handle to the default audio playback device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
+    [[nodiscard]] static base::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
@@ -119,7 +119,7 @@ public:
     /// \return A vector containing the device handles or an empty vector if no devices are available
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
+    [[nodiscard]] static base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio capture device
@@ -131,7 +131,7 @@ public:
     /// \return The handle to the default audio capture device
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] static SFML_AUDIO_API base::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
+    [[nodiscard]] static base::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \private
@@ -139,7 +139,7 @@ public:
     /// \brief Default constructor
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API explicit AudioContext(base::PassKey<AudioContext>&&);
+    [[nodiscard]] explicit AudioContext(base::PassKey<AudioContext>&&);
 
 private:
     friend CaptureDevice;
@@ -151,7 +151,7 @@ private:
     /// device implementations to initialize the miniaudio devices.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] SFML_AUDIO_API static void* getMAContext();
+    [[nodiscard]] static void* getMAContext();
 };
 
 } // namespace sf

@@ -51,7 +51,7 @@ int main()
 #else
 
 
-    #include "SFML/ImGui/ImGui.hpp"
+    #include "SFML/ImGui/ImGuiContext.hpp"
 
     #include "SFML/Graphics/Color.hpp"
     #include "SFML/Graphics/DrawableBatch.hpp"

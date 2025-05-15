@@ -21,7 +21,7 @@
 
     ```cpp
     auto graphicsContext = sf::GraphicsContext::create().value(); // Holds all "global" OpenGL state
-    sf::ImGui::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
+    sf::ImGuiContext imGuiContext;    // Holds all "global" ImGui state
 
     sf::RenderWindow window({.size{640u, 480u}, .title = "ImGui + SFML = <3"});
     sf::Clock deltaClock;
