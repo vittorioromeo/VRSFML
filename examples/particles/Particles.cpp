@@ -73,7 +73,7 @@ int main()
     //
     //
     // Set up imgui
-    auto imGuiContext = sf::ImGuiContext::create(window).value();
+    sf::ImGuiContext imGuiContext;
 
     //
     //

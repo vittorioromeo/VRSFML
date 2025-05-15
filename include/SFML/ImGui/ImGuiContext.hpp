@@ -15,8 +15,6 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Optional.hpp"
-#include "SFML/Base/PassKey.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 
@@ -26,13 +24,11 @@
 namespace sf
 {
 class Event;
-class ImGuiContext;
 class RenderTarget;
 class RenderTexture;
 class RenderWindow;
 class Texture;
 class Window;
-struct ImGuiContextImpl;
 struct Sprite;
 } // namespace sf
 
@@ -40,22 +36,22 @@ struct Sprite;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-class ImGuiWindowGuard
+class ImGuiContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    explicit ImGuiWindowGuard();
+    explicit ImGuiContext(bool loadDefaultFont = true);
 
     ////////////////////////////////////////////////////////////
-    ~ImGuiWindowGuard();
+    ~ImGuiContext();
 
     ////////////////////////////////////////////////////////////
-    ImGuiWindowGuard(const ImGuiWindowGuard&)            = delete;
-    ImGuiWindowGuard& operator=(const ImGuiWindowGuard&) = delete;
+    ImGuiContext(const ImGuiContext&)            = delete;
+    ImGuiContext& operator=(const ImGuiContext&) = delete;
 
     ////////////////////////////////////////////////////////////
-    ImGuiWindowGuard(ImGuiWindowGuard&&) noexcept;
-    ImGuiWindowGuard& operator=(ImGuiWindowGuard&&) noexcept;
+    ImGuiContext(ImGuiContext&&) noexcept;
+    ImGuiContext& operator=(ImGuiContext&&) noexcept;
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -185,72 +181,13 @@ public:
     ////////////////////////////////////////////////////////////
     void drawRectFilled(const FloatRect& rect, Color color, float rounding = 0.f, int roundingCorners = 0x0F);
 
-
 private:
-    friend ImGuiContextImpl;
-    friend ImGuiContext;
-
     ////////////////////////////////////////////////////////////
     void initDefaultJoystickMapping();
 
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
-};
-
-////////////////////////////////////////////////////////////
-class [[nodiscard]] SFML_IMGUI_API ImGuiContext
-{
-public:
-    ////////////////////////////////////////////////////////////
-    /// \brief Create a new audio context
-    ///
-    ////////////////////////////////////////////////////////////
-    static base::Optional<ImGuiContext> create();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] static base::Optional<ImGuiWindowGuard> init(bool loadDefaultFont = true);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~ImGuiContext();
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext(const ImGuiContext&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted copy assignment
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext& operator=(const ImGuiContext&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext(ImGuiContext&&) noexcept;
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Deleted move assignment operator
-    ///
-    ////////////////////////////////////////////////////////////
-    ImGuiContext& operator=(ImGuiContext&&) noexcept = delete;
-
-    ////////////////////////////////////////////////////////////
-    /// \private
-    ///
-    /// \brief Constructor
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ImGuiContext(base::PassKey<ImGuiContext>&&);
+    base::UniquePtr<Impl> m_impl; //!< Implementation details
 };
 
 } // namespace sf

@@ -564,7 +564,7 @@ class Game
 {
 private:
     ////////////////////////////////////////////////////////////
-    sf::RenderWindow&        m_window;
+    sf::RenderWindow& m_window;
     sf::ImGuiContext& m_imGuiContext;
 
     ////////////////////////////////////////////////////////////
@@ -805,7 +805,7 @@ int main()
     //
     //
     // Set up imgui
-    auto imGuiContext = sf::ImGuiContext::create(window).value(); // TODO P0: use same pattern as other contexts
+    sf::ImGuiContext imGuiContext;
 
     //
     //

@@ -17,7 +17,6 @@
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
-    auto imGuiContext    = sf::ImGuiContext::create().value();
 
     sf::RenderWindow window({
         .size  = {1280u, 720u},
@@ -25,7 +24,7 @@ int main()
         .vsync = true,
     });
 
-    auto windowImGuiGuard = sf::ImGuiContext::init().value();
+    sf::ImGuiContext imGuiContext;
 
     sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                      sf::RenderWindow::Settings{
@@ -34,7 +33,7 @@ int main()
                                                          .vsync = true,
                                                      });
 
-    auto childWindowImGuiGuard = sf::ImGuiContext::init();
+    sf::base::Optional<sf::ImGuiContext> childImGuiContext{sf::base::inPlace};
 
     sf::Clock deltaClock;
     while (true)
@@ -42,7 +41,7 @@ int main()
         // Main window event processing
         while (const sf::base::Optional event = window.pollEvent())
         {
-            windowImGuiGuard.processEvent(window, *event);
+            imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -51,7 +50,7 @@ int main()
         // Update
         const sf::Time dt = deltaClock.restart();
 
-        windowImGuiGuard.update(window, dt);
+        imGuiContext.update(window, dt);
 
         ImGui::Begin("Hello, world!");
         ImGui::Button("Look at this pretty button");
@@ -64,24 +63,24 @@ int main()
 
         window.clear();
         window.draw(shape);
-        windowImGuiGuard.render(window);
+        imGuiContext.render(window);
         window.display();
 
         const auto processChildWindow = [&](sf::RenderWindow& childWindowRef)
         {
             while (const sf::base::Optional event = childWindowRef.pollEvent())
             {
-                childWindowImGuiGuard->processEvent(childWindowRef, *event);
+                childImGuiContext->processEvent(childWindowRef, *event);
 
                 if (event->is<sf::Event::Closed>())
                 {
-                    childWindowImGuiGuard.reset();
+                    childImGuiContext.reset();
                     childWindow.reset();
                     return;
                 }
             }
 
-            childWindowImGuiGuard->update(childWindowRef, dt);
+            childImGuiContext->update(childWindowRef, dt);
 
             ImGui::Begin("Works in a second window!");
             ImGui::Button("Example button");
@@ -91,7 +90,7 @@ int main()
 
             childWindowRef.clear();
             childWindowRef.draw(shape2);
-            childWindowImGuiGuard->render(childWindowRef);
+            childImGuiContext->render(childWindowRef);
             childWindowRef.display();
         };
 
