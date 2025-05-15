@@ -28,7 +28,7 @@ int main()
     auto imGuiContext    = sf::ImGuiContext::create().value();
 
     sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
-    auto             windowImGuiGuard = sf::ImGuiContext::init(window).value();
+    auto             windowImGuiGuard = sf::ImGuiContext::init().value();
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
@@ -76,7 +76,7 @@ int main()
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
-            windowImGuiGuard.processEvent(*event);
+            windowImGuiGuard.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;

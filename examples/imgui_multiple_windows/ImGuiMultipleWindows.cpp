@@ -25,7 +25,7 @@ int main()
         .vsync = true,
     });
 
-    auto windowImGuiGuard = sf::ImGuiContext::init(window).value();
+    auto windowImGuiGuard = sf::ImGuiContext::init().value();
 
     sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
                                                      sf::RenderWindow::Settings{
@@ -34,7 +34,7 @@ int main()
                                                          .vsync = true,
                                                      });
 
-    auto childWindowImGuiGuard = sf::ImGuiContext::init(*childWindow);
+    auto childWindowImGuiGuard = sf::ImGuiContext::init();
 
     sf::Clock deltaClock;
     while (true)
@@ -42,7 +42,7 @@ int main()
         // Main window event processing
         while (const sf::base::Optional event = window.pollEvent())
         {
-            windowImGuiGuard.processEvent(*event);
+            windowImGuiGuard.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -71,7 +71,7 @@ int main()
         {
             while (const sf::base::Optional event = childWindowRef.pollEvent())
             {
-                childWindowImGuiGuard->processEvent(*event);
+                childWindowImGuiGuard->processEvent(childWindowRef, *event);
 
                 if (event->is<sf::Event::Closed>())
                 {
