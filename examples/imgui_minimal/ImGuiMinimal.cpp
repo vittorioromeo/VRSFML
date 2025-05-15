@@ -25,13 +25,11 @@
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
-    auto imGuiContext    = sf::ImGuiContext::create().value();
 
     sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
-    auto             windowImGuiGuard = sf::ImGuiContext::init().value();
+    sf::ImGuiContext imGuiContext;
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
-
 
     const float width     = 128.f;
     const float height    = 64.f;
@@ -76,7 +74,7 @@ int main()
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
-            windowImGuiGuard.processEvent(window, *event);
+            imGuiContext.processEvent(window, *event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -88,7 +86,7 @@ int main()
                 eventMousePosition = eMouseMoved->position;
         }
 
-        windowImGuiGuard.update(window, deltaClock.restart());
+        imGuiContext.update(window, deltaClock.restart());
 
         ImGui::ShowDemoWindow();
 
@@ -113,13 +111,13 @@ int main()
                 {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}); // TODO P0: doesn't work on emscripten
 
         ImGui::Button("Look at this pretty button");
-        windowImGuiGuard.image(baseRenderTexture, size.toVec2f());
+        imGuiContext.image(baseRenderTexture, size.toVec2f());
 
         ImGui::End();
 
         window.clear();
         window.draw(shape);
-        windowImGuiGuard.render(window);
+        imGuiContext.render(window);
         window.display();
     }
 }
