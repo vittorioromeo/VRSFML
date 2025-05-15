@@ -225,16 +225,12 @@ namespace sf::ShapeUtils
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computePieSlicePointFromArcAngleStep(
-    const base::SizeT  index,
-    const float        radius,
-    const float        arcAngleStep,
-    const float        startAngle,
-    const float        sweepAngle,
-    const unsigned int pointCount) noexcept
+    const base::SizeT index,
+    const float       radius,
+    const float       arcAngleStep,
+    const float       startAngle) noexcept
 {
-    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u); // Need center + at least start/end points on arc
-    SFML_BASE_ASSERT_AND_ASSUME(sweepAngle > 0.f); // Sweep angle must be positive
-    SFML_BASE_ASSERT_AND_ASSUME(index < pointCount);
+
     SFML_BASE_ASSERT_AND_ASSUME(radius >= 0.f); // Radius should be non-negative
 
     // Vertex `0` is the center of the arc/circle, acting as the hub for the triangle fan.
@@ -299,12 +295,11 @@ namespace sf::ShapeUtils
     const float        sweepAngle,
     const unsigned int pointCount) noexcept
 {
-    return computePieSlicePointFromArcAngleStep(index,
-                                                radius,
-                                                computePieSliceArcAngleStep(sweepAngle, pointCount),
-                                                startAngle,
-                                                sweepAngle,
-                                                pointCount);
+    SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u); // Need center + at least start/end points on arc
+    SFML_BASE_ASSERT_AND_ASSUME(sweepAngle > 0.f); // Sweep angle must be positive
+    SFML_BASE_ASSERT_AND_ASSUME(index < pointCount);
+
+    return computePieSlicePointFromArcAngleStep(index, radius, computePieSliceArcAngleStep(sweepAngle, pointCount), startAngle);
 }
 
 ////////////////////////////////////////////////////////////
