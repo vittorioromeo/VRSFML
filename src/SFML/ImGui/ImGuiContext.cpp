@@ -378,12 +378,11 @@ constexpr unsigned int nullJoystickId = Joystick::MaxCount;
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ImGuiWindowGuard::Impl
 {
-    const Window*   window;
     ::ImGuiContext* imContext{::ImGui::CreateContext()};
 
     base::Optional<Texture> fontTexture; // internal font atlas which is used if user doesn't set a custom Texture.
 
-    bool             windowHasFocus;
+    bool             windowHasFocus{false};
     bool             mouseMoved{false};
     bool             mousePressed[3]{};
     ImGuiMouseCursor lastCursor{ImGuiMouseCursor_COUNT};
@@ -423,10 +422,7 @@ struct [[nodiscard]] ImGuiWindowGuard::Impl
 #endif
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit Impl(const Window& theWindow) :
-    window(&theWindow),
-    windowHasFocus(theWindow.hasFocus()),
-    joystickId{getConnectedJoystickId()}
+    [[nodiscard]] explicit Impl() : joystickId{getConnectedJoystickId()}
     {
     }
 
@@ -467,8 +463,7 @@ struct [[nodiscard]] ImGuiWindowGuard::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool init(const Vec2f              displaySize,
-                            const bool               loadDefaultFont,
+    [[nodiscard]] bool init(const bool               loadDefaultFont,
                             const SetClipboardTextFn setClipboardTextFn,
                             const GetClipboardTextFn getClipboardTextFn)
     {
@@ -481,9 +476,6 @@ struct [[nodiscard]] ImGuiWindowGuard::Impl
         io.BackendPlatformName = "imgui_impl_sfml";
 
         joystickId = getConnectedJoystickId();
-
-        // init rendering
-        io.DisplaySize = toImVec2(displaySize);
 
         // clipboard
         io.SetClipboardTextFn = setClipboardTextFn;
@@ -610,16 +602,16 @@ struct [[nodiscard]] ImGuiWindowGuard::Impl
     }
 
     ////////////////////////////////////////////////////////////
-    void processEvent(const Event& event)
+    void processEvent(const Window& window, const Event& event)
     {
         ImGuiIO& io = ::ImGui::GetIO();
 
-        if (!windowHasFocus && window->hasFocus())
+        if (!windowHasFocus && window.hasFocus())
         {
             io.AddFocusEvent(true);
             windowHasFocus = true;
         }
-        else if (windowHasFocus && !window->hasFocus())
+        else if (windowHasFocus && !window.hasFocus())
         {
             io.AddFocusEvent(false);
             windowHasFocus = false;
@@ -875,9 +867,7 @@ struct [[nodiscard]] ImGuiWindowGuard::Impl
 ////////////////////////////////////////////////////////////
 void ImGuiWindowGuard::setActive()
 {
-    SFML_BASE_ASSERT(m_impl->window != nullptr);
     ::ImGui::SetCurrentContext(m_impl->imContext);
-    m_impl->windowHasFocus = m_impl->window->hasFocus();
 }
 
 
@@ -1183,21 +1173,7 @@ ImGuiContext::ImGuiContext(ImGuiContext&&) noexcept : ImGuiContext{base::PassKey
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<ImGuiWindowGuard> ImGuiContext::init(RenderWindow& window, const bool loadDefaultFont)
-{
-    return init(window, window, loadDefaultFont);
-}
-
-
-////////////////////////////////////////////////////////////
-base::Optional<ImGuiWindowGuard> ImGuiContext::init(Window& window, RenderTarget& target, const bool loadDefaultFont)
-{
-    return init(window, target.getSize().toVec2f(), loadDefaultFont);
-}
-
-
-////////////////////////////////////////////////////////////
-ImGuiWindowGuard::ImGuiWindowGuard(const Window& window) : m_impl{base::makeUnique<Impl>(window)}
+ImGuiWindowGuard::ImGuiWindowGuard() : m_impl{base::makeUnique<Impl>()}
 {
 }
 
@@ -1215,14 +1191,14 @@ ImGuiWindowGuard& ImGuiWindowGuard::operator=(ImGuiWindowGuard&&) noexcept = def
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<ImGuiWindowGuard> ImGuiContext::init(Window& window, const Vec2f displaySize, const bool loadDefaultFont)
+base::Optional<ImGuiWindowGuard> ImGuiContext::init(const bool loadDefaultFont)
 {
     auto& ic = ensureInstalled();
 
-    base::Optional<ImGuiWindowGuard> result{base::inPlace, window};
+    base::Optional<ImGuiWindowGuard> result{base::inPlace};
     ::ImGui::SetCurrentContext(result->m_impl->imContext);
 
-    if (!result->m_impl->init(displaySize, loadDefaultFont, &setClipboardTextFn, &getClipboardTextFn))
+    if (!result->m_impl->init(loadDefaultFont, &setClipboardTextFn, &getClipboardTextFn))
     {
         result.reset();
         return result;
@@ -1236,12 +1212,12 @@ base::Optional<ImGuiWindowGuard> ImGuiContext::init(Window& window, const Vec2f 
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiWindowGuard::processEvent(const Event& event)
+void ImGuiWindowGuard::processEvent(const Window& window, const Event& event)
 {
     ensureInstalled();
     setActive();
 
-    m_impl->processEvent(event);
+    m_impl->processEvent(window, event);
 }
 
 
@@ -1267,6 +1243,9 @@ void ImGuiWindowGuard::render(RenderTarget& target)
 {
     ensureInstalled();
     setActive();
+
+    // init rendering
+    ImGui::GetIO().DisplaySize = toImVec2(target.getSize().toVec2f());
 
     sf::priv::TextureSaver textureSaver;
     sf::priv::ShaderSaver  shaderSaver;
