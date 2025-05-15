@@ -107,7 +107,7 @@ unsigned int MusicReader::getSampleRate() const
 
 
 ////////////////////////////////////////////////////////////
-ChannelMap MusicReader::getChannelMap() const
+const ChannelMap& MusicReader::getChannelMap() const
 {
     return m_impl->file.getChannelMap();
 }

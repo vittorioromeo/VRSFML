@@ -2,11 +2,11 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 #include "SFML/Audio/SoundBufferRecorder.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
@@ -124,7 +124,7 @@ int main()
         sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
 
         // Create a sound instance and play it
-        sf::Sound sound(playbackDevice, buffer, sf::AudioSettings{});
+        sf::Sound sound(playbackDevice, buffer);
 
         // Wait until finished
         while (sound.isPlaying())

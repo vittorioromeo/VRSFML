@@ -5,7 +5,6 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/ChannelMap.hpp" // used
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/Sound.hpp"
@@ -160,9 +159,13 @@ Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const Au
 m_impl(playbackDevice, *this, buffer)
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, (&m_impl->buffer));
-
-    // TODO P0: needed???
     applyAudioSettings(audioSettings);
+}
+
+
+////////////////////////////////////////////////////////////
+Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer) : Sound{playbackDevice, buffer, AudioSettings{}}
+{
 }
 
 

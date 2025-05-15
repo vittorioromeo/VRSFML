@@ -13,17 +13,17 @@
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/Transform.hpp"
 
-#include "SFML/Audio/Music.hpp"
-#include "SFML/Audio/SoundStream.hpp"
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/Listener.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/PlaybackDeviceHandle.hpp"
 #include "SFML/Audio/SoundChannel.hpp"
+#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/EventUtils.hpp"
@@ -141,8 +141,8 @@ public:
             .emplace(playbackDevice,
                      musicReader,
                      sf::AudioSettings{
-                         .rollOff = 0.04f,
-                         .looping = true,
+                         .attenuation = 0.04f,
+                         .looping     = true,
                      })
             .play();
     }
@@ -153,10 +153,10 @@ public:
     }
 
 private:
-    sf::Listener&                       m_listener;
-    sf::CircleShape                     m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
-    sf::CircleShape                     m_soundShape{{.radius = 20.f}};
-    sf::Vec2f                           m_position;
+    sf::Listener&                 m_listener;
+    sf::CircleShape               m_listenerShape{{.fillColor = sf::Color::Red, .radius = 20.f}};
+    sf::CircleShape               m_soundShape{{.radius = 20.f}};
+    sf::Vec2f                     m_position;
     sf::base::Optional<sf::Music> m_music;
 };
 
@@ -206,10 +206,10 @@ public:
             .emplace(playbackDevice,
                      musicReader,
                      sf::AudioSettings{
-                         .pitch   = m_pitch,
-                         .volume  = m_volume / 100.f,
-                         .rollOff = 0.f,
-                         .looping = true,
+                         .volume      = m_volume / 100.f,
+                         .pitch       = m_pitch,
+                         .attenuation = 0.f,
+                         .looping     = true,
                      })
             .play();
     }
@@ -220,11 +220,11 @@ public:
     }
 
 private:
-    sf::Listener&                       m_listener;
-    float                               m_pitch{1.f};
-    float                               m_volume{100.f};
-    sf::Text                            m_pitchText;
-    sf::Text                            m_volumeText;
+    sf::Listener&                 m_listener;
+    float                         m_pitch{1.f};
+    float                         m_volume{100.f};
+    sf::Text                      m_pitchText;
+    sf::Text                      m_volumeText;
     sf::base::Optional<sf::Music> m_music;
 };
 
@@ -301,10 +301,10 @@ public:
             .emplace(playbackDevice,
                      musicReader,
                      sf::AudioSettings{
-                         .cone      = {innerConeAngle, outerConeAngle, 0.f},
-                         .direction = {0.f, 1.f, 0.f},
-                         .rollOff   = m_attenuation,
-                         .looping   = true,
+                         .cone        = {innerConeAngle, outerConeAngle, 0.f},
+                         .direction   = {0.f, 1.f, 0.f},
+                         .attenuation = m_attenuation,
+                         .looping     = true,
                      })
             .play();
     }
@@ -445,7 +445,7 @@ public:
         target.draw(m_currentFrequency, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
     {
         // We set the listener position back to the default
         // so that the tone is right on top of the listener
@@ -575,7 +575,7 @@ public:
         target.draw(m_currentFactor, states);
     }
 
-    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader& musicReader) override
+    void start(sf::PlaybackDevice& playbackDevice, sf::MusicReader&) override
     {
         // Synchronize listener audio position with graphical position
         m_listener.position = {m_listenerShape.position.x, m_listenerShape.position.y, 0.f};
@@ -652,8 +652,8 @@ public:
             .emplace(playbackDevice,
                      musicReader,
                      sf::AudioSettings{
-                         .rollOff = 0.f,
-                         .looping = true,
+                         .attenuation = 0.f,
+                         .looping     = true,
                      })
             .play();
     }

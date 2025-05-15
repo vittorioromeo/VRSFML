@@ -20,7 +20,7 @@ class TestSoundStream : public sf::SoundStream
 {
 public:
     explicit TestSoundStream(sf::PlaybackDevice& playbackDevice) :
-    sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 0u}
+    sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
     {
     }
 
@@ -71,7 +71,7 @@ TEST_CASE("[Audio] sf::SoundStream" * doctest::skip(skipAudioDeviceTests))
     {
         TestSoundStream testSoundStream(playbackDevice);
         testSoundStream.setPlayingOffset(sf::milliseconds(100));
-        CHECK(testSoundStream.getPlayingOffset() == sf::milliseconds(0));
+        CHECK(testSoundStream.getPlayingOffset() == sf::milliseconds(100));
     }
 
     SECTION("Set/get loop")

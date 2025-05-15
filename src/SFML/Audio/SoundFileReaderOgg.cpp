@@ -110,13 +110,12 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
     // Retrieve the music attributes
     vorbis_info* vorbisInfo = ov_info(&m_impl->vorbis, -1);
 
-    Info& info        = result.emplace();
-    info.channelCount = static_cast<unsigned int>(vorbisInfo->channels);
-    info.sampleRate   = static_cast<unsigned int>(vorbisInfo->rate);
-    info.sampleCount  = static_cast<base::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
+    Info& info       = result.emplace();
+    info.sampleRate  = static_cast<unsigned int>(vorbisInfo->rate);
+    info.sampleCount = static_cast<base::SizeT>(ov_pcm_total(&m_impl->vorbis, -1) * vorbisInfo->channels);
 
     // For Vorbis channel mapping refer to: https://xiph.org/vorbis/doc/Vorbis_I_spec.html#x1-810004.3.9
-    switch (info.channelCount)
+    switch (static_cast<unsigned int>(vorbisInfo->channels))
     {
         case 0:
             priv::err() << "No channels in Vorbis file";
@@ -174,7 +173,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderOgg::open(InputStream& stre
     }
 
     // We must keep the channel count for the seek function
-    m_impl->channelCount = info.channelCount;
+    m_impl->channelCount = static_cast<unsigned int>(info.channelMap.getSize());
 
     return result;
 }

@@ -39,12 +39,12 @@ struct SFML_AUDIO_API Listener
         float outerGain{}; //!< Outer gain
     };
 
-    float volume{1.f};         //< Volume (between `0` and `1`)
-    Vec3f position{0, 0, 0};   //< Position where audio is heard from
-    Vec3f direction{0, 0, -1}; //< Forward-pointing vec3 from listener's perspective (not necessarily normalized)
-    Vec3f velocity{0, 0, 0};   //< Velocity of the listener
-    Listener::Cone cone{Angle::Full, Angle::Full, 1}; //< Cone properties (affects directional attenuation)
-    Vec3f          upVec{0, 1, 0}; //< Upward-pointing vec3 from the listener's perspective (not necessarily normalized)
+    float volume{1.f};         //!< Volume (between `0` and `1`)
+    Vec3f position{0, 0, 0};   //!< Position where audio is heard from
+    Vec3f direction{0, 0, -1}; //!< Forward-pointing vec3 from listener's perspective (not necessarily normalized)
+    Vec3f velocity{0, 0, 0};   //!< Velocity of the listener
+    Listener::Cone cone{Angle::Full, Angle::Full, 1}; //!< Cone properties (affects directional attenuation)
+    Vec3f upVec{0, 1, 0}; //!< Upward-pointing vec3 from the listener's perspective (not necessarily normalized)
 };
 
 } // namespace sf

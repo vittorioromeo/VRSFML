@@ -129,7 +129,7 @@ public:
 
 private:
     struct Impl;
-    base::InPlacePImpl<Impl, 2048> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 1792> m_impl; //!< Implementation details
 };
 
 ////////////////////////////////////////////////////////////

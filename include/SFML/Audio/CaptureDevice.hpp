@@ -11,9 +11,9 @@
 
 #include "SFML/System/LifetimeDependee.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -162,13 +162,13 @@ private:
     /// \brief Try to start the device, returns `true` on success
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool startDevice() const;
+    [[nodiscard]] bool startDevice();
 
     ////////////////////////////////////////////////////////////
     /// \brief Try to stop the device, returns `true` on success
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool stopDevice() const;
+    [[nodiscard]] bool stopDevice();
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the "process samples" callback used by miniaudio
@@ -181,8 +181,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details
-    // TODO P0: needs address stability, but memory should be reusable
+    base::InPlacePImpl<Impl, 5728> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking

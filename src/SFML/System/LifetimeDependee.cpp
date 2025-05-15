@@ -99,7 +99,6 @@ LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 
 
 ////////////////////////////////////////////////////////////
-// A deep copy of a resource implies that lifetime tracking must being from scratch for that new copy.
 LifetimeDependee& LifetimeDependee::operator=(const LifetimeDependee& rhs)
 {
     if (&rhs == this)
@@ -107,7 +106,6 @@ LifetimeDependee& LifetimeDependee::operator=(const LifetimeDependee& rhs)
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-    asAtomicUInt(m_dependantCount).store(0u, std::memory_order::relaxed);
 
     return *this;
 }
@@ -121,8 +119,6 @@ LifetimeDependee& LifetimeDependee::operator=(LifetimeDependee&& rhs) noexcept
 
     m_dependeeName  = rhs.m_dependeeName;
     m_dependantName = rhs.m_dependantName;
-
-    // See rationale in move constructor for not resetting `rhs.m_dependantCount`.
 
     return *this;
 }

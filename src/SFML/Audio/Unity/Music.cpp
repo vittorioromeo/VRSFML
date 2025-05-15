@@ -4,7 +4,7 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ChannelMap.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
@@ -55,15 +55,18 @@ namespace sf
 Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings) :
 SoundStream(playbackDevice, musicReader.getChannelMap(), musicReader.getSampleRate()),
 m_loopSpan{0u, musicReader.getSampleCount()},
-m_musicSource(&musicReader),
+m_musicReader(musicReader),
 m_sampleOffset{0u}
 {
-    SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, this, m_musicSource);
-
-    // TODO P0: needed???
+    SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, this, (&m_musicReader));
     applyAudioSettings(audioSettings);
-    setEffectProcessor(getEffectProcessor());
-    setPlayingOffset(getPlayingOffset());
+}
+
+
+////////////////////////////////////////////////////////////
+Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader) :
+Music{playbackDevice, musicReader, AudioSettings{}}
+{
 }
 
 
@@ -75,7 +78,7 @@ Music::~Music() = default;
 bool Music::onGetData(SoundStream::Chunk& data)
 {
     // Resize the internal buffer so that it can contain 1 second of audio samples
-    m_samples.resize(getSampleRate() * getChannelCount());
+    m_samples.resize(m_musicReader.getSampleRate() * m_musicReader.getChannelCount());
 
     base::SizeT     toFill  = m_samples.size();
     const base::U64 loopEnd = m_loopSpan.offset + m_loopSpan.length;
@@ -90,13 +93,13 @@ bool Music::onGetData(SoundStream::Chunk& data)
     data.samples = m_samples.data();
 
     // `seekAndRead` is thread-safe
-    const auto [sampleOffset, samplesRead] = m_musicSource->seekAndRead(m_sampleOffset, m_samples.data(), toFill);
+    const auto [sampleOffset, samplesRead] = m_musicReader.seekAndRead(m_sampleOffset, m_samples.data(), toFill);
 
     data.sampleCount = samplesRead;
     m_sampleOffset   = sampleOffset + samplesRead;
 
     // Check if we have stopped obtaining samples or reached either the EOF or the loop end point
-    return (data.sampleCount != 0) && (m_sampleOffset < m_musicSource->getSampleCount()) &&
+    return (data.sampleCount != 0) && (m_sampleOffset < m_musicReader.getSampleCount()) &&
            (m_sampleOffset != loopEnd || m_loopSpan.length == 0);
 }
 
@@ -104,7 +107,7 @@ bool Music::onGetData(SoundStream::Chunk& data)
 ////////////////////////////////////////////////////////////
 void Music::onSeek(const Time timeOffset)
 {
-    m_sampleOffset = timeToSamples(getSampleRate(), getChannelCount(), timeOffset);
+    m_sampleOffset = timeToSamples(m_musicReader.getSampleRate(), m_musicReader.getChannelCount(), timeOffset);
 }
 
 
@@ -120,7 +123,7 @@ base::Optional<base::U64> Music::onLoop()
         return base::makeOptional(m_sampleOffset);
     }
 
-    if (isLooping() && (m_sampleOffset >= m_musicSource->getSampleCount()))
+    if (isLooping() && (m_sampleOffset >= m_musicReader.getSampleCount()))
     {
         // If we're at the EOF, reset to 0
         m_sampleOffset = 0u;
@@ -134,8 +137,8 @@ base::Optional<base::U64> Music::onLoop()
 ////////////////////////////////////////////////////////////
 Music::TimeSpan Music::getLoopPoints() const
 {
-    const auto sampleRate   = getSampleRate();
-    const auto channelCount = getChannelCount();
+    const auto sampleRate   = m_musicReader.getSampleRate();
+    const auto channelCount = m_musicReader.getChannelCount();
 
     return TimeSpan{samplesToTime(sampleRate, channelCount, m_loopSpan.offset),
                     samplesToTime(sampleRate, channelCount, m_loopSpan.length)};
@@ -145,13 +148,13 @@ Music::TimeSpan Music::getLoopPoints() const
 ////////////////////////////////////////////////////////////
 void Music::setLoopPoints(const TimeSpan timePoints)
 {
-    const auto sampleRate   = getSampleRate();
-    const auto channelCount = getChannelCount();
+    const auto sampleRate   = m_musicReader.getSampleRate();
+    const auto channelCount = m_musicReader.getChannelCount();
 
     SFML_BASE_ASSERT(channelCount > 0u);
     SFML_BASE_ASSERT(sampleRate > 0u);
 
-    const auto fileChannelCount = m_musicSource->getSampleCount();
+    const auto fileChannelCount = m_musicReader.getSampleCount();
 
     Span<base::U64> samplePoints{timeToSamples(sampleRate, channelCount, timePoints.offset),
                                  timeToSamples(sampleRate, channelCount, timePoints.length)};
@@ -173,14 +176,14 @@ void Music::setLoopPoints(const TimeSpan timePoints)
     if (samplePoints.offset >= fileChannelCount)
     {
         priv::err() << "LoopPoints offset val must be in range [0, Duration).";
-        m_loopSpan = {0u, m_musicSource->getSampleCount()}; // Reset to default
+        m_loopSpan = {0u, m_musicReader.getSampleCount()}; // Reset to default
         return;
     }
 
     if (samplePoints.length == 0u)
     {
         priv::err() << "LoopPoints length val must be nonzero.";
-        m_loopSpan = {0u, m_musicSource->getSampleCount()}; // Reset to default
+        m_loopSpan = {0u, m_musicReader.getSampleCount()}; // Reset to default
         return;
     }
 
@@ -194,11 +197,11 @@ void Music::setLoopPoints(const TimeSpan timePoints)
     // When we apply this change, we need to "reset" this instance and its buffer
 
     // Get old playing status and position
-    // const Status oldStatus = getStatus();
-    const Time oldPos = getPlayingOffset();
+    const bool oldIsPlaying = isPlaying();
+    const Time oldPos       = getPlayingOffset();
 
     // Unload
-    // stop();
+    stop();
 
     // Set
     m_loopSpan = samplePoints;
@@ -208,29 +211,15 @@ void Music::setLoopPoints(const TimeSpan timePoints)
         setPlayingOffset(oldPos);
 
     // Resume
-    // if (oldStatus == Status::Playing)
-    //    resumeOnLastPlaybackDevice();
+    if (oldIsPlaying)
+        resume();
 }
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Music::getChannelCount() const
+const MusicReader& Music::getMusicReader() const
 {
-    return m_musicSource->getChannelCount();
-}
-
-
-////////////////////////////////////////////////////////////
-unsigned int Music::getSampleRate() const
-{
-    return m_musicSource->getSampleRate();
-}
-
-
-////////////////////////////////////////////////////////////
-sf::ChannelMap Music::getChannelMap() const
-{
-    return m_musicSource->getChannelMap();
+    return m_musicReader;
 }
 
 } // namespace sf

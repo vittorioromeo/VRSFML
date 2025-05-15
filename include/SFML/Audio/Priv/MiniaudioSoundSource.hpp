@@ -20,9 +20,9 @@
 ////////////////////////////////////////////////////////////
 namespace sf
 {
-struct AudioSettings;
 class EffectProcessor;
 class Time;
+struct AudioSettings;
 } // namespace sf
 
 
@@ -615,7 +615,7 @@ protected:
     /// This constructor is meant to be called by derived classes only.
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit MiniaudioSoundSource() = default;
+    [[nodiscard]] explicit MiniaudioSoundSource();
 
     ////////////////////////////////////////////////////////////
     /// \brief Apply the stored settings onto `sound`
@@ -641,7 +641,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 320> m_impl; //!< Implementation details
+    base::InPlacePImpl<Impl, 288> m_impl; //!< Implementation details
 };
 
 } // namespace sf::priv

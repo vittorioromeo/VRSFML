@@ -124,13 +124,12 @@ base::Optional<SoundFileReader::Info> SoundFileReaderMp3::open(InputStream& stre
         return result; // Empty optional
 
     // Retrieve the music attributes
-    Info& info        = result.emplace();
-    info.channelCount = static_cast<unsigned int>(m_impl->decoder.info.channels);
-    info.sampleRate   = static_cast<unsigned int>(m_impl->decoder.info.hz);
-    info.sampleCount  = m_impl->decoder.samples;
+    Info& info       = result.emplace();
+    info.sampleRate  = static_cast<unsigned int>(m_impl->decoder.info.hz);
+    info.sampleCount = m_impl->decoder.samples;
 
     // MP3 only supports mono/stereo channels
-    switch (info.channelCount)
+    switch (static_cast<unsigned int>(m_impl->decoder.info.channels))
     {
         case 0:
             priv::err() << "No channels in MP3 file";

@@ -217,7 +217,7 @@ public:
     /// \see `getSampleRate`, `getChannelCount`, `getDuration`
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] ChannelMap getChannelMap() const;
+    [[nodiscard]] const ChannelMap& getChannelMap() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the total duration of the sound

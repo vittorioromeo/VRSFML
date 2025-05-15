@@ -37,10 +37,9 @@ public:
     ////////////////////////////////////////////////////////////
     struct Info
     {
-        base::U64    sampleCount{};  //!< Total number of samples in the file
-        unsigned int channelCount{}; //!< Number of channels of the sound
-        unsigned int sampleRate{};   //!< Samples rate of the sound, in samples per second
-        ChannelMap   channelMap;     //!< Map of position in sample frame to sound channel
+        base::U64    sampleCount{}; //!< Total number of samples in the file
+        unsigned int sampleRate{};  //!< Samples rate of the sound, in samples per second
+        ChannelMap   channelMap;    //!< Map of position in sample frame to sound channel
     };
 
     ////////////////////////////////////////////////////////////

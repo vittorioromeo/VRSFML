@@ -41,7 +41,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Construction")
     {
-        const sf::Sound sound(playbackDevice, soundBuffer, sf::AudioSettings{});
+        const sf::Sound sound(playbackDevice, soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
         CHECK(!sound.isLooping());
         CHECK(sound.getPlayingOffset() == sf::Time{});
@@ -50,21 +50,21 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Get buffer")
     {
-        sf::Sound sound(playbackDevice, soundBuffer, sf::AudioSettings{});
+        sf::Sound sound(playbackDevice, soundBuffer);
         CHECK(&sound.getBuffer() == &soundBuffer);
     }
 
     SECTION("Set/get loop")
     {
-        sf::Sound sound(playbackDevice, soundBuffer, sf::AudioSettings{});
+        sf::Sound sound(playbackDevice, soundBuffer);
         sound.setLooping(true);
         CHECK(sound.isLooping());
     }
 
     SECTION("Set/get playing offset")
     {
-        sf::Sound sound(playbackDevice, soundBuffer, sf::AudioSettings{});
-        sound.setPlayingOffset(sf::seconds(10)); // TODO P0: i think this must be stored in SoundSource as well?
+        sf::Sound sound(playbackDevice, soundBuffer);
+        sound.setPlayingOffset(sf::seconds(10));
         CHECK(sound.getPlayingOffset() == sf::seconds(10));
     }
 
@@ -73,13 +73,13 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
         auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
-        const sf::Sound sound(playbackDevice, soundBufferA, sf::AudioSettings{});
+        const sf::Sound sound(playbackDevice, soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
         CHECK(!sound.isLooping());
         CHECK(sound.getPlayingOffset() == sf::Time{});
         CHECK(!sound.isPlaying());
 
-        soundBufferB = SFML_BASE_MOVE(soundBufferA); // TODO P0: this mistkae should be detected
+        soundBufferB = SFML_BASE_MOVE(soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
     }
 
@@ -88,14 +88,13 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
         auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
-        const sf::Sound soundA(playbackDevice, soundBufferA, sf::AudioSettings{});
-        const sf::Sound soundB(playbackDevice, soundBufferB, sf::AudioSettings{});
+        const sf::Sound soundA(playbackDevice, soundBufferA);
+        const sf::Sound soundB(playbackDevice, soundBufferB);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
 
-        // TODO P0: fix
-        // soundBufferB = soundBufferA;
+        soundBufferB = soundBufferA;
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
@@ -106,8 +105,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
         auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
 
-        const sf::Sound soundA(playbackDevice, soundBufferA, sf::AudioSettings{});
-        const sf::Sound soundB(playbackDevice, soundBufferB, sf::AudioSettings{});
+        const sf::Sound soundA(playbackDevice, soundBufferA);
+        const sf::Sound soundB(playbackDevice, soundBufferB);
 
         CHECK(&soundA.getBuffer() == &soundBufferA);
         CHECK(&soundB.getBuffer() == &soundBufferB);
@@ -126,7 +125,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             const auto badFunction = [&playbackDevice]
             {
                 const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-                return sf::Sound(playbackDevice, localSoundBuffer, sf::AudioSettings{});
+                return sf::Sound(playbackDevice, localSoundBuffer);
             };
 
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
@@ -143,7 +142,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             {
                 explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
                 memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
-                memberSound{thePlaybackDevice, memberSoundBuffer, sf::AudioSettings{}}
+                memberSound{thePlaybackDevice, memberSoundBuffer}
                 {
                 }
 
@@ -170,7 +169,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             auto sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sf::Sound s0(playbackDevice, sb0, sf::AudioSettings{});
+            sf::Sound s0(playbackDevice, sb0);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
             sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
@@ -186,7 +185,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             CHECK(optDependee.hasValue());
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sf::Sound s0(playbackDevice, *optDependee, sf::AudioSettings{});
+            sf::Sound s0(playbackDevice, *optDependee);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
             optDependee.reset();

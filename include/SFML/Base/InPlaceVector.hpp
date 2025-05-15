@@ -171,8 +171,9 @@ public:
         // no-op, just for compatibility
     }
 
+
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve([[maybe_unused]] const SizeT targetCapacity)
+    [[gnu::always_inline, gnu::flatten]] void reserve([[maybe_unused]] const SizeT targetCapacity)
     {
         SFML_BASE_ASSERT(targetCapacity <= N);
         // no-op, just for compatibility
@@ -180,55 +181,21 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserveMore([[maybe_unused]] const SizeT n)
+    [[gnu::always_inline, gnu::flatten]] void reserveMore([[maybe_unused]] const SizeT n)
     {
-        SFML_BASE_ASSERT(m_size + n <= N);
+        SFML_BASE_ASSERT(size() + n <= N);
         // no-op, just for compatibility
     }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void assignRange(const TItem* const b, const TItem* const e)
-    {
-        SFML_BASE_ASSERT(b != nullptr);
-        SFML_BASE_ASSERT(e != nullptr);
-        SFML_BASE_ASSERT(b <= e);
-
-        const auto count = static_cast<SizeT>(e - b);
-        SFML_BASE_ASSERT(count <= N);
-
-        clear();
-        priv::VectorUtils::copyRange(data(), b, e);
-
-        m_size = count;
-    }
-
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceRange(const TItem* const ptr, const SizeT count) noexcept
     {
-        SFML_BASE_ASSERT(m_size + count <= N);          // Capacity check is vital here
-        SFML_BASE_ASSERT(ptr != nullptr || count == 0); // ptr can be null only if count is 0
+        SFML_BASE_ASSERT(m_size + count <= N);
+        SFML_BASE_ASSERT(ptr != nullptr);
 
         priv::VectorUtils::copyRange(data() + m_size, ptr, ptr + count);
         m_size += count;
     }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void emplaceRange(const TItem* const ptr, const SizeT count)
-    {
-        SFML_BASE_ASSERT(m_size + count <= N); // Ensure fits
-        unsafeEmplaceRange(ptr, count);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const InPlaceVector& rhs) noexcept
-    {
-        unsafeEmplaceRange(rhs.data(), rhs.m_size);
-    }
-
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void clear() noexcept
@@ -258,41 +225,6 @@ public:
     {
         SFML_BASE_ASSERT(m_size < N);
         return *(SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<Ts&&>(xs)...));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename... Ts>
-    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)
-    {
-        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename T>
-    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)
-    {
-        return unsafeEmplaceBack(static_cast<T&&>(x));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename... Ts>
-    [[gnu::always_inline]] TItem& reEmplaceByIterator(TItem* const it, Ts&&... xs)
-    {
-        SFML_BASE_ASSERT(it >= begin() && it < end());
-
-        priv::VectorUtils::destroyRange(it, it + 1);
-        return *(SFML_BASE_PLACEMENT_NEW(it) TItem(static_cast<Ts&&>(xs)...));
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename... Ts>
-    [[gnu::always_inline]] TItem& reEmplaceByIndex(const base::SizeT index, Ts&&... xs)
-    {
-        return reEmplaceByIterator(data() + index, static_cast<Ts&&>(xs)...);
     }
 
 
@@ -333,15 +265,6 @@ public:
     {
         SFML_BASE_ASSERT(m_size + sizeof...(items) <= N);
         (SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)), ...);
-    }
-
-
-    ////////////////////////////////////////////////////////////
-    template <typename... TItems>
-    [[gnu::always_inline]] void pushBackMultiple(TItems&&... items)
-    {
-        SFML_BASE_ASSERT(m_size + sizeof...(items) <= N);
-        unsafePushBackMultiple(static_cast<TItems&&>(items)...);
     }
 
 
@@ -427,7 +350,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_ACCESSORS(InPlaceVector);
+    SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(InPlaceVector);
 };
 
 } // namespace sf::base

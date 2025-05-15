@@ -179,7 +179,7 @@ template <typename T>
 
 
 ////////////////////////////////////////////////////////////
-#define SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_ACCESSORS(vectorType)                                                    \
+#define SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(vectorType)                                                   \
                                                                                                                      \
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& operator[](const SizeT i) noexcept             \
     {                                                                                                                \
@@ -267,7 +267,7 @@ template <typename T>
         return true;                                                                                                 \
     }                                                                                                                \
                                                                                                                      \
-    [[nodiscard]] bool operator!=(const vectorType& rhs) const                                                       \
+    [[nodiscard, gnu::always_inline]] bool operator!=(const vectorType& rhs) const                                   \
     {                                                                                                                \
         return !(*this == rhs);                                                                                      \
     }                                                                                                                \
@@ -276,6 +276,70 @@ template <typename T>
     [[gnu::always_inline]] friend void swap(vectorType& lhs, vectorType& rhs) noexcept                               \
     {                                                                                                                \
         lhs.swap(rhs);                                                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    template <typename... Ts>                                                                                        \
+    [[gnu::always_inline, gnu::flatten]] TItem& emplaceBack(Ts&&... xs)                                              \
+    {                                                                                                                \
+        reserveMore(1);                                                                                              \
+        return unsafeEmplaceBack(static_cast<Ts&&>(xs)...);                                                          \
+    }                                                                                                                \
+                                                                                                                     \
+    template <typename T = TItem>                                                                                    \
+    [[gnu::always_inline, gnu::flatten]] TItem& pushBack(T&& x)                                                      \
+    {                                                                                                                \
+        reserveMore(1);                                                                                              \
+        return unsafeEmplaceBack(static_cast<T&&>(x));                                                               \
+    }                                                                                                                \
+                                                                                                                     \
+    template <typename... Ts>                                                                                        \
+    [[gnu::always_inline]] TItem& reEmplaceByIterator(TItem* const it, Ts&&... xs)                                   \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(it >= begin() && it < end());                                                               \
+                                                                                                                     \
+        if constexpr (!SFML_BASE_IS_TRIVIALLY_DESTRUCTIBLE(TItem))                                                   \
+            it->~TItem();                                                                                            \
+                                                                                                                     \
+        return *(SFML_BASE_PLACEMENT_NEW(it) TItem(static_cast<Ts&&>(xs)...));                                       \
+    }                                                                                                                \
+                                                                                                                     \
+    template <typename... Ts>                                                                                        \
+    [[gnu::always_inline]] TItem& reEmplaceByIndex(const base::SizeT index, Ts&&... xs)                              \
+    {                                                                                                                \
+        return reEmplaceByIterator(data() + index, static_cast<Ts&&>(xs)...);                                        \
+    }                                                                                                                \
+                                                                                                                     \
+    template <typename... TItems>                                                                                    \
+    [[gnu::always_inline]] void pushBackMultiple(TItems&&... items)                                                  \
+    {                                                                                                                \
+        reserveMore(sizeof...(items));                                                                               \
+        unsafePushBackMultiple(static_cast<TItems&&>(items)...);                                                     \
+    }                                                                                                                \
+                                                                                                                     \
+    [[gnu::always_inline]] void emplaceRange(const TItem* const ptr, const SizeT count)                              \
+    {                                                                                                                \
+        reserveMore(count);                                                                                          \
+        unsafeEmplaceRange(ptr, count);                                                                              \
+    }                                                                                                                \
+                                                                                                                     \
+    [[gnu::always_inline, gnu::flatten]] void unsafeEmplaceOther(const vectorType& rhs) noexcept                     \
+    {                                                                                                                \
+        unsafeEmplaceRange(rhs.data(), rhs.size());                                                                  \
+    }                                                                                                                \
+                                                                                                                     \
+    [[gnu::always_inline]] void assignRange(const TItem* const b, const TItem* const e)                              \
+    {                                                                                                                \
+        SFML_BASE_ASSERT(b != nullptr);                                                                              \
+        SFML_BASE_ASSERT(e != nullptr);                                                                              \
+        SFML_BASE_ASSERT(b <= e);                                                                                    \
+                                                                                                                     \
+        const auto count = static_cast<SizeT>(e - b);                                                                \
+                                                                                                                     \
+        clear();                                                                                                     \
+        reserve(count);                                                                                              \
+        priv::VectorUtils::copyRange(data(), b, e);                                                                  \
+                                                                                                                     \
+        unsafeSetSize(count);                                                                                        \
     }                                                                                                                \
                                                                                                                      \
     static_assert(true)
