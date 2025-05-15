@@ -4689,8 +4689,6 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
             ImGui::PopFont();
         });
 
-    imGuiContext.setActive();
-
     rtImGui.setView(scaledHUDView);
     rtImGui.clear(sf::Color::Transparent);
     imGuiContext.render(rtImGui);

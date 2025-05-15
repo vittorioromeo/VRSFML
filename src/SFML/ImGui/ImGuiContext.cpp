@@ -803,13 +803,6 @@ struct [[nodiscard]] ImGuiContext::Impl
 
 
 ////////////////////////////////////////////////////////////
-void ImGuiContext::setActive()
-{
-    ::ImGui::SetCurrentContext(m_impl->imContext);
-}
-
-
-////////////////////////////////////////////////////////////
 void ImGuiContext::setActiveJoystickId(unsigned int newJoystickId)
 {
     SFML_BASE_ASSERT(newJoystickId < Joystick::MaxCount);
@@ -1047,7 +1040,7 @@ ImGuiContext& ImGuiContext::operator=(ImGuiContext&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void ImGuiContext::processEvent(const Window& window, const Event& event)
 {
-    setActive();
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     m_impl->processEvent(window, event);
 }
 
@@ -1055,7 +1048,7 @@ void ImGuiContext::processEvent(const Window& window, const Event& event)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::update(RenderWindow& window, Time dt)
 {
-    setActive();
+    ::ImGui::SetCurrentContext(m_impl->imContext);
     m_impl->update(window, window, dt);
 }
 
@@ -1070,7 +1063,7 @@ void ImGuiContext::render(RenderWindow& window)
 ////////////////////////////////////////////////////////////
 void ImGuiContext::render(RenderTarget& target)
 {
-    setActive();
+    ::ImGui::SetCurrentContext(m_impl->imContext);
 
     // init rendering
     ::ImGui::GetIO().DisplaySize = toImVec2(target.getSize().toVec2f());
