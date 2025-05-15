@@ -16,7 +16,7 @@ class LifetimeDependee;
 class SFML_SYSTEM_API LifetimeDependant
 {
 public:
-    explicit LifetimeDependant(const char* const dependeeName, LifetimeDependee* dependee = nullptr) noexcept;
+    explicit LifetimeDependant(const char* dependeeName, LifetimeDependee* dependee = nullptr) noexcept;
     ~LifetimeDependant();
 
     LifetimeDependant(const LifetimeDependant& rhs) noexcept;

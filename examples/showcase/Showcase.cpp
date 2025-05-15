@@ -23,12 +23,12 @@
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
 
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioContext.hpp"
-#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/Window/Event.hpp"
@@ -493,11 +493,11 @@ public:
                     if (&it->getPlaybackDevice() == &playbackDevice)
                         it->play();
                     else
-                        m_activeSounds.reEmplaceByIterator(it, playbackDevice, m_sbByteMeow, sf::AudioSettings{}).play();
+                        m_activeSounds.reEmplaceByIterator(it, playbackDevice, m_sbByteMeow).play();
                 }
 
                 if (m_activeSounds.size() < 32u)
-                    m_activeSounds.emplaceBack(playbackDevice, m_sbByteMeow, sf::AudioSettings{}).play();
+                    m_activeSounds.emplaceBack(playbackDevice, m_sbByteMeow).play();
             }
 
             ImGui::SameLine();
@@ -506,9 +506,15 @@ public:
             if (ImGui::Button(buttonLabel))
             {
                 if (!m_activeMusic.hasValue())
-                    m_activeMusic.emplace(playbackDevice, m_msBGMWizard, sf::AudioSettings{});
-                else
+                    m_activeMusic.emplace(playbackDevice, m_msBGMWizard).play();
+                else if (&m_activeMusic->getPlaybackDevice() == &playbackDevice)
                     m_activeMusic->resume();
+                else
+                {
+                    const auto playingOffset = m_activeMusic->getPlayingOffset();
+                    m_activeMusic.emplace(playbackDevice, m_msBGMWizard).play();
+                    m_activeMusic->setPlayingOffset(playingOffset);
+                }
             }
 
             ++i;

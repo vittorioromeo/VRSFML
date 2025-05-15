@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/Music.hpp"
 
 #include "SFML/Base/FloatMax.hpp"
 #pragma GCC diagnostic push
@@ -500,11 +500,11 @@ struct Main
     struct BGMBuffer
     {
         sf::MusicReader musicReader;
-        sf::Music music;
+        sf::Music       music;
 
         explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
         musicReader{SFML_BASE_MOVE(theMusicSource)},
-        music{playbackDevice, musicReader, sf::AudioSettings{}}
+        music{playbackDevice, musicReader}
         {
         }
     };
@@ -1939,6 +1939,7 @@ struct Main
         optNextMusic->music.setLooping(true);
         optNextMusic->music.setAttenuation(0.f);
         optNextMusic->music.setSpatializationEnabled(false);
+        optNextMusic->music.play();
 #else
         (void)index;
         (void)force;

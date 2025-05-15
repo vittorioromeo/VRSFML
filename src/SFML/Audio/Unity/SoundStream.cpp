@@ -263,4 +263,11 @@ base::Optional<base::U64> SoundStream::onLoop()
     return base::makeOptional(base::U64{0});
 }
 
+
+////////////////////////////////////////////////////////////
+PlaybackDevice& SoundStream::getPlaybackDevice() const
+{
+    return *m_impl->soundBase.playbackDevice;
+}
+
 } // namespace sf

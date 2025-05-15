@@ -173,12 +173,11 @@ void streamMetadata(const FLAC__StreamDecoder*, const FLAC__StreamMetadata* meta
 
     if (meta->type == FLAC__METADATA_TYPE_STREAMINFO)
     {
-        data->info.sampleCount  = meta->data.stream_info.total_samples * meta->data.stream_info.channels;
-        data->info.sampleRate   = meta->data.stream_info.sample_rate;
-        data->info.channelCount = meta->data.stream_info.channels;
+        data->info.sampleCount = meta->data.stream_info.total_samples * meta->data.stream_info.channels;
+        data->info.sampleRate  = meta->data.stream_info.sample_rate;
 
         // For FLAC channel mapping refer to: https://xiph.org/flac/format.html#frame_header
-        switch (data->info.channelCount)
+        switch (meta->data.stream_info.channels)
         {
             case 0:
                 sf::priv::err() << "No channels in FLAC file";
@@ -370,13 +369,16 @@ void SoundFileReaderFlac::seek(base::U64 sampleOffset)
     {
         // The "write" callback will populate the leftovers buffer with the first batch of samples from the
         // seek destination, and since we want that data in this typical case, we don't re-clear it afterward
-        FLAC__stream_decoder_seek_absolute(m_impl->decoder.get(), sampleOffset / m_impl->clientData.info.channelCount);
+        FLAC__stream_decoder_seek_absolute(m_impl->decoder.get(),
+                                           sampleOffset / m_impl->clientData.info.channelMap.getSize());
     }
     else
     {
         // FLAC decoder can't skip straight to EOF, so we short-seek by one sample and skip the rest
         FLAC__stream_decoder_seek_absolute(m_impl->decoder.get(),
-                                           (m_impl->clientData.info.sampleCount / m_impl->clientData.info.channelCount) - 1);
+                                           (m_impl->clientData.info.sampleCount /
+                                            m_impl->clientData.info.channelMap.getSize()) -
+                                               1);
         FLAC__stream_decoder_skip_single_frame(m_impl->decoder.get());
 
         // This was re-populated during the seek, but we're skipping everything in this, so we need it emptied

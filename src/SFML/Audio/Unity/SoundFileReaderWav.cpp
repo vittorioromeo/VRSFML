@@ -163,8 +163,7 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
     for (auto i = 0u; i < m_impl->channelCount; ++i)
         soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(base::U8{channelMap[i]}));
 
-    return base::makeOptional<Info>(
-        {frameCount * m_impl->channelCount, m_impl->channelCount, sampleRate, SFML_BASE_MOVE(soundChannels)});
+    return base::makeOptional<Info>({frameCount * m_impl->channelCount, sampleRate, SFML_BASE_MOVE(soundChannels)});
 }
 
 

@@ -174,7 +174,7 @@ unsigned int SoundBuffer::getChannelCount() const
 
 
 ////////////////////////////////////////////////////////////
-ChannelMap SoundBuffer::getChannelMap() const
+const ChannelMap& SoundBuffer::getChannelMap() const
 {
     return m_impl->channelMap;
 }

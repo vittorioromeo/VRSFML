@@ -1,63 +1,50 @@
-#if 0 // TODO P0
+#include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
+#include "SFML/Audio/PlaybackDevice.hpp"
+#include "SFML/Audio/Sound.hpp"
+#include "SFML/Audio/SoundBuffer.hpp"
 
-    #include "SFML/Audio/PlaybackDevice.hpp"
-    #include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
-    #include "SFML/Audio/SoundBase.hpp"
+#include "SFML/System/Path.hpp"
 
-    #include "SFML/System/Time.hpp"
+#include "SFML/Base/FloatMax.hpp"
 
-    #include "SFML/Base/FloatMax.hpp"
+#include <Doctest.hpp>
 
-    #include <Doctest.hpp>
-
-    #include <AudioUtil.hpp>
-    #include <CommonTraits.hpp>
-    #include <SystemUtil.hpp>
+#include <AudioUtil.hpp>
+#include <CommonTraits.hpp>
+#include <SystemUtil.hpp>
 
 
-namespace
-{
-////////////////////////////////////////////////////////////
-class TestSoundSource : public sf::priv::MiniaudioSoundSource
-{
-public:
-    void setPlayingOffset(sf::Time) override
-    {
-    }
+#define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \
+    CHECK((xSoundSource).getPitch() == 1.f);                              \
+    CHECK((xSoundSource).getPan() == 0.f);                                \
+    CHECK((xSoundSource).getVolume() == 1.f);                             \
+    CHECK((xSoundSource).isSpatializationEnabled());                      \
+    CHECK((xSoundSource).getPosition() == sf::Vec3{0.f, 0.f, 0.f});       \
+    CHECK((xSoundSource).getDirection() == sf::Vec3f{0.f, 0.f, -1.f});    \
+    CHECK((xSoundSource).getCone().innerAngle == sf::radians(6.283185f)); \
+    CHECK((xSoundSource).getCone().outerAngle == sf::radians(6.283185f)); \
+    CHECK((xSoundSource).getCone().outerGain == 1.f);                     \
+    CHECK((xSoundSource).getVelocity() == sf::Vec3f{});                   \
+    CHECK((xSoundSource).getDopplerFactor() == 1.f);                      \
+    CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);       \
+    CHECK(!(xSoundSource).isRelativeToListener());                        \
+    CHECK((xSoundSource).getMinDistance() == 1.f);                        \
+    CHECK((xSoundSource).getMaxDistance() == SFML_BASE_FLOAT_MAX);        \
+    CHECK((xSoundSource).getMinGain() == 0);                              \
+    CHECK((xSoundSource).getMaxGain() == 1.f);                            \
+    CHECK((xSoundSource).getAttenuation() == 1.f);                        \
+    CHECK(!(xSoundSource).isPlaying());
 
-    [[nodiscard]] sf::priv::MiniaudioUtils::SoundBase& getSoundBase() const override
-    {
-        return soundBase;
-    }
-
-    sf::priv::MiniaudioUtils::SoundBase soundBase; //!< Sound base, needs to be first member
-};
-
-} // namespace
-
-    #define SFML_TEST_CHECK_DEFAULT_VALUES(xSoundSource)                      \
-        CHECK((xSoundSource).getPitch() == 1.f);                              \
-        CHECK((xSoundSource).getPan() == 0.f);                                \
-        CHECK((xSoundSource).getVolume() == 1.f);                             \
-        CHECK((xSoundSource).isSpatializationEnabled());                      \
-        CHECK((xSoundSource).getPosition() == sf::Vec3{0.f, 0.f, 0.f});       \
-        CHECK((xSoundSource).getDirection() == sf::Vec3f{0.f, 0.f, -1.f});    \
-        CHECK((xSoundSource).getCone().innerAngle == sf::radians(6.283185f)); \
-        CHECK((xSoundSource).getCone().outerAngle == sf::radians(6.283185f)); \
-        CHECK((xSoundSource).getCone().outerGain == 1.f);                     \
-        CHECK((xSoundSource).getVelocity() == sf::Vec3f{});                   \
-        CHECK((xSoundSource).getDopplerFactor() == 1.f);                      \
-        CHECK((xSoundSource).getDirectionalAttenuationFactor() == 1.f);       \
-        CHECK(!(xSoundSource).isRelativeToListener());                        \
-        CHECK((xSoundSource).getMinDistance() == 1.f);                        \
-        CHECK((xSoundSource).getMaxDistance() == SFML_BASE_FLOAT_MAX);        \
-        CHECK((xSoundSource).getMinGain() == 0);                              \
-        CHECK((xSoundSource).getMaxGain() == 1.f);                            \
-        CHECK((xSoundSource).getAttenuation() == 1.f);                        \
-        CHECK((xSoundSource).getStatus() == sf::priv::MiniaudioSoundSource::Status::Stopped);
 
 TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDeviceTests))
 {
+    auto               audioContext = sf::AudioContext::create().value();
+    sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
+    const auto         soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+
+    using TestSoundSource = sf::Sound;
+
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::priv::MiniaudioSoundSource));
@@ -71,38 +58,20 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Construction")
     {
-        const TestSoundSource soundSource;
+        const TestSoundSource soundSource(playbackDevice, soundBuffer);
         SFML_TEST_CHECK_DEFAULT_VALUES(soundSource);
-    }
-
-    SECTION("Copy semantics")
-    {
-        const TestSoundSource soundSource;
-
-        SECTION("Construction")
-        {
-            const TestSoundSource soundSourceCopy(soundSource); // NOLINT(performance-unnecessary-copy-initialization)
-            SFML_TEST_CHECK_DEFAULT_VALUES(soundSourceCopy);
-        }
-
-        SECTION("Assignment")
-        {
-            TestSoundSource soundSourceCopy;
-            soundSourceCopy = soundSource;
-            SFML_TEST_CHECK_DEFAULT_VALUES(soundSourceCopy);
-        }
     }
 
     SECTION("Set/get pitch")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
         soundSource.setPitch(42.f);
         CHECK(soundSource.getPitch() == 42.f);
     }
 
     SECTION("Set/get pan")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setPan(1.f);
         CHECK(soundSource.getPan() == 1.f);
@@ -110,7 +79,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get volume")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setVolume(0.f);
         CHECK(soundSource.getVolume() == 0.f);
@@ -124,7 +93,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get spatialization enabled")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setSpatializationEnabled(true);
         CHECK(soundSource.isSpatializationEnabled());
@@ -132,7 +101,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get position")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setPosition({1, 2, 3});
         CHECK(soundSource.getPosition() == sf::Vec3f{1, 2, 3});
@@ -140,7 +109,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get direction")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setDirection({4, 5, 6});
         CHECK(soundSource.getDirection() == sf::Vec3f{4, 5, 6});
@@ -148,7 +117,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get cone")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setCone({sf::radians(1), sf::radians(2), 3});
         CHECK(soundSource.getCone().innerAngle == sf::radians(1));
@@ -158,7 +127,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get velocity")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setVelocity({7, 8, 9});
         CHECK(soundSource.getVelocity() == sf::Vec3f{7, 8, 9});
@@ -166,7 +135,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get doppler factor")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setDopplerFactor(1);
         CHECK(soundSource.getDopplerFactor() == 1);
@@ -174,7 +143,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get directional attenuation factor")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setDirectionalAttenuationFactor(1);
         CHECK(soundSource.getDirectionalAttenuationFactor() == 1);
@@ -182,7 +151,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get relative to listener")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setRelativeToListener(true);
         CHECK(soundSource.isRelativeToListener());
@@ -190,7 +159,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get min distance")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setMinDistance(12.34f);
         CHECK(soundSource.getMinDistance() == 12.34f);
@@ -198,7 +167,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get max distance")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setMaxDistance(12.34f);
         CHECK(soundSource.getMaxDistance() == 12.34f);
@@ -206,7 +175,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get min gain")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setMinGain(12.34f);
         CHECK(soundSource.getMinGain() == 12.34f);
@@ -214,18 +183,16 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 
     SECTION("Set/get max gain")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
         soundSource.setMaxGain(12.34f);
         CHECK(soundSource.getMaxGain() == 12.34f);
     }
 
     SECTION("Set/get attenuation")
     {
-        TestSoundSource soundSource;
+        TestSoundSource soundSource(playbackDevice, soundBuffer);
 
         soundSource.setAttenuation(10);
         CHECK(soundSource.getAttenuation() == 10);
     }
 }
-
-#endif

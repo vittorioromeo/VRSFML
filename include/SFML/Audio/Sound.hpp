@@ -42,18 +42,20 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings);
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Destructor
-    ///
-    ////////////////////////////////////////////////////////////
-    ~Sound() override;
+    [[nodiscard]] explicit Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary sound buffer
     ///
     ////////////////////////////////////////////////////////////
     Sound(PlaybackDevice&, const SoundBuffer&& buffer, const AudioSettings& audioSettings) = delete;
+    Sound(PlaybackDevice&, const SoundBuffer&& buffer)                                     = delete;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Destructor
+    ///
+    ////////////////////////////////////////////////////////////
+    ~Sound() override;
 
     ////////////////////////////////////////////////////////////
     /// \brief Deleted copy constructor
@@ -144,8 +146,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::InPlacePImpl<Impl, 2560> m_impl; //!< Implementation details
-    // TODO P0: needs address stability, but memory should be reusable
+    base::InPlacePImpl<Impl, 1896> m_impl; //!< Implementation details
 
     ////////////////////////////////////////////////////////////
     // Lifetime tracking
