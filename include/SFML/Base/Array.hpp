@@ -24,7 +24,7 @@ struct [[nodiscard]] Array
 
 
     ///////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT size() noexcept
+    [[nodiscard, gnu::always_inline, gnu::const]] constexpr SizeT size() const noexcept
     {
         return N;
     }

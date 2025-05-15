@@ -114,8 +114,8 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT ver
             break;
         }
 
-        case PrimitiveType::TriangleFan:
         case PrimitiveType::TriangleStrip:
+        case PrimitiveType::TriangleFan:
         {
             SFML_BASE_ASSERT(vertexCount >= 3u);
             numTrianglesInStripOrFan = static_cast<IndexType>(vertexCount - 2u);
