@@ -359,7 +359,7 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
     ensureGeometryUpdate(*m_font);
 
-    target.drawIndexedQuads(m_vertices.data(), m_vertices.size(), PrimitiveType::Triangles, states);
+    target.drawQuads(m_vertices.data(), m_vertices.size(), PrimitiveType::Triangles, states);
 }
 
 

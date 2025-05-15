@@ -547,10 +547,7 @@ public:
     /// \param states      Render states to use for drawing
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedQuads(const Vertex*       vertexData,
-                          base::SizeT         vertexCount,
-                          PrimitiveType       type,
-                          const RenderStates& states = {});
+    void drawQuads(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a persistent mapped buffer and indices
