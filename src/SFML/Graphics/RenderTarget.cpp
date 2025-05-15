@@ -240,6 +240,15 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
 };
 #endif
 
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr bool isPrimitiveTypeSupportedByBatchStorage(
+    const sf::PrimitiveType type) noexcept
+{
+    return type == sf::PrimitiveType::Triangles || type == sf::PrimitiveType::TriangleStrip ||
+           type == sf::PrimitiveType::TriangleFan;
+}
+
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -889,7 +898,7 @@ void RenderTarget::drawVertices(const Vertex* const vertexData,
                                 const PrimitiveType type,
                                 const RenderStates& states)
 {
-    if (type == PrimitiveType::Triangles && m_autoBatchMode != AutoBatchMode::Disabled)
+    if (RenderTargetImpl::isPrimitiveTypeSupportedByBatchStorage(type) && m_autoBatchMode != AutoBatchMode::Disabled)
     {
         flushIfNeeded(states);
         addToAutoBatch(vertexData, vertexCount, type);
@@ -910,7 +919,7 @@ void RenderTarget::drawIndexedVertices(
     const PrimitiveType    type,
     const RenderStates&    states)
 {
-    if (type == PrimitiveType::Triangles && m_autoBatchMode != AutoBatchMode::Disabled)
+    if (RenderTargetImpl::isPrimitiveTypeSupportedByBatchStorage(type) && m_autoBatchMode != AutoBatchMode::Disabled)
     {
         flushIfNeeded(states);
         addToAutoBatch(vertexData, vertexCount, indexData, indexCount, type);
@@ -923,7 +932,7 @@ void RenderTarget::drawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::drawIndexedQuads(const Vertex* const vertexData,
+void RenderTarget::drawQuads(const Vertex* const vertexData,
                                     const base::SizeT   vertexCount,
                                     const PrimitiveType type,
                                     const RenderStates& states)

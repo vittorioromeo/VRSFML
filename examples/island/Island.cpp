@@ -25,6 +25,7 @@
 #include "SFML/System/Vec3.hpp"
 
 #include "SFML/Base/Clamp.hpp"
+#include "SFML/Base/Math/Pow.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -35,10 +36,6 @@
 #include <stb_perlin.h>
 
 #include <atomic>
-
-#include <cmath>
-#include <cstdlib>
-#include <cstring>
 
 
 namespace
@@ -94,15 +91,16 @@ float getElevation(sf::Vec2u position)
 
     for (int i = 0; i < perlinOctaves; ++i)
     {
-        const sf::Vec2f scaled = normalized * perlinFrequency * static_cast<float>(std::pow(perlinFrequencyBase, i));
+        const sf::Vec2f scaled = normalized * perlinFrequency *
+                                 static_cast<float>(sf::base::pow(perlinFrequencyBase, static_cast<float>(i)));
         elevation += stb_perlin_noise3(scaled.x, scaled.y, 0, 0, 0, 0) *
-                     static_cast<float>(std::pow(perlinFrequencyBase, -i));
+                     static_cast<float>(sf::base::pow(perlinFrequencyBase, -static_cast<float>(i)));
     }
 
     elevation = (elevation + 1.f) / 2.f;
 
     const float distance = 2.f * normalized.length();
-    elevation            = (elevation + heightBase) * (1.f - edgeFactor * std::pow(distance, edgeDropoffExponent));
+    elevation            = (elevation + heightBase) * (1.f - edgeFactor * sf::base::pow(distance, edgeDropoffExponent));
     elevation            = sf::base::clamp(elevation, 0.f, 1.f);
 
     return elevation;
@@ -211,8 +209,8 @@ sf::Color getTerrainColor(float elevation, float moisture)
         return {0, 0, static_cast<sf::base::U8>(elevation / 0.11f * 74.f + 181.f)};
 
     if (elevation < 0.14f)
-        return {static_cast<sf::base::U8>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
-                static_cast<sf::base::U8>(std::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+        return {static_cast<sf::base::U8>(sf::base::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
+                static_cast<sf::base::U8>(sf::base::pow((elevation - 0.11f) / 0.03f, 0.3f) * 48.f),
                 255};
 
     if (elevation < 0.16f)
@@ -241,8 +239,8 @@ sf::Color getTerrainColor(float elevation, float moisture)
 ////////////////////////////////////////////////////////////
 sf::Vec2f computeNormal(float left, float right, float bottom, float top)
 {
-    const sf::Vec3f deltaX(1, 0, (std::pow(right, heightFlatten) - std::pow(left, heightFlatten)) * heightFactor);
-    const sf::Vec3f deltaY(0, 1, (std::pow(top, heightFlatten) - std::pow(bottom, heightFlatten)) * heightFactor);
+    const sf::Vec3f deltaX(1, 0, (sf::base::pow(right, heightFlatten) - sf::base::pow(left, heightFlatten)) * heightFactor);
+    const sf::Vec3f deltaY(0, 1, (sf::base::pow(top, heightFlatten) - sf::base::pow(bottom, heightFlatten)) * heightFactor);
 
     sf::Vec3f crossProduct = deltaX.cross(deltaY);
 
@@ -278,15 +276,14 @@ sf::Vertex computeVertex(sf::Vec2u position)
 /// the vertex buffer when done.
 ///
 ////////////////////////////////////////////////////////////
-void processWorkItem(sf::base::Vector<sf::Vertex>& vertices, sf::Vertex* const targetBuffer, const unsigned int index)
+void processWorkItem(sf::Vertex* vertices, const unsigned int index)
 {
     const unsigned int rowStart = rowBlockSize * index;
 
     if (rowStart >= resolution.y)
         return;
 
-    const unsigned int rowEnd   = sf::base::min(rowStart + rowBlockSize, resolution.y);
-    const unsigned int rowCount = rowEnd - rowStart;
+    const unsigned int rowEnd = sf::base::min(rowStart + rowBlockSize, resolution.y);
 
     for (unsigned int y = rowStart; y < rowEnd; ++y)
     {
@@ -324,11 +321,6 @@ void processWorkItem(sf::base::Vector<sf::Vertex>& vertices, sf::Vertex* const t
                 vertices[arrayIndexBase + 5] = computeVertex({x + 1, y});
         }
     }
-
-    // Copy the resulting geometry from our thread-local buffer into the target buffer
-    std::memcpy(targetBuffer + (resolution.x * rowStart * 6),
-                vertices.data(),
-                sizeof(sf::Vertex) * resolution.x * rowCount * 6);
 }
 
 
@@ -350,9 +342,8 @@ void generateTerrain(sf::base::ThreadPool& threadPool, sf::Vertex* buffer)
     for (unsigned int i = 0u; i < blockCount; ++i)
         threadPool.post([buffer, i]
         {
-            static thread_local sf::base::Vector<sf::Vertex> vertices(resolution.x * rowBlockSize * 6);
-            processWorkItem(vertices, buffer, i);
-
+            const unsigned int rowStart = rowBlockSize * i;
+            processWorkItem(buffer + (resolution.x * rowStart * 6), i);
             pendingTasks.fetch_sub(1u, std::memory_order::release);
         });
 
@@ -415,7 +406,7 @@ int main()
     if (!terrain.create(resolution.x * resolution.y * 6))
     {
         sf::cErr() << "Failed to create vertex buffer" << sf::endL;
-        return EXIT_FAILURE;
+        return 1;
     }
 
     // Resize the staging buffer to be able to hold all the terrain geometry
