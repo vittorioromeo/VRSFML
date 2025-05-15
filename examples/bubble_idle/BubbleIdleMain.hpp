@@ -49,7 +49,7 @@
 #include "Timer.hpp"
 #include "Version.hpp"
 
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/BlendMode.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
@@ -464,7 +464,8 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui context
-    sf::ImGui::ImGuiContext imGuiContext = sf::ImGui::ImGuiContext::create(window).value(); // TODO P0: fix move semantics
+    sf::ImGuiContext     imGuiContext     = sf::ImGuiContext::create().value();
+    sf::ImGuiWindowGuard windowImGuiGuard = sf::ImGuiContext::init(window).value();
 
     ////////////////////////////////////////////////////////////
     // Exiting status
@@ -8725,7 +8726,7 @@ struct Main
         while (const sf::base::Optional event = window.pollEvent())
         {
             inputHelper.applyEvent(*event);
-            imGuiContext.processEvent(window, *event);
+            windowImGuiGuard.processEvent(*event);
 
             if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
@@ -9054,7 +9055,7 @@ struct Main
 
         //
         // Update ImGui
-        imGuiContext.update(window, deltaTime);
+        windowImGuiGuard.update(window, deltaTime);
 
         //
         // Update PP undo button

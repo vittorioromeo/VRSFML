@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 struct ImDrawData;
 
-namespace sf::ImGui::priv
+namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(readability-identifier-naming)
@@ -25,4 +25,4 @@ void ImGui_ImplOpenGL3_NewFrame();
 // NOLINTNEXTLINE(readability-identifier-naming)
 void ImGui_ImplOpenGL3_Shutdown();
 
-} // namespace sf::ImGui::priv
+} // namespace sf::priv

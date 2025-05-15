@@ -93,7 +93,7 @@
         #define IMGUI_IMPL_OPENGL_MAY_HAVE_BIND_SAMPLER
     #endif
 
-namespace sf::ImGui::priv
+namespace sf::priv
 {
 
 // OpenGL Data

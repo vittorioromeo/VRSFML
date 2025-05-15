@@ -1,4 +1,4 @@
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/Color.hpp"
@@ -25,10 +25,10 @@
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
+    auto imGuiContext    = sf::ImGuiContext::create().value();
 
     sf::RenderWindow window({.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true});
-
-    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+    auto             windowImGuiGuard = sf::ImGuiContext::init(window).value();
 
     const sf::CircleShape shape{{.fillColor = sf::Color::Green, .radius = 100.f}};
 
@@ -38,7 +38,6 @@ int main()
     const float halfWidth = width / 2.f;
 
     const sf::Vec2u size{static_cast<unsigned int>(width), static_cast<unsigned int>(height)};
-
 
     auto baseRenderTexture = sf::RenderTexture::create(size, {.antiAliasingLevel = 0, .sRgbCapable = true}).value();
 
@@ -77,7 +76,7 @@ int main()
     {
         while (const sf::base::Optional event = window.pollEvent())
         {
-            imGuiContext.processEvent(window, *event);
+            windowImGuiGuard.processEvent(*event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -89,7 +88,7 @@ int main()
                 eventMousePosition = eMouseMoved->position;
         }
 
-        imGuiContext.update(window, deltaClock.restart());
+        windowImGuiGuard.update(window, deltaClock.restart());
 
         ImGui::ShowDemoWindow();
 
@@ -114,13 +113,13 @@ int main()
                 {.size{1024u, 768u}, .title = "ImGui + SFML = <3", .vsync = true}); // TODO P0: doesn't work on emscripten
 
         ImGui::Button("Look at this pretty button");
-        imGuiContext.image(baseRenderTexture, size.toVec2f());
+        windowImGuiGuard.image(baseRenderTexture, size.toVec2f());
 
         ImGui::End();
 
         window.clear();
         window.draw(shape);
-        imGuiContext.render(window);
+        windowImGuiGuard.render(window);
         window.display();
     }
 }

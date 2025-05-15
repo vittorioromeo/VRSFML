@@ -1,4 +1,4 @@
-#include "SFML/ImGui/ImGui.hpp"
+#include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/CircleShape.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -17,17 +17,24 @@
 int main()
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
+    auto imGuiContext    = sf::ImGuiContext::create().value();
 
-    sf::RenderWindow window({.size{1280u, 720u}, .title = "ImGui + SFML = <3", .vsync = true});
+    sf::RenderWindow window({
+        .size  = {1280u, 720u},
+        .title = "ImGui + SFML = <3",
+        .vsync = true,
+    });
 
-    auto imGuiContext = sf::ImGui::ImGuiContext::create(window).value();
+    auto windowImGuiGuard = sf::ImGuiContext::init(window).value();
 
-    sf::base::Optional<sf::RenderWindow>
-        childWindow(sf::base::inPlace,
-                    sf::RenderWindow::Settings{.size{640u, 480u}, .title = "ImGui-SFML Child window", .vsync = true});
+    sf::base::Optional<sf::RenderWindow> childWindow(sf::base::inPlace,
+                                                     sf::RenderWindow::Settings{
+                                                         .size  = {640u, 480u},
+                                                         .title = "ImGui-SFML Child window",
+                                                         .vsync = true,
+                                                     });
 
-    if (!imGuiContext.init(*childWindow))
-        return -1;
+    auto childWindowImGuiGuard = sf::ImGuiContext::init(*childWindow);
 
     sf::Clock deltaClock;
     while (true)
@@ -35,7 +42,7 @@ int main()
         // Main window event processing
         while (const sf::base::Optional event = window.pollEvent())
         {
-            imGuiContext.processEvent(window, *event);
+            windowImGuiGuard.processEvent(*event);
 
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
@@ -43,10 +50,9 @@ int main()
 
         // Update
         const sf::Time dt = deltaClock.restart();
-        imGuiContext.update(window, dt);
 
-        // Add ImGui widgets in the first window
-        imGuiContext.setCurrentWindow(window);
+        windowImGuiGuard.update(window, dt);
+
         ImGui::Begin("Hello, world!");
         ImGui::Button("Look at this pretty button");
         ImGui::End();
@@ -58,26 +64,25 @@ int main()
 
         window.clear();
         window.draw(shape);
-        imGuiContext.render(window);
+        windowImGuiGuard.render(window);
         window.display();
 
         const auto processChildWindow = [&](sf::RenderWindow& childWindowRef)
         {
             while (const sf::base::Optional event = childWindowRef.pollEvent())
             {
-                imGuiContext.processEvent(childWindowRef, *event);
+                childWindowImGuiGuard->processEvent(*event);
 
                 if (event->is<sf::Event::Closed>())
                 {
-                    imGuiContext.shutdown(childWindowRef);
+                    childWindowImGuiGuard.reset();
                     childWindow.reset();
                     return;
                 }
             }
 
-            imGuiContext.update(childWindowRef, dt);
+            childWindowImGuiGuard->update(childWindowRef, dt);
 
-            imGuiContext.setCurrentWindow(childWindowRef);
             ImGui::Begin("Works in a second window!");
             ImGui::Button("Example button");
             ImGui::End();
@@ -86,7 +91,7 @@ int main()
 
             childWindowRef.clear();
             childWindowRef.draw(shape2);
-            imGuiContext.render(childWindowRef);
+            childWindowImGuiGuard->render(childWindowRef);
             childWindowRef.display();
         };
 
