@@ -1728,7 +1728,7 @@ bool Main::checkUiUnlock(const sf::base::SizeT unlockId, const bool unlockCondit
 ////////////////////////////////////////////////////////////
 void Main::uiImageFromAtlas(const sf::FloatRect& txr, const sf::RenderTarget::TextureDrawParams& drawParams)
 {
-    windowImGuiGuard.image(
+    imGuiContext.image(
         sf::Sprite{
             .position    = drawParams.position,
             .scale       = drawParams.scale * profile.uiScale,
@@ -4689,11 +4689,11 @@ void Main::gameLoopDrawImGui(const sf::base::U8 shouldDrawUIAlpha)
             ImGui::PopFont();
         });
 
-    windowImGuiGuard.setActive();
+    imGuiContext.setActive();
 
     rtImGui.setView(scaledHUDView);
     rtImGui.clear(sf::Color::Transparent);
-    windowImGuiGuard.render(rtImGui);
+    imGuiContext.render(rtImGui);
     rtImGui.display();
 
     rtGame.draw(rtImGui.getTexture(),

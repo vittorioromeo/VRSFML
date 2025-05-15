@@ -464,8 +464,7 @@ struct Main
 
     ////////////////////////////////////////////////////////////
     // ImGui context
-    sf::ImGuiContext     imGuiContext     = sf::ImGuiContext::create().value();
-    sf::ImGuiWindowGuard windowImGuiGuard = sf::ImGuiContext::init(window).value();
+    sf::ImGuiContext imGuiContext{/* loadDefaultFont */ false};
 
     ////////////////////////////////////////////////////////////
     // Exiting status
@@ -8726,7 +8725,7 @@ struct Main
         while (const sf::base::Optional event = window.pollEvent())
         {
             inputHelper.applyEvent(*event);
-            windowImGuiGuard.processEvent(*event);
+            imGuiContext.processEvent(window, *event);
 
             if (shouldDrawUI && event->is<sf::Event::KeyPressed>() &&
                 event->getIf<sf::Event::KeyPressed>()->code == sf::Keyboard::Key::Escape)
@@ -9055,7 +9054,7 @@ struct Main
 
         //
         // Update ImGui
-        windowImGuiGuard.update(window, deltaTime);
+        imGuiContext.update(window, deltaTime);
 
         //
         // Update PP undo button
