@@ -32,6 +32,11 @@ using sf::base::SizeT;
 
 namespace sfvr::impl
 {
+[[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X) noexcept
+{
+    return X;
+}
+
 [[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X, auto... Xs) noexcept
 {
     decltype(X) result = X;
@@ -342,6 +347,24 @@ public:
     [[nodiscard, gnu::always_inline]] bool has_index(index_type index) const noexcept
     {
         return _index == index;
+    }
+
+    template <typename T>
+    [[nodiscard, gnu::always_inline]] T* get_if() & noexcept
+    {
+        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(T*, _buffer) : nullptr;
+    }
+
+    template <typename T>
+    [[nodiscard, gnu::always_inline]] const T* get_if() const& noexcept
+    {
+        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(const T*, _buffer) : nullptr;
+    }
+
+    template <typename T>
+    [[nodiscard, gnu::always_inline]] T* get_if() && noexcept
+    {
+        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(T*, _buffer) : nullptr;
     }
 
     template <typename T>
