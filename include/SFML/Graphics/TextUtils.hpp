@@ -455,11 +455,26 @@ inline auto createTextGeometryAndGetBounds(
 
 
 ////////////////////////////////////////////////////////////
-/// \class sf::TextUtils
+/// \namespace sf::TextUtils
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// \brief Utility functions for text processing and geometry generation.
 ///
-/// \see `sf::Text`
+/// This namespace provides a collection of helper functions tailored for
+/// advanced text manipulation within SFML. These functions handle tasks
+/// such as calculating the bounding box of a string (`precomputeTextLocalBounds`),
+/// determining the number of quads required to render a given text
+/// (`precomputeTextQuadCount`), and generating the vertex data for
+/// text rendering, including handling styles like underline and strikethrough,
+/// as well as character and line spacing (`createTextGeometryAndGetBounds`,
+/// `addGlyphQuad`, `addLine`).
+///
+/// While these utilities are predominantly used internally by the `sf::Text`
+/// class to manage and render text, they are exposed for users who might
+/// need to perform custom text layout, implement specialized text rendering
+/// techniques, or gain deeper insights into text geometry for effects or
+/// editor tools.
+///
+/// \see sf::Text, sf::Font
 ///
 ////////////////////////////////////////////////////////////

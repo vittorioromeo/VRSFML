@@ -31,7 +31,40 @@ enum class [[nodiscard]] TextStyle : base::U8
 };
 
 ////////////////////////////////////////////////////////////
-/// \brief Data required to draw a rounded rectangle shape
+/// \struct sf::TextData
+/// \ingroup graphics
+///
+/// \brief Plain Old Data (POD) struct holding properties of a text object.
+///
+/// `sf::TextData` is a simple struct that aggregates all the visual
+/// and transformational properties of a piece of text. This includes
+/// the text string itself, character size, styling (like bold or italic),
+/// colors, spacing, and transformation attributes (position, rotation,
+/// scale, origin).
+///
+/// Its POD nature makes it suitable for scenarios like batched rendering,
+/// where an array of `TextData` might be processed, or for serializing
+/// text properties to and from files.
+///
+/// While `sf::TextData` is used internally by SFML, particularly by
+/// the `sf::Text` class, it can also be useful for users who prefer
+/// or require managing text-related data in a more data-oriented fashion.
+///
+/// Members:
+/// - `string`: The `sf::String` to be displayed.
+/// - `characterSize`: Base size of the characters in pixels.
+/// - `letterSpacing`: Spacing factor between individual letters.
+/// - `lineSpacing`: Spacing factor between lines of text.
+/// - `fillColor`: The `sf::Color` used to fill the text characters.
+/// - `outlineColor`: The `sf::Color` used for the text's outline.
+/// - `outlineThickness`: Thickness of the text's outline in pixels.
+/// - `style`: The `sf::TextStyle` (e.g., Regular, Bold, Italic).
+/// - `position`: The 2D position of the text.
+/// - `rotation`: The rotation angle of the text, in degrees.
+/// - `scale`: The scaling factors (horizontal and vertical) of the text.
+/// - `origin`: The 2D origin point for transformations (position, scale, rotation).
+///
+/// \see sf::Text, sf::TextStyle, sf::Color, sf::String
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API TextData
@@ -49,14 +82,3 @@ struct [[nodiscard]] SFML_GRAPHICS_API TextData
 };
 
 } // namespace sf
-
-
-////////////////////////////////////////////////////////////
-/// \class sf::RoundedRectangleShapeData
-/// \ingroup graphics
-///
-/// TODO P1: docs
-///
-/// \see `sf::Shape`
-///
-////////////////////////////////////////////////////////////
