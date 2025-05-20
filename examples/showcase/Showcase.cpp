@@ -590,6 +590,7 @@ private:
     const sf::FloatRect m_txrWhiteDot = m_textureAtlas.add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
 
     ////////////////////////////////////////////////////////////
+    ImFont*        m_imGuiFont{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/Born2bSportyFS.ttf", 18.f)};
     const sf::Font m_font = sf::Font::openFromFile("resources/tuffy.ttf", &m_textureAtlas).value();
 
     ////////////////////////////////////////////////////////////
@@ -608,6 +609,9 @@ private:
     ExampleShapes    m_exampleShapes{m_window, m_font};
     ExampleBunnyMark m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
     ExampleAudio     m_exampleAudio{m_window, m_font};
+
+    ////////////////////////////////////////////////////////////
+    static inline constexpr const char* exampleNames[]{"Shapes", "Bunnymark", "Audio"};
 
     ////////////////////////////////////////////////////////////
     sf::base::SizeT m_activeExample = 2u;
@@ -716,8 +720,11 @@ public:
 
             m_imGuiContext.update(m_window, deltaTime);
 
+            ImGui::PushFont(m_imGuiFont);
             ImGui::Begin("Granita Showcase", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
-            // ImGui::SetWindowSize({420.f, 490.f});
+
+            ImGui::SetNextItemWidth(120.f);
+            ImGui::Combo("Example", reinterpret_cast<int*>(&m_activeExample), exampleNames, sf::base::getArraySize(exampleNames));
 
             plotSamples("Update", " ms", m_samplesUpdateMs, 64.f);
             plotSamples("Draw", " ms", m_samplesDrawMs, 64.f);
@@ -734,6 +741,8 @@ public:
 
             if (m_activeExample == 2u)
                 m_exampleAudio.imgui();
+
+            ImGui::PopFont();
 
             m_samplesImGuiMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---
