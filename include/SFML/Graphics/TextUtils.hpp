@@ -22,7 +22,7 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf::TextUtils
 {
 ////////////////////////////////////////////////////////////
 struct TextSpacingConstants
@@ -451,7 +451,7 @@ inline auto createTextGeometryAndGetBounds(
 
 // TODO P1: precompute globalbounds as well?
 
-} // namespace sf
+} // namespace sf::TextUtils
 
 
 ////////////////////////////////////////////////////////////

@@ -479,7 +479,6 @@ namespace sf::ShapeUtils
 /// for each point of the base shape, plus two additional vertices to
 /// close the outline loop.
 ///
-/// \tparam TFillPositionFn Type of the function/lambda that provides fill point positions.
 /// \param outlineThickness The desired thickness of the outline.
 /// \param fillPositionFn   A function or lambda that, when called with an index
 ///                         `i` (from `0` to `pointCount - 1`), returns the

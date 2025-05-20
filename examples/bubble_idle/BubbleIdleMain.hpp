@@ -455,7 +455,7 @@ struct Main
                                      .outlineColor     = colorBlueOutline,
                                      .outlineThickness = 2.f};
 
-        loadingTextData.origin = precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
+        loadingTextData.origin = sf::TextUtils::precomputeTextLocalBounds(fontMouldyCheese, loadingTextData).size / 2.f;
         window.draw(fontMouldyCheese, loadingTextData);
 
         window.display();
@@ -9234,8 +9234,9 @@ struct Main
 
             for (sf::base::SizeT i = 0u; i < 3u; ++i)
             {
-                demoInfoTextData.string   = lines[i].data();
-                demoInfoTextData.origin.x = precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
+                demoInfoTextData.string = lines[i].data();
+                demoInfoTextData.origin
+                    .x = sf::TextUtils::precomputeTextLocalBounds(fontSuperBakery, demoInfoTextData).size.x;
                 demoInfoTextData.position = demoText.getBottomRight().addY(10.f + (static_cast<float>(i) * lineSpacing));
 
                 rtGame.draw(fontSuperBakery, demoInfoTextData);

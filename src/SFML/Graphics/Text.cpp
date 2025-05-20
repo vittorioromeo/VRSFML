@@ -297,7 +297,7 @@ Vec2f Text::findCharacterPos(base::SizeT index) const
 
     const auto [whitespaceWidth,
                 letterSpacing,
-                lineSpacing] = precomputeSpacingConstants(*m_font, m_style, m_characterSize, m_letterSpacing, m_lineSpacing);
+                lineSpacing] = TextUtils::precomputeSpacingConstants(*m_font, m_style, m_characterSize, m_letterSpacing, m_lineSpacing);
 
     // Compute the position
     Vec2f    characterPos;
@@ -383,7 +383,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
         return;
 
     // Precalculate the amount of quads that will be produced
-    const auto fillQuadCount    = precomputeTextQuadCount(m_string, m_style);
+    const auto fillQuadCount    = TextUtils::precomputeTextQuadCount(m_string, m_style);
     const auto outlineQuadCount = m_outlineThickness == 0.f ? 0u : fillQuadCount;
 
     const base::SizeT outlineVertexCount = outlineQuadCount * 4u;
@@ -392,7 +392,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
     m_vertices.resize(outlineVertexCount + fillVertexCount);
     m_fillVerticesStartIndex = outlineVertexCount;
 
-    m_bounds = createTextGeometryAndGetBounds<
+    m_bounds = TextUtils::createTextGeometryAndGetBounds<
         /* CalculateBounds */ true>(outlineVertexCount,
                                     font,
                                     m_string,
@@ -404,9 +404,9 @@ void Text::ensureGeometryUpdate(const Font& font) const
                                     m_fillColor,
                                     m_outlineColor,
                                     [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addLine(m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
+    { return TextUtils::addLine(m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
                                     [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addGlyphQuad(m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
+    { return TextUtils::addGlyphQuad(m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
 }
 
 } // namespace sf

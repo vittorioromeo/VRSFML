@@ -825,7 +825,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
     if (textData.string.isEmpty())
         return {};
 
-    const auto fillQuadCount    = precomputeTextQuadCount(textData.string, textData.style);
+    const auto fillQuadCount    = TextUtils::precomputeTextQuadCount(textData.string, textData.style);
     const auto outlineQuadCount = textData.outlineThickness == 0.f ? 0u : fillQuadCount;
 
     const auto numQuads = fillQuadCount + outlineQuadCount;
@@ -841,20 +841,21 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
 
     Vertex* vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
-    createTextGeometryAndGetBounds</* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
-                                                                font,
-                                                                textData.string,
-                                                                textData.style,
-                                                                textData.characterSize,
-                                                                textData.letterSpacing,
-                                                                textData.lineSpacing,
-                                                                textData.outlineThickness,
-                                                                textData.fillColor,
-                                                                textData.outlineColor,
-                                                                [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addLinePreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); },
-                                                                [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return addGlyphQuadPreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); });
+    TextUtils::createTextGeometryAndGetBounds<
+        /* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
+                                     font,
+                                     textData.string,
+                                     textData.style,
+                                     textData.characterSize,
+                                     textData.letterSpacing,
+                                     textData.lineSpacing,
+                                     textData.outlineThickness,
+                                     textData.fillColor,
+                                     textData.outlineColor,
+                                     [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return TextUtils::addLinePreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); },
+                                     [&](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+    { return TextUtils::addGlyphQuadPreTransformed(transform, vertexPtr, SFML_BASE_FORWARD(xs)...); });
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
