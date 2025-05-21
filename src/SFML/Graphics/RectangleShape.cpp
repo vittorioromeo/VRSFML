@@ -15,9 +15,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-RectangleShape::RectangleShape(const Settings& settings) : Shape(priv::toShapeSettings(settings))
+RectangleShape::RectangleShape(const Data& data) : Shape(priv::toShapeData(data))
 {
-    setSize(settings.size);
+    setSize(data.size);
 }
 
 
