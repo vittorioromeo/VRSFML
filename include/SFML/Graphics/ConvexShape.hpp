@@ -24,10 +24,32 @@ class SFML_GRAPHICS_API ConvexShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization data for a `sf::ConvexShape`
     ///
+    /// This struct groups the parameters needed to initialize a
+    /// `sf::ConvexShape`. It includes common shape properties
+    /// (like transform, texture, fill color, outline) and
+    /// convex shape specific properties, such as the initial
+    /// point count.
+    ///
+    /// An instance of `Data` is passed to the constructor
+    /// of `sf::ConvexShape`.
+    ///
+    /// Example:
+    /// \code
+    /// sf::ConvexShape::Data data;
+    /// data.pointCount = 5; // For a pentagon
+    /// data.fillColor = sf::Color::Green;
+    /// data.outlineColor = sf::Color::Black;
+    /// data.outlineThickness = 2.f;
+    ///
+    /// sf::ConvexShape pentagon(data);
+    /// // Points still need to be set individually using `setPoint`
+    /// \endcode
+    ///
+    /// \see ConvexShape(const Data&)
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
+    struct [[nodiscard]] Data
     {
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
@@ -38,10 +60,10 @@ public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param settings Settings of the polygon
+    /// \param settings Data of the polygon
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit ConvexShape(const Settings& settings);
+    [[nodiscard]] explicit ConvexShape(const Data& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the number of points of the polygon

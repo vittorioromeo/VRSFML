@@ -55,7 +55,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    using Settings = TextData;
+    using Data = TextData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Construct the text from a string, font and size
@@ -67,16 +67,16 @@ public:
     /// of a certain size, make sure the corresponding bitmap
     /// font that supports that size is used.
     ///
-    /// \param settings       Settings of the text
+    /// \param data Data of the text
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font& font, const Settings& settings);
+    [[nodiscard]] Text(const Font& font, const Data& data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Disallow construction from a temporary font
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] Text(const Font&& font, const Settings& settings) = delete;
+    [[nodiscard]] Text(const Font&& font, const Data& data) = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Destructor

@@ -158,7 +158,6 @@ base::Optional<SoundFileReader::Info> SoundFileReaderWav::open(InputStream& stre
     }
 
     ChannelMap soundChannels;
-    soundChannels.reserve(m_impl->channelCount);
 
     for (auto i = 0u; i < m_impl->channelCount; ++i)
         soundChannels.append(priv::MiniaudioUtils::miniaudioChannelToSoundChannel(base::U8{channelMap[i]}));
