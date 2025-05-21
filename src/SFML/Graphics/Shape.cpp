@@ -19,16 +19,16 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-Shape::Shape(const Settings& settings) :
-m_textureRect{settings.textureRect},
-m_outlineTextureRect{settings.outlineTextureRect},
-m_outlineThickness{settings.outlineThickness},
-m_fillColor{settings.fillColor},
-m_outlineColor{settings.outlineColor},
-position{settings.position},
-scale{settings.scale},
-origin{settings.origin},
-rotation{settings.rotation}
+Shape::Shape(const Data& data) :
+m_textureRect{data.textureRect},
+m_outlineTextureRect{data.outlineTextureRect},
+m_outlineThickness{data.outlineThickness},
+m_fillColor{data.fillColor},
+m_outlineColor{data.outlineColor},
+position{data.position},
+scale{data.scale},
+origin{data.origin},
+rotation{data.rotation}
 {
 }
 
