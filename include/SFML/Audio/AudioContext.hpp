@@ -30,14 +30,31 @@ class PlaybackDeviceHandle;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Provides access to audio functionality
+///
+/// AudioContext is a central place for managing audio resources
+/// and devices. It ensures that the underlying audio system
+/// is initialized and provides access to connected audio devices.
+///
+/// An AudioContext must be created before most other audio
+/// classes can be used.
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_AUDIO_API AudioContext
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief Create a new audio context
+    /// \brief Create and initialize a new audio context
+    ///
+    /// This function performs the necessary initialization of the
+    /// audio system. It must be called before any other audio
+    /// functions are used. If the audio system cannot be
+    /// initialized, this function returns `base::nullOpt`.
+    ///
+    /// It is recommended to create an AudioContext early in the
+    /// program's execution, for example in `main()`.
+    ///
+    /// \return A new audio context on success, or `base::nullOpt` on failure
     ///
     ////////////////////////////////////////////////////////////
     static base::Optional<AudioContext> create();
@@ -73,63 +90,88 @@ public:
     AudioContext& operator=(AudioContext&& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Check if the audio context is installed
+    /// \brief Check if an audio context has been successfully initialized
     ///
-    /// Installation can be done by calling `create` early in
-    /// your program (e.g. in `main`).
+    /// This function returns true if an `AudioContext` instance
+    /// has been successfully created (and not yet destroyed),
+    /// and false otherwise. It can be used to check if the audio
+    /// system is ready to be used.
     ///
+    /// \return True if an audio context is currently installed, false otherwise
+    ///
+    /// \see create
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static bool isInstalled();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio playback devices
     ///
-    /// This function returns a vector of strings containing
-    /// handles to all available audio playback devices.
+    /// This function returns a vector of handles for all audio
+    /// playback devices currently available on the system.
+    /// Playback devices are typically sound cards, USB headsets, etc.
     ///
-    /// If no devices are available, this function will return
+    /// These handles can be used to create `sf::PlaybackDevice` instances.
+    ///
+    /// If no playback devices are available, this function returns
     /// an empty vector.
     ///
-    /// \return A vector containing the device handles or an empty vector if no devices are available
+    /// \return A vector of available audio playback device handles
     ///
+    /// \see PlaybackDevice, getDefaultPlaybackDeviceHandle
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Vector<PlaybackDeviceHandle> getAvailablePlaybackDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio playback device
     ///
-    /// This function returns a handle to the default audio
-    /// playback device. If none is available, `base::nullOpt` is
-    /// returned instead.
+    /// This function returns a handle for the default audio playback
+    /// device. The system typically designates one playback device
+    /// as the default.
     ///
-    /// \return The handle to the default audio playback device
+    /// This handle can be used to create an `sf::PlaybackDevice` instance.
     ///
+    /// If no default playback device is available (e.g., no audio
+    /// hardware is present), this function returns `base::nullOpt`.
+    ///
+    /// \return An optional containing a handle to the default audio playback device, or `base::nullOpt`
+    ///
+    /// \see PlaybackDevice, getAvailablePlaybackDeviceHandles
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<PlaybackDeviceHandle> getDefaultPlaybackDeviceHandle();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a list of handles to all available audio capture devices
     ///
-    /// This function returns a vector of strings containing
-    /// handles to all available audio capture devices.
+    /// This function returns a vector of handles for all audio
+    /// capture devices currently available on the system.
+    /// Capture devices are typically microphones or other audio inputs.
     ///
-    /// If no devices are available, this function will return
+    /// These handles can be used to create `sf::CaptureDevice` instances.
+    ///
+    /// If no capture devices are available, this function returns
     /// an empty vector.
     ///
-    /// \return A vector containing the device handles or an empty vector if no devices are available
+    /// \return A vector of available audio capture device handles
     ///
+    /// \see CaptureDevice, getDefaultCaptureDeviceHandle
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Vector<CaptureDeviceHandle> getAvailableCaptureDeviceHandles();
 
     ////////////////////////////////////////////////////////////
     /// \brief Get a handle to the default audio capture device
     ///
-    /// This function returns a handle to the default audio
-    /// capture device. If none is available, `base::nullOpt` is
-    /// returned instead.
+    /// This function returns a handle for the default audio capture
+    /// device. The system typically designates one capture device
+    /// as the default.
     ///
-    /// \return The handle to the default audio capture device
+    /// This handle can be used to create an `sf::CaptureDevice` instance.
     ///
+    /// If no default capture device is available (e.g., no microphone
+    /// is connected), this function returns `base::nullOpt`.
+    ///
+    /// \return An optional containing a handle to the default audio capture device, or `base::nullOpt`
+    ///
+    /// \see CaptureDevice, getAvailableCaptureDeviceHandles
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static base::Optional<CaptureDeviceHandle> getDefaultCaptureDeviceHandle();
 
@@ -146,9 +188,19 @@ private:
     friend PlaybackDevice;
 
     ////////////////////////////////////////////////////////////
-    /// Implementation detail, returns a pointer to the miniaudio
-    /// context. This pointer is used in the playback and capture
-    /// device implementations to initialize the miniaudio devices.
+    /// \brief Get a pointer to the underlying miniaudio context
+    /// \warning This is an internal function and should not be used by client code.
+    ///
+    /// This function provides access to the raw miniaudio context
+    /// (`ma_context*`). It is used internally by SFML's audio
+    /// module, particularly by `sf::PlaybackDevice` and
+    /// `sf::CaptureDevice`, to interact with the miniaudio backend.
+    ///
+    /// Accessing or manipulating the miniaudio context directly
+    /// can lead to undefined behavior if not handled correctly
+    /// with SFML's own audio management.
+    ///
+    /// \return A pointer to the miniaudio context, or `nullptr` if not initialized.
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] static void* getMAContext();
@@ -161,8 +213,34 @@ private:
 /// \class sf::AudioContext
 /// \ingroup audio
 ///
-/// TODO P1: docs
+/// sf::AudioContext provides access to audio functionality.
+/// It is a central place for managing audio resources and devices.
 ///
-/// \see TODO P1: docs
+/// An AudioContext must be created before most other audio
+/// classes can be used. It ensures that the underlying audio
+/// system is initialized and provides access to connected
+/// audio devices.
+///
+/// Usage example:
+/// \code
+/// #include <SFML/Audio.hpp>
+///
+/// int main()
+/// {
+///     auto audioContext = sf::AudioContext::create();
+///     if (!audioContext)
+///     {
+///         // Handle audio system initialization failure
+///         return -1;
+///     }
+///
+///     // ... proceed with using other SFML audio features ...
+///
+///     // The audioContext will be automatically cleaned up when it goes out of scope.
+///     return 0;
+/// }
+/// \endcode
+///
+/// \see sf::Sound, sf::Music, sf::SoundBufferRecorder, sf::Listener
 ///
 ////////////////////////////////////////////////////////////
