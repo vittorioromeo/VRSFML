@@ -35,7 +35,7 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
     SECTION("Type traits")
     {
         STATIC_CHECK(!SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape));
-        STATIC_CHECK(SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape, sf::Shape::Settings));
+        STATIC_CHECK(SFML_BASE_IS_CONSTRUCTIBLE(sf::Shape, sf::Shape::Data));
         STATIC_CHECK(SFML_BASE_IS_COPY_CONSTRUCTIBLE(sf::Shape));
         STATIC_CHECK(SFML_BASE_IS_COPY_ASSIGNABLE(sf::Shape));
         STATIC_CHECK(SFML_BASE_IS_MOVE_CONSTRUCTIBLE(sf::Shape));

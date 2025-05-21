@@ -14,7 +14,12 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Data required to draw a star shape
+/// \brief Defines the geometric properties of an arrow shape
+///
+/// `sf::ArrowShapeData` is used to specify the dimensions and
+/// characteristics of an arrow, such as the length and width
+/// of its shaft and head. This data is then typically used by
+/// a rendering system or a shape class to draw the actual arrow.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData
@@ -35,8 +40,31 @@ struct [[nodiscard]] SFML_GRAPHICS_API ArrowShapeData
 /// \class sf::ArrowShapeData
 /// \ingroup graphics
 ///
-/// TODO P1: docs
+/// `sf::ArrowShapeData` is a structure that holds the geometric
+/// definition of an arrow. It defines properties like the length
+/// and width of the arrow's shaft, and the length and width of
+/// its head.
 ///
-/// \see `sf::Shape`, `sf::CircleShape`
+/// This structure is typically used in conjunction with a generic
+/// shape class or a rendering function that can take this data
+/// to produce a visual representation of an arrow.
+///
+/// Example usage:
+/// \code
+/// sf::ArrowShapeData arrowData{
+///     .position = {100.f, 100.f},
+///     .shaftLength = 100.f,
+///     .shaftWidth = 5.f,
+///     .headLength = 20.f,
+///     .headWidth = 15.f,
+/// };
+///
+/// window.draw(arrowData);
+/// \endcode
+///
+/// The individual members `shaftLength`, `shaftWidth`, `headLength`,
+/// and `headWidth` control the respective dimensions of the arrow.
+///
+/// \see sf::Shape, sf::RectangleShape, sf::ConvexShape
 ///
 ////////////////////////////////////////////////////////////
