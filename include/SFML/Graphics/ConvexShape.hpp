@@ -24,8 +24,30 @@ class SFML_GRAPHICS_API ConvexShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization settings for a `sf::ConvexShape`
     ///
+    /// This struct groups the parameters needed to initialize a
+    /// `sf::ConvexShape`. It includes common shape properties
+    /// (like transform, texture, fill color, outline) and
+    /// convex shape specific properties, such as the initial
+    /// point count.
+    ///
+    /// An instance of `Settings` is passed to the constructor
+    /// of `sf::ConvexShape`.
+    ///
+    /// Example:
+    /// \code
+    /// sf::ConvexShape::Settings settings;
+    /// settings.pointCount = 5; // For a pentagon
+    /// settings.fillColor = sf::Color::Green;
+    /// settings.outlineColor = sf::Color::Black;
+    /// settings.outlineThickness = 2.f;
+    ///
+    /// sf::ConvexShape pentagon(settings);
+    /// // Points still need to be set individually using setPoint()
+    /// \endcode
+    ///
+    /// \see ConvexShape(const Settings&)
     ////////////////////////////////////////////////////////////
     struct [[nodiscard]] Settings
     {
