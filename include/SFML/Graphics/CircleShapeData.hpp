@@ -14,7 +14,13 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Data required to draw a circle shape
+/// \brief Defines the geometric properties of a circle shape
+///
+/// `sf::CircleShapeData` is used to specify the characteristics
+/// of a circle, such as its radius and the number of points
+/// used to approximate its contour. This data is then typically
+/// used by a rendering system or a shape class like `sf::CircleShape`
+/// to draw the actual circle.
 ///
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
