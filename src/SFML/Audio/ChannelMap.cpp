@@ -70,13 +70,6 @@ ChannelMap::ChannelMap(std::initializer_list<SoundChannel> channels)
 
 
 ////////////////////////////////////////////////////////////
-void ChannelMap::reserve(base::SizeT count)
-{
-    m_channels.reserve(count);
-}
-
-
-////////////////////////////////////////////////////////////
 void ChannelMap::append(SoundChannel channel)
 {
     m_channels.pushBack(channel);

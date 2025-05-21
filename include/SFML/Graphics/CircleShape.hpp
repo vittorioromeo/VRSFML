@@ -25,18 +25,23 @@ class SFML_GRAPHICS_API CircleShape : public Shape
 {
 public:
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Initialization data for a `sf::CircleShape`
     ///
+    /// This type alias points to `sf::CircleShapeData`, which
+    /// holds all the configurable parameters for a circle shape.
+    /// It is used when constructing a `sf::CircleShape`.
+    ///
+    /// \see sf::CircleShapeData
     ////////////////////////////////////////////////////////////
-    using Settings = CircleShapeData;
+    using Data = CircleShapeData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param settings Settings of the circle
+    /// \param settings Data of the circle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit CircleShape(const Settings& settings);
+    [[nodiscard]] explicit CircleShape(const Data& data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the radius of the circle
