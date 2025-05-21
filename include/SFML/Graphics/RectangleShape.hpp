@@ -27,15 +27,15 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    using Settings = RectangleShapeData;
+    using Data = RectangleShapeData;
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
-    /// \param settings Settings of the rectangle
+    /// \param settings Data of the rectangle
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit RectangleShape(const Settings& settings);
+    [[nodiscard]] explicit RectangleShape(const Data& data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the size of the rectangle

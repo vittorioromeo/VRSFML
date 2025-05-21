@@ -52,7 +52,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct [[nodiscard]] Settings
+    struct [[nodiscard]] Data
     {
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
         SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
@@ -62,7 +62,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    explicit Shape(const Settings& settings);
+    explicit Shape(const Data& data);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set the sub-rectangle of the texture that the shape will display
@@ -351,19 +351,19 @@ public:
 namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
-template <typename TSettings>
-[[nodiscard]] inline Shape::Settings toShapeSettings(const TSettings& settings)
+template <typename TData>
+[[nodiscard]] inline Shape::Data toShapeData(const TData& data)
 {
     return {
-        .position           = settings.position,
-        .scale              = settings.scale,
-        .origin             = settings.origin,
-        .rotation           = settings.rotation,
-        .textureRect        = settings.textureRect,
-        .outlineTextureRect = settings.outlineTextureRect,
-        .fillColor          = settings.fillColor,
-        .outlineColor       = settings.outlineColor,
-        .outlineThickness   = settings.outlineThickness,
+        .position           = data.position,
+        .scale              = data.scale,
+        .origin             = data.origin,
+        .rotation           = data.rotation,
+        .textureRect        = data.textureRect,
+        .outlineTextureRect = data.outlineTextureRect,
+        .fillColor          = data.fillColor,
+        .outlineColor       = data.outlineColor,
+        .outlineThickness   = data.outlineThickness,
     };
 }
 

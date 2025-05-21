@@ -16,10 +16,10 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-CircleShape::CircleShape(const Settings& settings) :
-Shape(priv::toShapeSettings(settings)),
-m_radius{settings.radius},
-m_pointCount{settings.pointCount}
+CircleShape::CircleShape(const Data& data) :
+Shape(priv::toShapeData(data)),
+m_radius{data.radius},
+m_pointCount{data.pointCount}
 {
     updateCircleGeometry();
 }
