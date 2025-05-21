@@ -14,9 +14,9 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-ConvexShape::ConvexShape(const Settings& settings) : Shape(priv::toShapeSettings(settings))
+ConvexShape::ConvexShape(const Data& data) : Shape(priv::toShapeData(data))
 {
-    setPointCount(settings.pointCount);
+    setPointCount(data.pointCount);
 }
 
 
