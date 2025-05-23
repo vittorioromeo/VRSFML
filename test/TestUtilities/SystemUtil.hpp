@@ -14,7 +14,7 @@
 // String conversions for Catch2
 namespace sf
 {
-class Angle;
+struct Angle;
 class String;
 class Time;
 

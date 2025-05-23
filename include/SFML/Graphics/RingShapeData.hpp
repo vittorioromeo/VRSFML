@@ -24,6 +24,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API RingShapeData
 
     float        outerRadius{0.f}; //!< Distance from the center to the outer points
     float        innerRadius{0.f}; //!< Distance from the center to the inner points
+    Angle        startAngle{};     //!< Starting angle of the ring point generation
     unsigned int pointCount{30u};  //!< Number of points composing the ring
 };
 

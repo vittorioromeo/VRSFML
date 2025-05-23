@@ -16,6 +16,7 @@
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
+#include "SFML/Base/Remainder.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 
@@ -38,11 +39,13 @@ namespace sf::ShapeUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePointFromAngleStep(
     const base::SizeT index,
+    const float       startRadians,
     const float       angleStep,
     const float       hRadius,
     const float       vRadius) noexcept
 {
-    const auto [sine, cosine] = base::fastSinCos(static_cast<float>(index) * angleStep);
+    const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
+    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -66,11 +69,12 @@ namespace sf::ShapeUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeEllipsePoint(
     const base::SizeT  index,
+    const float        startRadians,
     const unsigned int pointCount,
     const float        hRadius,
     const float        vRadius) noexcept
 {
-    return computeEllipsePointFromAngleStep(index, base::tau / static_cast<float>(pointCount), hRadius, vRadius);
+    return computeEllipsePointFromAngleStep(index, startRadians, base::tau / static_cast<float>(pointCount), hRadius, vRadius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -88,10 +92,11 @@ namespace sf::ShapeUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePointFromAngleStep(
     const base::SizeT index,
+    const float       startRadians,
     const float       angleStep,
     const float       radius) noexcept
 {
-    return computeEllipsePointFromAngleStep(index, angleStep, radius, radius);
+    return computeEllipsePointFromAngleStep(index, startRadians, angleStep, radius, radius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -109,10 +114,11 @@ namespace sf::ShapeUtils
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr Vec2f computeCirclePoint(
     const base::SizeT  index,
+    const float        startRadians,
     const unsigned int pointCount,
     const float        radius) noexcept
 {
-    return computeCirclePointFromAngleStep(index, base::tau / static_cast<float>(pointCount), radius);
+    return computeCirclePointFromAngleStep(index, startRadians, base::tau / static_cast<float>(pointCount), radius);
 }
 
 ////////////////////////////////////////////////////////////
@@ -280,8 +286,9 @@ namespace sf::ShapeUtils
     // There are `(pointCount - 1)` points on the arc edge.
     // These points span `(pointCount - 2)` segments along the arc.
 
-    const auto arcPointStep   = static_cast<float>(index - 1u);
-    const auto [sine, cosine] = base::fastSinCos(startAngle + arcPointStep * arcAngleStep);
+    const auto  arcPointStep  = static_cast<float>(index - 1u);
+    const float wrappedAngle  = base::positiveRemainder(startAngle + arcPointStep * arcAngleStep, base::tau);
+    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);
@@ -416,7 +423,8 @@ namespace sf::ShapeUtils
     SFML_BASE_ASSERT_AND_ASSUME(outerRadius >= 0.f);
     SFML_BASE_ASSERT_AND_ASSUME(innerRadius >= 0.f);
 
-    const auto [sine, cosine] = base::fastSinCos(startRadians + static_cast<float>(index) * angleStep);
+    const float wrappedAngle = base::positiveRemainder(startRadians + static_cast<float>(index) * angleStep, base::tau);
+    const auto [sine, cosine] = base::fastSinCos(wrappedAngle);
 
     SFML_BASE_ASSERT_AND_ASSUME(sine >= -1.f && sine <= 1.f);
     SFML_BASE_ASSERT_AND_ASSUME(cosine >= -1.f && cosine <= 1.f);

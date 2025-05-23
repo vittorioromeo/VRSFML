@@ -29,6 +29,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API CircleShapeData
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_SHAPE;
 
     float        radius{0.f};     //!< Radius of the circle
+    Angle        startAngle{};    //!< Starting angle of circle point generation
     unsigned int pointCount{30u}; //!< Number of points composing the circle
 };
 

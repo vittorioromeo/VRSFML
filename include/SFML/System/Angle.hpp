@@ -26,9 +26,8 @@ namespace sf
 /// \brief Represents an angle value.
 ///
 ////////////////////////////////////////////////////////////
-class [[nodiscard]] Angle
+struct [[nodiscard]] Angle
 {
-public:
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor
     ///
@@ -48,7 +47,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float asDegrees() const
     {
-        return m_radians * (180.f / base::pi);
+        return radians * (180.f / base::pi);
     }
 
 
@@ -62,7 +61,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float asRadians() const
     {
-        return m_radians;
+        return radians;
     }
 
 
@@ -99,7 +98,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapSigned() const
     {
-        return Angle(base::positiveRemainder(m_radians + base::pi, base::tau) - base::pi);
+        return Angle(base::positiveRemainder(radians + base::pi, base::tau) - base::pi);
     }
 
 
@@ -136,7 +135,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle wrapUnsigned() const
     {
-        return Angle(base::positiveRemainder(m_radians, base::tau));
+        return Angle(base::positiveRemainder(radians, base::tau));
     }
 
 
@@ -157,7 +156,7 @@ public:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Angle rotatedTowards(const Angle other,
                                                                                                      const float speed) const
     {
-        float diff = base::remainder(other.m_radians - m_radians, base::tau);
+        float diff = base::remainder(other.radians - radians, base::tau);
 
         if (diff > base::pi)
             diff -= base::tau;
@@ -165,9 +164,9 @@ public:
             diff += base::tau;
 
         if (SFML_BASE_MATH_FABSF(diff) <= speed)
-            return Angle{other.m_radians};
+            return Angle{other.radians};
 
-        float result = m_radians;
+        float result = radians;
 
         if (diff > 0.f)
             result += speed;
@@ -196,7 +195,6 @@ public:
     // NOLINTNEXTLINE(readability-identifier-naming)
     static const Angle Full; //!< Predefined 360 degree angle value
 
-private:
     friend AutoWrapAngle;
 
 
@@ -232,7 +230,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator<(const Angle lhs, const Angle rhs)
     {
-        return lhs.m_radians < rhs.m_radians;
+        return lhs.radians < rhs.radians;
     }
 
 
@@ -249,7 +247,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator>(const Angle lhs, const Angle rhs)
     {
-        return lhs.m_radians > rhs.m_radians;
+        return lhs.radians > rhs.radians;
     }
 
 
@@ -266,7 +264,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator<=(const Angle lhs, const Angle rhs)
     {
-        return lhs.m_radians <= rhs.m_radians;
+        return lhs.radians <= rhs.radians;
     }
 
 
@@ -283,7 +281,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr bool operator>=(const Angle lhs, const Angle rhs)
     {
-        return lhs.m_radians >= rhs.m_radians;
+        return lhs.radians >= rhs.radians;
     }
 
 
@@ -300,7 +298,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator-(const Angle rhs)
     {
-        return Angle(-rhs.m_radians);
+        return Angle(-rhs.radians);
     }
 
 
@@ -316,7 +314,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator+(const Angle lhs, const Angle rhs)
     {
-        return Angle(lhs.m_radians + rhs.m_radians);
+        return Angle(lhs.radians + rhs.radians);
     }
 
 
@@ -332,7 +330,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator+=(Angle& lhs, const Angle rhs)
     {
-        lhs.m_radians += rhs.m_radians;
+        lhs.radians += rhs.radians;
         return lhs;
     }
 
@@ -349,7 +347,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator-(const Angle lhs, const Angle rhs)
     {
-        return Angle(lhs.m_radians - rhs.m_radians);
+        return Angle(lhs.radians - rhs.radians);
     }
 
 
@@ -365,7 +363,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator-=(Angle& lhs, const Angle rhs)
     {
-        lhs.m_radians -= rhs.m_radians;
+        lhs.radians -= rhs.radians;
         return lhs;
     }
 
@@ -382,7 +380,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator*(const Angle lhs, const float rhs)
     {
-        return Angle(lhs.m_radians * rhs);
+        return Angle(lhs.radians * rhs);
     }
 
 
@@ -414,7 +412,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator*=(Angle& lhs, const float rhs)
     {
-        lhs.m_radians *= rhs;
+        lhs.radians *= rhs;
         return lhs;
     }
 
@@ -432,7 +430,7 @@ private:
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator/(const Angle lhs, const float rhs)
     {
         SFML_BASE_ASSERT(rhs != 0.f && "Angle::operator/ cannot divide by 0");
-        return Angle(lhs.m_radians / rhs);
+        return Angle(lhs.radians / rhs);
     }
 
 
@@ -449,7 +447,7 @@ private:
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator/=(Angle& lhs, const float rhs)
     {
         SFML_BASE_ASSERT(rhs != 0.f && "Angle::operator/= cannot divide by 0");
-        lhs.m_radians /= rhs;
+        lhs.radians /= rhs;
         return lhs;
     }
 
@@ -466,8 +464,8 @@ private:
     ////////////////////////////////////////////////////////////
     friend constexpr float operator/(const Angle lhs, const Angle rhs)
     {
-        SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator/ cannot divide by 0");
-        return lhs.m_radians / rhs.m_radians;
+        SFML_BASE_ASSERT(rhs.radians != 0.f && "Angle::operator/ cannot divide by 0");
+        return lhs.radians / rhs.radians;
     }
 
 
@@ -491,8 +489,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] friend constexpr Angle operator%(const Angle lhs, const Angle rhs)
     {
-        SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator% cannot modulus by 0");
-        return Angle(base::positiveRemainder(lhs.m_radians, rhs.m_radians));
+        SFML_BASE_ASSERT(rhs.radians != 0.f && "Angle::operator% cannot modulus by 0");
+        return Angle(base::positiveRemainder(lhs.radians, rhs.radians));
     }
 
 
@@ -508,8 +506,8 @@ private:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] friend constexpr Angle& operator%=(Angle& lhs, const Angle rhs)
     {
-        SFML_BASE_ASSERT(rhs.m_radians != 0.f && "Angle::operator%= cannot modulus by 0");
-        lhs.m_radians = base::positiveRemainder(lhs.m_radians, rhs.m_radians);
+        SFML_BASE_ASSERT(rhs.radians != 0.f && "Angle::operator%= cannot modulus by 0");
+        lhs.radians = base::positiveRemainder(lhs.radians, rhs.radians);
         return lhs;
     }
 
@@ -523,7 +521,7 @@ private:
     /// \param radians Angle in radians
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float radians) : m_radians(radians)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float radians) : radians(radians)
     {
     }
 
@@ -531,7 +529,7 @@ private:
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    float m_radians{0.f}; //!< Angle value stored as radians
+    float radians{0.f}; //!< Angle value stored as radians
 };
 
 
