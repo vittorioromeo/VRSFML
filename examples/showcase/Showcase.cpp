@@ -6,6 +6,7 @@
 #include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/CircleShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/EllipseShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
@@ -22,6 +23,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
+#include "SFML/Graphics/VertexSpan.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/AudioSettings.hpp"
@@ -42,6 +44,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -98,9 +101,9 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
-    void drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
+    sf::VertexSpan drawShape(const sf::Vec2f currentOffset, const char* label, const auto& shapeData)
     {
-        m_window.draw(applyCommonSettings(currentOffset, shapeData), {.texture = &m_font.getTexture()});
+        auto result = m_window.draw(applyCommonSettings(currentOffset, shapeData), {.texture = &m_font.getTexture()});
 
         m_window.draw(m_font,
                       sf::TextData{
@@ -112,6 +115,8 @@ private:
                       });
 
         m_phase += 0.1f;
+
+        return result;
     }
 
     ////////////////////////////////////////////////////////////
@@ -154,12 +159,25 @@ private:
                   });
 
         drawShape(offset,
+                  "Arrow",
+                  sf::ArrowShapeData{
+                      .position    = {32.f, 196.f},
+                      .origin      = {(64.f + 48.f) / 2.f, 0.f},
+                      .shaftLength = 64.f,
+                      .shaftWidth  = 32.f + (32.f * getPhasedValue(0.04f, 2.f)),
+                      .headLength  = 48.f,
+                      .headWidth   = 96.f - (64.f * getPhasedValue(0.06f, 3.f)),
+                  });
+
+        /*
+        drawShape(offset,
                   "Rectangle",
                   sf::RectangleShapeData{
                       .position = {32.f, 196.f},
                       .origin   = {64.f, 32.f},
                       .size     = {128.f, 64.f},
                   });
+        */
 
         drawShape(offset,
                   "RoundedRectangle",
@@ -204,14 +222,16 @@ private:
                   });
 
         drawShape(offset,
-                  "Arrow",
-                  sf::ArrowShapeData{
+                  "CurvedArrow",
+                  sf::CurvedArrowShapeData{
                       .position    = {196.f, 364.f},
-                      .origin      = {(64.f + 48.f) / 2.f, 0.f},
-                      .shaftLength = 64.f,
-                      .shaftWidth  = 32.f + (32.f * getPhasedValue(0.04f, 2.f)),
-                      .headLength  = 48.f,
-                      .headWidth   = 96.f - (64.f * getPhasedValue(0.06f, 3.f)),
+                      .origin      = {64.f, 64.f},
+                      .outerRadius = 64.f,
+                      .innerRadius = 32.f + (16.f * getPhasedValue(0.25f, 2.f)),
+                      .startAngle  = sf::degrees(0.f),
+                      .sweepAngle  = sf::degrees((270.f * getPhasedValue(0.1f, 2.0f))),
+                      .headLength  = 32.f,
+                      .headWidth   = 8.f + (64.f * getPhasedValue(0.06f, 3.f)),
                   });
     }
 
@@ -416,8 +436,6 @@ public:
 ////////////////////////////////////////////////////////////
 class ExampleAudio
 {
-    // TODO P0: implement
-
 private:
     ////////////////////////////////////////////////////////////
     sf::RenderWindow& m_window;
@@ -560,6 +578,206 @@ public:
 
 
 ////////////////////////////////////////////////////////////
+class ExampleIndividualShape
+{
+private:
+    ////////////////////////////////////////////////////////////
+    sf::RenderWindow& m_window;
+    const sf::Font&   m_font;
+
+    ////////////////////////////////////////////////////////////
+    float m_time  = 0.f;
+    float m_phase = 0.f;
+
+    ///////////////////////////////////////////////////////////
+    sf::ArrowShapeData            m_sdArrow;
+    sf::CircleShapeData           m_sdCircle;
+    sf::CurvedArrowShapeData      m_sdCurvedArrow;
+    sf::EllipseShapeData          m_sdEllipse;
+    sf::PieSliceShapeData         m_sdPieSlice;
+    sf::RectangleShapeData        m_sdRectangle;
+    sf::RingShapeData             m_sdRingShape;
+    sf::RingPieSliceShapeData     m_sdRingPieSlice;
+    sf::RoundedRectangleShapeData m_sdRoundedRectangle;
+    sf::StarShapeData             m_sdStar;
+
+    ////////////////////////////////////////////////////////////
+    int m_shapeIndex = 0;
+
+    ////////////////////////////////////////////////////////////
+    sf::Vec2f m_position{256.f, 256.f};
+    sf::Vec2f m_origin;
+    sf::Angle m_rotation;
+    sf::Vec2f m_scale{1.f, 1.f};
+
+    ////////////////////////////////////////////////////////////
+    decltype(auto) callWithActiveShape(auto&& f)
+    {
+        switch (m_shapeIndex)
+        {
+            case 0:
+                return f(m_sdArrow);
+            case 1:
+                return f(m_sdCircle);
+            case 2:
+                return f(m_sdCurvedArrow);
+            case 3:
+                return f(m_sdEllipse);
+            case 4:
+                return f(m_sdPieSlice);
+            case 5:
+                return f(m_sdRectangle);
+            case 6:
+                return f(m_sdRingShape);
+            case 7:
+                return f(m_sdRingPieSlice);
+            case 8:
+                return f(m_sdRoundedRectangle);
+        }
+
+        SFML_BASE_ASSERT(m_shapeIndex == 9);
+        return f(m_sdStar);
+    }
+
+public:
+    ////////////////////////////////////////////////////////////
+    explicit ExampleIndividualShape(sf::RenderWindow& window, const sf::Font& font) : m_window{window}, m_font{font}
+    {
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(const float deltaTimeMs)
+    {
+        m_time += deltaTimeMs;
+
+        callWithActiveShape([this](auto& shapeData)
+        {
+            const auto fillColor = sf::Color::Red.withRotatedHue(m_time + m_phase * 65.f);
+
+            shapeData.fillColor        = fillColor;
+            shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
+            shapeData.outlineThickness = std::abs(4.f * std::sin(m_time * 0.05f + m_phase));
+
+            shapeData.position = m_position;
+            shapeData.origin   = m_origin;
+            shapeData.rotation = m_rotation;
+            shapeData.scale    = m_scale;
+        });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void imgui()
+    {
+        ImGui::Begin("Shape Playground", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
+
+        constexpr const char* shapeNames[]{
+            "Arrow",
+            "Circle",
+            "CurvedArrow",
+            "Ellipse",
+            "PieSlice",
+            "Rectangle",
+            "Ring",
+            "RingPieSlice",
+            "RoundedRectangle",
+            "Star",
+        };
+
+        ImGui::SetNextItemWidth(120.f);
+        ImGui::Combo("Shape", &m_shapeIndex, shapeNames, sf::base::getArraySize(shapeNames));
+
+#define SLIDERFLOAT(obj, member, min, max) \
+    ImGui::SliderFloat(#member "##" #obj, &(obj).member, min, max, "%.3f", ImGuiSliderFlags_NoRoundToFormat)
+
+#define SLIDERUINT(obj, member, min, max) \
+    ImGui::SliderInt(#member "##" #obj, reinterpret_cast<int*>(&(obj).member), min, max)
+
+        SLIDERFLOAT(*this, m_position.x, -128.f, resolution.x);
+        SLIDERFLOAT(*this, m_position.y, -128.f, resolution.y);
+        SLIDERFLOAT(*this, m_origin.x, -256.f, 256.f);
+        SLIDERFLOAT(*this, m_origin.y, -256.f, 256.f);
+        SLIDERFLOAT(*this, m_rotation.radians, 0.f, sf::base::tau);
+        SLIDERFLOAT(*this, m_scale.x, 0.f, 10.f);
+        SLIDERFLOAT(*this, m_scale.y, 0.f, 10.f);
+
+        switch (m_shapeIndex)
+        {
+            case 0:
+                SLIDERFLOAT(m_sdArrow, shaftLength, 0.f, 100.f);
+                SLIDERFLOAT(m_sdArrow, shaftWidth, 0.f, 100.f);
+                SLIDERFLOAT(m_sdArrow, headLength, 0.f, 100.f);
+                SLIDERFLOAT(m_sdArrow, headWidth, 0.f, 100.f);
+                break;
+            case 1:
+                SLIDERFLOAT(m_sdCircle, radius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdCircle, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERUINT(m_sdCircle, pointCount, 3u, 100u);
+                break;
+            case 2:
+                SLIDERFLOAT(m_sdCurvedArrow, outerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdCurvedArrow, innerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdCurvedArrow, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERFLOAT(m_sdCurvedArrow, sweepAngle.radians, 0.f, sf::base::tau);
+                SLIDERFLOAT(m_sdCurvedArrow, headLength, 0.f, 100.f);
+                SLIDERFLOAT(m_sdCurvedArrow, headWidth, 0.f, 100.f);
+                SLIDERUINT(m_sdCurvedArrow, pointCount, 3u, 100u);
+                break;
+            case 3:
+                SLIDERFLOAT(m_sdEllipse, horizontalRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdEllipse, verticalRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdEllipse, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERUINT(m_sdEllipse, pointCount, 3u, 100u);
+                break;
+            case 4:
+                SLIDERFLOAT(m_sdPieSlice, radius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdPieSlice, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERFLOAT(m_sdPieSlice, sweepAngle.radians, 0.f, sf::base::tau);
+                SLIDERUINT(m_sdPieSlice, pointCount, 3u, 100u);
+                break;
+            case 5:
+                SLIDERFLOAT(m_sdRectangle, size.x, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRectangle, size.y, 0.f, 100.f);
+                break;
+            case 6:
+                SLIDERFLOAT(m_sdRingShape, outerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRingShape, innerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRingShape, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERUINT(m_sdRingShape, pointCount, 3u, 100u);
+                break;
+            case 7:
+                SLIDERFLOAT(m_sdRingPieSlice, outerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRingPieSlice, innerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRingPieSlice, startAngle.radians, 0.f, sf::base::tau);
+                SLIDERFLOAT(m_sdRingPieSlice, sweepAngle.radians, 0.f, sf::base::tau);
+                SLIDERUINT(m_sdRingPieSlice, pointCount, 3u, 100u);
+                break;
+            case 8:
+                SLIDERFLOAT(m_sdRoundedRectangle, size.x, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRoundedRectangle, size.y, 0.f, 100.f);
+                SLIDERFLOAT(m_sdRoundedRectangle, cornerRadius, 0.f, 100.f);
+                SLIDERUINT(m_sdRoundedRectangle, cornerPointCount, 3u, 100u);
+                break;
+            case 9:
+                SLIDERFLOAT(m_sdStar, outerRadius, 0.f, 100.f);
+                SLIDERFLOAT(m_sdStar, innerRadius, 0.f, 100.f);
+                SLIDERUINT(m_sdStar, pointCount, 3u, 100u);
+                break;
+        }
+
+        ImGui::End();
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw()
+    {
+        m_phase = 0.f;
+
+        callWithActiveShape([this](auto& shapeData) { m_window.draw(shapeData); });
+    }
+};
+
+
+////////////////////////////////////////////////////////////
 class Game
 {
 private:
@@ -606,15 +824,16 @@ private:
     };
 
     ////////////////////////////////////////////////////////////
-    ExampleShapes    m_exampleShapes{m_window, m_font};
-    ExampleBunnyMark m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
-    ExampleAudio     m_exampleAudio{m_window, m_font};
+    ExampleShapes          m_exampleShapes{m_window, m_font};
+    ExampleBunnyMark       m_exampleBunnyMark{m_window, m_font, m_textureAtlas, m_bunnyTextureRects};
+    ExampleAudio           m_exampleAudio{m_window, m_font};
+    ExampleIndividualShape m_exampleIndividualShape{m_window, m_font};
 
     ////////////////////////////////////////////////////////////
-    static inline constexpr const char* exampleNames[]{"Shapes", "Bunnymark", "Audio"};
+    static inline constexpr const char* exampleNames[]{"Shapes", "Bunnymark", "Audio", "IndividualShape"};
 
     ////////////////////////////////////////////////////////////
-    sf::base::SizeT m_activeExample = 2u;
+    sf::base::SizeT m_activeExample = 3u;
 
     ////////////////////////////////////////////////////////////
     void clearSamples()
@@ -685,7 +904,7 @@ public:
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
                     if (eKeyPressed->code == sf::Keyboard::Key::Space)
-                        m_activeExample = ((m_activeExample + 1u) % 3u);
+                        m_activeExample = ((m_activeExample + 1u) % 4u);
             }
 
             m_samplesEventMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
@@ -707,6 +926,8 @@ public:
                 m_exampleBunnyMark.update(deltaTimeMs * 0.01f);
             else if (m_activeExample == 2u)
                 m_exampleAudio.update(deltaTimeMs * 0.01f);
+            else if (m_activeExample == 3u)
+                m_exampleIndividualShape.update(deltaTimeMs * 0.01f);
 
             m_samplesUpdateMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---
@@ -741,6 +962,8 @@ public:
 
             if (m_activeExample == 2u)
                 m_exampleAudio.imgui();
+            else if (m_activeExample == 3u)
+                m_exampleIndividualShape.imgui();
 
             ImGui::PopFont();
 
@@ -762,6 +985,8 @@ public:
                 m_exampleBunnyMark.draw();
             else if (m_activeExample == 2u)
                 m_exampleAudio.draw();
+            else if (m_activeExample == 3u)
+                m_exampleIndividualShape.draw();
 
             m_samplesDrawMs.record(m_clock.getElapsedTime().asSeconds() * 1000.f);
             // ---

@@ -863,6 +863,7 @@ VertexSpan RenderTarget::draw(const priv::ShapeDataConcept auto& shapeData, cons
 ////////////////////////////////////////////////////////////
 template VertexSpan RenderTarget::draw(const ArrowShapeData&, const RenderStates&);
 template VertexSpan RenderTarget::draw(const CircleShapeData&, const RenderStates&);
+template VertexSpan RenderTarget::draw(const CurvedArrowShapeData&, const RenderStates&);
 template VertexSpan RenderTarget::draw(const EllipseShapeData&, const RenderStates&);
 template VertexSpan RenderTarget::draw(const PieSliceShapeData&, const RenderStates&);
 template VertexSpan RenderTarget::draw(const RectangleShapeData&, const RenderStates&);
@@ -933,9 +934,9 @@ void RenderTarget::drawIndexedVertices(
 
 ////////////////////////////////////////////////////////////
 void RenderTarget::drawQuads(const Vertex* const vertexData,
-                                    const base::SizeT   vertexCount,
-                                    const PrimitiveType type,
-                                    const RenderStates& states)
+                             const base::SizeT   vertexCount,
+                             const PrimitiveType type,
+                             const RenderStates& states)
 {
     SFML_BASE_ASSERT(vertexCount % 4u == 0u);
     drawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
