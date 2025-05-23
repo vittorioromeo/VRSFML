@@ -41,6 +41,7 @@ class VertexBuffer;
 
 struct ArrowShapeData;
 struct CircleShapeData;
+struct CurvedArrowShapeData;
 struct EllipseShapeData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
@@ -70,6 +71,7 @@ template <typename T>
 concept ShapeDataConcept =                             //
     SFML_BASE_IS_SAME(T, ArrowShapeData) ||            //
     SFML_BASE_IS_SAME(T, CircleShapeData) ||           //
+    SFML_BASE_IS_SAME(T, CurvedArrowShapeData) ||      //
     SFML_BASE_IS_SAME(T, EllipseShapeData) ||          //
     SFML_BASE_IS_SAME(T, PieSliceShapeData) ||         //
     SFML_BASE_IS_SAME(T, RectangleShapeData) ||        //

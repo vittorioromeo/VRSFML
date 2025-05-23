@@ -1,11 +1,11 @@
-#include "../bubble_idle/Easing.hpp"  // TODO P1: avoid the relative path...?
-#include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
+#include "../bubble_idle/ControlFlow.hpp" // TODO P1: avoid the relative path...?
+#include "../bubble_idle/Easing.hpp"      // TODO P1: avoid the relative path...?
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/ArrowShapeData.hpp"
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -40,6 +40,7 @@
 #include "ExampleUtils.hpp"
 
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -112,45 +113,113 @@ struct Block
 
 
 ////////////////////////////////////////////////////////////
-using BlockId = sf::base::SizeT;
+using ObjectId = sf::base::SizeT;
+
+
+////////////////////////////////////////////////////////////
+struct TGravityRotator
+{
+    bool clockwise{false};
+};
+
+
+////////////////////////////////////////////////////////////
+using TileType = sfvr::tinyvariant<TGravityRotator>;
+
+
+////////////////////////////////////////////////////////////
+struct Tile
+{
+    sf::Vec2i position;
+    TileType  type;
+};
+
+
+////////////////////////////////////////////////////////////
+using Object = sfvr::tinyvariant<Block, Tile>;
+
 
 ////////////////////////////////////////////////////////////
 struct World
 {
 private:
-    sf::base::Vector<sf::base::Optional<Block>> m_blocks;
+    sf::base::Vector<sf::base::Optional<Object>> m_objects;
 
 public:
     ////////////////////////////////////////////////////////////
     void addBlock(const Block& block)
     {
-        m_blocks.pushBack(block);
+        m_objects.emplaceBack(sf::base::inPlace, block);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void addWall(const sf::Vec2i position)
+    {
+        m_objects.emplaceBack(sf::base::inPlace,
+                              Block{
+                                  .position = position,
+                                  .type     = BlockType{BWall{}},
+                              });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void addColored(const sf::Vec2i position, const sf::Color color, const sf::Vec2i gravityDir = {0, 0})
+    {
+        m_objects.emplaceBack(sf::base::inPlace,
+                              Block{
+                                  .position   = position,
+                                  .type       = BlockType{BColored{.color = color}},
+                                  .gravityDir = gravityDir,
+                              });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void addGravityRotator(const sf::Vec2i position, const bool clockwise)
+    {
+        m_objects.emplaceBack(sf::base::inPlace,
+                              Tile{
+                                  .position = position,
+                                  .type     = TileType{TGravityRotator{.clockwise = clockwise}},
+                              });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void forTiles(auto&& f)
+    {
+        for (ObjectId i = 0u; i < m_objects.size(); ++i)
+            if (m_objects[i].hasValue() && m_objects[i]->is<Tile>())
+                if (f(i, m_objects[i]->as<Tile>()) == ControlFlow::Break)
+                    break;
     }
 
     ////////////////////////////////////////////////////////////
     void forBlocks(auto&& f)
     {
-        for (BlockId i = 0u; i < m_blocks.size(); ++i)
-            if (m_blocks[i].hasValue())
-                f(i, *m_blocks[i]);
+        for (ObjectId i = 0u; i < m_objects.size(); ++i)
+            if (m_objects[i].hasValue() && m_objects[i]->is<Block>())
+                if (f(i, m_objects[i]->as<Block>()) == ControlFlow::Break)
+                    break;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<Block>& getBlockById(const BlockId blockId)
+    [[nodiscard]] Block& getBlockById(const ObjectId objectId)
     {
-        SFML_BASE_ASSERT(blockId < m_blocks.size());
-        return m_blocks[blockId];
+        SFML_BASE_ASSERT(objectId < m_objects.size());
+        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
+        SFML_BASE_ASSERT(m_objects[objectId]->is<Block>());
+
+        return m_objects[objectId]->as<Block>();
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isBlocked(const sf::Vec2i position) const
     {
-        for (const sf::base::Optional<Block>& block : m_blocks)
+        for (const sf::base::Optional<Object>& object : m_objects)
         {
-            if (!block.hasValue())
+            if (!object.hasValue() || !object->is<Block>())
                 continue;
 
-            if (block->position == position)
+            if (object->as<Block>().position == position)
                 return true;
         }
 
@@ -158,45 +227,65 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::Optional<BlockId> getBlockByPosition(const sf::Vec2i position) const
+    [[nodiscard]] TGravityRotator* tryGetGravityRotator(const sf::Vec2i position)
     {
-        for (BlockId i = 0u; i < m_blocks.size(); ++i)
+        for (sf::base::Optional<Object>& object : m_objects)
         {
-            const auto& block = m_blocks[i];
+            if (!object.hasValue() || !object->is<Tile>())
+                continue;
 
-            if (block.hasValue() && block->position == position)
-                return sf::base::makeOptional<BlockId>(i);
+            if (object->as<Tile>().position == position)
+                return object->as<Tile>().type.get_if<TGravityRotator>();
+        }
+
+        return nullptr;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::Optional<ObjectId> getBlockByPosition(const sf::Vec2i position) const
+    {
+        for (ObjectId i = 0u; i < m_objects.size(); ++i)
+        {
+            const auto& object = m_objects[i];
+
+            if (object.hasValue() && object->is<Block>() && object->as<Block>().position == position)
+                return sf::base::makeOptional<ObjectId>(i);
         }
 
         return sf::base::nullOpt;
     }
 
     ////////////////////////////////////////////////////////////
-    void forOrthogonalNeighbors(const BlockId blockId, auto&& f) const
+    void forOrthogonalNeighbors(const ObjectId objectId, auto&& f) const
     {
-        const sf::base::Optional<Block>& block = m_blocks[blockId];
-        if (!block.hasValue())
+        const sf::base::Optional<Object>& object = m_objects[objectId];
+
+        if (!object.hasValue() || !object->is<Block>())
             return;
 
-        if (const auto e = getBlockByPosition(block->position + sf::Vec2i{0, 1}); e.hasValue())
-            f(*e);
+        if (const auto e = getBlockByPosition(object->as<Block>().position + sf::Vec2i{0, 1}); e.hasValue())
+            if (f(*e) == ControlFlow::Break)
+                return;
 
-        if (const auto w = getBlockByPosition(block->position + sf::Vec2i{1, 0}); w.hasValue())
-            f(*w);
+        if (const auto w = getBlockByPosition(object->as<Block>().position + sf::Vec2i{1, 0}); w.hasValue())
+            if (f(*w) == ControlFlow::Break)
+                return;
 
-        if (const auto n = getBlockByPosition(block->position + sf::Vec2i{0, -1}); n.hasValue())
-            f(*n);
+        if (const auto n = getBlockByPosition(object->as<Block>().position + sf::Vec2i{0, -1}); n.hasValue())
+            if (f(*n) == ControlFlow::Break)
+                return;
 
-        if (const auto s = getBlockByPosition(block->position + sf::Vec2i{-1, 0}); s.hasValue())
-            f(*s);
+        if (const auto s = getBlockByPosition(object->as<Block>().position + sf::Vec2i{-1, 0}); s.hasValue())
+            if (f(*s) == ControlFlow::Break)
+                return;
     }
 
     ////////////////////////////////////////////////////////////
-    void killBlock(const BlockId blockId)
+    void killBlock(const ObjectId objectId)
     {
-        SFML_BASE_ASSERT(blockId < m_blocks.size());
-        SFML_BASE_ASSERT(m_blocks[blockId].hasValue());
-        m_blocks[blockId].reset();
+        SFML_BASE_ASSERT(objectId < m_objects.size());
+        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
+        m_objects[objectId].reset();
     }
 };
 
@@ -204,7 +293,7 @@ public:
 ////////////////////////////////////////////////////////////
 struct TEMoveBlock
 {
-    BlockId   blockId;
+    ObjectId  objectId;
     sf::Vec2i newPosition;
     float     progress{0.f};
 };
@@ -213,9 +302,10 @@ struct TEMoveBlock
 ////////////////////////////////////////////////////////////
 struct TEFallBlock
 {
-    BlockId   blockId;
+    ObjectId  objectId;
     sf::Vec2i dir;
     sf::Vec2i newPosition;
+    bool      squish;
     float     progress{0.f};
 };
 
@@ -223,22 +313,31 @@ struct TEFallBlock
 ////////////////////////////////////////////////////////////
 struct TESquishBlock
 {
-    BlockId   blockId;
+    ObjectId  objectId;
     sf::Vec2i dir;
     float     progress{0.f};
 };
 
 
 ////////////////////////////////////////////////////////////
-struct TEKill
+struct TERotateGravityDir
 {
-    BlockId blockId;
-    float   progress{0.f};
+    ObjectId objectId;
+    bool     clockwise;
+    float    progress{0.f};
 };
 
 
 ////////////////////////////////////////////////////////////
-using TurnEvent = sfvr::tinyvariant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill>;
+struct TEKill
+{
+    ObjectId objectId;
+    float    progress{0.f};
+};
+
+
+////////////////////////////////////////////////////////////
+using TurnEvent = sfvr::tinyvariant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir>;
 
 
 ////////////////////////////////////////////////////////////
@@ -265,45 +364,52 @@ private:
 
     ////////////////////////////////////////////////////////////
     World                               m_world;
-    sf::base::Optional<sf::base::SizeT> m_grabbedBlockId;
+    sf::base::Optional<sf::base::SizeT> m_grabbedObjectId;
     sf::base::Vector<TurnEvent>         m_turnEvents;
+
+    ////////////////////////////////////////////////////////////
+    float m_time = 0.f;
 
     ////////////////////////////////////////////////////////////
     void checkForKill()
     {
-        sf::base::Vector<BlockId> blocksToKill;
+        sf::base::Vector<ObjectId> blocksToKill;
 
-        m_world.forBlocks([&](const BlockId blockId, const Block& block)
+        m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
             const auto* blockColored = block.type.get_if<BColored>();
             if (blockColored == nullptr)
-                return;
+                return ControlFlow::Continue;
 
-            m_world.forOrthogonalNeighbors(blockId,
-                                           [&](const BlockId neighborBlockId)
+            m_world.forOrthogonalNeighbors(objectId,
+                                           [&](const ObjectId neighborObjectId)
             {
-                if (neighborBlockId >= blockId)
-                    return;
+                if (neighborObjectId >= objectId)
+                    return ControlFlow::Continue;
 
-                const Block& neighborBlock        = *m_world.getBlockById(neighborBlockId);
+                const Block& neighborBlock        = m_world.getBlockById(neighborObjectId);
                 const auto*  neighborBlockColored = neighborBlock.type.get_if<BColored>();
 
                 if (neighborBlockColored == nullptr)
-                    return;
+                    return ControlFlow::Continue;
 
                 if (blockColored->color == neighborBlockColored->color)
                 {
-                    blocksToKill.pushBack(blockId);
-                    blocksToKill.pushBack(neighborBlockId);
+                    blocksToKill.pushBack(objectId);
+                    blocksToKill.pushBack(neighborObjectId);
                 }
+
+                return ControlFlow::Continue;
             });
+
+            return ControlFlow::Continue;
         });
 
         std::sort(blocksToKill.begin(), blocksToKill.end());
         blocksToKill.erase(sf::base::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
-        for (const BlockId blockId : blocksToKill)
-            m_turnEvents.pushBack(TEKill{.blockId = blockId});
+        for (const ObjectId objectId : blocksToKill)
+            m_turnEvents.pushBack(TEKill{.objectId = objectId});
     }
 
     ////////////////////////////////////////////////////////////
@@ -321,7 +427,7 @@ private:
         if (!turnEvent.is<TEKill>())
             return;
 
-        for (BlockId i = mustDelete ? 0u : 1u; i < m_turnEvents.size(); ++i)
+        for (ObjectId i = mustDelete ? 0u : 1u; i < m_turnEvents.size(); ++i)
         {
             if (!m_turnEvents[i].is<TEKill>())
                 break;
@@ -339,41 +445,31 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool run()
     {
-
         for (int iX = 0; iX < 16; ++iX)
             for (int iY = 0; iY < 16; ++iY)
                 if (iX == 0 || iX == 15 || iY == 0 || iY == 15)
-                    m_world.addBlock({.position = {iX, iY}, .type = BlockType{BWall{}}});
+                    m_world.addWall({iX, iY});
 
-        m_world.addBlock({.position = {4, 4}, .type = BlockType{BColored{.color = sf::Color::Red}}});
+        m_world.addColored({4, 4}, sf::Color::Red);
 
-        m_world.addBlock({
-            .position   = {6, 4},
-            .type       = BlockType{BColored{.color = sf::Color::Red}},
-            .gravityDir = {0, 1},
-        });
+        m_world.addColored({7, 4}, sf::Color::Red, {0, 1});
+        m_world.addColored({6, 6}, sf::Color::Red, {0, -1});
+        m_world.addColored({7, 6}, sf::Color::Red);
+        m_world.addColored({3, 3}, sf::Color::Red);
+        // m_world.addColored({8, 8}, sf::Color::Blue);
+        // m_world.addColored({9, 9}, sf::Color::Blue);
 
-        m_world.addBlock({
-            .position   = {6, 6},
-            .type       = BlockType{BColored{.color = sf::Color::Red}},
-            .gravityDir = {0, -1},
-        });
+        m_world.addGravityRotator({9, 10}, /* clockwise */ true);
+        m_world.addGravityRotator({2, 10}, /* clockwise */ true);
+        m_world.addGravityRotator({7, 1}, /* clockwise */ true);
 
-        m_world.addBlock({.position = {7, 6}, .type = BlockType{BColored{.color = sf::Color::Red}}});
-        m_world.addBlock({.position = {3, 3}, .type = BlockType{BColored{.color = sf::Color::Red}}});
-        m_world.addBlock({.position = {8, 8}, .type = BlockType{BColored{.color = sf::Color::Blue}}});
-        m_world.addBlock({.position = {9, 9}, .type = BlockType{BColored{.color = sf::Color::Blue}}});
-        m_world.addBlock({.position = {10, 10}, .type = BlockType{BColored{.color = sf::Color::Green}}});
-        m_world.addBlock({
-            .position   = {12, 10},
-            .type       = BlockType{BColored{.color = sf::Color::Green}},
-            .gravityDir = {-1, 0},
-        });
+        // m_world.addColored({10, 10}, sf::Color::Green);
+        // m_world.addColored({12, 11}, sf::Color::Green, {-1, 0});
 
-        m_world.addBlock({.position = {6, 5}, .type = BlockType{BWall{}}});
-        m_world.addBlock({.position = {7, 5}, .type = BlockType{BWall{}}});
-        m_world.addBlock({.position = {8, 5}, .type = BlockType{BWall{}}});
-
+        m_world.addWall({6, 4});
+        m_world.addWall({6, 5});
+        m_world.addWall({7, 5});
+        m_world.addWall({8, 5});
 
         while (true)
         {
@@ -401,31 +497,69 @@ public:
             const auto  deltaTime   = m_fpsClock.restart();
             const float deltaTimeMs = deltaTime.asSeconds() * 1000.f;
 
+            m_time += deltaTimeMs;
+
             const bool lmbPressed = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
             const auto mousePosition = m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window), m_window.getView()).toVec2f();
             const auto adjustedMousePosition = mousePosition + sf::Vec2f{32.f, 32.f};
             const auto worldMousePosition    = (mousePosition / 64.f).toVec2i();
 
             if (!lmbPressed)
-                m_grabbedBlockId.reset();
+                m_grabbedObjectId.reset();
 
             if (m_turnEvents.empty())
-                m_world.forBlocks([&](const BlockId blockId, const Block& block)
+                m_world.forBlocks([&](const ObjectId objectId, Block& block)
                 {
                     if (block.gravityDir == sf::Vec2i{0, 0})
-                        return;
+                        return ControlFlow::Continue;
 
                     sf::Vec2i targetPosition = block.position;
-                    while (!m_world.isBlocked(targetPosition + block.gravityDir))
-                        targetPosition += block.gravityDir;
+                    bool      mustFall       = false;
 
-                    if (targetPosition != block.position)
-                        m_turnEvents.pushBack(
-                            TEFallBlock{.blockId = blockId, .dir = block.gravityDir, .newPosition = targetPosition});
+                    while (true)
+                    {
+                        if (targetPosition == block.position)
+                        {
+                            targetPosition += block.gravityDir;
+                            continue;
+                        }
+
+                        if (m_world.isBlocked(targetPosition))
+                        {
+                            mustFall = targetPosition != block.position + block.gravityDir;
+                            break;
+                        }
+
+                        if (auto* gr = m_world.tryGetGravityRotator(targetPosition))
+                        {
+                            m_turnEvents.pushBack(TEFallBlock{
+                                .objectId    = objectId,
+                                .dir         = block.gravityDir,
+                                .newPosition = targetPosition,
+                                .squish      = false,
+                            });
+
+                            m_turnEvents.pushBack(TERotateGravityDir{
+                                .objectId  = objectId,
+                                .clockwise = gr->clockwise,
+                            });
+
+                            return ControlFlow::Continue;
+                        }
+
+                        targetPosition += block.gravityDir;
+                    }
+
+                    if (mustFall)
+                        m_turnEvents.pushBack(TEFallBlock{.objectId    = objectId,
+                                                          .dir         = block.gravityDir,
+                                                          .newPosition = targetPosition - block.gravityDir,
+                                                          .squish      = true});
+
+                    return ControlFlow::Continue;
                 });
 
-
-            m_world.forBlocks([&](const BlockId blockId, const Block& block)
+            m_world.forBlocks([&](const ObjectId objectId, const Block& block)
             {
                 const sf::Vec2f drawPosition = sf::Vec2f{block.position.x * 64.f, block.position.y * 64.f} +
                                                sf::Vec2f{32.f, 32.f};
@@ -435,26 +569,37 @@ public:
                                             adjustedMousePosition.y > drawPosition.y &&
                                             adjustedMousePosition.y < drawPosition.y + 64.f;
 
-                if (hoveredByMouse && lmbPressed && !m_grabbedBlockId.hasValue())
-                    m_grabbedBlockId.emplace(blockId);
+                if (hoveredByMouse && lmbPressed && !m_grabbedObjectId.hasValue())
+                {
+                    m_grabbedObjectId.emplace(objectId);
+                    return ControlFlow::Break;
+                }
+
+                return ControlFlow::Continue;
             });
 
             if (m_turnEvents.empty())
             {
-                if (m_grabbedBlockId.hasValue())
+                if (m_grabbedObjectId.hasValue())
                 {
-                    Block& grabbedBlock = *m_world.getBlockById(*m_grabbedBlockId);
+                    Block& grabbedBlock = m_world.getBlockById(*m_grabbedObjectId);
 
                     auto diff = worldMousePosition - grabbedBlock.position;
                     const sf::Vec2i dir = {diff.x < 0 ? -1 : (diff.x > 0 ? 1 : 0), diff.y < 0 ? -1 : (diff.y > 0 ? 1 : 0)};
 
                     const auto newPos = grabbedBlock.position + dir;
 
+                    const bool movingAgainstGravity = grabbedBlock.gravityDir != sf::Vec2i{0, 0} &&
+                                                      grabbedBlock.gravityDir == -dir;
+
                     if (!m_world.isBlocked(newPos))
-                        m_turnEvents.pushBack(
-                            TEMoveBlock{.blockId = *m_grabbedBlockId, .newPosition = grabbedBlock.position + dir});
+                    {
+                        if (!movingAgainstGravity)
+                            m_turnEvents.pushBack(
+                                TEMoveBlock{.objectId = *m_grabbedObjectId, .newPosition = grabbedBlock.position + dir});
+                    }
                     else if (diff != sf::Vec2i{0, 0})
-                        m_turnEvents.pushBack(TESquishBlock{.blockId = *m_grabbedBlockId, .dir = dir});
+                        m_turnEvents.pushBack(TESquishBlock{.objectId = *m_grabbedObjectId, .dir = dir});
                 }
             }
             else
@@ -468,7 +613,7 @@ public:
 
                         if (moveBlock->progress >= 1.f)
                         {
-                            Block& grabbedBlock   = *m_world.getBlockById(moveBlock->blockId);
+                            Block& grabbedBlock   = m_world.getBlockById(moveBlock->objectId);
                             grabbedBlock.position = moveBlock->newPosition;
 
                             checkForKill();
@@ -483,9 +628,11 @@ public:
 
                         if (fallBlock->progress >= 1.f)
                         {
-                            Block& grabbedBlock   = *m_world.getBlockById(fallBlock->blockId);
+                            Block& grabbedBlock   = m_world.getBlockById(fallBlock->objectId);
                             grabbedBlock.position = fallBlock->newPosition;
-                            m_turnEvents.pushBack(TESquishBlock{.blockId = fallBlock->blockId, .dir = fallBlock->dir});
+
+                            if (fallBlock->squish)
+                                m_turnEvents.pushBack(TESquishBlock{.objectId = fallBlock->objectId, .dir = fallBlock->dir});
 
                             checkForKill();
 
@@ -507,8 +654,27 @@ public:
 
                         if (kill->progress >= 1.f)
                         {
-                            m_world.killBlock(kill->blockId);
-                            m_grabbedBlockId.reset();
+                            m_world.killBlock(kill->objectId);
+                            m_grabbedObjectId.reset();
+
+                            return true;
+                        }
+                    }
+                    else if (auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
+                    {
+                        if (rotateGravityDir->progress < 1.f)
+                            rotateGravityDir->progress += deltaTimeMs * 0.0020f;
+
+                        if (rotateGravityDir->progress >= 1.f)
+                        {
+                            if (rotateGravityDir->clockwise)
+                                m_world.getBlockById(rotateGravityDir->objectId)
+                                    .gravityDir = sf::Vec2i{-m_world.getBlockById(rotateGravityDir->objectId).gravityDir.y,
+                                                            m_world.getBlockById(rotateGravityDir->objectId).gravityDir.x};
+                            else
+                                m_world.getBlockById(rotateGravityDir->objectId)
+                                    .gravityDir = sf::Vec2i{m_world.getBlockById(rotateGravityDir->objectId).gravityDir.y,
+                                                            -m_world.getBlockById(rotateGravityDir->objectId).gravityDir.x};
 
                             return true;
                         }
@@ -539,17 +705,45 @@ public:
             // ---
             m_window.clear();
 
-            m_world.forBlocks([&](const BlockId blockId, const Block& block)
+            m_world.forTiles([&](const ObjectId objectId, const Tile& tile)
             {
-                sf::Vec2f drawPositionOffset = {0.f, 0.f};
-                sf::Vec2f scaleMultiplier    = {1.f, 1.f};
-                float     rotationRadians    = 0.f;
+                const sf::Vec2f drawPosition = sf::Vec2f{tile.position.x * 64.f, tile.position.y * 64.f} +
+                                               sf::Vec2f{32.f, 32.f};
+
+                tile.type.linear_match([&](const TGravityRotator& gravityRotator)
+                {
+                    m_window.draw(sf::CurvedArrowShapeData{
+                        .position         = drawPosition,
+                        .scale            = {0.6f, 0.6f},
+                        .origin           = {32.f, 32.f},
+                        .rotation         = sf::radians(m_time * 0.002f).wrapUnsigned(),
+                        .fillColor        = sf::Color::LightYellow,
+                        .outlineColor     = sf::Color::Yellow,
+                        .outlineThickness = 2.f,
+                        .outerRadius      = 32.f,
+                        .innerRadius      = 24.f,
+                        .startAngle       = sf::degrees(0.f),
+                        .sweepAngle       = sf::degrees(270.f),
+                        .headLength       = 16.f,
+                        .headWidth        = 24.f,
+                    });
+                });
+
+                return ControlFlow::Continue;
+            });
+
+            m_world.forBlocks([&](const ObjectId objectId, const Block& block)
+            {
+                sf::Vec2f drawPositionOffset   = {0.f, 0.f};
+                sf::Vec2f scaleMultiplier      = {1.f, 1.f};
+                float     rotationRadians      = 0.f;
+                float     arrowRotationRadians = 0.f;
 
                 forTurnEventsToProcess([&](TurnEvent& turnEvent)
                 {
                     if (const auto* moveBlock = turnEvent.get_if<TEMoveBlock>())
                     {
-                        if (moveBlock->blockId == blockId)
+                        if (moveBlock->objectId == objectId)
                         {
                             const auto worldOffset = moveBlock->newPosition.toVec2f() - block.position.toVec2f();
                             drawPositionOffset     = easeInOutBack(moveBlock->progress) * worldOffset * 64.f;
@@ -557,7 +751,7 @@ public:
                     }
                     else if (const auto* fallBlock = turnEvent.get_if<TEFallBlock>())
                     {
-                        if (fallBlock->blockId == blockId)
+                        if (fallBlock->objectId == objectId)
                         {
                             const auto worldOffset = fallBlock->newPosition.toVec2f() - block.position.toVec2f();
                             drawPositionOffset     = easeInBack(fallBlock->progress) * worldOffset * 64.f;
@@ -565,7 +759,7 @@ public:
                     }
                     else if (const auto* squishBlock = turnEvent.get_if<TESquishBlock>())
                     {
-                        if (squishBlock->blockId == blockId)
+                        if (squishBlock->objectId == objectId)
                         {
                             const auto absDir = sf::Vec2f{sf::base::fabs(static_cast<float>(squishBlock->dir.x)),
                                                           sf::base::fabs(static_cast<float>(squishBlock->dir.y))};
@@ -580,10 +774,20 @@ public:
                     }
                     else if (const auto* kill = turnEvent.get_if<TEKill>())
                     {
-                        if (kill->blockId == blockId)
+                        if (kill->objectId == objectId)
                         {
                             scaleMultiplier *= 1.f - easeInOutBack(kill->progress);
                             rotationRadians = easeInOutSine(kill->progress) * sf::base::tau;
+                        }
+                    }
+                    else if (const auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
+                    {
+                        if (rotateGravityDir->objectId == objectId)
+                        {
+                            arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * sf::base::halfPi;
+
+                            scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
+                            scaleMultiplier.y += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
                         }
                     }
 
@@ -629,9 +833,11 @@ public:
                 if (block.gravityDir != sf::Vec2i{0, 0})
                     m_window.draw(sf::ArrowShapeData{
                         .position = drawPosition,
-                        .scale    = scaleMultiplier,
+                        .scale    = scaleMultiplier.rotatedBy(sf::degrees(90.f)),
                         .origin   = {},
-                        .rotation = sf::radians(block.gravityDir.toVec2f().angle().asRadians() + rotationRadians).wrapUnsigned(),
+                        .rotation = sf::radians(block.gravityDir.toVec2f().angle().asRadians() + rotationRadians +
+                                                arrowRotationRadians + sf::base::pi)
+                                        .wrapUnsigned(),
                         .fillColor        = sf::Color::LightRed,
                         .outlineColor     = sf::Color::White,
                         .outlineThickness = 2.f * sf::base::fabs(scaleMultiplier.x),
@@ -645,19 +851,21 @@ public:
                     m_window.draw(m_font,
                                   sf::TextData{
                                       .position         = drawPosition + sf::Vec2f{8.f, 2.f} - sf::Vec2f{32.f, 32.f},
-                                      .string           = std::to_string(blockId),
+                                      .string           = std::to_string(objectId),
                                       .characterSize    = 18u,
                                       .fillColor        = sf::Color::White,
                                       .outlineColor     = sf::Color::Black,
                                       .outlineThickness = 2.f,
                                   });
+
+                return ControlFlow::Continue;
             });
 
-            if (m_grabbedBlockId.hasValue())
+            if (m_grabbedObjectId.hasValue())
                 m_window.draw(m_font,
                               sf::TextData{
                                   .position         = {100, 100},
-                                  .string           = std::to_string(*m_grabbedBlockId),
+                                  .string           = std::to_string(*m_grabbedObjectId),
                                   .characterSize    = 18u,
                                   .fillColor        = sf::Color::White,
                                   .outlineColor     = sf::Color::Black,

@@ -39,7 +39,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr explicit(false) AutoWrapAngle(Angle angle) :
-    m_radians(angle.m_radians)
+    m_radians(angle.radians)
     {
     }
 
@@ -52,7 +52,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator=(Angle angle) noexcept
     {
-        m_radians = angle.m_radians;
+        m_radians = angle.radians;
         return *this;
     }
 
@@ -121,7 +121,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator+=(Angle rhs)
     {
-        m_radians += rhs.m_radians;
+        m_radians += rhs.radians;
         return *this;
     }
 
@@ -133,7 +133,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr AutoWrapAngle& operator-=(Angle rhs)
     {
-        m_radians -= rhs.m_radians;
+        m_radians -= rhs.radians;
         return *this;
     }
 

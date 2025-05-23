@@ -30,6 +30,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API EllipseShapeData
 
     float        horizontalRadius{0.f}; //!< Horizontal radius of the ellipse
     float        verticalRadius{0.f};   //!< Vertical radius of the ellipse
+    Angle        startAngle{};          //!< Starting angle of ellipse point generation
     unsigned int pointCount{30u};       //!< Number of points composing the ellipse
 };
 

@@ -65,7 +65,7 @@ unsigned int CircleShape::getPointCount() const
 Vec2f CircleShape::getPoint(base::SizeT index) const
 {
     SFML_BASE_ASSERT(index < m_pointCount && "Index is out of bounds");
-    return ShapeUtils::computeCirclePoint(index, m_pointCount, m_radius);
+    return ShapeUtils::computeCirclePoint(index, /* startAngle */ 0.f, m_pointCount, m_radius);
 }
 
 
@@ -82,7 +82,7 @@ void CircleShape::updateCircleGeometry()
     const float angleStep = sf::base::tau / static_cast<float>(m_pointCount);
 
     updateFromFunc([&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return ShapeUtils::computeCirclePointFromAngleStep(i, angleStep, m_radius); },
+    { return ShapeUtils::computeCirclePointFromAngleStep(i, /* startAngle */ 0.f, angleStep, m_radius); },
                    m_pointCount);
 }
 

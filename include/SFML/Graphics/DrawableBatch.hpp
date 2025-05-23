@@ -31,14 +31,15 @@ class Text;
 
 struct ArrowShapeData;
 struct CircleShapeData;
+struct CurvedArrowShapeData;
 struct EllipseShapeData;
 struct PieSliceShapeData;
 struct RectangleShapeData;
-struct RingShapeData;
 struct RingPieSliceShapeData;
+struct RingShapeData;
 struct RoundedRectangleShapeData;
-struct StarShapeData;
 struct Sprite;
+struct StarShapeData;
 struct TextData;
 struct Transform;
 } // namespace sf
@@ -505,6 +506,8 @@ public:
     ////////////////////////////////////////////////////////////
     void add(const Text& text);
 
+    // TODO P0: should return two vertex spans, one for fill and one for outline
+
     ////////////////////////////////////////////////////////////
     /// \brief Adds an arrow shape defined by `sf::ArrowShapeData` to the batch
     ///
@@ -534,6 +537,21 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     VertexSpan add(const CircleShapeData& sdCircle);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Adds a curved arrow shape defined by `sf::CurvedArrowShapeData` to the batch
+    ///
+    /// Generates vertices for a curved arrow based on the provided data
+    /// and appends them to the batch.
+    ///
+    /// \param sdCurvedArrow Data defining the curved arrow shape
+    ///
+    /// \return A `VertexSpan` referring to the added vertices.
+    ///
+    /// \warning The returned span is invalidated after the next call to `add` or batch flush.
+    ///
+    ////////////////////////////////////////////////////////////
+    VertexSpan add(const CurvedArrowShapeData& sdCurvedArrow);
 
     ////////////////////////////////////////////////////////////
     /// \brief Adds an ellipse shape defined by `sf::EllipseShapeData` to the batch

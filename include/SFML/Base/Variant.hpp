@@ -238,7 +238,7 @@ public:
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
         requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
-    : tinyvariant{inplace_type<T>, static_cast<T&&>(x)}
+    : tinyvariant{inplace_type<sf::base::RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
     {
     }
 
