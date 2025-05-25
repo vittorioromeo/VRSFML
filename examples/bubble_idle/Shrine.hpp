@@ -2,7 +2,7 @@
 
 #include "Aliases.hpp"
 #include "Countdown.hpp"
-#include "MathUtils.hpp"
+#include "HueColor.hpp"
 #include "ShrineConstants.hpp"
 #include "ShrineType.hpp"
 #include "TextShakeEffect.hpp"

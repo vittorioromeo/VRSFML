@@ -1,5 +1,6 @@
 #include "../bubble_idle/ControlFlow.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Easing.hpp"      // TODO P1: avoid the relative path...?
+#include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -13,8 +14,10 @@
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/RoundedRectangleShapeData.hpp"
+#include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/Music.hpp"
@@ -40,7 +43,6 @@
 #include "ExampleUtils.hpp"
 
 #include <algorithm>
-#include <iostream>
 #include <string>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -109,6 +111,8 @@ struct Block
     sf::Vec2i position;
     BlockType type;
     sf::Vec2i gravityDir = {0, 0};
+    bool      fixed      = false;
+    bool      locked     = false;
 };
 
 
@@ -146,12 +150,6 @@ private:
     sf::base::Vector<sf::base::Optional<Object>> m_objects;
 
 public:
-    ////////////////////////////////////////////////////////////
-    void addBlock(const Block& block)
-    {
-        m_objects.emplaceBack(sf::base::inPlace, block);
-    }
-
     ////////////////////////////////////////////////////////////
     void addWall(const sf::Vec2i position)
     {
@@ -354,7 +352,19 @@ private:
          .contextSettings = {.antiAliasingLevel = 8u}});
 
     ////////////////////////////////////////////////////////////
+    sf::Shader m_shader{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/shader.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    ////////////////////////////////////////////////////////////
     const sf::Font m_font = sf::Font::openFromFile("resources/Born2bSportyFS.ttf").value();
+
+    ////////////////////////////////////////////////////////////
+    const sf::Texture m_txFixed  = sf::Texture::loadFromFile("resources/fixed.png", {.smooth = true}).value();
+    const sf::Texture m_txLocked = sf::Texture::loadFromFile("resources/locked.png", {.smooth = true}).value();
 
     ////////////////////////////////////////////////////////////
     sf::ImGuiContext m_imGuiContext;
@@ -456,15 +466,15 @@ public:
         m_world.addColored({6, 6}, sf::Color::Red, {0, -1});
         m_world.addColored({7, 6}, sf::Color::Red);
         m_world.addColored({3, 3}, sf::Color::Red);
-        // m_world.addColored({8, 8}, sf::Color::Blue);
-        // m_world.addColored({9, 9}, sf::Color::Blue);
+        m_world.addColored({8, 8}, sf::Color::Blue);
+        m_world.addColored({9, 9}, sf::Color::Blue);
 
         m_world.addGravityRotator({9, 10}, /* clockwise */ true);
         m_world.addGravityRotator({2, 10}, /* clockwise */ true);
         m_world.addGravityRotator({7, 1}, /* clockwise */ true);
 
-        // m_world.addColored({10, 10}, sf::Color::Green);
-        // m_world.addColored({12, 11}, sf::Color::Green, {-1, 0});
+        m_world.addColored({10, 10}, sf::Color::Green);
+        m_world.addColored({12, 11}, sf::Color::Green, {-1, 0});
 
         m_world.addWall({6, 4});
         m_world.addWall({6, 5});
@@ -712,21 +722,23 @@ public:
 
                 tile.type.linear_match([&](const TGravityRotator& gravityRotator)
                 {
-                    m_window.draw(sf::CurvedArrowShapeData{
-                        .position         = drawPosition,
-                        .scale            = {0.6f, 0.6f},
-                        .origin           = {32.f, 32.f},
-                        .rotation         = sf::radians(m_time * 0.002f).wrapUnsigned(),
-                        .fillColor        = sf::Color::LightYellow,
-                        .outlineColor     = sf::Color::Yellow,
-                        .outlineThickness = 2.f,
-                        .outerRadius      = 32.f,
-                        .innerRadius      = 24.f,
-                        .startAngle       = sf::degrees(0.f),
-                        .sweepAngle       = sf::degrees(270.f),
-                        .headLength       = 16.f,
-                        .headWidth        = 24.f,
-                    });
+                    m_window.draw(
+                        sf::CurvedArrowShapeData{
+                            .position         = drawPosition,
+                            .scale            = {0.6f, 0.6f},
+                            .origin           = {32.f, 32.f},
+                            .rotation         = sf::radians(m_time * 0.002f).wrapUnsigned(),
+                            .fillColor        = sf::Color::LightYellow,
+                            .outlineColor     = sf::Color::Yellow,
+                            .outlineThickness = 2.f,
+                            .outerRadius      = 32.f,
+                            .innerRadius      = 24.f,
+                            .startAngle       = sf::degrees(0.f),
+                            .sweepAngle       = sf::degrees(270.f),
+                            .headLength       = 16.f,
+                            .headWidth        = 24.f,
+                        },
+                        {.shader = &m_shader});
                 });
 
                 return ControlFlow::Continue;
@@ -805,47 +817,77 @@ public:
                 block.type.linear_match(
                     [&](const BWall&)
                 {
-                    m_window.draw(sf::RectangleShapeData{
-                        .position         = drawPosition,
-                        .origin           = {32.f, 32.f},
-                        .fillColor        = sf::Color::Gray,
-                        .outlineColor     = sf::Color::LightGray,
-                        .outlineThickness = 4.f,
-                        .size             = {64.f, 64.f},
-                    });
+                    m_window.draw(
+                        sf::RectangleShapeData{
+                            .position         = drawPosition,
+                            .origin           = {32.f, 32.f},
+                            .fillColor        = sf::Color::Gray,
+                            .outlineColor     = sf::Color::LightGray,
+                            .outlineThickness = 4.f,
+                            .size             = {64.f, 64.f},
+                        },
+                        {.shader = &m_shader});
                 },
                     [&](const BColored& bColored)
                 {
-                    m_window.draw(sf::RoundedRectangleShapeData{
-                        .position         = drawPosition,
-                        .scale            = scaleMultiplier,
-                        .origin           = {32.f, 32.f},
-                        .rotation         = sf::radians(rotationRadians).wrapUnsigned(),
-                        .fillColor        = bColored.color,
-                        .outlineColor     = hoveredByMouse ? sf::Color::White : bColored.color.withLightness(0.75f),
-                        .outlineThickness = (hoveredByMouse ? -8.f : -4.f) *
-                                            scaleMultiplier.x, // TODO P0: sign inconsistency with normal rectangle
-                        .size         = sf::Vec2f{64.f, 64.f},
-                        .cornerRadius = 8.f,
-                    });
+                    m_window.draw(
+                        sf::RoundedRectangleShapeData{
+                            .position         = drawPosition,
+                            .scale            = scaleMultiplier,
+                            .origin           = {32.f, 32.f},
+                            .rotation         = sf::radians(rotationRadians).wrapUnsigned(),
+                            .fillColor        = bColored.color,
+                            .outlineColor     = hoveredByMouse ? sf::Color::White : bColored.color.withLightness(0.75f),
+                            .outlineThickness = (hoveredByMouse ? -8.f : -4.f) *
+                                                scaleMultiplier.x, // TODO P0: sign inconsistency with normal rectangle
+                            .size         = sf::Vec2f{64.f, 64.f},
+                            .cornerRadius = 8.f,
+                        },
+                        {.shader = &m_shader});
+
+
+                    if (true || block.fixed)
+                        m_window.draw(m_txFixed,
+                                      {
+                                          .position = drawPosition + sf::Vec2f{16.f, -16.f},
+                                          .scale    = scaleMultiplier * 0.3f,
+                                          .origin   = {32.f, 32.f},
+                                          .rotation = sf::radians(rotationRadians).wrapUnsigned(),
+                                          .color    = hueColor(bColored.color.toHSL().hue, 255u),
+                                      },
+                                      {.shader = &m_shader});
+
+                    if (true || block.locked)
+                        m_window.draw(m_txLocked,
+                                      {
+                                          .position = drawPosition + sf::Vec2f{16.f, 16.f},
+                                          .scale    = scaleMultiplier * 0.3f,
+                                          .origin   = {32.f, 32.f},
+                                          .rotation = sf::radians(rotationRadians).wrapUnsigned(),
+                                          .color    = hueColor(bColored.color.toHSL().hue, 255u),
+                                      },
+                                      {.shader = &m_shader});
+
+                    if (block.gravityDir != sf::Vec2i{0, 0})
+                        m_window.draw(
+                            sf::ArrowShapeData{
+                                .position = drawPosition + sf::Vec2f{-16.f, -16.f},
+                                .scale    = scaleMultiplier.rotatedBy(sf::degrees(90.f)) * 0.55f,
+                                .origin   = {12.f * sf::base::fabs(scaleMultiplier.x), 0.f},
+                                .rotation = sf::radians(block.gravityDir.toVec2f().angle().asRadians() +
+                                                        rotationRadians + arrowRotationRadians + sf::base::pi)
+                                                .wrapUnsigned(),
+                                .fillColor        = bColored.color.withLightness(0.35f),
+                                .outlineColor     = sf::Color::White,
+                                .outlineThickness = 1.f * sf::base::fabs(scaleMultiplier.x),
+                                .shaftLength      = 12.f * sf::base::fabs(scaleMultiplier.x),
+                                .shaftWidth       = 10.f * sf::base::fabs(scaleMultiplier.x),
+                                .headLength       = 12.f * sf::base::fabs(scaleMultiplier.x),
+                                .headWidth        = 20.f * sf::base::fabs(scaleMultiplier.x),
+                            },
+                            {.shader = &m_shader});
                 });
 
-                if (block.gravityDir != sf::Vec2i{0, 0})
-                    m_window.draw(sf::ArrowShapeData{
-                        .position = drawPosition,
-                        .scale    = scaleMultiplier.rotatedBy(sf::degrees(90.f)),
-                        .origin   = {},
-                        .rotation = sf::radians(block.gravityDir.toVec2f().angle().asRadians() + rotationRadians +
-                                                arrowRotationRadians + sf::base::pi)
-                                        .wrapUnsigned(),
-                        .fillColor        = sf::Color::LightRed,
-                        .outlineColor     = sf::Color::White,
-                        .outlineThickness = 2.f * sf::base::fabs(scaleMultiplier.x),
-                        .shaftLength      = 12.f * sf::base::fabs(scaleMultiplier.x),
-                        .shaftWidth       = 12.f * sf::base::fabs(scaleMultiplier.x),
-                        .headLength       = 12.f * sf::base::fabs(scaleMultiplier.x),
-                        .headWidth        = 24.f * sf::base::fabs(scaleMultiplier.x),
-                    });
 
                 if (false)
                     m_window.draw(m_font,
@@ -856,7 +898,8 @@ public:
                                       .fillColor        = sf::Color::White,
                                       .outlineColor     = sf::Color::Black,
                                       .outlineThickness = 2.f,
-                                  });
+                                  },
+                                  {.shader = &m_shader});
 
                 return ControlFlow::Continue;
             });
@@ -870,7 +913,8 @@ public:
                                   .fillColor        = sf::Color::White,
                                   .outlineColor     = sf::Color::Black,
                                   .outlineThickness = 2.f,
-                              });
+                              },
+                              {.shader = &m_shader});
 
             // ---
             ////////////////////////////////////////////////////////////
