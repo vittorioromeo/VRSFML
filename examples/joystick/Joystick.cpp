@@ -230,7 +230,8 @@ int main()
                                         0.1f, 100.f);
         // clang-format on
 
-        if (newThreshold != threshold)
+        // Update the threshold if it has changed, or if this is the first time
+        if (newThreshold != threshold || thresholdDisplay.value.getString().isEmpty())
         {
             threshold = newThreshold;
             window.setJoystickThreshold(threshold);
