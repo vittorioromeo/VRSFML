@@ -132,8 +132,9 @@ namespace sf::priv
 ////////////////////////////////////////////////////////////
 struct JoystickImpl
 {
-    SDL_GUID      guid{};          //!< GUID of the joystick
-    SDL_Joystick* handle{nullptr}; //!< SDL handle to the joystick
+    SDL_GUID       guid{};          //!< GUID of the joystick
+    SDL_JoystickID id{};            //!< ID of the joystick
+    SDL_Joystick*  handle{nullptr}; //!< SDL handle to the joystick
 };
 
 
@@ -230,7 +231,7 @@ void JoystickManager::update()
                         [&](const base::Optional<JoystickInfo>& info)
         {
             SFML_BASE_ASSERT(info.hasValue());
-            return sdlLayer.areGUIDsEqual(joyImpl->guid, info->guid);
+            return info->id == joyImpl->id;
         }))
         {
             continue; // Not newly disconnected
@@ -256,8 +257,7 @@ void JoystickManager::update()
 
         if (base::anyOf(m_impl->impls,
                         m_impl->impls + Joystick::MaxCount,
-                        [&](const base::Optional<JoystickImpl>& impl)
-        { return impl.hasValue() && sdlLayer.areGUIDsEqual(impl->guid, guid); }))
+                        [&](const base::Optional<JoystickImpl>& impl) { return impl.hasValue() && impl->id == id; }))
             continue; // Not newly connected
 
         // Find an empty slot
@@ -269,6 +269,7 @@ void JoystickManager::update()
                 continue; // Used slot
 
             joyImpl.emplace();
+            joyImpl->id     = id;
             joyImpl->guid   = guid;
             joyImpl->handle = SDL_OpenJoystick(id);
 
@@ -277,9 +278,11 @@ void JoystickManager::update()
                 priv::err() << "Failed to open joystick: " << SDL_GetError();
                 joyImpl.reset();
             }
-
-            m_impl->capabilities[iImpl]    = getCapabilitiesFromSDL(*joyImpl->handle);
-            m_impl->identifications[iImpl] = getIdentificationFromSDL(*joyImpl->handle);
+            else
+            {
+                m_impl->capabilities[iImpl]    = getCapabilitiesFromSDL(*joyImpl->handle);
+                m_impl->identifications[iImpl] = getIdentificationFromSDL(*joyImpl->handle);
+            }
 
             break;
         }
