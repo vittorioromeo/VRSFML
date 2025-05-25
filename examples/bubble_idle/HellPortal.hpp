@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] HellPortal
 {
-    sf::Vec2f    position;
+    sf::Vec2f       position;
     Countdown       life;
     sf::base::SizeT catIdx;
 
