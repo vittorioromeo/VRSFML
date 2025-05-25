@@ -4,7 +4,6 @@
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/Math/Exp.hpp"
-#include "SFML/Base/Remainder.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -53,10 +52,4 @@
 
     return {exponentialApproach(current.x, target.x, deltaTimeMs, speed),
             exponentialApproach(current.y, target.y, deltaTimeMs, speed)};
-}
-
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float wrapHue(const float hue) noexcept
-{
-    return sf::base::positiveRemainder(hue, 360.f);
 }

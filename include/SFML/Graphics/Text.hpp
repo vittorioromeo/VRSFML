@@ -9,6 +9,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/TextData.hpp"
+#include "SFML/Graphics/TextStyle.hpp"
 #include "SFML/Graphics/TransformableMixin.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "SFML/Graphics/VertexSpan.hpp"
