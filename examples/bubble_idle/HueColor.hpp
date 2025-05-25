@@ -1,12 +1,17 @@
 #pragma once
 
-#include "MathUtils.hpp"
-
 #include "SFML/Graphics/Color.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Remainder.hpp"
 
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr float wrapHue(const float hue) noexcept
+{
+    return sf::base::positiveRemainder(hue, 360.f);
+}
 
 ////////////////////////////////////////////////////////////
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline constexpr sf::base::U8 hueToByte(const float hue) noexcept
