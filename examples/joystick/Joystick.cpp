@@ -24,9 +24,6 @@
 #include "ExampleUtils.hpp"
 
 #include <string>
-#include <unordered_map>
-
-#include <cstdlib>
 
 
 ////////////////////////////////////////////////////////////
@@ -41,84 +38,26 @@ int main()
     // Open the text font
     const auto font = sf::Font::openFromFile("resources/tuffy.ttf").value();
 
-    constexpr auto characterSize   = 14u;
+    constexpr auto characterSize   = 16u;
     const auto     fontLineSpacing = font.getLineSpacing(characterSize);
 
-    struct JoystickTexts
+    sf::OutStringStream oss;
+
+    // Set up our string conversion parameters
+    oss.setPrecision(2);
+    oss.setFormatFlags(sf::FormatFlags::fixed | sf::FormatFlags::boolalpha);
+
+    const auto toStr = [&](const auto&... xs)
     {
-        sf::Text label;
-        sf::Text value;
+        oss.setStr("");
+        (oss << ... << xs);
+        return oss.to<sf::String>();
     };
 
-    std::unordered_map<std::string, JoystickTexts> texts;
-
-    sf::OutStringStream oss;
-    float               threshold = 0.1f;
+    float threshold = 0.1f;
 
     // Axes labels in as strings
     const sf::base::Array<std::string, 8> axisLabels = {"X", "Y", "Z", "R", "U", "V", "PovX", "PovY"};
-
-    // Helper to set text entries to a specified value
-    const auto set = [&](const std::string& label, const auto& value)
-    {
-        oss.setStr("");
-        oss << value;
-
-        texts.at(label).value.setString(oss.to<sf::String>());
-    };
-
-    // Update joystick identification
-    const auto updateIdentification = [&](const sf::Joystick::Query& query)
-    {
-        oss.setStr("");
-        oss << "Joystick " << query.getIndex() << ":";
-
-        auto& [label, value] = texts.at("ID");
-        label.setString(oss.to<sf::String>());
-        value.setString(query.getName());
-    };
-
-    // Update joystick axes
-    const auto updateAxes = [&](const sf::Joystick::Query& query)
-    {
-        for (unsigned int j = 0; j < sf::Joystick::AxisCount; ++j)
-            if (query.hasAxis(static_cast<sf::Joystick::Axis>(j)))
-                set(axisLabels[j], query.getAxisPosition(static_cast<sf::Joystick::Axis>(j)));
-    };
-
-    // Update joystick buttons
-    const auto updateButtons = [&](const sf::Joystick::Query& query)
-    {
-        for (unsigned int j = 0; j < query.getButtonCount(); ++j)
-        {
-            oss.setStr("");
-            oss << "Button " << j;
-
-            set(oss.to<std::string>(), query.isButtonPressed(j));
-        }
-    };
-
-    // Update the label-value sf::Text objects based on the current joystick state
-    const auto updateValues = [&](unsigned int index)
-    {
-        const auto query = sf::Joystick::query(index);
-        if (!query.hasValue())
-            return false;
-
-        updateIdentification(*query);
-        updateAxes(*query);
-        updateButtons(*query);
-
-        return true;
-    };
-
-    const auto updateThresholdText = [&]
-    {
-        oss.setStr("");
-        oss << threshold << "  (Change with up/down arrow keys)";
-
-        texts.at("Threshold").value.setString(oss.to<sf::String>());
-    };
 
     constexpr sf::Vec2f windowSize{400.f, 775.f};
 
@@ -130,59 +69,9 @@ int main()
         .vsync     = true,
     });
 
-    // Set up our string conversion parameters
-    oss.setPrecision(2);
-    oss.setFormatFlags(sf::FormatFlags::fixed | sf::FormatFlags::boolalpha);
-
-    // Utility function to create text objects
-    const auto emplaceTexts = [&](const std::string& labelStr, const std::string& valueStr, const float yOffset) -> auto&
-    {
-        auto [it, success] = texts.try_emplace(labelStr,
-                                               sf::Text{font,
-                                                        {.position         = {5.f, 5.f + yOffset * fontLineSpacing},
-                                                         .string           = labelStr + ":",
-                                                         .characterSize    = characterSize,
-                                                         .outlineColor     = sf::Color::Blue,
-                                                         .outlineThickness = 0.5f}},
-                                               sf::Text{font,
-                                                        {.position      = {80.f, 5.f + yOffset * fontLineSpacing},
-                                                         .string        = valueStr,
-                                                         .characterSize = characterSize}});
-
-        return it->second;
-    };
-
-    // Set up our joystick identification `sf::Text` objects
-    {
-        auto& [label, value] = emplaceTexts("ID", "", 0.f);
-        label.setString("<Not Connected>");
-    }
-
-    // Set up our threshold sf::Text objects
-    emplaceTexts("Threshold", "", 2.f);
-    updateThresholdText();
-
-    // Set up our label-value sf::Text objects
-    for (unsigned int i = 0; i < sf::Joystick::AxisCount; ++i)
-        emplaceTexts(axisLabels[i], "N/A", static_cast<float>(i + 4));
-
-    for (unsigned int i = 0; i < sf::Joystick::ButtonCount; ++i)
-    {
-        oss.setStr("");
-        oss << "Button " << i;
-
-        emplaceTexts(oss.to<std::string>(), "N/A", static_cast<float>(sf::Joystick::AxisCount + i + 4));
-    }
-
-    // Update initially displayed joystick values if a joystick is already connected on startup
-    for (unsigned int i = 0; i < sf::Joystick::MaxCount; ++i)
-        if (updateValues(i))
-            break;
-
-    // Create drawable batch to optimize rendering
-    sf::CPUDrawableBatch drawableBatch;
-
     sf::Clock clock;
+
+    sf::base::Vector<sf::String> eventLog;
 
     while (true)
     {
@@ -192,69 +81,115 @@ int main()
             if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                 return 0;
 
-            if (handleAspectRatioAwareResize(*event, windowSize, window))
-                continue;
+            // if (handleAspectRatioAwareResize(*event, windowSize, window))
+            //     continue;
 
-            if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
-                updateValues(joystickButtonPressed->joystickId);
-            else if (const auto* joystickButtonReleased = event->getIf<sf::Event::JoystickButtonReleased>())
-                updateValues(joystickButtonReleased->joystickId);
-            else if (const auto* joystickMoved = event->getIf<sf::Event::JoystickMoved>())
-                updateValues(joystickMoved->joystickId);
-            else if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
-            {
-                sf::cOut() << "Connected joystick: " << joystickConnected->joystickId << '\n';
-                updateValues(joystickConnected->joystickId);
-            }
+            if (const auto* joystickConnected = event->getIf<sf::Event::JoystickConnected>())
+                eventLog.pushBack(toStr("[Joystick ", joystickConnected->joystickId, "]: connected"));
             else if (const auto* joystickDisconnected = event->getIf<sf::Event::JoystickDisconnected>())
-            {
-                sf::cOut() << "Disconnected joystick: " << joystickDisconnected->joystickId << '\n';
-
-                // Reset displayed joystick values to empty
-                for (auto& [label, joystickObject] : texts)
-                    joystickObject.value.setString("N/A");
-
-                auto& [label, value] = texts.at("ID");
-                label.setString("<Not Connected>");
-                value.setString("");
-
-                updateThresholdText();
-            }
+                eventLog.pushBack(toStr("[Joystick ", joystickDisconnected->joystickId, "]: disconnected"));
+            else if (const auto* joystickMoved = event->getIf<sf::Event::JoystickMoved>())
+                eventLog.pushBack(toStr("[Joystick ",
+                                        joystickMoved->joystickId,
+                                        "] moved: axis ",
+                                        axisLabels[static_cast<unsigned int>(joystickMoved->axis)],
+                                        " -> ",
+                                        joystickMoved->position));
+            else if (const auto* joystickButtonPressed = event->getIf<sf::Event::JoystickButtonPressed>())
+                eventLog.pushBack(
+                    toStr("[Joystick ", joystickButtonPressed->joystickId, "] button pressed: ", joystickButtonPressed->button));
+            else if (const auto* joystickButtonReleased = event->getIf<sf::Event::JoystickButtonReleased>())
+                eventLog.pushBack(toStr("[Joystick ",
+                                        joystickButtonReleased->joystickId,
+                                        "] button released: ",
+                                        joystickButtonReleased->button));
         }
 
-        // Update threshold if the user wants to change it
-        // clang-format off
-        const float newThreshold = sf::base::clamp(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)   ? threshold + 0.1f
-                                            : sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ? threshold - 0.1f
-                                            : threshold,
-                                        0.1f, 100.f);
-        // clang-format on
+        while (eventLog.size() > 10u)
+            eventLog.erase(eventLog.begin());
 
-        // Update the threshold if it has changed, or if this is the first time
-        if (newThreshold != threshold || thresholdDisplay.value.getString().isEmpty())
-        {
-            threshold = newThreshold;
-            window.setJoystickThreshold(threshold);
+        // Update the threshold
+        threshold = sf::base::clamp(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)     ? threshold + 0.1f
+                                    : sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down) ? threshold - 0.1f
+                                                                                          : threshold,
+                                    0.1f,
+                                    100.f);
 
-            updateThresholdText();
-        }
+        window.setJoystickThreshold(threshold);
 
         clock.restart();
+
+        unsigned int connectedJoystickCount = 0u;
+        for (unsigned int i = 0; i < sf::Joystick::MaxCount; ++i)
+            if (sf::Joystick::query(i))
+                ++connectedJoystickCount;
+
+        window.setSize({400u * sf::base::max(1u, connectedJoystickCount), 775u});
+        window.setView(sf::View{{775.f / 2.f, 775.f / 2.f}, {775.f, 775.f}});
+
+        float xOffset      = 0.f;
+        float yOffset      = 0.f;
+        float yEventOffset = 0.f;
+
+        const auto drawLabelValue = [&](const sf::String& label, const sf::String& value)
+        {
+            window.draw(font,
+                        {.position         = {5.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                         .string           = label + ":",
+                         .characterSize    = characterSize,
+                         .outlineColor     = sf::Color::Blue,
+                         .outlineThickness = 0.5f});
+
+            window.draw(font,
+                        {.position      = {80.f + 320.f * xOffset, 50.f + yOffset * fontLineSpacing},
+                         .string        = value,
+                         .characterSize = characterSize});
+
+            yOffset += 1.f;
+        };
 
         // Clear the window
         window.clear();
 
-        // Draw the label-value sf::Text objects
+        window.draw(font,
+                    {.position         = {5.f, 5.f},
+                     .string           = toStr("Threshold: ", threshold, "  (Change with up/down arrow keys)"),
+                     .characterSize    = characterSize,
+                     .outlineColor     = sf::Color::Blue,
+                     .outlineThickness = 0.5f});
+
+        for (const auto& eventStr : eventLog)
         {
-            drawableBatch.clear();
+            window.draw(font,
+                        {.position         = {5.f, 500.f + yEventOffset * fontLineSpacing},
+                         .string           = eventStr,
+                         .characterSize    = characterSize,
+                         .outlineColor     = sf::Color::Blue,
+                         .outlineThickness = 0.5f});
 
-            for (const auto& [label, joystickObject] : texts)
-            {
-                drawableBatch.add(joystickObject.label);
-                drawableBatch.add(joystickObject.value);
-            }
+            ++yEventOffset;
+        }
 
-            window.draw(drawableBatch, {.texture = &font.getTexture()});
+        for (unsigned int i = 0u; i < sf::Joystick::MaxCount; ++i)
+        {
+            auto query = sf::Joystick::query(i);
+            if (!query.hasValue())
+                continue;
+
+            // Draw joystick identification
+            drawLabelValue(toStr("Joystick ", query->getIndex()), query->getName());
+
+            // Draw joystick axes
+            for (unsigned int j = 0u; j < sf::Joystick::AxisCount; ++j)
+                if (query->hasAxis(static_cast<sf::Joystick::Axis>(j)))
+                    drawLabelValue(axisLabels[j], toStr(query->getAxisPosition(static_cast<sf::Joystick::Axis>(j))));
+
+            // Draw joystick buttons
+            for (unsigned int j = 0u; j < query->getButtonCount(); ++j)
+                drawLabelValue(toStr("Button ", j), toStr(query->isButtonPressed(j)));
+
+            xOffset += 1.f;
+            yOffset = 0.f;
         }
 
         // Display things on screen
