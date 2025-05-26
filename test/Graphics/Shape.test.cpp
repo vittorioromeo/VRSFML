@@ -102,5 +102,13 @@ TEST_CASE("[Graphics] sf::Shape" * doctest::skip(skipDisplayTests))
             CHECK(triangleShape.getLocalBounds() == Approx(sf::FloatRect({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
             CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-7.2150f, -14.2400f}, {44.4300f, 59.2400f})));
         }
+
+        SECTION("Add beveled outline")
+        {
+            triangleShape.setMiterLimit(2);
+            triangleShape.setOutlineThickness(5);
+            CHECK(triangleShape.getLocalBounds() == Approx(sf::FloatRect({-7.2150f, -10.f}, {44.4300f, 55.f})));
+            CHECK(triangleShape.getGlobalBounds() == Approx(sf::FloatRect({-7.2150f, -10.f}, {44.4300f, 55.f})));
+        }
     }
 }

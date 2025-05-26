@@ -22,5 +22,6 @@
     ::sf::Color     fillColor{::sf::Color::White};    /*!< Fill color */                                            \
     ::sf::Color     outlineColor{::sf::Color::White}; /*!< Outline color */                                         \
     float           outlineThickness{};               /*!< Thickness of the shape's outline */                      \
+    float           miterLimit{4.f}; /*!< Limit on the ratio between miter length and outline thickness */          \
                                                                                                                     \
     static_assert(true)

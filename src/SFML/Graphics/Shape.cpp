@@ -123,6 +123,21 @@ void Shape::setOutlineThickness(float thickness)
 
 
 ////////////////////////////////////////////////////////////
+void Shape::setMiterLimit(float miterLimit)
+{
+    m_miterLimit = miterLimit;
+    updateOutline();
+}
+
+
+////////////////////////////////////////////////////////////
+float Shape::getMiterLimit() const
+{
+    return m_miterLimit;
+}
+
+
+////////////////////////////////////////////////////////////
 float Shape::getOutlineThickness() const
 {
     return m_outlineThickness;
@@ -194,8 +209,8 @@ void Shape::updateOutlineTexCoords()
 ////////////////////////////////////////////////////////////
 void Shape::updateOutline()
 {
-    // Return if there is no outline
-    if (m_outlineThickness == 0.f)
+    // Return if there is no outline or no vertices
+    if (m_outlineThickness == 0.f || m_vertices.size() < 2)
     {
         m_verticesEndIndex = m_vertices.size();
         m_bounds           = m_insideBounds;
@@ -209,7 +224,8 @@ void Shape::updateOutline()
     ShapeUtils::updateOutlineFromTriangleFanFill(m_outlineThickness,
                                                  m_vertices.data() + 1u, // Skip the first vertex (center point)
                                                  m_vertices.data() + m_verticesEndIndex,
-                                                 count);
+                                                 count,
+                                                 m_miterLimit);
 
     // Update outline colors
     updateOutlineColors();
