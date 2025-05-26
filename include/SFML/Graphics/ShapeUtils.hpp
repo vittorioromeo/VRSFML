@@ -506,7 +506,7 @@ inline constexpr void updateOutlineImpl(const float                      outline
                                         auto&&                           fillPositionFn,
                                         Vertex* const SFML_BASE_RESTRICT outlineVertices,
                                         const base::SizeT                pointCount,
-                                        const float                      miterLimit = 4.f) noexcept
+                                        const float                      miterLimit) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(outlineVertices != nullptr);
     SFML_BASE_ASSERT_AND_ASSUME(pointCount >= 3u);
@@ -585,7 +585,7 @@ inline constexpr void updateOutlineFromTriangleFanFill(
     const Vertex* const SFML_BASE_RESTRICT fillVertices,
     Vertex* const SFML_BASE_RESTRICT       outlineVertices,
     const base::SizeT                      pointCount,
-    const float                            miterLimit = 4.f) noexcept
+    const float                            miterLimit) noexcept
 {
     SFML_BASE_ASSERT_AND_ASSUME(fillVertices != nullptr);
 

@@ -137,6 +137,37 @@ public:
     void setOutlineThickness(float thickness);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Set the limit on the ratio between miter length and outline thickness
+    ///
+    /// Outline segments around each shape corner are joined either
+    /// with a miter or a bevel join.
+    /// - A miter join is formed by extending outline segments until
+    ///   they intersect. The distance between the point of
+    ///   intersection and the shape's corner is the miter length.
+    /// - A bevel join is formed by connecting outline segments with
+    ///   a straight line perpendicular to the corner's bissector.
+    ///
+    /// The miter limit is used to determine whether ouline segments
+    /// around a corner are joined with a bevel or a miter.
+    /// When the ratio between the miter length and outline thickness
+    /// exceeds the miter limit, a bevel is used instead of a miter.
+    ///
+    /// The miter limit is linked to the maximum inner angle of a
+    /// corner below which a bevel is used by the following formula:
+    ///
+    /// miterLimit = 1 / sin(angle / 2)
+    ///
+    /// The miter limit must be greater than or equal to 1.
+    /// By default, the miter limit is 4.
+    ///
+    /// \param miterLimit New miter limit
+    ///
+    /// \see getMiterLimit
+    ///
+    ////////////////////////////////////////////////////////////
+    void setMiterLimit(float miterLimit);
+
+    ////////////////////////////////////////////////////////////
     /// \brief Get the sub-rectangle of the texture displayed by the shape
     ///
     /// \return Texture rectangle of the shape
@@ -185,6 +216,16 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getOutlineThickness() const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the limit on the ratio between miter length and outline thickness
+    ///
+    /// \return Limit on the ratio between miter length and outline thickness
+    ///
+    /// \see setMiterLimit
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getMiterLimit() const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the local bounding rectangle of the entity
@@ -337,6 +378,7 @@ private:
     FloatRect m_bounds;               //!< Bounding rectangle of the whole shape (outline + fill)
 
     float m_outlineThickness{}; //!< Thickness of the shape's outline
+    float m_miterLimit{4.f};    //!< Limit on the ratio between miter length and outline thickness
 
     Color m_fillColor{Color::White};    //!< Fill color
     Color m_outlineColor{Color::White}; //!< Outline color
@@ -364,6 +406,7 @@ template <typename TData>
         .fillColor          = data.fillColor,
         .outlineColor       = data.outlineColor,
         .outlineThickness   = data.outlineThickness,
+        .miterLimit         = data.miterLimit,
     };
 }
 
