@@ -449,7 +449,8 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     ShapeUtils::updateOutlineFromTriangleFanFill(descriptor.outlineThickness,
                                                  outlineVertexPtr - fillVertexCount + 1u, // Skip the first vertex (center point)
                                                  outlineVertexPtr,
-                                                 nPoints);
+                                                 nPoints,
+                                                 descriptor.miterLimit);
 
     //
     // Update outline colors and outline tex coords
@@ -689,7 +690,8 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
             return bodyFillVertexPtr[2 * tweakedIndex].position;
         },
                                       outlineVertexPtr,
-                                      outlinePerimeterPointCount);
+                                      outlinePerimeterPointCount,
+                                      sd.miterLimit);
 
         updateOutlineVerticesColorAndTextureRect(sd, outlineVertexPtr, outlineVertexCount);
         m_storage.commitMoreVertices(outlineVertexCount);
@@ -887,7 +889,11 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         };
 
         Vertex* const chosenOutlineVertexStart = chosenOutlineVertexPtr;
-        ShapeUtils::updateOutlineImpl(sdRing.outlineThickness, getBoundaryPoint, chosenOutlineVertexStart, nPoints);
+        ShapeUtils::updateOutlineImpl(sdRing.outlineThickness,
+                                      getBoundaryPoint,
+                                      chosenOutlineVertexStart,
+                                      nPoints,
+                                      sdRing.miterLimit);
 
         // Generate outline indices
         IndexType* chosenOutlineIndexPtrStart = chosenOutlineIndexPtr;
@@ -1021,9 +1027,10 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     };
 
     ShapeUtils::updateOutlineImpl(sdRingPieSlice.outlineThickness,
-                                  getBoundaryPoint,   // Lambda providing positions
-                                  outlineVertexPtr,   // Output vertex buffer
-                                  numBoundaryPoints); // Number of unique points in the loop
+                                  getBoundaryPoint,  // Lambda providing positions
+                                  outlineVertexPtr,  // Output vertex buffer
+                                  numBoundaryPoints, // Number of unique points in the loop
+                                  sdRingPieSlice.miterLimit);
 
     //
     // Generate outline indices

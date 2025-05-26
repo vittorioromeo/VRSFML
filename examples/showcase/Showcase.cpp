@@ -609,6 +609,8 @@ private:
     sf::Vec2f m_origin;
     sf::Angle m_rotation;
     sf::Vec2f m_scale{1.f, 1.f};
+    float     m_outlineThickness = 4.f;
+    float     m_miterLimit       = 4.f;
 
     ////////////////////////////////////////////////////////////
     decltype(auto) callWithActiveShape(auto&& f)
@@ -656,7 +658,8 @@ public:
 
             shapeData.fillColor        = fillColor;
             shapeData.outlineColor     = fillColor.withRotatedHue(180.f);
-            shapeData.outlineThickness = std::abs(4.f * std::sin(m_time * 0.05f + m_phase));
+            shapeData.outlineThickness = m_outlineThickness;
+            shapeData.miterLimit       = m_miterLimit;
 
             shapeData.position = m_position;
             shapeData.origin   = m_origin;
@@ -699,6 +702,8 @@ public:
         SLIDERFLOAT(*this, m_rotation.radians, 0.f, sf::base::tau);
         SLIDERFLOAT(*this, m_scale.x, 0.f, 10.f);
         SLIDERFLOAT(*this, m_scale.y, 0.f, 10.f);
+        SLIDERFLOAT(*this, m_outlineThickness, 0.f, 50.f);
+        SLIDERFLOAT(*this, m_miterLimit, 1.f, 10.f);
 
         switch (m_shapeIndex)
         {
