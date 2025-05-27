@@ -40,9 +40,9 @@ m_rectPacker(m_atlasTexture.getSize())
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vec2u size)
+base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vec2u size, Vec2u padding)
 {
-    const auto packedPosition = m_rectPacker.pack(size);
+    const auto packedPosition = m_rectPacker.pack(size + padding);
 
     if (!packedPosition.hasValue())
         return fail("pack pixel array rectangle for texture atlas");
@@ -54,16 +54,16 @@ base::Optional<FloatRect> TextureAtlas::add(const base::U8* pixels, Vec2u size)
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FloatRect> TextureAtlas::add(const Image& image)
+base::Optional<FloatRect> TextureAtlas::add(const Image& image, Vec2u padding)
 {
-    return add(image.getPixelsPtr(), image.getSize());
+    return add(image.getPixelsPtr(), image.getSize(), padding);
 }
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<FloatRect> TextureAtlas::add(const Texture& texture)
+base::Optional<FloatRect> TextureAtlas::add(const Texture& texture, Vec2u padding)
 {
-    const auto packedPosition = m_rectPacker.pack(texture.getSize());
+    const auto packedPosition = m_rectPacker.pack(texture.getSize() + padding);
 
     if (!packedPosition.hasValue())
         return fail("pack texture rectangle for texture atlas");
