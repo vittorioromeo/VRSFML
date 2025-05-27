@@ -45,9 +45,9 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vec2u size);
-    [[nodiscard]] base::Optional<FloatRect> add(const Image& image);
-    [[nodiscard]] base::Optional<FloatRect> add(const Texture& texture);
+    [[nodiscard]] base::Optional<FloatRect> add(const base::U8* pixels, Vec2u size, Vec2u padding = {});
+    [[nodiscard]] base::Optional<FloatRect> add(const Image& image, Vec2u padding = {});
+    [[nodiscard]] base::Optional<FloatRect> add(const Texture& texture, Vec2u padding = {});
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

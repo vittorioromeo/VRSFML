@@ -30,3 +30,4 @@ old/x.x
 *.bak2
 
 examples/bubble_idle/userdata*
+*.psd

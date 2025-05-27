@@ -546,6 +546,16 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    /// \brief Returns a new vec2 where components have the absolute values of `*this
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr Vec2 abs() const
+    {
+        return {x < T{0} ? -x : x, y < T{0} ? -y : y};
+    }
+
+
+    ////////////////////////////////////////////////////////////
     /// \brief Convert to another `Vec2` of type `OtherVec2`
     ///
     /// `OtherVec2` must be a `Vec2<...>` type.
