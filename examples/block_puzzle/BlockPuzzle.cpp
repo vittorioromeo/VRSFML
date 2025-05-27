@@ -568,8 +568,7 @@ private:
                 const auto* neighborBlockColored = neighborBlock.type.get_if<BColored>();
                 const auto* neighborBlockKey     = neighborBlock.type.get_if<BKey>();
 
-                if ((neighborBlockColored != nullptr && neighborBlockColored->color == blockKey->color) ||
-                    (neighborBlockKey != nullptr && neighborBlockKey->color == blockKey->color))
+                if (neighborBlockColored != nullptr || neighborBlockKey != nullptr)
                 {
                     m_turnEvents.pushBack(TEUnlock{.objectId = neighborObjectId});
                     blocksToKill.pushBack(objectId);
