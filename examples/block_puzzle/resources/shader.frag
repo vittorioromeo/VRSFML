@@ -1,4 +1,6 @@
 layout(location = 1) uniform sampler2D sf_u_texture;
+uniform float u_time;
+uniform bool u_waveEnabled;
 
 ////////////////////////////////////////////////////////////
 in vec4 sf_v_color;
@@ -36,7 +38,22 @@ vec3 rotateHueRGB(vec3 color, float angle_degrees)
 ////////////////////////////////////////////////////////////
 void main()
 {
-    vec4 texColor = texture(sf_u_texture, sf_v_texCoord);
+    vec2 waveCoord = sf_v_texCoord;
+
+    if (u_waveEnabled)
+    {
+        // Control wave properties
+        float waveFrequency = 10.0;  // How many waves across the width
+        float waveAmplitude = 0.02;  // How much to distort vertically
+        float waveSpeed     = 0.001; // Speed of wave motion
+
+        // Apply horizontal wave effect based on Y coordinate and time
+        waveCoord.y += sin(waveCoord.x * waveFrequency + u_time * waveSpeed) * waveAmplitude;
+        waveCoord.x += cos(waveCoord.y * waveFrequency + u_time * waveSpeed) * waveAmplitude;
+    }
+
+    // Sample texture at distorted coordinates
+    vec4 texColor = texture(sf_u_texture, waveCoord);
 
     if (texColor.a < 0.01)
         discard;
@@ -52,5 +69,5 @@ void main()
     }
 
     vec3 finalColor = rotateHueRGB(texColor.rgb, float(sf_v_color.b) * 360.0);
-    sf_fragColor = vec4(finalColor, sf_v_color.a * texColor.a);
+    sf_fragColor    = vec4(finalColor, sf_v_color.a * texColor.a);
 }
