@@ -10,6 +10,7 @@
 #include "SFML/Graphics/CurvedArrowShapeData.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RectangleShapeData.hpp"
@@ -59,6 +60,10 @@
 
 #include <initializer_list>
 
+// TODO P0:
+// - keys should have different colors compared to blocks
+// - redraw blocks, consider making them pointy instead of using an arrow
+// - maybe we can drop shadows using a shader
 
 namespace
 {
@@ -264,6 +269,12 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool isOOB(const sf::Vec2i position) const
+    {
+        return position.x < 0 || position.x >= 12 || position.y < 0 || position.y >= 12;
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isLava(const sf::Vec2i position) const
     {
         for (const sf::base::Optional<Object>& object : m_objects)
@@ -296,6 +307,9 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isBlocked(const sf::Vec2i position) const
     {
+        if (isOOB(position))
+            return true;
+
         for (const sf::base::Optional<Object>& object : m_objects)
         {
             if (!object.hasValue() || !object->is<Block>())
@@ -509,6 +523,27 @@ private:
     sf::Shader::UniformLocation m_ulWaveEnabled = m_shader.getUniformLocation("u_waveEnabled").value();
 
     ////////////////////////////////////////////////////////////
+    sf::Shader m_shaderSpriteAlpha{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/spritealpha.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
+
+    ////////////////////////////////////////////////////////////
+    sf::Shader m_shaderBlurQuad = sf::Shader::loadFromFile({.fragmentPath = "resources/blurquad.frag"}).value();
+
+    sf::Shader::UniformLocation m_ulBlurQuadSourceTexture = m_shaderBlurQuad.getUniformLocation("sf_u_texture").value();
+    sf::Shader::UniformLocation m_ulBlurQuadBlurDirection = m_shaderBlurQuad.getUniformLocation("u_blurDirection").value();
+    sf::Shader::UniformLocation m_ulBlurQuadRadiusPixels = m_shaderBlurQuad.getUniformLocation("u_blurRadiusPixels").value();
+
+    ////////////////////////////////////////////////////////////
+    sf::Shader m_shaderShadow = sf::Shader::loadFromFile({.fragmentPath = "resources/shadow.frag"}).value();
+
+    sf::Shader::UniformLocation m_ulShadowTexture = m_shaderShadow.getUniformLocation("sf_u_texture").value();
+    sf::Shader::UniformLocation m_ulShadowColor   = m_shaderShadow.getUniformLocation("u_shadowColor").value();
+
+    ////////////////////////////////////////////////////////////
     const sf::Font m_font = sf::Font::openFromFile("resources/Born2bSportyFS.ttf").value();
 
     ////////////////////////////////////////////////////////////
@@ -587,6 +622,12 @@ private:
     sf::CPUDrawableBatch m_dbObject;
 
     //////////////////////////////////////////////////////////////
+    sf::RenderTexture m_rtSpriteBg{
+        sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+
+    sf::RenderTexture m_rtSpriteBgTemp{
+        sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+
     sf::RenderTexture m_rtGame{
         sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
 
@@ -1161,29 +1202,30 @@ public:
                     {
                         m_lavaParticles.emplaceBack(
                             ParticleData{.position   = tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset,
-                                         .velocity   = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.06f,
-                                         .scale      = m_rngFast.getF(0.08f, 0.27f) * 3.75f,
-                                         .scaleDecay = -0.00025f,
+                                         .velocity   = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.05f,
+                                         .scale      = m_rngFast.getF(0.08f, 0.27f) * 1.25f,
+                                         .scaleDecay = -0.002f,
                                          .accelerationY = 0.f,
                                          .opacity       = 0.35f,
-                                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.5f,
+                                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.35f,
                                          .rotation      = m_rngFast.getF(0.f, sf::base::tau),
                                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
                     };
 
                     const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
                     {
-                        if (m_rngFast.getI(0, 100) > 40)
+                        if (m_rngFast.getI(0, 100) > 30)
                             return;
 
-                        if (m_world.isLava(tile.position + dir) || m_world.isWall(tile.position + dir))
+                        if (m_world.isOOB(tile.position + dir) || m_world.isLava(tile.position + dir) ||
+                            m_world.isWall(tile.position + dir))
                             return;
 
                         if (particleBudget <= 0.f)
                             return;
 
                         const auto rndOffset = m_rngFast.getF(-64.f, 64.f);
-                        const auto dirOffset = m_rngFast.getF(8.f, 24.f);
+                        const auto dirOffset = m_rngFast.getF(4.f, 12.f);
 
                         if (dir.x == 0)
                             makeLavaParticle(sf::Vec2f{rndOffset, dir.y * 64.f + -dir.y * dirOffset});
@@ -1555,13 +1597,14 @@ public:
                 },
                     [&](const BColored& bColored)
                 {
-                    m_dbObjectBg.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = m_txrBlockBg,
-                    });
+                    if (false)
+                        m_dbObjectBg.add(sf::Sprite{
+                            .position    = drawPosition,
+                            .scale       = scaleMultiplier,
+                            .origin      = {64.f, 64.f},
+                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                            .textureRect = m_txrBlockBg,
+                        });
 
                     const sf::FloatRect* txr = bColored.kind == BlockKind::A
                                                    ? &m_txrBlock0
@@ -1580,13 +1623,14 @@ public:
                 },
                     [&](const BKey& bKey)
                 {
-                    m_dbObjectBg.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = m_txrKeyBg,
-                    });
+                    if (false)
+                        m_dbObjectBg.add(sf::Sprite{
+                            .position    = drawPosition,
+                            .scale       = scaleMultiplier,
+                            .origin      = {64.f, 64.f},
+                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                            .textureRect = m_txrKeyBg,
+                        });
 
                     const sf::FloatRect* txr = bKey.kind == BlockKind::A
                                                    ? &m_txrKey0
@@ -1635,6 +1679,30 @@ public:
                 m_dbLavaParticles.add(
                     particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1], m_txrLavaParticle, inverseHueColor));
 
+            m_rtSpriteBg.clear(sf::Color::Transparent);
+            m_rtSpriteBg.draw(m_dbWall, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha});
+            m_rtSpriteBg.draw(m_dbObject, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha});
+            m_rtSpriteBg.display();
+
+            m_shaderBlurQuad.setUniform(m_ulBlurQuadSourceTexture, m_rtSpriteBg.getTexture());
+            m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
+            m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, 10.f);
+
+            m_rtSpriteBgTemp.clear(sf::Color::Transparent);
+            m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
+            m_rtSpriteBgTemp.display();
+
+            m_shaderBlurQuad.setUniform(m_ulBlurQuadSourceTexture, m_rtSpriteBgTemp.getTexture());
+            m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
+
+            m_rtSpriteBg.clear(sf::Color::Transparent);
+            m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
+            m_rtSpriteBg.display();
+
+            m_shaderShadow.setUniform(m_ulShadowTexture, m_rtSpriteBg.getTexture());
+            m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(128u).toVec4<sf::Glsl::Vec4>());
+
+
             m_rtGame.clear();
             m_shader.setUniform(m_ulWaveEnabled, true);
             m_rtGame.draw(m_txLava,
@@ -1653,9 +1721,9 @@ public:
                               .texture   = &m_textureAtlas.getTexture(),
                               .shader    = &m_shader,
                           });
-            m_rtGame.draw(m_dbWall, states);
             m_rtGame.draw(m_dbTile, states);
-            m_rtGame.draw(m_dbObjectBg, states);
+            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
+            m_rtGame.draw(m_dbWall, states);
             m_rtGame.draw(m_dbObject, states);
 
             if (false)
@@ -1666,6 +1734,7 @@ public:
                 });
 
             m_rtGame.display();
+
 
             m_window.clear();
 
