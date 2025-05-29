@@ -123,7 +123,13 @@ struct BKey
 
 
 ////////////////////////////////////////////////////////////
-using BlockType = sfvr::tinyvariant<BWall, BColored, BKey>;
+struct BPadlock
+{
+};
+
+
+////////////////////////////////////////////////////////////
+using BlockType = sfvr::tinyvariant<BWall, BColored, BKey, BPadlock>;
 
 
 ////////////////////////////////////////////////////////////
@@ -216,6 +222,17 @@ public:
                                       Block{
                                           .position   = position,
                                           .type       = BlockType{BKey{.kind = kind}},
+                                          .gravityDir = gravityDir,
+                                      });
+    }
+
+    ////////////////////////////////////////////////////////////
+    Object& addPadlock(const sf::Vec2i position, const sf::Vec2i gravityDir = {0, 0})
+    {
+        return *m_objects.emplaceBack(sf::base::inPlace,
+                                      Block{
+                                          .position   = position,
+                                          .type       = BlockType{BPadlock{}},
                                           .gravityDir = gravityDir,
                                       });
     }
@@ -531,14 +548,23 @@ private:
     }()};
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderBlurQuad = sf::Shader::loadFromFile({.fragmentPath = "resources/blurquad.frag"}).value();
+    sf::Shader m_shaderBlurQuad{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/blurquad.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
 
-    sf::Shader::UniformLocation m_ulBlurQuadSourceTexture = m_shaderBlurQuad.getUniformLocation("sf_u_texture").value();
     sf::Shader::UniformLocation m_ulBlurQuadBlurDirection = m_shaderBlurQuad.getUniformLocation("u_blurDirection").value();
     sf::Shader::UniformLocation m_ulBlurQuadRadiusPixels = m_shaderBlurQuad.getUniformLocation("u_blurRadiusPixels").value();
 
     ////////////////////////////////////////////////////////////
-    sf::Shader m_shaderShadow = sf::Shader::loadFromFile({.fragmentPath = "resources/shadow.frag"}).value();
+    sf::Shader m_shaderShadow{[]
+    {
+        auto result = sf::Shader::loadFromFile({.fragmentPath = "resources/shadow.frag"}).value();
+        result.setUniform(result.getUniformLocation("sf_u_texture").value(), sf::Shader::CurrentTexture);
+        return result;
+    }()};
 
     sf::Shader::UniformLocation m_ulShadowTexture = m_shaderShadow.getUniformLocation("sf_u_texture").value();
     sf::Shader::UniformLocation m_ulShadowColor   = m_shaderShadow.getUniformLocation("u_shadowColor").value();
@@ -609,6 +635,8 @@ private:
     const sf::FloatRect m_txrWallSet      = addImgResourceToAtlas("wallset.png");
     const sf::FloatRect m_txrWallBits     = addImgResourceToAtlas("wallbits.png");
     const sf::FloatRect m_txrLavaParticle = addImgResourceToAtlas("lavaparticle.png");
+    const sf::FloatRect m_txrLock0        = addImgResourceToAtlas("lock0.png");
+    const sf::FloatRect m_txrPinned       = addImgResourceToAtlas("pinned.png");
 
     //////////////////////////////////////////////////////////////
     sf::Texture m_txLava = sf::Texture::loadFromFile("resources/lava.png", {.smooth = true}).value();
@@ -620,6 +648,7 @@ private:
     sf::CPUDrawableBatch m_dbWall;
     sf::CPUDrawableBatch m_dbObjectBg;
     sf::CPUDrawableBatch m_dbObject;
+    sf::CPUDrawableBatch m_dbObjectAttributes;
 
     //////////////////////////////////////////////////////////////
     sf::RenderTexture m_rtSpriteBg{
@@ -652,7 +681,7 @@ private:
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
             const auto* blockColored = block.type.get_if<BColored>();
-            if (blockColored == nullptr || block.locked.hasValue())
+            if (blockColored == nullptr || isLocked(block))
                 return ControlFlow::Continue;
 
             m_world.forOrthogonalNeighbors(objectId,
@@ -664,7 +693,7 @@ private:
                 const Block& neighborBlock        = m_world.getBlockById(neighborObjectId);
                 const auto*  neighborBlockColored = neighborBlock.type.get_if<BColored>();
 
-                if (neighborBlockColored == nullptr || neighborBlock.locked.hasValue())
+                if (neighborBlockColored == nullptr || isLocked(neighborBlock))
                     return ControlFlow::Continue;
 
                 if (blockColored->kind == neighborBlockColored->kind)
@@ -701,7 +730,7 @@ private:
                                            [&](const ObjectId neighborObjectId)
             {
                 Block& neighborBlock = m_world.getBlockById(neighborObjectId);
-                if (!neighborBlock.locked.hasValue())
+                if (!isLocked(neighborBlock))
                     return ControlFlow::Continue;
 
                 if (neighborBlock.locked.value() != blockKey->kind)
@@ -740,7 +769,7 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, Block& block)
         {
-            if (block.gravityDir == sf::Vec2i{0, 0} || block.locked.hasValue())
+            if (block.gravityDir == sf::Vec2i{0, 0} || isLocked(block))
                 return ControlFlow::Continue;
 
             sf::Vec2i targetPosition = block.position;
@@ -848,7 +877,10 @@ private:
         m_world.addColored({3, 8}, BlockKind::B).as<Block>().fixed = true;
 
         m_world.addColored({4, 10}, BlockKind::B).as<Block>().locked.emplace(BlockKind::A);
-        m_world.addKey({6, 11}, BlockKind::B);
+        m_world.addKey({6, 10}, BlockKind::B);
+
+        // m_world.addPadlock({8, 8});
+        m_world.addPadlock({8, 10});
 
         // m_world.addGravityRotator({9, 10}, /* clockwise */ true);
         // m_world.addGravityRotator({2, 10}, /* clockwise */ true);
@@ -859,7 +891,7 @@ private:
         m_world.addLava({3, 9});
 
         m_world.addColored({10, 10}, BlockKind::C);
-        m_world.addColored({12, 11}, BlockKind::C, {-1, 0});
+        m_world.addColored({10, 6}, BlockKind::C, {-1, 0});
 
         m_world.addWall({6, 4});
         m_world.addWall({6, 5});
@@ -1065,6 +1097,24 @@ private:
         return (getMousePos() / 128.f).toVec2i();
     }
 
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool isLocked(const Block& block) const noexcept
+    {
+        return block.locked.hasValue();
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] sf::Color getHueColor(const float hue, const sf::base::U8 alpha = 255u) const noexcept
+    {
+        return hueColor(sf::base::fmod(m_time * 0.06f + hue, 360.f), alpha);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] sf::Color getLavaColor() const noexcept
+    {
+        return hueColor(-5.f, 205u);
+    }
+
 public:
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool run()
@@ -1207,14 +1257,14 @@ public:
                                          .scaleDecay = -0.002f,
                                          .accelerationY = 0.f,
                                          .opacity       = 0.35f,
-                                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.35f,
+                                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
                                          .rotation      = m_rngFast.getF(0.f, sf::base::tau),
                                          .torque        = m_rngFast.getF(-0.001f, 0.001f)});
                     };
 
                     const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
                     {
-                        if (m_rngFast.getI(0, 100) > 30)
+                        if (m_rngFast.getI(0, 100) > 15)
                             return;
 
                         if (m_world.isOOB(tile.position + dir) || m_world.isLava(tile.position + dir) ||
@@ -1242,7 +1292,7 @@ public:
 
                     while (particleBudget > 0.f)
                     {
-                        if (m_rngFast.getI(0, 100) > 95)
+                        if (m_rngFast.getI(0, 100) > 98)
                             makeLavaParticle(sf::Vec2f{m_rngFast.getF(-64.f, 64.f), m_rngFast.getF(-64.f, 64.f)});
 
                         particleBudget -= deltaTimeMs * 0.35f;
@@ -1271,7 +1321,7 @@ public:
 
             updateParticleLike(m_lavaParticles);
 
-            m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.01f, 0.f);
+            m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
             // ---
             ////////////////////////////////////////////////////////////
 
@@ -1329,6 +1379,7 @@ public:
             m_dbWall.clear();
             m_dbObjectBg.clear();
             m_dbObject.clear();
+            m_dbObjectAttributes.clear();
 
             m_world.forTiles([&](const ObjectId objectId, const Tile& tile)
             {
@@ -1469,7 +1520,7 @@ public:
                                             getAdjustedMousePos().y > drawPosition.y &&
                                             getAdjustedMousePos().y < drawPosition.y + 128.f;
 
-                const bool canInteractWithHoveredBlock = !block.fixed && !block.locked && hoveredByMouse;
+                const bool canInteractWithHoveredBlock = !block.fixed && !isLocked(block) && hoveredByMouse;
 
                 if (cursorToUse == &m_cursorArrow && canInteractWithHoveredBlock)
                     cursorToUse = &m_cursorHand;
@@ -1478,60 +1529,40 @@ public:
 
                 const auto drawAttributes = [&](const auto& blockImpl)
                 {
-                    const float offset = 32.f - 4.f;
+                    const float offset = 32.f - 6.f;
 
                     if (block.fixed)
-                        m_dbObject.add(sf::Sprite{
-                            .position    = drawPosition + sf::Vec2f{offset, -offset},
-                            .scale       = scaleMultiplier * 0.4f,
+                        m_dbObjectAttributes.add(sf::Sprite{
+                            .position    = drawPosition,
+                            .scale       = scaleMultiplier,
                             .origin      = {64.f, 64.f},
                             .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                            .textureRect = m_txrFixed,
-                            .color       = hueColor(kindToColor(blockImpl.kind).toHSL().hue, 255u),
-                        });
-
-                    if (block.locked)
-                        m_dbObject.add(sf::Sprite{
-                            .position    = drawPosition + sf::Vec2f{offset, offset},
-                            .scale       = scaleMultiplier * 0.4f,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians + lockRotationRadians).wrapUnsigned(),
-                            .textureRect = m_txrLocked,
-                            .color       = hueColor(kindToColor(block.locked.value()).toHSL().hue, 255u),
+                            .textureRect = m_txrPinned,
+                            .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                         });
 
                     if (block.gravityDir != sf::Vec2i{0, 0})
-                        m_dbObject.add(sf::Sprite{
-                            .position = drawPosition + sf::Vec2f{-offset, -offset},
-                            .scale    = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.4f,
+                        m_dbObjectAttributes.add(sf::Sprite{
+                            .position = drawPosition,
+                            .scale    = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
                             .origin   = {64.f, 64.f},
                             .rotation = sf::radians(
                                             block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
                                             rotationRadians + arrowRotationRadians)
                                             .wrapUnsigned(),
                             .textureRect = m_txrGravArrow,
-                            .color       = hueColor(kindToColor(blockImpl.kind).toHSL().hue, 255u),
+                            .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
                         });
 
-                    /*
-                    m_dbObject.add(sf::ArrowShapeData{
-                        .position = drawPosition + sf::Vec2f{-16.f, -16.f},
-                        .scale    = scaleMultiplier.rotatedBy(sf::degrees(90.f)) * 0.55f,
-                        .origin   = {12.f * sf::base::fabs(scaleMultiplier.x), 0.f},
-                        .rotation = sf::radians(block.gravityDir.toVec2f().angle().asRadians() + rotationRadians +
-                                                arrowRotationRadians + sf::base::pi)
-                                        .wrapUnsigned(),
-                        .textureRect        = m_txrWhiteDot,
-                        .outlineTextureRect = m_txrWhiteDot,
-                        .fillColor          = blockImpl.color.withLightness(0.35f),
-                        .outlineColor       = sf::Color::White,
-                        .outlineThickness   = 1.f * sf::base::fabs(scaleMultiplier.x),
-                        .shaftLength        = 12.f * sf::base::fabs(scaleMultiplier.x),
-                        .shaftWidth         = 10.f * sf::base::fabs(scaleMultiplier.x),
-                        .headLength         = 12.f * sf::base::fabs(scaleMultiplier.x),
-                        .headWidth          = 20.f * sf::base::fabs(scaleMultiplier.x),
-                    });
-                    */
+                    if (isLocked(block))
+                        m_dbObjectAttributes.add(sf::Sprite{
+                            .position    = drawPosition + sf::Vec2f{40.f, 30.f},
+                            .scale       = scaleMultiplier * 0.5f,
+                            .origin      = {64.f, 64.f},
+                            .rotation    = sf::radians(rotationRadians + lockRotationRadians + 0.2f).wrapUnsigned(),
+                            .textureRect = m_txrLock0,
+                            .color       = getHueColor(kindToColor(block.locked.value()).toHSL().hue),
+                        });
                 };
 
                 block.type.linear_match(
@@ -1565,7 +1596,7 @@ public:
                         .origin      = {64.f, 64.f},
                         .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
                         .textureRect = txr,
-                        .color       = sf::Color::White,
+                        .color       = getHueColor(0.f),
                     });
 
                     const auto patchCorner = [&](const float index)
@@ -1576,7 +1607,7 @@ public:
                             .origin      = {64.f, 64.f},
                             .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
                             .textureRect = {m_txrWallBits.position + sf::Vec2f{128.f * index, 0.f}, {128.f, 128.f}},
-                            .color       = sf::Color::White,
+                            .color       = getHueColor(0.f),
                         });
                     };
 
@@ -1597,15 +1628,6 @@ public:
                 },
                     [&](const BColored& bColored)
                 {
-                    if (false)
-                        m_dbObjectBg.add(sf::Sprite{
-                            .position    = drawPosition,
-                            .scale       = scaleMultiplier,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                            .textureRect = m_txrBlockBg,
-                        });
-
                     const sf::FloatRect* txr = bColored.kind == BlockKind::A
                                                    ? &m_txrBlock0
                                                    : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
@@ -1616,22 +1638,13 @@ public:
                         .origin      = {64.f, 64.f},
                         .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
                         .textureRect = *txr,
-                        .color       = hueColor(kindToColor(bColored.kind).toHSL().hue, 255u),
+                        .color       = getHueColor(kindToColor(bColored.kind).toHSL().hue),
                     });
 
                     drawAttributes(bColored);
                 },
                     [&](const BKey& bKey)
                 {
-                    if (false)
-                        m_dbObjectBg.add(sf::Sprite{
-                            .position    = drawPosition,
-                            .scale       = scaleMultiplier,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                            .textureRect = m_txrKeyBg,
-                        });
-
                     const sf::FloatRect* txr = bKey.kind == BlockKind::A
                                                    ? &m_txrKey0
                                                    : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
@@ -1642,10 +1655,25 @@ public:
                         .origin      = {64.f, 64.f},
                         .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
                         .textureRect = *txr,
-                        .color       = hueColor(kindToColor(bKey.kind).toHSL().hue, 255u),
+                        .color       = getHueColor(kindToColor(bKey.kind).toHSL().hue),
                     });
 
                     drawAttributes(bKey);
+                },
+                    [&](const BPadlock& bPadlock)
+                {
+                    const sf::FloatRect* txr = &m_txrLock0;
+
+                    m_dbObject.add(sf::Sprite{
+                        .position    = drawPosition,
+                        .scale       = scaleMultiplier,
+                        .origin      = {64.f, 64.f},
+                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                        .textureRect = *txr,
+                        .color       = getHueColor(kindToColor(BlockKind::A).toHSL().hue),
+                    });
+
+                    // drawAttributes(bPadlock);
                 });
 
                 return ControlFlow::Continue;
@@ -1669,48 +1697,41 @@ public:
                     m_dbBackground.add(sf::Sprite{
                         .position    = {iX * 128.f, iY * 128.f},
                         .textureRect = *txr,
-                        .color       = sf::Color::White,
+                        .color       = getHueColor(0.f),
                     });
                 }
 
-            const auto inverseHueColor = hueColor(sf::base::fmod(-m_time * 0.01f, 360.f), 255u);
-
             for (sf::base::SizeT i = 0; i < m_lavaParticles.size(); ++i)
                 m_dbLavaParticles.add(
-                    particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1], m_txrLavaParticle, inverseHueColor));
+                    particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1], m_txrLavaParticle, getLavaColor()));
 
-            m_rtSpriteBg.clear(sf::Color::Transparent);
-            m_rtSpriteBg.draw(m_dbWall, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha});
-            m_rtSpriteBg.draw(m_dbObject, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha});
-            m_rtSpriteBg.display();
+            const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
+            {
+                m_rtSpriteBg.clear(sf::Color::Transparent);
+                (m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}), ...);
+                m_rtSpriteBg.display();
 
-            m_shaderBlurQuad.setUniform(m_ulBlurQuadSourceTexture, m_rtSpriteBg.getTexture());
-            m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
-            m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, 10.f);
+                m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
+                m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius);
 
-            m_rtSpriteBgTemp.clear(sf::Color::Transparent);
-            m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
-            m_rtSpriteBgTemp.display();
+                m_rtSpriteBgTemp.clear(sf::Color::Transparent);
+                m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
+                m_rtSpriteBgTemp.display();
 
-            m_shaderBlurQuad.setUniform(m_ulBlurQuadSourceTexture, m_rtSpriteBgTemp.getTexture());
-            m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
+                m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
 
-            m_rtSpriteBg.clear(sf::Color::Transparent);
-            m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
-            m_rtSpriteBg.display();
+                m_rtSpriteBg.clear(sf::Color::Transparent);
+                m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
+                m_rtSpriteBg.display();
 
-            m_shaderShadow.setUniform(m_ulShadowTexture, m_rtSpriteBg.getTexture());
-            m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(128u).toVec4<sf::Glsl::Vec4>());
+                m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());
+            };
 
 
             m_rtGame.clear();
             m_shader.setUniform(m_ulWaveEnabled, true);
             m_rtGame.draw(m_txLava,
-                          {
-                              .position = {0.f, 0.f},
-                              .scale    = {2.f, 2.f},
-                              .color    = inverseHueColor,
-                          },
+                          {.position = {0.f, 0.f}, .scale = {2.f, 2.f}, .color = getLavaColor()},
                           {.shader = &m_shader});
             m_rtGame.flush();
             m_shader.setUniform(m_ulWaveEnabled, false);
@@ -1722,9 +1743,17 @@ public:
                               .shader    = &m_shader,
                           });
             m_rtGame.draw(m_dbTile, states);
+
+            updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
             m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
+
             m_rtGame.draw(m_dbWall, states);
             m_rtGame.draw(m_dbObject, states);
+
+            updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
+            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
+
+            m_rtGame.draw(m_dbObjectAttributes, states);
 
             if (false)
                 m_rtGame.draw(sf::RectangleShapeData{
@@ -1741,7 +1770,6 @@ public:
             m_window.draw(m_rtGame.getTexture(),
                           {
                               .scale = {0.5f, 0.5f},
-                              .color = hueColor(sf::base::fmod(m_time * 0.01f, 360.f), 255u),
                           },
                           {.shader = &m_shader});
 
@@ -1749,9 +1777,8 @@ public:
                 m_window.draw(m_txUndo,
                               {
                                   .scale = {0.5f, 0.5f},
-                                  .color = hueColor(sf::base::fmod(m_time * 0.01f, 360.f),
-                                                    static_cast<sf::base::U8>(
-                                                        remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
+                                  .color = sf::Color::whiteMask(static_cast<sf::base::U8>(
+                                      remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                               },
                               {.shader = &m_shader});
 

@@ -364,11 +364,11 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard]] bool RenderTarget::clearImpl()
+[[nodiscard]] bool RenderTarget::prepare()
 {
     if (!setActive(true))
     {
-        priv::err() << "Failed to activate render target in `clearImpl`";
+        priv::err() << "Failed to activate render target in `prepare`";
         return false;
     }
 
@@ -390,7 +390,7 @@ RenderTarget& RenderTarget::operator=(RenderTarget&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color color)
 {
-    if (!clearImpl())
+    if (!prepare())
         return;
 
     glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
@@ -401,7 +401,7 @@ void RenderTarget::clear(const Color color)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clearStencil(const StencilValue stencilValue)
 {
-    if (!clearImpl())
+    if (!prepare())
         return;
 
     glCheck(glClearStencil(static_cast<int>(stencilValue.value)));
@@ -412,7 +412,7 @@ void RenderTarget::clearStencil(const StencilValue stencilValue)
 ////////////////////////////////////////////////////////////
 void RenderTarget::clear(const Color color, const StencilValue stencilValue)
 {
-    if (!clearImpl())
+    if (!prepare())
         return;
 
     glCheck(glClearColor(color.r / 255.f, color.g / 255.f, color.b / 255.f, color.a / 255.f));
