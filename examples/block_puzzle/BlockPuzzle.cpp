@@ -1112,7 +1112,7 @@ private:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] sf::Color getLavaColor() const noexcept
     {
-        return hueColor(-5.f, 205u);
+        return hueColor(-5.f, 215u);
     }
 
 public:
@@ -1254,7 +1254,7 @@ public:
                             ParticleData{.position   = tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset,
                                          .velocity   = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.05f,
                                          .scale      = m_rngFast.getF(0.08f, 0.27f) * 1.25f,
-                                         .scaleDecay = -0.002f,
+                                         .scaleDecay = -0.0015f,
                                          .accelerationY = 0.f,
                                          .opacity       = 0.35f,
                                          .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
@@ -1264,7 +1264,7 @@ public:
 
                     const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
                     {
-                        if (m_rngFast.getI(0, 100) > 15)
+                        if (m_rngFast.getI(0, 100) > 30)
                             return;
 
                         if (m_world.isOOB(tile.position + dir) || m_world.isLava(tile.position + dir) ||
@@ -1275,7 +1275,7 @@ public:
                             return;
 
                         const auto rndOffset = m_rngFast.getF(-64.f, 64.f);
-                        const auto dirOffset = m_rngFast.getF(4.f, 12.f);
+                        const auto dirOffset = m_rngFast.getF(-2.f, 6.f);
 
                         if (dir.x == 0)
                             makeLavaParticle(sf::Vec2f{rndOffset, dir.y * 64.f + -dir.y * dirOffset});
