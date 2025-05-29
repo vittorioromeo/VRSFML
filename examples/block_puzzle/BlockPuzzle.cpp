@@ -62,8 +62,9 @@
 
 // TODO P0:
 // - keys should have different colors compared to blocks
-// - redraw blocks, consider making them pointy instead of using an arrow
-// - maybe we can drop shadows using a shader
+// - kill blocks in lava
+// - portals
+// - 4x1 surround kill
 
 namespace
 {
