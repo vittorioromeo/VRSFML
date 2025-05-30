@@ -24,6 +24,76 @@
 #include <string>
 #include <string_view>
 
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr std::ios_base::openmode mapFileOpenMode(const sf::FileOpenMode sfmlEnum)
+{
+    std::ios_base::openmode stlValue = {};
+
+    const auto mapFlag = [&](const auto sfmlFlag, std::ios_base::openmode stlFlag)
+    {
+        if ((sfmlEnum & sfmlFlag) != sf::FileOpenMode::none)
+            stlValue |= stlFlag;
+    };
+
+    mapFlag(sf::FileOpenMode::app, std::ios_base::app);
+    mapFlag(sf::FileOpenMode::ate, std::ios_base::ate);
+    mapFlag(sf::FileOpenMode::bin, std::ios_base::binary);
+    mapFlag(sf::FileOpenMode::in, std::ios_base::in);
+    mapFlag(sf::FileOpenMode::out, std::ios_base::out);
+    mapFlag(sf::FileOpenMode::trunc, std::ios_base::trunc);
+
+    return stlValue;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr std::ios_base::fmtflags mapFormatFlags(const sf::FormatFlags sfmlEnum)
+{
+    std::ios_base::fmtflags stlValue = {};
+
+    const auto mapFlag = [&](const auto sfmlFlag, std::ios_base::fmtflags stlFlag)
+    {
+        if ((sfmlEnum & sfmlFlag) != sf::FormatFlags::none)
+            stlValue |= stlFlag;
+    };
+
+    mapFlag(sf::FormatFlags::boolalpha, std::ios_base::boolalpha);
+    mapFlag(sf::FormatFlags::dec, std::ios_base::dec);
+    mapFlag(sf::FormatFlags::fixed, std::ios_base::fixed);
+    mapFlag(sf::FormatFlags::hex, std::ios_base::hex);
+    mapFlag(sf::FormatFlags::internal, std::ios_base::internal);
+    mapFlag(sf::FormatFlags::left, std::ios_base::left);
+    mapFlag(sf::FormatFlags::oct, std::ios_base::oct);
+    mapFlag(sf::FormatFlags::right, std::ios_base::right);
+    mapFlag(sf::FormatFlags::scientific, std::ios_base::scientific);
+    mapFlag(sf::FormatFlags::showbase, std::ios_base::showbase);
+    mapFlag(sf::FormatFlags::showpoint, std::ios_base::showpoint);
+    mapFlag(sf::FormatFlags::showpos, std::ios_base::showpos);
+    mapFlag(sf::FormatFlags::skipws, std::ios_base::skipws);
+    mapFlag(sf::FormatFlags::unitbuf, std::ios_base::unitbuf);
+    mapFlag(sf::FormatFlags::uppercase, std::ios_base::uppercase);
+
+    return stlValue;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::const]] constexpr std::ios_base::seekdir mapSeekDir(const sf::SeekDir sfmlEnum)
+{
+    switch (sfmlEnum)
+    {
+        case sf::SeekDir::beg:
+            return std::ios_base::beg;
+        case sf::SeekDir::cur:
+            return std::ios_base::cur;
+        default:
+            SFML_BASE_ASSERT(sfmlEnum == sf::SeekDir::end);
+            return std::ios_base::end;
+    }
+}
+
+} // namespace
+
 
 namespace sf
 {
@@ -297,7 +367,7 @@ OutFileStream::OutFileStream() = default;
 
 ////////////////////////////////////////////////////////////
 OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) :
-m_impl(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode))
+m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
 }
 
@@ -317,7 +387,7 @@ OutFileStream& OutFileStream::operator=(OutFileStream&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void OutFileStream::open(const Path& filename, FileOpenMode mode)
 {
-    m_impl->ofs.open(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode));
+    m_impl->ofs.open(filename.to<std::filesystem::path>(), mapFileOpenMode(mode));
 }
 
 
@@ -523,7 +593,7 @@ void OutStringStream::setPrecision(base::PtrDiffT precision)
 ////////////////////////////////////////////////////////////
 void OutStringStream::setFormatFlags(FormatFlags flags)
 {
-    m_impl->oss.setf(static_cast<std::ios_base::fmtflags>(flags));
+    m_impl->oss.setf(mapFormatFlags(flags));
 }
 
 
@@ -661,7 +731,7 @@ InFileStream::InFileStream() = default;
 
 ////////////////////////////////////////////////////////////
 InFileStream::InFileStream(const Path& filename, FileOpenMode mode) :
-m_impl(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode))
+m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
 }
 
@@ -681,7 +751,7 @@ InFileStream& InFileStream::operator=(InFileStream&&) noexcept = default;
 ////////////////////////////////////////////////////////////
 void InFileStream::open(const Path& filename, FileOpenMode mode)
 {
-    m_impl->ifs.open(filename.to<std::filesystem::path>(), static_cast<std::ios_base::openmode>(mode));
+    m_impl->ifs.open(filename.to<std::filesystem::path>(), mapFileOpenMode(mode));
 }
 
 
@@ -711,7 +781,7 @@ InFileStream& InFileStream::seekg(base::PtrDiffT absolutePos)
 ////////////////////////////////////////////////////////////
 InFileStream& InFileStream::seekg(base::PtrDiffT offset, SeekDir dir)
 {
-    m_impl->ifs.seekg(static_cast<std::streamoff>(offset), static_cast<std::ios_base::seekdir>(dir));
+    m_impl->ifs.seekg(static_cast<std::streamoff>(offset), mapSeekDir(dir));
     return *this;
 }
 
@@ -809,8 +879,7 @@ InStringStream::InStringStream() = default;
 
 
 ////////////////////////////////////////////////////////////
-InStringStream::InStringStream(const std::string& str, FileOpenMode mode) :
-m_impl(str, static_cast<std::ios_base::openmode>(mode))
+InStringStream::InStringStream(const std::string& str, FileOpenMode mode) : m_impl(str, mapFileOpenMode(mode))
 {
 }
 

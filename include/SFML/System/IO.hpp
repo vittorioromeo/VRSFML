@@ -35,21 +35,44 @@ class Path;
 namespace sf
 {
 ////////////////////////////////////////////////////////////
+/// \brief Type used to flush an output stream.
+///
+////////////////////////////////////////////////////////////
 struct FlushType
 {
 };
 
+////////////////////////////////////////////////////////////
+/// \brief Global used to flush an output stream.
+///
+/// Substitute for `std::flush`.
+///
+////////////////////////////////////////////////////////////
 inline constexpr FlushType flush;
 
 
+////////////////////////////////////////////////////////////
+/// \brief Type used to print a newline and flush an output stream.
+///
 ////////////////////////////////////////////////////////////
 struct EndLType
 {
 };
 
+////////////////////////////////////////////////////////////
+/// \brief Global used to print a newline and flush an output stream.
+///
+/// Substitute for `std::endl`.
+///
+////////////////////////////////////////////////////////////
 inline constexpr EndLType endL;
 
 
+////////////////////////////////////////////////////////////
+/// \brief Output stream wrapper for `std::ostream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
+///
 ////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API IOStreamOutput
 {
@@ -96,6 +119,11 @@ public:
 
 
 ////////////////////////////////////////////////////////////
+/// \brief Input stream wrapper for `std::istream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
+///
+////////////////////////////////////////////////////////////
 class SFML_SYSTEM_API IOStreamInput
 {
     friend IOStreamInput& cIn();
@@ -129,77 +157,64 @@ public:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard output stream (std::cout)
+/// \brief Stream wrapping the standard output stream `std::cout`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cOut();
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard error stream (std::cerr)
+/// \brief Stream wrapping the standard error stream `std::cerr`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API IOStreamOutput& cErr();
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Stream wrapping the standard input stream (std::cin)
+/// \brief Stream wrapping the standard input stream `std::cin`
 ///
 ////////////////////////////////////////////////////////////
 [[nodiscard]] SFML_SYSTEM_API IOStreamInput& cIn();
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-template <typename Stream, typename T>
-bool getLine(Stream& stream, T& target);
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
-///
-////////////////////////////////////////////////////////////
-template <typename T>
-bool getLine(IOStreamInput& stream, T& target);
-
-
-////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Helper function to write a string to a file.
 ///
 ////////////////////////////////////////////////////////////
 bool writeToFile(base::StringView filename, base::StringView contents);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Helper function to read the contents of a file into a string.
 ///
 ////////////////////////////////////////////////////////////
 bool readFromFile(base::StringView filename, std::string& target);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Flags used to specify how a file should be opened.
+///
+/// Substitute for `std::ios_base::openmode`.
 ///
 ////////////////////////////////////////////////////////////
 enum class FileOpenMode
 {
-    none      = 0,
-    app       = 1L << 0,
-    ate       = 1L << 1,
-    bin       = 1L << 2,
-    in        = 1L << 3,
-    out       = 1L << 4,
-    trunc     = 1L << 5,
-    noreplace = 1L << 6,
+    none  = 0,
+    app   = 1L << 0,
+    ate   = 1L << 1,
+    bin   = 1L << 2,
+    in    = 1L << 3,
+    out   = 1L << 4,
+    trunc = 1L << 5,
 };
 
 SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FileOpenMode);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Flags used to specify how a stream should be formatted.
+///
+/// Substitute for `std::ios_base::fmtflags`.
 ///
 ////////////////////////////////////////////////////////////
 enum class FormatFlags
@@ -230,7 +245,9 @@ SFML_BASE_DEFINE_ENUM_CLASS_BITWISE_OPS(FormatFlags);
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Specifies the direction for seeking in a stream.
+///
+/// Substitute for `std::ios_base::seekdir`.
 ///
 ////////////////////////////////////////////////////////////
 enum class SeekDir
@@ -242,27 +259,45 @@ enum class SeekDir
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Stream manipulator to set the fill character for an output stream.
+///
+/// Substitute for `std::setfill`.
 ///
 ////////////////////////////////////////////////////////////
 struct SetFill
 {
-    char c;
+    char c; //!< The fill character
 };
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Stream manipulator to set the field width for an output stream.
+///
+/// Substitute for `std::setw`.
 ///
 ////////////////////////////////////////////////////////////
 struct SetWidth
 {
-    int width;
+    int width; //!< The field width
 };
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Stream manipulator to set the precision for an output stream.
+///
+/// Substitute for `std::setprecision`.
+///
+////////////////////////////////////////////////////////////
+struct SetPrecision
+{
+    int precision; //!< The precision
+};
+
+
+////////////////////////////////////////////////////////////
+/// \brief Stream manipulator to set the output format to hexadecimal.
+///
+/// Substitute for `std::hex`.
 ///
 ////////////////////////////////////////////////////////////
 struct Hex
@@ -271,7 +306,9 @@ struct Hex
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Provides an interface for writing to files, similar to `std::ofstream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
 ///
 ////////////////////////////////////////////////////////////
 class OutFileStream
@@ -318,7 +355,9 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Provides an interface for writing to strings, similar to `std::ostringstream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
 ///
 ////////////////////////////////////////////////////////////
 class OutStringStream
@@ -373,7 +412,9 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Provides an interface for reading from files, similar to `std::ifstream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
 ///
 ////////////////////////////////////////////////////////////
 class InFileStream
@@ -416,7 +457,9 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Provides an interface for reading from strings, similar to `std::istringstream`.
+///
+/// Uses PImpl to avoid exposing expensive headers in the public API.
 ///
 ////////////////////////////////////////////////////////////
 class InStringStream
@@ -460,16 +503,50 @@ private:
 
 
 ////////////////////////////////////////////////////////////
-/// \brief TODO P1: docs
+/// \brief Reads a line from the input stream into the target variable.
+///
+/// Substitutes for `std::getline`.
 ///
 ////////////////////////////////////////////////////////////
 template <typename T>
 bool getLine(InStringStream& stream, T& target);
 
+
+////////////////////////////////////////////////////////////
+/// \brief Reads a line from the input stream into the target variable.
+///
+/// Substitutes for `std::getline`.
+///
+////////////////////////////////////////////////////////////
+template <typename Stream, typename T>
+bool getLine(Stream& stream, T& target);
+
+
+////////////////////////////////////////////////////////////
+/// \brief Reads a line from the input stream into the target variable.
+///
+/// Substitutes for `std::getline`.
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+bool getLine(IOStreamInput& stream, T& target);
+
 } // namespace sf
 
 
 ////////////////////////////////////////////////////////////
-/// TODO P1: docs
+/// \file SFML/System/IO.hpp
+/// \ingroup system
+///
+/// This header provides classes for file and string input/output operations.
+/// It includes wrappers for standard streams like `std::cout`, `std::cin`, and `std::cerr`,
+/// as well as specialized classes for reading from and writing to files and strings.
+///
+/// It also defines various stream manipulators and flags for formatting output.
+///
+/// The classes are designed to be used in a way that minimizes dependencies on
+/// expensive headers, using the PImpl idiom to hide implementation details.
+///
+/// Functionality and API should be similar to the Standard Library's I/O streams.
 ///
 ////////////////////////////////////////////////////////////
