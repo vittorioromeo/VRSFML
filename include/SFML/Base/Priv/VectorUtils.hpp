@@ -135,35 +135,33 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline T* eraseRangeImpl(T* begin, T* end, T* const first, T* const last)
+[[gnu::always_inline, gnu::flatten]] inline T* eraseRangeImpl(T* const begin, T* const end, T* const first, T* const last)
 {
     SFML_BASE_ASSERT(first >= begin && first <= end);
     SFML_BASE_ASSERT(last >= begin && last <= end);
     SFML_BASE_ASSERT(first != last);
 
-    T* const originalEnd = begin + (end - begin);
-
     // Tracks the position where the next non-erased element should be moved to
     T* currWritePtr = first;
 
     // If `last` is not the end, elements from `last` onwards need to be shifted to the left to fill the gap
-    if (last != originalEnd)
+    if (last != end)
     {
         if constexpr (SFML_BASE_IS_TRIVIALLY_COPYABLE(T))
         {
-            SFML_BASE_MEMMOVE(first,                                               // Destination
-                              last,                                                // Source
-                              static_cast<SizeT>(originalEnd - last) * sizeof(T)); // Number of bytes
+            SFML_BASE_MEMMOVE(first,                                       // Destination
+                              last,                                        // Source
+                              static_cast<SizeT>(end - last) * sizeof(T)); // Number of bytes
 
             // Update `currWritePtr` to the new logical end of the moved block
-            currWritePtr = first + (originalEnd - last);
+            currWritePtr = first + (end - last);
         }
         else
         {
             T* currReadPtr = last;
 
             // Loop until all elements from `last` to `m_endSize` have been processed
-            while (currReadPtr != originalEnd)
+            while (currReadPtr != end)
                 *currWritePtr++ = static_cast<T&&>(*currReadPtr++);
 
             // After the loop, `currWritePtr` points to the position after the last moved element
@@ -173,7 +171,7 @@ template <typename T>
     // If `last == m_endSize`, all elements from `first` to `m_endSize` are being erased
     // No elements need to be moved. `currWritePtr` remains `first`.
 
-    destroyRange(currWritePtr, originalEnd);
+    destroyRange(currWritePtr, end);
     return currWritePtr;
 }
 

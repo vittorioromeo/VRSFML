@@ -1680,7 +1680,7 @@ public:
             sf::base::abort(); // on_error_too_many_elements();
         }
         auto shifts = calc_shifts_for_size(container.size());
-        if (0 == bucket_count() || shifts < m_shifts || container.get_allocator() != m_values.get_allocator())
+        if (0 == bucket_count() || shifts < m_shifts)
         {
             m_shifts = shifts;
             deallocate_buckets();
