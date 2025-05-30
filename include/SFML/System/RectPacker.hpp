@@ -7,8 +7,9 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
+#include "SFML/Base/Span.hpp"
 
 
 namespace sf
@@ -20,6 +21,9 @@ namespace sf
 /// rectangles within a larger, fixed-size area (bin). It's commonly used
 /// for creating texture atlases, where multiple smaller images are packed
 /// into a single larger texture to optimize rendering.
+///
+/// The internals of `RectPacker` require address stability, so
+/// it is a non-copyable and non-movable class.
 ///
 ////////////////////////////////////////////////////////////
 class RectPacker
@@ -52,16 +56,16 @@ public:
     RectPacker& operator=(const RectPacker& rhs) = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move constructor
+    /// \brief Deleted move constructor
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker(RectPacker&& rhs) noexcept;
+    RectPacker(RectPacker&& rhs) noexcept = delete;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Move assignment operator
+    /// \brief Deleted move assignment operator
     ///
     ////////////////////////////////////////////////////////////
-    RectPacker& operator=(RectPacker&& rhs) noexcept;
+    RectPacker& operator=(RectPacker&& rhs) noexcept = delete;
 
     ////////////////////////////////////////////////////////////
     /// \brief Attempt to pack a rectangle of the given size.
@@ -77,8 +81,27 @@ public:
     ///         if there was no room left in the bin.
     ///
     ////////////////////////////////////////////////////////////
-    // TODO P1: add overload to pack multiple rects at once
     [[nodiscard]] base::Optional<Vec2u> pack(Vec2u rectSize);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief ATtempt to pack multiple rectangles at once.
+    ///
+    /// This function tries to pack multiple rectangles into the bin
+    /// in a single operation. The positions of the packed rectangles
+    /// are returned in the `outPositions` span, which must have the
+    /// same size as the `rectSizes` span.
+    ///
+    /// \param outPositions A span to fill with the top-left positions
+    ///                     of the packed rectangles. Must be large enough
+    ///                     to hold all rectangles specified in `rectSizes`.
+    ///
+    /// \param rectSizes A span containing the sizes of the rectangles to pack.
+    ///                  Each rectangle size must have both dimensions greater than zero.
+    ///
+    /// \return `true` if all rectangles were packed successfully, `false` otherwise.
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool packMultiple(base::Span<Vec2u> outPositions, base::Span<const Vec2u> rectSizes);
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the size of the packing area (the bin).
@@ -91,7 +114,7 @@ private:
     // Member data
     ////////////////////////////////////////////////////////////
     struct Impl;
-    base::UniquePtr<Impl> m_impl; //!< Implementation details (needs address stability)
+    base::InPlacePImpl<Impl, 36'864> m_impl; //!< Implementation details
 };
 
 } // namespace sf
