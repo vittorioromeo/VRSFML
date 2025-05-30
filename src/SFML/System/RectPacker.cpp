@@ -8,7 +8,6 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/UniquePtr.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -28,7 +27,7 @@ struct RectPacker::Impl
     stbrp_node    nodes[MaxNodes]{};
     stbrp_context context{};
 
-    explicit Impl(Vec2u size)
+    explicit Impl(const Vec2u size)
     {
         stbrp_init_target(&context, static_cast<int>(size.x), static_cast<int>(size.y), nodes, MaxNodes);
     }
@@ -36,21 +35,13 @@ struct RectPacker::Impl
 
 
 ////////////////////////////////////////////////////////////
-RectPacker::RectPacker(Vec2u size) : m_impl(base::makeUnique<Impl>(size))
+RectPacker::RectPacker(const Vec2u size) : m_impl(size)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 RectPacker::~RectPacker() = default;
-
-
-////////////////////////////////////////////////////////////
-RectPacker::RectPacker(RectPacker&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-RectPacker& RectPacker::operator=(RectPacker&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -68,7 +59,7 @@ base::Optional<Vec2u> RectPacker::pack(Vec2u rectSize)
     stbrp_rect toPack{/* id */ 0,
                       /* input width */ static_cast<int>(rectSize.x),
                       /* input height */ static_cast<int>(rectSize.y),
-                      /* output x*/ {},
+                      /* output x */ {},
                       /* output y */ {},
                       /* was_packed */ {}};
 
@@ -81,6 +72,57 @@ base::Optional<Vec2u> RectPacker::pack(Vec2u rectSize)
     SFML_BASE_ASSERT(toPack.was_packed != 0);
 
     return base::makeOptional<Vec2u>(static_cast<unsigned int>(toPack.x), static_cast<unsigned int>(toPack.y));
+}
+
+
+////////////////////////////////////////////////////////////
+bool RectPacker::packMultiple(base::Span<Vec2u> outPositions, base::Span<const Vec2u> rectSizes)
+{
+    const auto fail = [&](const char* what)
+    {
+        priv::err() << "Failure packing multiple rectangles: " << what;
+        return false;
+    };
+
+    if (outPositions.size() != rectSizes.size())
+        return fail("mismatched output and input sizes");
+
+    if (outPositions.size() > 512u)
+        return fail("too many rectangles to pack (max 512)");
+
+    stbrp_rect toPack[512];
+
+    for (std::size_t i = 0; i < rectSizes.size(); ++i)
+    {
+        const auto& size = rectSizes[i];
+
+        if (size.x == 0u || size.y == 0u)
+            return fail("zero-sized input rect size");
+
+        toPack[i] = {/* id */ static_cast<int>(i),
+                     /* input width */ static_cast<int>(size.x),
+                     /* input height */ static_cast<int>(size.y),
+                     /* output x */ {},
+                     /* output y */ {},
+                     /* was_packed */ {}};
+    }
+
+    const int rc = stbrp_pack_rects(&m_impl->context, toPack, /* num_rects */ static_cast<int>(rectSizes.size()));
+
+    if (rc == /* failure */ 0)
+        return fail("no room to pack");
+
+    SFML_BASE_ASSERT(rc == /* success */ 1);
+
+    for (std::size_t i = 0; i < rectSizes.size(); ++i)
+    {
+        const auto& packed = toPack[i];
+        SFML_BASE_ASSERT(packed.was_packed);
+
+        outPositions[i] = {static_cast<unsigned int>(packed.x), static_cast<unsigned int>(packed.y)};
+    }
+
+    return true;
 }
 
 

@@ -70,4 +70,27 @@ TEST_CASE("[System] sf::RectPacker", "")
         CHECK(!rectPacker.pack({1u, 1u}));
         CHECK(!rectPacker.pack({64u, 64u}));
     }
+
+    SECTION("Pack Multiple -- OK")
+    {
+        const sf::Vec2u sizes[] = {{64u, 64u}, {64u, 64u}, {64u, 64u}, {64u, 64u}};
+        sf::Vec2u       positions[4];
+
+        sf::RectPacker rectPacker({128u, 128u});
+        CHECK(rectPacker.packMultiple(positions, sizes));
+
+        CHECK(positions[0] == sf::Vec2u{64u, 64u});
+        CHECK(positions[1] == sf::Vec2u{0u, 0u});
+        CHECK(positions[2] == sf::Vec2u{64u, 0u});
+        CHECK(positions[3] == sf::Vec2u{0u, 64u});
+    }
+
+    SECTION("Pack Multiple -- Failure")
+    {
+        const sf::Vec2u sizes[] = {{64u, 64u}, {64u, 64u}, {64u, 64u}, {65u, 64u}};
+        sf::Vec2u       positions[4];
+
+        sf::RectPacker rectPacker({128u, 128u});
+        CHECK(!rectPacker.packMultiple(positions, sizes));
+    }
 }
