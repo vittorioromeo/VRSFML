@@ -7,7 +7,6 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Swap.hpp"
 
 
 namespace sf::base
@@ -21,7 +20,7 @@ struct Span
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline]] constexpr Span(T* theDataX, SizeT theSizeX) : theData{theDataX}, theSize{theSizeX}
+    [[nodiscard, gnu::always_inline]] constexpr Span(T* data, SizeT size) : theData{data}, theSize{size}
     {
         SFML_BASE_ASSERT(theData != nullptr || (theData == nullptr && theSize == 0u));
     }
@@ -108,8 +107,15 @@ struct Span
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] friend void swap(Span& lhs, Span& rhs) noexcept
     {
-        base::swap(lhs.theData, rhs.theData);
-        base::swap(lhs.theSize, rhs.theSize);
+        const auto swapImpl = []<typename U>(U& a, U& b)
+        {
+            U tempA = a;
+            a       = b;
+            b       = tempA;
+        };
+
+        swapImpl(lhs.theData, rhs.theData);
+        swapImpl(lhs.theSize, rhs.theSize);
     }
 
 

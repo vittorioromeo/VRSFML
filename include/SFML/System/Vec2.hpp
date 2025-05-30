@@ -883,5 +883,3 @@ extern template class sf::Vec2<unsigned int>;
 /// Note: for 3-dimensional vectors, see `sf::Vec3`.
 ///
 ////////////////////////////////////////////////////////////
-
-// TODO P0: compatibility aliases for SFML
