@@ -81,11 +81,12 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    /**
-     * @brief FixedFunction Constructor from functional object.
-     * @param f Functor object will be stored in the internal objStorage
-     * using move constructor. Unmovable objects are prohibited explicitly.
-     */
+    /// \brief FixedFunction Constructor from functional object.
+    ///
+    /// \param f Functor object will be stored in the internal objStorage
+    /// using move constructor. Unmovable objects are prohibited explicitly.
+    ///
+    ////////////////////////////////////////////////////////////
     template <typename TFFwd>
     // NOLINTNEXTLINE(bugprone-forwarding-reference-overload)
     [[nodiscard]] FixedFunction(TFFwd&& f) : FixedFunction()
@@ -95,7 +96,7 @@ public:
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_methodPtr = [](char* s, FnPtrType, Ts... xs) -> RetType
-        { return reinterpret_cast<UnrefType*>(s)->operator()(xs...); };
+        { return reinterpret_cast<UnrefType*>(s)->operator()(SFML_BASE_FORWARD(xs)...); };
 
         // NOLINTNEXTLINE(readability-non-const-parameter)
         m_allocPtr = [](char* s, void* o, const Operation operation)
@@ -127,7 +128,7 @@ public:
     template <typename TFReturn, typename... TFs>
     [[nodiscard]] FixedFunction(TFReturn (*f)(TFs...)) noexcept :
     functionPtr{f},
-    m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(xs...); }},
+    m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(SFML_BASE_FORWARD(xs)...); }},
     m_allocPtr{nullptr}
     {
     }
