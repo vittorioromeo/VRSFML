@@ -51,7 +51,7 @@ void MiniaudioUtils::SoundBase::nodeOnProcess(
 void MiniaudioUtils::SoundBase::processEffect(const float** const framesIn,
                                               base::U32&          frameCountIn,
                                               float** const       framesOut,
-                                              base::U32&          frameCountOut) const
+                                              base::U32&          frameCountOut)
 {
     // If a processor is set, call it
     if (effectProcessor)

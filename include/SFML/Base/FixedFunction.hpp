@@ -256,17 +256,6 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    template <typename... TArgs>
-    [[gnu::always_inline, gnu::flatten]] RetType operator()(TArgs&&... args) const
-    {
-        SFML_BASE_ASSERT(m_methodPtr != nullptr);
-
-        // TODO P1: not const-correct, should probably store two methodPtrs
-        return m_methodPtr(const_cast<char*>(objStorage), functionPtr, SFML_BASE_FORWARD(args)...);
-    }
-
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] explicit operator bool() const
     {
         return m_methodPtr != nullptr;
