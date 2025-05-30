@@ -69,7 +69,7 @@ struct SoundBase
                               ma_uint32*    frameCountOut);
 
     ////////////////////////////////////////////////////////////
-    void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut) const;
+    void processEffect(const float** framesIn, base::U32& frameCountIn, float** framesOut, base::U32& frameCountOut);
 
     ////////////////////////////////////////////////////////////
     void setChannelMap(const ChannelMap& channelMap);
