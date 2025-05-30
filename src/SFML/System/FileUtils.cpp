@@ -9,12 +9,12 @@
 
 #include <string>
 
-#include <cctype>
 #include <cstdio>
 
 
 namespace sf
 {
+////////////////////////////////////////////////////////////
 std::FILE* openFile(const Path& filename, base::StringView mode)
 {
 #ifdef SFML_SYSTEM_WINDOWS

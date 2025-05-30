@@ -323,7 +323,7 @@ struct AnchorPointMixin
 
 ////////////////////////////////////////////////////////////
 /// \class sf::AnchorPointMixin
-/// \ingroup graphics
+/// \ingroup system
 ///
 /// Utility mixin providing convenient functions to get and set
 /// the position of an object based on anchor points relative

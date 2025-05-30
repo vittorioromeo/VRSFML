@@ -45,7 +45,7 @@ RectPacker::~RectPacker() = default;
 
 
 ////////////////////////////////////////////////////////////
-base::Optional<Vec2u> RectPacker::pack(Vec2u rectSize)
+base::Optional<Vec2u> RectPacker::pack(const Vec2u rectSize)
 {
     const auto fail = [&](const char* what)
     {
@@ -76,7 +76,7 @@ base::Optional<Vec2u> RectPacker::pack(Vec2u rectSize)
 
 
 ////////////////////////////////////////////////////////////
-bool RectPacker::packMultiple(base::Span<Vec2u> outPositions, base::Span<const Vec2u> rectSizes)
+bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::Span<const Vec2u> rectSizes)
 {
     const auto fail = [&](const char* what)
     {
