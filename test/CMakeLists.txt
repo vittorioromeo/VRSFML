@@ -129,6 +129,25 @@ sfml_add_test(test-sfml-network "${NETWORK_SRC}" SFML::Network)
 file(GLOB AUDIO_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Audio/*.cpp" "${TEST_SRCROOT}/Audio/*.hpp" "${TEST_SRCROOT}/Audio/*.inl")
 sfml_add_test(test-sfml-audio "${AUDIO_SRC}" SFML::Audio)
 
+if(SFML_OS_IOS)
+    set(AUDIO_RESOURCE
+        Audio/ding-🐌.flac
+        Audio/ding-🐌.mp3
+        Audio/ding-ń.flac
+        Audio/ding-ń.mp3
+        Audio/ding.flac
+        Audio/ding.mp3
+        Audio/doodle_pop-🐌.ogg
+        Audio/doodle_pop-ń.ogg
+        Audio/doodle_pop.ogg
+        Audio/killdeer-🐌.wav
+        Audio/killdeer-ń.wav
+        Audio/killdeer.wav
+    )
+    target_sources(test-sfml-audio PRIVATE ${AUDIO_RESOURCE})
+    set_source_files_properties(${AUDIO_RESOURCE} PROPERTIES MACOSX_PACKAGE_LOCATION "Audio")
+endif()
+
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Because we can only write to the tmp directory on the Android virtual device we will need to build our directory tree under it
     set(TARGET_DIR "/data/local/tmp/$<TARGET_FILE_DIR:test-sfml-system>")
