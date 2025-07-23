@@ -45,6 +45,7 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -287,6 +288,16 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] Tile& getTileById(const ObjectId objectId)
+    {
+        SFML_BASE_ASSERT(objectId < m_objects.size());
+        SFML_BASE_ASSERT(m_objects[objectId].hasValue());
+        SFML_BASE_ASSERT(m_objects[objectId]->is<Tile>());
+
+        return m_objects[objectId]->as<Tile>();
+    }
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard]] bool isOOB(const sf::Vec2i position) const
     {
         return position.x < 0 || position.x >= 12 || position.y < 0 || position.y >= 12;
@@ -473,7 +484,15 @@ struct TEUnlock
 
 
 ////////////////////////////////////////////////////////////
-using TurnEvent = sfvr::tinyvariant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock>;
+struct TEBurn
+{
+    ObjectId objectId;
+    float    progress{0.f};
+};
+
+
+////////////////////////////////////////////////////////////
+using TurnEvent = sfvr::tinyvariant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
 
 
 ////////////////////////////////////////////////////////////
@@ -586,6 +605,7 @@ private:
     sf::base::Vector<TurnEvent>         m_turnEvents;
 
     ////////////////////////////////////////////////////////////
+    sf::base::Vector<ParticleData> m_lavaParticlesTop;
     sf::base::Vector<ParticleData> m_lavaParticles;
 
     ////////////////////////////////////////////////////////////
@@ -645,6 +665,7 @@ private:
     //////////////////////////////////////////////////////////////
     sf::CPUDrawableBatch m_dbBackground;
     sf::CPUDrawableBatch m_dbLavaParticles;
+    sf::CPUDrawableBatch m_dbLavaParticlesTop;
     sf::CPUDrawableBatch m_dbTile;
     sf::CPUDrawableBatch m_dbWall;
     sf::CPUDrawableBatch m_dbObjectBg;
@@ -722,6 +743,36 @@ private:
     }
 
     ////////////////////////////////////////////////////////////
+    void checkForBurn()
+    {
+        sf::base::Vector<ObjectId> blocksToBurn;
+
+        m_world.forBlocks([&](const ObjectId objectId, const Block& block)
+        {
+            const auto* blockColored = block.type.get_if<BColored>();
+            if (blockColored == nullptr)
+                return ControlFlow::Continue;
+
+            const auto tileId = m_world.getTileByPosition(block.position);
+            if (!tileId.hasValue())
+                return ControlFlow::Continue;
+
+            const auto& tile = m_world.getTileById(*tileId);
+            if (!tile.type.is<TLava>())
+                return ControlFlow::Continue;
+
+            blocksToBurn.pushBack(objectId);
+            return ControlFlow::Continue;
+        });
+
+        std::sort(blocksToBurn.begin(), blocksToBurn.end());
+        blocksToBurn.erase(sf::base::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
+
+        for (const ObjectId objectId : blocksToBurn)
+            m_turnEvents.pushBack(TEBurn{.objectId = objectId});
+    }
+
+    ////////////////////////////////////////////////////////////
     void checkForUnlock()
     {
         sf::base::Vector<ObjectId> blocksToKill;
@@ -792,6 +843,13 @@ private:
                 if (m_world.isBlocked(targetPosition))
                 {
                     mustFall = targetPosition != block.position + block.gravityDir;
+                    break;
+                }
+
+                if (m_world.isLava(targetPosition))
+                {
+                    targetPosition += block.gravityDir;
+                    mustFall = true;
                     break;
                 }
 
@@ -1006,6 +1064,33 @@ private:
             return true;
         }
 
+        if (auto* burn = turnEvent.get_if<TEBurn>())
+        {
+            if (!makeProgress(burn, deltaTimeMs * 0.00025f))
+            {
+                const auto blockPos       = m_world.getBlockById(burn->objectId).position;
+                const auto blockRenderPos = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + sf::Vec2f{64.f, 64.f};
+
+                const float     offset = sf::base::max(4.f, 64.f * (1.f - burn->progress));
+                const sf::Vec2f offsetVec{offset, offset};
+
+                const auto nParticles = static_cast<int>(sf::base::ceil((1.f - burn->progress) * 5.f));
+
+                for (int i = 0; i < nParticles; ++i)
+                {
+                    makeLavaParticle(m_rngFast.getVec2f(blockRenderPos - offsetVec, blockRenderPos + offsetVec));
+                    makeLavaParticleTop(m_rngFast.getVec2f(blockRenderPos - offsetVec, blockRenderPos + offsetVec));
+                }
+
+                return false;
+            }
+
+            m_world.killObject(burn->objectId);
+            m_grabbedObjectId.reset();
+
+            return true;
+        }
+
         return false;
     }
 
@@ -1017,6 +1102,11 @@ private:
             forTurnEventsToProcess([&](TurnEvent& turnEvent) { return updateTurnEvent(turnEvent, deltaTimeMs); });
             return;
         }
+
+        checkForBurn();
+
+        if (!m_turnEvents.empty())
+            return;
 
         checkForKill();
 
@@ -1119,6 +1209,36 @@ private:
     [[nodiscard, gnu::always_inline]] sf::Color getLavaColor() const noexcept
     {
         return hueColor(-5.f, 215u);
+    }
+
+    ////////////////////////////////////////////////////////////
+    void makeLavaParticle(const sf::Vec2f position)
+    {
+        m_lavaParticles.emplaceBack(
+            ParticleData{.position      = position,
+                         .velocity      = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.05f,
+                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 1.25f,
+                         .scaleDecay    = -0.0015f,
+                         .accelerationY = 0.f,
+                         .opacity       = 0.35f,
+                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
+                         .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                         .torque        = m_rngFast.getF(-0.001f, 0.001f)});
+    }
+
+    ////////////////////////////////////////////////////////////
+    void makeLavaParticleTop(const sf::Vec2f position)
+    {
+        m_lavaParticlesTop.emplaceBack(
+            ParticleData{.position      = position,
+                         .velocity      = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.05f,
+                         .scale         = m_rngFast.getF(0.08f, 0.27f) * 1.25f,
+                         .scaleDecay    = -0.0015f,
+                         .accelerationY = 0.f,
+                         .opacity       = 0.35f,
+                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
+                         .rotation      = m_rngFast.getF(0.f, sf::base::tau),
+                         .torque        = m_rngFast.getF(-0.001f, 0.001f)});
     }
 
 public:
@@ -1254,19 +1374,8 @@ public:
                 tile.type.linear_match([&](const TGravityRotator&) {},
                                        [&](const TLava&)
                 {
-                    const auto makeLavaParticle = [&](const sf::Vec2f offset)
-                    {
-                        m_lavaParticles.emplaceBack(
-                            ParticleData{.position   = tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset,
-                                         .velocity   = m_rngFast.getVec2f({-0.75f, -0.75f}, {0.75f, 0.75f}) * 0.05f,
-                                         .scale      = m_rngFast.getF(0.08f, 0.27f) * 1.25f,
-                                         .scaleDecay = -0.0015f,
-                                         .accelerationY = 0.f,
-                                         .opacity       = 0.35f,
-                                         .opacityDecay  = m_rngFast.getF(0.001f, 0.002f) * 0.47f,
-                                         .rotation      = m_rngFast.getF(0.f, sf::base::tau),
-                                         .torque        = m_rngFast.getF(-0.001f, 0.001f)});
-                    };
+                    const auto getParticlePos = [&](const sf::Vec2f offset)
+                    { return tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset; };
 
                     const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
                     {
@@ -1284,9 +1393,9 @@ public:
                         const auto dirOffset = m_rngFast.getF(-2.f, 6.f);
 
                         if (dir.x == 0)
-                            makeLavaParticle(sf::Vec2f{rndOffset, dir.y * 64.f + -dir.y * dirOffset});
+                            makeLavaParticle(getParticlePos({rndOffset, dir.y * 64.f + -dir.y * dirOffset}));
                         else if (dir.y == 0)
-                            makeLavaParticle(sf::Vec2f{dir.x * 64.f + -dir.x * dirOffset, rndOffset});
+                            makeLavaParticle(getParticlePos({dir.x * 64.f + -dir.x * dirOffset, rndOffset}));
 
                         particleBudget -= deltaTimeMs * 0.35f;
                     };
@@ -1299,7 +1408,7 @@ public:
                     while (particleBudget > 0.f)
                     {
                         if (m_rngFast.getI(0, 100) > 98)
-                            makeLavaParticle(sf::Vec2f{m_rngFast.getF(-64.f, 64.f), m_rngFast.getF(-64.f, 64.f)});
+                            makeLavaParticle(getParticlePos({m_rngFast.getF(-64.f, 64.f), m_rngFast.getF(-64.f, 64.f)}));
 
                         particleBudget -= deltaTimeMs * 0.35f;
                     }
@@ -1326,6 +1435,7 @@ public:
             };
 
             updateParticleLike(m_lavaParticles);
+            updateParticleLike(m_lavaParticlesTop);
 
             m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
             // ---
@@ -1381,6 +1491,7 @@ public:
 
             m_dbBackground.clear();
             m_dbLavaParticles.clear();
+            m_dbLavaParticlesTop.clear();
             m_dbTile.clear();
             m_dbWall.clear();
             m_dbObjectBg.clear();
@@ -1513,6 +1624,15 @@ public:
                         scaleMultiplier.y += 0.35f * easeInOutSine(bounce(unlock->progress));
 
                         return false;
+                    }
+
+                    if (const auto& burn = turnEvent.get_if<TEBurn>())
+                    {
+                        if (burn->objectId != objectId)
+                            return false;
+
+                        scaleMultiplier *= 1.f - easeInOutSine(burn->progress);
+                        rotationRadians = easeInOutSine(burn->progress) * -sf::base::tau * 2.f;
                     }
 
                     return false;
@@ -1711,6 +1831,11 @@ public:
                 m_dbLavaParticles.add(
                     particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1], m_txrLavaParticle, getLavaColor()));
 
+            for (sf::base::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
+                m_dbLavaParticlesTop.add(particleToSprite(m_lavaParticlesTop[m_lavaParticlesTop.size() - i - 1],
+                                                          m_txrLavaParticle,
+                                                          getLavaColor()));
+
             const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
             {
                 const auto downscaleSize = m_rtGame.getSize().toVec2f();
@@ -1759,23 +1884,20 @@ public:
             m_rtGame.draw(m_dbTile, states);
 
             updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(),
-                          {
-                              .position = {8.f, 8.f},
-                              .scale    = {2.f, 2.f},
-                          },
-                          {.shader = &m_shaderShadow});
+            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
 
             m_rtGame.draw(m_dbWall, states);
             m_rtGame.draw(m_dbObject, states);
 
-            updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(),
+            m_rtGame.draw(m_dbLavaParticlesTop,
                           {
-                              .position = {4.f, 4.f},
-                              .scale    = {2.f, 2.f},
-                          },
-                          {.shader = &m_shaderShadow});
+                              .blendMode = sf::BlendAdd,
+                              .texture   = &m_textureAtlas.getTexture(),
+                              .shader    = &m_shader,
+                          });
+
+            updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
+            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
 
             m_rtGame.draw(m_dbObjectAttributes, states);
 
