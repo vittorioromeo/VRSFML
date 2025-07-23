@@ -652,11 +652,16 @@ private:
     sf::CPUDrawableBatch m_dbObjectAttributes;
 
     //////////////////////////////////////////////////////////////
-    sf::RenderTexture m_rtSpriteBg{
-        sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+    static inline constexpr float shadowTextureResMult = 0.75f;
 
-    sf::RenderTexture m_rtSpriteBgTemp{
-        sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
+    //////////////////////////////////////////////////////////////
+    sf::RenderTexture m_rtSpriteBg{sf::RenderTexture::create(m_window.getSize() * 2.f * shadowTextureResMult,
+                                                             {.antiAliasingLevel = 0u, .sRgbCapable = false})
+                                       .value()};
+
+    sf::RenderTexture m_rtSpriteBgTemp{sf::RenderTexture::create(m_window.getSize() * 2.f * shadowTextureResMult,
+                                                                 {.antiAliasingLevel = 0u, .sRgbCapable = false})
+                                           .value()};
 
     sf::RenderTexture m_rtGame{
         sf::RenderTexture::create(m_window.getSize() * 2.f, {.antiAliasingLevel = 0u, .sRgbCapable = false}).value()};
@@ -1708,6 +1713,14 @@ public:
 
             const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
             {
+                const auto downscaleSize = m_rtGame.getSize().toVec2f();
+
+                sf::View downscaleView;
+                downscaleView.size   = downscaleSize;
+                downscaleView.center = downscaleSize / 2.f;
+
+                m_rtSpriteBg.setView(downscaleView);
+
                 m_rtSpriteBg.clear(sf::Color::Transparent);
                 (m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}), ...);
                 m_rtSpriteBg.display();
@@ -1746,13 +1759,23 @@ public:
             m_rtGame.draw(m_dbTile, states);
 
             updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
+            m_rtGame.draw(m_rtSpriteBg.getTexture(),
+                          {
+                              .position = {8.f, 8.f},
+                              .scale    = {2.f, 2.f},
+                          },
+                          {.shader = &m_shaderShadow});
 
             m_rtGame.draw(m_dbWall, states);
             m_rtGame.draw(m_dbObject, states);
 
             updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
+            m_rtGame.draw(m_rtSpriteBg.getTexture(),
+                          {
+                              .position = {4.f, 4.f},
+                              .scale    = {2.f, 2.f},
+                          },
+                          {.shader = &m_shaderShadow});
 
             m_rtGame.draw(m_dbObjectAttributes, states);
 

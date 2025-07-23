@@ -358,6 +358,7 @@ template <typename T>
 
 // Aliases for the most common types
 using Vec3i = Vec3<int>;
+using Vec3u = Vec3<unsigned int>;
 using Vec3f = Vec3<float>;
 
 } // namespace sf

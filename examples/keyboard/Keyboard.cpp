@@ -740,7 +740,7 @@ private:
         }
 
         Cell(sf::Keyboard::Scancode theScancode, float marginRightRatio) :
-        Cell(theScancode, {1.f, 1.f}, marginRightRatio)
+            Cell(theScancode, {1.f, 1.f}, marginRightRatio)
         {
         }
 

@@ -74,7 +74,7 @@ jobs:
         # --- End Updated Linux entries ---
         - platform: { name: Windows MinGW, os: windows-2022 }
           config: { name: Static Standard Libraries, flags: -GNinja -DSFML_USE_MESA3D=ON -DCMAKE_CXX_COMPILER=g++ -DSFML_USE_STATIC_STD_LIBS=ON }
-        - platform: { name: Windows MinGW, os: windows-2022 }
+        - platform: { name: Windows MinGW, os: windows-2025 }
           config: { name: Static with PCH (GCC), flags: -GNinja -DSFML_USE_MESA3D=ON -DCMAKE_CXX_COMPILER=g++ -DBUILD_SHARED_LIBS=OFF -DSFML_ENABLE_PCH=ON -DSFML_ENABLE_STDLIB_ASSERTIONS=OFF } # disabling stdlib assertions due to false positive
         # - platform: { name: macOS, os: macos-14 }
         #   config: { name: Frameworks, flags: -GNinja -DSFML_BUILD_FRAMEWORKS=ON -DBUILD_SHARED_LIBS=ON }

@@ -27,7 +27,7 @@ template <typename T>
     else
     {
         for (T* p = srcBegin; p != srcEnd; ++p, ++target)
-            SFML_BASE_PLACEMENT_NEW(target) T(static_cast<T&&>(*p));
+            SFML_BASE_PLACEMENT_NEW(target) T(static_cast<T&&>(*p)); // not exception-safe
     }
 }
 
