@@ -19,13 +19,15 @@ void main()
     blurredColor += texture(sf_u_texture, sf_v_texCoord) * centerWeight;
     totalWeight += centerWeight;
 
+    vec2 texelSize     = vec2(1.0) / textureSize(sf_u_texture, 0); // TODO P1: move to uniform
+    vec2 stepDirection = u_blurDirection * texelSize;
+
     for (int i = 1; i <= int(ceil(u_blurRadiusPixels)); ++i)
     {
         float distance = float(i);
         float weight   = exp(-(distance * distance) / twoSigmaSq);
 
-        vec2 texelSize = vec2(1.0) / textureSize(sf_u_texture, 0);
-        vec2 offset    = u_blurDirection * distance * texelSize;
+        vec2 offset = stepDirection * distance;
 
         blurredColor += texture(sf_u_texture, sf_v_texCoord + offset) * weight;
         blurredColor += texture(sf_u_texture, sf_v_texCoord - offset) * weight;
@@ -33,12 +35,5 @@ void main()
         totalWeight += 2.0 * weight;
     }
 
-    if (totalWeight > 0.0)
-    {
-        sf_fragColor = blurredColor / totalWeight;
-    }
-    else
-    {
-        sf_fragColor = texture(sf_u_texture, sf_v_texCoord);
-    }
+    sf_fragColor = blurredColor / totalWeight;
 }
