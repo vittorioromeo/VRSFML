@@ -80,8 +80,34 @@ else()
             set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES POSITION_INDEPENDENT_CODE ON)
         endif()
 
-        # disable building dependencies as part of a unity build, they don't support it
-        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD OFF)
+        # build using unity build and exclude files that cause issues
+        set_target_properties(ogg FLAC vorbis vorbisenc vorbisfile PROPERTIES UNITY_BUILD ON UNITY_BUILD_BATCH_SIZE 256)
+        set_source_files_properties(
+            "${flac_SOURCE_DIR}/src/libFLAC/fixed.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/format.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse2.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_ssse3.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/fixed_intrin_sse42.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/lpc.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/metadata_object.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/stream_decoder.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/stream_encoder.c"
+            "${flac_SOURCE_DIR}/src/libFLAC/window.c"
+            TARGET_DIRECTORY FLAC
+            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+        )
+        set_source_files_properties(
+            "${vorbis_SOURCE_DIR}/lib/floor1.c"
+            "${vorbis_SOURCE_DIR}/lib/sharedbook.c"
+            "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
+            TARGET_DIRECTORY vorbis
+            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+        )
+        set_source_files_properties(
+            "${vorbis_SOURCE_DIR}/lib/vorbisenc.c"
+            TARGET_DIRECTORY vorbisenc
+            PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON
+        )
 
         if(TARGET benchmark_residual)
             set_target_properties(benchmark_residual PROPERTIES UNITY_BUILD OFF)
