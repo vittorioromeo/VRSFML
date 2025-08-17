@@ -705,7 +705,7 @@ private:
         // NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions)
         constexpr iter_t(const iter_t<OtherIsConst>& other) noexcept
             requires(IsConst && !OtherIsConst)
-        : m_data(other.m_data), m_idx(other.m_idx)
+            : m_data(other.m_data), m_idx(other.m_idx)
         {
         }
 
@@ -1460,10 +1460,10 @@ private:
 
 public:
     explicit table(sf::base::SizeT bucket_count = 0, const Hash& hash = Hash(), const KeyEqual& equal = KeyEqual()) :
-    m_values(),
-    m_buckets(),
-    m_hash(hash),
-    m_equal(equal)
+        m_values(),
+        m_buckets(),
+        m_hash(hash),
+        m_equal(equal)
     {
         if (0 != bucket_count)
         {
@@ -1482,7 +1482,7 @@ public:
           size_type bucket_count = 0,
           const Hash& hash = Hash(),
           const KeyEqual& equal = KeyEqual()) :
-    table(bucket_count, hash, equal)
+        table(bucket_count, hash, equal)
     {
         insert(first, last);
     }
@@ -1494,18 +1494,18 @@ public:
           sf::base::SizeT bucket_count = 0,
           const Hash& hash = Hash(),
           const KeyEqual& equal = KeyEqual()) :
-    table(bucket_count, hash, equal)
+        table(bucket_count, hash, equal)
     {
         insert(ilist);
     }
 
     table(std::initializer_list<value_type> ilist, size_type bucket_count) :
-    table(ilist, bucket_count, Hash(), KeyEqual())
+        table(ilist, bucket_count, Hash(), KeyEqual())
     {
     }
 
     table(std::initializer_list<value_type> init, size_type bucket_count, const Hash& hash) :
-    table(init, bucket_count, hash, KeyEqual())
+        table(init, bucket_count, hash, KeyEqual())
     {
     }
 

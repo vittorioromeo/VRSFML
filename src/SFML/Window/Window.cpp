@@ -44,8 +44,8 @@ struct Window::Window::Impl
 ////////////////////////////////////////////////////////////
 template <typename... TWindowBaseArgs>
 Window::Window(const Settings& windowSettings, unsigned int bitsPerPixel, TWindowBaseArgs&&... windowBaseArgs) :
-WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
-m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
+    WindowBase(SFML_BASE_FORWARD(windowBaseArgs)...),
+    m_impl(WindowContext::createGlContext(windowSettings.contextSettings, getWindowImpl(), bitsPerPixel))
 {
     // Perform common initializations
     SFML_BASE_ASSERT(m_impl->glContext != nullptr);
@@ -68,7 +68,7 @@ Window::Window(const Settings& windowSettings) : Window(windowSettings, windowSe
 
 ////////////////////////////////////////////////////////////
 Window::Window(WindowHandle handle, const ContextSettings& contextSettings) :
-Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUtils::getDesktopMode().bitsPerPixel, handle)
+    Window(WindowSettings{.size{}, .contextSettings = contextSettings}, VideoModeUtils::getDesktopMode().bitsPerPixel, handle)
 {
 }
 

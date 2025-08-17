@@ -67,10 +67,10 @@ void SDLGlContext::initContext(SDLGlContext* const shared)
 
 ////////////////////////////////////////////////////////////
 SDLGlContext::SDLGlContext(const unsigned int id, SDLGlContext* const shared, const ContextSettings& settings) :
-GlContext(id, settings),
-m_window(nullptr),
-m_context(nullptr),
-m_ownsWindow(false)
+    GlContext(id, settings),
+    m_window(nullptr),
+    m_context(nullptr),
+    m_ownsWindow(false)
 {
     if (!getSDLLayerSingleton().applyGLContextSettings(m_settings))
         err() << "Failed to apply SDL GL context settings for shared GL context hidden window";
@@ -94,10 +94,10 @@ SDLGlContext::SDLGlContext(const unsigned int     id,
                            const ContextSettings& settings,
                            const SDLWindowImpl&   owner,
                            const unsigned int /* bitsPerPixel */) :
-GlContext(id, settings),
-m_window(owner.getSDLHandle()),
-m_context(nullptr),
-m_ownsWindow(false)
+    GlContext(id, settings),
+    m_window(owner.getSDLHandle()),
+    m_context(nullptr),
+    m_ownsWindow(false)
 {
     initContext(shared);
 }

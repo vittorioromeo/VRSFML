@@ -35,7 +35,7 @@ struct PlaybackDevice::Impl
     explicit Impl(
         // NOLINTNEXTLINE(modernize-pass-by-value)
         const PlaybackDeviceHandle& thePlaybackDeviceHandle) :
-    playbackDeviceHandle(thePlaybackDeviceHandle)
+        playbackDeviceHandle(thePlaybackDeviceHandle)
     {
     }
 

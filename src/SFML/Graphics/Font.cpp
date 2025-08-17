@@ -338,10 +338,11 @@ struct Font::Impl
                                MapType</* combined key */ base::U64, Glyph>>; //!< Table mapping a codepoint to its glyph
 
     explicit Impl(TextureAtlas* theTextureAtlasPtr) :
-    textureAtlasPtr{theTextureAtlasPtr},
-    fallbackTextureAtlas{theTextureAtlasPtr == nullptr
-                             ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
-                             : base::nullOpt}
+        textureAtlasPtr{theTextureAtlasPtr},
+        fallbackTextureAtlas{
+            theTextureAtlasPtr == nullptr
+                ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
+                : base::nullOpt}
     {
     }
 

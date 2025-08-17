@@ -136,9 +136,8 @@ private:
 
     template <typename T, impl::SizeT I, typename... Args>
     [[nodiscard,
-      gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T>, impl::inplace_index_t<I>, Args&&... args) noexcept
-    :
-    _index{static_cast<index_type>(I)}
+      gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T>, impl::inplace_index_t<I>, Args&&... args) noexcept :
+        _index{static_cast<index_type>(I)}
     {
         TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
         SFML_BASE_PLACEMENT_NEW(_buffer) T{static_cast<Args&&>(args)...};
@@ -224,21 +223,20 @@ private:
 public:
     template <typename T, typename... Args>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T> inplace_type, Args&&... args) noexcept :
-    tinyvariant{inplace_type, inplace_index<index_of<T>>, static_cast<Args&&>(args)...}
+        tinyvariant{inplace_type, inplace_index<index_of<T>>, static_cast<Args&&>(args)...}
     {
     }
 
     template <impl::SizeT I, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_index_t<I> inplace_index, Args&&... args) noexcept
-    :
-    tinyvariant{inplace_type<TINYVARIANT_NTH_TYPE(I)>, inplace_index, static_cast<Args&&>(args)...}
+    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_index_t<I> inplace_index, Args&&... args) noexcept :
+        tinyvariant{inplace_type<TINYVARIANT_NTH_TYPE(I)>, inplace_index, static_cast<Args&&>(args)...}
     {
     }
 
     template <typename T>
     [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
         requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
-    : tinyvariant{inplace_type<sf::base::RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
+        : tinyvariant{inplace_type<sf::base::RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
     {
     }
 
@@ -248,7 +246,7 @@ public:
 
     [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
         requires(!triviallyCopyConstructible)
-    : _index{rhs._index}
+        : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)
@@ -262,7 +260,7 @@ public:
 
     [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
         requires(!triviallyMoveConstructible)
-    : _index{rhs._index}
+        : _index{rhs._index}
     {
         TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
                                           SFML_BASE_PLACEMENT_NEW(_buffer)

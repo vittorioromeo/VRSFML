@@ -26,8 +26,8 @@ void Joystick::update()
 
 ////////////////////////////////////////////////////////////
 Joystick::Query::Query(const priv::JoystickManager& joystickManager, unsigned int joystickId) :
-m_joystickManager(joystickManager),
-m_joystickId(joystickId)
+    m_joystickManager(joystickManager),
+    m_joystickId(joystickId)
 {
     SFML_BASE_ASSERT(isConnected() && "Created query for unconnected joystick");
 }

@@ -56,7 +56,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource(GLUniqueResource&& rhs) noexcept :
-    m_id{base::exchange(rhs.m_id, 0u)}
+        m_id{base::exchange(rhs.m_id, 0u)}
     {
         SFML_BASE_ASSERT(m_id != 0u);
     }

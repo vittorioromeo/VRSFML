@@ -22,7 +22,7 @@ struct AudioDeviceHandle::Impl
 
 ////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(const void* maDeviceInfo) :
-m_impl(*static_cast<const ma_device_info*>(maDeviceInfo))
+    m_impl(*static_cast<const ma_device_info*>(maDeviceInfo))
 {
 }
 
@@ -36,21 +36,21 @@ const void* AudioDeviceHandle::getMADeviceInfo() const
 
 ////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(base::PassKey<AudioContext>&&, const void* maDeviceInfo) :
-AudioDeviceHandle{maDeviceInfo}
+    AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(base::PassKey<PlaybackDevice>&&, const void* maDeviceInfo) :
-AudioDeviceHandle{maDeviceInfo}
+    AudioDeviceHandle{maDeviceInfo}
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 AudioDeviceHandle::AudioDeviceHandle(base::PassKey<CaptureDevice>&&, const void* maDeviceInfo) :
-AudioDeviceHandle{maDeviceInfo}
+    AudioDeviceHandle{maDeviceInfo}
 {
 }
 

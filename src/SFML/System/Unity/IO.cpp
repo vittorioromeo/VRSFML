@@ -367,7 +367,7 @@ OutFileStream::OutFileStream() = default;
 
 ////////////////////////////////////////////////////////////
 OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) :
-m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
+    m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
 }
 
@@ -731,7 +731,7 @@ InFileStream::InFileStream() = default;
 
 ////////////////////////////////////////////////////////////
 InFileStream::InFileStream(const Path& filename, FileOpenMode mode) :
-m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
+    m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
 }
 

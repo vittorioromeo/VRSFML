@@ -87,7 +87,7 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit(false) InPlaceVector(const std::initializer_list<TItem> iList) :
-    InPlaceVector(iList.begin(), iList.end())
+        InPlaceVector(iList.begin(), iList.end())
     {
     }
 

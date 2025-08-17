@@ -267,11 +267,11 @@ InputSoundFile::InputSoundFile(base::PassKey<InputSoundFile>&&,
                                base::U64                                     sampleCount,
                                unsigned int                                  sampleRate,
                                ChannelMap&&                                  channelMap) :
-m_reader(SFML_BASE_MOVE(reader)),
-m_stream(SFML_BASE_MOVE(stream)),
-m_sampleCount(sampleCount),
-m_sampleRate(sampleRate),
-m_channelMap(SFML_BASE_MOVE(channelMap))
+    m_reader(SFML_BASE_MOVE(reader)),
+    m_stream(SFML_BASE_MOVE(stream)),
+    m_sampleCount(sampleCount),
+    m_sampleRate(sampleRate),
+    m_channelMap(SFML_BASE_MOVE(channelMap))
 {
 }
 

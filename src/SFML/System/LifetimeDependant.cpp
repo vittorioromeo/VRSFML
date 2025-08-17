@@ -13,8 +13,8 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 LifetimeDependant::LifetimeDependant(const char* const dependeeName, LifetimeDependee* dependee) noexcept :
-m_dependeeName(dependeeName),
-m_dependee(dependee)
+    m_dependeeName(dependeeName),
+    m_dependee(dependee)
 {
     addSelfAsDependant();
 }
@@ -29,15 +29,15 @@ LifetimeDependant::~LifetimeDependant()
 
 ////////////////////////////////////////////////////////////
 LifetimeDependant::LifetimeDependant(const LifetimeDependant& rhs) noexcept :
-LifetimeDependant(rhs.m_dependeeName, rhs.m_dependee)
+    LifetimeDependant(rhs.m_dependeeName, rhs.m_dependee)
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 LifetimeDependant::LifetimeDependant(LifetimeDependant&& rhs) noexcept :
-m_dependeeName(rhs.m_dependeeName),
-m_dependee(rhs.m_dependee)
+    m_dependeeName(rhs.m_dependeeName),
+    m_dependee(rhs.m_dependee)
 {
     rhs.m_dependee = nullptr;
 }

@@ -37,9 +37,9 @@ struct ErrStream::Impl
 
 ////////////////////////////////////////////////////////////
 ErrStream::Guard::Guard(std::ostream& stream, void* mutexPtr, bool multiLine) :
-m_stream(stream),
-m_mutexPtr(mutexPtr),
-m_multiLine(multiLine)
+    m_stream(stream),
+    m_mutexPtr(mutexPtr),
+    m_multiLine(multiLine)
 {
 }
 

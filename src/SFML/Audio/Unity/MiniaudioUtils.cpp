@@ -94,8 +94,8 @@ void MiniaudioUtils::SoundBase::setChannelMap(const ChannelMap& channelMap)
 MiniaudioUtils::SoundBase::SoundBase(PlaybackDevice&   thePlaybackDevice,
                                      const void* const dataSourceVTable,
                                      const ChannelMap& channelMap) :
-dataSourceBase{}, // must be first member!
-playbackDevice(&thePlaybackDevice)
+    dataSourceBase{}, // must be first member!
+    playbackDevice(&thePlaybackDevice)
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(PlaybackDevice, SoundBase, this, playbackDevice);
 

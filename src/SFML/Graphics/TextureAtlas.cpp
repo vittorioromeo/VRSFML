@@ -33,8 +33,8 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 TextureAtlas::TextureAtlas(Texture&& atlasTexture) :
-m_atlasTexture(SFML_BASE_MOVE(atlasTexture)),
-m_rectPacker(m_atlasTexture.getSize())
+    m_atlasTexture(SFML_BASE_MOVE(atlasTexture)),
+    m_rectPacker(m_atlasTexture.getSize())
 {
 }
 

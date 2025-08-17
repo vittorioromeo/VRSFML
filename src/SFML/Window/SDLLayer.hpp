@@ -116,8 +116,8 @@ struct SDLAllocatedArray
 
     ////////////////////////////////////////////////////////////
     explicit SDLAllocatedArray(SDLUPtr<T>&& thePtr, const base::SizeT theCount) :
-    ptr{SFML_BASE_MOVE(thePtr)},
-    count{theCount}
+        ptr{SFML_BASE_MOVE(thePtr)},
+        count{theCount}
     {
     }
 
