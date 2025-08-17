@@ -26,9 +26,9 @@ struct SoundBuffer::Impl
     ////////////////////////////////////////////////////////////
     // NOLINTNEXTLINE(modernize-pass-by-value)
     explicit Impl(base::Vector<base::I16>&& theSamples, const ChannelMap& theChannelMap, const unsigned int theSampleRate) :
-    samples(SFML_BASE_MOVE(theSamples)),
-    channelMap(theChannelMap),
-    sampleRate(theSampleRate)
+        samples(SFML_BASE_MOVE(theSamples)),
+        channelMap(theChannelMap),
+        sampleRate(theSampleRate)
     {
         SFML_BASE_ASSERT(channelMap.getSize() > 0u);
         SFML_BASE_ASSERT(sampleRate > 0u);
@@ -189,7 +189,7 @@ Time SoundBuffer::getDuration() const
 
 ////////////////////////////////////////////////////////////
 SoundBuffer::SoundBuffer(base::PassKey<SoundBuffer>&&, void* samplesVectorPtr, const ChannelMap& channelMap, unsigned int sampleRate) :
-m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)), channelMap, sampleRate)
+    m_impl(SFML_BASE_MOVE(*static_cast<base::Vector<base::I16>*>(samplesVectorPtr)), channelMap, sampleRate)
 {
 }
 

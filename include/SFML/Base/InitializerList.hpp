@@ -34,8 +34,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr initializer_list(const T* b, const size_type s) noexcept :
-    m_begin(b),
-    m_size(s)
+        m_begin(b),
+        m_size(s)
     {
     }
 

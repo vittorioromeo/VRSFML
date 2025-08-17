@@ -222,8 +222,8 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             struct BadStruct
             {
                 BadStruct() :
-                memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()},
-                memberText{memberFont, {}}
+                    memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()},
+                    memberText{memberFont, {}}
                 {
                 }
 

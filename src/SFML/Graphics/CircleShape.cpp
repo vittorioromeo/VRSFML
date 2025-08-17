@@ -17,9 +17,9 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 CircleShape::CircleShape(const Data& data) :
-Shape(priv::toShapeData(data)),
-m_radius{data.radius},
-m_pointCount{data.pointCount}
+    Shape(priv::toShapeData(data)),
+    m_radius{data.radius},
+    m_pointCount{data.pointCount}
 {
     updateCircleGeometry();
 }

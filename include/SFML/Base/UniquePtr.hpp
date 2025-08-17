@@ -62,8 +62,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit UniquePtr(T* ptr, const TDeleter& deleter) noexcept :
-    TDeleter{deleter},
-    m_ptr{ptr}
+        TDeleter{deleter},
+        m_ptr{ptr}
     {
     }
 
@@ -84,7 +84,7 @@ public:
     template <typename U, typename UDeleter>
     [[nodiscard, gnu::always_inline]] constexpr UniquePtr(UniquePtr<U, UDeleter>&& rhs) noexcept
         requires(base::isSame<T, U> || base::isBaseOf<T, U>)
-    : TDeleter{static_cast<UDeleter&&>(rhs)}, m_ptr{rhs.m_ptr}
+        : TDeleter{static_cast<UDeleter&&>(rhs)}, m_ptr{rhs.m_ptr}
     {
         rhs.m_ptr = nullptr;
     }

@@ -65,9 +65,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     GLPersistentBuffer(GLPersistentBuffer&& rhs) noexcept :
-    m_obj{rhs.m_obj},
-    m_mappedPtr{rhs.m_mappedPtr},
-    m_capacity{rhs.m_capacity}
+        m_obj{rhs.m_obj},
+        m_mappedPtr{rhs.m_mappedPtr},
+        m_capacity{rhs.m_capacity}
     {
         rhs.m_obj       = nullptr;
         rhs.m_mappedPtr = nullptr;

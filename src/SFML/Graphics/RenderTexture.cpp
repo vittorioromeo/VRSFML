@@ -114,8 +114,8 @@ struct RenderTexture::Impl
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit Impl(Texture&& theTexture) :
-    texture(SFML_BASE_MOVE(theTexture)),
-    tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
+        texture(SFML_BASE_MOVE(theTexture)),
+        tmpTexture(Texture::create(texture.getSize(), {.sRgb = texture.isSrgb(), .smooth = texture.isSmooth()}).value())
     {
     }
 
@@ -538,8 +538,8 @@ const Texture& RenderTexture::getTexture() const
 
 ////////////////////////////////////////////////////////////
 RenderTexture::RenderTexture(base::PassKey<RenderTexture>&&, Texture&& texture) :
-RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVec2f()})),
-m_impl(SFML_BASE_MOVE(texture))
+    RenderTarget(View::fromRect({{0.f, 0.f}, texture.getSize().toVec2f()})),
+    m_impl(SFML_BASE_MOVE(texture))
 {
 }
 

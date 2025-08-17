@@ -389,7 +389,7 @@ struct [[nodiscard]] ImGuiContext::Impl
     [[nodiscard]] explicit Impl(const bool               loadDefaultFont,
                                 const SetClipboardTextFn setClipboardTextFn,
                                 const GetClipboardTextFn getClipboardTextFn) :
-    joystickId{getConnectedJoystickId()}
+        joystickId{getConnectedJoystickId()}
     {
         ImGuiIO& io = ::ImGui::GetIO();
 
@@ -1019,7 +1019,7 @@ const char* getClipboardTextFn(void* /* userData */)
 
 ////////////////////////////////////////////////////////////
 ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
-m_impl{base::makeUnique<Impl>(loadDefaultFont, &setClipboardTextFn, &getClipboardTextFn)}
+    m_impl{base::makeUnique<Impl>(loadDefaultFont, &setClipboardTextFn, &getClipboardTextFn)}
 {
     initDefaultJoystickMapping();
 }

@@ -162,8 +162,8 @@ struct SDLWindowImpl::Impl
     bool isExternal = false; //!< Is the window created externally?
 
     explicit Impl(const char* context, SDL_Window* theSDLWindow, const bool theIsExternal) :
-    sdlWindow{theSDLWindow},
-    isExternal{theIsExternal}
+        sdlWindow{theSDLWindow},
+        isExternal{theIsExternal}
     {
         if (!sdlWindow)
         {
@@ -681,7 +681,7 @@ base::Optional<Event> SDLWindowImpl::popEvent()
 
 ////////////////////////////////////////////////////////////
 SDLWindowImpl::SDLWindowImpl(const char* const context, void* const sdlWindow, const bool isExternal) :
-m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
+    m_impl{context, static_cast<SDL_Window*>(sdlWindow), isExternal}
 {
     auto& joystickManager = WindowContext::getJoystickManager();
 

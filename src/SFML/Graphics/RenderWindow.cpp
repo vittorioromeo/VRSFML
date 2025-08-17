@@ -22,8 +22,8 @@ namespace sf
 ////////////////////////////////////////////////////////////
 template <typename... TWindowArgs>
 RenderWindow::RenderWindow(int /* disambiguator */, TWindowArgs&&... windowArgs) :
-Window(SFML_BASE_FORWARD(windowArgs)...),
-RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
+    Window(SFML_BASE_FORWARD(windowArgs)...),
+    RenderTarget(View::fromRect({{0.f, 0.f}, getSize().toVec2f()}))
 {
     // Retrieve the framebuffer ID we have to bind when targeting the window for rendering
     // We assume that this window's context is still active at this point
@@ -39,7 +39,7 @@ RenderWindow::RenderWindow(const Settings& windowSettings) : RenderWindow(int{},
 
 ////////////////////////////////////////////////////////////
 RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& contextSettings) :
-RenderWindow(int{}, handle, contextSettings)
+    RenderWindow(int{}, handle, contextSettings)
 {
 }
 

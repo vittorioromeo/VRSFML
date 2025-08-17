@@ -20,15 +20,15 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Shape::Shape(const Data& data) :
-m_textureRect{data.textureRect},
-m_outlineTextureRect{data.outlineTextureRect},
-m_outlineThickness{data.outlineThickness},
-m_fillColor{data.fillColor},
-m_outlineColor{data.outlineColor},
-position{data.position},
-scale{data.scale},
-origin{data.origin},
-rotation{data.rotation}
+    m_textureRect{data.textureRect},
+    m_outlineTextureRect{data.outlineTextureRect},
+    m_outlineThickness{data.outlineThickness},
+    m_fillColor{data.fillColor},
+    m_outlineColor{data.outlineColor},
+    position{data.position},
+    scale{data.scale},
+    origin{data.origin},
+    rotation{data.rotation}
 {
 }
 

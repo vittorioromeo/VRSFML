@@ -35,9 +35,9 @@ struct PersistentGPUStorage::Impl
     Impl& operator=(const Impl&) = delete;
 
     Impl(Impl&& rhs) noexcept :
-    persistentVaoGroup{SFML_BASE_MOVE(rhs.persistentVaoGroup)},
-    vboPersistentBuffer{SFML_BASE_MOVE(rhs.vboPersistentBuffer)},
-    eboPersistentBuffer{SFML_BASE_MOVE(rhs.eboPersistentBuffer)}
+        persistentVaoGroup{SFML_BASE_MOVE(rhs.persistentVaoGroup)},
+        vboPersistentBuffer{SFML_BASE_MOVE(rhs.vboPersistentBuffer)},
+        eboPersistentBuffer{SFML_BASE_MOVE(rhs.eboPersistentBuffer)}
     {
         // Adjust the persistent buffers to point to the new VAO group (self-referential pointers)
         vboPersistentBuffer.adjustObjPointer(persistentVaoGroup.vbo);

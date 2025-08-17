@@ -28,9 +28,9 @@ struct Sound::Impl
 {
     ////////////////////////////////////////////////////////////
     explicit Impl(PlaybackDevice& thePlaybackDevice, Sound& theOwner, const SoundBuffer& theBuffer) :
-    soundBase(thePlaybackDevice, &Impl::vtable, theBuffer.getChannelMap()),
-    owner(theOwner),
-    buffer(theBuffer)
+        soundBase(thePlaybackDevice, &Impl::vtable, theBuffer.getChannelMap()),
+        owner(theOwner),
+        buffer(theBuffer)
     {
         if (!soundBase.initialize(&onEnd))
         {
@@ -156,7 +156,7 @@ struct Sound::Impl
 
 ////////////////////////////////////////////////////////////
 Sound::Sound(PlaybackDevice& playbackDevice, const SoundBuffer& buffer, const AudioSettings& audioSettings) :
-m_impl(playbackDevice, *this, buffer)
+    m_impl(playbackDevice, *this, buffer)
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(SoundBuffer, Sound, this, (&m_impl->buffer));
     applyAudioSettings(audioSettings);
