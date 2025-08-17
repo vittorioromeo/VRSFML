@@ -32,7 +32,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit Time(const base::I64 microseconds) :
-    m_microseconds(microseconds)
+        m_microseconds(microseconds)
     {
     }
 

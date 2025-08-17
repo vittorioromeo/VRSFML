@@ -149,7 +149,7 @@ base::Optional<base::SizeT> FileInputStream::getSize()
 
 ////////////////////////////////////////////////////////////
 FileInputStream::FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<std::FILE, FileCloser>&& file) :
-m_file(SFML_BASE_MOVE(file))
+    m_file(SFML_BASE_MOVE(file))
 {
 }
 
@@ -157,7 +157,7 @@ m_file(SFML_BASE_MOVE(file))
 ////////////////////////////////////////////////////////////
 #ifdef SFML_SYSTEM_ANDROID
 FileInputStream::FileInputStream(base::PassKey<FileInputStream>&&, base::UniquePtr<priv::ResourceStream>&& androidFile) :
-m_androidFile(SFML_BASE_MOVE(androidFile))
+    m_androidFile(SFML_BASE_MOVE(androidFile))
 {
 }
 #endif

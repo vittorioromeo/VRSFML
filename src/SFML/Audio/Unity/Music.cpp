@@ -53,10 +53,10 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader, const AudioSettings& audioSettings) :
-SoundStream(playbackDevice, musicReader.getChannelMap(), musicReader.getSampleRate()),
-m_loopSpan{0u, musicReader.getSampleCount()},
-m_musicReader(musicReader),
-m_sampleOffset{0u}
+    SoundStream(playbackDevice, musicReader.getChannelMap(), musicReader.getSampleRate()),
+    m_loopSpan{0u, musicReader.getSampleCount()},
+    m_musicReader(musicReader),
+    m_sampleOffset{0u}
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(MusicReader, Music, this, (&m_musicReader));
     applyAudioSettings(audioSettings);
@@ -65,7 +65,7 @@ m_sampleOffset{0u}
 
 ////////////////////////////////////////////////////////////
 Music::Music(PlaybackDevice& playbackDevice, MusicReader& musicReader) :
-Music{playbackDevice, musicReader, AudioSettings{}}
+    Music{playbackDevice, musicReader, AudioSettings{}}
 {
 }
 

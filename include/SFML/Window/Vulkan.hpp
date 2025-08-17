@@ -48,9 +48,9 @@ struct VulkanSurfaceData
     explicit VulkanSurfaceData(const VkInstance&            theInstance,
                                VkSurfaceKHR&                theSurface,
                                const VkAllocationCallbacks* theAllocator = nullptr) :
-    instance{theInstance},
-    surface{theSurface},
-    allocator{theAllocator}
+        instance{theInstance},
+        surface{theSurface},
+        allocator{theAllocator}
     {
     }
 

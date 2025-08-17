@@ -39,7 +39,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] inline constexpr explicit(false) AutoWrapAngle(Angle angle) :
-    m_radians(angle.radians)
+        m_radians(angle.radians)
     {
     }
 

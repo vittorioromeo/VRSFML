@@ -33,7 +33,7 @@ struct MusicReader::Impl
 
 ////////////////////////////////////////////////////////////
 MusicReader::MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file) :
-m_impl(base::makeUnique<Impl>(SFML_BASE_MOVE(file)))
+    m_impl(base::makeUnique<Impl>(SFML_BASE_MOVE(file)))
 {
 }
 

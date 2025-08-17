@@ -67,7 +67,7 @@ void OutputSoundFile::write(const base::I16* samples, base::U64 count)
 
 ////////////////////////////////////////////////////////////
 OutputSoundFile::OutputSoundFile(base::PassKey<OutputSoundFile>&&, base::UniquePtr<SoundFileWriter>&& writer) :
-m_writer(SFML_BASE_MOVE(writer))
+    m_writer(SFML_BASE_MOVE(writer))
 {
 }
 

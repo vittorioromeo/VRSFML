@@ -63,10 +63,10 @@ class [[nodiscard]] Worker
 public:
     ////////////////////////////////////////////////////////////
     explicit Worker(TaskQueue& queue) noexcept :
-    m_queue{&queue},
-    m_ctok{queue},
-    m_state{State::Running},
-    m_doneBlockingProcessing{false}
+        m_queue{&queue},
+        m_ctok{queue},
+        m_state{State::Running},
+        m_doneBlockingProcessing{false}
     {
     }
 

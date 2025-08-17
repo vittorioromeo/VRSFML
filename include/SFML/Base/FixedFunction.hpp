@@ -127,18 +127,18 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename TFReturn, typename... TFs>
     [[nodiscard]] FixedFunction(TFReturn (*f)(TFs...)) noexcept :
-    functionPtr{f},
-    m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(SFML_BASE_FORWARD(xs)...); }},
-    m_allocPtr{nullptr}
+        functionPtr{f},
+        m_methodPtr{[](char* /* unused */, FnPtrType xf, Ts... xs) -> RetType { return xf(SFML_BASE_FORWARD(xs)...); }},
+        m_allocPtr{nullptr}
     {
     }
 
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] explicit FixedFunction(decltype(nullptr)) noexcept :
-    functionPtr{nullptr},
-    m_methodPtr{nullptr},
-    m_allocPtr{nullptr}
+        functionPtr{nullptr},
+        m_methodPtr{nullptr},
+        m_allocPtr{nullptr}
     {
     }
 

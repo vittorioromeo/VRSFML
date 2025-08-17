@@ -70,8 +70,8 @@ bool LifetimeDependee::TestingModeGuard::fatalErrorTriggered(const char* const d
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LifetimeDependee::LifetimeDependee(const char* dependeeName, const char* dependantName) :
-m_dependeeName(dependeeName),
-m_dependantName(dependantName)
+    m_dependeeName(dependeeName),
+    m_dependantName(dependantName)
 {
     SFML_BASE_PLACEMENT_NEW(m_dependantCount) AtomicUInt(0u);
 }
@@ -80,7 +80,7 @@ m_dependantName(dependantName)
 ////////////////////////////////////////////////////////////
 // A deep copy of a resource implies that lifetime tracking must being from scratch for that new copy.
 LifetimeDependee::LifetimeDependee(const LifetimeDependee& rhs) :
-LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
+    LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 {
 }
 
@@ -88,7 +88,7 @@ LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 ////////////////////////////////////////////////////////////
 // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
 LifetimeDependee::LifetimeDependee(LifetimeDependee&& rhs) noexcept :
-LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
+    LifetimeDependee(rhs.m_dependeeName, rhs.m_dependantName)
 {
     // Intentionally not resetting `rhs.m_dependantCount` here, as we want to get a fatal error
     // if it wasn't `0u` when the move occurred.

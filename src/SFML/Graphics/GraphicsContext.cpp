@@ -105,7 +105,7 @@ base::Optional<GraphicsContext> GraphicsContext::create()
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext(base::PassKey<GraphicsContext>&&, WindowContext&& windowContext) :
-m_impl(SFML_BASE_MOVE(windowContext))
+    m_impl(SFML_BASE_MOVE(windowContext))
 {
     graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }
@@ -113,7 +113,7 @@ m_impl(SFML_BASE_MOVE(windowContext))
 
 ////////////////////////////////////////////////////////////
 GraphicsContext::GraphicsContext(GraphicsContext&& rhs) noexcept :
-m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
+    m_impl(static_cast<WindowContext&&>(rhs.m_impl->windowContext))
 {
     graphicsContextRC.fetch_add(1u, std::memory_order::relaxed);
 }

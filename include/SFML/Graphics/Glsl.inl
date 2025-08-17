@@ -116,10 +116,10 @@ struct [[nodiscard]] Vec4
     ////////////////////////////////////////////////////////////
     template <typename U>
     [[nodiscard, gnu::always_inline]] constexpr explicit Vec4(const Vec4<U>& other) :
-    x(static_cast<T>(other.x)),
-    y(static_cast<T>(other.y)),
-    z(static_cast<T>(other.z)),
-    w(static_cast<T>(other.w))
+        x(static_cast<T>(other.x)),
+        y(static_cast<T>(other.y)),
+        z(static_cast<T>(other.z)),
+        w(static_cast<T>(other.w))
     {
     }
 
@@ -143,10 +143,10 @@ struct [[nodiscard]] Vec4
 ////////////////////////////////////////////////////////////
 template <>
 constexpr Vec4<float>::Vec4(Color color) :
-x(color.r / 255.f),
-y(color.g / 255.f),
-z(color.b / 255.f),
-w(color.a / 255.f)
+    x(color.r / 255.f),
+    y(color.g / 255.f),
+    z(color.b / 255.f),
+    w(color.a / 255.f)
 {
 }
 

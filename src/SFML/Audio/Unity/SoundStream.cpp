@@ -33,10 +33,10 @@ struct SoundStream::Impl
                   SoundStream&       theOwner,
                   const ChannelMap&  theChannelMap, // NOLINT(modernize-pass-by-value)
                   const unsigned int theSampleRate) :
-    soundBase(thePlaybackDevice, &Impl::vtable, theChannelMap),
-    owner(theOwner),
-    channelMap(theChannelMap),
-    sampleRate(theSampleRate)
+        soundBase(thePlaybackDevice, &Impl::vtable, theChannelMap),
+        owner(theOwner),
+        channelMap(theChannelMap),
+        sampleRate(theSampleRate)
     {
         if (!soundBase.initialize(&onEnd))
         {
@@ -216,7 +216,7 @@ struct SoundStream::Impl
 ////////////////////////////////////////////////////////////
 // TODO P0: take audiosettings?
 SoundStream::SoundStream(PlaybackDevice& playbackDevice, const ChannelMap& channelMap, const unsigned int sampleRate) :
-m_impl(playbackDevice, *this, channelMap, sampleRate)
+    m_impl(playbackDevice, *this, channelMap, sampleRate)
 {
     SFML_BASE_ASSERT(channelMap.getSize() > 0u);
     SFML_BASE_ASSERT(sampleRate > 0u);

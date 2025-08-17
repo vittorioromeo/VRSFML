@@ -20,7 +20,7 @@ class TestSoundStream : public sf::SoundStream
 {
 public:
     explicit TestSoundStream(sf::PlaybackDevice& playbackDevice) :
-    sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
+        sf::SoundStream{playbackDevice, sf::ChannelMap{sf::SoundChannel::Mono}, 44'100u}
     {
     }
 

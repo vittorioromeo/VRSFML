@@ -141,8 +141,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             struct BadStruct
             {
                 explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
-                memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
-                memberSound{thePlaybackDevice, memberSoundBuffer}
+                    memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
+                    memberSound{thePlaybackDevice, memberSoundBuffer}
                 {
                 }
 

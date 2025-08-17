@@ -27,20 +27,20 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Text::Text(const Font& font, const Data& data) :
-m_string(data.string),
-m_font(&font),
-m_characterSize(data.characterSize),
-m_letterSpacing(data.letterSpacing),
-m_lineSpacing(data.lineSpacing),
-m_outlineThickness(data.outlineThickness),
-m_fillColor(data.fillColor),
-m_outlineColor(data.outlineColor),
-position{data.position},
-scale{data.scale},
-origin{data.origin},
-rotation{data.rotation},
-m_style(data.style),
-m_geometryNeedUpdate{true}
+    m_string(data.string),
+    m_font(&font),
+    m_characterSize(data.characterSize),
+    m_letterSpacing(data.letterSpacing),
+    m_lineSpacing(data.lineSpacing),
+    m_outlineThickness(data.outlineThickness),
+    m_fillColor(data.fillColor),
+    m_outlineColor(data.outlineColor),
+    position{data.position},
+    scale{data.scale},
+    origin{data.origin},
+    rotation{data.rotation},
+    m_style(data.style),
+    m_geometryNeedUpdate{true}
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_font);
 }

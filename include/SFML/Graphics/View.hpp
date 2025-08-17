@@ -35,7 +35,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
     {
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr ScissorRect(Vec2f thePosition, Vec2f theSize) :
-        FloatRect{thePosition, theSize}
+            FloatRect{thePosition, theSize}
         {
             SFML_BASE_ASSERT(position.x >= 0.f && position.x <= 1.f && "position.x must lie within [0, 1]");
             SFML_BASE_ASSERT(position.y >= 0.f && position.y <= 1.f && "position.y must lie within [0, 1]");
@@ -47,7 +47,7 @@ struct [[nodiscard]] SFML_GRAPHICS_API View
 
         ////////////////////////////////////////////////////////////
         [[nodiscard, gnu::always_inline]] constexpr explicit(false) ScissorRect(const FloatRect& rect) :
-        ScissorRect{rect.position, rect.size}
+            ScissorRect{rect.position, rect.size}
         {
         }
 

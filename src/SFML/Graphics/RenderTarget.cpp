@@ -302,8 +302,8 @@ struct [[nodiscard]] RenderTarget::Impl
 
     ////////////////////////////////////////////////////////////
     explicit Impl(const View& theView) :
-    view(theView),
-    id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
+        view(theView),
+        id(RenderTargetImpl::nextUniqueId.fetch_add(1u, std::memory_order::relaxed))
     {
     }
 
@@ -663,7 +663,7 @@ struct [[nodiscard]] RenderTarget::DrawGuard
     [[nodiscard, gnu::always_inline]] explicit DrawGuard(RenderTarget&       theRenderTarget,
                                                          const RenderStates& theRenderStates,
                                                          const GLVAOGroup&   vaoGroup) :
-    renderTarget(theRenderTarget)
+        renderTarget(theRenderTarget)
     {
         renderTarget.setupDraw(vaoGroup, theRenderStates);
     }

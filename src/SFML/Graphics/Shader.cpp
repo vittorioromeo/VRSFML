@@ -311,9 +311,9 @@ struct Shader::Impl
     }
 
     explicit Impl(Impl&& rhs) noexcept :
-    shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
-    currentTexture(base::exchange(rhs.currentTexture, -1)),
-    textures(SFML_BASE_MOVE(rhs.textures))
+        shaderProgram(base::exchange(rhs.shaderProgram, 0u)),
+        currentTexture(base::exchange(rhs.currentTexture, -1)),
+        textures(SFML_BASE_MOVE(rhs.textures))
     {
     }
 };
@@ -335,7 +335,7 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] explicit UniformBinder(unsigned int shaderProgram) :
-    m_currentProgram(static_cast<GLhandle>(castToGlHandle(shaderProgram)))
+        m_currentProgram(static_cast<GLhandle>(castToGlHandle(shaderProgram)))
     {
         SFML_BASE_ASSERT(m_currentProgram != 0);
 

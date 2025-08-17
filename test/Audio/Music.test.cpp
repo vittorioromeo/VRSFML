@@ -230,8 +230,8 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             struct BadStruct
             {
                 explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
-                memberMusicSource{sf::MusicReader::openFromFile("Audio/ding.mp3").value()},
-                memberSound{thePlaybackDevice, memberMusicSource}
+                    memberMusicSource{sf::MusicReader::openFromFile("Audio/ding.mp3").value()},
+                    memberSound{thePlaybackDevice, memberMusicSource}
                 {
                 }
 

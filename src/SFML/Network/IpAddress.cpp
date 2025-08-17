@@ -25,7 +25,7 @@ const IpAddress IpAddress::Broadcast(255, 255, 255, 255);
 
 ////////////////////////////////////////////////////////////
 IpAddress::IpAddress(base::U8 byte0, base::U8 byte1, base::U8 byte2, base::U8 byte3) :
-m_address(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
+    m_address(static_cast<base::U32>((byte0 << 24) | (byte1 << 16) | (byte2 << 8) | byte3))
 {
 }
 

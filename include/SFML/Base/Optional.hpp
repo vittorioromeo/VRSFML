@@ -107,7 +107,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(const Optional& rhs)
         requires(!base::isTriviallyCopyConstructible<T> && base::isCopyConstructible<T>)
-    : m_engaged{rhs.m_engaged}
+        : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(rhs.m_buffer.obj);
@@ -123,7 +123,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr explicit(false) Optional(Optional&& rhs) noexcept
         requires(!base::isTriviallyMoveConstructible<T> && base::isMoveConstructible<T>)
-    : m_engaged{rhs.m_engaged}
+        : m_engaged{rhs.m_engaged}
     {
         if (m_engaged)
             SFML_BASE_PLACEMENT_NEW(&m_buffer.obj) T(SFML_BASE_MOVE(rhs.m_buffer.obj));

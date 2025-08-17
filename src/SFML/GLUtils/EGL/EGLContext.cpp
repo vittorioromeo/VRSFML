@@ -250,7 +250,7 @@ struct EglContext::Impl
 
 ////////////////////////////////////////////////////////////
 EglContext::EglContext(unsigned int id, EglContext* shared, const ContextSettings& contextSettings) :
-GlContext(id, contextSettings)
+    GlContext(id, contextSettings)
 {
     EglContextImpl::ensureInit();
 
@@ -284,7 +284,7 @@ EglContext::EglContext(unsigned int                          id,
                        const ContextSettings&                contextSettings,
                        [[maybe_unused]] const SDLWindowImpl& owner,
                        unsigned int                          bitsPerPixel) :
-GlContext(id, contextSettings)
+    GlContext(id, contextSettings)
 {
     EglContextImpl::ensureInit();
 

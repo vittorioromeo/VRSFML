@@ -48,8 +48,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* cStr) noexcept :
-    theData{cStr},
-    theSize{SFML_BASE_STRLEN(cStr)}
+        theData{cStr},
+        theSize{SFML_BASE_STRLEN(cStr)}
     {
         SFML_BASE_ASSERT(cStr != nullptr);
     }
@@ -57,8 +57,8 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* cStr, const SizeT len) noexcept :
-    theData{cStr},
-    theSize{len}
+        theData{cStr},
+        theSize{len}
     {
         SFML_BASE_ASSERT(cStr != nullptr || (cStr == nullptr && len == 0u));
     }
@@ -71,7 +71,7 @@ public:
                     stringLike.data();
                     stringLike.size();
                 })
-    : theData{stringLike.data()}, theSize{stringLike.size()}
+        : theData{stringLike.data()}, theSize{stringLike.size()}
     {
         SFML_BASE_ASSERT(stringLike.data() != nullptr);
     }

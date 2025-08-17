@@ -133,9 +133,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] Vector(const Vector& rhs) :
-    m_data{rhs.m_data == nullptr ? nullptr : priv::VectorUtils::allocate<TItem>(rhs.size())},
-    m_endSize{m_data + rhs.size()},
-    m_endCapacity{m_data + rhs.size()}
+        m_data{rhs.m_data == nullptr ? nullptr : priv::VectorUtils::allocate<TItem>(rhs.size())},
+        m_endSize{m_data + rhs.size()},
+        m_endCapacity{m_data + rhs.size()}
     {
         priv::VectorUtils::copyRange(m_data, rhs.m_data, rhs.m_endSize);
     }
@@ -159,9 +159,9 @@ public:
 
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] Vector(Vector&& rhs) noexcept :
-    m_data{rhs.m_data},
-    m_endSize{rhs.m_endSize},
-    m_endCapacity{rhs.m_endCapacity}
+        m_data{rhs.m_data},
+        m_endSize{rhs.m_endSize},
+        m_endCapacity{rhs.m_endCapacity}
     {
         rhs.m_data    = nullptr;
         rhs.m_endSize = rhs.m_endCapacity = nullptr;

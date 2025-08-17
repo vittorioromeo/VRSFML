@@ -14,8 +14,8 @@ namespace sf::priv
 {
 ////////////////////////////////////////////////////////////
 FramebufferSaver::FramebufferSaver() :
-m_drawFramebufferBinding(static_cast<int>(priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING))),
-m_readFramebufferBinding(static_cast<int>(priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING)))
+    m_drawFramebufferBinding(static_cast<int>(priv::getGLInteger(GL_DRAW_FRAMEBUFFER_BINDING))),
+    m_readFramebufferBinding(static_cast<int>(priv::getGLInteger(GL_READ_FRAMEBUFFER_BINDING)))
 {
 }
 

@@ -16,9 +16,9 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Socket::Socket(Type type, bool isBlocking) :
-m_type(type),
-m_socket(priv::SocketImpl::invalidSocket()),
-m_isBlocking(isBlocking)
+    m_type(type),
+    m_socket(priv::SocketImpl::invalidSocket()),
+    m_isBlocking(isBlocking)
 {
 }
 
@@ -36,9 +36,9 @@ Socket::~Socket()
 
 ////////////////////////////////////////////////////////////
 Socket::Socket(Socket&& rhs) noexcept :
-m_type(rhs.m_type),
-m_socket(base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
-m_isBlocking(rhs.m_isBlocking)
+    m_type(rhs.m_type),
+    m_socket(base::exchange(rhs.m_socket, priv::SocketImpl::invalidSocket())),
+    m_isBlocking(rhs.m_isBlocking)
 {
 }
 

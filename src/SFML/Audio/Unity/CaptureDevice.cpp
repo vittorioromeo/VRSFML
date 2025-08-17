@@ -51,7 +51,7 @@ struct CaptureDevice::Impl
     [[nodiscard]] explicit Impl(
         // NOLINTNEXTLINE(modernize-pass-by-value)
         const CaptureDeviceHandle& theDeviceHandle) :
-    captureDeviceHandle(theDeviceHandle)
+        captureDeviceHandle(theDeviceHandle)
     {
     }
 
