@@ -65,20 +65,20 @@ namespace sf
 {
 ////////////////////////////////////////////////////////////
 Texture::Texture(base::PassKey<Texture>&&, Vec2u size, unsigned int texture, bool sRgb) :
-m_size(size),
-m_texture(texture),
-m_sRgb(sRgb),
-m_cacheId(TextureImpl::getUniqueId())
+    m_size(size),
+    m_texture(texture),
+    m_sRgb(sRgb),
+    m_cacheId(TextureImpl::getUniqueId())
 {
 }
 
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(const Texture& rhs) :
-m_isSmooth(rhs.m_isSmooth),
-m_sRgb(rhs.m_sRgb),
-m_wrapMode(rhs.m_wrapMode),
-m_cacheId(TextureImpl::getUniqueId())
+    m_isSmooth(rhs.m_isSmooth),
+    m_sRgb(rhs.m_sRgb),
+    m_wrapMode(rhs.m_wrapMode),
+    m_cacheId(TextureImpl::getUniqueId())
 {
     base::Optional texture = create(rhs.getSize(), {.sRgb = rhs.isSrgb(), .smooth = rhs.isSmooth()});
 
@@ -122,14 +122,14 @@ Texture::~Texture()
 
 ////////////////////////////////////////////////////////////
 Texture::Texture(Texture&& rhs) noexcept :
-m_size(base::exchange(rhs.m_size, {})),
-m_texture(base::exchange(rhs.m_texture, 0u)),
-m_isSmooth(base::exchange(rhs.m_isSmooth, false)),
-m_sRgb(base::exchange(rhs.m_sRgb, false)),
-m_wrapMode(base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
-m_fboAttachment(base::exchange(rhs.m_fboAttachment, false)),
-m_hasMipmap(base::exchange(rhs.m_hasMipmap, false)),
-m_cacheId(base::exchange(rhs.m_cacheId, 0u))
+    m_size(base::exchange(rhs.m_size, {})),
+    m_texture(base::exchange(rhs.m_texture, 0u)),
+    m_isSmooth(base::exchange(rhs.m_isSmooth, false)),
+    m_sRgb(base::exchange(rhs.m_sRgb, false)),
+    m_wrapMode(base::exchange(rhs.m_wrapMode, TextureWrapMode::Clamp)),
+    m_fboAttachment(base::exchange(rhs.m_fboAttachment, false)),
+    m_hasMipmap(base::exchange(rhs.m_hasMipmap, false)),
+    m_cacheId(base::exchange(rhs.m_cacheId, 0u))
 {
 }
 
@@ -293,6 +293,10 @@ base::Optional<Texture> Texture::loadFromImage(const Image& image, const Texture
     }
 
     // Load a sub-area of the image
+    SFML_BASE_ASSERT(settings.area.size.x > 0);
+    SFML_BASE_ASSERT(settings.area.size.y > 0);
+    SFML_BASE_ASSERT(settings.area.position.x < size.x);
+    SFML_BASE_ASSERT(settings.area.position.y < size.y);
 
     // Adjust the rectangle to the size of the image
     IntRect rectangle    = settings.area;
