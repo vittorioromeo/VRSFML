@@ -9,6 +9,7 @@
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
 #include "SFML/Graphics/Sprite.hpp"
@@ -33,6 +34,7 @@
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/ThreadPool.hpp"
+#include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -40,6 +42,54 @@
 
 #include <latch>
 #include <string>
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[gnu::always_inline]] void updateParticle(
+    sf::Vec2f&      position,
+    sf::Vec2f&      velocity,
+    const sf::Vec2f acceleration,
+
+    float&      scale,
+    const float scaleGrowth,
+
+    float&      opacity,
+    const float opacityGrowth,
+
+    float&      rotation,
+    const float torque)
+{
+    velocity += acceleration;
+    position += velocity;
+    scale += scaleGrowth;
+    opacity += opacityGrowth;
+    rotation += torque;
+}
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline]] void drawParticleImpl(
+    const sf::Texture&   texture,
+    const sf::FloatRect& txr,
+    const sf::Vec2f      origin,
+    const sf::Vec2f      position,
+    const float          scale,
+    const float          rotation,
+    auto&&               drawFn)
+{
+    drawFn(
+        sf::Sprite{
+            .position    = position,
+            .scale       = {scale, scale},
+            .origin      = origin,
+            .rotation    = sf::radians(rotation),
+            .textureRect = txr,
+        },
+        sf::RenderStates{.texture = &texture});
+}
+
+} // namespace
 
 
 ////////////////////////////////////////////////////////////
@@ -100,6 +150,77 @@ int main()
         addImgResourceToAtlas("pStar.png"),
         addImgResourceToAtlas("pTrail.png"),
     };
+
+    //
+    //
+    // OOP Particles
+    struct Entity
+    {
+        virtual ~Entity() = default;
+
+        virtual void update()
+        {
+        }
+
+        virtual void draw(const sf::Texture&, sf::RenderTarget&)
+        {
+        }
+    };
+
+    struct ParticleOOP : Entity
+    {
+        sf::Vec2f position;
+        sf::Vec2f velocity;
+        sf::Vec2f acceleration;
+
+        float scale;
+        float scaleGrowth;
+
+        float opacity;
+        float opacityGrowth;
+
+        float rotation;
+        float torque;
+
+        ParticleOOP(sf::Vec2f position,
+                    sf::Vec2f velocity,
+                    sf::Vec2f acceleration,
+                    float     scale,
+                    float     scaleGrowth,
+                    float     opacity,
+                    float     opacityGrowth,
+                    float     rotation,
+                    float     torque) :
+            position(position),
+            velocity(velocity),
+            acceleration(acceleration),
+            scale(scale),
+            scaleGrowth(scaleGrowth),
+            opacity(opacity),
+            opacityGrowth(opacityGrowth),
+            rotation(rotation),
+            torque(torque)
+        {
+        }
+
+        void update() override
+        {
+            updateParticle(position, velocity, acceleration, scale, scaleGrowth, opacity, opacityGrowth, rotation, torque);
+        }
+
+        void draw(const sf::Texture& texture, sf::RenderTarget& rt) override
+        {
+            drawParticleImpl(texture,
+                             {{0.f, 0.f}, {64.f, 64.f}},
+                             {32.f, 32.f},
+                             position,
+                             scale,
+                             rotation,
+                             [&](const sf::Sprite& sprite, const sf::RenderStates& states) { rt.draw(sprite, states); });
+        }
+    };
+
+    sf::base::Vector<sf::base::UniquePtr<Entity>> entities;
 
     //
     //
@@ -169,6 +290,7 @@ int main()
     sf::base::U64 autoBatchVertexThreshold = 32'768u;
     bool          multithreadedUpdate      = false;
     bool          multithreadedDraw        = false;
+    bool          useOOP                   = false;
     bool          useSoA                   = false;
     bool          unifiedSoAProcessing     = false;
     bool          destroyParticles         = true;
@@ -248,6 +370,21 @@ int main()
         );
     };
 
+    const auto populateParticlesOOP = [&](const sf::base::SizeT n)
+    {
+        if (n < entities.size())
+        {
+            entities.resize(n);
+            return;
+        }
+
+        entities.reserve(n);
+
+        for (sf::base::SizeT i = entities.size(); i < n; ++i)
+            pushParticle([&](auto&&... args) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
+            { entities.emplaceBack(sf::base::makeUnique<ParticleOOP>(args...)); });
+    };
+
     const auto populateParticlesAoS = [&](const sf::base::SizeT n)
     {
         if (n < particlesAoS.size())
@@ -279,7 +416,9 @@ int main()
 
     const auto populateParticles = [&](const sf::base::SizeT n)
     {
-        if (useSoA)
+        if (useOOP)
+            populateParticlesOOP(n);
+        else if (useSoA)
             populateParticlesSoA(n);
         else
             populateParticlesAoS(n);
@@ -322,7 +461,11 @@ int main()
                 const auto destroyPredicate = [](const float opacity) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
                 { return opacity <= 0.f; };
 
-                if (useSoA)
+                if (useOOP)
+                {
+                    // TODO: erasure is the first issue!
+                }
+                else if (useSoA)
                 {
                     if (destroyBySwapping)
                         particlesSoA.eraseIfBySwapping<5 /* opacity */>(destroyPredicate);
@@ -360,30 +503,14 @@ int main()
 
             populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
-            const auto updateParticle =
-                [&](sf::Vec2f&      position,
-                    sf::Vec2f&      velocity,
-                    const sf::Vec2f acceleration,
-
-                    float&      scale,
-                    const float scaleGrowth,
-
-                    float&      opacity,
-                    const float opacityGrowth,
-
-                    float&      rotation,
-                    const float torque) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-            {
-                velocity += acceleration;
-                position += velocity;
-                scale += scaleGrowth;
-                opacity += opacityGrowth;
-                rotation += torque;
-            };
-
             if (!multithreadedUpdate)
             {
-                if (useSoA)
+                if (useOOP)
+                {
+                    for (auto& e : entities)
+                        e->update();
+                }
+                else if (useSoA)
                 {
                     if (unifiedSoAProcessing)
                     {
@@ -423,7 +550,11 @@ int main()
             }
             else
             {
-                if (useSoA)
+                if (useOOP)
+                {
+                    // TODO
+                }
+                else if (useSoA)
                 {
                     if (unifiedSoAProcessing)
                     {
@@ -557,6 +688,10 @@ int main()
             ImGui::Checkbox("Multithreaded Draw", &multithreadedDraw);
             ImGui::EndDisabled();
 
+            if (ImGui::Checkbox("Use OOP", &useOOP))
+                populateParticles(static_cast<sf::base::SizeT>(numEntities));
+
+
             if (ImGui::Checkbox("Use SoA", &useSoA))
                 populateParticles(static_cast<sf::base::SizeT>(numEntities));
 
@@ -613,32 +748,24 @@ int main()
             const sf::FloatRect& textureRect = spriteTextureRects[0];
             const auto           origin      = textureRect.size / 2.f;
 
-            const auto drawParticleImpl =
-                [&](const sf::Vec2f position, const float scale, const float rotation, auto&& drawFn)
-            {
-                drawFn(
-                    sf::Sprite{
-                        .position    = position,
-                        .scale       = {scale, scale},
-                        .origin      = origin,
-                        .rotation    = sf::radians(rotation),
-                        .textureRect = textureRect,
-                    },
-                    sf::RenderStates{.texture = &textureAtlas.getTexture()});
-            };
-
             const auto drawNthParticle = [&](const sf::base::SizeT& i, auto&& drawFn)
             {
-                if (useSoA)
+                if (useOOP)
+                {
+                    entities[i]->draw(textureAtlas.getTexture(), window);
+                }
+                else if (useSoA)
                 {
                     particlesSoA.withNth<0, 3, 7>(i,
                                                   [&](const auto& position, const auto& scale, const auto& rotation)
-                    { drawParticleImpl(position, scale, rotation, drawFn); });
+                    {
+                        drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, position, scale, rotation, drawFn);
+                    });
                 }
                 else
                 {
                     const ParticleAoS& p = particlesAoS[i];
-                    drawParticleImpl(p.position, p.scale, p.rotation, drawFn);
+                    drawParticleImpl(textureAtlas.getTexture(), textureRect, origin, p.position, p.scale, p.rotation, drawFn);
                 }
             };
 

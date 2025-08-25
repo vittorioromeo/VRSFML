@@ -355,6 +355,37 @@ template <typename Vector, typename Predicate>
     return nRemoved;
 }
 
+// TODO P0: docs, maybe replace existing uses of erase if with this
+template <typename Vector, typename Predicate>
+[[gnu::always_inline]] inline constexpr SizeT vectorSwapAndPopIf(Vector& vector, Predicate&& predicate)
+{
+    SizeT nRemoved = 0u;
+
+    for (SizeT i = 0u; i < vector.size();)
+    {
+        if (predicate(vector[i]))
+        {
+            vector[i] = SFML_BASE_MOVE(vector.back());
+
+            if constexpr (requires { vector.popBack(); })
+            {
+                vector.popBack();
+            }
+            else
+            {
+                vector.pop_back();
+            }
+
+            ++nRemoved;
+        }
+        else
+        {
+            i++;
+        }
+    }
+
+    return nRemoved;
+}
 
 ////////////////////////////////////////////////////////////
 /// \brief Check if a range is sorted according to a comparison function
