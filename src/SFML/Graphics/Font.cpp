@@ -46,6 +46,9 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 
+#include <atomic>
+#include <hb-ft.h>
+
 
 namespace
 {
@@ -91,12 +94,12 @@ template <typename T, typename U>
 ////////////////////////////////////////////////////////////
 // Combine outline thickness, boldness and font glyph index into a single 64-bit key
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] inline sf::base::U64 combineGlyphTableKey(
-    const float    outlineThickness,
-    const bool     bold,
-    const char32_t index)
+    const float        outlineThickness,
+    const bool         bold,
+    const unsigned int glyphIndex)
 {
     return (sf::base::U64{reinterpret<sf::base::U32>(quantizeOutlineThickness(outlineThickness))} << 32) |
-           (sf::base::U64{bold} << 31) | index;
+           (sf::base::U64{bold} << 31) | glyphIndex;
 }
 
 
@@ -123,6 +126,8 @@ template <typename T, typename U>
 ////////////////////////////////////////////////////////////
 [[nodiscard]] bool setFaceCurrentSize(const FT_Face face, const unsigned int characterSize)
 {
+    SFML_BASE_ASSERT(face);
+
     // FT_Set_Pixel_Sizes is an expensive function, so we must call it
     // only when necessary to avoid killing performance
 
@@ -165,7 +170,7 @@ template <typename T, typename U>
     const FT_Stroker&               stroker,
     sf::TextureAtlas&               textureAtlas,
     sf::base::Vector<sf::base::U8>& pixelBuffer,
-    const char32_t                  codePoint,
+    const unsigned int              glyphIndex,
     const unsigned int              characterSize,
     const bool                      bold,
     const float                     outlineThickness)
@@ -181,10 +186,9 @@ template <typename T, typename U>
         return glyph; // Empty glyph
 
     // Load the glyph corresponding to the code point
-    const FT_Int32 flags = outlineThickness == 0.f ? FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT
-                                                   : FT_LOAD_TARGET_NORMAL | FT_LOAD_FORCE_AUTOHINT | FT_LOAD_NO_BITMAP;
+    const FT_Int32 flags = outlineThickness == 0.f ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_NORMAL | FT_LOAD_NO_BITMAP;
 
-    if (FT_Load_Char(face, codePoint, flags) != 0)
+    if (FT_Load_Glyph(face, glyphIndex, flags) != 0)
         return glyph; // Empty glyph
 
     // Retrieve the glyph
@@ -323,6 +327,18 @@ template <typename T, typename U>
     return glyph;
 }
 
+
+////////////////////////////////////////////////////////////
+// Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
+constinit std::atomic<unsigned int> nextFontUniqueId{1u}; // start at 1, zero is "no texture"
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
+{
+    return nextFontUniqueId.fetch_add(1u, std::memory_order::relaxed);
+}
+
 } // namespace
 
 
@@ -344,10 +360,17 @@ struct Font::Impl
                 ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
                 : base::nullOpt}
     {
+        // TODO P0: necessary for strikethrough/underline
+        getTextureAtlas().add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
     }
 
     ~Impl()
     {
+        for (auto& [fontId, subFont] : hbSubFontCache)
+            hb_font_destroy(subFont);
+
+        hb_font_destroy(hbFont);
+
         // All the function below are safe to call with null pointer arguments.
         // The documentation of FreeType isn't clear on the matter, but the
         // implementation does explicitly check for null.
@@ -378,10 +401,13 @@ struct Font::Impl
 
     // Key for the outer map: combines character size and bold flag
     // Key for the inner map: combines the two char32_t code points
-    mutable MapType<base::U64, MapType<base::U64, float>> kerningCache;   //!< Cache for kerning values
-    mutable MapType<char32_t, unsigned int>               charIndexCache; //!< Cache for character indices
+    mutable MapType<base::U64, MapType<base::U64, float>> kerningCache;    //!< Cache for kerning values
+    mutable MapType<char32_t, unsigned int>               glyphIndexCache; //!< Cache for character indices
 
     base::UniquePtr<InputStream> stream; //!< Stream for `openFromFile` and `openFromMemory`
+
+    mutable hb_font_t*                        hbFont{nullptr};
+    mutable MapType<unsigned int, hb_font_t*> hbSubFontCache;
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] TextureAtlas& getTextureAtlas() const
@@ -392,7 +418,7 @@ struct Font::Impl
     ////////////////////////////////////////////////////////////
     [[nodiscard]] auto loadGlyphImpl(auto&              glyphsByCharacterSize,
                                      const base::U64    key,
-                                     const char32_t     codePoint,
+                                     const unsigned int glyphIndex,
                                      const unsigned int characterSize,
                                      const bool         bold,
                                      const float        outlineThickness) const
@@ -402,7 +428,7 @@ struct Font::Impl
                                             ftStroker,
                                             getTextureAtlas(),
                                             pixelBuffer,
-                                            codePoint,
+                                            glyphIndex,
                                             characterSize,
                                             bold,
                                             outlineThickness);
@@ -414,7 +440,7 @@ struct Font::Impl
     [[nodiscard, gnu::always_inline]] const Glyph& getGlyphImpl(
         auto&              glyphsByCharacterSize,
         const base::U64    key,
-        const char32_t     codePoint,
+        const unsigned int glyphIndex,
         const unsigned int characterSize,
         const bool         bold,
         const float        outlineThickness) const
@@ -424,7 +450,7 @@ struct Font::Impl
             return it->second;
 
         // Glyph not cached: we have to load it
-        return loadGlyphImpl(glyphsByCharacterSize, key, codePoint, characterSize, bold, outlineThickness).first->second;
+        return loadGlyphImpl(glyphsByCharacterSize, key, glyphIndex, characterSize, bold, outlineThickness).first->second;
     }
 };
 
@@ -577,8 +603,14 @@ base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas*
         return result;
     }
 
-    // Set family name
-    result->m_impl->info.family = impl.ftFace->family_name;
+    // Setup HarfBuzz font
+    result->m_impl->hbFont = hb_ft_font_create(impl.ftFace, nullptr);
+
+    // Set font info
+    result->m_impl->info.id                 = getUniqueId();
+    result->m_impl->info.family             = impl.ftFace->family_name;
+    result->m_impl->info.hasKerning         = FT_HAS_KERNING(impl.ftFace);
+    result->m_impl->info.hasVerticalMetrics = FT_HAS_VERTICAL(impl.ftFace);
 
     return result;
 }
@@ -607,14 +639,34 @@ const FontInfo& Font::getInfo() const
 
 
 ////////////////////////////////////////////////////////////
-unsigned int Font::getCharIndex(const char32_t codePoint) const
+unsigned int Font::getGlyphIndex(const char32_t codePoint) const
 {
-    if (const auto* it = m_impl->charIndexCache.find(codePoint); it != m_impl->charIndexCache.end())
+    if (const auto* it = m_impl->glyphIndexCache.find(codePoint); it != m_impl->glyphIndexCache.end())
         return it->second;
 
-    const auto result                 = FT_Get_Char_Index(m_impl->ftFace, codePoint);
-    m_impl->charIndexCache[codePoint] = result;
+    const auto result                  = FT_Get_Char_Index(m_impl->ftFace, codePoint);
+    m_impl->glyphIndexCache[codePoint] = result;
     return result;
+}
+
+
+////////////////////////////////////////////////////////////
+const Glyph& Font::getGlyphByGlyphIndex(const unsigned int glyphIndex,
+                                        const unsigned int characterSize,
+                                        const bool         bold,
+                                        const float        outlineThickness) const
+{
+    return m_impl->getGlyphImpl(
+        // Get the page corresponding to the character size
+        m_impl->glyphs[characterSize],
+
+        // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
+        combineGlyphTableKey(outlineThickness, bold, glyphIndex),
+
+        glyphIndex,
+        characterSize,
+        bold,
+        outlineThickness);
 }
 
 
@@ -624,17 +676,7 @@ const Glyph& Font::getGlyph(const char32_t     codePoint,
                             const bool         bold,
                             const float        outlineThickness) const
 {
-    return m_impl->getGlyphImpl(
-        // Get the page corresponding to the character size
-        m_impl->glyphs[characterSize],
-
-        // Build the key by combining the glyph index (based on code point), bold flag, and outline thickness
-        combineGlyphTableKey(outlineThickness, bold, getCharIndex(codePoint)),
-
-        codePoint,
-        characterSize,
-        bold,
-        outlineThickness);
+    return getGlyphByGlyphIndex(getGlyphIndex(codePoint), characterSize, bold, outlineThickness);
 }
 
 
@@ -650,11 +692,11 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
     auto& glyphsByCharacterSize = m_impl->glyphs[characterSize];
 
     // Get the glyph index (based on code point)
-    const auto charIndex = getCharIndex(codePoint);
+    const auto glyphIndex = getGlyphIndex(codePoint);
 
     // Precompute the keys for the fill and outline glyphs
-    const auto fillGlyphKey    = combineGlyphTableKey(0.f, bold, charIndex);
-    const auto outlineGlyphKey = combineGlyphTableKey(outlineThickness, bold, charIndex);
+    const auto fillGlyphKey    = combineGlyphTableKey(0.f, bold, glyphIndex);
+    const auto outlineGlyphKey = combineGlyphTableKey(outlineThickness, bold, glyphIndex);
 
     // Check if the fill glyph is already cached
     const auto* fillGlyphIt = glyphsByCharacterSize.find(fillGlyphKey);
@@ -662,7 +704,7 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
     {
         // Fill glyph not cached: we have to load it
         fillGlyphIt = m_impl
-                          ->loadGlyphImpl(glyphsByCharacterSize, fillGlyphKey, codePoint, characterSize, bold, /* outlineThickness */ 0.f)
+                          ->loadGlyphImpl(glyphsByCharacterSize, fillGlyphKey, glyphIndex, characterSize, bold, /* outlineThickness */ 0.f)
                           .first;
     }
 
@@ -672,7 +714,7 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
     {
         // Outline glyph not cached: we have to load it
         outlineGlyphIt = m_impl
-                             ->loadGlyphImpl(glyphsByCharacterSize, outlineGlyphKey, codePoint, characterSize, bold, outlineThickness)
+                             ->loadGlyphImpl(glyphsByCharacterSize, outlineGlyphKey, glyphIndex, characterSize, bold, outlineThickness)
                              .first;
 
         // We also need to load the fill glyph again, as its location in memory may have changed
@@ -688,7 +730,7 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
 ////////////////////////////////////////////////////////////
 bool Font::hasGlyph(const char32_t codePoint) const
 {
-    return getCharIndex(codePoint) != 0u;
+    return getGlyphIndex(codePoint) != 0u;
 }
 
 
@@ -716,7 +758,7 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
 
     FT_Face face = m_impl->ftFace;
 
-    if (!face || !setCurrentSize(characterSize))
+    if (!setCurrentSize(characterSize))
     {
         // Invalid font
         m_impl->kerningCache[sizeBoldKey][pairKey] = 0.f;
@@ -724,13 +766,14 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
     }
 
     // Convert the characters to indices
-    const FT_UInt index1 = FT_Get_Char_Index(face, first);
-    const FT_UInt index2 = FT_Get_Char_Index(face, second);
+    const unsigned int index1 = getGlyphIndex(first);
+    const unsigned int index2 = getGlyphIndex(second);
 
-    // Retrieve position compensation deltas generated by FT_LOAD_FORCE_AUTOHINT flag
-    const auto firstRsbDelta = static_cast<float>(getGlyph(first, characterSize, bold, /* outlineThickness */ 0.f).rsbDelta);
+    // Retrieve position compensation deltas generated by auto-hinting if it is used
+    const auto firstRsbDelta = static_cast<float>(
+        getGlyphByGlyphIndex(index1, characterSize, bold, /* outlineThickness */ 0.f).rsbDelta);
     const auto secondLsbDelta = static_cast<float>(
-        getGlyph(second, characterSize, bold, /* outlineThickness */ 0.f).lsbDelta);
+        getGlyphByGlyphIndex(index2, characterSize, bold, /* outlineThickness */ 0.f).lsbDelta);
 
     float calculatedKerning = 0.f;
 
@@ -758,14 +801,42 @@ float Font::getKerning(const char32_t first, const char32_t second, const unsign
 
 
 ////////////////////////////////////////////////////////////
-float Font::getLineSpacing(const unsigned int characterSize) const
+float Font::getAscent(const unsigned int characterSize) const
 {
+    if (!setCurrentSize(characterSize))
+        return 0.f;
+
     FT_Face face = m_impl->ftFace;
 
-    if (setCurrentSize(characterSize))
-        return static_cast<float>(face->size->metrics.height) / float{1 << 6};
+    if (!FT_IS_SCALABLE(face))
+        return static_cast<float>(face->size->metrics.ascender) / float{1 << 6};
 
-    return 0.f;
+    return static_cast<float>(FT_MulFix(face->ascender, face->size->metrics.y_scale)) / float{1 << 6};
+}
+
+
+////////////////////////////////////////////////////////////
+float Font::getDescent(const unsigned int characterSize) const
+{
+    if (!setCurrentSize(characterSize))
+        return 0.f;
+
+    FT_Face face = m_impl->ftFace;
+
+    if (!FT_IS_SCALABLE(face))
+        return static_cast<float>(face->size->metrics.descender) / float{1 << 6};
+
+    return static_cast<float>(FT_MulFix(face->descender, face->size->metrics.y_scale)) / float{1 << 6};
+}
+
+
+////////////////////////////////////////////////////////////
+float Font::getLineSpacing(const unsigned int characterSize) const
+{
+    if (!setCurrentSize(characterSize))
+        return 0.f;
+
+    return static_cast<float>(m_impl->ftFace->size->metrics.height) / float{1 << 6};
 }
 
 
@@ -774,16 +845,14 @@ float Font::getUnderlinePosition(const unsigned int characterSize) const
 {
     FT_Face face = m_impl->ftFace;
 
-    if (setCurrentSize(characterSize))
-    {
-        // Return a fixed position if font is a bitmap font
-        if (!FT_IS_SCALABLE(face))
-            return static_cast<float>(characterSize) / 10.f;
+    if (!setCurrentSize(characterSize))
+        return 0.f;
 
-        return -static_cast<float>(FT_MulFix(face->underline_position, face->size->metrics.y_scale)) / float{1 << 6};
-    }
+    // Return a fixed position if font is a bitmap font
+    if (!FT_IS_SCALABLE(face))
+        return static_cast<float>(characterSize) / 10.f;
 
-    return 0.f;
+    return -static_cast<float>(FT_MulFix(face->underline_position, face->size->metrics.y_scale)) / float{1 << 6};
 }
 
 
@@ -792,16 +861,14 @@ float Font::getUnderlineThickness(const unsigned int characterSize) const
 {
     FT_Face face = m_impl->ftFace;
 
-    if (face && setCurrentSize(characterSize))
-    {
-        // Return a fixed thickness if font is a bitmap font
-        if (!FT_IS_SCALABLE(face))
-            return static_cast<float>(characterSize) / 14.f;
+    if (!setCurrentSize(characterSize))
+        return 0.f;
 
-        return static_cast<float>(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale)) / float{1 << 6};
-    }
+    // Return a fixed thickness if font is a bitmap font
+    if (!FT_IS_SCALABLE(face))
+        return static_cast<float>(characterSize) / 14.f;
 
-    return 0.f;
+    return static_cast<float>(FT_MulFix(face->underline_thickness, face->size->metrics.y_scale)) / float{1 << 6};
 }
 
 
@@ -834,6 +901,24 @@ bool Font::isSmooth() const
 bool Font::setCurrentSize(unsigned int characterSize) const
 {
     return setFaceCurrentSize(m_impl->ftFace, characterSize);
+}
+
+
+////////////////////////////////////////////////////////////
+void* Font::getHBSubFont(const unsigned int characterSize) const
+{
+    // Check if we already have a cached HarfBuzz font for this character size
+    if (auto* const it = m_impl->hbSubFontCache.find(characterSize); it != m_impl->hbSubFontCache.end())
+        return it->second;
+
+    // Create a new HarfBuzz subfont
+    hb_font_t* hbSubFont = hb_font_create_sub_font(m_impl->hbFont);
+
+    hb_font_set_scale(hbSubFont, static_cast<int>(characterSize) * 64, static_cast<int>(characterSize) * 64);
+    hb_ft_font_set_funcs(hbSubFont); // Propagate FT funcs
+
+    m_impl->hbSubFontCache[characterSize] = hbSubFont;
+    return hbSubFont;
 }
 
 } // namespace sf

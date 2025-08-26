@@ -9,6 +9,9 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Priv/TransformableMacros.hpp"
+#include "SFML/Graphics/TextClusterGrouping.hpp"
+#include "SFML/Graphics/TextLineAlignment.hpp"
+#include "SFML/Graphics/TextOrientation.hpp"
 #include "SFML/Graphics/TextStyle.hpp"
 
 #include "SFML/System/String.hpp"
@@ -39,14 +42,17 @@ struct [[nodiscard]] SFML_GRAPHICS_API TextData
 {
     SFML_PRIV_DEFINE_SETTINGS_DATA_MEMBERS_TRANSFORMABLE;
 
-    String       string{};                   //!< String to display
-    unsigned int characterSize{30u};         //!< Base size of characters, in pixels
-    float        letterSpacing{1.f};         //!< Spacing factor between letters
-    float        lineSpacing{1.f};           //!< Spacing factor between lines
-    Color        fillColor{Color::White};    //!< Text fill color
-    Color        outlineColor{Color::Black}; //!< Text outline color
-    float        outlineThickness{0.f};      //!< Thickness of the text's outline
-    TextStyle    style{TextStyle::Regular};  //!< Text style (see Style enum)
+    String              string{};                                        //!< String to display
+    unsigned int        characterSize{30u};                              //!< Base size of characters, in pixels
+    float               letterSpacing{1.f};                              //!< Spacing factor between letters
+    float               lineSpacing{1.f};                                //!< Spacing factor between lines
+    Color               fillColor{Color::White};                         //!< Text fill color
+    Color               outlineColor{Color::Black};                      //!< Text outline color
+    float               outlineThickness{0.f};                           //!< Thickness of the text's outline
+    TextStyle           style{TextStyle::Regular};                       //!< Text style (see Style enum)
+    TextLineAlignment   lineAlignment{TextLineAlignment::Default};       //!< Line alignment for a multi-line text
+    TextOrientation     textOrientation{TextOrientation::Default};       //!< Text orientation
+    TextClusterGrouping clusterGrouping{TextClusterGrouping::Character}; //!< Cluster grouping algorithm
 };
 
 } // namespace sf

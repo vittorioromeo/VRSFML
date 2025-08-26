@@ -189,6 +189,8 @@ void MiniaudioSoundSource::setAttenuation(const float attenuation)
 void MiniaudioSoundSource::setEffectProcessor(const EffectProcessor& effectProcessor)
 {
     m_impl->effectProcessor = effectProcessor;
+
+    // TODO P0: warning
     getSoundBase().setAndConnectEffectProcessor(effectProcessor);
 }
 
@@ -340,6 +342,8 @@ void MiniaudioSoundSource::applyAudioSettings(const AudioSettings& settings)
 void MiniaudioSoundSource::applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const
 {
     soundBase.applyAudioSettings(m_impl->audioSettings);
+
+    // TODO P0: warning
     soundBase.setAndConnectEffectProcessor(m_impl->effectProcessor);
 }
 

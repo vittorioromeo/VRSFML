@@ -6,10 +6,12 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/FontInfo.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
+#include "SFML/Graphics/ShapedGlyph.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Vertex.hpp"
@@ -17,10 +19,210 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/String.hpp"
 
+#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/Math/Fabs.hpp"
+#include "SFML/Base/Math/Round.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Vector.hpp"
+
+#include <SheenBidi/SheenBidi.h>
+#include <hb-ft.h>
+
+
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline constexpr bool isControlChar(int c)
+{
+    return (c >= 0x00 && c <= 0x1F) || (c == 0x7F);
+}
+
+
+////////////////////////////////////////////////////////////
+// Split string into segments with uniform text properties
+void forStringSegments(const sf::String& input, auto&& f)
+{
+    const SBCodepointSequence codepointSequence{SBStringEncodingUTF32,
+                                                static_cast<const void*>(input.getData()),
+                                                input.getSize()};
+
+    auto* const scriptLocator   = SBScriptLocatorCreate();
+    auto* const algorithm       = SBAlgorithmCreate(&codepointSequence);
+    SBUInteger  paragraphOffset = 0;
+
+    while (paragraphOffset < input.getSize())
+    {
+        SBUInteger paragraphLength{};
+        SBUInteger separatorLength{};
+        SBAlgorithmGetParagraphBoundary(algorithm, paragraphOffset, static_cast<SBUInteger>(-1), &paragraphLength, &separatorLength);
+
+        // If the paragraph contains characters besides the separator,
+        // split the separator off into its own paragraph in the next iteration
+        // We do this to ensure line breaks are inserted into segments last
+        // after all character runs on the same line have already been inserted
+        // This allows us to draw our segments in left-to-right top-to-bottom order
+        if (separatorLength < paragraphLength)
+            paragraphLength -= separatorLength;
+
+        auto* const paragraph = SBAlgorithmCreateParagraph(algorithm, paragraphOffset, paragraphLength, SBLevelDefaultLTR);
+        auto* const line     = SBParagraphCreateLine(paragraph, paragraphOffset, paragraphLength);
+        const auto  runCount = SBLineGetRunCount(line);
+        const auto* runArray = SBLineGetRunsPtr(line);
+
+        for (SBUInteger i = 0; i < runCount; i++)
+        {
+            // Odd levels are RTL, even levels are LTR
+            const auto direction = (runArray[i].level % 2) ? HB_DIRECTION_RTL : HB_DIRECTION_LTR;
+
+            const SBCodepointSequence codepointSubsequence{SBStringEncodingUTF32,
+                                                           static_cast<const void*>(input.getData() + runArray[i].offset),
+                                                           runArray[i].length};
+
+            SBScriptLocatorLoadCodepoints(scriptLocator, &codepointSubsequence);
+
+            while (SBScriptLocatorMoveNext(scriptLocator))
+            {
+                const auto* agent  = SBScriptLocatorGetAgent(scriptLocator);
+                const auto  script = hb_script_from_iso15924_tag(SBScriptGetUnicodeTag(agent->script));
+
+                f(runArray[i].offset + agent->offset, agent->length, script, direction);
+            }
+
+            SBScriptLocatorReset(scriptLocator);
+        }
+
+        SBLineRelease(line);
+        SBParagraphRelease(paragraph);
+
+        paragraphOffset += paragraphLength;
+    }
+
+    SBAlgorithmRelease(algorithm);
+    SBScriptLocatorRelease(scriptLocator);
+}
+
+
+////////////////////////////////////////////////////////////
+// The glyph data that is output after shaping
+struct GlyphData
+{
+    sf::base::U32  id{};        //!< Glyph ID (not codepoint!)
+    sf::base::U32  cluster{};   //!< Cluster the glyph belongs to
+    sf::Vec2f      offset;      //!< The offset to apply to the glyph
+    sf::Vec2f      advance;     //!< The advance to apply to the cursor when transitioning to the next glyph
+    hb_direction_t direction{}; //!< Text direction
+};
+
+
+////////////////////////////////////////////////////////////
+// Our shape function
+auto forShapedGlyphs(
+    hb_font_t* const                       shaper,
+    const unsigned int                     characterSize,
+    const sf::String&                      input,
+    const sf::base::Vector<sf::base::U32>& indices,
+    const hb_script_t                      script,
+    hb_direction_t                         direction,
+    const sf::Text::Orientation            orientation,
+    const sf::Text::ClusterGrouping        clusterGrouping,
+    const float                            outlineThickness,
+    const sf::base::U32                    style,
+    auto&&                                 f)
+{
+    SFML_BASE_ASSERT(input.getSize() == indices.size() && "Input string length does not match indices count");
+
+    // Adjust the direction if a vertical orientation was set
+    if (orientation == sf::Text::Orientation::TopToBottom)
+        direction = HB_DIRECTION_TTB;
+    else if (orientation == sf::Text::Orientation::BottomToTop)
+        direction = HB_DIRECTION_BTT;
+
+    static thread_local auto* buffer = hb_buffer_create();
+
+    // Clear out and add the input to the buffer
+    hb_buffer_clear_contents(buffer);
+    hb_buffer_pre_allocate(buffer, static_cast<unsigned int>(input.getSize()));
+
+    // Instead of using hb_buffer_add_utf32, we have to use hb_buffer_add
+    // to specify the initial cluster IDs for every character
+    for (auto i = 0u; i < input.getSize(); ++i)
+        hb_buffer_add(buffer, input[i], indices[i]);
+
+    // hb_buffer_add doesn't automatically set the buffer content type so do it now
+    hb_buffer_set_content_type(buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
+
+    // Set the script and direction we detected during segmentation
+    hb_buffer_set_script(buffer, script);
+    hb_buffer_set_direction(buffer, direction);
+
+    // Try to guess the language of the text the user provided
+    hb_buffer_guess_segment_properties(buffer);
+
+    // Set the cluster level
+    switch (clusterGrouping)
+    {
+        case sf::Text::ClusterGrouping::Grapheme:
+            hb_buffer_set_cluster_level(buffer, HB_BUFFER_CLUSTER_LEVEL_MONOTONE_GRAPHEMES);
+            break;
+        case sf::Text::ClusterGrouping::Character:
+            hb_buffer_set_cluster_level(buffer, HB_BUFFER_CLUSTER_LEVEL_MONOTONE_CHARACTERS);
+            break;
+        case sf::Text::ClusterGrouping::None:
+            hb_buffer_set_cluster_level(buffer, HB_BUFFER_CLUSTER_LEVEL_CHARACTERS);
+            break;
+    }
+
+    // Set load flags analogous to the Font implementation
+    FT_Int32 flags = FT_LOAD_TARGET_NORMAL;
+    if (outlineThickness != 0)
+        flags |= FT_LOAD_NO_BITMAP;
+    hb_ft_font_set_load_flags(shaper, flags);
+
+    // Shape the text
+    hb_shape(shaper, buffer, nullptr, 0);
+
+    // Retrieve position data glyph by glyph
+    const auto  glyphCount     = hb_buffer_get_length(buffer);
+    const auto* glyphInfo      = hb_buffer_get_glyph_infos(buffer, nullptr);
+    const auto* glyphPositions = hb_buffer_get_glyph_positions(buffer, nullptr);
+
+    // HarfBuzz returns position data in scaled units
+    // We need to convert them to pixels by dividing by the
+    // current font scale factoring out the current character size
+    // Also flip Y since HarfBuzz uses positive Y up coordinates
+    sf::Vec2i fontScale;
+    hb_font_get_scale(shaper, &fontScale.x, &fontScale.y);
+
+    const sf::Vec2f divisor{static_cast<float>(fontScale.x) / static_cast<float>(characterSize),
+                            static_cast<float>(fontScale.y) / -static_cast<float>(characterSize)};
+
+    for (auto i = 0u; i < glyphCount; ++i)
+    {
+        GlyphData glyphData{glyphInfo[i].codepoint,
+                            glyphInfo[i].cluster,
+                            sf::Vec2f{sf::base::round(static_cast<float>(glyphPositions[i].x_offset) / divisor.x),
+                                      sf::base::round(static_cast<float>(glyphPositions[i].y_offset) / divisor.y)},
+                            sf::Vec2f{sf::base::round(static_cast<float>(glyphPositions[i].x_advance) / divisor.x),
+                                      sf::base::round(static_cast<float>(glyphPositions[i].y_advance) / divisor.y)},
+                            hb_buffer_get_direction(buffer)};
+
+        // Adjust advances if we are shaping bold text
+        // There doesn't seem to be a standardized way to do this so we will use 0.8f
+        // since it sits in the middle ground of common word processor applications
+        if ((style & static_cast<sf::base::U32>(sf::Text::Style::Bold)) != 0)
+        {
+            glyphData.advance.x += (glyphData.advance.x != 0.f) ? ((glyphData.advance.x >= 0.f) ? 0.8f : -0.8f) : 0.f;
+            glyphData.advance.y += (glyphData.advance.y != 0.f) ? ((glyphData.advance.y >= 0.f) ? 0.8f : -0.8f) : 0.f;
+        }
+
+        f(glyphData);
+    }
+}
+
+} // namespace
 
 
 namespace sf
@@ -30,8 +232,8 @@ Text::Text(const Font& font, const Data& data) :
     m_string(data.string),
     m_font(&font),
     m_characterSize(data.characterSize),
-    m_letterSpacing(data.letterSpacing),
-    m_lineSpacing(data.lineSpacing),
+    m_letterSpacingFactor(data.letterSpacing),
+    m_lineSpacingFactor(data.lineSpacing),
     m_outlineThickness(data.outlineThickness),
     m_fillColor(data.fillColor),
     m_outlineColor(data.outlineColor),
@@ -40,6 +242,9 @@ Text::Text(const Font& font, const Data& data) :
     origin{data.origin},
     rotation{data.rotation},
     m_style(data.style),
+    m_lineAlignment(data.lineAlignment),
+    m_textOrientation(data.textOrientation),
+    m_clusterGrouping(data.clusterGrouping),
     m_geometryNeedUpdate{true}
 {
     SFML_UPDATE_LIFETIME_DEPENDANT(Font, Text, this, m_font);
@@ -104,21 +309,21 @@ void Text::setCharacterSize(const unsigned int size)
 ////////////////////////////////////////////////////////////
 void Text::setLetterSpacing(const float spacingFactor)
 {
-    if (m_letterSpacing == spacingFactor)
+    if (m_letterSpacingFactor == spacingFactor)
         return;
 
-    m_letterSpacing      = spacingFactor;
-    m_geometryNeedUpdate = true;
+    m_letterSpacingFactor = spacingFactor;
+    m_geometryNeedUpdate  = true;
 }
 
 
 ////////////////////////////////////////////////////////////
 void Text::setLineSpacing(const float spacingFactor)
 {
-    if (m_lineSpacing == spacingFactor)
+    if (m_lineSpacingFactor == spacingFactor)
         return;
 
-    m_lineSpacing        = spacingFactor;
+    m_lineSpacingFactor  = spacingFactor;
     m_geometryNeedUpdate = true;
 }
 
@@ -210,6 +415,28 @@ void Text::setOutlineThickness(const float thickness)
 
 
 ////////////////////////////////////////////////////////////
+void Text::setLineAlignment(const LineAlignment lineAlignment)
+{
+    if (m_lineAlignment == lineAlignment)
+        return;
+
+    m_lineAlignment      = lineAlignment;
+    m_geometryNeedUpdate = true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Text::setOrientation(const TextOrientation textOrientation)
+{
+    if (m_textOrientation == textOrientation)
+        return;
+
+    m_textOrientation    = textOrientation;
+    m_geometryNeedUpdate = true;
+}
+
+
+////////////////////////////////////////////////////////////
 const String& Text::getString() const
 {
     return m_string;
@@ -233,14 +460,14 @@ unsigned int Text::getCharacterSize() const
 ////////////////////////////////////////////////////////////
 float Text::getLetterSpacing() const
 {
-    return m_letterSpacing;
+    return m_letterSpacingFactor;
 }
 
 
 ////////////////////////////////////////////////////////////
 float Text::getLineSpacing() const
 {
-    return m_lineSpacing;
+    return m_lineSpacingFactor;
 }
 
 
@@ -287,51 +514,50 @@ float Text::getOutlineThickness() const
 
 
 ////////////////////////////////////////////////////////////
-Vec2f Text::findCharacterPos(base::SizeT index) const
+Text::LineAlignment Text::getLineAlignment() const
 {
-    // Adjust the index if it's out of range
-    index = base::min(index, m_string.getSize());
+    return m_lineAlignment;
+}
 
-    // Precompute the variables needed by the algorithm
-    const bool isBold = !!(m_style & Style::Bold);
 
-    const auto [whitespaceWidth,
-                letterSpacing,
-                lineSpacing] = TextUtils::precomputeSpacingConstants(*m_font, m_style, m_characterSize, m_letterSpacing, m_lineSpacing);
+////////////////////////////////////////////////////////////
+Text::Orientation Text::getOrientation() const
+{
+    return m_textOrientation;
+}
 
-    // Compute the position
-    Vec2f    characterPos;
-    char32_t prevChar = 0;
-    for (base::SizeT i = 0u; i < index; ++i)
-    {
-        const char32_t curChar = m_string[i];
 
-        // Apply the kerning offset
-        characterPos.x += m_font->getKerning(prevChar, curChar, m_characterSize, isBold);
-        prevChar = curChar;
+////////////////////////////////////////////////////////////
+const base::Vector<ShapedGlyph>& Text::getShapedGlyphs() const
+{
+    ensureGeometryUpdate(*m_font);
+    return m_glyphs;
+}
 
-        // Handle special characters
-        switch (curChar)
-        {
-            case U' ':
-                characterPos.x += whitespaceWidth;
-                continue;
-            case U'\t':
-                characterPos.x += whitespaceWidth * 4;
-                continue;
-            case U'\n':
-                characterPos.y += lineSpacing;
-                characterPos.x = 0;
-                continue;
-        }
 
-        // For regular characters, add the advance offset of the glyph
-        characterPos.x += m_font->getGlyph(curChar, m_characterSize, isBold, /* outlineThickness */ 0.f).advance +
-                          letterSpacing;
-    }
+////////////////////////////////////////////////////////////
+Text::ClusterGrouping Text::getClusterGrouping() const
+{
+    return m_clusterGrouping;
+}
 
-    // Transform the characterPos to global coordinates
-    return getTransform().transformPoint(characterPos);
+
+////////////////////////////////////////////////////////////
+void Text::setClusterGrouping(const ClusterGrouping clusterGrouping)
+{
+    if (m_clusterGrouping == clusterGrouping)
+        return;
+
+    m_clusterGrouping    = clusterGrouping;
+    m_geometryNeedUpdate = true;
+}
+
+
+////////////////////////////////////////////////////////////
+void Text::setGlyphPreProcessor(GlyphPreProcessor glyphPreProcessor)
+{
+    m_glyphPreProcessor  = SFML_BASE_MOVE(glyphPreProcessor);
+    m_geometryNeedUpdate = true;
 }
 
 
@@ -339,7 +565,6 @@ Vec2f Text::findCharacterPos(base::SizeT index) const
 const FloatRect& Text::getLocalBounds() const
 {
     ensureGeometryUpdate(*m_font);
-
     return m_bounds;
 }
 
@@ -375,6 +600,7 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
     // Clear the previous geometry
     m_vertices.clear();
+    m_glyphs.clear();
     m_fillVerticesStartIndex = 0u;
     m_bounds                 = {};
 
@@ -383,8 +609,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
         return;
 
     // Precalculate the amount of quads that will be produced
-    const auto fillQuadCount    = TextUtils::precomputeTextQuadCount(m_string, m_style);
-    const auto outlineQuadCount = m_outlineThickness == 0.f ? 0u : fillQuadCount;
+    const auto fillQuadCount    = precomputeQuadCount();
+    const auto outlineQuadCount = (m_outlineThickness == 0.f && !m_glyphPreProcessor) ? 0u : fillQuadCount;
 
     const base::SizeT outlineVertexCount = outlineQuadCount * 4u;
     const base::SizeT fillVertexCount    = fillQuadCount * 4u;
@@ -392,21 +618,581 @@ void Text::ensureGeometryUpdate(const Font& font) const
     m_vertices.resize(outlineVertexCount + fillVertexCount);
     m_fillVerticesStartIndex = outlineVertexCount;
 
-    m_bounds = TextUtils::createTextGeometryAndGetBounds<
-        /* CalculateBounds */ true>(outlineVertexCount,
-                                    font,
-                                    m_string,
-                                    m_style,
-                                    m_characterSize,
-                                    m_letterSpacing,
-                                    m_lineSpacing,
-                                    m_outlineThickness,
-                                    m_fillColor,
-                                    m_outlineColor,
-                                    [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return TextUtils::addLine(m_vertices.data(), SFML_BASE_FORWARD(xs)...); },
-                                    [this](auto&&... xs) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return TextUtils::addGlyphQuad(m_vertices.data(), SFML_BASE_FORWARD(xs)...); });
+    // TODO P0:
+    base::SizeT currFillIndex    = outlineVertexCount;
+    base::SizeT currOutlineIndex = 0u;
+
+    // Compute values related to the text style
+    const bool  isBold             = !!(m_style & Style::Bold);
+    const bool  isUnderlined       = !!(m_style & Style::Underlined);
+    const bool  isStrikeThrough    = !!(m_style & Style::StrikeThrough);
+    const float underlineOffset    = font.getUnderlinePosition(m_characterSize);
+    const float underlineThickness = font.getUnderlineThickness(m_characterSize);
+
+    // Compute the location of the strikethrough dynamically
+    // We use the center point of the lowercase 'x' glyph as the reference
+    // We reuse the underline thickness as the thickness of the strikethrough as well
+    const float strikeThroughOffset = font.getGlyph(U'x', m_characterSize, isBold, /* outlineThickness */ 0.f)
+                                          .bounds.getCenter()
+                                          .y;
+
+    // Precompute the variables needed by the algorithm
+    const float whitespaceWidth = font.getGlyph(U' ', m_characterSize, isBold, /* outlineThickness */ 0.f).advance;
+    const float letterSpacing   = (whitespaceWidth / 3.0f) * (m_letterSpacingFactor - 1.0f);
+    const float lineSpacing     = font.getLineSpacing(m_characterSize) * m_lineSpacingFactor;
+
+    float x = 0.f;
+    auto  y = (m_textOrientation == TextOrientation::Default) ? static_cast<float>(m_characterSize) : 0.f;
+
+    // Variables used to compute bounds
+    auto minX = static_cast<float>(m_characterSize);
+    auto minY = static_cast<float>(m_characterSize);
+    auto maxX = 0.f;
+    auto maxY = 0.f;
+
+    // Check that we have a usable font
+    SFML_BASE_ASSERT(font.getInfo().id && "Font not usable for shaping text");
+
+    // Ensure the font is set to the size expected by the shaper
+    if (!font.setCurrentSize(m_characterSize))
+    {
+        SFML_BASE_ASSERT(false && "Failed to set font size");
+        return;
+    }
+
+    // Shaping only supports single lines, we will need to
+    // break multi-line strings into individual lines ourselves
+    String                  currentLine;
+    base::Vector<base::U32> currentLineIndices;
+    base::Vector<base::U32> currentLineTabIndices;
+    hb_script_t             currentScript{};
+    hb_direction_t          currentDirection{};
+
+    const auto outputLine = [&]
+    {
+        // Variables used to compute bounds for the current line
+        auto lineMinX = static_cast<float>(m_characterSize);
+        auto lineMinY = static_cast<float>(m_characterSize);
+        auto lineMaxX = 0.f;
+        auto lineMaxY = 0.f;
+
+        // We want to combine the multiple spaces we substituted a tab with back into a single glyph
+        // To do that we just enlarge the first of its shaped spaces to 4 times its width
+        // We then skip the following 3 spaces
+        auto glyphsToSkip = 0;
+
+        forShapedGlyphs(static_cast<hb_font_t*>(m_font->getHBSubFont(m_characterSize)),
+                        m_characterSize,
+                        currentLine,
+                        currentLineIndices,
+                        currentScript,
+                        currentDirection,
+                        m_textOrientation,
+                        m_clusterGrouping,
+                        m_outlineThickness,
+                        !!(m_style & Style::Bold),
+
+                        // Create one quad for each character
+                        [&](const GlyphData& shapeGlyph)
+        {
+            // Skip trailing spaces of a tab
+            if (glyphsToSkip > 0)
+            {
+                --glyphsToSkip;
+                return; // Basically a `continue`
+            }
+
+            // Extract the current glyph's description
+            const Glyph& glyph = m_font->getGlyphByGlyphIndex(shapeGlyph.id, m_characterSize, isBold, /* outlineThickness */ 0.f);
+
+            // Add the glyph to the glyph list
+            auto& glyphEntry    = m_glyphs.emplaceBack(glyph);
+            glyphEntry.cluster  = shapeGlyph.cluster;
+            glyphEntry.position = sf::Vec2f{x, y} + shapeGlyph.offset;
+            bool isHorizontal   = false;
+            bool isVertical     = false;
+
+            switch (shapeGlyph.direction)
+            {
+                case HB_DIRECTION_LTR:
+                    glyphEntry.textDirection = TextDirection::LeftToRight;
+                    glyphEntry.glyph.advance = shapeGlyph.advance.x;
+                    glyphEntry.baseline      = y;
+                    isHorizontal             = true;
+                    break;
+                case HB_DIRECTION_RTL:
+                    glyphEntry.textDirection = TextDirection::RightToLeft;
+                    glyphEntry.glyph.advance = shapeGlyph.advance.x;
+                    glyphEntry.baseline      = y;
+                    isHorizontal             = true;
+                    break;
+                case HB_DIRECTION_TTB:
+                    glyphEntry.textDirection = TextDirection::TopToBottom;
+                    glyphEntry.glyph.advance = shapeGlyph.advance.y;
+                    glyphEntry.baseline      = x;
+                    isVertical               = true;
+                    break;
+                case HB_DIRECTION_BTT:
+                    glyphEntry.textDirection = TextDirection::BottomToTop;
+                    glyphEntry.glyph.advance = shapeGlyph.advance.y;
+                    glyphEntry.baseline      = x;
+                    isVertical               = true;
+                    break;
+                default:
+                    glyphEntry.textDirection = TextDirection::Unspecified;
+                    break;
+            }
+
+            Style style            = m_style;
+            Color fillColor        = m_fillColor;
+            Color outlineColor     = m_outlineColor;
+            float outlineThickness = m_outlineThickness;
+            float italicShear      = 0.f;
+
+            // Add the glyph to the vertices, if the texture rect has an area
+            // (not the case with transparent glyphs e.g. space character)
+            if (glyph.textureRect.size.x != 0 && glyph.textureRect.size.y != 0)
+            {
+                if (m_glyphPreProcessor)
+                    m_glyphPreProcessor(glyphEntry, style, fillColor, outlineColor, outlineThickness);
+
+                italicShear = !!(style & Style::Italic) ? degrees(12).asRadians() : 0.f;
+
+                // TODO P0: can speed this up when outline is on by looking up the two glyphs at once
+
+                // Apply the outline
+                if (outlineThickness != 0.f)
+                {
+                    const Glyph& outlineGlyph = font.getGlyphByGlyphIndex(shapeGlyph.id,
+                                                                          m_characterSize,
+                                                                          !!(style & Style::Bold),
+                                                                          outlineThickness);
+
+                    // Add the outline glyph to the vertices
+                    TextUtils::addGlyphQuad(m_vertices.data(),
+                                            currOutlineIndex,
+                                            glyphEntry.position,
+                                            outlineColor,
+                                            outlineGlyph,
+                                            italicShear);
+                }
+
+                glyphEntry.vertexOffset = currFillIndex;
+
+                const Glyph& fillGlyph = font.getGlyphByGlyphIndex(shapeGlyph.id,
+                                                                   m_characterSize,
+                                                                   !!(style & Style::Bold),
+                                                                   /* outlineThickness */ 0.f);
+                TextUtils::addGlyphQuad(m_vertices.data(), currFillIndex, glyphEntry.position, fillColor, fillGlyph, italicShear);
+
+                glyphEntry.vertexCount = currFillIndex - glyphEntry.vertexOffset;
+
+                if (isVertical)
+                {
+                    const auto hasAdvance = glyphEntry.glyph.advance > 0.f;
+                    if (isUnderlined && hasAdvance)
+                    {
+                        const Vec2f entryPosition = glyphEntry.position + sf::Vec2f(glyphEntry.glyph.bounds.position.x, 0.f);
+                        const float entryWidth = glyphEntry.glyph.bounds.size.x;
+
+                        TextUtils::addLineHorizontal(m_vertices.data(),
+                                                     currFillIndex,
+                                                     entryPosition.x,
+                                                     entryPosition.x + entryWidth,
+                                                     entryPosition.y,
+                                                     m_fillColor,
+                                                     underlineOffset,
+                                                     underlineThickness);
+
+                        if (m_outlineThickness != 0.f)
+                            TextUtils::addLineHorizontal(m_vertices.data(),
+                                                         currOutlineIndex,
+                                                         entryPosition.x,
+                                                         entryPosition.x + entryWidth,
+                                                         entryPosition.y,
+                                                         m_outlineColor,
+                                                         underlineOffset,
+                                                         underlineThickness,
+                                                         m_outlineThickness);
+                    }
+                }
+            }
+            else
+            {
+                // Remove unwanted x-offset when dealing with vertical spaces
+                if ((shapeGlyph.direction == HB_DIRECTION_TTB) || (shapeGlyph.direction == HB_DIRECTION_BTT))
+                    glyphEntry.position.x -= shapeGlyph.offset.x;
+
+                // Check if we are dealing with the start of a tab
+                if (sf::base::find(currentLineTabIndices.begin(), currentLineTabIndices.end(), shapeGlyph.cluster) !=
+                    currentLineTabIndices.end())
+                {
+                    // Widen the size to 4 times the advance of the space glyph
+                    glyphEntry.glyph.advance *= 4.0f;
+
+                    if (isHorizontal)
+                        glyphEntry.glyph.bounds.size.x = glyphEntry.glyph.advance;
+                    else if (isVertical)
+                        glyphEntry.glyph.bounds.size.y = glyphEntry.glyph.advance;
+
+                    // Skip the next 3 space glyphs
+                    glyphsToSkip = 3;
+                }
+                else
+                {
+                    // If the glyph doesn't have a texture it is probably a space
+                    // Set the bounds width to the width of the space so the user can
+                    // make use of it
+                    if (isHorizontal)
+                        glyphEntry.glyph.bounds.size = {shapeGlyph.advance.x + letterSpacing, 0.f};
+                    else if (isVertical)
+                        glyphEntry.glyph.bounds.size = {0.f, shapeGlyph.advance.y + letterSpacing};
+                }
+
+                if (m_glyphPreProcessor)
+                    m_glyphPreProcessor(glyphEntry, style, fillColor, outlineColor, outlineThickness);
+
+                italicShear = !!(style & Style::Italic) ? degrees(12).asRadians() : 0.f;
+            }
+
+            // Update the current bounds
+            const Vec2f p1 = glyph.bounds.position + shapeGlyph.offset;
+            const Vec2f p2 = p1 + glyphEntry.glyph.bounds.size;
+
+            lineMinX = SFML_BASE_MIN(lineMinX, x + p1.x - italicShear * p2.y);
+            lineMaxX = SFML_BASE_MAX(lineMaxX, x + p2.x - italicShear * p1.y);
+            lineMinY = SFML_BASE_MIN(lineMinY, y + p1.y);
+            lineMaxY = SFML_BASE_MAX(lineMaxY, y + p2.y);
+
+            // Advance to the next character
+            // Only apply additional letter spacing if the current glyph has an advance (base glyph)
+            // Applying the letter spacing to glyphs without an advance would affect
+            // mark glyphs as well which would lead to incorrect results
+            const auto hasAdvance = glyphEntry.glyph.advance > 0.f;
+
+            if (isHorizontal)
+                x += glyphEntry.glyph.advance + (hasAdvance ? letterSpacing : 0.f);
+            else if (isVertical)
+                y += glyphEntry.glyph.advance + (hasAdvance ? letterSpacing : 0.f);
+        });
+
+        // Update the multi-line bounds
+        minX = SFML_BASE_MIN(minX, lineMinX);
+        maxX = SFML_BASE_MAX(maxX, lineMaxX);
+        minY = SFML_BASE_MIN(minY, lineMinY);
+        maxY = SFML_BASE_MAX(maxY, lineMaxY);
+
+        currentLine.clear();
+        currentLineIndices.clear();
+        currentLineTabIndices.clear();
+
+        // If we're using the underlined style and there's a new line, draw a line
+        // (Vertical underlines are applied per-glyph above)
+        if (isUnderlined && m_textOrientation == TextOrientation::Default)
+        {
+            TextUtils::addLineHorizontal(m_vertices.data(), currFillIndex, 0.f, x, y, m_fillColor, underlineOffset, underlineThickness);
+
+            if (m_outlineThickness != 0.f)
+                TextUtils::addLineHorizontal(m_vertices.data(),
+                                             currOutlineIndex,
+                                             0.f,
+                                             x,
+                                             y,
+                                             m_outlineColor,
+                                             underlineOffset,
+                                             underlineThickness,
+                                             m_outlineThickness);
+        }
+
+        // If we're using the strikethrough style and there's a new line, draw a line across all characters
+        if (isStrikeThrough)
+        {
+            if (m_textOrientation == TextOrientation::Default)
+            {
+                TextUtils::addLineHorizontal(m_vertices.data(), currFillIndex, 0.f, x, y, m_fillColor, strikeThroughOffset, underlineThickness);
+
+                if (m_outlineThickness != 0.f)
+                    TextUtils::addLineHorizontal(m_vertices.data(),
+                                                 currOutlineIndex,
+                                                 0.f,
+                                                 x,
+                                                 y,
+                                                 m_outlineColor,
+                                                 strikeThroughOffset,
+                                                 underlineThickness,
+                                                 m_outlineThickness);
+            }
+            else
+            {
+                // Slanting the text by 12 degrees means the strikethrough would
+                // have to be offset by
+                // width * sin(12 degrees) / 2
+                // which is approximately
+                // width * 0.1
+                TextUtils::addLineVertical(m_vertices.data(),
+                                           currFillIndex,
+                                           lineMinY,
+                                           lineMaxY,
+                                           m_fillColor,
+                                           !!(m_style & Style::Italic) ? (lineMaxX - lineMinX) * 0.1f : 0.f,
+                                           underlineThickness);
+
+                if (m_outlineThickness != 0.f)
+                    TextUtils::addLineVertical(m_vertices.data(),
+                                               currOutlineIndex,
+                                               lineMinY,
+                                               lineMaxY,
+                                               m_outlineColor,
+                                               !!(m_style & Style::Italic) ? (lineMaxX - lineMinX) * 0.1f : 0.f,
+                                               underlineThickness,
+                                               m_outlineThickness);
+            }
+        }
+    };
+
+    // In order to be able to align text we have to record all line data until we can compute the text metrics
+    // We then use the record data to shift the necessary lines to the right/left as necessary
+    struct LineRecord
+    {
+        base::SizeT    glyphsStart{};
+        base::SizeT    glyphsCount{};
+        base::SizeT    verticesStart{};
+        base::SizeT    verticesCount{};
+        base::SizeT    outlineVerticesStart{};
+        base::SizeT    outlineVerticesCount{};
+        base::SizeT    firstCodepointOffset = static_cast<base::SizeT>(-1);
+        hb_direction_t direction{};
+        float          lineWidth{};
+    };
+
+    sf::base::Vector<LineRecord> lines;
+
+    const auto beginLineRecord = [&]
+    {
+        // Start a new line record
+        auto& lineRecord                = lines.emplaceBack();
+        lineRecord.glyphsStart          = m_glyphs.size();
+        lineRecord.verticesStart        = currFillIndex;
+        lineRecord.outlineVerticesStart = currOutlineIndex;
+    };
+
+    const auto endLineRecord = [&]
+    {
+        // Complete the line record
+        auto& lineRecord                = lines.back();
+        lineRecord.glyphsCount          = m_glyphs.size() - lineRecord.glyphsStart;
+        lineRecord.verticesCount        = currFillIndex - lineRecord.verticesStart;
+        lineRecord.outlineVerticesCount = currOutlineIndex - lineRecord.outlineVerticesStart;
+        lineRecord.lineWidth            = x;
+    };
+
+    bool firstSegment = true;
+    bool anySegment   = false;
+
+    // Split the input string into multiple segments with uniform
+    // script and direction using the unicode bidirectional algorithm
+
+    // Iterate over all segments
+    forStringSegments(m_string,
+                      [&](const sf::base::SizeT offset,
+                          const sf::base::SizeT length,
+                          const hb_script_t     script,
+                          const hb_direction_t  direction)
+    {
+        anySegment = true;
+
+        if (firstSegment)
+        {
+            beginLineRecord();
+            firstSegment = false;
+        }
+
+        {
+            currentScript    = script;
+            currentDirection = direction;
+
+            if (offset < lines.back().firstCodepointOffset)
+            {
+                lines.back().firstCodepointOffset = offset;
+                lines.back().direction            = currentDirection;
+            }
+
+            // Record the number of glyphs BEFORE processing this segment
+            // const base::SizeT glyphsBefore = m_glyphs.size();
+
+            // We use the index into the input string as the input cluster IDs as well
+            // This way the user will be able to map the resulting cluster IDs back to
+            // characters in the input text they provided for advanced functionality
+            for (auto index = static_cast<sf::base::U32>(offset); index < static_cast<sf::base::U32>(offset + length);
+                 ++index)
+            {
+                const auto& curChar = m_string[index];
+
+                // Handle special characters
+                if ((curChar == U'\n'))
+                {
+                    if (!currentLine.isEmpty())
+                        outputLine();
+
+                    // Add new entry to glyphs
+                    // For our purposes, we consider the newline
+                    // character to constitute its own cluster
+                    auto& glyph = m_glyphs.emplaceBack(
+                        font.getGlyph('\n', m_characterSize, isBold, /* outlineThickness */ 0.f));
+
+                    glyph.glyph.bounds.size = {};
+                    glyph.baseline          = y;
+                    glyph.position          = {x, y};
+                    glyph.cluster           = index;
+
+                    endLineRecord();
+                    beginLineRecord();
+
+                    // Update the current bounds (min coordinates)
+                    minX = SFML_BASE_MIN(minX, x);
+                    minY = SFML_BASE_MIN(minY, y);
+
+                    y += lineSpacing;
+                    x = 0;
+
+                    // Update the current bounds (max coordinates)
+                    maxX = SFML_BASE_MAX(maxX, x);
+                    maxY = SFML_BASE_MAX(maxY, y);
+
+                    // Next glyph, no need to create a quad for newline
+                    continue;
+                }
+
+                if (curChar == U'\t')
+                {
+                    // Replace tab character with 4 spaces for shaping
+                    currentLine += "    ";
+                    currentLineIndices.resize(currentLineIndices.size() + 4u, index);
+                    currentLineTabIndices.emplaceBack(index);
+                    continue;
+                }
+
+                if ((curChar < 0x80) && isControlChar(static_cast<int>(curChar)))
+                {
+                    // Skip all other control characters to avoid weird graphical issues
+                    continue;
+                }
+
+                currentLine += curChar;
+                currentLineIndices.emplaceBack(index);
+            }
+
+            if (!currentLine.isEmpty())
+                outputLine();
+        }
+    });
+
+    if (anySegment)
+        endLineRecord();
+
+    // If we're using outline, update the current bounds
+    if (m_outlineThickness != 0.f)
+    {
+        const float outline = sf::base::fabs(sf::base::ceil(m_outlineThickness));
+        minX -= outline;
+        maxX += outline;
+        minY -= outline;
+        maxY += outline;
+    }
+
+    // Update the bounding rectangle
+    m_bounds.position = Vec2f(minX, minY);
+    m_bounds.size     = Vec2f(maxX, maxY) - Vec2f(minX, minY);
+
+    // Use line record data to post-process lines e.g. re-alignment etc.
+    if (lines.empty())
+        return;
+
+    // Get width of widest line
+    const auto maxWidth = [&]
+    {
+        float result = lines[0].lineWidth;
+
+        for (const auto& line : lines)
+            result = SFML_BASE_MAX(result, line.lineWidth);
+
+        return result;
+    }();
+
+    for (auto& line : lines)
+    {
+        auto shift = 0.f;
+
+        if (m_lineAlignment == LineAlignment::Center)
+            shift = line.lineWidth / -2.0f;
+        else if (m_lineAlignment == LineAlignment::Right)
+            shift = -line.lineWidth;
+        else if ((m_lineAlignment == LineAlignment::Default) && (line.direction == HB_DIRECTION_RTL))
+            shift = maxWidth - line.lineWidth;
+        else
+            continue; // Skip modifying the data if there is nothing to shift
+
+        // Shift glyphs
+        for (auto i = line.glyphsStart; i < line.glyphsStart + line.glyphsCount; ++i)
+            m_glyphs[i].position.x += shift;
+
+        // Shift vertices
+        for (auto i = line.verticesStart; i < line.verticesStart + line.verticesCount; ++i)
+            m_vertices[i].position.x += shift;
+
+        // Shift vertices
+        for (auto i = line.outlineVerticesStart; i < line.outlineVerticesStart + line.outlineVerticesCount; ++i)
+            m_vertices[i].position.x += shift;
+    }
+
+    // Update bounds if necessary
+    if (m_lineAlignment == LineAlignment::Center)
+        m_bounds.position.x -= m_bounds.size.x / 2.0f;
+    else if (m_lineAlignment == LineAlignment::Right)
+        m_bounds.position.x -= m_bounds.size.x;
+}
+
+
+////////////////////////////////////////////////////////////
+base::SizeT Text::precomputeQuadCount() const
+{
+    SFML_BASE_ASSERT(!m_string.isEmpty());
+
+    base::SizeT result = 0u;
+
+    // Compute values related to the text style
+    const bool isUnderlined    = !!(m_style & Style::Underlined);
+    const bool isStrikeThrough = !!(m_style & Style::StrikeThrough);
+
+    for (auto index = 0u; index < m_string.getSize(); ++index)
+    {
+        const auto& curChar = m_string[index];
+
+        // Handle special characters
+        if ((curChar == U'\n'))
+        {
+            if (isStrikeThrough)
+                ++result;
+
+            // Next glyph, no need to create a quad for newline
+            continue;
+        }
+
+        // Replace tab character with 4 spaces for shaping
+        if (curChar == U'\t')
+            continue;
+
+        // Skip all other control characters to avoid weird graphical issues
+        if ((curChar < 0x80) && isControlChar(static_cast<int>(curChar)))
+            continue;
+
+        result += 2u;
+
+        if (isUnderlined)
+            ++result;
+    }
+
+    return result;
 }
 
 } // namespace sf

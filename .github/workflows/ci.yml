@@ -233,6 +233,9 @@ jobs:
         fi
         echo "Using $(which ccache)"
         ccache --version
+        rm -f "C:\Program Files\mingw64\bin\cmake.exe"
+        echo "Using $(which cmake)"
+        cmake --version
 
     - name: Configure CMake
       run: |
@@ -263,7 +266,8 @@ jobs:
 
     - name: Test (Windows)
       if: runner.os == 'Windows' && !contains(matrix.platform.name, 'MinGW') && !contains(matrix.platform.name, 'arm64')
-      run: cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
+      run: |
+        cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
 
     # --- Updated Test Step (Using xvfb-run for Linux, Simplified Path) ---
     - name: Test (Linux/macOS/MinGW)
@@ -289,6 +293,7 @@ jobs:
         else
           GET_GL_INFO_CMD="echo 'Warning: test-sfml-window executable not found in $BASE_BUILD_DIR.'"
         fi
+        ls build/
 
         # Execute tests: Use xvfb-run wrapper only on Linux
         if [ "${{ runner.os }}" == "Linux" ]; then

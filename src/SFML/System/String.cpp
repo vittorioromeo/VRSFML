@@ -13,6 +13,7 @@
 
 #include <locale>
 #include <string>
+#include <unicodelib.h>
 
 #include <cwchar>
 
@@ -353,6 +354,27 @@ String::Iterator String::end()
 String::ConstIterator String::end() const
 {
     return m_impl->string.empty() ? nullptr : &(m_impl->string.front()) + m_impl->string.size();
+}
+
+
+////////////////////////////////////////////////////////////
+bool String::isGraphemeBoundary(const base::SizeT position) const
+{
+    return unicode::is_grapheme_boundary(m_impl->string.data(), m_impl->string.size(), position);
+}
+
+
+////////////////////////////////////////////////////////////
+bool String::isWordBoundary(const base::SizeT position) const
+{
+    return unicode::is_word_boundary(m_impl->string.data(), m_impl->string.size(), position);
+}
+
+
+////////////////////////////////////////////////////////////
+bool String::isSentenceBoundary(const base::SizeT position) const
+{
+    return unicode::is_sentence_boundary(m_impl->string.data(), m_impl->string.size(), position);
 }
 
 

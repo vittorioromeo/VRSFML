@@ -1088,6 +1088,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
 
     Vertex* vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
+    // TODO P0: this uses the old algorithm (non-harfbuzz)
     TextUtils::createTextGeometryAndGetBounds<
         /* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
                                      font,
