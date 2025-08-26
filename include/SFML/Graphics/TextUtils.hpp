@@ -118,25 +118,53 @@ struct TextSpacingConstants
 
 
 ////////////////////////////////////////////////////////////
-// Add an underline or strikethrough line to the vertex array
-inline void addLine(Vertex* const SFML_BASE_RESTRICT vertices,
-                    base::SizeT&                     index,
-                    const float                      lineLength,
-                    const float                      lineTop,
-                    const Color                      color,
-                    const float                      offset,
-                    const float                      thickness,
-                    const float                      outlineThickness)
+// Add a horizontal underline or strikethrough line to the vertex array
+inline void addLineHorizontal(
+    Vertex* const SFML_BASE_RESTRICT vertices,
+    base::SizeT&                     index,
+    const float                      lineLeft,
+    const float                      lineRight,
+    const float                      lineTop,
+    const sf::Color                  color,
+    const float                      offset,
+    const float                      thickness,
+    const float                      outlineThickness = 0.f)
 {
-    const float top    = SFML_BASE_MATH_FLOORF(lineTop + offset - (thickness / 2.f) + 0.5f);
-    const float bottom = top + SFML_BASE_MATH_FLOORF(thickness + 0.5f);
+    const float top    = base::floor(lineTop + offset - (thickness / 2) + 0.5f);
+    const float bottom = top + base::floor(thickness + 0.5f);
 
     auto* ptr = vertices + index;
 
-    *ptr++ = {{-outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{lineLength + outlineThickness, top - outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{-outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
-    *ptr++ = {{lineLength + outlineThickness, bottom + outlineThickness}, color, {1.f, 1.f}};
+    *ptr++ = {{lineLeft - outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineRight + outlineThickness, top - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineLeft - outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{lineRight + outlineThickness, bottom + outlineThickness}, color, {1.0f, 1.0f}};
+
+    index += 4u;
+}
+
+
+////////////////////////////////////////////////////////////
+// Add a vertical strikethrough line to the vertex array
+inline void addLineVertical(
+    Vertex* const SFML_BASE_RESTRICT vertices,
+    base::SizeT&                     index,
+    const float                      lineTop,
+    const float                      lineBottom,
+    const sf::Color                  color,
+    const float                      offset,
+    const float                      thickness,
+    const float                      outlineThickness = 0.f)
+{
+    const float left  = base::floor(offset - (thickness / 2) + 0.5f);
+    const float right = left + base::floor(thickness + 0.5f);
+
+    auto* ptr = vertices + index;
+
+    *ptr++ = {{left - outlineThickness, lineTop - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{right + outlineThickness, lineTop - outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{left - outlineThickness, lineBottom + outlineThickness}, color, {1.0f, 1.0f}};
+    *ptr++ = {{right + outlineThickness, lineBottom + outlineThickness}, color, {1.0f, 1.0f}};
 
     index += 4u;
 }
@@ -170,6 +198,7 @@ inline void addGlyphQuad(Vertex* const SFML_BASE_RESTRICT vertices,
 }
 
 
+// TODO P0: new ones
 ////////////////////////////////////////////////////////////
 // Add an underline or strikethrough line to the vertex array (pre-transformed)
 inline void addLinePreTransformed(

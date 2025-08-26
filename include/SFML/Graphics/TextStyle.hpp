@@ -17,5 +17,4 @@ enum class [[nodiscard]] TextStyle : unsigned char
     StrikeThrough = 1 << 3  //!< Strike through characters
 };
 
-
 } // namespace sf

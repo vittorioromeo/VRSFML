@@ -149,27 +149,32 @@ public:
     [[nodiscard]] const FontInfo& getInfo() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief Retrieve a glyph of the font
+    /// \brief Retrieve a glyph of the font by glyph ID
     ///
     /// If the font is a bitmap font, not all character sizes
     /// might be available. If the glyph is not available at the
     /// requested size, an empty glyph is returned.
     ///
-    /// You may want to use `hasGlyph` to determine if the
-    /// glyph exists before requesting it. If the glyph does not
-    /// exist, a font specific default is returned.
+    /// This function is only useful for getting the glyphs
+    /// returned in the data from calling `shape`.
     ///
     /// Be aware that using a negative value for the outline
     /// thickness will cause distorted rendering.
     ///
-    /// \param codePoint        Unicode code point of the character to get
+    /// \param glyphIndex       ID of the glyph to get
     /// \param characterSize    Reference character size
     /// \param bold             Retrieve the bold version or the regular one?
     /// \param outlineThickness Thickness of outline (when != 0 the glyph will not be filled)
     ///
-    /// \return The glyph corresponding to `codePoint` and `characterSize`
+    /// \return The glyph corresponding to `id` and `characterSize`
     ///
     ////////////////////////////////////////////////////////////
+    [[nodiscard]] const Glyph& getGlyphByGlyphIndex(unsigned int glyphIndex,
+                                                    unsigned int characterSize,
+                                                    bool         bold,
+                                                    float        outlineThickness) const;
+
+    // TODO P0:
     [[nodiscard]] const Glyph& getGlyph(char32_t codePoint, unsigned int characterSize, bool bold, float outlineThickness) const;
 
     ////////////////////////////////////////////////////////////
@@ -229,6 +234,42 @@ public:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] float getKerning(char32_t first, char32_t second, unsigned int characterSize, bool bold = false) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the ascent
+    ///
+    /// The ascent is the largest distance between the baseline and
+    /// the top of all glyphs in the font.
+    ///
+    /// Be aware that there is no uniform definition of how the
+    /// ascent is calculated. It can vary from font to font.
+    ///
+    /// \param characterSize Reference character size
+    ///
+    /// \return Ascent, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getAscent(unsigned int characterSize) const;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Get the descent
+    ///
+    /// The descent is the largest distance between the baseline and
+    /// the bottom of all glyphs in the font.
+    ///
+    /// Be aware that there is no uniform definition of how the
+    /// descent is calculated. It can vary from font to font.
+    ///
+    /// The descent shares the same coordinate system as the
+    /// ascent. This means that it will be negative for distances
+    /// below the baseline.
+    ///
+    /// \param characterSize Reference character size
+    ///
+    /// \return Descent, in pixels
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] float getDescent(unsigned int characterSize) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the line spacing
@@ -311,6 +352,8 @@ public:
     [[nodiscard]] bool isSmooth() const;
 
 private:
+    friend class Text;
+
     ////////////////////////////////////////////////////////////
     /// \brief Open from stream and print errors with custom message
     ///
@@ -323,7 +366,7 @@ private:
     /// \param codePoint Unicode code point of the character to load
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] unsigned int getCharIndex(char32_t codePoint) const;
+    [[nodiscard]] unsigned int getGlyphIndex(char32_t codePoint) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Make sure that the given size is the current one
@@ -334,6 +377,9 @@ private:
     ///
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool setCurrentSize(unsigned int characterSize) const;
+
+    // TODO P0:
+    [[nodiscard]] void* getHBSubFont(unsigned int characterSize) const;
 
 public:
     ////////////////////////////////////////////////////////////

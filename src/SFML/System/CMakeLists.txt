@@ -43,6 +43,9 @@ target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/ext
 # stb_rect_pack sources
 target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/stb_rect_pack")
 
+# cpp-unicodelib sources
+target_include_directories(sfml-system SYSTEM PRIVATE "${PROJECT_SOURCE_DIR}/extlibs/headers/cpp-unicodelib")
+
 # enable precompiled headers
 if (SFML_ENABLE_PCH)
     message(VERBOSE "enabling PCH for SFML library 'sfml-system' (reused as the PCH for other SFML libraries)")

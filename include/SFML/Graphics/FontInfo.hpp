@@ -18,7 +18,10 @@ namespace sf
 ////////////////////////////////////////////////////////////
 struct SFML_GRAPHICS_API FontInfo
 {
-    String family; //!< The font family
+    unsigned int id{};                 //!< A unique ID that identifies the font
+    String       family;               //!< The font family
+    bool         hasKerning{};         //!< Has kerning information
+    bool         hasVerticalMetrics{}; //!< Has native vertical metrics
 };
 
 } // namespace sf

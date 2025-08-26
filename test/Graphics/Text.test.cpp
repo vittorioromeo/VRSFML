@@ -20,6 +20,24 @@
 #include <WindowUtil.hpp>
 
 
+namespace
+{
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool equalsApprox(const float left, const float right, const float epsilon)
+{
+    return sf::base::fabs(left - right) <= epsilon;
+}
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool equalsApprox(const sf::FloatRect& left, const sf::FloatRect& right, const float epsilon)
+{
+    return equalsApprox(left.position.x, right.position.x, epsilon) &&
+           equalsApprox(left.position.y, right.position.y, epsilon) &&
+           equalsApprox(left.size.x, right.size.x, epsilon) && equalsApprox(left.size.y, right.size.y, epsilon);
+}
+
+} // namespace
+
 TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 {
     auto graphicsContext = sf::GraphicsContext::create().value();
@@ -50,7 +68,9 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
+            CHECK(text.getLineAlignment() == sf::Text::LineAlignment::Default);
+            CHECK(text.getShapedGlyphs().empty());
+            CHECK(text.getClusterGrouping() == sf::Text::ClusterGrouping::Character);
             CHECK(text.getLocalBounds() == sf::FloatRect());
             CHECK(text.getGlobalBounds() == sf::FloatRect());
         }
@@ -67,9 +87,11 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 8}, {357, 28}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({1, 8}, {357, 28}));
+            CHECK(text.getLineAlignment() == sf::Text::LineAlignment::Default);
+            CHECK_FALSE(text.getShapedGlyphs().empty());
+            CHECK(text.getClusterGrouping() == sf::Text::ClusterGrouping::Character);
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 8}, {358, 28}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({1, 8}, {358, 28}), 1.f));
         }
 
         SECTION("Font, string, and character size constructor")
@@ -84,9 +106,11 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             CHECK(text.getFillColor() == sf::Color::White);
             CHECK(text.getOutlineColor() == sf::Color::Black);
             CHECK(text.getOutlineThickness() == 0);
-            CHECK(text.findCharacterPos(0) == sf::Vec2f{});
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 7}, {290, 22}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({1, 7}, {290, 22}));
+            CHECK(text.getLineAlignment() == sf::Text::LineAlignment::Default);
+            CHECK_FALSE(text.getShapedGlyphs().empty());
+            CHECK(text.getClusterGrouping() == sf::Text::ClusterGrouping::Character);
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 7}, {292, 22}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({1, 7}, {292, 22}), 1.f));
         }
     }
 
@@ -155,46 +179,59 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         CHECK(text.getOutlineThickness() == 3.14f);
     }
 
-    SECTION("findCharacterPos()")
+    SECTION("Set get line alignment")
     {
-        sf::Text text(font, {.string = "\tabcdefghijklmnopqrstuvwxyz \n"});
-        text.position = {120, 240};
-        CHECK(text.findCharacterPos(0) == sf::Vec2f{120, 240});
-        CHECK(text.findCharacterPos(1) == sf::Vec2f{156, 240});
-        CHECK(text.findCharacterPos(2) == sf::Vec2f{170, 240});
-        CHECK(text.findCharacterPos(3) == sf::Vec2f{185, 240});
-        CHECK(text.findCharacterPos(4) == sf::Vec2f{198, 240});
+        sf::Text text(font, {.string = "QWERTY"});
+        text.position = {50, 25};
+        text.setLineAlignment(sf::Text::LineAlignment::Center);
+        CHECK(text.getLineAlignment() == sf::Text::LineAlignment::Center);
+        text.setLineAlignment(sf::Text::LineAlignment::Right);
+        CHECK(text.getLineAlignment() == sf::Text::LineAlignment::Right);
+    }
 
-        // Indices that are too large are capped at maximum valid index
-        CHECK(text.findCharacterPos(1000) == sf::Vec2f{120, 277});
+    SECTION("Set/get cluster grouping")
+    {
+        sf::Text text(font, {});
+        text.setClusterGrouping(sf::Text::ClusterGrouping::Grapheme);
+        CHECK(text.getClusterGrouping() == sf::Text::ClusterGrouping::Grapheme);
     }
 
     SECTION("Get bounds")
     {
         sf::Text text(font, {.string = "Test", .characterSize = 18u});
         text.position = {100, 200};
-        CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-        CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+        CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 5}, {32, 13}), 1.f));
+        CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({101, 205}, {32, 13}), 1.f));
 
         SECTION("Add underline")
         {
             text.setStyle(sf::Text::Style::Underlined);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 5}, {32, 13}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({101, 205}, {32, 13}), 1.f));
         }
 
         SECTION("Add strikethrough")
         {
             text.setStyle(sf::Text::Style::StrikeThrough);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == sf::FloatRect({101, 205}, {33, 13}));
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 5}, {32, 13}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({101, 205}, {32, 13}), 1.f));
         }
 
         SECTION("Change rotation")
         {
             text.rotation = sf::degrees(180);
-            CHECK(text.getLocalBounds() == sf::FloatRect({1, 5}, {33, 13}));
-            CHECK(text.getGlobalBounds() == Approx(sf::FloatRect({66, 182}, {33, 13})));
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({1, 5}, {32, 13}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), (sf::FloatRect({67, 182}, {32, 13})), 1.f));
+        }
+
+        SECTION("Change alignment")
+        {
+            text.setLineAlignment(sf::Text::LineAlignment::Center);
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({-15, 5}, {32, 13}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({85, 205}, {32, 13}), 1.f));
+            text.setLineAlignment(sf::Text::LineAlignment::Right);
+            CHECK(equalsApprox(text.getLocalBounds(), sf::FloatRect({-31, 5}, {32, 13}), 1.f));
+            CHECK(equalsApprox(text.getGlobalBounds(), sf::FloatRect({69, 205}, {32, 13}), 1.f));
         }
     }
 
