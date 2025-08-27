@@ -533,7 +533,7 @@ Ftp::Response Ftp::getResponse()
                                                      length - static_cast<base::SizeT>(in.tellg()));
 
                         // Return the response code and message
-                        return Response(static_cast<Response::Status>(code), message);
+                        return Response(static_cast<Response::Status>(code), std::move(message));
                     }
 
                     // The line we just read was actually not a response,
