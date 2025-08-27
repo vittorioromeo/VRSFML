@@ -477,8 +477,6 @@ void Text::ensureGeometryUpdate(const Font& font) const
     currentLineIndices.clear();
     currentLineTabIndices.clear();
 
-    hb_script_t currentScript{};
-
     const auto addHLines = [&](const float lineLeft, const float lineRight, const float lineTop, const float offset)
     {
         TextUtils::addLineHorizontal(m_vertices.data(), currFillIndex, lineLeft, lineRight, lineTop, m_fillColor, offset, underlineThickness);
@@ -514,6 +512,8 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
     static thread_local base::Vector<TextUtils::GlyphData> shapedGlyphs;
 
+    hb_script_t currentScript{};
+
     const auto outputLine = [&]
     {
         // Variables used to compute bounds for the current line
@@ -528,7 +528,6 @@ void Text::ensureGeometryUpdate(const Font& font) const
         auto glyphsToSkip = 0;
 
         shapedGlyphs.clear();
-
         populateShapedGlyphs(static_cast<hb_font_t*>(m_font->getHBSubFont(m_characterSize)),
                              m_characterSize,
                              currentLine,
@@ -604,17 +603,18 @@ void Text::ensureGeometryUpdate(const Font& font) const
 
                 italicShear = !!(style & Style::Italic) ? degrees(12).asRadians() : 0.f;
 
-                // TODO P0: can speed this up when outline is on by looking up the two glyphs at once
+                glyphEntry.vertexOffset = currFillIndex;
 
-                // Apply the outline
                 if (outlineThickness != 0.f)
                 {
-                    const Glyph& outlineGlyph = font.getGlyphByGlyphIndex(shapeGlyph.id,
-                                                                          m_characterSize,
-                                                                          !!(style & Style::Bold),
-                                                                          outlineThickness);
+                    const auto& [fillGlyph,
+                                 outlineGlyph] = font.getFillAndOutlineGlyphByGlyphIndex(shapeGlyph.id,
+                                                                                         m_characterSize,
+                                                                                         !!(style & Style::Bold),
+                                                                                         outlineThickness);
 
-                    // Add the outline glyph to the vertices
+                    TextUtils::addGlyphQuad(m_vertices.data(), currFillIndex, glyphEntry.position, fillColor, fillGlyph, italicShear);
+
                     TextUtils::addGlyphQuad(m_vertices.data(),
                                             currOutlineIndex,
                                             glyphEntry.position,
@@ -622,17 +622,18 @@ void Text::ensureGeometryUpdate(const Font& font) const
                                             outlineGlyph,
                                             italicShear);
                 }
+                else
+                {
 
-                glyphEntry.vertexOffset = currFillIndex;
+                    const Glyph& fillGlyph = font.getGlyphByGlyphIndex(shapeGlyph.id,
+                                                                       m_characterSize,
+                                                                       !!(style & Style::Bold),
+                                                                       /* outlineThickness */ 0.f);
 
-                const Glyph& fillGlyph = font.getGlyphByGlyphIndex(shapeGlyph.id,
-                                                                   m_characterSize,
-                                                                   !!(style & Style::Bold),
-                                                                   /* outlineThickness */ 0.f);
+                    TextUtils::addGlyphQuad(m_vertices.data(), currFillIndex, glyphEntry.position, fillColor, fillGlyph, italicShear);
+                }
 
-                TextUtils::addGlyphQuad(m_vertices.data(), currFillIndex, glyphEntry.position, fillColor, fillGlyph, italicShear);
-
-                glyphEntry.vertexCount = currFillIndex - glyphEntry.vertexOffset;
+                glyphEntry.vertexCount = 4u;
 
                 if (isVertical)
                 {
@@ -932,7 +933,7 @@ base::SizeT Text::precomputeQuadCount() const
 
     for (auto index = 0u; index < m_string.getSize(); ++index)
     {
-        const auto& curChar = m_string[index];
+        const char32_t curChar = m_string[index];
 
         // Handle special characters
         if ((curChar == U'\n'))
