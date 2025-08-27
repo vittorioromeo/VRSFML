@@ -20,10 +20,63 @@
 #include "SFML/Base/Math/Floor.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Vector.hpp"
+
+
+////////////////////////////////////////////////////////////
+// Forward declarations
+////////////////////////////////////////////////////////////
 
 
 namespace sf::TextUtils
 {
+////////////////////////////////////////////////////////////
+struct StringSegment
+{
+    base::SizeT offset;
+    base::SizeT length;
+    int         script;    // Maps to `hb_script_t`
+    int         direction; // Maps to `hb_direction_t`
+};
+
+
+////////////////////////////////////////////////////////////
+void populateStringSegments(const String& input, base::Vector<StringSegment>& outputVec);
+
+
+////////////////////////////////////////////////////////////
+// The glyph data that is output after shaping
+struct GlyphData
+{
+    base::U32 id{};      //!< Glyph ID (not codepoint!)
+    base::U32 cluster{}; //!< Cluster the glyph belongs to
+    Vec2f     offset;    //!< The offset to apply to the glyph
+    Vec2f     advance;   //!< The advance to apply to the cursor when transitioning to the next glyph
+    int       direction; //!< Text direction (maps to `hb_direction_t`)
+};
+
+
+////////////////////////////////////////////////////////////
+void populateShapedGlyphs(
+    void*                          shaper, // `hb_font_t`
+    unsigned int                   characterSize,
+    const String&                  input,
+    const base::Vector<base::U32>& indices,
+    int                            script, // `hb_script_t`
+    Text::Orientation              orientation,
+    Text::ClusterGrouping          clusterGrouping,
+    float                          outlineThickness,
+    base::U32                      style,
+    base::Vector<GlyphData>&       outputVec);
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard, gnu::always_inline, gnu::const]] inline constexpr bool isControlChar(const int c)
+{
+    return (c >= 0x00 && c <= 0x1F) || (c == 0x7F);
+}
+
+
 ////////////////////////////////////////////////////////////
 struct TextSpacingConstants
 {
