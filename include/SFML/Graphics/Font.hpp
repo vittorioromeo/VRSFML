@@ -188,6 +188,16 @@ public:
     };
 
     ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] GlyphPair getFillAndOutlineGlyphByGlyphIndex(
+        unsigned int glyphIndex,
+        unsigned int characterSize,
+        bool         bold,
+        float        outlineThickness) const;
+
+    ////////////////////////////////////////////////////////////
     /// \brief Retrieve a pair of fill and outline glyphs of the font
     ///
     /// \see `getGlyph`

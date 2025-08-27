@@ -682,18 +682,15 @@ const Glyph& Font::getGlyph(const char32_t     codePoint,
 
 
 ////////////////////////////////////////////////////////////
-Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
-                                             const unsigned int characterSize,
-                                             const bool         bold,
-                                             const float        outlineThickness) const
+Font::GlyphPair Font::getFillAndOutlineGlyphByGlyphIndex(const unsigned int glyphIndex,
+                                                         const unsigned int characterSize,
+                                                         const bool         bold,
+                                                         const float        outlineThickness) const
 {
     SFML_BASE_ASSERT(outlineThickness != 0.f);
 
     // Get the page corresponding to the character size
     auto& glyphsByCharacterSize = m_impl->glyphs[characterSize];
-
-    // Get the glyph index (based on code point)
-    const auto glyphIndex = getGlyphIndex(codePoint);
 
     // Precompute the keys for the fill and outline glyphs
     const auto fillGlyphKey    = combineGlyphTableKey(0.f, bold, glyphIndex);
@@ -725,6 +722,16 @@ Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
     }
 
     return {.fillGlyph = fillGlyphIt->second, .outlineGlyph = outlineGlyphIt->second};
+}
+
+
+////////////////////////////////////////////////////////////
+Font::GlyphPair Font::getFillAndOutlineGlyph(const char32_t     codePoint,
+                                             const unsigned int characterSize,
+                                             const bool         bold,
+                                             const float        outlineThickness) const
+{
+    return getFillAndOutlineGlyphByGlyphIndex(getGlyphIndex(codePoint), characterSize, bold, outlineThickness);
 }
 
 
