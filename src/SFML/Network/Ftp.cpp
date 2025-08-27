@@ -14,6 +14,7 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"
@@ -533,7 +534,7 @@ Ftp::Response Ftp::getResponse()
                                                      length - static_cast<base::SizeT>(in.tellg()));
 
                         // Return the response code and message
-                        return Response(static_cast<Response::Status>(code), std::move(message));
+                        return Response(static_cast<Response::Status>(code), SFML_BASE_MOVE(message));
                     }
 
                     // The line we just read was actually not a response,

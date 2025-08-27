@@ -151,6 +151,14 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
             }
 
+            SECTION("qoi")
+            {
+                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.qoi");
+                REQUIRE(image.hasValue());
+                CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
+                CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
+            }
+
             CHECK(image->getSize() == sf::Vec2u{1001, 304});
             CHECK(image->getPixelsPtr() != nullptr);
         }
@@ -263,6 +271,18 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(filename.remove());
             }
 
+            SECTION("To .qoi")
+            {
+                auto filename = sf::Path::tempDirectoryPath() / "test.qoi";
+                CHECK(image.saveToFile(filename));
+
+                const auto loadedImage = sf::Image::loadFromFile(filename).value();
+                CHECK(loadedImage.getSize() == sf::Vec2u{256, 256});
+                CHECK(loadedImage.getPixelsPtr() != nullptr);
+
+                CHECK(filename.remove());
+            }
+
             SECTION("To Spanish Latin1 filename .png")
             {
                 // small n with tilde, from Spanish, outside of ASCII, inside common Latin 1 codepage
@@ -359,6 +379,16 @@ TEST_CASE("[Graphics] sf::Image")
                 CHECK(output[1] == 80);
                 CHECK(output[2] == 78);
                 CHECK(output[3] == 71);
+            }
+
+            SECTION("To qoi")
+            {
+                output = image.saveToMemory(sf::Image::SaveFormat::QOI);
+                REQUIRE(output.size() == 28);
+                CHECK(output[0] == 113);
+                CHECK(output[1] == 111);
+                CHECK(output[2] == 105);
+                CHECK(output[3] == 102);
             }
 
             // Cannot test JPEG encoding due to it triggering UB in stbiw__jpg_writeBits
