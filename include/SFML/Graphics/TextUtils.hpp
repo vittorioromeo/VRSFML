@@ -36,23 +36,29 @@ struct TextSpacingConstants
 ////////////////////////////////////////////////////////////
 [[nodiscard]] inline TextSpacingConstants precomputeSpacingConstants(
     const Font&        font,
-    const TextStyle    style,
+    const bool         isBold,
     const unsigned int characterSize,
-    const float        letterSpacing,
-    const float        lineSpacing)
+    const float        letterSpacingFactor,
+    const float        lineSpacingFactor)
 {
-    const bool isBold = !!(style & TextStyle::Bold);
-
-    float whitespaceWidth = font.getGlyph(U' ', characterSize, isBold, /* outlineThickness */ 0.f).advance;
-
-    const float finalLetterSpacing = (whitespaceWidth / 3.f) * (letterSpacing - 1.f);
-    whitespaceWidth += finalLetterSpacing;
+    const float whitespaceWidth = font.getGlyph(U' ', characterSize, isBold, /* outlineThickness */ 0.f).advance;
 
     return {
         .whitespaceWidth    = whitespaceWidth,
-        .finalLetterSpacing = finalLetterSpacing,
-        .finalLineSpacing   = font.getLineSpacing(characterSize) * lineSpacing,
+        .finalLetterSpacing = (whitespaceWidth / 3.0f) * (letterSpacingFactor - 1.0f),
+        .finalLineSpacing   = font.getLineSpacing(characterSize) * lineSpacingFactor,
     };
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] inline float precomputeStrikethroughOffset(const Font&        font,
+                                                         const bool         isBold,
+                                                         const bool         isStrikeThrough,
+                                                         const unsigned int characterSize)
+{
+    return isStrikeThrough ? font.getGlyph(U'x', characterSize, isBold, /* outlineThickness */ 0.f).bounds.getCenter().y
+                           : 0.f;
 }
 
 
@@ -283,16 +289,12 @@ inline auto createTextGeometryAndGetBounds(
     // Compute the location of the strike through dynamically
     // We use the center point of the lowercase 'x' glyph as the reference
     // We reuse the underline thickness as the thickness of the strike through as well
-    const float strikeThroughOffset = isStrikeThrough
-                                          ? font.getGlyph(U'x', characterSize, isBold, /* outlineThickness */ 0.f)
-                                                .bounds.getCenter()
-                                                .y
-                                          : 0.f;
+    const float strikeThroughOffset = precomputeStrikethroughOffset(font, isBold, isStrikeThrough, characterSize);
 
     // Precompute the variables needed by the algorithm
     const auto [whitespaceWidth,
                 finalLetterSpacing,
-                finalLineSpacing] = precomputeSpacingConstants(font, style, characterSize, letterSpacing, lineSpacing);
+                finalLineSpacing] = precomputeSpacingConstants(font, isBold, characterSize, letterSpacing, lineSpacing);
 
     base::SizeT currFillIndex    = outlineVertexCount;
     base::SizeT currOutlineIndex = 0u;
