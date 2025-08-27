@@ -360,8 +360,9 @@ struct Font::Impl
                 ? base::makeOptional<TextureAtlas>(Texture::create({1024u, 1024u}, {.smooth = true}).value())
                 : base::nullOpt}
     {
-        // TODO P0: necessary for strikethrough/underline
-        getTextureAtlas().add(sf::GraphicsContext::getBuiltInWhiteDotTexture()).value();
+        // Add a white dot texture to the atlas to correctly display strikethrough/underline
+        [[maybe_unused]] const auto optRect = getTextureAtlas().add(sf::GraphicsContext::getBuiltInWhiteDotTexture());
+        SFML_BASE_ASSERT(optRect.hasValue());
     }
 
     ~Impl()

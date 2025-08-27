@@ -793,51 +793,56 @@ int main()
     // Main loop
     while (true)
     {
-        // Handle events
-        window.pollAndHandleEvents(
-            [&](const sf::Event::KeyPressed& event)
-        {
-            switch (event.scancode)
-            {
-                case sf::Keyboard::Scancode::Left:
-                    for (auto& demoText : demoTexts)
-                    {
-                        demoText.updateGlyphBox(-1);
-                        demoText.updateCursorPosition(-1);
-                    }
-                    break;
-                case sf::Keyboard::Scancode::Right:
-                    for (auto& demoText : demoTexts)
-                    {
-                        demoText.updateGlyphBox(1);
-                        demoText.updateCursorPosition(1);
-                    }
-                    break;
-                case sf::Keyboard::Scancode::F1:
-                    drawBoundingBox = !drawBoundingBox;
-                    break;
-                case sf::Keyboard::Scancode::F2:
-                    drawGlyphBox = !drawGlyphBox;
-                    break;
-                case sf::Keyboard::Scancode::F3:
-                    drawCursor = !drawCursor;
-                    break;
-                case sf::Keyboard::Scancode::F4:
-                    for (auto& demoText : demoTexts)
-                        demoText.cyclePreProcessing();
-                    break;
-                default:
-                    break;
-            }
-        },
-            [&](const sf::Event::MouseButtonPressed& event)
-        {
-            if (event.button != sf::Mouse::Button::Left)
-                return;
 
-            for (auto& demoText : demoTexts)
-                demoText.handleMousePress(window.mapPixelToCoords(event.position));
-        });
+        while (sf::base::Optional event = window.pollEvent())
+        {
+            if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
+                return 0;
+
+            if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+            {
+                switch (eKeyPressed->scancode)
+                {
+                    case sf::Keyboard::Scancode::Left:
+                        for (auto& demoText : demoTexts)
+                        {
+                            demoText.updateGlyphBox(-1);
+                            demoText.updateCursorPosition(-1);
+                        }
+                        break;
+                    case sf::Keyboard::Scancode::Right:
+                        for (auto& demoText : demoTexts)
+                        {
+                            demoText.updateGlyphBox(1);
+                            demoText.updateCursorPosition(1);
+                        }
+                        break;
+                    case sf::Keyboard::Scancode::F1:
+                        drawBoundingBox = !drawBoundingBox;
+                        break;
+                    case sf::Keyboard::Scancode::F2:
+                        drawGlyphBox = !drawGlyphBox;
+                        break;
+                    case sf::Keyboard::Scancode::F3:
+                        drawCursor = !drawCursor;
+                        break;
+                    case sf::Keyboard::Scancode::F4:
+                        for (auto& demoText : demoTexts)
+                            demoText.cyclePreProcessing();
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else if (auto* eButtonPressed = event->getIf<sf::Event::MouseButtonPressed>())
+            {
+                if (eButtonPressed->button != sf::Mouse::Button::Left)
+                    continue;
+
+                for (auto& demoText : demoTexts)
+                    demoText.handleMousePress(window.mapPixelToCoords(eButtonPressed->position));
+            }
+        }
 
         window.clear();
 
