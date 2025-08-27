@@ -5,6 +5,7 @@
 // Other 1st party headers
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/ShapedGlyph.hpp" // used
 
 #include "SFML/System/LifetimeDependee.hpp"
 #include "SFML/System/Path.hpp"
