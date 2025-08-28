@@ -332,13 +332,6 @@ template <typename T, typename U>
 // Thread-safe unique identifier generator, is used for states cache (see RenderTarget)
 constinit std::atomic<unsigned int> nextFontUniqueId{1u}; // start at 1, zero is "no texture"
 
-
-////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten]] inline unsigned int getUniqueId() noexcept
-{
-    return nextFontUniqueId.fetch_add(1u, std::memory_order::relaxed);
-}
-
 } // namespace
 
 
@@ -608,7 +601,7 @@ base::Optional<Font> Font::openFromStreamImpl(InputStream& stream, TextureAtlas*
     result->m_impl->hbFont = hb_ft_font_create(impl.ftFace, nullptr);
 
     // Set font info
-    result->m_impl->info.id                 = getUniqueId();
+    result->m_impl->info.id                 = nextFontUniqueId.fetch_add(1u, std::memory_order::relaxed);
     result->m_impl->info.family             = impl.ftFace->family_name;
     result->m_impl->info.hasKerning         = FT_HAS_KERNING(impl.ftFace);
     result->m_impl->info.hasVerticalMetrics = FT_HAS_VERTICAL(impl.ftFace);
