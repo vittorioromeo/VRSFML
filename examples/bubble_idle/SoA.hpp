@@ -4,8 +4,8 @@
 #include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/TypePackElement.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -65,6 +65,20 @@ public:
     [[nodiscard, gnu::always_inline, gnu::pure]] sf::base::SizeT getSize() const
     {
         return SOA_AS_CONST_BASE(0).data.size();
+    }
+
+    ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT I>
+    [[nodiscard, gnu::always_inline]] auto& get() noexcept
+    {
+        return SOA_AS_BASE(I).data;
+    }
+
+    ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT I>
+    [[nodiscard, gnu::always_inline]] const auto& get() const noexcept
+    {
+        return SOA_AS_CONST_BASE(I).data;
     }
 
     ////////////////////////////////////////////////////////////
