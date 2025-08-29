@@ -91,7 +91,8 @@ namespace sf
     vertexPtr[2].position.x = transform.a00 * absSize.x + transform.a02;
     vertexPtr[2].position.y = transform.a10 * absSize.x + transform.a12;
 
-    vertexPtr[3].position = transform.transformPoint(absSize);
+    vertexPtr[3].position.x = transform.a00 * absSize.x + vertexPtr[1].position.x;
+    vertexPtr[3].position.y = transform.a10 * absSize.x + vertexPtr[1].position.y;
 
     // Color
     vertexPtr[0].color = color;

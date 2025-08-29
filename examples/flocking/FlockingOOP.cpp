@@ -1493,9 +1493,9 @@ int main()
 
             ImGui::Combo("Mode", reinterpret_cast<int*>(&mode), "OOP\0AOS\0AOSImproved\0SOA\0");
             ImGui::Checkbox("Draw step", &drawStep);
-            ImGui::SliderFloat("Simulation Speed", &simulationSpeed, 0.1f, 10.f);
-            ImGui::SliderFloat("Rocket Spawn Rate", &rocketSpawnRate, 0.05f, 50.f);
-            ImGui::SliderFloat("Zoom", &zoom, 0.1f, 5.f);
+            ImGui::SliderFloat("Simulation Speed", &simulationSpeed, 0.1f, 4.f);
+            ImGui::SliderFloat("Rocket Spawn Rate", &rocketSpawnRate, 0.05f, 4.f);
+            ImGui::SliderFloat("Zoom", &zoom, 0.1f, 4.f);
 
             ImGui::End();
         }
