@@ -113,7 +113,7 @@ struct World
 
     void update(float dt)
     {
-        for (sf::base::SizeT i = 0; i < entities.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < entities.size(); ++i)
             entities[i]->update(dt);
     }
 
@@ -397,7 +397,7 @@ struct World
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0; i < emitters.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
         {
             if (!emitters[i].hasValue())
             {
@@ -646,7 +646,7 @@ struct World
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0; i < smokeEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < smokeEmitters.size(); ++i)
         {
             if (!smokeEmitters[i].hasValue())
             {
@@ -662,7 +662,7 @@ struct World
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0; i < fireEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < fireEmitters.size(); ++i)
         {
             if (!fireEmitters[i].hasValue())
             {
@@ -948,7 +948,7 @@ struct World
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0; i < smokeEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < smokeEmitters.size(); ++i)
         {
             if (!smokeEmitters[i].hasValue())
             {
@@ -964,7 +964,7 @@ struct World
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0; i < fireEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0u; i < fireEmitters.size(); ++i)
         {
             if (!fireEmitters[i].hasValue())
             {
@@ -1034,7 +1034,7 @@ struct World
             auto&       rotations      = particles.template get<Field::Rotation>();
             const auto& rotationDeltas = particles.template get<Field::RotationDelta>();
 
-            for (sf::base::SizeT i = 0; i < nParticles; ++i)
+            for (sf::base::SizeT i = 0u; i < nParticles; ++i)
             {
                 velocities[i] += accelerations[i] * dt;
                 positions[i] += velocities[i] * dt;
@@ -1336,9 +1336,50 @@ int main()
 
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
+
+                if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
+                {
+                    if (eKeyPressed->code == sf::Keyboard::Key::Num1)
+                    {
+                        mode            = Mode::OOP;
+                        drawStep        = true;
+                        simulationSpeed = 0.1f;
+                        rocketSpawnRate = 0.f;
+                        zoom            = 3.f;
+
+                        oopWorld = {};
+
+                        for (int k = 0; k < 6; ++k)
+                        {
+                            {
+                                auto& r        = oopWorld.addEntity<OOP::Rocket>();
+                                r.position     = {-256.f * static_cast<float>(k) + -16.f, windowSize.y / 2.f};
+                                r.velocity     = {1.0f, 0.f};
+                                r.acceleration = {0.03f, 0.f};
+                            }
+
+                            for (int i = 1; i <= 5; ++i)
+                            {
+                                auto& r0    = oopWorld.addEntity<OOP::Rocket>();
+                                r0.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
+                                               windowSize.y / 2.f - 32.f * static_cast<float>(i)};
+                                r0.velocity = {1.0f, 0.f};
+                                r0.acceleration = {0.03f, 0.f};
+
+                                auto& r1    = oopWorld.addEntity<OOP::Rocket>();
+                                r1.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
+                                               windowSize.y / 2.f + 32.f * static_cast<float>(i)};
+                                r1.velocity = {1.0f, 0.f};
+                                r1.acceleration = {0.03f, 0.f};
+                            }
+                        }
+                    }
+                }
             }
         }
         // ---
+
+        sf::base::SizeT nRockets = 0;
 
         ////////////////////////////////////////////////////////////
         // Update step
@@ -1350,8 +1391,6 @@ int main()
 
             if (mode == Mode::OOP)
             {
-                sf::base::SizeT nRockets = 0;
-
                 // TODO P0:
                 /*
                 for (const auto& entity : oopWorld.entities)
@@ -1375,7 +1414,7 @@ int main()
             }
             else if (mode == Mode::AOS)
             {
-                const sf::base::SizeT nRockets = aosWorld.rockets.size();
+                nRockets = aosWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1391,7 +1430,7 @@ int main()
             }
             else if (mode == Mode::AOSImproved)
             {
-                const sf::base::SizeT nRockets = aosImprovedWorld.rockets.size();
+                nRockets = aosImprovedWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1407,7 +1446,7 @@ int main()
             }
             else if (mode == Mode::SOA)
             {
-                const sf::base::SizeT nRockets = soaWorld.rockets.size();
+                nRockets = soaWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1456,6 +1495,8 @@ int main()
             plotGraph("FPS", " FPS", samplesFPS, 300.f);
             plotGraph("Display", " ms", samplesDisplayMs, 300.f);
 
+            ImGui::Text("Number of rockets: %zu", nRockets);
+
             if (mode == Mode::OOP)
             {
                 ImGui::Text("Number of entities: %zu", oopWorld.entities.size());
@@ -1483,7 +1524,7 @@ int main()
             ImGui::Checkbox("Draw step", &drawStep);
             ImGui::SliderFloat("Simulation Speed", &simulationSpeed, 0.1f, 4.f);
             ImGui::SliderFloat("Rocket Spawn Rate", &rocketSpawnRate, 0.05f, 4.f);
-            ImGui::SliderFloat("Zoom", &zoom, 0.1f, 4.f);
+            ImGui::SliderFloat("Zoom", &zoom, 1.f, 4.f);
 
             ImGui::End();
         }
@@ -1496,7 +1537,7 @@ int main()
         clock.restart();
         {
             window.clear();
-            window.setView({.center = windowSize / 2.f, .size = windowSize / zoom});
+            window.setView({.center = {windowSize.x / (2.f * zoom), windowSize.y / 2.f}, .size = windowSize / zoom});
 
             if (drawStep)
             {
