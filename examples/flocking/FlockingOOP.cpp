@@ -17,7 +17,7 @@
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureAtlas.hpp"
-#include "SFML/Graphics/View.hpp"
+#include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Window/EventUtils.hpp"
 
@@ -32,12 +32,11 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <utility>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include <string>
+#include <cstdio>
 
 
 namespace
@@ -114,7 +113,7 @@ struct World
 
     void update(float dt)
     {
-        for (std::size_t i = 0; i < entities.size(); ++i)
+        for (sf::base::SizeT i = 0; i < entities.size(); ++i)
             entities[i]->update(dt);
     }
 
@@ -384,8 +383,8 @@ struct Rocket
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    std::size_t smokeEmitterIdx;
-    std::size_t fireEmitterIdx;
+    sf::base::SizeT smokeEmitterIdx;
+    sf::base::SizeT fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
@@ -396,9 +395,9 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t addEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addEmitter(const Emitter& emitter)
     {
-        for (std::size_t i = 0; i < emitters.size(); ++i)
+        for (sf::base::SizeT i = 0; i < emitters.size(); ++i)
         {
             if (!emitters[i].hasValue())
             {
@@ -631,8 +630,8 @@ struct Rocket
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    std::size_t smokeEmitterIdx;
-    std::size_t fireEmitterIdx;
+    sf::base::SizeT smokeEmitterIdx;
+    sf::base::SizeT fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
@@ -645,9 +644,9 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t addSmokeEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
     {
-        for (std::size_t i = 0; i < smokeEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0; i < smokeEmitters.size(); ++i)
         {
             if (!smokeEmitters[i].hasValue())
             {
@@ -661,9 +660,9 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t addFireEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (std::size_t i = 0; i < fireEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0; i < fireEmitters.size(); ++i)
         {
             if (!fireEmitters[i].hasValue())
             {
@@ -892,7 +891,7 @@ using ParticleSoA = SoAFor<sf::Vec2f, // position
 
 struct Field
 {
-    enum : std::size_t
+    enum : sf::base::SizeT
     {
         Position,
         Velocity,
@@ -933,8 +932,8 @@ struct Rocket
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    std::size_t smokeEmitterIdx;
-    std::size_t fireEmitterIdx;
+    sf::base::SizeT smokeEmitterIdx;
+    sf::base::SizeT fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
@@ -947,9 +946,9 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t addSmokeEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
     {
-        for (std::size_t i = 0; i < smokeEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0; i < smokeEmitters.size(); ++i)
         {
             if (!smokeEmitters[i].hasValue())
             {
@@ -963,9 +962,9 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] std::size_t addFireEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (std::size_t i = 0; i < fireEmitters.size(); ++i)
+        for (sf::base::SizeT i = 0; i < fireEmitters.size(); ++i)
         {
             if (!fireEmitters[i].hasValue())
             {
@@ -1035,7 +1034,7 @@ struct World
             auto&       rotations      = particles.template get<Field::Rotation>();
             const auto& rotationDeltas = particles.template get<Field::RotationDelta>();
 
-            for (std::size_t i = 0; i < nParticles; ++i)
+            for (sf::base::SizeT i = 0; i < nParticles; ++i)
             {
                 velocities[i] += accelerations[i] * dt;
                 positions[i] += velocities[i] * dt;
@@ -1272,7 +1271,6 @@ int main()
     txrFire   = spriteTextureRects[2];
     txrRocket = spriteTextureRects[6];
 
-
     //
     //
     // Options
@@ -1285,8 +1283,8 @@ int main()
     //
     //
     // Shared values
-    float       rocketSpawnTimer = 0.f;
-    std::size_t nTargetRockets   = 500;
+    float           rocketSpawnTimer = 0.f;
+    sf::base::SizeT nTargetRockets   = 500;
 
     //
     //
@@ -1352,7 +1350,7 @@ int main()
 
             if (mode == Mode::OOP)
             {
-                std::size_t nRockets = 0;
+                sf::base::SizeT nRockets = 0;
 
                 // TODO P0:
                 /*
@@ -1377,7 +1375,7 @@ int main()
             }
             else if (mode == Mode::AOS)
             {
-                const std::size_t nRockets = aosWorld.rockets.size();
+                const sf::base::SizeT nRockets = aosWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1393,7 +1391,7 @@ int main()
             }
             else if (mode == Mode::AOSImproved)
             {
-                const std::size_t nRockets = aosImprovedWorld.rockets.size();
+                const sf::base::SizeT nRockets = aosImprovedWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1409,7 +1407,7 @@ int main()
             }
             else if (mode == Mode::SOA)
             {
-                const std::size_t nRockets = soaWorld.rockets.size();
+                const sf::base::SizeT nRockets = soaWorld.rockets.size();
 
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
@@ -1448,14 +1446,9 @@ int main()
 
             const auto plotGraph = [&](const char* label, const char* unit, const Sampler& samples, float upperBound)
             {
-                ImGui::PlotLines(label,
-                                 samples.data(),
-                                 static_cast<int>(samples.size()),
-                                 0,
-                                 (std::to_string(samples.getAverage()) + unit).c_str(),
-                                 0.f,
-                                 upperBound,
-                                 ImVec2{256.f, 32.f});
+                char buf[64];
+                std::snprintf(buf, sizeof(buf), "%.4f %s", samples.getAverage(), unit);
+                ImGui::PlotLines(label, samples.data(), static_cast<int>(samples.size()), 0, buf, 0.f, upperBound, ImVec2{256.f, 32.f});
             };
 
             plotGraph("Update", " ms", samplesUpdateMs, 10.f);
