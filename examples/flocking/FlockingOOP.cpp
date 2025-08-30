@@ -1015,12 +1015,10 @@ struct World
     ////////////////////////////////////////////////////////////
     void update(const float dt)
     {
-
         auto updateParticles = [&](auto& particles)
         {
             const auto nParticles = particles.getSize();
 
-            // Get all columns needed for the physics update
             auto&       positions     = particles.template get<Field::Position>();
             auto&       velocities    = particles.template get<Field::Velocity>();
             const auto& accelerations = particles.template get<Field::Acceleration>();
@@ -1037,14 +1035,11 @@ struct World
             auto&       rotations      = particles.template get<Field::Rotation>();
             const auto& rotationDeltas = particles.template get<Field::RotationDelta>();
 
-            // A single, fused loop for maximum temporal locality
             for (std::size_t i = 0; i < nParticles; ++i)
             {
-                // Physics update
                 velocities[i] += accelerations[i] * dt;
-                positions[i] += velocities[i] * dt; // Use the *new* velocity
+                positions[i] += velocities[i] * dt;
 
-                // Other attributes
                 lifes[i] += lifeDeltas[i] * dt;
 
                 scales[i] += scaleDeltas[i] * dt;
@@ -1079,16 +1074,16 @@ struct World
                     /* .velocity     */ rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
                     /* .acceleration */ sf::Vec2f{0.f, -0.011f},
 
-                    /* .lifetime     */ 1.f,
-                    /* .lifetimeDecayRate     */ -0.005f,
+                    /* .lifetime          */ 1.f,
+                    /* .lifetimeDecayRate */ -0.005f,
 
-                    /* .scale    */ rng.getF(0.0025f, 0.0035f),
-                    /* .scaleRate    */ rng.getF(0.001f, 0.003f) * 2.75f,
+                    /* .scale     */ rng.getF(0.0025f, 0.0035f),
+                    /* .scaleRate */ rng.getF(0.001f, 0.003f) * 2.75f,
 
-                    /* .opacity  */ rng.getF(0.05f, 0.25f),
-                    /* .opacityChange  */ -rng.getF(0.001f, 0.002f) * 3.25f,
+                    /* .opacity       */ rng.getF(0.05f, 0.25f),
+                    /* .opacityChange */ -rng.getF(0.001f, 0.002f) * 3.25f,
 
-                    /* .rotation */ rng.getF(0.f, 6.28f),
+                    /* .rotation        */ rng.getF(0.f, 6.28f),
                     /* .angularVelocity */ rng.getF(-0.02f, 0.02f));
         }
 
@@ -1109,16 +1104,16 @@ struct World
                     /* .velocity     */ rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                     /* .acceleration */ sf::Vec2f{0.f, 0.07f},
 
-                    /* .lifetime     */ 1.f,
-                    /* .lifetimeDecayRate     */ -0.005f,
+                    /* .lifetime          */ 1.f,
+                    /* .lifetimeDecayRate */ -0.005f,
 
-                    /* .scale    */ rng.getF(0.5f, 0.7f) * 0.085f,
-                    /* .scaleRate    */ -rng.getF(0.001f, 0.003f) * 0.25f,
+                    /* .scale     */ rng.getF(0.5f, 0.7f) * 0.085f,
+                    /* .scaleRate */ -rng.getF(0.001f, 0.003f) * 0.25f,
 
-                    /* .opacity  */ rng.getF(0.2f, 0.4f) * 0.85f,
-                    /* .opacityChange  */ -0.001f,
+                    /* .opacity       */ rng.getF(0.2f, 0.4f) * 0.85f,
+                    /* .opacityChange */ -0.001f,
 
-                    /* .rotation */ rng.getF(0.f, 6.28f),
+                    /* .rotation        */ rng.getF(0.f, 6.28f),
                     /* .angularVelocity */ rng.getF(-0.002f, 0.002f));
         }
 
@@ -1440,7 +1435,7 @@ int main()
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            ImGui::Begin("Vittorio's SFML fork: particles example", nullptr, ImGuiWindowFlags_NoResize);
+            ImGui::Begin("TODO", nullptr, ImGuiWindowFlags_NoResize);
             ImGui::SetWindowSize({380.f, 510.f});
 
             const auto clearSamples = [&]
