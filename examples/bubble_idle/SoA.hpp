@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IndexSequence.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/TypePackElement.hpp"
@@ -44,13 +44,13 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(sf::base::SizeT capacity)
+    [[gnu::always_inline]] void reserve(const sf::base::SizeT capacity)
     {
         (SOA_ALL_BASES().data.reserve(capacity), ...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(sf::base::SizeT size)
+    [[gnu::always_inline]] void resize(const sf::base::SizeT size)
     {
         (SOA_ALL_BASES().data.resize(size), ...);
     }
@@ -83,27 +83,27 @@ public:
 
     ////////////////////////////////////////////////////////////
     template <sf::base::SizeT... Js>
-    [[gnu::always_inline]] void withNth(sf::base::SizeT i, auto&& f)
+    [[gnu::always_inline]] void withNth(const sf::base::SizeT i, auto&& f)
     {
         f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllNth(sf::base::SizeT i, auto&& f)
+    [[gnu::always_inline]] void withAllNth(const sf::base::SizeT i, auto&& f)
     {
         f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
     template <sf::base::SizeT... Js>
-    [[gnu::always_inline]] void withSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    [[gnu::always_inline]] void withSubRange(const sf::base::SizeT start, const sf::base::SizeT end, auto&& f)
     {
         for (sf::base::SizeT i = start; i < end; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    [[gnu::always_inline]] void withAllSubRange(const sf::base::SizeT start, const sf::base::SizeT end, auto&& f)
     {
         for (sf::base::SizeT i = start; i < end; ++i)
             f(SOA_ALL_BASES().data[i]...);
@@ -113,14 +113,18 @@ public:
     template <sf::base::SizeT... Js>
     [[gnu::always_inline]] void with(auto&& f)
     {
-        for (sf::base::SizeT i = 0u; i < getSize(); ++i)
+        const sf::base::SizeT size = getSize();
+
+        for (sf::base::SizeT i = 0u; i < size; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void withAll(auto&& f)
     {
-        for (sf::base::SizeT i = 0u; i < getSize(); ++i)
+        const sf::base::SizeT size = getSize();
+
+        for (sf::base::SizeT i = 0u; i < size; ++i)
             f(SOA_ALL_BASES().data[i]...);
     }
 
@@ -163,7 +167,7 @@ public:
         // Process elements, swapping out removed ones.
         while (i < n)
         {
-            if (!f(static_cast<SoABase<Js, SFML_BASE_TYPE_PACK_ELEMENT(Js, Ts...)>&>(*this).data[i]...))
+            if (!f(SOA_AS_BASE(Js).data[i]...))
             {
                 ++i;
                 continue;
