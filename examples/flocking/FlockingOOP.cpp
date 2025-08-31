@@ -6,6 +6,7 @@
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
+#include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
@@ -28,10 +29,16 @@
 
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IntTypes.hpp"
+#include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
+#include <iostream>
+#include <latch>
+#include <string>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -53,23 +60,34 @@ sf::FloatRect txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-void drawParticleImpl(sf::RenderTarget&   rt,
-                      const sf::Vec2f     position,
-                      const sf::Vec2f     scale,
-                      const float         rotation,
-                      const sf::FloatRect txr,
-                      const float         opacity)
+[[nodiscard, gnu::always_inline]] sf::Sprite makeParticleSprite(
+    const sf::Vec2f     position,
+    const sf::Vec2f     scale,
+    const float         rotation,
+    const sf::FloatRect txr,
+    const float         opacity)
 {
-    rt.draw(
-        sf::Sprite{
-            .position    = position,
-            .scale       = scale,
-            .origin      = txr.size / 2.f,
-            .rotation    = sf::radians(rotation),
-            .textureRect = txr,
-            .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
-        },
-        sf::RenderStates{.texture = txAtlas});
+    return {
+        .position    = position,
+        .scale       = scale,
+        .origin      = txr.size / 2.f,
+        .rotation    = sf::radians(rotation),
+        .textureRect = txr,
+        .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
+    };
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline]] void drawParticleImpl(
+    sf::RenderTarget&   rt,
+    const sf::Vec2f     position,
+    const sf::Vec2f     scale,
+    const float         rotation,
+    const sf::FloatRect txr,
+    const float         opacity)
+{
+    rt.draw(makeParticleSprite(position, scale, rotation, txr, opacity), sf::RenderStates{.texture = txAtlas});
 }
 
 
@@ -139,9 +157,6 @@ struct World
 ////////////////////////////////////////////////////////////
 struct Emitter : Entity
 {
-    float lifetime;
-    float lifetimeDecayRate;
-
     float spawnTimer;
     float spawnRate;
 
@@ -151,13 +166,10 @@ struct Emitter : Entity
     {
         Entity::update(dt);
 
-        lifetime += lifetimeDecayRate * dt;
         spawnTimer += spawnRate * dt;
 
         for (; spawnTimer >= 1.f; spawnTimer -= 1.f)
             spawnParticle();
-
-        alive = lifetime > 0.f;
     }
 
     void draw(sf::RenderTarget&) override
@@ -168,12 +180,10 @@ struct Emitter : Entity
 ////////////////////////////////////////////////////////////
 struct Particle : Entity
 {
-    float lifetime;
     float scale;
     float opacity;
     float rotation;
 
-    float lifetimeDecayRate;
     float scaleRate;
     float opacityChange;
     float angularVelocity;
@@ -182,12 +192,11 @@ struct Particle : Entity
     {
         Entity::update(dt);
 
-        lifetime += lifetimeDecayRate * dt;
         scale += scaleRate * dt;
         opacity += opacityChange * dt;
         rotation += angularVelocity * dt;
 
-        alive = lifetime > 0.f;
+        alive = opacity > 0.f;
 
         if (scale <= 0.f)
             scale = 0.f;
@@ -226,15 +235,13 @@ struct SmokeEmitter : Emitter
         p.velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f;
         p.acceleration = {0.f, -0.011f};
 
-        p.lifetime = 1.f;
         p.scale    = rng.getF(0.0025f, 0.0035f);
         p.opacity  = rng.getF(0.05f, 0.25f);
         p.rotation = rng.getF(0.f, 6.28f);
 
-        p.lifetimeDecayRate = -0.005f;
-        p.scaleRate         = rng.getF(0.001f, 0.003f) * 2.75f;
-        p.opacityChange     = -rng.getF(0.001f, 0.002f) * 3.25f;
-        p.angularVelocity   = rng.getF(-0.02f, 0.02f);
+        p.scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f;
+        p.opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f;
+        p.angularVelocity = rng.getF(-0.02f, 0.02f);
     }
 };
 
@@ -249,15 +256,13 @@ struct FireEmitter : Emitter
         p.velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f});
         p.acceleration = {0.f, 0.07f};
 
-        p.lifetime = 1.f;
         p.scale    = rng.getF(0.5f, 0.7f) * 0.085f;
         p.opacity  = rng.getF(0.2f, 0.4f) * 0.85f;
         p.rotation = 0.f;
 
-        p.lifetimeDecayRate = -0.005f;
-        p.scaleRate         = -rng.getF(0.001f, 0.003f) * 0.25f;
-        p.opacityChange     = -0.001f;
-        p.angularVelocity   = rng.getF(-0.002f, 0.002f);
+        p.scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f;
+        p.opacityChange   = -0.001f;
+        p.angularVelocity = rng.getF(-0.002f, 0.002f);
     }
 };
 
@@ -277,25 +282,21 @@ struct Rocket : Entity
         {
             init = true;
 
-            auto& se             = world->addEntity<SmokeEmitter>();
-            se.position          = position;
-            se.velocity          = {};
-            se.acceleration      = {};
-            se.lifetime          = 100.f;
-            se.lifetimeDecayRate = -0.01f;
-            se.spawnTimer        = 0.f;
-            se.spawnRate         = 2.5f;
-            smokeEmitter         = &se;
+            auto& se        = world->addEntity<SmokeEmitter>();
+            se.position     = position;
+            se.velocity     = {};
+            se.acceleration = {};
+            se.spawnTimer   = 0.f;
+            se.spawnRate    = 2.5f;
+            smokeEmitter    = &se;
 
-            auto& fe             = world->addEntity<FireEmitter>();
-            fe.position          = position;
-            fe.velocity          = {};
-            fe.acceleration      = {};
-            fe.lifetime          = 100.f;
-            fe.lifetimeDecayRate = -0.01f;
-            fe.spawnTimer        = 0.f;
-            fe.spawnRate         = 1.25f;
-            fireEmitter          = &fe;
+            auto& fe        = world->addEntity<FireEmitter>();
+            fe.position     = position;
+            fe.velocity     = {};
+            fe.acceleration = {};
+            fe.spawnTimer   = 0.f;
+            fe.spawnRate    = 1.25f;
+            fireEmitter     = &fe;
         }
 
         velocity += acceleration * dt;
@@ -310,8 +311,8 @@ struct Rocket : Entity
         {
             alive = false;
 
-            smokeEmitter->lifetime = 0.f;
-            fireEmitter->lifetime  = 0.f;
+            smokeEmitter->alive = false;
+            fireEmitter->alive  = false;
         }
     }
 
@@ -347,9 +348,6 @@ struct Emitter
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    float lifetime;
-    float lifetimeDecayRate;
-
     float spawnTimer;
     float spawnRate;
 
@@ -363,12 +361,10 @@ struct Particle
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    float lifetime;
     float scale;
     float opacity;
     float rotation;
 
-    float lifetimeDecayRate;
     float scaleRate;
     float opacityChange;
     float angularVelocity;
@@ -423,19 +419,15 @@ struct World
         auto& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 2.5f,
-            .type              = ParticleType::Smoke,
+            .spawnTimer = 0.f,
+            .spawnRate  = 2.5f,
+            .type       = ParticleType::Smoke,
         });
 
         rocket.fireEmitterIdx = addEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 1.25f,
-            .type              = ParticleType::Fire,
+            .spawnTimer = 0.f,
+            .spawnRate  = 1.25f,
+            .type       = ParticleType::Fire,
         });
 
         return rocket;
@@ -449,7 +441,6 @@ struct World
             p.position += p.velocity * dt;
             p.velocity += p.acceleration * dt;
 
-            p.lifetime += p.lifetimeDecayRate * dt;
             p.scale += p.scaleRate * dt;
             p.opacity += p.opacityChange * dt;
             p.rotation += p.angularVelocity * dt;
@@ -469,29 +460,25 @@ struct World
             e->position += e->velocity * dt;
             e->velocity += e->acceleration * dt;
 
-            e->lifetime += e->lifetimeDecayRate * dt;
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
             {
                 if (e->type == ParticleType::Smoke)
                 {
-                    addParticle(
-                        {.position     = e->position,
-                         .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                         .acceleration = {0.f, -0.011f},
+                    addParticle({.position     = e->position,
+                                 .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
+                                 .acceleration = {0.f, -0.011f},
 
-                         .lifetime = 1.f,
-                         .scale    = rng.getF(0.0025f, 0.0035f),
-                         .opacity  = rng.getF(0.05f, 0.25f),
-                         .rotation = rng.getF(0.f, 6.28f),
+                                 .scale    = rng.getF(0.0025f, 0.0035f),
+                                 .opacity  = rng.getF(0.05f, 0.25f),
+                                 .rotation = rng.getF(0.f, 6.28f),
 
-                         .lifetimeDecayRate = -0.005f,
-                         .scaleRate         = rng.getF(0.001f, 0.003f) * 2.75f,
-                         .opacityChange     = -rng.getF(0.001f, 0.002f) * 3.25f,
-                         .angularVelocity   = rng.getF(-0.02f, 0.02f),
+                                 .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+                                 .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+                                 .angularVelocity = rng.getF(-0.02f, 0.02f),
 
-                         .type = ParticleType::Smoke});
+                                 .type = ParticleType::Smoke});
                 }
                 else if (e->type == ParticleType::Fire)
                 {
@@ -500,15 +487,13 @@ struct World
                         .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                         .acceleration = {0.f, 0.07f},
 
-                        .lifetime = 1.f,
                         .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
                         .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
                         .rotation = rng.getF(0.f, 6.28f),
 
-                        .lifetimeDecayRate = -0.005f,
-                        .scaleRate         = -rng.getF(0.001f, 0.003f) * 0.25f,
-                        .opacityChange     = -0.001f,
-                        .angularVelocity   = rng.getF(-0.002f, 0.002f),
+                        .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
+                        .opacityChange   = -0.001f,
+                        .angularVelocity = rng.getF(-0.002f, 0.002f),
 
                         .type = ParticleType::Fire,
                     });
@@ -532,11 +517,7 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        for (auto& e : emitters)
-            if (e.hasValue() && e->lifetime <= 0.f)
-                e.reset();
-
-        sf::base::vectorSwapAndPopIf(particles, [](const auto& p) { return p.lifetime <= 0.f; });
+        sf::base::vectorSwapAndPopIf(particles, [](const auto& p) { return p.opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
                                      [&](const auto& r)
@@ -598,9 +579,6 @@ struct Emitter
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    float lifetime;
-    float lifetimeDecayRate;
-
     float spawnTimer;
     float spawnRate;
 };
@@ -612,12 +590,10 @@ struct Particle
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    float lifetime;
     float scale;
     float opacity;
     float rotation;
 
-    float lifetimeDecayRate;
     float scaleRate;
     float opacityChange;
     float angularVelocity;
@@ -693,17 +669,13 @@ struct World
         auto& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addSmokeEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 2.5f,
+            .spawnTimer = 0.f,
+            .spawnRate  = 2.5f,
         });
 
         rocket.fireEmitterIdx = addFireEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 1.25f,
+            .spawnTimer = 0.f,
+            .spawnRate  = 1.25f,
         });
 
         return rocket;
@@ -717,7 +689,6 @@ struct World
             p.position += p.velocity * dt;
             p.velocity += p.acceleration * dt;
 
-            p.lifetime += p.lifetimeDecayRate * dt;
             p.scale += p.scaleRate * dt;
             p.opacity += p.opacityChange * dt;
             p.rotation += p.angularVelocity * dt;
@@ -743,7 +714,6 @@ struct World
             e->position += e->velocity * dt;
             e->velocity += e->acceleration * dt;
 
-            e->lifetime += e->lifetimeDecayRate * dt;
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
@@ -752,15 +722,13 @@ struct World
                     .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
                     .acceleration = {0.f, -0.011f},
 
-                    .lifetime = 1.f,
                     .scale    = rng.getF(0.0025f, 0.0035f),
                     .opacity  = rng.getF(0.05f, 0.25f),
                     .rotation = rng.getF(0.f, 6.28f),
 
-                    .lifetimeDecayRate = -0.005f,
-                    .scaleRate         = rng.getF(0.001f, 0.003f) * 2.75f,
-                    .opacityChange     = -rng.getF(0.001f, 0.002f) * 3.25f,
-                    .angularVelocity   = rng.getF(-0.02f, 0.02f),
+                    .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+                    .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+                    .angularVelocity = rng.getF(-0.02f, 0.02f),
                 });
         }
 
@@ -772,7 +740,6 @@ struct World
             e->position += e->velocity * dt;
             e->velocity += e->acceleration * dt;
 
-            e->lifetime += e->lifetimeDecayRate * dt;
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
@@ -781,15 +748,13 @@ struct World
                     .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                     .acceleration = {0.f, 0.07f},
 
-                    .lifetime = 1.f,
                     .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
                     .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
                     .rotation = rng.getF(0.f, 6.28f),
 
-                    .lifetimeDecayRate = -0.005f,
-                    .scaleRate         = -rng.getF(0.001f, 0.003f) * 0.25f,
-                    .opacityChange     = -0.001f,
-                    .angularVelocity   = rng.getF(-0.002f, 0.002f),
+                    .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
+                    .opacityChange   = -0.001f,
+                    .angularVelocity = rng.getF(-0.002f, 0.002f),
                 });
         }
 
@@ -809,16 +774,8 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        for (auto& e : smokeEmitters)
-            if (e.hasValue() && e->lifetime <= 0.f)
-                e.reset();
-
-        for (auto& e : fireEmitters)
-            if (e.hasValue() && e->lifetime <= 0.f)
-                e.reset();
-
-        sf::base::vectorSwapAndPopIf(smokeParticles, [](const auto& p) { return p.lifetime <= 0.f; });
-        sf::base::vectorSwapAndPopIf(fireParticles, [](const auto& p) { return p.lifetime <= 0.f; });
+        sf::base::vectorSwapAndPopIf(smokeParticles, [](const auto& p) { return p.opacity <= 0.f; });
+        sf::base::vectorSwapAndPopIf(fireParticles, [](const auto& p) { return p.opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
                                      [&](const auto& r)
@@ -877,9 +834,6 @@ using ParticleSoA = SoAFor<sf::Vec2f, // position
                            sf::Vec2f, // velocity
                            sf::Vec2f, // acceleration
 
-                           float, // lifetime
-                           float, // lifetimeDecayRate
-
                            float, // scale
                            float, // scaleRate
 
@@ -896,9 +850,6 @@ struct Field
         Position,
         Velocity,
         Acceleration,
-
-        Life,
-        LifeDelta,
 
         Scale,
         ScaleDelta,
@@ -917,9 +868,6 @@ struct Emitter
     sf::Vec2f position;
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
-
-    float lifetime;
-    float lifetimeDecayRate;
 
     float spawnTimer;
     float spawnRate;
@@ -995,17 +943,13 @@ struct World
         auto& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addSmokeEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 2.5f,
+            .spawnTimer = 0.f,
+            .spawnRate  = 2.5f,
         });
 
         rocket.fireEmitterIdx = addFireEmitter({
-            .lifetime          = 100.f,
-            .lifetimeDecayRate = -0.01f,
-            .spawnTimer        = 0.f,
-            .spawnRate         = 1.25f,
+            .spawnTimer = 0.f,
+            .spawnRate  = 1.25f,
         });
 
         return rocket;
@@ -1022,9 +966,6 @@ struct World
             auto&       velocities    = particles.template get<Field::Velocity>();
             const auto& accelerations = particles.template get<Field::Acceleration>();
 
-            auto&       lifes      = particles.template get<Field::Life>();
-            const auto& lifeDeltas = particles.template get<Field::LifeDelta>();
-
             auto&       scales      = particles.template get<Field::Scale>();
             const auto& scaleDeltas = particles.template get<Field::ScaleDelta>();
 
@@ -1038,8 +979,6 @@ struct World
             {
                 velocities[i] += accelerations[i] * dt;
                 positions[i] += velocities[i] * dt;
-
-                lifes[i] += lifeDeltas[i] * dt;
 
                 scales[i] += scaleDeltas[i] * dt;
                 if (scales[i] <= 0.f)
@@ -1064,7 +1003,6 @@ struct World
             e->position += e->velocity * dt;
             e->velocity += e->acceleration * dt;
 
-            e->lifetime += e->lifetimeDecayRate * dt;
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
@@ -1072,9 +1010,6 @@ struct World
                     /* .position     */ e->position,
                     /* .velocity     */ rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
                     /* .acceleration */ sf::Vec2f{0.f, -0.011f},
-
-                    /* .lifetime          */ 1.f,
-                    /* .lifetimeDecayRate */ -0.005f,
 
                     /* .scale     */ rng.getF(0.0025f, 0.0035f),
                     /* .scaleRate */ rng.getF(0.001f, 0.003f) * 2.75f,
@@ -1094,7 +1029,6 @@ struct World
             e->position += e->velocity * dt;
             e->velocity += e->acceleration * dt;
 
-            e->lifetime += e->lifetimeDecayRate * dt;
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
@@ -1102,9 +1036,6 @@ struct World
                     /* .position     */ e->position,
                     /* .velocity     */ rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                     /* .acceleration */ sf::Vec2f{0.f, 0.07f},
-
-                    /* .lifetime          */ 1.f,
-                    /* .lifetimeDecayRate */ -0.005f,
 
                     /* .scale     */ rng.getF(0.5f, 0.7f) * 0.085f,
                     /* .scaleRate */ -rng.getF(0.001f, 0.003f) * 0.25f,
@@ -1132,16 +1063,8 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        for (auto& e : smokeEmitters)
-            if (e.hasValue() && e->lifetime <= 0.f)
-                e.reset();
-
-        for (auto& e : fireEmitters)
-            if (e.hasValue() && e->lifetime <= 0.f)
-                e.reset();
-
-        smokeParticles.eraseIfBySwapping<Field::Life>([](const float lifetime) { return lifetime <= 0.f; });
-        fireParticles.eraseIfBySwapping<Field::Life>([](const float lifetime) { return lifetime <= 0.f; });
+        smokeParticles.eraseIfBySwapping<Field::Opacity>([](const float opacity) { return opacity <= 0.f; });
+        fireParticles.eraseIfBySwapping<Field::Opacity>([](const float opacity) { return opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
                                      [&](const auto& r)
@@ -1164,14 +1087,170 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void draw(sf::RenderTarget& rt)
+    [[gnu::always_inline, gnu::flatten]] static inline constexpr void appendSpriteAsTriangleVertices(
+        const sf::Transform& transform,
+        const sf::FloatRect& textureRect,
+        const sf::Color      color,
+        sf::Vertex* const    vertexPtr) // This pointer should now point to a buffer with space for 6 vertices
+    {
+        const auto& [texPos, texSize] = textureRect;
+        const sf::Vec2f absSize{SFML_BASE_MATH_FABSF(texSize.x), SFML_BASE_MATH_FABSF(texSize.y)};
+
+        // Calculate the four corner points once, as before
+        const sf::Vec2f p1 = transform.transformPoint({0.f, 0.f});             // Top-left
+        const sf::Vec2f p2 = transform.transformPoint({absSize.x, 0.f});       // Top-right
+        const sf::Vec2f p3 = transform.transformPoint({absSize.x, absSize.y}); // Bottom-right
+        const sf::Vec2f p4 = transform.transformPoint({0.f, absSize.y});       // Bottom-left
+
+        // Texture coordinates for the four corners
+        const sf::Vec2f t1 = texPos;
+        const sf::Vec2f t2 = texPos.addX(texSize.x);
+        const sf::Vec2f t3 = texPos + texSize;
+        const sf::Vec2f t4 = texPos.addY(texSize.y);
+
+        // Build the two triangles that form the quad
+        // Triangle 1: Top-left, Top-right, Bottom-right
+        vertexPtr[0] = {p1, color, t1};
+        vertexPtr[1] = {p2, color, t2};
+        vertexPtr[2] = {p3, color, t3};
+
+        // Triangle 2: Top-left, Bottom-right, Bottom-left
+        vertexPtr[3] = {p1, color, t1};
+        vertexPtr[4] = {p3, color, t3};
+        vertexPtr[5] = {p4, color, t4};
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw(auto& doInBatches, sf::RenderTarget& rt)
     {
         smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f& position, const float& scale, const float& opacity, const float& rotation)
+            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
         { drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity); });
 
         fireParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f& position, const float& scale, const float& opacity, const float& rotation)
+            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
+        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity); });
+
+        for (const auto& r : rockets)
+        {
+            auto* txr = &txrRocket;
+
+            rt.draw(
+                sf::Sprite{
+                    .position    = r.position,
+                    .scale       = {0.15f, 0.15f},
+                    .origin      = txr->size / 2.f,
+                    .rotation    = sf::radians(0.f),
+                    .textureRect = *txr,
+                    .color       = sf::Color::White,
+                },
+                sf::RenderStates{.texture = txAtlas});
+        }
+        return;
+        //  for (auto& batch : cpuDrawableBatches)
+        //      batch.clear();
+
+        static sf::base::Vector<sf::Vertex> smokeVertices;
+        smokeVertices.resize(smokeParticles.getSize() * 6u);
+        /*
+                auto* out = smokeVertices.data();
+
+                smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
+                    [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
+                {
+                    const auto sprite = makeParticleSprite(position, {scale, scale}, rotation, txrSmoke, opacity);
+
+                    appendSpriteAsTriangleVertices(sprite.getTransform(),
+                                                   txrSmoke,
+                                                   sprite.color,
+                                                   out); // Write to the current pointer
+
+                    // Advance the pointer by 4 vertices for the next particle
+                    out += 6;
+                });*/
+
+
+        doInBatches(static_cast<sf::base::SizeT>(smokeParticles.getSize()),
+                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
+        {
+            // Each thread gets a pointer to its designated starting spot
+            sf::Vertex* out = smokeVertices.data() + batchStartIdx * 6u;
+
+            smokeParticles
+                .withSubRange<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(batchStartIdx,
+                                                                                              batchEndIdx,
+                                                                                              [&](const sf::Vec2f position,
+                                                                                                  const float scale,
+                                                                                                  const float opacity,
+                                                                                                  const float rotation)
+            {
+                const auto sprite = makeParticleSprite(position, {scale, scale}, rotation, txrSmoke, opacity);
+
+                appendSpriteAsTriangleVertices(sprite.getTransform(),
+                                               txrSmoke,
+                                               sprite.color,
+                                               out); // Write to the current pointer
+
+                // Advance the pointer by 6 vertices for the next particle
+                out += 6;
+            });
+        });
+
+        constexpr std::size_t verticesPerChunk = 46'656 * 4;
+        const std::size_t     nChunks          = smokeVertices.size() / verticesPerChunk;
+
+        for (std::size_t iChunks = 0u; iChunks < nChunks; ++iChunks)
+            rt.drawVertices(smokeVertices.data() + iChunks * verticesPerChunk,
+                            verticesPerChunk,
+                            sf::PrimitiveType::Triangles,
+                            {.texture = txAtlas});
+
+        /*
+        static sf::base::Vector<sf::Vertex> fireVertices;
+        fireVertices.resize(fireParticles.getSize() * 4u);
+
+
+        doInBatches(static_cast<sf::base::SizeT>(fireParticles.getSize()),
+                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
+        {
+            fireParticles
+                .withSubRange<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(batchStartIdx,
+                                                                                              batchEndIdx,
+                                                                                              [&](const sf::Vec2f position,
+                                                                                                  const float scale,
+                                                                                                  const float opacity,
+                                                                                                  const float rotation)
+            { cpuDrawableBatches[iBatch].add(makeParticleSprite(position, {scale, scale}, rotation, txrFire, opacity)); });
+        });
+        */
+
+        // for (auto& batch : cpuDrawableBatches)
+        //    rt.draw(batch, {.texture = txAtlas});
+
+        for (const auto& r : rockets)
+        {
+            auto* txr = &txrRocket;
+
+            rt.draw(
+                sf::Sprite{
+                    .position    = r.position,
+                    .scale       = {0.15f, 0.15f},
+                    .origin      = txr->size / 2.f,
+                    .rotation    = sf::radians(0.f),
+                    .textureRect = *txr,
+                    .color       = sf::Color::White,
+                },
+                sf::RenderStates{.texture = txAtlas});
+        }
+
+        return;
+
+        smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
+            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
+        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity); });
+
+        fireParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
+            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
         { drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity); });
 
         for (const auto& r : rockets)
@@ -1228,7 +1307,7 @@ int main()
         .resizable       = false,
         .vsync           = false,
         .frametimeLimit  = 144u,
-        .contextSettings = {.antiAliasingLevel = 8u},
+        .contextSettings = {.antiAliasingLevel = 16u},
     });
 
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
@@ -1253,6 +1332,7 @@ int main()
     // Load fonts
     const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
     const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
+    ImFont*    fontImGuiGeistMono{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/geistmono.ttf", 32.f)};
 
     //
     //
@@ -1279,6 +1359,48 @@ int main()
     float simulationSpeed = 0.1f;
     float rocketSpawnRate = 0.1f;
     float zoom            = 3.f;
+    bool  showInfo        = true;
+
+    //
+    //
+    // Set up drawable batches
+    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
+    const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
+    const auto     nWorkers      = nMaxWorkers;
+
+    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : sf::CPUDrawableBatch
+    {
+        using sf::CPUDrawableBatch::CPUDrawableBatch;
+    };
+
+    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
+
+    //
+    //
+    // Set up thread pool
+    sf::base::ThreadPool pool(nWorkers);
+
+    const auto doInBatches = [&](const sf::base::SizeT nParticlesTotal, auto&& f)
+    {
+        const sf::base::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
+
+        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
+
+        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
+        {
+            pool.post([&, i]
+            {
+                const sf::base::SizeT batchStartIdx = i * particlesPerBatch;
+                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
+
+                f(i, batchStartIdx, batchEndIdx);
+
+                latch.count_down();
+            });
+        }
+
+        latch.wait();
+    };
 
     //
     //
@@ -1312,10 +1434,10 @@ int main()
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    Sampler samplesUpdateMs(/* capacity */ 64u);
-    Sampler samplesDrawMs(/* capacity */ 64u);
-    Sampler samplesDisplayMs(/* capacity */ 64u);
-    Sampler samplesFPS(/* capacity */ 64u);
+    Sampler samplesUpdateMs(/* capacity */ 128u);
+    Sampler samplesDrawMs(/* capacity */ 128u);
+    Sampler samplesDisplayMs(/* capacity */ 128u);
+    Sampler samplesFPS(/* capacity */ 128u);
 
     //
     //
@@ -1527,6 +1649,68 @@ int main()
             ImGui::SliderFloat("Zoom", &zoom, 1.f, 4.f);
 
             ImGui::End();
+
+
+            if (showInfo)
+            {
+                ImGui::SetNextWindowPos({24.f, 24.f});
+
+                ImGui::PushFont(fontImGuiGeistMono);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
+
+                ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+                ImGui::SetWindowFontScale(1.25f);
+
+                ImGui::Text("    FPS: %.1f", samplesFPS.getAverage());
+                ImGui::Text(" Update: %.1f ms", samplesUpdateMs.getAverage());
+                ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverage());
+                ImGui::Text("Display: %.1f ms", samplesDisplayMs.getAverage());
+
+                ImGui::Separator();
+                ImGui::SetWindowFontScale(0.75f);
+                ImGui::Checkbox("Enable rendering", &drawStep);
+
+                ImGui::Separator();
+                ImGui::SetWindowFontScale(0.75f);
+
+                ImGui::Text("Rocket spawn rate");
+
+                if (ImGui::Button("x1.0##r1"))
+                    rocketSpawnRate = 1.f;
+                else if (ImGui::SameLine(), ImGui::Button("x2.0##r2"))
+                    rocketSpawnRate = 2.f;
+                else if (ImGui::SameLine(), ImGui::Button("x3.0##r3"))
+                    rocketSpawnRate = 3.f;
+                else if (ImGui::SameLine(), ImGui::Button("x4.0##r4"))
+                    rocketSpawnRate = 4.f;
+
+                ImGui::Separator();
+                ImGui::SetWindowFontScale(0.75f);
+
+                ImGui::Text("Simulation speed");
+
+                if (ImGui::Button("x0.1##s1"))
+                    simulationSpeed = 0.1f;
+                else if (ImGui::SameLine(), ImGui::Button("x0.5##s2"))
+                    simulationSpeed = 0.5f;
+                else if (ImGui::SameLine(), ImGui::Button("x1.0##s3"))
+                    simulationSpeed = 1.f;
+                else if (ImGui::SameLine(), ImGui::Button("x2.0##s4"))
+                    simulationSpeed = 2.f;
+                else if (ImGui::SameLine(), ImGui::Button("x3.0##s5"))
+                    simulationSpeed = 3.f;
+
+                ImGui::Separator();
+                ImGui::SetWindowFontScale(0.75f);
+
+                ImGui::Text("Zoom level");
+                ImGui::SliderFloat("##Zoom", &zoom, 1.f, 3.f);
+
+                ImGui::End();
+
+                ImGui::PopStyleVar();
+                ImGui::PopFont();
+            }
         }
         // ---
 
@@ -1548,7 +1732,7 @@ int main()
                 else if (mode == Mode::AOSImproved)
                     aosImprovedWorld.draw(window);
                 else if (mode == Mode::SOA)
-                    soaWorld.draw(window);
+                    soaWorld.draw(doInBatches, window);
             }
         }
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
