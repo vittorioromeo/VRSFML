@@ -16,7 +16,7 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf // TODO P0: add subnamespace here
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
@@ -72,7 +72,7 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteVertices(
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
     const Transform& transform,
     const FloatRect& textureRect,
     const Color      color,
@@ -154,7 +154,7 @@ namespace sf
     Vertex* const   vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
-    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
+    appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
 
 ////////////////////////////////////////////////////////////

@@ -549,12 +549,12 @@ void RenderTarget::draw(const Texture& texture, RenderStates states)
     {
         Vertex buffer[4];
 
-        appendPreTransformedSpriteVertices(Transform::from(/* position */ {0.f, 0.f},
-                                                           /* scale */ {1.f, 1.f},
-                                                           /* origin */ {0.f, 0.f}),
-                                           texture.getRect(),
-                                           Color::White,
-                                           buffer);
+        appendPreTransformedSpriteQuadVertices(Transform::from(/* position */ {0.f, 0.f},
+                                                               /* scale */ {1.f, 1.f},
+                                                               /* origin */ {0.f, 0.f}),
+                                               texture.getRect(),
+                                               Color::White,
+                                               buffer);
 
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }
@@ -585,10 +585,10 @@ void RenderTarget::draw(const Texture& texture, const TextureDrawParams& params,
 
         Vertex buffer[4];
 
-        appendPreTransformedSpriteVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
-                                           (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
-                                           params.color,
-                                           buffer);
+        appendPreTransformedSpriteQuadVertices(Transform::from(params.position, params.scale, params.origin, sine, cosine),
+                                               (params.textureRect == FloatRect{}) ? texture.getRect() : params.textureRect,
+                                               params.color,
+                                               buffer);
 
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }
@@ -608,7 +608,7 @@ void RenderTarget::draw(const Sprite& sprite, const RenderStates& states)
     else
     {
         Vertex buffer[4];
-        appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
+        appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, buffer);
         draw(buffer, PrimitiveType::TriangleStrip, states);
     }
 }
@@ -722,6 +722,7 @@ void RenderTarget::immediateDrawIndexedQuads(const Vertex*       vertexData,
                                              const RenderStates& states)
 {
     SFML_BASE_ASSERT(vertexCount % 4u == 0u);
+    SFML_BASE_ASSERT(vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
 
     immediateDrawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
 }
@@ -939,6 +940,8 @@ void RenderTarget::drawQuads(const Vertex* const vertexData,
                              const RenderStates& states)
 {
     SFML_BASE_ASSERT(vertexCount % 4u == 0u);
+    SFML_BASE_ASSERT(vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
+
     drawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
 }
 
