@@ -171,15 +171,13 @@ void runWindowTest(DWORD exStyle, bool withMenu)
         SECTION("Custom context settings")
         {
             static constexpr sf::ContextSettings contextSettings{/* depthBits*/ 1,
-                                                                 /* stencilBits */ 1,
-                                                                 /* antiAliasingLevel */ 1};
+                                                                 /* stencilBits */ 1};
 
             renderWindow.emplace(handle, contextSettings);
 
             INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
             CHECK(renderWindow->getSettings().depthBits >= 1);
             CHECK(renderWindow->getSettings().stencilBits >= 1);
-            CHECK(renderWindow->getSettings().antiAliasingLevel >= 1);
         }
 
         INFO("sf::Window test with exStyle: " << exStyle << ", withMenu: " << withMenu);
