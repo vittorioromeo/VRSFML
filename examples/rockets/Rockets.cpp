@@ -1264,6 +1264,24 @@ int main()
     AOSImproved::World aosImprovedWorld;
     SOA::World         soaWorld;
 
+    oopWorld.entities.reserve(1'250'000);
+
+    aosWorld.rockets.reserve(2500);
+    aosWorld.emitters.reserve(5000);
+    aosWorld.particles.reserve(1'000'000);
+
+    aosImprovedWorld.rockets.reserve(2500);
+    aosImprovedWorld.smokeEmitters.reserve(2500);
+    aosImprovedWorld.fireEmitters.reserve(2500);
+    aosImprovedWorld.smokeParticles.reserve(750'000);
+    aosImprovedWorld.fireParticles.reserve(750'000);
+
+    soaWorld.rockets.reserve(2500);
+    soaWorld.smokeEmitters.reserve(2500);
+    soaWorld.fireEmitters.reserve(2500);
+    soaWorld.smokeParticles.reserve(750'000);
+    soaWorld.fireParticles.reserve(750'000);
+
     //
     //
     // Set up clock and time sampling
@@ -1525,6 +1543,10 @@ int main()
                 simulationSpeed = 2.f;
             else if (ImGui::SameLine(), ImGui::Button("x3.0##s5"))
                 simulationSpeed = 3.f;
+            else if (ImGui::SameLine(), ImGui::Button("x4.0##s6"))
+                simulationSpeed = 4.f;
+            else if (ImGui::SameLine(), ImGui::Button("x5.0##s7"))
+                simulationSpeed = 5.f;
 
             ImGui::Separator();
             ImGui::SetWindowFontScale(0.75f);
