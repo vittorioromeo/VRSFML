@@ -16,6 +16,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
@@ -710,25 +711,6 @@ private:
                                       const RenderStates& states = {});
 
     ////////////////////////////////////////////////////////////
-    /// \brief Immediately draw quads defined by an array of vertices and precomputed quad indices
-    ///
-    /// Will result in an OpenGL draw call.
-    /// Does not flush any batch in-flight.
-    /// Indices follow the sequence `[0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 9, 10, ...]`.
-    /// Vertex count must be a multiple of `4`.
-    ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void immediateDrawIndexedQuads(const Vertex*       vertexData,
-                                   base::SizeT         vertexCount,
-                                   PrimitiveType       type,
-                                   const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by a persistent mapped buffer and indices
     ///
     /// Will result in an OpenGL draw call.
@@ -757,6 +739,132 @@ private:
     ////////////////////////////////////////////////////////////
     void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
 
+public: // TODO P0: to private, review everything below!
+        // TODO P0: consider using a C++20 designated initializer approach everywhere in these funcs
+    struct InstanceAttributeBinder;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class VAOHandle
+    {
+    public:
+        VAOHandle();
+        ~VAOHandle();
+
+        VAOHandle(const VAOHandle&)            = delete;
+        VAOHandle& operator=(const VAOHandle&) = delete;
+
+        VAOHandle(VAOHandle&&) noexcept;
+        VAOHandle& operator=(VAOHandle&&) noexcept;
+
+    private:
+        friend RenderTarget;
+
+        struct Impl;
+        base::InPlacePImpl<Impl, 128> m_impl;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class VBOHandle
+    {
+    public:
+        VBOHandle();
+        ~VBOHandle();
+
+        VBOHandle(const VBOHandle&)            = delete;
+        VBOHandle& operator=(const VBOHandle&) = delete;
+
+        VBOHandle(VBOHandle&&) noexcept;
+        VBOHandle& operator=(VBOHandle&&) noexcept;
+
+    private:
+        friend InstanceAttributeBinder;
+
+        struct Impl;
+        base::InPlacePImpl<Impl, 64> m_impl;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct InstanceAttributeBinder
+    {
+        ////////////////////////////////////////////////////////////
+        enum class Type
+        {
+            Byte,
+            UnsignedByte,
+            Short,
+            UnsignedShort,
+            Int,
+            UnsignedInt,
+            Float,
+            Double
+        };
+
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder() = default;
+
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder(const InstanceAttributeBinder&)            = delete;
+        InstanceAttributeBinder& operator=(const InstanceAttributeBinder&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder(InstanceAttributeBinder&&)            = delete;
+        InstanceAttributeBinder& operator=(InstanceAttributeBinder&&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        void bindVBO(VBOHandle& vboHandle);
+
+        ////////////////////////////////////////////////////////////
+        void uploadData(base::SizeT instanceCount, const void* data, base::SizeT stride);
+
+        ////////////////////////////////////////////////////////////
+        template <typename T>
+        void uploadContiguousData(const base::SizeT instanceCount, const T* const data)
+        {
+            uploadData(instanceCount, data, sizeof(T));
+        }
+
+        ////////////////////////////////////////////////////////////
+        void setup(unsigned int location, unsigned int size, Type type, bool normalized, base::SizeT stride, base::SizeT fieldOffset);
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawInstancedVertices(
+        VAOHandle&                                              vaoHandle,
+        const Vertex*                                           vertexData,
+        base::SizeT                                             vertexCount,
+        base::SizeT                                             instanceCount,
+        PrimitiveType                                           type,
+        const RenderStates&                                     states,
+        base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawInstancedIndexedVertices(
+        VAOHandle&                                              vaoHandle,
+        const Vertex*                                           vertexData,
+        base::SizeT                                             vertexCount,
+        const IndexType*                                        indexData,
+        base::SizeT                                             indexCount,
+        base::SizeT                                             instanceCount,
+        PrimitiveType                                           type,
+        const RenderStates&                                     states,
+        base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn);
+
+private:
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
@@ -891,6 +999,42 @@ private:
                                                   base::SizeT   indexCount,
                                                   base::SizeT   indexOffset,
                                                   base::SizeT   vertexOffset);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: instanced, non-indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type          Type of primitives to draw
+    /// \param vertexOffset  Offset of the first vertex to use when drawing
+    /// \param vertexCount   Number of vertices to use when drawing
+    /// \param instanceCount Number of instances to draw
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokeInstancedPrimitiveDrawCall(PrimitiveType type,
+                                          base::SizeT   vertexOffset,
+                                          base::SizeT   vertexCount,
+                                          base::SizeT   instanceCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: instanced, indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type          Type of primitives to draw
+    /// \param indexOffset   Offset of the first index to use when drawing
+    /// \param indexCount    Number of indices to use when drawing
+    /// \param instanceCount Number of instances to draw
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokeInstancedPrimitiveDrawCallIndexed(PrimitiveType type,
+                                                 base::SizeT   indexOffset,
+                                                 base::SizeT   indexCount,
+                                                 base::SizeT   instanceCount);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs

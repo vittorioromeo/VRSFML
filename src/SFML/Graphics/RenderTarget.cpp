@@ -716,19 +716,6 @@ void RenderTarget::immediateDrawIndexedVertices(
 
 
 ////////////////////////////////////////////////////////////
-void RenderTarget::immediateDrawIndexedQuads(const Vertex*       vertexData,
-                                             const base::SizeT   vertexCount,
-                                             const PrimitiveType type,
-                                             const RenderStates& states)
-{
-    SFML_BASE_ASSERT(vertexCount % 4u == 0u);
-    SFML_BASE_ASSERT(vertexCount < base::getArraySize(RenderTargetImpl::precomputedQuadIndices) / 6u * 4u);
-
-    immediateDrawIndexedVertices(vertexData, vertexCount, RenderTargetImpl::precomputedQuadIndices, vertexCount / 4u * 6u, type, states);
-}
-
-
-////////////////////////////////////////////////////////////
 void RenderTarget::immediateDrawPersistentMappedIndexedVertices(
     [[maybe_unused]] const PersistentGPUDrawableBatch& batch,
     [[maybe_unused]] const base::SizeT                 indexCount,
@@ -765,6 +752,163 @@ void RenderTarget::immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBa
                                  drawableBatch.m_storage.indices.size(),
                                  PrimitiveType::Triangles,
                                  states);
+}
+
+
+////////////////////////////////////////////////////////////
+struct RenderTarget::VAOHandle::Impl
+{
+    GLVAOGroup vaoGroup;
+};
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VAOHandle::VAOHandle() = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VAOHandle::~VAOHandle() = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VAOHandle::VAOHandle(VAOHandle&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VAOHandle& RenderTarget::VAOHandle::operator=(VAOHandle&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+struct RenderTarget::VBOHandle::Impl
+{
+    GLVertexBufferObject vbo;
+};
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VBOHandle::VBOHandle() = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VBOHandle::~VBOHandle() = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VBOHandle::VBOHandle(VBOHandle&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+RenderTarget::VBOHandle& RenderTarget::VBOHandle::operator=(VBOHandle&&) noexcept = default;
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::InstanceAttributeBinder::bindVBO(VBOHandle& vboHandle)
+{
+    vboHandle.m_impl->vbo.bind();
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::InstanceAttributeBinder::uploadData(const base::SizeT instanceCount,
+                                                       const void* const data,
+                                                       const base::SizeT stride)
+{
+    glCheck(glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(stride * instanceCount), data, GL_STREAM_DRAW));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::InstanceAttributeBinder::setup(
+    const unsigned int location,
+    const unsigned int size,
+    const Type         type,
+    const bool         normalized,
+    const base::SizeT  stride,
+    const base::SizeT  fieldOffset)
+{
+    const auto glType = [&]() -> GLenum
+    {
+        switch (type)
+        {
+            case Type::Byte:
+                return GL_BYTE;
+            case Type::UnsignedByte:
+                return GL_UNSIGNED_BYTE;
+            case Type::Short:
+                return GL_SHORT;
+            case Type::UnsignedShort:
+                return GL_UNSIGNED_SHORT;
+            case Type::Int:
+                return GL_INT;
+            case Type::UnsignedInt:
+                return GL_UNSIGNED_INT;
+            case Type::Float:
+                return GL_FLOAT;
+            case Type::Double:
+                return GL_DOUBLE;
+        }
+
+        SFML_BASE_ASSERT(false);
+    }();
+
+    glCheck(glEnableVertexAttribArray(location));
+    glCheck(
+        glVertexAttribPointer(location, size, glType, normalized ? GL_TRUE : GL_FALSE, stride, reinterpret_cast<void*>(fieldOffset)));
+    glCheck(glVertexAttribDivisor(location, 1));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::immediateDrawInstancedVertices(
+    VAOHandle&                                              vaoHandle,
+    const Vertex* const                                     vertexData,
+    const base::SizeT                                       vertexCount,
+    const base::SizeT                                       instanceCount,
+    const PrimitiveType                                     type,
+    const RenderStates&                                     states,
+    base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn)
+{
+    // Nothing to draw or inactive target
+    if (vertexData == nullptr || vertexCount == 0u || instanceCount == 0u || !setActive(true))
+        return;
+
+    const DrawGuard drawGuard{*this, states, vaoHandle.m_impl->vaoGroup};
+
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
+
+    InstanceAttributeBinder iab;
+    setupFn(iab);
+
+    invokeInstancedPrimitiveDrawCall(type, 0, vertexCount, instanceCount);
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::immediateDrawInstancedIndexedVertices(
+    VAOHandle&                                              vaoHandle,
+    const Vertex* const                                     vertexData,
+    const base::SizeT                                       vertexCount,
+    const IndexType* const                                  indexData,
+    const base::SizeT                                       indexCount,
+    const base::SizeT                                       instanceCount,
+    const PrimitiveType                                     type,
+    const RenderStates&                                     states,
+    base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn)
+{
+    // Nothing to draw or inactive target
+    if (vertexData == nullptr || vertexCount == 0u || indexData == nullptr || indexCount == 0u || instanceCount == 0u ||
+        !setActive(true))
+        return;
+
+    const DrawGuard drawGuard{*this, states, vaoHandle.m_impl->vaoGroup};
+
+    RenderTargetImpl::streamVerticesToGPU(vertexData, vertexCount);
+    RenderTargetImpl::streamIndicesToGPU(indexData, indexCount);
+
+    InstanceAttributeBinder iab;
+    setupFn(iab);
+
+    invokeInstancedPrimitiveDrawCallIndexed(type, 0, indexCount, instanceCount);
 }
 
 
@@ -1488,6 +1632,40 @@ void RenderTarget::invokePrimitiveDrawCallIndexedBaseVertex(
                                      /*   index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType)),
                                      /*    base vertex */ static_cast<GLint>(vertexOffset)));
 #endif
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::invokeInstancedPrimitiveDrawCall(const PrimitiveType type,
+                                                    const base::SizeT   vertexOffset,
+                                                    const base::SizeT   vertexCount,
+                                                    const base::SizeT   instanceCount)
+{
+    m_currentDrawStats.drawCalls += 1u;
+    m_currentDrawStats.drawnVertices += vertexCount * instanceCount;
+
+    glCheck(glDrawArraysInstanced(/*      primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                                  /*       vertex offset */ static_cast<GLint>(vertexOffset),
+                                  /*        vertex count */ static_cast<GLsizei>(vertexCount),
+                                  /* number of instances */ static_cast<GLsizei>(instanceCount)));
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::invokeInstancedPrimitiveDrawCallIndexed(
+    const PrimitiveType type,
+    const base::SizeT   indexOffset,
+    const base::SizeT   indexCount,
+    const base::SizeT   instanceCount)
+{
+    m_currentDrawStats.drawCalls += 1u;
+    m_currentDrawStats.drawnVertices += indexCount * instanceCount;
+
+    glCheck(glDrawElementsInstanced(/*      primitive type */ RenderTargetImpl::primitiveTypeToOpenGLMode(type),
+                                    /*         index count */ static_cast<GLsizei>(indexCount),
+                                    /*          index type */ GL_UNSIGNED_INT,
+                                    /*        index offset */ reinterpret_cast<void*>(indexOffset * sizeof(IndexType)),
+                                    /* number of instances */ static_cast<GLsizei>(instanceCount)));
 }
 
 } // namespace sf
