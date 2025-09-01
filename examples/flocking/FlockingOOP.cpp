@@ -40,22 +40,20 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 
-#include <cstdio>
-
 
 namespace
 {
 ////////////////////////////////////////////////////////////
-constexpr sf::Vertex baseQuad[4]{
-    {{-0.5, -0.5}, sf::Color::White, {}}, // Top-left
-    {{0.5, -0.5}, sf::Color::White, {}},  // Top-right
-    {{0.5, 0.5}, sf::Color::White, {}},   // Bottom-right
-    {{-0.5, 0.5}, sf::Color::White, {}}   // Bottom-left
+constexpr sf::Vertex instancedQuadVertices[4] = {
+    {{-0.5, -0.5}, sf::Color::White, {0.f, 0.f}}, // Top-left
+    {{0.5, -0.5}, sf::Color::White, {1.f, 0.f}},  // Top-right
+    {{0.5, 0.5}, sf::Color::White, {1.f, 1.f}},   // Bottom-right
+    {{-0.5, 0.5}, sf::Color::White, {0.f, 1.f}}   // Bottom-left
 };
 
 
 ////////////////////////////////////////////////////////////
-constexpr unsigned int quadIndices[6]{
+constexpr unsigned int instancedQuadIndices[6] = {
     0,
     1,
     2,
@@ -81,6 +79,7 @@ constexpr const char* instancedVertexShader = R"glsl(
 layout(location = 0) uniform mat4 sf_u_mvpMatrix;
 layout(location = 1) uniform sampler2D sf_u_texture;
 layout(location = 2) uniform vec4 u_texRect;
+layout(location = 3) uniform vec2 u_invTexSize;
 
 layout(location = 0) in vec2 sf_a_position;
 layout(location = 1) in vec4 sf_a_color; // Unused but part of Vertex struct
@@ -97,33 +96,34 @@ out vec2 sf_v_texCoord;
 
 void main()
 {
-    vec2 pos = sf_a_position * u_texRect.zw;
+    // scale in local (pixel) space
+    vec2 local = sf_a_position * u_texRect.zw;
 
-    float cos_rot = cos(instance_rotation);
-    float sin_rot = sin(instance_rotation);
-    mat2 rot_scale_matrix = mat2(cos_rot, sin_rot, -sin_rot, cos_rot) * instance_scale;
+    // inline rotate + scale
+    float c = cos(instance_rotation);
+    float s = sin(instance_rotation);
+    float x = local.x * c - local.y * s;
+    float y = local.x * s + local.y * c;
+    vec2 worldPos = instance_position + instance_scale * vec2(x, y);
 
-    pos = (rot_scale_matrix * pos) + instance_position;
-
-    gl_Position = sf_u_mvpMatrix * vec4(pos, 0.0, 1.0);
+    gl_Position = sf_u_mvpMatrix * vec4(worldPos, 0.0, 1.0);
 
     sf_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
 
-    // Texture coordinate calculation needs to account for the -0.5 to 0.5 range
-    vec2 tex_coord_from_unit = sf_a_position + 0.5; // Convert from [-0.5, 0.5] to [0, 1]
-    vec2 final_texCoord = u_texRect.xy + (tex_coord_from_unit * u_texRect.zw);
-    sf_v_texCoord = final_texCoord / vec2(textureSize(sf_u_texture, 0));
+    vec2 final_texCoord = u_texRect.xy + (sf_a_texCoord * u_texRect.zw);
+    sf_v_texCoord = final_texCoord * u_invTexSize;
 }
 
 )glsl";
 
 
 ////////////////////////////////////////////////////////////
-sf::Shader*                            instanceRenderingShader   = nullptr;
-const sf::Shader::UniformLocation*     ulTextureRect             = nullptr;
-sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup = nullptr;
-sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]  = {};
-sf::base::Vector<ParticleInstanceData> instanceDataBuffer;
+sf::Shader*                            instanceRenderingShader         = nullptr;
+const sf::Shader::UniformLocation*     instanceRenderingULTextureRect  = nullptr;
+const sf::Shader::UniformLocation*     instanceRenderingInvTextureSize = nullptr;
+sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup       = nullptr;
+sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]        = {};
+sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer;
 
 
 ////////////////////////////////////////////////////////////
@@ -138,25 +138,6 @@ sf::FloatRect txrRocket;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline]] sf::Sprite makeParticleSprite(
-    const sf::Vec2f     position,
-    const sf::Vec2f     scale,
-    const float         rotation,
-    const sf::FloatRect txr,
-    const float         opacity)
-{
-    return {
-        .position    = position,
-        .scale       = scale,
-        .origin      = txr.size / 2.f,
-        .rotation    = sf::radians(rotation),
-        .textureRect = txr,
-        .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
-    };
-}
-
-
-////////////////////////////////////////////////////////////
 [[gnu::always_inline]] void drawParticleImpl(
     sf::RenderTarget&   rt,
     const sf::Vec2f     position,
@@ -165,7 +146,32 @@ sf::FloatRect txrRocket;
     const sf::FloatRect txr,
     const float         opacity)
 {
-    rt.draw(makeParticleSprite(position, scale, rotation, txr, opacity), sf::RenderStates{.texture = txAtlas});
+    rt.draw(
+        sf::Sprite{
+            .position    = position,
+            .scale       = scale,
+            .origin      = txr.size / 2.f,
+            .rotation    = sf::radians(rotation),
+            .textureRect = txr,
+            .color       = sf::Color::whiteMask(static_cast<sf::base::U8>(opacity * 255.f)),
+        },
+        sf::RenderStates{.texture = txAtlas});
+}
+
+
+////////////////////////////////////////////////////////////
+[[gnu::always_inline]] void drawRocketImpl(sf::RenderTarget& rt, const sf::Vec2f position)
+{
+    rt.draw(
+        sf::Sprite{
+            .position    = position,
+            .scale       = {0.15f, 0.15f},
+            .origin      = txrRocket.size / 2.f,
+            .rotation    = sf::radians(0.f),
+            .textureRect = txrRocket,
+            .color       = sf::Color::White,
+        },
+        sf::RenderStates{.texture = txAtlas});
 }
 
 
@@ -194,7 +200,9 @@ struct Entity
         velocity += acceleration * dt;
     }
 
-    virtual void draw(sf::RenderTarget&) = 0;
+    virtual void draw(sf::RenderTarget&)
+    {
+    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -209,7 +217,8 @@ struct World
 
     void update(float dt)
     {
-        for (sf::base::SizeT i = 0u; i < entities.size(); ++i)
+        // Cannot use range-based `for` as new elements are created while updating
+        for (sf::base::SizeT i = 0u; i < entities.size(); ++i) // NOLINT(modernize-loop-convert)
             entities[i]->update(dt);
     }
 
@@ -249,10 +258,6 @@ struct Emitter : Entity
         for (; spawnTimer >= 1.f; spawnTimer -= 1.f)
             spawnParticle();
     }
-
-    void draw(sf::RenderTarget&) override
-    {
-    }
 };
 
 ////////////////////////////////////////////////////////////
@@ -275,12 +280,6 @@ struct Particle : Entity
         rotation += angularVelocity * dt;
 
         alive = opacity > 0.f;
-
-        if (scale <= 0.f)
-            scale = 0.f;
-
-        if (opacity <= 0.f)
-            opacity = 0.f;
     }
 };
 
@@ -360,27 +359,23 @@ struct Rocket : Entity
         {
             init = true;
 
-            auto& se        = world->addEntity<SmokeEmitter>();
-            se.position     = position;
-            se.velocity     = {};
-            se.acceleration = {};
-            se.spawnTimer   = 0.f;
-            se.spawnRate    = 2.5f;
-            smokeEmitter    = &se;
+            smokeEmitter               = &world->addEntity<SmokeEmitter>();
+            smokeEmitter->position     = position;
+            smokeEmitter->velocity     = {};
+            smokeEmitter->acceleration = {};
+            smokeEmitter->spawnTimer   = 0.f;
+            smokeEmitter->spawnRate    = 2.5f;
 
-            auto& fe        = world->addEntity<FireEmitter>();
-            fe.position     = position;
-            fe.velocity     = {};
-            fe.acceleration = {};
-            fe.spawnTimer   = 0.f;
-            fe.spawnRate    = 1.25f;
-            fireEmitter     = &fe;
+            fireEmitter               = &world->addEntity<FireEmitter>();
+            fireEmitter->position     = position;
+            fireEmitter->velocity     = {};
+            fireEmitter->acceleration = {};
+            fireEmitter->spawnTimer   = 0.f;
+            fireEmitter->spawnRate    = 1.25f;
         }
 
         velocity += acceleration * dt;
         position += velocity * dt;
-
-        velocity = velocity.clampMaxLength(2.5f);
 
         smokeEmitter->position = position - sf::Vec2f{12.f, 0.f};
         fireEmitter->position  = position - sf::Vec2f{12.f, 0.f};
@@ -396,13 +391,7 @@ struct Rocket : Entity
 
     void draw(sf::RenderTarget& rt) override
     {
-        rt.draw(sf::Sprite{.position    = position,
-                           .scale       = {0.15f, 0.15f},
-                           .origin      = txrRocket.size / 2.f,
-                           .rotation    = sf::radians(0.f),
-                           .textureRect = txrRocket,
-                           .color       = sf::Color::White},
-                sf::RenderStates{.texture = txAtlas});
+        drawRocketImpl(rt, position);
     }
 };
 
@@ -472,13 +461,11 @@ struct World
     [[nodiscard]] sf::base::SizeT addEmitter(const Emitter& emitter)
     {
         for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
-        {
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
                 return i;
             }
-        }
 
         emitters.emplaceBack(emitter);
         return emitters.size() - 1;
@@ -494,7 +481,7 @@ struct World
     ////////////////////////////////////////////////////////////
     Rocket& addRocket(const Rocket& r)
     {
-        auto& rocket = rockets.emplaceBack(r);
+        Rocket& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addEmitter({
             .spawnTimer = 0.f,
@@ -522,15 +509,9 @@ struct World
             p.scale += p.scaleRate * dt;
             p.opacity += p.opacityChange * dt;
             p.rotation += p.angularVelocity * dt;
-
-            if (p.scale <= 0.f)
-                p.scale = 0.f;
-
-            if (p.opacity <= 0.f)
-                p.opacity = 0.f;
         }
 
-        for (auto& e : emitters)
+        for (sf::base::Optional<Emitter>& e : emitters)
         {
             if (!e.hasValue())
                 continue;
@@ -579,15 +560,15 @@ struct World
             }
         }
 
-        for (auto& r : rockets)
+        for (Rocket& r : rockets)
         {
             r.position += r.velocity * dt;
             r.velocity += r.acceleration * dt;
 
-            if (auto& se = emitters[r.smokeEmitterIdx])
+            if (sf::base::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
-            if (auto& fe = emitters[r.fireEmitterIdx])
+            if (sf::base::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
                 fe->position = r.position + sf::Vec2f{12.f, 0.f};
         }
     }
@@ -595,52 +576,32 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        sf::base::vectorSwapAndPopIf(particles, [](const auto& p) { return p.opacity <= 0.f; });
+        sf::base::vectorSwapAndPopIf(particles, [](const Particle& p) { return p.opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
-                                     [&](const auto& r)
+                                     [&](const Rocket& r)
         {
-            const bool outOfBounds = r.position.x > 1680.f + 100.f;
+            if (r.position.x <= 1680.f + 64.f)
+                return false;
 
-            if (outOfBounds)
-            {
-                auto& se = emitters[r.smokeEmitterIdx];
-                if (se.hasValue())
-                    se.reset();
+            emitters[r.smokeEmitterIdx].reset();
+            emitters[r.fireEmitterIdx].reset();
 
-                auto& fe = emitters[r.fireEmitterIdx];
-                if (fe.hasValue())
-                    fe.reset();
-            }
-
-            return outOfBounds;
+            return true; // Out of bounds
         });
     }
 
     ////////////////////////////////////////////////////////////
     void draw(sf::RenderTarget& rt)
     {
-        for (const auto& p : particles)
+        for (const Particle& p : particles)
         {
             auto* txr = (p.type == ParticleType::Smoke) ? &txrSmoke : &txrFire;
             drawParticleImpl(rt, p.position, {p.scale, p.scale}, p.rotation, *txr, p.opacity);
         }
 
-        for (const auto& r : rockets)
-        {
-            auto* txr = &txrRocket;
-
-            rt.draw(
-                sf::Sprite{
-                    .position    = r.position,
-                    .scale       = {0.15f, 0.15f},
-                    .origin      = txr->size / 2.f,
-                    .rotation    = sf::radians(0.f),
-                    .textureRect = *txr,
-                    .color       = sf::Color::White,
-                },
-                sf::RenderStates{.texture = txAtlas});
-        }
+        for (const Rocket& r : rockets)
+            drawRocketImpl(rt, r.position);
     }
 };
 
@@ -698,35 +659,29 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addEmitterImpl(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < smokeEmitters.size(); ++i)
-        {
-            if (!smokeEmitters[i].hasValue())
+        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+            if (!emitters[i].hasValue())
             {
-                smokeEmitters[i].emplace(emitter);
+                emitters[i].emplace(emitter);
                 return i;
             }
-        }
 
-        smokeEmitters.emplaceBack(emitter);
-        return smokeEmitters.size() - 1;
+        emitters.emplaceBack(emitter);
+        return emitters.size() - 1;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
+    {
+        return addEmitterImpl(smokeEmitters, emitter);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < fireEmitters.size(); ++i)
-        {
-            if (!fireEmitters[i].hasValue())
-            {
-                fireEmitters[i].emplace(emitter);
-                return i;
-            }
-        }
-
-        fireEmitters.emplaceBack(emitter);
-        return fireEmitters.size() - 1;
+        return addEmitterImpl(fireEmitters, emitter);
     }
 
     ////////////////////////////////////////////////////////////
@@ -770,21 +725,15 @@ struct World
             p.scale += p.scaleRate * dt;
             p.opacity += p.opacityChange * dt;
             p.rotation += p.angularVelocity * dt;
-
-            if (p.scale <= 0.f)
-                p.scale = 0.f;
-
-            if (p.opacity <= 0.f)
-                p.opacity = 0.f;
         };
 
-        for (auto& p : smokeParticles)
+        for (Particle& p : smokeParticles)
             updateParticle(p);
 
-        for (auto& p : fireParticles)
+        for (Particle& p : fireParticles)
             updateParticle(p);
 
-        for (auto& e : smokeEmitters)
+        for (sf::base::Optional<Emitter>& e : smokeEmitters)
         {
             if (!e.hasValue())
                 continue;
@@ -810,7 +759,7 @@ struct World
                 });
         }
 
-        for (auto& e : fireEmitters)
+        for (sf::base::Optional<Emitter>& e : fireEmitters)
         {
             if (!e.hasValue())
                 continue;
@@ -841,10 +790,10 @@ struct World
             r.position += r.velocity * dt;
             r.velocity += r.acceleration * dt;
 
-            if (auto& se = smokeEmitters[r.smokeEmitterIdx])
+            if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
-            if (auto& fe = fireEmitters[r.fireEmitterIdx])
+            if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
                 fe->position = r.position + sf::Vec2f{12.f, 0.f};
         }
     }
@@ -852,119 +801,74 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        sf::base::vectorSwapAndPopIf(smokeParticles, [](const auto& p) { return p.opacity <= 0.f; });
-        sf::base::vectorSwapAndPopIf(fireParticles, [](const auto& p) { return p.opacity <= 0.f; });
+        sf::base::vectorSwapAndPopIf(smokeParticles, [](const Particle& p) { return p.opacity <= 0.f; });
+        sf::base::vectorSwapAndPopIf(fireParticles, [](const Particle& p) { return p.opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
-                                     [&](const auto& r)
+                                     [&](const Rocket& r)
         {
-            const bool outOfBounds = r.position.x > 1680.f + 100.f;
+            if (r.position.x <= 1680.f + 64.f)
+                return false;
 
-            if (outOfBounds)
-            {
-                auto& se = smokeEmitters[r.smokeEmitterIdx];
-                if (se.hasValue())
-                    se.reset();
+            smokeEmitters[r.smokeEmitterIdx].reset();
+            fireEmitters[r.fireEmitterIdx].reset();
 
-                auto& fe = fireEmitters[r.fireEmitterIdx];
-                if (fe.hasValue())
-                    fe.reset();
-            }
-
-            return outOfBounds;
+            return true; // Out of bounds
         });
     }
 
     ////////////////////////////////////////////////////////////
     void draw(sf::RenderTarget& rt)
     {
+        const auto drawParticlesInstanced =
+            [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
         {
-            const auto drawParticlesInstanced =
-                [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            const auto nParticles = particles.size();
+
+            instanceRenderingDataBuffer.clear();
+            instanceRenderingDataBuffer.reserve(nParticles);
+
+            for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                instanceRenderingDataBuffer
+                    .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
+
+            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                const auto nParticles = particles.size();
+                using IAB = sf::RenderTarget::InstanceAttributeBinder;
 
-                instanceDataBuffer.clear();
-                instanceDataBuffer.reserve(nParticles);
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
+                binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer.data());
 
-                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
-                    instanceDataBuffer.emplaceBack(particles[i].position,
-                                                   particles[i].scale,
-                                                   particles[i].rotation,
-                                                   particles[i].opacity);
+                constexpr auto stride = sizeof(ParticleInstanceData);
 
-                auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
-                {
-                    using IAB = sf::RenderTarget::InstanceAttributeBinder;
-
-                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
-                    binder.uploadContiguousData(nParticles, instanceDataBuffer.data());
-
-                    constexpr auto stride = sizeof(ParticleInstanceData);
-
-                    binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
-                    binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
-                    binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
-                    binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
-                };
-
-                instanceRenderingShader->setUniform(*ulTextureRect,
-                                                    sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
-
-                rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                         baseQuad,
-                                                         4,
-                                                         quadIndices,
-                                                         6,
-                                                         nParticles,
-                                                         sf::PrimitiveType::Triangles,
-                                                         {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                         setupSpriteInstanceAttribs);
+                binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
             };
 
-            drawParticlesInstanced(0, txrSmoke, smokeParticles);
-            drawParticlesInstanced(1, txrFire, fireParticles);
+            instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
+                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            for (const auto& r : rockets)
-            {
-                auto* txr = &txrRocket;
+            instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize,
+                                                sf::Glsl::Vec2{1.f / txAtlas->getSize().x, 1.f / txAtlas->getSize().y});
 
-                rt.draw(
-                    sf::Sprite{
-                        .position    = r.position,
-                        .scale       = {0.15f, 0.15f},
-                        .origin      = txr->size / 2.f,
-                        .rotation    = sf::radians(0.f),
-                        .textureRect = *txr,
-                        .color       = sf::Color::White,
-                    },
-                    sf::RenderStates{.texture = txAtlas});
-            }
+            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
+                                                     instancedQuadVertices,
+                                                     4,
+                                                     instancedQuadIndices,
+                                                     6,
+                                                     nParticles,
+                                                     sf::PrimitiveType::Triangles,
+                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
+                                                     setupSpriteInstanceAttribs);
+        };
 
-            return;
-        }
-
-        for (const auto& p : smokeParticles)
-            drawParticleImpl(rt, p.position, {p.scale, p.scale}, p.rotation, txrSmoke, p.opacity);
-
-        for (const auto& p : fireParticles)
-            drawParticleImpl(rt, p.position, {p.scale, p.scale}, p.rotation, txrFire, p.opacity);
+        drawParticlesInstanced(0, txrSmoke, smokeParticles);
+        drawParticlesInstanced(1, txrFire, fireParticles);
 
         for (const auto& r : rockets)
-        {
-            auto* txr = &txrRocket;
-
-            rt.draw(
-                sf::Sprite{
-                    .position    = r.position,
-                    .scale       = {0.15f, 0.15f},
-                    .origin      = txr->size / 2.f,
-                    .rotation    = sf::radians(0.f),
-                    .textureRect = *txr,
-                    .color       = sf::Color::White,
-                },
-                sf::RenderStates{.texture = txAtlas});
-        }
+            drawRocketImpl(rt, r.position);
     }
 };
 
@@ -1038,35 +942,29 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addEmitterImpl(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < smokeEmitters.size(); ++i)
-        {
-            if (!smokeEmitters[i].hasValue())
+        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+            if (!emitters[i].hasValue())
             {
-                smokeEmitters[i].emplace(emitter);
+                emitters[i].emplace(emitter);
                 return i;
             }
-        }
 
-        smokeEmitters.emplaceBack(emitter);
-        return smokeEmitters.size() - 1;
+        emitters.emplaceBack(emitter);
+        return emitters.size() - 1;
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
+    {
+        return addEmitterImpl(smokeEmitters, emitter);
     }
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
     {
-        for (sf::base::SizeT i = 0u; i < fireEmitters.size(); ++i)
-        {
-            if (!fireEmitters[i].hasValue())
-            {
-                fireEmitters[i].emplace(emitter);
-                return i;
-            }
-        }
-
-        fireEmitters.emplaceBack(emitter);
-        return fireEmitters.size() - 1;
+        return addEmitterImpl(fireEmitters, emitter);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1084,7 +982,7 @@ struct World
     ////////////////////////////////////////////////////////////
     Rocket& addRocket(const Rocket& r)
     {
-        auto& rocket = rockets.emplaceBack(r);
+        Rocket& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addSmokeEmitter({
             .spawnTimer = 0.f,
@@ -1123,15 +1021,8 @@ struct World
             {
                 velocities[i] += accelerations[i] * dt;
                 positions[i] += velocities[i] * dt;
-
                 scales[i] += scaleDeltas[i] * dt;
-                if (scales[i] <= 0.f)
-                    scales[i] = 0.f;
-
                 opacities[i] += opacityDeltas[i] * dt;
-                if (opacities[i] <= 0.f)
-                    opacities[i] = 0.f;
-
                 rotations[i] += rotationDeltas[i] * dt;
             }
         };
@@ -1139,7 +1030,7 @@ struct World
         updateParticles(smokeParticles);
         updateParticles(fireParticles);
 
-        for (auto& e : smokeEmitters)
+        for (sf::base::Optional<Emitter>& e : smokeEmitters)
         {
             if (!e.hasValue())
                 continue;
@@ -1165,7 +1056,7 @@ struct World
                     /* .angularVelocity */ rng.getF(-0.02f, 0.02f));
         }
 
-        for (auto& e : fireEmitters)
+        for (sf::base::Optional<Emitter>& e : fireEmitters)
         {
             if (!e.hasValue())
                 continue;
@@ -1191,7 +1082,7 @@ struct World
                     /* .angularVelocity */ rng.getF(-0.002f, 0.002f));
         }
 
-        for (auto& r : rockets)
+        for (Rocket& r : rockets)
         {
             r.position += r.velocity * dt;
             r.velocity += r.acceleration * dt;
@@ -1211,117 +1102,70 @@ struct World
         fireParticles.eraseIfBySwapping<Field::Opacity>([](const float opacity) { return opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
-                                     [&](const auto& r)
+                                     [&](const Rocket& r)
         {
-            const bool outOfBounds = r.position.x > 1680.f + 100.f;
+            if (r.position.x <= 1680.f + 64.f)
+                return false;
 
-            if (outOfBounds)
-            {
-                auto& se = smokeEmitters[r.smokeEmitterIdx];
-                if (se.hasValue())
-                    se.reset();
+            smokeEmitters[r.smokeEmitterIdx].reset();
+            fireEmitters[r.fireEmitterIdx].reset();
 
-                auto& fe = fireEmitters[r.fireEmitterIdx];
-                if (fe.hasValue())
-                    fe.reset();
-            }
-
-            return outOfBounds;
+            return true; // Out of bounds
         });
     }
 
     ////////////////////////////////////////////////////////////
     void draw(sf::RenderTarget& rt)
     {
+        const auto drawParticlesInstanced =
+            [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
         {
-            const auto drawParticlesInstanced =
-                [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            const auto nParticles = particles.getSize();
+
+            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                const auto nParticles = particles.getSize();
+                using IAB = sf::RenderTarget::InstanceAttributeBinder;
 
-                auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
-                {
-                    using IAB = sf::RenderTarget::InstanceAttributeBinder;
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
+                binder.uploadContiguousData(nParticles, particles.template get<Field::Position>().data());
+                binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
 
-                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
-                    binder.uploadContiguousData(nParticles, particles.template get<Field::Position>().data());
-                    binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
+                binder.uploadContiguousData(nParticles, particles.template get<Field::Scale>().data());
+                binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
-                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
-                    binder.uploadContiguousData(nParticles, particles.template get<Field::Scale>().data());
-                    binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
+                binder.uploadContiguousData(nParticles, particles.template get<Field::Rotation>().data());
+                binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
-                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
-                    binder.uploadContiguousData(nParticles, particles.template get<Field::Rotation>().data());
-                    binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
-
-                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
-                    binder.uploadContiguousData(nParticles, particles.template get<Field::Opacity>().data());
-                    binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
-                };
-
-                instanceRenderingShader->setUniform(*ulTextureRect,
-                                                    sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
-
-                rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                         baseQuad,
-                                                         4,
-                                                         quadIndices,
-                                                         6,
-                                                         nParticles,
-                                                         sf::PrimitiveType::Triangles,
-                                                         {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                         setupSpriteInstanceAttribs);
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
+                binder.uploadContiguousData(nParticles, particles.template get<Field::Opacity>().data());
+                binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
             };
 
-            drawParticlesInstanced(0, txrSmoke, smokeParticles);
-            drawParticlesInstanced(4, txrFire, fireParticles);
+            instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
+                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            for (const auto& r : rockets)
-            {
-                auto* txr = &txrRocket;
+            instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize, 1.f / txAtlas->getSize().toVec2f());
 
-                rt.draw(
-                    sf::Sprite{
-                        .position    = r.position,
-                        .scale       = {0.15f, 0.15f},
-                        .origin      = txr->size / 2.f,
-                        .rotation    = sf::radians(0.f),
-                        .textureRect = *txr,
-                        .color       = sf::Color::White,
-                    },
-                    sf::RenderStates{.texture = txAtlas});
-            }
+            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
+                                                     instancedQuadVertices,
+                                                     4,
+                                                     instancedQuadIndices,
+                                                     6,
+                                                     nParticles,
+                                                     sf::PrimitiveType::Triangles,
+                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
+                                                     setupSpriteInstanceAttribs);
+        };
 
-            return;
-        }
-
-        smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
-        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity); });
-
-        fireParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
-        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity); });
+        drawParticlesInstanced(0, txrSmoke, smokeParticles);
+        drawParticlesInstanced(4, txrFire, fireParticles);
 
         for (const auto& r : rockets)
-        {
-            auto* txr = &txrRocket;
-
-            rt.draw(
-                sf::Sprite{
-                    .position    = r.position,
-                    .scale       = {0.15f, 0.15f},
-                    .origin      = txr->size / 2.f,
-                    .rotation    = sf::radians(0.f),
-                    .textureRect = *txr,
-                    .color       = sf::Color::White,
-                },
-                sf::RenderStates{.texture = txAtlas});
-        }
+            drawRocketImpl(rt, r.position);
     }
 };
-
 } // namespace SOA
 
 ////////////////////////////////////////////////////////////
@@ -1372,7 +1216,7 @@ int main()
     //
     //
     // Set up texture atlas
-    sf::TextureAtlas textureAtlas{sf::Texture::create({1024u, 1024u}, {.smooth = true}).value()};
+    sf::TextureAtlas textureAtlas{sf::Texture::create({512u, 256u}, {.smooth = true}).value()};
     txAtlas = &textureAtlas.getTexture();
 
     const auto addImgResourceToAtlas = [&](const sf::Path& path)
@@ -1381,26 +1225,14 @@ int main()
     //
     //
     // Load fonts
-    const auto fontTuffy        = sf::Font::openFromFile("resources/tuffy.ttf", &textureAtlas).value();
-    const auto fontMouldyCheese = sf::Font::openFromFile("resources/mouldycheese.ttf", &textureAtlas).value();
-    ImFont*    fontImGuiGeistMono{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/geistmono.ttf", 32.f)};
+    ImFont* const fontImGuiGeistMono{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/geistmono.ttf", 32.f)};
 
     //
     //
     // Load images and add to texture atlas
-    const sf::FloatRect spriteTextureRects[]{
-        addImgResourceToAtlas("pCircle.png"),
-        addImgResourceToAtlas("pExplosion.png"),
-        addImgResourceToAtlas("pFire.png"),
-        addImgResourceToAtlas("pSmoke.png"),
-        addImgResourceToAtlas("pStar.png"),
-        addImgResourceToAtlas("pTrail.png"),
-        addImgResourceToAtlas("rocket.png"),
-    };
-
-    txrSmoke  = spriteTextureRects[3];
-    txrFire   = spriteTextureRects[2];
-    txrRocket = spriteTextureRects[6];
+    txrSmoke  = addImgResourceToAtlas("pSmoke.png");
+    txrFire   = addImgResourceToAtlas("pFire.png");
+    txrRocket = addImgResourceToAtlas("rocket.png");
 
     //
     //
@@ -1418,8 +1250,11 @@ int main()
     for (sf::base::SizeT i = 0u; i < 8u; ++i)
         instanceRenderingVBOs[i] = &instancedRenderingVBOsImpl[i];
 
-    const auto ulTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
-    ulTextureRect                = &ulTextureRectImpl;
+    const auto instanceRenderingULTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
+    instanceRenderingULTextureRect = &instanceRenderingULTextureRectImpl;
+
+    const auto instanceRenderingInvTextureSizeImpl = instancedRenderingShaderImpl.getUniformLocation("u_invTexSize").value();
+    instanceRenderingInvTextureSize = &instanceRenderingInvTextureSizeImpl;
 
     //
     //
@@ -1429,32 +1264,15 @@ int main()
     float simulationSpeed = 0.1f;
     float rocketSpawnRate = 0.1f;
     float zoom            = 3.f;
-    bool  showInfo        = true;
 
     //
     //
-    // Shared values
-    float rocketSpawnTimer = 0.f;
-
-    //
-    //
-    // OOP Particles
-    OOP::World oopWorld;
-
-    //
-    //
-    // AOS Particles
-    AOS::World aosWorld;
-
-    //
-    //
-    // AOSImproved Particles
+    // Simulation state
+    float              rocketSpawnTimer = 0.f;
+    OOP::World         oopWorld;
+    AOS::World         aosWorld;
     AOSImproved::World aosImprovedWorld;
-
-    //
-    //
-    // SOA Particles
-    SOA::World soaWorld;
+    SOA::World         soaWorld;
 
     //
     //
@@ -1529,8 +1347,6 @@ int main()
         }
         // ---
 
-        sf::base::SizeT nRockets = 0;
-
         ////////////////////////////////////////////////////////////
         // Update step
         ////////////////////////////////////////////////////////////
@@ -1564,8 +1380,6 @@ int main()
             }
             else if (mode == Mode::AOS)
             {
-                nRockets = aosWorld.rockets.size();
-
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
                     aosWorld.addRocket({
@@ -1580,8 +1394,6 @@ int main()
             }
             else if (mode == Mode::AOSImproved)
             {
-                nRockets = aosImprovedWorld.rockets.size();
-
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
                     aosImprovedWorld.addRocket({
@@ -1596,8 +1408,6 @@ int main()
             }
             else if (mode == Mode::SOA)
             {
-                nRockets = soaWorld.rockets.size();
-
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
                     soaWorld.addRocket({
