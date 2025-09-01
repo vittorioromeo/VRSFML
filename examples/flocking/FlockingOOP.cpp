@@ -5,15 +5,17 @@
 #include "SFML/ImGui/ImGuiContext.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/DrawableBatch.hpp"
-#include "SFML/Graphics/DrawableBatchUtils.hpp"
 #include "SFML/Graphics/Font.hpp"
+#include "SFML/Graphics/Glsl.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/RenderTexture.hpp"
 #include "SFML/Graphics/RenderWindow.hpp"
+#include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Sprite.hpp"
 #include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/Texture.hpp"
@@ -28,6 +30,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Builtins/OffsetOf.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -36,9 +39,7 @@
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
 
-#include <iostream>
 #include <latch>
-#include <string>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -49,11 +50,92 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
+constexpr sf::Vertex baseQuad[4]{
+    {{-0.5, -0.5}, sf::Color::White, {}}, // Top-left
+    {{0.5, -0.5}, sf::Color::White, {}},  // Top-right
+    {{0.5, 0.5}, sf::Color::White, {}},   // Bottom-right
+    {{-0.5, 0.5}, sf::Color::White, {}}   // Bottom-left
+};
+
+
+////////////////////////////////////////////////////////////
+constexpr unsigned int quadIndices[6]{
+    0,
+    1,
+    2,
+    2,
+    3,
+    0,
+};
+
+
+////////////////////////////////////////////////////////////
+struct ParticleInstanceData
+{
+    sf::Vec2f position;
+    float     scale;
+    float     rotation;
+    float     opacity;
+};
+
+
+////////////////////////////////////////////////////////////
+constexpr const char* instancedVertexShader = R"glsl(
+
+layout(location = 0) uniform mat4 sf_u_mvpMatrix;
+layout(location = 1) uniform sampler2D sf_u_texture;
+layout(location = 2) uniform vec4 u_texRect;
+
+layout(location = 0) in vec2 sf_a_position;
+layout(location = 1) in vec4 sf_a_color; // Unused but part of Vertex struct
+layout(location = 2) in vec2 sf_a_texCoord;
+
+// Per-instance attributes (unique for each sprite)
+layout(location = 3) in vec2 instance_position;
+layout(location = 4) in float instance_scale;
+layout(location = 5) in float instance_rotation;
+layout(location = 6) in float instance_opacity;
+
+out vec4 sf_v_color;
+out vec2 sf_v_texCoord;
+
+void main()
+{
+    vec2 pos = sf_a_position * u_texRect.zw;
+
+    float cos_rot = cos(instance_rotation);
+    float sin_rot = sin(instance_rotation);
+    mat2 rot_scale_matrix = mat2(cos_rot, sin_rot, -sin_rot, cos_rot) * instance_scale;
+
+    pos = (rot_scale_matrix * pos) + instance_position;
+
+    gl_Position = sf_u_mvpMatrix * vec4(pos, 0.0, 1.0);
+
+    sf_v_color = vec4(1.0, 1.0, 1.0, instance_opacity);
+
+    // Texture coordinate calculation needs to account for the -0.5 to 0.5 range
+    vec2 tex_coord_from_unit = sf_a_position + 0.5; // Convert from [-0.5, 0.5] to [0, 1]
+    vec2 final_texCoord = u_texRect.xy + (tex_coord_from_unit * u_texRect.zw);
+    sf_v_texCoord = final_texCoord / vec2(textureSize(sf_u_texture, 0));
+}
+
+)glsl";
+
+
+////////////////////////////////////////////////////////////
+sf::Shader*                            instanceRenderingShader   = nullptr;
+const sf::Shader::UniformLocation*     ulTextureRect             = nullptr;
+sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup = nullptr;
+sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]  = {};
+sf::base::Vector<ParticleInstanceData> instanceDataBuffer;
+
+
+////////////////////////////////////////////////////////////
 RNGFast rng;
 
 
 ////////////////////////////////////////////////////////////
-sf::Texture*  txAtlas;
+sf::Texture*  txAtlas = nullptr;
 sf::FloatRect txrSmoke;
 sf::FloatRect txrFire;
 sf::FloatRect txrRocket;
@@ -800,6 +882,72 @@ struct World
     ////////////////////////////////////////////////////////////
     void draw(sf::RenderTarget& rt)
     {
+        {
+            const auto drawParticlesInstanced =
+                [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
+            {
+                const auto nParticles = particles.size();
+
+                instanceDataBuffer.clear();
+                instanceDataBuffer.reserve(nParticles);
+
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    instanceDataBuffer.emplaceBack(particles[i].position,
+                                                   particles[i].scale,
+                                                   particles[i].rotation,
+                                                   particles[i].opacity);
+
+                auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+                {
+                    using IAB = sf::RenderTarget::InstanceAttributeBinder;
+
+                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
+                    binder.uploadContiguousData(nParticles, instanceDataBuffer.data());
+
+                    constexpr auto stride = sizeof(ParticleInstanceData);
+
+                    binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
+                    binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
+                    binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
+                    binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+                };
+
+                instanceRenderingShader->setUniform(*ulTextureRect,
+                                                    sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+
+                rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
+                                                         baseQuad,
+                                                         4,
+                                                         quadIndices,
+                                                         6,
+                                                         nParticles,
+                                                         sf::PrimitiveType::Triangles,
+                                                         {.texture = txAtlas, .shader = instanceRenderingShader},
+                                                         setupSpriteInstanceAttribs);
+            };
+
+            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+            drawParticlesInstanced(1, txrFire, fireParticles);
+
+            for (const auto& r : rockets)
+            {
+                auto* txr = &txrRocket;
+
+                rt.draw(
+                    sf::Sprite{
+                        .position    = r.position,
+                        .scale       = {0.15f, 0.15f},
+                        .origin      = txr->size / 2.f,
+                        .rotation    = sf::radians(0.f),
+                        .textureRect = *txr,
+                        .color       = sf::Color::White,
+                    },
+                    sf::RenderStates{.texture = txAtlas});
+            }
+
+            return;
+        }
+
         for (const auto& p : smokeParticles)
             drawParticleImpl(rt, p.position, {p.scale, p.scale}, p.rotation, txrSmoke, p.opacity);
 
@@ -1087,163 +1235,70 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] static inline constexpr void appendSpriteAsTriangleVertices(
-        const sf::Transform& transform,
-        const sf::FloatRect& textureRect,
-        const sf::Color      color,
-        sf::Vertex* const    vertexPtr) // This pointer should now point to a buffer with space for 6 vertices
+    void draw(sf::RenderTarget& rt)
     {
-        const auto& [texPos, texSize] = textureRect;
-        const sf::Vec2f absSize{SFML_BASE_MATH_FABSF(texSize.x), SFML_BASE_MATH_FABSF(texSize.y)};
-
-        // Calculate the four corner points once, as before
-        const sf::Vec2f p1 = transform.transformPoint({0.f, 0.f});             // Top-left
-        const sf::Vec2f p2 = transform.transformPoint({absSize.x, 0.f});       // Top-right
-        const sf::Vec2f p3 = transform.transformPoint({absSize.x, absSize.y}); // Bottom-right
-        const sf::Vec2f p4 = transform.transformPoint({0.f, absSize.y});       // Bottom-left
-
-        // Texture coordinates for the four corners
-        const sf::Vec2f t1 = texPos;
-        const sf::Vec2f t2 = texPos.addX(texSize.x);
-        const sf::Vec2f t3 = texPos + texSize;
-        const sf::Vec2f t4 = texPos.addY(texSize.y);
-
-        // Build the two triangles that form the quad
-        // Triangle 1: Top-left, Top-right, Bottom-right
-        vertexPtr[0] = {p1, color, t1};
-        vertexPtr[1] = {p2, color, t2};
-        vertexPtr[2] = {p3, color, t3};
-
-        // Triangle 2: Top-left, Bottom-right, Bottom-left
-        vertexPtr[3] = {p1, color, t1};
-        vertexPtr[4] = {p3, color, t3};
-        vertexPtr[5] = {p4, color, t4};
-    }
-
-    ////////////////////////////////////////////////////////////
-    void draw(auto& doInBatches, sf::RenderTarget& rt)
-    {
-        smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
-        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrSmoke, opacity); });
-
-        fireParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-            [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
-        { drawParticleImpl(rt, position, {scale, scale}, rotation, txrFire, opacity); });
-
-        for (const auto& r : rockets)
         {
-            auto* txr = &txrRocket;
-
-            rt.draw(
-                sf::Sprite{
-                    .position    = r.position,
-                    .scale       = {0.15f, 0.15f},
-                    .origin      = txr->size / 2.f,
-                    .rotation    = sf::radians(0.f),
-                    .textureRect = *txr,
-                    .color       = sf::Color::White,
-                },
-                sf::RenderStates{.texture = txAtlas});
-        }
-        return;
-        //  for (auto& batch : cpuDrawableBatches)
-        //      batch.clear();
-
-        static sf::base::Vector<sf::Vertex> smokeVertices;
-        smokeVertices.resize(smokeParticles.getSize() * 6u);
-        /*
-                auto* out = smokeVertices.data();
-
-                smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
-                    [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
-                {
-                    const auto sprite = makeParticleSprite(position, {scale, scale}, rotation, txrSmoke, opacity);
-
-                    appendSpriteAsTriangleVertices(sprite.getTransform(),
-                                                   txrSmoke,
-                                                   sprite.color,
-                                                   out); // Write to the current pointer
-
-                    // Advance the pointer by 4 vertices for the next particle
-                    out += 6;
-                });*/
-
-
-        doInBatches(static_cast<sf::base::SizeT>(smokeParticles.getSize()),
-                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
-        {
-            // Each thread gets a pointer to its designated starting spot
-            sf::Vertex* out = smokeVertices.data() + batchStartIdx * 6u;
-
-            smokeParticles
-                .withSubRange<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(batchStartIdx,
-                                                                                              batchEndIdx,
-                                                                                              [&](const sf::Vec2f position,
-                                                                                                  const float scale,
-                                                                                                  const float opacity,
-                                                                                                  const float rotation)
+            const auto drawParticlesInstanced =
+                [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
             {
-                const auto sprite = makeParticleSprite(position, {scale, scale}, rotation, txrSmoke, opacity);
+                const auto nParticles = particles.getSize();
 
-                appendSpriteAsTriangleVertices(sprite.getTransform(),
-                                               txrSmoke,
-                                               sprite.color,
-                                               out); // Write to the current pointer
+                auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+                {
+                    using IAB = sf::RenderTarget::InstanceAttributeBinder;
 
-                // Advance the pointer by 6 vertices for the next particle
-                out += 6;
-            });
-        });
+                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
+                    binder.uploadContiguousData(nParticles, particles.template get<Field::Position>().data());
+                    binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
 
-        constexpr std::size_t verticesPerChunk = 46'656 * 4;
-        const std::size_t     nChunks          = smokeVertices.size() / verticesPerChunk;
+                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
+                    binder.uploadContiguousData(nParticles, particles.template get<Field::Scale>().data());
+                    binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
-        for (std::size_t iChunks = 0u; iChunks < nChunks; ++iChunks)
-            rt.drawVertices(smokeVertices.data() + iChunks * verticesPerChunk,
-                            verticesPerChunk,
-                            sf::PrimitiveType::Triangles,
-                            {.texture = txAtlas});
+                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
+                    binder.uploadContiguousData(nParticles, particles.template get<Field::Rotation>().data());
+                    binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
-        /*
-        static sf::base::Vector<sf::Vertex> fireVertices;
-        fireVertices.resize(fireParticles.getSize() * 4u);
+                    binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
+                    binder.uploadContiguousData(nParticles, particles.template get<Field::Opacity>().data());
+                    binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
+                };
 
+                instanceRenderingShader->setUniform(*ulTextureRect,
+                                                    sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-        doInBatches(static_cast<sf::base::SizeT>(fireParticles.getSize()),
-                    [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
-        {
-            fireParticles
-                .withSubRange<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(batchStartIdx,
-                                                                                              batchEndIdx,
-                                                                                              [&](const sf::Vec2f position,
-                                                                                                  const float scale,
-                                                                                                  const float opacity,
-                                                                                                  const float rotation)
-            { cpuDrawableBatches[iBatch].add(makeParticleSprite(position, {scale, scale}, rotation, txrFire, opacity)); });
-        });
-        */
+                rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
+                                                         baseQuad,
+                                                         4,
+                                                         quadIndices,
+                                                         6,
+                                                         nParticles,
+                                                         sf::PrimitiveType::Triangles,
+                                                         {.texture = txAtlas, .shader = instanceRenderingShader},
+                                                         setupSpriteInstanceAttribs);
+            };
 
-        // for (auto& batch : cpuDrawableBatches)
-        //    rt.draw(batch, {.texture = txAtlas});
+            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+            drawParticlesInstanced(4, txrFire, fireParticles);
 
-        for (const auto& r : rockets)
-        {
-            auto* txr = &txrRocket;
+            for (const auto& r : rockets)
+            {
+                auto* txr = &txrRocket;
 
-            rt.draw(
-                sf::Sprite{
-                    .position    = r.position,
-                    .scale       = {0.15f, 0.15f},
-                    .origin      = txr->size / 2.f,
-                    .rotation    = sf::radians(0.f),
-                    .textureRect = *txr,
-                    .color       = sf::Color::White,
-                },
-                sf::RenderStates{.texture = txAtlas});
+                rt.draw(
+                    sf::Sprite{
+                        .position    = r.position,
+                        .scale       = {0.15f, 0.15f},
+                        .origin      = txr->size / 2.f,
+                        .rotation    = sf::radians(0.f),
+                        .textureRect = *txr,
+                        .color       = sf::Color::White,
+                    },
+                    sf::RenderStates{.texture = txAtlas});
+            }
+
+            return;
         }
-
-        return;
 
         smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
             [&](const sf::Vec2f position, const float scale, const float opacity, const float rotation)
@@ -1350,6 +1405,25 @@ int main()
     txrSmoke  = spriteTextureRects[3];
     txrFire   = spriteTextureRects[2];
     txrRocket = spriteTextureRects[6];
+
+    //
+    //
+    // Instanced rendering setup
+    // TODO P0: cleanup
+    auto instancedRenderingShaderImpl = sf::Shader::loadFromMemory({.vertexCode   = instancedVertexShader,
+                                                                    .fragmentCode = sf::DefaultShader::srcFragment})
+                                            .value();
+    instanceRenderingShader = &instancedRenderingShaderImpl;
+
+    auto instancedRenderingVAOGroupImpl = sf::RenderTarget::VAOHandle{};
+    instanceRenderingVAOGroup           = &instancedRenderingVAOGroupImpl;
+
+    sf::RenderTarget::VBOHandle instancedRenderingVBOsImpl[8];
+    for (sf::base::SizeT i = 0u; i < 8u; ++i)
+        instanceRenderingVBOs[i] = &instancedRenderingVBOsImpl[i];
+
+    const auto ulTextureRectImpl = instancedRenderingShaderImpl.getUniformLocation("u_texRect").value();
+    ulTextureRect                = &ulTextureRectImpl;
 
     //
     //
@@ -1732,7 +1806,7 @@ int main()
                 else if (mode == Mode::AOSImproved)
                     aosImprovedWorld.draw(window);
                 else if (mode == Mode::SOA)
-                    soaWorld.draw(doInBatches, window);
+                    soaWorld.draw(window);
             }
         }
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
