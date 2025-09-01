@@ -335,7 +335,7 @@ struct FireEmitter : Emitter
 
         p.scale    = rng.getF(0.5f, 0.7f) * 0.085f;
         p.opacity  = rng.getF(0.2f, 0.4f) * 0.85f;
-        p.rotation = 0.f;
+        p.rotation = rng.getF(0.f, 6.28f);
 
         p.scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f;
         p.opacityChange   = -0.001f;
@@ -349,38 +349,31 @@ struct Rocket : Entity
     SmokeEmitter* smokeEmitter = nullptr;
     FireEmitter*  fireEmitter  = nullptr;
 
-    bool init = false;
+    void init()
+    {
+        smokeEmitter               = &world->addEntity<SmokeEmitter>();
+        smokeEmitter->position     = position;
+        smokeEmitter->velocity     = {};
+        smokeEmitter->acceleration = {};
+        smokeEmitter->spawnTimer   = 0.f;
+        smokeEmitter->spawnRate    = 2.5f;
+
+        fireEmitter               = &world->addEntity<FireEmitter>();
+        fireEmitter->position     = position;
+        fireEmitter->velocity     = {};
+        fireEmitter->acceleration = {};
+        fireEmitter->spawnTimer   = 0.f;
+        fireEmitter->spawnRate    = 1.25f;
+    }
 
     void update(float dt) override
     {
         Entity::update(dt);
 
-        if (!init)
-        {
-            init = true;
-
-            smokeEmitter               = &world->addEntity<SmokeEmitter>();
-            smokeEmitter->position     = position;
-            smokeEmitter->velocity     = {};
-            smokeEmitter->acceleration = {};
-            smokeEmitter->spawnTimer   = 0.f;
-            smokeEmitter->spawnRate    = 2.5f;
-
-            fireEmitter               = &world->addEntity<FireEmitter>();
-            fireEmitter->position     = position;
-            fireEmitter->velocity     = {};
-            fireEmitter->acceleration = {};
-            fireEmitter->spawnTimer   = 0.f;
-            fireEmitter->spawnRate    = 1.25f;
-        }
-
-        velocity += acceleration * dt;
-        position += velocity * dt;
-
         smokeEmitter->position = position - sf::Vec2f{12.f, 0.f};
         fireEmitter->position  = position - sf::Vec2f{12.f, 0.f};
 
-        if (position.x > 1680.f + 100.f)
+        if (position.x > 1680.f + 64.f)
         {
             alive = false;
 
@@ -569,7 +562,7 @@ struct World
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
             if (sf::base::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
-                fe->position = r.position + sf::Vec2f{12.f, 0.f};
+                fe->position = r.position - sf::Vec2f{12.f, 0.f};
         }
     }
 
@@ -794,7 +787,7 @@ struct World
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
             if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                fe->position = r.position + sf::Vec2f{12.f, 0.f};
+                fe->position = r.position - sf::Vec2f{12.f, 0.f};
         }
     }
 
@@ -849,9 +842,6 @@ struct World
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
-
-            instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize,
-                                                sf::Glsl::Vec2{1.f / txAtlas->getSize().x, 1.f / txAtlas->getSize().y});
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
@@ -1091,7 +1081,7 @@ struct World
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
             if (auto& fe = fireEmitters[r.fireEmitterIdx])
-                fe->position = r.position + sf::Vec2f{12.f, 0.f};
+                fe->position = r.position - sf::Vec2f{12.f, 0.f};
         }
     }
 
@@ -1145,8 +1135,6 @@ struct World
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
-
-            instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize, 1.f / txAtlas->getSize().toVec2f());
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
@@ -1255,6 +1243,8 @@ int main()
 
     const auto instanceRenderingInvTextureSizeImpl = instancedRenderingShaderImpl.getUniformLocation("u_invTexSize").value();
     instanceRenderingInvTextureSize = &instanceRenderingInvTextureSizeImpl;
+
+    instanceRenderingShader->setUniform(*instanceRenderingInvTextureSize, 1.f / txAtlas->getSize().toVec2f());
 
     //
     //
@@ -1372,7 +1362,9 @@ int main()
 
                     rocket.position     = rng.getVec2f({-500.f, 0.f}, {-100.f, windowSize.y});
                     rocket.velocity     = {};
-                    rocket.acceleration = {rng.getF(0.01f, 0.05f), 0.f};
+                    rocket.acceleration = {rng.getF(0.01f, 0.025f), 0.f};
+
+                    rocket.init();
                 }
 
                 oopWorld.update(simulationSpeed);
