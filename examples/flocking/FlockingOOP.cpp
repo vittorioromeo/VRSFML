@@ -32,14 +32,10 @@
 #include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Builtins/OffsetOf.hpp"
 #include "SFML/Base/IntTypes.hpp"
-#include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/ThreadPool.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <latch>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -1437,50 +1433,8 @@ int main()
 
     //
     //
-    // Set up drawable batches
-    constexpr auto cacheLineSize = static_cast<sf::base::SizeT>(sf::base::hardwareDestructiveInterferenceSize);
-    const auto     nMaxWorkers   = static_cast<sf::base::U64>(sf::base::ThreadPool::getHardwareWorkerCount());
-    const auto     nWorkers      = nMaxWorkers;
-
-    struct alignas(cacheLineSize) AlignedCPUDrawableBatch : sf::CPUDrawableBatch
-    {
-        using sf::CPUDrawableBatch::CPUDrawableBatch;
-    };
-
-    sf::base::Vector<AlignedCPUDrawableBatch> cpuDrawableBatches(static_cast<sf::base::SizeT>(nMaxWorkers));
-
-    //
-    //
-    // Set up thread pool
-    sf::base::ThreadPool pool(nWorkers);
-
-    const auto doInBatches = [&](const sf::base::SizeT nParticlesTotal, auto&& f)
-    {
-        const sf::base::SizeT particlesPerBatch = nParticlesTotal / nWorkers;
-
-        std::latch latch{static_cast<sf::base::PtrDiffT>(nWorkers)};
-
-        for (sf::base::SizeT i = 0u; i < nWorkers; ++i)
-        {
-            pool.post([&, i]
-            {
-                const sf::base::SizeT batchStartIdx = i * particlesPerBatch;
-                const sf::base::SizeT batchEndIdx = (i == nWorkers - 1u) ? nParticlesTotal : (i + 1u) * particlesPerBatch;
-
-                f(i, batchStartIdx, batchEndIdx);
-
-                latch.count_down();
-            });
-        }
-
-        latch.wait();
-    };
-
-    //
-    //
     // Shared values
-    float           rocketSpawnTimer = 0.f;
-    sf::base::SizeT nTargetRockets   = 500;
+    float rocketSpawnTimer = 0.f;
 
     //
     //
@@ -1668,30 +1622,42 @@ int main()
         {
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
-            ImGui::Begin("TODO", nullptr, ImGuiWindowFlags_NoResize);
-            ImGui::SetWindowSize({380.f, 510.f});
 
-            const auto clearSamples = [&]
+            const auto plotGraphNoOverlay = [&](const char* label, const Sampler& samples, float upperBound)
             {
-                samplesUpdateMs.clear();
-                samplesDrawMs.clear();
-                samplesDisplayMs.clear();
-                samplesFPS.clear();
+                ImGui::PlotLines(label,
+                                 samples.data(),
+                                 static_cast<int>(samples.size()),
+                                 0,
+                                 nullptr,
+                                 0.f,
+                                 upperBound,
+                                 ImVec2{128.f, 32.f});
             };
 
-            const auto plotGraph = [&](const char* label, const char* unit, const Sampler& samples, float upperBound)
-            {
-                char buf[64];
-                std::snprintf(buf, sizeof(buf), "%.4f %s", samples.getAverage(), unit);
-                ImGui::PlotLines(label, samples.data(), static_cast<int>(samples.size()), 0, buf, 0.f, upperBound, ImVec2{256.f, 32.f});
-            };
+            ImGui::SetNextWindowSize(ImVec2{440.f, 470.f});
+            ImGui::SetNextWindowPos({windowSize.x - 440.f - 24.f, 24.f});
 
-            plotGraph("Update", " ms", samplesUpdateMs, 10.f);
-            plotGraph("Draw", " ms", samplesDrawMs, 100.f);
-            plotGraph("FPS", " FPS", samplesFPS, 300.f);
-            plotGraph("Display", " ms", samplesDisplayMs, 300.f);
+            ImGui::PushFont(fontImGuiGeistMono);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
 
-            ImGui::Text("Number of rockets: %zu", nRockets);
+            ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+            ImGui::SetWindowFontScale(1.25f);
+
+            plotGraphNoOverlay("##infofps", samplesFPS, 144.f);
+            ImGui::SameLine();
+            ImGui::Text("    FPS: %.1f", samplesFPS.getAverage());
+
+            plotGraphNoOverlay("##infoupdate", samplesUpdateMs, 30.f);
+            ImGui::SameLine();
+            ImGui::Text(" Update: %.1f ms", samplesUpdateMs.getAverage());
+
+            plotGraphNoOverlay("##infodraw", samplesDrawMs, 30.f);
+            ImGui::SameLine();
+            ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverage());
+
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(1.f);
 
             if (mode == Mode::OOP)
             {
@@ -1716,75 +1682,58 @@ int main()
                                 soaWorld.fireEmitters.size() + soaWorld.fireParticles.getSize());
             }
 
-            ImGui::Combo("Mode", reinterpret_cast<int*>(&mode), "OOP\0AOS\0AOSImproved\0SOA\0");
-            ImGui::Checkbox("Draw step", &drawStep);
-            ImGui::SliderFloat("Simulation Speed", &simulationSpeed, 0.1f, 4.f);
-            ImGui::SliderFloat("Rocket Spawn Rate", &rocketSpawnRate, 0.05f, 4.f);
-            ImGui::SliderFloat("Zoom", &zoom, 1.f, 4.f);
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(0.75f);
+            ImGui::Checkbox("Enable rendering", &drawStep);
+
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(0.75f);
+            ImGui::Combo("##infoMode",
+                         reinterpret_cast<int*>(&mode),
+                         "OOP (Heap-allocated entities)\0AoS (Very branchy)\0AoS (Improved)\0SoA\0");
+
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(0.75f);
+
+            ImGui::Text("Rocket spawn rate: %.1fx", static_cast<double>(rocketSpawnRate));
+
+            if (ImGui::Button("x1.0##r1"))
+                rocketSpawnRate = 1.f;
+            else if (ImGui::SameLine(), ImGui::Button("x2.0##r2"))
+                rocketSpawnRate = 2.f;
+            else if (ImGui::SameLine(), ImGui::Button("x3.0##r3"))
+                rocketSpawnRate = 3.f;
+            else if (ImGui::SameLine(), ImGui::Button("x4.0##r4"))
+                rocketSpawnRate = 4.f;
+            else if (ImGui::SameLine(), ImGui::Button("x5.0##r5"))
+                rocketSpawnRate = 5.f;
+
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(0.75f);
+
+            ImGui::Text("Simulation speed: %.1fx", static_cast<double>(simulationSpeed));
+
+            if (ImGui::Button("x0.1##s1"))
+                simulationSpeed = 0.1f;
+            else if (ImGui::SameLine(), ImGui::Button("x0.5##s2"))
+                simulationSpeed = 0.5f;
+            else if (ImGui::SameLine(), ImGui::Button("x1.0##s3"))
+                simulationSpeed = 1.f;
+            else if (ImGui::SameLine(), ImGui::Button("x2.0##s4"))
+                simulationSpeed = 2.f;
+            else if (ImGui::SameLine(), ImGui::Button("x3.0##s5"))
+                simulationSpeed = 3.f;
+
+            ImGui::Separator();
+            ImGui::SetWindowFontScale(0.75f);
+
+            ImGui::Text("Zoom level: %.1fx", static_cast<double>(zoom));
+            ImGui::SliderFloat("##Zoom", &zoom, 1.f, 3.f);
 
             ImGui::End();
 
-
-            if (showInfo)
-            {
-                ImGui::SetNextWindowPos({24.f, 24.f});
-
-                ImGui::PushFont(fontImGuiGeistMono);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
-
-                ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
-                ImGui::SetWindowFontScale(1.25f);
-
-                ImGui::Text("    FPS: %.1f", samplesFPS.getAverage());
-                ImGui::Text(" Update: %.1f ms", samplesUpdateMs.getAverage());
-                ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverage());
-                ImGui::Text("Display: %.1f ms", samplesDisplayMs.getAverage());
-
-                ImGui::Separator();
-                ImGui::SetWindowFontScale(0.75f);
-                ImGui::Checkbox("Enable rendering", &drawStep);
-
-                ImGui::Separator();
-                ImGui::SetWindowFontScale(0.75f);
-
-                ImGui::Text("Rocket spawn rate");
-
-                if (ImGui::Button("x1.0##r1"))
-                    rocketSpawnRate = 1.f;
-                else if (ImGui::SameLine(), ImGui::Button("x2.0##r2"))
-                    rocketSpawnRate = 2.f;
-                else if (ImGui::SameLine(), ImGui::Button("x3.0##r3"))
-                    rocketSpawnRate = 3.f;
-                else if (ImGui::SameLine(), ImGui::Button("x4.0##r4"))
-                    rocketSpawnRate = 4.f;
-
-                ImGui::Separator();
-                ImGui::SetWindowFontScale(0.75f);
-
-                ImGui::Text("Simulation speed");
-
-                if (ImGui::Button("x0.1##s1"))
-                    simulationSpeed = 0.1f;
-                else if (ImGui::SameLine(), ImGui::Button("x0.5##s2"))
-                    simulationSpeed = 0.5f;
-                else if (ImGui::SameLine(), ImGui::Button("x1.0##s3"))
-                    simulationSpeed = 1.f;
-                else if (ImGui::SameLine(), ImGui::Button("x2.0##s4"))
-                    simulationSpeed = 2.f;
-                else if (ImGui::SameLine(), ImGui::Button("x3.0##s5"))
-                    simulationSpeed = 3.f;
-
-                ImGui::Separator();
-                ImGui::SetWindowFontScale(0.75f);
-
-                ImGui::Text("Zoom level");
-                ImGui::SliderFloat("##Zoom", &zoom, 1.f, 3.f);
-
-                ImGui::End();
-
-                ImGui::PopStyleVar();
-                ImGui::PopFont();
-            }
+            ImGui::PopStyleVar();
+            ImGui::PopFont();
         }
         // ---
 
