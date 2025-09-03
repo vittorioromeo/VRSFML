@@ -491,7 +491,7 @@ struct tuple_hash_helper {
     template <typename T, sf::base::SizeT... Idx>
     [[nodiscard]] static auto calc_hash(T const& t, sf::base::IndexSequence<Idx...>) noexcept -> sf::base::U64 {
         auto h = sf::base::U64{};
-        ((h = mix64(h, to64(std::get<Idx>(t)))), ...);
+        (..., (h = mix64(h, to64(std::get<Idx>(t)))));
         return h;
     }
 };

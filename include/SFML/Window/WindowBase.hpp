@@ -63,7 +63,7 @@ public:
     /// This constructor creates the window with the size and pixel
     /// depth defined in `mode`. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...). An optional state can
+    /// title bar, resizable, closable, etc...). An optional state can
     /// be provided. If `state` is `State::Fullscreen`, then `mode`
     /// must be a valid video mode.
     ///

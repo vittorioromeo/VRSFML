@@ -446,7 +446,7 @@ SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXTERN_TEMPLATE_GETIF, SFML_PRIV_EVEN
 /// `sf::Window::pollEvent` and `sf::Window::waitEvent` functions.
 ///
 /// A `sf::Event` instance contains the subtype of the event
-/// (mouse moved, key pressed, window closed, ...) as well
+/// (mouse moved, key pressed, window closed, etc...) as well
 /// as the details about this particular event. Each event
 /// corresponds to a different subtype struct which contains
 /// the data required to process that event.

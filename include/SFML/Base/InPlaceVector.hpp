@@ -264,7 +264,7 @@ public:
     [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
     {
         SFML_BASE_ASSERT(m_size + sizeof...(items) <= N);
-        (SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)), ...);
+        (..., SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)));
     }
 
 

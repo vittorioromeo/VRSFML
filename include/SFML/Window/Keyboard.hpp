@@ -664,7 +664,7 @@ enum : unsigned int
 ///
 /// \warning The virtual keyboard is not supported on all
 ///          systems. It will typically be implemented on mobile OSes
-///          (Android, iOS) but not on desktop OSes (Windows, Linux, ...).
+///          (Android, iOS) but not on desktop OSes (Windows, Linux, etc...).
 ///
 /// If the virtual keyboard is not available, this function does
 /// nothing.

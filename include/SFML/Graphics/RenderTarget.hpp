@@ -87,7 +87,7 @@ concept ShapeDataConcept =                             //
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Base class for all render targets (window, texture, ...)
+/// \brief Base class for all render targets (window, texture, etc...)
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
