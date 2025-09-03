@@ -465,13 +465,6 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    Particle& addParticle(const Particle& particle)
-    {
-        particles.emplaceBack(particle);
-        return particles.back();
-    }
-
-    ////////////////////////////////////////////////////////////
     Rocket& addRocket(const Rocket& r)
     {
         Rocket& rocket = rockets.emplaceBack(r);
@@ -518,23 +511,24 @@ struct World
             {
                 if (e->type == ParticleType::Smoke)
                 {
-                    addParticle({.position     = e->position,
-                                 .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                                 .acceleration = {0.f, -0.011f},
+                    particles.pushBack(
+                        {.position     = e->position,
+                         .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
+                         .acceleration = {0.f, -0.011f},
 
-                                 .scale    = rng.getF(0.0025f, 0.0035f),
-                                 .opacity  = rng.getF(0.05f, 0.25f),
-                                 .rotation = rng.getF(0.f, 6.28f),
+                         .scale    = rng.getF(0.0025f, 0.0035f),
+                         .opacity  = rng.getF(0.05f, 0.25f),
+                         .rotation = rng.getF(0.f, 6.28f),
 
-                                 .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
-                                 .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
-                                 .angularVelocity = rng.getF(-0.02f, 0.02f),
+                         .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+                         .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+                         .angularVelocity = rng.getF(-0.02f, 0.02f),
 
-                                 .type = ParticleType::Smoke});
+                         .type = ParticleType::Smoke});
                 }
                 else if (e->type == ParticleType::Fire)
                 {
-                    addParticle({
+                    particles.pushBack({
                         .position     = e->position,
                         .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                         .acceleration = {0.f, 0.07f},
@@ -638,8 +632,8 @@ struct Rocket
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    sf::base::SizeT smokeEmitterIdx;
-    sf::base::SizeT fireEmitterIdx;
+    sf::base::U16 smokeEmitterIdx;
+    sf::base::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
@@ -652,7 +646,7 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitterImpl(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
         for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
@@ -666,43 +660,12 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
-    {
-        return addEmitterImpl(smokeEmitters, emitter);
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
-    {
-        return addEmitterImpl(fireEmitters, emitter);
-    }
-
-    ////////////////////////////////////////////////////////////
-    Particle& addSmokeParticle(const Particle& particle)
-    {
-        return smokeParticles.emplaceBack(particle);
-    }
-
-    ////////////////////////////////////////////////////////////
-    Particle& addFireParticle(const Particle& particle)
-    {
-        return fireParticles.emplaceBack(particle);
-    }
-
-    ////////////////////////////////////////////////////////////
     Rocket& addRocket(const Rocket& r)
     {
-        auto& rocket = rockets.emplaceBack(r);
+        Rocket& rocket = rockets.emplaceBack(r);
 
-        rocket.smokeEmitterIdx = addSmokeEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 2.5f,
-        });
-
-        rocket.fireEmitterIdx = addFireEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 1.25f,
-        });
+        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
+        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
 
         return rocket;
     }
@@ -737,7 +700,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                addSmokeParticle({
+                smokeParticles.pushBack({
                     .position     = e->position,
                     .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
                     .acceleration = {0.f, -0.011f},
@@ -763,7 +726,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                addFireParticle({
+                fireParticles.pushBack({
                     .position     = e->position,
                     .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                     .acceleration = {0.f, 0.07f},
@@ -918,8 +881,8 @@ struct Rocket
     sf::Vec2f velocity;
     sf::Vec2f acceleration;
 
-    sf::base::SizeT smokeEmitterIdx;
-    sf::base::SizeT fireEmitterIdx;
+    sf::base::U16 smokeEmitterIdx;
+    sf::base::U16 fireEmitterIdx;
 };
 
 ////////////////////////////////////////////////////////////
@@ -932,7 +895,7 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitterImpl(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
+    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
         for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
@@ -946,43 +909,12 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addSmokeEmitter(const Emitter& emitter)
-    {
-        return addEmitterImpl(smokeEmitters, emitter);
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addFireEmitter(const Emitter& emitter)
-    {
-        return addEmitterImpl(fireEmitters, emitter);
-    }
-
-    ////////////////////////////////////////////////////////////
-    void addSmokeParticle(const auto&... xs)
-    {
-        return smokeParticles.pushBack(xs...);
-    }
-
-    ////////////////////////////////////////////////////////////
-    void addFireParticle(const auto&... xs)
-    {
-        return fireParticles.pushBack(xs...);
-    }
-
-    ////////////////////////////////////////////////////////////
     Rocket& addRocket(const Rocket& r)
     {
         Rocket& rocket = rockets.emplaceBack(r);
 
-        rocket.smokeEmitterIdx = addSmokeEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 2.5f,
-        });
-
-        rocket.fireEmitterIdx = addFireEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 1.25f,
-        });
+        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
+        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
 
         return rocket;
     }
@@ -1031,7 +963,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                addSmokeParticle(
+                smokeParticles.pushBack(
                     /* .position     */ e->position,
                     /* .velocity     */ rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
                     /* .acceleration */ sf::Vec2f{0.f, -0.011f},
@@ -1057,7 +989,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                addFireParticle(
+                fireParticles.pushBack(
                     /* .position     */ e->position,
                     /* .velocity     */ rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
                     /* .acceleration */ sf::Vec2f{0.f, 0.07f},
@@ -1077,10 +1009,10 @@ struct World
             r.position += r.velocity * dt;
             r.velocity += r.acceleration * dt;
 
-            if (auto& se = smokeEmitters[r.smokeEmitterIdx])
+            if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
                 se->position = r.position - sf::Vec2f{12.f, 0.f};
 
-            if (auto& fe = fireEmitters[r.fireEmitterIdx])
+            if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
                 fe->position = r.position - sf::Vec2f{12.f, 0.f};
         }
     }
@@ -1365,15 +1297,6 @@ int main()
 
             if (mode == Mode::OOP)
             {
-                // TODO P0:
-                /*
-                for (const auto& entity : oopWorld.entities)
-                {
-                    if (dynamic_cast<OOP::Rocket*>(entity.get()))
-                        ++nRockets;
-                }
-                */
-
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
                     auto& rocket = oopWorld.addEntity<OOP::Rocket>();
