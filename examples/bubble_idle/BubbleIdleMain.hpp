@@ -503,8 +503,8 @@ struct Main
         sf::Music       music;
 
         explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
-        musicReader{SFML_BASE_MOVE(theMusicSource)},
-        music{playbackDevice, musicReader}
+            musicReader{SFML_BASE_MOVE(theMusicSource)},
+            music{playbackDevice, musicReader}
         {
         }
     };
