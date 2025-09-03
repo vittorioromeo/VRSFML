@@ -111,8 +111,8 @@ private:
 /// \ingroup graphics
 ///
 /// This class inherits all the functions of `sf::Transformable`
-/// (position, rotation, scale, bounds, ...) as well as the
-/// functions of `sf::Shape` (outline, color, texture, ...).
+/// (position, rotation, scale, bounds, etc...) as well as the
+/// functions of `sf::Shape` (outline, color, texture, etc...).
 ///
 /// Usage example:
 /// \code

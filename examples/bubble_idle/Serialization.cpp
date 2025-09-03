@@ -185,11 +185,11 @@ template <bool Serialize>
 {
     if constexpr (Serialize)
     {
-        (serialize(j, index++, fields), ...);
+        (..., serialize(j, index++, fields));
     }
     else
     {
-        (deserialize(j, index++, fields), ...);
+        (..., deserialize(j, index++, fields));
     }
 
     return index;

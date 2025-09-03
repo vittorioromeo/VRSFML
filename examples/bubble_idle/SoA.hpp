@@ -40,25 +40,25 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()
     {
-        (SOA_ALL_BASES().data.clear(), ...);
+        (..., SOA_ALL_BASES().data.clear());
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void reserve(const sf::base::SizeT capacity)
     {
-        (SOA_ALL_BASES().data.reserve(capacity), ...);
+        (..., SOA_ALL_BASES().data.reserve(capacity));
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void resize(const sf::base::SizeT size)
     {
-        (SOA_ALL_BASES().data.resize(size), ...);
+        (..., SOA_ALL_BASES().data.resize(size));
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void pushBack(auto&&... values)
     {
-        (SOA_ALL_BASES().data.pushBack(SFML_BASE_FORWARD(values)), ...);
+        (..., SOA_ALL_BASES().data.pushBack(SFML_BASE_FORWARD(values)));
     }
 
     ////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ public:
         const sf::base::SizeT n = getSize();
 
         // Find the first element to remove.
-        sf::base::SizeT i = 0;
+        sf::base::SizeT i = 0u;
         while (i < n && !f(SOA_AS_BASE(Js).data[i]...))
             ++i;
 
@@ -148,13 +148,13 @@ public:
                 continue;
 
             if (newSize != i)
-                ((SOA_ALL_BASES().data[newSize] = SFML_BASE_MOVE(SOA_ALL_BASES().data[i])), ...);
+                (..., (SOA_ALL_BASES().data[newSize] = SFML_BASE_MOVE(SOA_ALL_BASES().data[i])));
 
             ++newSize;
         }
 
         // Resize all columns to the new size.
-        ((SOA_ALL_BASES().data.resize(newSize)), ...);
+        (..., SOA_ALL_BASES().data.resize(newSize));
     }
 
     ////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ public:
     void eraseIfBySwapping(auto&& f)
     {
         sf::base::SizeT n = getSize();
-        sf::base::SizeT i = 0;
+        sf::base::SizeT i = 0u;
 
         // Process elements, swapping out removed ones.
         while (i < n)
@@ -175,13 +175,13 @@ public:
 
             // Swap the current element with the last one, then reduce the container size.
             --n;
-            ((sf::base::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n])), ...);
+            (..., sf::base::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
 
-            // Do not increment i; check the new element at i.
+            // Do not increment `i`; check the new element at `i`.
         }
 
         // Resize all columns to the new size.
-        ((SOA_ALL_BASES().data.resize(n)), ...);
+        (..., SOA_ALL_BASES().data.resize(n));
     }
 };
 

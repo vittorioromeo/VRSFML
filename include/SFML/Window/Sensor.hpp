@@ -89,7 +89,7 @@ struct Sensor
 /// can retrieve the state of a sensor at any time (you don't need to
 /// store and update its current value on your side).
 ///
-/// Depending on the OS and hardware of the device (phone, tablet, ...),
+/// Depending on the OS and hardware of the device (phone, tablet, etc...),
 /// some sensor types may not be available. You should always check
 /// the availability of a sensor before trying to read it, with the
 /// `sf::Sensor::isAvailable` function.

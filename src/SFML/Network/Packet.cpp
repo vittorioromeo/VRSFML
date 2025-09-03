@@ -30,7 +30,7 @@ template <typename IntegerType, typename... Bytes>
     IntegerType     integer = 0;
     sf::base::SizeT index   = 0;
 
-    return ((integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)), ...);
+    return (..., (integer |= static_cast<IntegerType>(static_cast<IntegerType>(byte) << 8 * index++)));
 }
 
 } // namespace
