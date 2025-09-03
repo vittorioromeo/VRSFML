@@ -3524,7 +3524,7 @@ struct Main
         {
             return pickRandomBubbleInRadiusMatching({cx, cy},
                                                     range,
-                                                    [&](const Bubble& b) { return ((b.type == types) || ...); });
+                                                    [&](const Bubble& b) { return (... || (b.type == types)); });
         };
 
         if (!pt->perm.geniusCatsPurchased)
