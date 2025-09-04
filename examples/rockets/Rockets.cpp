@@ -1,6 +1,6 @@
 #include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
-#include "../bubble_idle/SoA.hpp"     // TODO P1: avoid the relative path...?
+#include "SoAPFR.hpp"                 // TODO P1: avoid the relative path...?
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -869,37 +869,23 @@ struct World
 namespace SOA
 {
 ////////////////////////////////////////////////////////////
-using ParticleSoA = SoAFor<sf::Vec2f, // position
-                           sf::Vec2f, // velocity
-                           sf::Vec2f, // acceleration
-
-                           float, // scale
-                           float, // scaleRate
-
-                           float, // opacity
-                           float, // opacityChange
-
-                           float,  // rotation
-                           float>; // angularVelocity
-
-struct Field
+struct Particle
 {
-    enum : sf::base::SizeT
-    {
-        Position,
-        Velocity,
-        Acceleration,
+    sf::Vec2f position;
+    sf::Vec2f velocity;
+    sf::Vec2f acceleration;
 
-        Scale,
-        ScaleDelta,
+    float scale;
+    float opacity;
+    float rotation;
 
-        Opacity,
-        OpacityDelta,
-
-        Rotation,
-        RotationDelta
-    };
+    float scaleRate;
+    float opacityChange;
+    float angularVelocity;
 };
+
+////////////////////////////////////////////////////////////
+using ParticleSoA = SoAFor<Particle>;
 
 ////////////////////////////////////////////////////////////
 struct Emitter
@@ -964,18 +950,18 @@ struct World
         {
             const auto nParticles = particles.getSize();
 
-            auto&       positions     = particles.template get<Field::Position>();
-            auto&       velocities    = particles.template get<Field::Velocity>();
-            const auto& accelerations = particles.template get<Field::Acceleration>();
+            auto&       positions     = particles.template get<&Particle::position>();
+            auto&       velocities    = particles.template get<&Particle::velocity>();
+            const auto& accelerations = particles.template get<&Particle::acceleration>();
 
-            auto&       scales      = particles.template get<Field::Scale>();
-            const auto& scaleDeltas = particles.template get<Field::ScaleDelta>();
+            auto&       scales      = particles.template get<&Particle::scale>();
+            const auto& scaleDeltas = particles.template get<&Particle::scaleRate>();
 
-            auto&       opacities     = particles.template get<Field::Opacity>();
-            const auto& opacityDeltas = particles.template get<Field::OpacityDelta>();
+            auto&       opacities     = particles.template get<&Particle::opacity>();
+            const auto& opacityDeltas = particles.template get<&Particle::opacityChange>();
 
-            auto&       rotations      = particles.template get<Field::Rotation>();
-            const auto& rotationDeltas = particles.template get<Field::RotationDelta>();
+            auto&       rotations      = particles.template get<&Particle::rotation>();
+            const auto& rotationDeltas = particles.template get<&Particle::angularVelocity>();
 
             for (sf::base::SizeT i = 0u; i < nParticles; ++i)
             {
@@ -1000,19 +986,19 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                smokeParticles.pushBack(
-                    /* .position     */ e->position,
-                    /* .velocity     */ rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                    /* .acceleration */ sf::Vec2f{0.f, -0.011f},
+                smokeParticles.pushBack({
+                    .position     = e->position,
+                    .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
+                    .acceleration = {0.f, -0.011f},
 
-                    /* .scale     */ rng.getF(0.0025f, 0.0035f),
-                    /* .scaleRate */ rng.getF(0.001f, 0.003f) * 2.75f,
+                    .scale    = rng.getF(0.0025f, 0.0035f),
+                    .opacity  = rng.getF(0.05f, 0.25f),
+                    .rotation = rng.getF(0.f, 6.28f),
 
-                    /* .opacity       */ rng.getF(0.05f, 0.25f),
-                    /* .opacityChange */ -rng.getF(0.001f, 0.002f) * 3.25f,
-
-                    /* .rotation        */ rng.getF(0.f, 6.28f),
-                    /* .angularVelocity */ rng.getF(-0.02f, 0.02f));
+                    .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+                    .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+                    .angularVelocity = rng.getF(-0.02f, 0.02f),
+                });
         }
 
         for (sf::base::Optional<Emitter>& e : fireEmitters)
@@ -1025,19 +1011,19 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                fireParticles.pushBack(
-                    /* .position     */ e->position,
-                    /* .velocity     */ rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
-                    /* .acceleration */ sf::Vec2f{0.f, 0.07f},
+                fireParticles.pushBack({
+                    .position     = e->position,
+                    .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
+                    .acceleration = {0.f, 0.07f},
 
-                    /* .scale     */ rng.getF(0.5f, 0.7f) * 0.085f,
-                    /* .scaleRate */ -rng.getF(0.001f, 0.003f) * 0.25f,
+                    .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
+                    .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
+                    .rotation = rng.getF(0.f, 6.28f),
 
-                    /* .opacity       */ rng.getF(0.2f, 0.4f) * 0.85f,
-                    /* .opacityChange */ -0.001f,
-
-                    /* .rotation        */ rng.getF(0.f, 6.28f),
-                    /* .angularVelocity */ rng.getF(-0.002f, 0.002f));
+                    .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
+                    .opacityChange   = -0.001f,
+                    .angularVelocity = rng.getF(-0.002f, 0.002f),
+                });
         }
 
         for (Rocket& r : rockets)
@@ -1056,8 +1042,8 @@ struct World
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
-        smokeParticles.eraseIfBySwapping<Field::Opacity>([](const float opacity) { return opacity <= 0.f; });
-        fireParticles.eraseIfBySwapping<Field::Opacity>([](const float opacity) { return opacity <= 0.f; });
+        smokeParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
+        fireParticles.eraseIfBySwapping<&Particle::opacity>([](const float opacity) { return opacity <= 0.f; });
 
         sf::base::vectorSwapAndPopIf(rockets,
                                      [&](const Rocket& r)
@@ -1085,19 +1071,19 @@ struct World
                 using IAB = sf::RenderTarget::InstanceAttributeBinder;
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
-                binder.uploadContiguousData(nParticles, particles.template get<Field::Position>().data());
+                binder.uploadContiguousData(nParticles, particles.template get<&Particle::position>().data());
                 binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
-                binder.uploadContiguousData(nParticles, particles.template get<Field::Scale>().data());
+                binder.uploadContiguousData(nParticles, particles.template get<&Particle::scale>().data());
                 binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
-                binder.uploadContiguousData(nParticles, particles.template get<Field::Rotation>().data());
+                binder.uploadContiguousData(nParticles, particles.template get<&Particle::rotation>().data());
                 binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
-                binder.uploadContiguousData(nParticles, particles.template get<Field::Opacity>().data());
+                binder.uploadContiguousData(nParticles, particles.template get<&Particle::opacity>().data());
                 binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
             };
 

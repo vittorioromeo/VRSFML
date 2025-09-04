@@ -363,25 +363,24 @@ template <typename Vector, typename Predicate>
 
     for (SizeT i = 0u; i < vector.size();)
     {
-        if (predicate(vector[i]))
+        if (!predicate(vector[i]))
         {
-            vector[i] = SFML_BASE_MOVE(vector.back());
+            ++i;
+            continue;
+        }
 
-            if constexpr (requires { vector.popBack(); })
-            {
-                vector.popBack();
-            }
-            else
-            {
-                vector.pop_back();
-            }
+        vector[i] = SFML_BASE_MOVE(vector.back());
 
-            ++nRemoved;
+        if constexpr (requires { vector.popBack(); })
+        {
+            vector.popBack();
         }
         else
         {
-            i++;
+            vector.pop_back();
         }
+
+        ++nRemoved;
     }
 
     return nRemoved;
