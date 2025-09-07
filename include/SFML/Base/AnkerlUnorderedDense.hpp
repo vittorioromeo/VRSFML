@@ -500,7 +500,7 @@ template <typename... Args>
 struct hash<std::tuple<Args...>> : tuple_hash_helper<Args...> {
     using is_avalanching = void;
     auto operator()(std::tuple<Args...> const& t) const noexcept -> sf::base::U64 {
-        return tuple_hash_helper<Args...>::calc_hash(t, SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(Args)){});
+        return tuple_hash_helper<Args...>::calc_hash(t, SFML_BASE_INDEX_SEQUENCE_FOR(Args){});
     }
 };
 
