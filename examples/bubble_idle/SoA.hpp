@@ -192,4 +192,4 @@ public:
 
 ////////////////////////////////////////////////////////////
 template <typename... Ts>
-using SoAFor = SoA<SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(Ts)), Ts...>;
+using SoAFor = SoA<SFML_BASE_INDEX_SEQUENCE_FOR(Ts), Ts...>;
