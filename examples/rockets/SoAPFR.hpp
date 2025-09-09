@@ -109,31 +109,31 @@ consteval sf::base::SizeT countFields()
     // NOLINTBEGIN(readability-misleading-indentation)
 
     // clang-format off
-         if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};  }) { return 24u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};    }) { return 23u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};      }) { return 22u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};        }) { return 21u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};          }) { return 20u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};            }) { return 19u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};              }) { return 18u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                }) { return 17u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                  }) { return 16u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                    }) { return 15u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x};                      }) { return 14u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x};                        }) { return 13u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x};                          }) { return 12u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x};                            }) { return 11u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x};                              }) { return 10u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x};                                }) { return 9u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x,x};                                  }) { return 8u; }
-    else if constexpr (requires { T{x,x,x,x,x,x,x};                                    }) { return 7u; }
-    else if constexpr (requires { T{x,x,x,x,x,x};                                      }) { return 6u; }
-    else if constexpr (requires { T{x,x,x,x,x};                                        }) { return 5u; }
-    else if constexpr (requires { T{x,x,x,x};                                          }) { return 4u; }
-    else if constexpr (requires { T{x,x,x};                                            }) { return 3u; }
-    else if constexpr (requires { T{x,x};                                              }) { return 2u; }
-    else if constexpr (requires { T{x};                                                }) { return 1u; }
-    else if constexpr (requires { T{};                                                 }) { return 0u; }
+         if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x}; }) { return 24u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};   }) { return 23u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};     }) { return 22u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};       }) { return 21u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};         }) { return 20u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};           }) { return 19u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};             }) { return 18u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};               }) { return 17u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                 }) { return 16u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x,x};                   }) { return 15u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x,x};                     }) { return 14u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x,x};                       }) { return 13u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x,x};                         }) { return 12u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x,x};                           }) { return 11u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x,x};                             }) { return 10u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x,x};                               }) { return 9u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x,x};                                 }) { return 8u; }
+    else if constexpr (requires { T{x,x,x,x,x,x,x};                                   }) { return 7u; }
+    else if constexpr (requires { T{x,x,x,x,x,x};                                     }) { return 6u; }
+    else if constexpr (requires { T{x,x,x,x,x};                                       }) { return 5u; }
+    else if constexpr (requires { T{x,x,x,x};                                         }) { return 4u; }
+    else if constexpr (requires { T{x,x,x};                                           }) { return 3u; }
+    else if constexpr (requires { T{x,x};                                             }) { return 2u; }
+    else if constexpr (requires { T{x};                                               }) { return 1u; }
+    else if constexpr (requires { T{};                                                }) { return 0u; }
     // clang-format on
 
     else
