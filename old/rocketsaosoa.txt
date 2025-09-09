@@ -23,9 +23,6 @@
 #include "SFML/Graphics/View.hpp" // used
 
 #include "SFML/Window/EventUtils.hpp"
-#include "SFML/Window/Keyboard.hpp"
-#include "SFML/Window/VideoMode.hpp"
-#include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/System/Clock.hpp"
 #include "SFML/System/Path.hpp"
@@ -39,8 +36,6 @@
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include "ExampleUtils.hpp"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -617,7 +612,7 @@ struct World
                                                      setupSpriteInstanceAttribs);
         };
 
-        const auto nParticles = particles.size();
+        const sf::base::SizeT nParticles = particles.size();
 
         instanceRenderingDataBuffer.clear();
         instanceRenderingDataBuffer.reserve(nParticles);
@@ -822,7 +817,7 @@ struct World
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
         {
-            const auto nParticles = particles.size();
+            const sf::base::SizeT nParticles = particles.size();
 
             instanceRenderingDataBuffer.clear();
             instanceRenderingDataBuffer.reserve(nParticles);
@@ -961,19 +956,39 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void update(const float dt)
+    void update(const float dt, const bool fusedLoop)
     {
         auto updateParticles = [&](auto& soa)
         {
-            const auto nParticles = soa.positions.size();
+            const sf::base::SizeT nParticles = soa.positions.size();
 
-            for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+            if (fusedLoop)
             {
-                soa.velocities[i] += soa.accelerations[i] * dt;
-                soa.positions[i] += soa.velocities[i] * dt;
-                soa.scales[i] += soa.scaleRates[i] * dt;
-                soa.opacities[i] += soa.opacityChanges[i] * dt;
-                soa.rotations[i] += soa.angularVelocities[i] * dt;
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                {
+                    soa.velocities[i] += soa.accelerations[i] * dt;
+                    soa.positions[i] += soa.velocities[i] * dt;
+                    soa.scales[i] += soa.scaleRates[i] * dt;
+                    soa.opacities[i] += soa.opacityChanges[i] * dt;
+                    soa.rotations[i] += soa.angularVelocities[i] * dt;
+                }
+            }
+            else
+            {
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    soa.velocities[i] += soa.accelerations[i] * dt;
+
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    soa.positions[i] += soa.velocities[i] * dt;
+
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    soa.scales[i] += soa.scaleRates[i] * dt;
+
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    soa.opacities[i] += soa.opacityChanges[i] * dt;
+
+                for (sf::base::SizeT i = 0u; i < nParticles; ++i)
+                    soa.rotations[i] += soa.angularVelocities[i] * dt;
             }
         };
 
@@ -1089,7 +1104,7 @@ struct World
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
         {
-            const auto nParticles = particles.positions.size();
+            const sf::base::SizeT nParticles = particles.positions.size();
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
@@ -1215,27 +1230,47 @@ struct World
     }
 
     ////////////////////////////////////////////////////////////
-    void update(const float dt)
+    void update(const float dt, const bool fusedLoop)
     {
         auto updateParticles = [&](auto& soa)
         {
-            soa.withAll(
-                [&](sf::Vec2f&       position,
-                    sf::Vec2f&       velocity,
-                    const sf::Vec2f& acceleration,
-                    float&           scale,
-                    float&           opacity,
-                    float&           rotation,
-                    const float&     scaleRate,
-                    const float&     opacityChange,
-                    const float&     angularVelocity)
+            if (fusedLoop)
             {
-                velocity += acceleration * dt;
-                position += velocity * dt;
-                scale += scaleRate * dt;
-                opacity += opacityChange * dt;
-                rotation += angularVelocity * dt;
-            });
+                soa.withAll(
+                    [&](sf::Vec2f&       position,
+                        sf::Vec2f&       velocity,
+                        const sf::Vec2f& acceleration,
+                        float&           scale,
+                        float&           opacity,
+                        float&           rotation,
+                        const float&     scaleRate,
+                        const float&     opacityChange,
+                        const float&     angularVelocity)
+                {
+                    velocity += acceleration * dt;
+                    position += velocity * dt;
+                    scale += scaleRate * dt;
+                    opacity += opacityChange * dt;
+                    rotation += angularVelocity * dt;
+                });
+            }
+            else
+            {
+                soa.template with<&Particle::velocity, &Particle::acceleration>(
+                    [&](sf::Vec2f& velocity, const sf::Vec2f& acceleration) { velocity += acceleration * dt; });
+
+                soa.template with<&Particle::position, &Particle::velocity>(
+                    [&](sf::Vec2f& position, const sf::Vec2f& velocity) { position += velocity * dt; });
+
+                soa.template with<&Particle::scale, &Particle::scaleRate>([&](float& scale, const float& scaleRate)
+                { scale += scaleRate * dt; });
+
+                soa.template with<&Particle::opacity, &Particle::opacityChange>(
+                    [&](float& opacity, const float& opacityChange) { opacity += opacityChange * dt; });
+
+                soa.template with<&Particle::rotation, &Particle::angularVelocity>(
+                    [&](float& rotation, const float& angularVelocity) { rotation += angularVelocity * dt; });
+            }
         };
 
         updateParticles(smokeParticles);
@@ -1329,7 +1364,7 @@ struct World
         const auto drawParticlesInstanced =
             [&](const sf::base::SizeT vboIndexOffset, const sf::FloatRect& txr, const auto& particles)
         {
-            const auto nParticles = particles.getSize();
+            const sf::base::SizeT nParticles = particles.getSize();
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
@@ -1377,6 +1412,427 @@ struct World
 } // namespace SOAMeta
 
 ////////////////////////////////////////////////////////////
+namespace AOSOA
+{
+////////////////////////////////////////////////////////////
+struct Particle
+{
+    sf::Vec2f position;
+    sf::Vec2f velocity;
+    sf::Vec2f acceleration;
+
+    float scale;
+    float opacity;
+    float rotation;
+
+    float scaleRate;
+    float opacityChange;
+    float angularVelocity;
+};
+
+////////////////////////////////////////////////////////////
+class ParticleAoSoA
+{
+public:
+    static constexpr sf::base::SizeT ChunkSize = 16;
+
+private:
+    struct ParticleChunk
+    {
+        sf::Vec2f position[ChunkSize];
+        sf::Vec2f velocity[ChunkSize];
+        sf::Vec2f acceleration[ChunkSize];
+        float     scale[ChunkSize];
+        float     opacity[ChunkSize];
+        float     rotation[ChunkSize];
+        float     scaleRate[ChunkSize];
+        float     opacityChange[ChunkSize];
+        float     angularVelocity[ChunkSize];
+    };
+
+    sf::base::Vector<ParticleChunk> m_chunks;
+    sf::base::SizeT                 m_size{0};
+
+public:
+    [[nodiscard]] sf::base::SizeT getSize() const
+    {
+        return m_size;
+    }
+
+    void reserve(const sf::base::SizeT capacity)
+    {
+        m_chunks.reserve(capacity / ChunkSize + 1);
+    }
+
+    void pushBack(const Particle& p)
+    {
+        if (m_size / ChunkSize >= m_chunks.size())
+            m_chunks.emplaceBack();
+
+        const auto chunkIdx = m_size / ChunkSize;
+        const auto elemIdx  = m_size % ChunkSize;
+
+        m_chunks[chunkIdx].position[elemIdx]        = p.position;
+        m_chunks[chunkIdx].velocity[elemIdx]        = p.velocity;
+        m_chunks[chunkIdx].acceleration[elemIdx]    = p.acceleration;
+        m_chunks[chunkIdx].scale[elemIdx]           = p.scale;
+        m_chunks[chunkIdx].opacity[elemIdx]         = p.opacity;
+        m_chunks[chunkIdx].rotation[elemIdx]        = p.rotation;
+        m_chunks[chunkIdx].scaleRate[elemIdx]       = p.scaleRate;
+        m_chunks[chunkIdx].opacityChange[elemIdx]   = p.opacityChange;
+        m_chunks[chunkIdx].angularVelocity[elemIdx] = p.angularVelocity;
+
+        m_size++;
+    }
+
+    void popBack()
+    {
+        SFML_BASE_ASSERT(m_size > 0);
+
+        m_size--;
+
+        if (m_size > 0 && m_size % ChunkSize == 0)
+            m_chunks.popBack();
+    }
+
+    void swapWithLast(const sf::base::SizeT index)
+    {
+        SFML_BASE_ASSERT(index < m_size);
+        SFML_BASE_ASSERT(m_size > 1);
+
+        const auto lastIndex = m_size - 1;
+
+        SFML_BASE_ASSERT(index != lastIndex);
+
+        const auto srcChunkIdx = lastIndex / ChunkSize;
+        const auto srcElemIdx  = lastIndex % ChunkSize;
+
+        const auto dstChunkIdx = index / ChunkSize;
+        const auto dstElemIdx  = index % ChunkSize;
+
+        m_chunks[dstChunkIdx].position[dstElemIdx]        = m_chunks[srcChunkIdx].position[srcElemIdx];
+        m_chunks[dstChunkIdx].velocity[dstElemIdx]        = m_chunks[srcChunkIdx].velocity[srcElemIdx];
+        m_chunks[dstChunkIdx].acceleration[dstElemIdx]    = m_chunks[srcChunkIdx].acceleration[srcElemIdx];
+        m_chunks[dstChunkIdx].scale[dstElemIdx]           = m_chunks[srcChunkIdx].scale[srcElemIdx];
+        m_chunks[dstChunkIdx].opacity[dstElemIdx]         = m_chunks[srcChunkIdx].opacity[srcElemIdx];
+        m_chunks[dstChunkIdx].rotation[dstElemIdx]        = m_chunks[srcChunkIdx].rotation[srcElemIdx];
+        m_chunks[dstChunkIdx].scaleRate[dstElemIdx]       = m_chunks[srcChunkIdx].scaleRate[srcElemIdx];
+        m_chunks[dstChunkIdx].opacityChange[dstElemIdx]   = m_chunks[srcChunkIdx].opacityChange[srcElemIdx];
+        m_chunks[dstChunkIdx].angularVelocity[dstElemIdx] = m_chunks[srcChunkIdx].angularVelocity[srcElemIdx];
+    }
+
+    void eraseIfBySwapping(auto&& pred)
+    {
+        sf::base::SizeT i = 0u;
+        while (i < m_size)
+        {
+            const auto chunkIdx = i / ChunkSize;
+            const auto elemIdx  = i % ChunkSize;
+
+            if (pred(m_chunks[chunkIdx].opacity[elemIdx]))
+            {
+                swapWithLast(i);
+                popBack();
+            }
+            else
+            {
+                ++i;
+            }
+        }
+    }
+
+    void withAll(auto&& f)
+    {
+        // Pre-compute chunk counts to avoid conditional logic inside the main loop.
+        const auto numFullChunks = m_size / ChunkSize;
+        const auto lastChunkSize = m_size % ChunkSize;
+
+        // Iterate over all full chunks.
+        for (sf::base::SizeT chunkIndex = 0; chunkIndex < numFullChunks; ++chunkIndex)
+        {
+            auto& chunk = m_chunks[chunkIndex];
+            for (sf::base::SizeT i = 0; i < ChunkSize; ++i)
+                f(chunk.position[i],
+                  chunk.velocity[i],
+                  chunk.acceleration[i],
+                  chunk.scale[i],
+                  chunk.opacity[i],
+                  chunk.rotation[i],
+                  chunk.scaleRate[i],
+                  chunk.opacityChange[i],
+                  chunk.angularVelocity[i]);
+        }
+
+        // Handle the last, potentially partial, chunk.
+        if (lastChunkSize > 0)
+        {
+            auto& lastChunk = m_chunks[numFullChunks];
+            for (sf::base::SizeT i = 0; i < lastChunkSize; ++i)
+                f(lastChunk.position[i],
+                  lastChunk.velocity[i],
+                  lastChunk.acceleration[i],
+                  lastChunk.scale[i],
+                  lastChunk.opacity[i],
+                  lastChunk.rotation[i],
+                  lastChunk.scaleRate[i],
+                  lastChunk.opacityChange[i],
+                  lastChunk.angularVelocity[i]);
+        }
+    }
+
+    void forEachDrawable(auto&& f) const
+    {
+        // Pre-compute chunk counts to avoid conditional logic inside the main loop.
+        const auto numFullChunks = m_size / ChunkSize;
+        const auto lastChunkSize = m_size % ChunkSize;
+
+        // Iterate over all full chunks.
+        for (sf::base::SizeT chunkIndex = 0; chunkIndex < numFullChunks; ++chunkIndex)
+        {
+            const auto& chunk = m_chunks[chunkIndex];
+            for (sf::base::SizeT i = 0; i < ChunkSize; ++i)
+                f(chunk.position[i], chunk.scale[i], chunk.rotation[i], chunk.opacity[i]);
+        }
+
+        // Handle the last, potentially partial, chunk.
+        if (lastChunkSize > 0)
+        {
+            const auto& lastChunk = m_chunks[numFullChunks];
+            for (sf::base::SizeT i = 0; i < lastChunkSize; ++i)
+                f(lastChunk.position[i], lastChunk.scale[i], lastChunk.rotation[i], lastChunk.opacity[i]);
+        }
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+struct Emitter
+{
+    sf::Vec2f position;
+    sf::Vec2f velocity;
+    sf::Vec2f acceleration;
+
+    float spawnTimer;
+    float spawnRate;
+};
+
+////////////////////////////////////////////////////////////
+struct Rocket
+{
+    sf::Vec2f position;
+    sf::Vec2f velocity;
+    sf::Vec2f acceleration;
+
+    sf::base::U16 smokeEmitterIdx;
+    sf::base::U16 fireEmitterIdx;
+};
+
+////////////////////////////////////////////////////////////
+struct World
+{
+    sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
+    sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
+    ParticleAoSoA                                 smokeParticles;
+    ParticleAoSoA                                 fireParticles;
+    sf::base::Vector<Rocket>                      rockets;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
+    {
+        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+            if (!emitters[i].hasValue())
+            {
+                emitters[i].emplace(emitter);
+                return i;
+            }
+
+        emitters.emplaceBack(emitter);
+        return emitters.size() - 1;
+    }
+
+    ////////////////////////////////////////////////////////////
+    Rocket& addRocket(const Rocket& r)
+    {
+        Rocket& rocket = rockets.emplaceBack(r);
+
+        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
+        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
+
+        return rocket;
+    }
+
+    ////////////////////////////////////////////////////////////
+    void update(const float dt)
+    {
+        auto updateParticles = [&](ParticleAoSoA& particles)
+        {
+            particles.withAll(
+                [&](sf::Vec2f&       position,
+                    sf::Vec2f&       velocity,
+                    const sf::Vec2f& acceleration,
+                    float&           scale,
+                    float&           opacity,
+                    float&           rotation,
+                    const float&     scaleRate,
+                    const float&     opacityChange,
+                    const float&     angularVelocity)
+            {
+                velocity += acceleration * dt;
+                position += velocity * dt;
+                scale += scaleRate * dt;
+                opacity += opacityChange * dt;
+                rotation += angularVelocity * dt;
+            });
+        };
+
+        updateParticles(smokeParticles);
+        updateParticles(fireParticles);
+
+        for (sf::base::Optional<Emitter>& e : smokeEmitters)
+        {
+            if (!e.hasValue())
+                continue;
+
+            e->position += e->velocity * dt;
+            e->velocity += e->acceleration * dt;
+            e->spawnTimer += e->spawnRate * dt;
+
+            for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+                smokeParticles.pushBack({
+                    .position     = e->position,
+                    .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
+                    .acceleration = {0.f, -0.011f},
+
+                    .scale    = rng.getF(0.0025f, 0.0035f),
+                    .opacity  = rng.getF(0.05f, 0.25f),
+                    .rotation = rng.getF(0.f, 6.28f),
+
+                    .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+                    .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+                    .angularVelocity = rng.getF(-0.02f, 0.02f),
+                });
+        }
+
+        for (sf::base::Optional<Emitter>& e : fireEmitters)
+        {
+            if (!e.hasValue())
+                continue;
+
+            e->position += e->velocity * dt;
+            e->velocity += e->acceleration * dt;
+            e->spawnTimer += e->spawnRate * dt;
+
+            for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+                fireParticles.pushBack({
+                    .position     = e->position,
+                    .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
+                    .acceleration = {0.f, 0.07f},
+
+                    .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
+                    .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
+                    .rotation = rng.getF(0.f, 6.28f),
+
+                    .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
+                    .opacityChange   = -0.001f,
+                    .angularVelocity = rng.getF(-0.002f, 0.002f),
+                });
+        }
+
+        for (Rocket& r : rockets)
+        {
+            r.position += r.velocity * dt;
+            r.velocity += r.acceleration * dt;
+
+            if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                se->position = r.position - sf::Vec2f{12.f, 0.f};
+
+            if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                fe->position = r.position - sf::Vec2f{12.f, 0.f};
+        }
+    }
+
+    ////////////////////////////////////////////////////////////
+    void cleanup()
+    {
+        smokeParticles.eraseIfBySwapping([](const float opacity) { return opacity <= 0.f; });
+        fireParticles.eraseIfBySwapping([](const float opacity) { return opacity <= 0.f; });
+
+        sf::base::vectorSwapAndPopIf(rockets,
+                                     [&](const Rocket& r)
+        {
+            if (r.position.x <= 1680.f + 64.f)
+                return false;
+
+            smokeEmitters[r.smokeEmitterIdx].reset();
+            fireEmitters[r.fireEmitterIdx].reset();
+
+            return true; // Out of bounds
+        });
+    }
+
+    ////////////////////////////////////////////////////////////
+    void draw(sf::RenderTarget& rt)
+    {
+        const auto drawParticlesInstanced =
+            [&](const sf::base::Vector<ParticleInstanceData>& instanceBuffer,
+                const sf::base::SizeT                         vboIndexOffset,
+                const sf::FloatRect&                          txr)
+        {
+            const sf::base::SizeT nParticles = instanceBuffer.size();
+
+            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            {
+                using IAB = sf::RenderTarget::InstanceAttributeBinder;
+
+                binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
+                binder.uploadContiguousData(nParticles, instanceBuffer.data());
+
+                constexpr auto stride = sizeof(ParticleInstanceData);
+
+                binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+            };
+
+            instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
+                                                sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
+
+            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
+                                                     instancedQuadVertices,
+                                                     4,
+                                                     instancedQuadIndices,
+                                                     6,
+                                                     nParticles,
+                                                     sf::PrimitiveType::Triangles,
+                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
+                                                     setupSpriteInstanceAttribs);
+        };
+
+        const auto populateBuffer = [&](const ParticleAoSoA& particles, sf::base::Vector<ParticleInstanceData>& buffer)
+        {
+            const sf::base::SizeT nParticles = particles.getSize();
+            buffer.clear();
+            buffer.reserve(nParticles);
+
+            particles.forEachDrawable([&](const sf::Vec2f& position, float scale, float rotation, float opacity)
+            { buffer.emplaceBack(position, scale, rotation, opacity); });
+        };
+
+        populateBuffer(smokeParticles, instanceRenderingDataBuffer);
+        populateBuffer(fireParticles, instanceRenderingDataBufferTwo);
+
+        drawParticlesInstanced(instanceRenderingDataBuffer, 0, txrSmoke);
+        drawParticlesInstanced(instanceRenderingDataBufferTwo, 1, txrFire);
+
+        for (const auto& r : rockets)
+            drawRocketImpl(rt, r.position);
+    }
+};
+
+} // namespace AOSOA
+
+////////////////////////////////////////////////////////////
 enum class Mode
 {
     OOP,
@@ -1384,6 +1840,7 @@ enum class Mode
     AOSImproved,
     SOAManual,
     SOAMeta,
+    AOSOA,
 };
 
 } // namespace
@@ -1403,15 +1860,12 @@ int main()
     //
     //
     // Set up window
-    constexpr sf::Vec2f resolution{1680.f, 1050.f};
+    constexpr sf::Vec2f windowSize{1680.f, 1050.f};
 
-    auto window = makeDPIScaledRenderWindow({
-        .size            = resolution.toVec2u(),
+    sf::RenderWindow window({
+        .size            = windowSize.toVec2u(),
         .title           = "Rockets",
-        .fullscreen      = false,
         .resizable       = false,
-        .closable        = false,
-        .hasTitlebar     = false,
         .vsync           = false,
         .frametimeLimit  = 144u,
         .contextSettings = {.antiAliasingLevel = 16u},
@@ -1433,16 +1887,6 @@ int main()
 
     const auto addImgResourceToAtlas = [&](const sf::Path& path)
     { return textureAtlas.add(sf::Image::loadFromFile("resources" / path).value()).value(); };
-
-    //
-    //
-    // Set up presentation textures
-    sf::Texture txBanners[4] = {
-        sf::Texture::loadFromFile("resources/banner0.png").value(),
-        sf::Texture::loadFromFile("resources/banner1.png").value(),
-        sf::Texture::loadFromFile("resources/banner2.png").value(),
-        sf::Texture::loadFromFile("resources/banner3.png").value(),
-    };
 
     //
     //
@@ -1485,16 +1929,10 @@ int main()
     // Options
     Mode  mode            = Mode::OOP;
     bool  drawStep        = true;
-    bool  drawUI          = false;
+    bool  soaFusedLoop    = true;
     float simulationSpeed = 0.1f;
     float rocketSpawnRate = 0.1f;
     float zoom            = 3.f;
-
-    //
-    //
-    // Presentation state
-    float bannerAlpha[4]       = {0.f, 0.f, 0.f, 0.f};
-    float bannerTargetAlpha[4] = {0.f, 0.f, 0.f, 0.f};
 
     //
     //
@@ -1505,6 +1943,7 @@ int main()
     AOSImproved::World aosImprovedWorld;
     SOAManual::World   soaManualWorld;
     SOAMeta::World     soaMetaWorld;
+    AOSOA::World       aosoaWorld;
 
     oopWorld.entities.reserve(1'250'000);
 
@@ -1529,6 +1968,12 @@ int main()
     soaMetaWorld.fireEmitters.reserve(2500);
     soaMetaWorld.smokeParticles.reserve(750'000);
     soaMetaWorld.fireParticles.reserve(750'000);
+
+    aosoaWorld.rockets.reserve(2500);
+    aosoaWorld.smokeEmitters.reserve(2500);
+    aosoaWorld.fireEmitters.reserve(2500);
+    aosoaWorld.smokeParticles.reserve(750'000);
+    aosoaWorld.fireParticles.reserve(750'000);
 
     //
     //
@@ -1561,16 +2006,12 @@ int main()
                 if (sf::EventUtils::isClosedOrEscapeKeyPressed(*event))
                     return 0;
 
-                if (handleAspectRatioAwareResize(*event, resolution, window))
-                    continue;
-
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
                 {
                     if (eKeyPressed->code == sf::Keyboard::Key::Num1)
                     {
                         mode            = Mode::OOP;
                         drawStep        = true;
-                        drawUI          = false;
                         simulationSpeed = 0.1f;
                         rocketSpawnRate = 0.f;
                         zoom            = 3.f;
@@ -1581,68 +2022,26 @@ int main()
                         {
                             {
                                 auto& r        = oopWorld.addEntity<OOP::Rocket>();
-                                r.position     = {-256.f * static_cast<float>(k) + -16.f, resolution.y / 2.f};
+                                r.position     = {-256.f * static_cast<float>(k) + -16.f, windowSize.y / 2.f};
                                 r.velocity     = {1.0f, 0.f};
                                 r.acceleration = {0.03f, 0.f};
-                                r.init();
                             }
 
                             for (int i = 1; i <= 5; ++i)
                             {
                                 auto& r0    = oopWorld.addEntity<OOP::Rocket>();
                                 r0.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
-                                               resolution.y / 2.f - 32.f * static_cast<float>(i)};
+                                               windowSize.y / 2.f - 32.f * static_cast<float>(i)};
                                 r0.velocity = {1.0f, 0.f};
                                 r0.acceleration = {0.03f, 0.f};
-                                r0.init();
 
                                 auto& r1    = oopWorld.addEntity<OOP::Rocket>();
                                 r1.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
-                                               resolution.y / 2.f + 32.f * static_cast<float>(i)};
+                                               windowSize.y / 2.f + 32.f * static_cast<float>(i)};
                                 r1.velocity = {1.0f, 0.f};
                                 r1.acceleration = {0.03f, 0.f};
-                                r1.init();
                             }
                         }
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num2)
-                    {
-                        bannerTargetAlpha[0] = 1.f;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num3)
-                    {
-                        bannerTargetAlpha[1] = 1.f;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num4)
-                    {
-                        bannerTargetAlpha[2] = 1.f;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num5)
-                    {
-                        bannerTargetAlpha[3] = 1.f;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num6)
-                    {
-                        for (float& ta : bannerTargetAlpha)
-                            ta = 0.f;
-
-                        drawUI = true;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::F)
-                    {
-                        window.setResizable(false);
-                        window.setHasTitlebar(false);
-
-                        window.setSize(sf::VideoModeUtils::getDesktopMode().size);
-                        window.setPosition({0, 0});
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::W)
-                    {
-                        window.setResizable(true);
-                        window.setHasTitlebar(true);
-
-                        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2.f);
-                        window.setCenter(sf::VideoModeUtils::getDesktopMode().size / 2.f);
                     }
                 }
             }
@@ -1657,18 +2056,18 @@ int main()
         {
             rocketSpawnTimer += rocketSpawnRate * simulationSpeed;
 
-            const auto updateNonOOPWorld = [&](auto& world)
+            const auto updateNonOOPWorld = [&](auto& world, auto&&... xs)
             {
                 for (; rocketSpawnTimer >= 1.f; rocketSpawnTimer -= 1.f)
                 {
                     world.addRocket({
-                        .position     = rng.getVec2f({-500.f, 0.f}, {-100.f, resolution.y}),
+                        .position     = rng.getVec2f({-500.f, 0.f}, {-100.f, windowSize.y}),
                         .velocity     = {},
                         .acceleration = {rng.getF(0.01f, 0.025f), 0.f},
                     });
                 }
 
-                world.update(simulationSpeed);
+                world.update(simulationSpeed, xs...);
                 world.cleanup();
             };
 
@@ -1678,7 +2077,7 @@ int main()
                 {
                     auto& rocket = oopWorld.addEntity<OOP::Rocket>();
 
-                    rocket.position     = rng.getVec2f({-500.f, 0.f}, {-100.f, resolution.y});
+                    rocket.position     = rng.getVec2f({-500.f, 0.f}, {-100.f, windowSize.y});
                     rocket.velocity     = {};
                     rocket.acceleration = {rng.getF(0.01f, 0.025f), 0.f};
 
@@ -1693,20 +2092,11 @@ int main()
             else if (mode == Mode::AOSImproved)
                 updateNonOOPWorld(aosImprovedWorld);
             else if (mode == Mode::SOAManual)
-                updateNonOOPWorld(soaManualWorld);
+                updateNonOOPWorld(soaManualWorld, soaFusedLoop);
             else if (mode == Mode::SOAMeta)
-                updateNonOOPWorld(soaMetaWorld);
-
-            const auto moveFloatTowards = [](float& value, const float target, const float delta)
-            {
-                if (value < target)
-                    value = sf::base::min(target, value + delta);
-                else if (value > target)
-                    value = sf::base::max(target, value - delta);
-            };
-
-            for (int i = 0; i < 4; ++i)
-                moveFloatTowards(bannerAlpha[i], bannerTargetAlpha[i], 0.025f);
+                updateNonOOPWorld(soaMetaWorld, soaFusedLoop);
+            else if (mode == Mode::AOSOA)
+                updateNonOOPWorld(aosoaWorld);
         }
         samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
@@ -1716,8 +2106,6 @@ int main()
         ////////////////////////////////////////////////////////////
         // ---
         clock.restart();
-
-        if (drawUI)
         {
             const auto clearSamples = [&]
             {
@@ -1742,7 +2130,7 @@ int main()
             };
 
             ImGui::SetNextWindowSize(ImVec2{440.f, 470.f});
-            ImGui::SetNextWindowPos({window.getRight() - 440.f - 24.f, 24.f});
+            ImGui::SetNextWindowPos({windowSize.x - 440.f - 24.f, 24.f});
 
             ImGui::PushFont(fontImGuiGeistMono);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
@@ -1795,17 +2183,25 @@ int main()
                                 soaMetaWorld.smokeParticles.getSize() + soaMetaWorld.fireEmitters.size() +
                                 soaMetaWorld.fireParticles.getSize());
             }
+            else if (mode == Mode::AOSOA)
+            {
+                ImGui::Text("Number of entities: %zu",
+                            aosoaWorld.rockets.size() + aosoaWorld.smokeEmitters.size() +
+                                aosoaWorld.smokeParticles.getSize() + aosoaWorld.fireEmitters.size() +
+                                aosoaWorld.fireParticles.getSize());
+            }
 
             ImGui::Separator();
             ImGui::SetWindowFontScale(0.75f);
             ImGui::Checkbox("Enable rendering", &drawStep);
+            ImGui::Checkbox("Enable SoA fused loop", &soaFusedLoop);
 
             ImGui::Separator();
             ImGui::SetWindowFontScale(0.75f);
             if (ImGui::Combo("##infoMode",
                              reinterpret_cast<int*>(&mode),
                              "OOP (Heap-allocated entities)\0AoS (Very branchy)\0AoS (Improved)\0SoA (Manual)\0SoA "
-                             "(Meta)\0"))
+                             "(Meta)\0AoSoA\0"))
             {
                 clearSamples();
             }
@@ -1866,13 +2262,7 @@ int main()
         clock.restart();
         {
             window.clear();
-
-            const auto prevView = window.getView();
-
-            window.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
-                            .size     = prevView.size / zoom,
-                            .viewport = prevView.viewport});
-
+            window.setView({.center = {windowSize.x / (2.f * zoom), windowSize.y / 2.f}, .size = windowSize / zoom});
 
             if (drawStep)
             {
@@ -1886,25 +2276,8 @@ int main()
                     soaManualWorld.draw(window);
                 else if (mode == Mode::SOAMeta)
                     soaMetaWorld.draw(window);
-            }
-
-            window.setView(prevView);
-
-            for (int i = 0; i < 4; ++i)
-            {
-                constexpr float offset = 53.f;
-
-                float top = offset;
-
-                for (int j = 0; j < i; ++j)
-                    top += txBanners[j].getRect().size.y + offset;
-
-                window.draw(txBanners[i],
-                            {
-                                .position    = {(resolution.x - txBanners[0].getSize().x) / 2.f, top},
-                                .textureRect = txBanners[i].getRect(),
-                                .color = sf::Color::whiteMask(static_cast<sf::base::U8>(bannerAlpha[i] * 255.f * 0.85f)),
-                            });
+                else if (mode == Mode::AOSOA)
+                    aosoaWorld.draw(window);
             }
         }
         samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
@@ -1913,9 +2286,7 @@ int main()
         // ---
         clock.restart();
         {
-            if (drawUI)
-                imGuiContext.render(window);
-
+            imGuiContext.render(window);
             window.display();
         }
         samplesDisplayMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
