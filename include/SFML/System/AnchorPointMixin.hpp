@@ -123,7 +123,15 @@ struct AnchorPointMixin
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getLeft() const
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getLeft();
+        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
+        {
+            return static_cast<const T&>(*this).getGlobalBounds().getLeft();
+        }
+        else
+        {
+            // For `sf::WindowBase`
+            return 0.f;
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -134,7 +142,15 @@ struct AnchorPointMixin
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getRight() const
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getRight();
+        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
+        {
+            return static_cast<const T&>(*this).getGlobalBounds().getRight();
+        }
+        else
+        {
+            // For `sf::WindowBase`
+            return static_cast<float>(static_cast<const T&>(*this).getSize().x);
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -145,7 +161,15 @@ struct AnchorPointMixin
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getTop() const
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getTop();
+        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
+        {
+            return static_cast<const T&>(*this).getGlobalBounds().getTop();
+        }
+        else
+        {
+            // For `sf::WindowBase`
+            return 0.f;
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -156,7 +180,15 @@ struct AnchorPointMixin
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline constexpr float getBottom() const
     {
-        return static_cast<const T&>(*this).getGlobalBounds().getBottom();
+        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
+        {
+            return static_cast<const T&>(*this).getGlobalBounds().getBottom();
+        }
+        else
+        {
+            // For `sf::WindowBase`
+            return static_cast<float>(static_cast<const T&>(*this).getSize().y);
+        }
     }
 
     ////////////////////////////////////////////////////////////
@@ -171,8 +203,17 @@ struct AnchorPointMixin
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] inline constexpr void setAnchorPoint(const Vec2f factors, const Vec2f newPosition)
     {
-        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
-        static_cast<T&>(*this).position += newPosition - bounds.position + bounds.getAnchorPointOffset(factors);
+        if constexpr (requires { static_cast<const T&>(*this).getGlobalBounds(); })
+        {
+            const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+            static_cast<T&>(*this).position += newPosition - bounds.position + bounds.getAnchorPointOffset(factors);
+        }
+        else
+        {
+            // For `sf::WindowBase`
+            static_cast<T&>(*this).setPosition(
+                (newPosition - static_cast<const T&>(*this).getSize().toVec2f().componentWiseMul(factors)).toVec2i());
+        }
     }
 
 ////////////////////////////////////////////////////////////
@@ -315,6 +356,36 @@ struct AnchorPointMixin
     {
         const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
         static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y - bounds.size.y;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the world X coordinate of the center
+    ///
+    /// This moves the entire object horizontally so its center
+    /// aligns with `newCoordinate`.
+    ///
+    /// \param newCoordinate Target X coordinate for the center
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setCenterX(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.x += newCoordinate - bounds.position.x - bounds.size.x / 2.f;
+    }
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Set the world Y coordinate of the center
+    ///
+    /// This moves the entire object vertically so its center
+    /// aligns with `newCoordinate`.
+    ///
+    /// \param newCoordinate Target Y coordinate for the center
+    ///
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline, gnu::flatten]] inline constexpr void setCenterY(const float newCoordinate)
+    {
+        const auto& bounds = static_cast<const T&>(*this).getGlobalBounds();
+        static_cast<T&>(*this).position.y += newCoordinate - bounds.position.y - bounds.size.y / 2.f;
     }
 };
 
