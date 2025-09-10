@@ -249,7 +249,7 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
+        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(end(), first, last);
         m_size              = static_cast<SizeT>(currWritePtr - data());
 
         // Return an iterator to the element that now occupies the position

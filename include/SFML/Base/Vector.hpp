@@ -324,7 +324,7 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        m_endSize = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
+        m_endSize = priv::VectorUtils::eraseRangeImpl(end(), first, last);
 
         // Return an iterator to the element that now occupies the position
         // where the first erased element (`first`) was. This is `first` itself,
