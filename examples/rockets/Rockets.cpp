@@ -691,17 +691,17 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
+    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
         for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
-                return i;
+                return static_cast<sf::base::U16>(i);
             }
 
         emitters.emplaceBack(emitter);
-        return emitters.size() - 1;
+        return static_cast<sf::base::U16>(emitters.size() - 1);
     }
 
     ////////////////////////////////////////////////////////////
@@ -936,17 +936,17 @@ struct World
     sf::base::Vector<Rocket>                      rockets;
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
+    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
     {
         for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
-                return i;
+                return static_cast<sf::base::U16>(i);
             }
 
         emitters.emplaceBack(emitter);
-        return emitters.size() - 1;
+        return static_cast<sf::base::U16>(emitters.size() - 1);
     }
 
     ////////////////////////////////////////////////////////////
@@ -1196,11 +1196,11 @@ struct World
             if (!emitters[i].hasValue())
             {
                 emitters[i].emplace(emitter);
-                return i;
+                return static_cast<sf::base::U16>(i);
             }
 
         emitters.emplaceBack(emitter);
-        return emitters.size() - 1;
+        return static_cast<sf::base::U16>(emitters.size() - 1);
     }
 
     ////////////////////////////////////////////////////////////
