@@ -69,7 +69,7 @@ constexpr unsigned int instancedQuadIndices[6] = {
 
 
 ////////////////////////////////////////////////////////////
-struct ParticleInstanceData
+struct ParticleInstanceData // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     float     scale;
@@ -248,7 +248,7 @@ struct World
 };
 
 ////////////////////////////////////////////////////////////
-struct Emitter : Entity
+struct Emitter : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     float spawnTimer;
     float spawnRate;
@@ -267,7 +267,7 @@ struct Emitter : Entity
 };
 
 ////////////////////////////////////////////////////////////
-struct Particle : Entity
+struct Particle : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     float scale;
     float opacity;
@@ -397,6 +397,50 @@ struct Rocket : Entity
 } // namespace OOP
 
 
+namespace Shared
+{
+////////////////////////////////////////////////////////////
+template <typename TParticle>
+[[nodiscard, gnu::always_inline]] TParticle makeAoSSmokeParticle(const sf::Vec2f position)
+{
+    return {
+        .position     = position,
+        .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
+        .acceleration = {0.f, -0.011f},
+
+        .scale    = rng.getF(0.0025f, 0.0035f),
+        .opacity  = rng.getF(0.05f, 0.25f),
+        .rotation = rng.getF(0.f, 6.28f),
+
+        .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
+        .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
+        .angularVelocity = rng.getF(-0.02f, 0.02f),
+    };
+}
+
+
+////////////////////////////////////////////////////////////
+template <typename TParticle>
+[[nodiscard, gnu::always_inline]] TParticle makeAoSFireParticle(const sf::Vec2f position)
+{
+    return {
+        .position     = position,
+        .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
+        .acceleration = {0.f, 0.07f},
+
+        .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
+        .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
+        .rotation = rng.getF(0.f, 6.28f),
+
+        .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
+        .opacityChange   = -0.001f,
+        .angularVelocity = rng.getF(-0.002f, 0.002f),
+    };
+}
+
+}; // namespace Shared
+
+
 ////////////////////////////////////////////////////////////
 namespace AOS
 {
@@ -421,7 +465,7 @@ struct Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct Particle
+struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -439,7 +483,7 @@ struct Particle
 };
 
 ////////////////////////////////////////////////////////////
-struct Rocket
+struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -476,15 +520,21 @@ struct World
         Rocket& rocket = rockets.emplaceBack(r);
 
         rocket.smokeEmitterIdx = addEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 2.5f,
-            .type       = ParticleType::Smoke,
+            .position     = rocket.position,
+            .velocity     = {},
+            .acceleration = {},
+            .spawnTimer   = 0.f,
+            .spawnRate    = 2.5f,
+            .type         = ParticleType::Smoke,
         });
 
         rocket.fireEmitterIdx = addEmitter({
-            .spawnTimer = 0.f,
-            .spawnRate  = 1.25f,
-            .type       = ParticleType::Fire,
+            .position     = rocket.position,
+            .velocity     = {},
+            .acceleration = {},
+            .spawnTimer   = 0.f,
+            .spawnRate    = 1.25f,
+            .type         = ParticleType::Fire,
         });
 
         return rocket;
@@ -514,40 +564,11 @@ struct World
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
             {
                 if (e->type == ParticleType::Smoke)
-                {
-                    particles.pushBack(
-                        {.position     = e->position,
-                         .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                         .acceleration = {0.f, -0.011f},
-
-                         .scale    = rng.getF(0.0025f, 0.0035f),
-                         .opacity  = rng.getF(0.05f, 0.25f),
-                         .rotation = rng.getF(0.f, 6.28f),
-
-                         .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
-                         .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
-                         .angularVelocity = rng.getF(-0.02f, 0.02f),
-
-                         .type = ParticleType::Smoke});
-                }
+                    particles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position));
                 else if (e->type == ParticleType::Fire)
-                {
-                    particles.pushBack({
-                        .position     = e->position,
-                        .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
-                        .acceleration = {0.f, 0.07f},
+                    particles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position));
 
-                        .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
-                        .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
-                        .rotation = rng.getF(0.f, 6.28f),
-
-                        .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
-                        .opacityChange   = -0.001f,
-                        .angularVelocity = rng.getF(-0.002f, 0.002f),
-
-                        .type = ParticleType::Fire,
-                    });
-                }
+                particles.back().type = e->type;
             }
         }
 
@@ -640,6 +661,61 @@ struct World
 } // namespace AOS
 
 
+namespace Shared
+{
+////////////////////////////////////////////////////////////
+template <typename TEmitter>
+struct AddU16EmitterMixin
+{
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<TEmitter>>& emitters, const TEmitter& emitter)
+    {
+        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
+            if (!emitters[i].hasValue())
+            {
+                emitters[i].emplace(emitter);
+                return static_cast<sf::base::U16>(i);
+            }
+
+        emitters.emplaceBack(emitter);
+        return static_cast<sf::base::U16>(emitters.size() - 1);
+    }
+};
+
+////////////////////////////////////////////////////////////
+template <typename TRocket>
+struct AddRocketMixin
+{
+    ////////////////////////////////////////////////////////////
+    TRocket& addRocket(this auto&& self, const TRocket& r)
+    {
+        TRocket& rocket = self.rockets.emplaceBack(r);
+
+        rocket.smokeEmitterIdx = self.addEmitter(self.smokeEmitters,
+                                                 {
+                                                     .position     = rocket.position,
+                                                     .velocity     = {},
+                                                     .acceleration = {},
+                                                     .spawnTimer   = 0.f,
+                                                     .spawnRate    = 2.5f,
+                                                 });
+
+        rocket.fireEmitterIdx = self.addEmitter(self.fireEmitters,
+                                                {
+                                                    .position     = rocket.position,
+                                                    .velocity     = {},
+                                                    .acceleration = {},
+                                                    .spawnTimer   = 0.f,
+                                                    .spawnRate    = 1.25f,
+                                                });
+
+        return rocket;
+    }
+};
+
+} // namespace Shared
+
+
 ////////////////////////////////////////////////////////////
 namespace AOSImproved
 {
@@ -655,7 +731,7 @@ struct Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct Particle
+struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -671,7 +747,7 @@ struct Particle
 };
 
 ////////////////////////////////////////////////////////////
-struct Rocket
+struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -682,38 +758,13 @@ struct Rocket
 };
 
 ////////////////////////////////////////////////////////////
-struct World
+struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
     sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
     sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
     sf::base::Vector<Particle>                    smokeParticles;
     sf::base::Vector<Particle>                    fireParticles;
     sf::base::Vector<Rocket>                      rockets;
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
-    {
-        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
-            if (!emitters[i].hasValue())
-            {
-                emitters[i].emplace(emitter);
-                return static_cast<sf::base::U16>(i);
-            }
-
-        emitters.emplaceBack(emitter);
-        return static_cast<sf::base::U16>(emitters.size() - 1);
-    }
-
-    ////////////////////////////////////////////////////////////
-    Rocket& addRocket(const Rocket& r)
-    {
-        Rocket& rocket = rockets.emplaceBack(r);
-
-        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
-        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
-
-        return rocket;
-    }
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -747,42 +798,10 @@ struct World
             updateParticle(p);
 
         for (sf::base::Optional<Emitter>& e : smokeEmitters)
-            updateEmitter(e,
-                          [&]
-            {
-                smokeParticles.pushBack({
-                    .position     = e->position,
-                    .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                    .acceleration = {0.f, -0.011f},
-
-                    .scale    = rng.getF(0.0025f, 0.0035f),
-                    .opacity  = rng.getF(0.05f, 0.25f),
-                    .rotation = rng.getF(0.f, 6.28f),
-
-                    .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
-                    .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
-                    .angularVelocity = rng.getF(-0.02f, 0.02f),
-                });
-            });
+            updateEmitter(e, [&] { smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position)); });
 
         for (sf::base::Optional<Emitter>& e : fireEmitters)
-            updateEmitter(e,
-                          [&]
-            {
-                fireParticles.pushBack({
-                    .position     = e->position,
-                    .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
-                    .acceleration = {0.f, 0.07f},
-
-                    .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
-                    .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
-                    .rotation = rng.getF(0.f, 6.28f),
-
-                    .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
-                    .opacityChange   = -0.001f,
-                    .angularVelocity = rng.getF(-0.002f, 0.002f),
-                });
-            });
+            updateEmitter(e, [&] { fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position)); });
 
         for (Rocket& r : rockets)
         {
@@ -916,7 +935,7 @@ struct Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct Rocket
+struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -927,38 +946,13 @@ struct Rocket
 };
 
 ////////////////////////////////////////////////////////////
-struct World
+struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
     sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
     sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
     ParticleSoA                                   smokeParticles;
     ParticleSoA                                   fireParticles;
     sf::base::Vector<Rocket>                      rockets;
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::U16 addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
-    {
-        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
-            if (!emitters[i].hasValue())
-            {
-                emitters[i].emplace(emitter);
-                return static_cast<sf::base::U16>(i);
-            }
-
-        emitters.emplaceBack(emitter);
-        return static_cast<sf::base::U16>(emitters.size() - 1);
-    }
-
-    ////////////////////////////////////////////////////////////
-    Rocket& addRocket(const Rocket& r)
-    {
-        Rocket& rocket = rockets.emplaceBack(r);
-
-        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
-        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
-
-        return rocket;
-    }
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1140,7 +1134,7 @@ struct World
 namespace SOAMeta
 {
 ////////////////////////////////////////////////////////////
-struct Particle
+struct Particle // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -1170,7 +1164,7 @@ struct Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct Rocket
+struct Rocket // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::Vec2f position;
     sf::Vec2f velocity;
@@ -1181,38 +1175,13 @@ struct Rocket
 };
 
 ////////////////////////////////////////////////////////////
-struct World
+struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocket>
 {
     sf::base::Vector<sf::base::Optional<Emitter>> smokeEmitters;
     sf::base::Vector<sf::base::Optional<Emitter>> fireEmitters;
     ParticleSoA                                   smokeParticles;
     ParticleSoA                                   fireParticles;
     sf::base::Vector<Rocket>                      rockets;
-
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] sf::base::SizeT addEmitter(sf::base::Vector<sf::base::Optional<Emitter>>& emitters, const Emitter& emitter)
-    {
-        for (sf::base::SizeT i = 0u; i < emitters.size(); ++i)
-            if (!emitters[i].hasValue())
-            {
-                emitters[i].emplace(emitter);
-                return static_cast<sf::base::U16>(i);
-            }
-
-        emitters.emplaceBack(emitter);
-        return static_cast<sf::base::U16>(emitters.size() - 1);
-    }
-
-    ////////////////////////////////////////////////////////////
-    Rocket& addRocket(const Rocket& r)
-    {
-        Rocket& rocket = rockets.emplaceBack(r);
-
-        rocket.smokeEmitterIdx = addEmitter(smokeEmitters, {.spawnTimer = 0.f, .spawnRate = 2.5f});
-        rocket.fireEmitterIdx  = addEmitter(fireEmitters, {.spawnTimer = 0.f, .spawnRate = 1.25f});
-
-        return rocket;
-    }
 
     ////////////////////////////////////////////////////////////
     void update(const float dt)
@@ -1251,19 +1220,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                smokeParticles.pushBack({
-                    .position     = e->position,
-                    .velocity     = rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f,
-                    .acceleration = {0.f, -0.011f},
-
-                    .scale    = rng.getF(0.0025f, 0.0035f),
-                    .opacity  = rng.getF(0.05f, 0.25f),
-                    .rotation = rng.getF(0.f, 6.28f),
-
-                    .scaleRate       = rng.getF(0.001f, 0.003f) * 2.75f,
-                    .opacityChange   = -rng.getF(0.001f, 0.002f) * 3.25f,
-                    .angularVelocity = rng.getF(-0.02f, 0.02f),
-                });
+                smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position));
         }
 
         for (sf::base::Optional<Emitter>& e : fireEmitters)
@@ -1276,19 +1233,7 @@ struct World
             e->spawnTimer += e->spawnRate * dt;
 
             for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
-                fireParticles.pushBack({
-                    .position     = e->position,
-                    .velocity     = rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}),
-                    .acceleration = {0.f, 0.07f},
-
-                    .scale    = rng.getF(0.5f, 0.7f) * 0.085f,
-                    .opacity  = rng.getF(0.2f, 0.4f) * 0.85f,
-                    .rotation = rng.getF(0.f, 6.28f),
-
-                    .scaleRate       = -rng.getF(0.001f, 0.003f) * 0.25f,
-                    .opacityChange   = -0.001f,
-                    .angularVelocity = rng.getF(-0.002f, 0.002f),
-                });
+                fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position));
         }
 
         for (Rocket& r : rockets)
@@ -1487,8 +1432,9 @@ int main()
     bool  drawStep        = true;
     bool  drawUI          = false;
     float simulationSpeed = 0.1f;
-    float rocketSpawnRate = 0.1f;
+    float rocketSpawnRate = 0.f;
     float zoom            = 3.f;
+    float imguiMult       = 1.f;
 
     //
     //
@@ -1543,6 +1489,23 @@ int main()
 
     //
     //
+    // Helper functions
+    const auto makeFullscreen = [&]
+    {
+        window.setResizable(false);
+        window.setHasTitlebar(false);
+
+        window.setSize(sf::VideoModeUtils::getDesktopMode().size);
+        window.setPosition({0, 0});
+    };
+
+    //
+    //
+    // Initally set as fullscreen
+    makeFullscreen();
+
+    //
+    //
     // Simulation loop
     while (true)
     {
@@ -1577,7 +1540,7 @@ int main()
 
                         oopWorld = {};
 
-                        for (int k = 0; k < 6; ++k)
+                        for (int k = 0; k < 24; ++k)
                         {
                             {
                                 auto& r        = oopWorld.addEntity<OOP::Rocket>();
@@ -1628,13 +1591,17 @@ int main()
 
                         drawUI = true;
                     }
+                    else if (eKeyPressed->code == sf::Keyboard::Key::Num8)
+                    {
+                        imguiMult -= 0.25f;
+                    }
+                    else if (eKeyPressed->code == sf::Keyboard::Key::Num9)
+                    {
+                        imguiMult += 0.25f;
+                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::F)
                     {
-                        window.setResizable(false);
-                        window.setHasTitlebar(false);
-
-                        window.setSize(sf::VideoModeUtils::getDesktopMode().size);
-                        window.setPosition({0, 0});
+                        makeFullscreen();
                     }
                     else if (eKeyPressed->code == sf::Keyboard::Key::W)
                     {
@@ -1727,6 +1694,8 @@ int main()
                 samplesFPS.clear();
             };
 
+            const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * imguiMult); };
+
             imGuiContext.update(window, fpsClock.getElapsedTime());
 
             const auto plotGraphNoOverlay = [&](const char* label, const Sampler& samples, float upperBound)
@@ -1738,17 +1707,17 @@ int main()
                                  nullptr,
                                  0.f,
                                  upperBound,
-                                 ImVec2{128.f, 32.f});
+                                 ImVec2{128.f * imguiMult, 32.f * imguiMult});
             };
 
-            ImGui::SetNextWindowSize(ImVec2{440.f, 470.f});
-            ImGui::SetNextWindowPos({window.getRight() - 440.f - 24.f, 24.f});
+            ImGui::SetNextWindowSize(ImVec2{440.f * imguiMult, 470.f * imguiMult});
+            ImGui::SetNextWindowPos({window.getRight() - 440.f * imguiMult - 24.f * imguiMult, 24.f * imguiMult});
 
             ImGui::PushFont(fontImGuiGeistMono);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f); // Set corner radius
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.f * imguiMult); // Set corner radius
 
             ImGui::Begin("HUD", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
-            ImGui::SetWindowFontScale(1.25f);
+            setFontScale(1.25f);
 
             plotGraphNoOverlay("##infofps", samplesFPS, 144.f);
             ImGui::SameLine();
@@ -1763,7 +1732,7 @@ int main()
             ImGui::Text("   Draw: %.1f ms", samplesDrawMs.getAverage());
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(1.f);
+            setFontScale(1.f);
 
             if (mode == Mode::OOP)
             {
@@ -1797,11 +1766,11 @@ int main()
             }
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.75f);
+            setFontScale(0.75f);
             ImGui::Checkbox("Enable rendering", &drawStep);
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.75f);
+            setFontScale(0.75f);
             if (ImGui::Combo("##infoMode",
                              reinterpret_cast<int*>(&mode),
                              "OOP (Heap-allocated entities)\0AoS (Very branchy)\0AoS (Improved)\0SoA (Manual)\0SoA "
@@ -1811,7 +1780,7 @@ int main()
             }
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.75f);
+            setFontScale(0.75f);
 
             ImGui::Text("Rocket spawn rate: %.1fx", static_cast<double>(rocketSpawnRate));
 
@@ -1827,7 +1796,7 @@ int main()
                 rocketSpawnRate = 5.f;
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.75f);
+            setFontScale(0.75f);
 
             ImGui::Text("Simulation speed: %.1fx", static_cast<double>(simulationSpeed));
 
@@ -1847,7 +1816,7 @@ int main()
                 simulationSpeed = 5.f;
 
             ImGui::Separator();
-            ImGui::SetWindowFontScale(0.75f);
+            setFontScale(0.75f);
 
             ImGui::Text("Zoom level: %.1fx", static_cast<double>(zoom));
             ImGui::SliderFloat("##Zoom", &zoom, 1.f, 3.f);
