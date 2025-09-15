@@ -58,14 +58,7 @@ constexpr sf::Vertex instancedQuadVertices[4] = {
 
 
 ////////////////////////////////////////////////////////////
-constexpr unsigned int instancedQuadIndices[6] = {
-    0,
-    1,
-    2,
-    2,
-    3,
-    0,
-};
+constexpr unsigned int instancedQuadIndices[6] = {0u, 1u, 2u, 2u, 3u, 0u};
 
 
 ////////////////////////////////////////////////////////////
@@ -87,7 +80,7 @@ layout(location = 2) uniform vec4 u_texRect;
 layout(location = 3) uniform vec2 u_invTexSize;
 
 layout(location = 0) in vec2 sf_a_position;
-layout(location = 1) in vec4 sf_a_color; // Unused but part of Vertex struct
+layout(location = 1) in vec4 sf_a_color; // Unused but part of `sf::Vertex` struct
 layout(location = 2) in vec2 sf_a_texCoord;
 
 // Per-instance attributes (unique for each sprite)
@@ -128,8 +121,7 @@ const sf::Shader::UniformLocation*     instanceRenderingULTextureRect  = nullptr
 const sf::Shader::UniformLocation*     instanceRenderingInvTextureSize = nullptr;
 sf::RenderTarget::VAOHandle*           instanceRenderingVAOGroup       = nullptr;
 sf::RenderTarget::VBOHandle*           instanceRenderingVBOs[8]        = {};
-sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer;
-sf::base::Vector<ParticleInstanceData> instanceRenderingDataBufferTwo;
+sf::base::Vector<ParticleInstanceData> instanceRenderingDataBuffer[2];
 
 
 ////////////////////////////////////////////////////////////
@@ -290,7 +282,7 @@ struct Particle : Entity // NOLINT(cppcoreguidelines-pro-type-member-init)
 };
 
 ////////////////////////////////////////////////////////////
-struct SmokeParticle : Particle
+struct SmokeParticle final : Particle
 {
     void draw(sf::RenderTarget& rt) override
     {
@@ -299,7 +291,7 @@ struct SmokeParticle : Particle
 };
 
 ////////////////////////////////////////////////////////////
-struct FireParticle : Particle
+struct FireParticle final : Particle
 {
     void draw(sf::RenderTarget& rt) override
     {
@@ -308,7 +300,7 @@ struct FireParticle : Particle
 };
 
 ////////////////////////////////////////////////////////////
-struct SmokeEmitter : Emitter
+struct SmokeEmitter final : Emitter
 {
     void spawnParticle() override
     {
@@ -329,7 +321,7 @@ struct SmokeEmitter : Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct FireEmitter : Emitter
+struct FireEmitter final : Emitter
 {
     void spawnParticle() override
     {
@@ -350,7 +342,7 @@ struct FireEmitter : Emitter
 };
 
 ////////////////////////////////////////////////////////////
-struct Rocket : Entity
+struct Rocket final : Entity
 {
     SmokeEmitter* smokeEmitter = nullptr;
     FireEmitter*  fireEmitter  = nullptr;
@@ -397,6 +389,7 @@ struct Rocket : Entity
 } // namespace OOP
 
 
+////////////////////////////////////////////////////////////
 namespace Shared
 {
 ////////////////////////////////////////////////////////////
@@ -640,18 +633,18 @@ struct World
 
         const auto nParticles = particles.size();
 
-        instanceRenderingDataBuffer.clear();
-        instanceRenderingDataBuffer.reserve(nParticles);
+        instanceRenderingDataBuffer[0].clear();
+        instanceRenderingDataBuffer[0].reserve(nParticles);
 
-        instanceRenderingDataBufferTwo.clear();
-        instanceRenderingDataBufferTwo.reserve(nParticles);
+        instanceRenderingDataBuffer[1].clear();
+        instanceRenderingDataBuffer[1].reserve(nParticles);
 
         for (const Particle& p : particles)
-            (p.type == ParticleType::Smoke ? instanceRenderingDataBuffer : instanceRenderingDataBufferTwo)
+            (p.type == ParticleType::Smoke ? instanceRenderingDataBuffer[0] : instanceRenderingDataBuffer[1])
                 .emplaceBack(p.position, p.scale, p.rotation, p.opacity);
 
-        drawParticlesInstanced(instanceRenderingDataBuffer, 0, txrSmoke);
-        drawParticlesInstanced(instanceRenderingDataBufferTwo, 1, txrFire);
+        drawParticlesInstanced(instanceRenderingDataBuffer[0], 0, txrSmoke);
+        drawParticlesInstanced(instanceRenderingDataBuffer[1], 1, txrFire);
 
         for (const auto& r : rockets)
             drawRocketImpl(rt, r.position);
@@ -661,6 +654,7 @@ struct World
 } // namespace AOS
 
 
+////////////////////////////////////////////////////////////
 namespace Shared
 {
 ////////////////////////////////////////////////////////////
@@ -769,7 +763,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     ////////////////////////////////////////////////////////////
     void update(const float dt)
     {
-        auto updateParticle = [&](Particle& p)
+        const auto updateParticle = [&](Particle& p)
         {
             p.position += p.velocity * dt;
             p.velocity += p.acceleration * dt;
@@ -778,7 +772,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             p.rotation += p.angularVelocity * dt;
         };
 
-        auto updateEmitter = [&](sf::base::Optional<Emitter>& e, auto&& fSpawn)
+        const auto updateEmitter = [&](sf::base::Optional<Emitter>& e, auto&& fSpawn)
         {
             if (!e.hasValue())
                 return;
@@ -843,11 +837,11 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
         {
             const auto nParticles = particles.size();
 
-            instanceRenderingDataBuffer.clear();
-            instanceRenderingDataBuffer.reserve(nParticles);
+            instanceRenderingDataBuffer[0].clear();
+            instanceRenderingDataBuffer[0].reserve(nParticles);
 
             for (sf::base::SizeT i = 0u; i < nParticles; ++i)
-                instanceRenderingDataBuffer
+                instanceRenderingDataBuffer[0]
                     .emplaceBack(particles[i].position, particles[i].scale, particles[i].rotation, particles[i].opacity);
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
@@ -855,7 +849,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 using IAB = sf::RenderTarget::InstanceAttributeBinder;
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
-                binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer.data());
+                binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer[0].data());
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
@@ -889,6 +883,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
 } // namespace AOSImproved
 
+
 ////////////////////////////////////////////////////////////
 namespace SOAManual
 {
@@ -907,6 +902,7 @@ struct ParticleSoA
     sf::base::Vector<float> opacityChanges;
     sf::base::Vector<float> angularVelocities;
 
+    ////////////////////////////////////////////////////////////
     void forEachVector(auto&& f)
     {
         f(positions);
@@ -920,6 +916,12 @@ struct ParticleSoA
         f(scaleRates);
         f(opacityChanges);
         f(angularVelocities);
+    }
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] sf::base::SizeT getSize() const
+    {
+        return positions.size();
     }
 };
 
@@ -957,9 +959,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     ////////////////////////////////////////////////////////////
     void update(const float dt)
     {
-        auto updateParticles = [&](auto& soa)
+        const auto updateParticles = [&](auto& soa)
         {
-            const auto nParticles = soa.positions.size();
+            const auto nParticles = soa.getSize();
 
             for (sf::base::SizeT i = 0u; i < nParticles; ++i)
             {
@@ -1499,10 +1501,19 @@ int main()
         window.setPosition({0, 0});
     };
 
+    const auto makeWindowed = [&]
+    {
+        window.setResizable(true);
+        window.setHasTitlebar(true);
+
+        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2.f);
+        window.setCenter(sf::VideoModeUtils::getDesktopMode().size / 2.f);
+    };
+
     //
     //
-    // Initally set as fullscreen
-    makeFullscreen();
+    // Startup as windowed mode
+    makeWindowed();
 
     //
     //
@@ -1569,21 +1580,13 @@ int main()
                         }
                     }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num2)
-                    {
                         bannerTargetAlpha[0] = 1.f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num3)
-                    {
                         bannerTargetAlpha[1] = 1.f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num4)
-                    {
                         bannerTargetAlpha[2] = 1.f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num5)
-                    {
                         bannerTargetAlpha[3] = 1.f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num6)
                     {
                         for (float& ta : bannerTargetAlpha)
@@ -1592,25 +1595,13 @@ int main()
                         drawUI = true;
                     }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num8)
-                    {
                         imguiMult -= 0.25f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num9)
-                    {
                         imguiMult += 0.25f;
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::F)
-                    {
                         makeFullscreen();
-                    }
                     else if (eKeyPressed->code == sf::Keyboard::Key::W)
-                    {
-                        window.setResizable(true);
-                        window.setHasTitlebar(true);
-
-                        window.setSize(sf::VideoModeUtils::getDesktopMode().size / 2.f);
-                        window.setCenter(sf::VideoModeUtils::getDesktopMode().size / 2.f);
-                    }
+                        makeWindowed();
                 }
             }
         }
@@ -1734,6 +1725,25 @@ int main()
             ImGui::Separator();
             setFontScale(1.f);
 
+            const auto getSize = [](const auto& container)
+            {
+                if constexpr (requires { container.size(); })
+                {
+                    return container.size();
+                }
+                else
+                {
+                    return container.getSize();
+                }
+            };
+
+            const auto printDODEntityCount = [&](const auto& world)
+            {
+                ImGui::Text("Number of entities: %zu",
+                            getSize(world.rockets) + getSize(world.smokeEmitters) + getSize(world.smokeParticles) +
+                                getSize(world.fireEmitters) + getSize(world.fireParticles));
+            };
+
             if (mode == Mode::OOP)
             {
                 ImGui::Text("Number of entities: %zu", oopWorld.entities.size());
@@ -1744,26 +1754,11 @@ int main()
                             aosWorld.rockets.size() + aosWorld.emitters.size() + aosWorld.particles.size());
             }
             else if (mode == Mode::AOSImproved)
-            {
-                ImGui::Text("Number of entities: %zu",
-                            aosImprovedWorld.rockets.size() + aosImprovedWorld.smokeEmitters.size() +
-                                aosImprovedWorld.smokeParticles.size() + aosImprovedWorld.fireEmitters.size() +
-                                aosImprovedWorld.fireParticles.size());
-            }
+                printDODEntityCount(aosImprovedWorld);
             else if (mode == Mode::SOAManual)
-            {
-                ImGui::Text("Number of entities: %zu",
-                            soaMetaWorld.rockets.size() + soaMetaWorld.smokeEmitters.size() +
-                                soaMetaWorld.smokeParticles.getSize() + soaMetaWorld.fireEmitters.size() +
-                                soaMetaWorld.fireParticles.getSize());
-            }
+                printDODEntityCount(soaManualWorld);
             else if (mode == Mode::SOAMeta)
-            {
-                ImGui::Text("Number of entities: %zu",
-                            soaMetaWorld.rockets.size() + soaMetaWorld.smokeEmitters.size() +
-                                soaMetaWorld.smokeParticles.getSize() + soaMetaWorld.fireEmitters.size() +
-                                soaMetaWorld.fireParticles.getSize());
-            }
+                printDODEntityCount(soaMetaWorld);
 
             ImGui::Separator();
             setFontScale(0.75f);
