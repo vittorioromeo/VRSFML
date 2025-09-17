@@ -622,9 +622,9 @@ struct World
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
-                                                     4,
+                                                     4u,
                                                      instancedQuadIndices,
-                                                     6,
+                                                     6u,
                                                      instanceBuffer.size(),
                                                      sf::PrimitiveType::Triangles,
                                                      {.texture = txAtlas, .shader = instanceRenderingShader},
@@ -864,9 +864,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
-                                                     4,
+                                                     4u,
                                                      instancedQuadIndices,
-                                                     6,
+                                                     6u,
                                                      nParticles,
                                                      sf::PrimitiveType::Triangles,
                                                      {.texture = txAtlas, .shader = instanceRenderingShader},
@@ -1113,9 +1113,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
-                                                     4,
+                                                     4u,
                                                      instancedQuadIndices,
-                                                     6,
+                                                     6u,
                                                      nParticles,
                                                      sf::PrimitiveType::Triangles,
                                                      {.texture = txAtlas, .shader = instanceRenderingShader},
@@ -1304,9 +1304,9 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
                                                      instancedQuadVertices,
-                                                     4,
+                                                     4u,
                                                      instancedQuadIndices,
-                                                     6,
+                                                     6u,
                                                      nParticles,
                                                      sf::PrimitiveType::Triangles,
                                                      {.texture = txAtlas, .shader = instanceRenderingShader},
@@ -1484,10 +1484,10 @@ int main()
     sf::Clock clock;
     sf::Clock fpsClock;
 
-    Sampler samplesUpdateMs(/* capacity */ 128u);
-    Sampler samplesDrawMs(/* capacity */ 128u);
-    Sampler samplesDisplayMs(/* capacity */ 128u);
-    Sampler samplesFPS(/* capacity */ 128u);
+    Sampler samplesUpdateMs(/* capacity */ 32u);
+    Sampler samplesDrawMs(/* capacity */ 32u);
+    Sampler samplesDisplayMs(/* capacity */ 32u);
+    Sampler samplesFPS(/* capacity */ 32u);
 
     //
     //
@@ -1551,7 +1551,7 @@ int main()
 
                         oopWorld = {};
 
-                        for (int k = 0; k < 24; ++k)
+                        for (int k = 0; k < 64; ++k)
                         {
                             {
                                 auto& r        = oopWorld.addEntity<OOP::Rocket>();
@@ -1725,20 +1725,20 @@ int main()
             ImGui::Separator();
             setFontScale(1.f);
 
-            const auto getSize = [](const auto& container)
+            const auto printDODEntityCount = [](const auto& world)
             {
-                if constexpr (requires { container.size(); })
+                const auto getSize = [](const auto& container)
                 {
-                    return container.size();
-                }
-                else
-                {
-                    return container.getSize();
-                }
-            };
+                    if constexpr (requires { container.size(); })
+                    {
+                        return container.size();
+                    }
+                    else
+                    {
+                        return container.getSize();
+                    }
+                };
 
-            const auto printDODEntityCount = [&](const auto& world)
-            {
                 ImGui::Text("Number of entities: %zu",
                             getSize(world.rockets) + getSize(world.smokeEmitters) + getSize(world.smokeParticles) +
                                 getSize(world.fireEmitters) + getSize(world.fireParticles));
@@ -1836,7 +1836,6 @@ int main()
             window.setView({.center   = {resolution.x / (2.f * zoom), resolution.y / 2.f},
                             .size     = prevView.size / zoom,
                             .viewport = prevView.viewport});
-
 
             if (drawStep)
             {
