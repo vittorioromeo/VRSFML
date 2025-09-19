@@ -16,6 +16,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/Traits/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
@@ -214,11 +215,11 @@ public:
             // Remove reference and cv-qualifiers
             using T = std::decay_t<decltype(event)>;
 
-            if constexpr (std::is_same_v<T, sf::Event::Closed>)
+            if constexpr (sf::base::isSame<T, sf::Event::Closed>)
             {
                 m_mustClose = true;
             }
-            else if constexpr (std::is_same_v<T, sf::Event::KeyPressed>)
+            else if constexpr (sf::base::isSame<T, sf::Event::KeyPressed>)
             {
                 m_log.emplaceBack("Key Pressed: " + scancodeToString(event.scancode));
 
@@ -229,15 +230,15 @@ public:
                     m_handlerText.setString("Current Handler: Forward");
                 }
             }
-            else if constexpr (std::is_same_v<T, sf::Event::MouseMoved>)
+            else if constexpr (sf::base::isSame<T, sf::Event::MouseMoved>)
             {
                 m_log.emplaceBack("Mouse Moved: " + vec2ToString(event.position));
             }
-            else if constexpr (std::is_same_v<T, sf::Event::MouseButtonPressed>)
+            else if constexpr (sf::base::isSame<T, sf::Event::MouseButtonPressed>)
             {
                 m_log.emplaceBack("Mouse Pressed");
             }
-            else if constexpr (std::is_same_v<T, sf::Event::TouchBegan>)
+            else if constexpr (sf::base::isSame<T, sf::Event::TouchBegan>)
             {
                 m_log.emplaceBack("Touch Began: " + vec2ToString(event.position));
             }
