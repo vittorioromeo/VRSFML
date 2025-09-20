@@ -46,23 +46,11 @@ struct SoundBuffer::Impl
 
 
 ////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(const SoundBuffer& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-SoundBuffer::SoundBuffer(SoundBuffer&& rhs) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+SoundBuffer::SoundBuffer(const SoundBuffer& rhs)                = default;
+SoundBuffer& SoundBuffer::operator=(const SoundBuffer& rhs)     = default;
+SoundBuffer::SoundBuffer(SoundBuffer&& rhs) noexcept            = default;
 SoundBuffer& SoundBuffer::operator=(SoundBuffer&& rhs) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-SoundBuffer::~SoundBuffer() = default;
+SoundBuffer::~SoundBuffer()                                     = default;
 
 
 ////////////////////////////////////////////////////////////

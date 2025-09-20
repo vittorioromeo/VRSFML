@@ -136,6 +136,20 @@ sf::FloatRect txrRocket;
 
 
 ////////////////////////////////////////////////////////////
+[[nodiscard]] sf::RenderTarget::DrawInstancedIndexedVerticesSettings makeInstancedDrawSettings(const sf::base::SizeT nInstances)
+{
+    return {.vaoHandle     = *instanceRenderingVAOGroup,
+            .vertexData    = instancedQuadVertices,
+            .vertexCount   = 4u,
+            .indexData     = instancedQuadIndices,
+            .indexCount    = 6u,
+            .instanceCount = nInstances,
+            .primitiveType = sf::PrimitiveType::Triangles,
+            .renderStates  = {.texture = txAtlas, .shader = instanceRenderingShader}};
+}
+
+
+////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void drawParticleImpl(
     sf::RenderTarget&   rt,
     const sf::Vec2f     position,
@@ -388,6 +402,8 @@ struct Rocket final : Entity
 
 } // namespace OOP
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
 
 ////////////////////////////////////////////////////////////
 namespace Shared
@@ -604,31 +620,21 @@ struct World
         {
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                using IAB = sf::RenderTarget::InstanceAttributeBinder;
-
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
                 binder.uploadContiguousData(instanceBuffer.size(), instanceBuffer.data());
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setup(3, 2, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, sf::GlDataType::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                     instancedQuadVertices,
-                                                     4u,
-                                                     instancedQuadIndices,
-                                                     6u,
-                                                     instanceBuffer.size(),
-                                                     sf::PrimitiveType::Triangles,
-                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                     setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(instanceBuffer.size()), setupSpriteInstanceAttribs);
         };
 
         const auto nParticles = particles.size();
@@ -846,31 +852,21 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                using IAB = sf::RenderTarget::InstanceAttributeBinder;
-
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset]);
                 binder.uploadContiguousData(nParticles, instanceRenderingDataBuffer[0].data());
 
                 constexpr auto stride = sizeof(ParticleInstanceData);
 
-                binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
-                binder.setup(4, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
-                binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
-                binder.setup(6, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
+                binder.setup(3, 2, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, position));
+                binder.setup(4, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, scale));
+                binder.setup(5, 1, sf::GlDataType::Float, false, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, rotation));
+                binder.setup(6, 1, sf::GlDataType::Float, true, stride, SFML_BASE_OFFSETOF(ParticleInstanceData, opacity));
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                     instancedQuadVertices,
-                                                     4u,
-                                                     instancedQuadIndices,
-                                                     6u,
-                                                     nParticles,
-                                                     sf::PrimitiveType::Triangles,
-                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                     setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
         drawParticlesInstanced(0, txrSmoke, smokeParticles);
@@ -1089,37 +1085,27 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                using IAB = sf::RenderTarget::InstanceAttributeBinder;
-
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
                 binder.uploadContiguousData(nParticles, particles.positions.data());
-                binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
+                binder.setup(3, 2, sf::GlDataType::Float, false, sizeof(sf::Vec2f), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
                 binder.uploadContiguousData(nParticles, particles.scales.data());
-                binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
+                binder.setup(4, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
                 binder.uploadContiguousData(nParticles, particles.rotations.data());
-                binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
+                binder.setup(5, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
                 binder.uploadContiguousData(nParticles, particles.opacities.data());
-                binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
+                binder.setup(6, 1, sf::GlDataType::Float, true, sizeof(float), 0u);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                     instancedQuadVertices,
-                                                     4u,
-                                                     instancedQuadIndices,
-                                                     6u,
-                                                     nParticles,
-                                                     sf::PrimitiveType::Triangles,
-                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                     setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
         drawParticlesInstanced(0, txrSmoke, smokeParticles);
@@ -1280,37 +1266,27 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
             auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
             {
-                using IAB = sf::RenderTarget::InstanceAttributeBinder;
-
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 0]);
                 binder.uploadContiguousData(nParticles, particles.template get<&Particle::position>().data());
-                binder.setup(3, 2, IAB::Type::Float, false, sizeof(sf::Vec2f), 0u);
+                binder.setup(3, 2, sf::GlDataType::Float, false, sizeof(sf::Vec2f), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 1]);
                 binder.uploadContiguousData(nParticles, particles.template get<&Particle::scale>().data());
-                binder.setup(4, 1, IAB::Type::Float, false, sizeof(float), 0u);
+                binder.setup(4, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 2]);
                 binder.uploadContiguousData(nParticles, particles.template get<&Particle::rotation>().data());
-                binder.setup(5, 1, IAB::Type::Float, false, sizeof(float), 0u);
+                binder.setup(5, 1, sf::GlDataType::Float, false, sizeof(float), 0u);
 
                 binder.bindVBO(*instanceRenderingVBOs[vboIndexOffset + 3]);
                 binder.uploadContiguousData(nParticles, particles.template get<&Particle::opacity>().data());
-                binder.setup(6, 1, IAB::Type::Float, true, sizeof(float), 0u);
+                binder.setup(6, 1, sf::GlDataType::Float, true, sizeof(float), 0u);
             };
 
             instanceRenderingShader->setUniform(*instanceRenderingULTextureRect,
                                                 sf::Glsl::Vec4{txr.position.x, txr.position.y, txr.size.x, txr.size.y});
 
-            rt.immediateDrawInstancedIndexedVertices(*instanceRenderingVAOGroup,
-                                                     instancedQuadVertices,
-                                                     4u,
-                                                     instancedQuadIndices,
-                                                     6u,
-                                                     nParticles,
-                                                     sf::PrimitiveType::Triangles,
-                                                     {.texture = txAtlas, .shader = instanceRenderingShader},
-                                                     setupSpriteInstanceAttribs);
+            rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
         drawParticlesInstanced(0, txrSmoke, smokeParticles);
@@ -1887,3 +1863,5 @@ int main()
         samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
     }
 }
+
+#pragma clang diagnostic pop

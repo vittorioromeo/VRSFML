@@ -188,4 +188,33 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
 
         CHECK(sf::base::isSorted(unsorted, unsorted + 0, less)); // Empty range is sorted
     }
+
+    SECTION("VectorSwapAndPopIf")
+    {
+        sf::base::Vector<int> v{1, 2, 3, 4, 5, 6, 7, 8};
+        auto                  isEven = [](int x) { return x % 2 == 0; };
+
+        sf::base::SizeT removedCount = sf::base::vectorSwapAndPopIf(v, isEven);
+
+        CHECK(removedCount == 4);
+        CHECK(v.size() == 4);
+        CHECK((v == sf::base::Vector<int>{1, 7, 3, 5}));
+
+        // Check with no elements removed
+        removedCount = sf::base::vectorSwapAndPopIf(v, isEven);
+        CHECK(removedCount == 0);
+        CHECK(v.size() == 4);
+        CHECK((v == sf::base::Vector<int>{1, 7, 3, 5}));
+
+        // Check removing all elements
+        auto isOdd   = [](int x) { return x % 2 != 0; };
+        removedCount = sf::base::vectorSwapAndPopIf(v, isOdd);
+        CHECK(removedCount == 4);
+        CHECK(v.empty());
+
+        // Check empty vector
+        removedCount = sf::base::vectorSwapAndPopIf(v, isOdd);
+        CHECK(removedCount == 0);
+        CHECK(v.empty());
+    }
 }

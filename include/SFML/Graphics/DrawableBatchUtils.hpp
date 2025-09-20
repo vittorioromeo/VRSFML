@@ -16,7 +16,7 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf // TODO P0: add subnamespace here
+namespace sf::DrawableBatchUtils
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
@@ -232,4 +232,4 @@ namespace sf // TODO P0: add subnamespace here
         *indexPtr++ = nextIndex + i;
 }
 
-} // namespace sf
+} // namespace sf::DrawableBatchUtils
