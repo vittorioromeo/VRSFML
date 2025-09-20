@@ -156,6 +156,8 @@ int main()
     // OOP Particles
     struct Entity
     {
+        bool alive = true;
+
         virtual ~Entity() = default;
 
         virtual void update()
@@ -206,6 +208,7 @@ int main()
         void update() override
         {
             updateParticle(position, velocity, acceleration, scale, scaleGrowth, opacity, opacityGrowth, rotation, torque);
+            alive = opacity > 0.f;
         }
 
         void draw(const sf::Texture& texture, sf::RenderTarget& rt) override
@@ -463,7 +466,7 @@ int main()
 
                 if (useOOP)
                 {
-                    // TODO: erasure is the first issue!
+                    sf::base::vectorSwapAndPopIf(entities, [](const auto& e) { return !e->alive; });
                 }
                 else if (useSoA)
                 {
