@@ -509,13 +509,13 @@ public:
     [[nodiscard]] bool hasTitlebar() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Set whether the window is resizable or not
     ///
     ////////////////////////////////////////////////////////////
     void setResizable(bool resizable);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Set whether the window has a titlebar or not
     ///
     ////////////////////////////////////////////////////////////
     void setHasTitlebar(bool hasTitleBar);
@@ -524,7 +524,7 @@ private:
     friend class Window;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the SDL implementation of the window
     ///
     ////////////////////////////////////////////////////////////
     priv::SDLWindowImpl& getWindowImpl();
