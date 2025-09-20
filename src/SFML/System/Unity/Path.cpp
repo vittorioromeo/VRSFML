@@ -74,22 +74,10 @@ Path::Path(int, const void* fsPath) : m_impl(*static_cast<const std::filesystem:
 
 
 ////////////////////////////////////////////////////////////
-Path::~Path() = default;
-
-
-////////////////////////////////////////////////////////////
-Path::Path(const Path&) = default;
-
-
-////////////////////////////////////////////////////////////
-Path& Path::operator=(const Path&) = default;
-
-
-////////////////////////////////////////////////////////////
-Path::Path(Path&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+Path::~Path()                          = default;
+Path::Path(const Path&)                = default;
+Path& Path::operator=(const Path&)     = default;
+Path::Path(Path&&) noexcept            = default;
 Path& Path::operator=(Path&&) noexcept = default;
 
 

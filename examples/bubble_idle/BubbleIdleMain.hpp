@@ -9209,7 +9209,7 @@ struct Main
         const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
 
         //
-        // Demo text (TODO P0: cleanup)
+        // Demo text (TODO P2: cleanup)
         if constexpr (isDemoVersion)
         {
             const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) *

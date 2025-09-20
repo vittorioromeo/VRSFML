@@ -45,10 +45,7 @@ RenderWindow::RenderWindow(WindowHandle handle, const ContextSettings& contextSe
 
 
 ////////////////////////////////////////////////////////////
-RenderWindow::RenderWindow(RenderWindow&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+RenderWindow::RenderWindow(RenderWindow&&) noexcept            = default;
 RenderWindow& RenderWindow::operator=(RenderWindow&&) noexcept = default;
 
 

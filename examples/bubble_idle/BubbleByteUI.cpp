@@ -1518,7 +1518,7 @@ void Main::uiSpeedrunning()
     ImGui::EndGroup();
 
     /*
-    // TODO P0: balance and enable
+    // TODO P2: balance and enable
     ImGui::SetCursorPosY(10.f * profile.uiScale);
     ImGui::SetCursorPosX((250.f + 230.f) * profile.uiScale);
 

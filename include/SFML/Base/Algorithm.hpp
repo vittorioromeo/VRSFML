@@ -333,7 +333,7 @@ template <typename Iter, typename Predicate>
 
 
 ////////////////////////////////////////////////////////////
-/// \brief Erase elements satisfying a predicate from a vector
+/// \brief Erase elements satisfying a predicate from a vector (stable)
 ///
 /// Removes all elements from the vector for which the predicate
 /// returns `true`. This function modifies the vector in-place.
@@ -355,7 +355,20 @@ template <typename Vector, typename Predicate>
     return nRemoved;
 }
 
-// TODO P0: docs, maybe replace existing uses of erase if with this
+
+////////////////////////////////////////////////////////////
+/// \brief Erase elements satisfying a predicate from a vector (unstable)
+///
+/// Removes all elements from the vector for which the predicate
+/// returns `true`. This function modifies the vector in-place.
+/// The relative order of elements is not preserved.
+///
+/// \param vector    Vector to modify
+/// \param predicate Unary predicate function
+///
+/// \return The number of elements removed
+///
+////////////////////////////////////////////////////////////
 template <typename Vector, typename Predicate>
 [[gnu::always_inline]] inline constexpr SizeT vectorSwapAndPopIf(Vector& vector, Predicate&& predicate)
 {

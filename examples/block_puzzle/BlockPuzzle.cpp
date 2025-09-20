@@ -61,7 +61,7 @@
 
 #include <initializer_list>
 
-// TODO P0:
+// TODO P2:
 // - keys should have different colors compared to blocks
 // - kill blocks in lava
 // - portals
