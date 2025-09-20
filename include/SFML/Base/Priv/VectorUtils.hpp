@@ -117,16 +117,13 @@ template <typename T>
                               numElementsToMove * sizeof(T)); // Number of bytes
         }
     }
-    else
+    else if (nextElement != currentEnd) // If 'it' is not the last element
     {
-        if (nextElement != currentEnd) // If 'it' is not the last element
-        {
-            T* currentWrite = it;
-            T* currentRead  = nextElement;
+        T* currentWrite = it;
+        T* currentRead  = nextElement;
 
-            while (currentRead != currentEnd)
-                *currentWrite++ = static_cast<T&&>(*currentRead++);
-        }
+        while (currentRead != currentEnd)
+            *currentWrite++ = static_cast<T&&>(*currentRead++);
     }
 
     return it;
