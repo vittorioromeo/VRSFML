@@ -56,22 +56,10 @@ AudioDeviceHandle::AudioDeviceHandle(base::PassKey<CaptureDevice>&&, const void*
 
 
 ////////////////////////////////////////////////////////////
-AudioDeviceHandle::~AudioDeviceHandle() = default;
-
-
-////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(const AudioDeviceHandle& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
-AudioDeviceHandle::AudioDeviceHandle(AudioDeviceHandle&& rhs) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-AudioDeviceHandle& AudioDeviceHandle::operator=(const AudioDeviceHandle& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
+AudioDeviceHandle::~AudioDeviceHandle()                                           = default;
+AudioDeviceHandle::AudioDeviceHandle(const AudioDeviceHandle& rhs)                = default;
+AudioDeviceHandle::AudioDeviceHandle(AudioDeviceHandle&& rhs) noexcept            = default;
+AudioDeviceHandle& AudioDeviceHandle::operator=(const AudioDeviceHandle& rhs)     = default;
 AudioDeviceHandle& AudioDeviceHandle::operator=(AudioDeviceHandle&& rhs) noexcept = default;
 
 

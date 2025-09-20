@@ -1,5 +1,5 @@
 # all source files
-if (NOT SFML_OS_EMSCRIPTEN)
+if (NOT SFML_OS_EMSCRIPTEN AND NOT ARCH_ARM64)
     set(SRC BubbleIdle.cpp Serialization.cpp Steam.cpp BubbleByteUI.cpp)
 
     # set the correct steam library
@@ -20,7 +20,7 @@ sfml_add_example(bubble_idle GUI_APP
                  SOURCES ${SRC}
                  DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
 
-if (WIN32)
+if (WIN32 AND NOT ARCH_ARM64)
     target_link_libraries(bubble_idle PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
 endif()
 
@@ -31,21 +31,23 @@ if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
     target_link_libraries(bubble_idle PRIVATE "-Wl,-subsystem,windows" "-mwindows")
 endif()
 
-# TODO P1: repetition
-# define the bubble_idle_demo target
-sfml_add_example(bubble_idle_demo GUI_APP
-                 SOURCES ${SRC}
-                 DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
+# do not produce demo target by default
+if (FALSE)
+    # define the bubble_idle_demo target
+    sfml_add_example(bubble_idle_demo GUI_APP
+                    SOURCES ${SRC}
+                    DEPENDS SFML::Audio SFML::Graphics SFML::ImGui ImGui::ImGui ${STEAM_LIB})
 
-target_compile_definitions(bubble_idle_demo PRIVATE BUBBLEBYTE_DEMO)
+    target_compile_definitions(bubble_idle_demo PRIVATE BUBBLEBYTE_DEMO)
 
-if (WIN32)
-    target_link_libraries(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
-endif()
+    if (WIN32 AND NOT ARCH_ARM64)
+        target_link_libraries(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/resources/icon.res")
+    endif()
 
-target_include_directories(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
+    target_include_directories(bubble_idle_demo PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/public")
 
-if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
-    target_compile_options(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
-    target_link_libraries(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+    if (WIN32 AND ${CMAKE_BUILD_TYPE} STREQUAL "Release")
+        target_compile_options(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+        target_link_libraries(bubble_idle_demo PRIVATE "-Wl,-subsystem,windows" "-mwindows")
+    endif()
 endif()
