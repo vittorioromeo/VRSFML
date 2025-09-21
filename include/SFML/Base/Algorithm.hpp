@@ -372,31 +372,20 @@ template <typename Vector, typename Predicate>
 template <typename Vector, typename Predicate>
 [[gnu::always_inline]] inline constexpr SizeT vectorSwapAndPopIf(Vector& vector, Predicate&& predicate)
 {
-    SizeT nRemoved = 0u;
+    const SizeT initialSize = vector.size();
+    SizeT       currentSize = initialSize;
 
-    for (SizeT i = 0u; i < vector.size();)
+    for (SizeT i = currentSize; i-- > 0u;)
     {
         if (!predicate(vector[i]))
-        {
-            ++i;
             continue;
-        }
 
-        vector[i] = SFML_BASE_MOVE(vector.back());
-
-        if constexpr (requires { vector.popBack(); })
-        {
-            vector.popBack();
-        }
-        else
-        {
-            vector.pop_back();
-        }
-
-        ++nRemoved;
+        --currentSize;
+        vector[i] = SFML_BASE_MOVE(vector[currentSize]);
     }
 
-    return nRemoved;
+    vector.resize(currentSize);
+    return static_cast<SizeT>(initialSize - currentSize);
 }
 
 ////////////////////////////////////////////////////////////

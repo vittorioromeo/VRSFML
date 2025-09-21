@@ -198,13 +198,13 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
 
         CHECK(removedCount == 4);
         CHECK(v.size() == 4);
-        CHECK((v == sf::base::Vector<int>{1, 7, 3, 5}));
+        CHECK((v == sf::base::Vector<int>{1, 5, 3, 7}));
 
         // Check with no elements removed
         removedCount = sf::base::vectorSwapAndPopIf(v, isEven);
         CHECK(removedCount == 0);
         CHECK(v.size() == 4);
-        CHECK((v == sf::base::Vector<int>{1, 7, 3, 5}));
+        CHECK((v == sf::base::Vector<int>{1, 5, 3, 7}));
 
         // Check removing all elements
         auto isOdd   = [](int x) { return x % 2 != 0; };
