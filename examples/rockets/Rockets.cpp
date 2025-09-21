@@ -1036,26 +1036,18 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
     {
         const auto soaEraseIf = [&](ParticleSoA& soa, auto&& predicate)
         {
-            sf::base::SizeT n = soa.positions.size();
-            sf::base::SizeT i = 0u;
+            sf::base::SizeT currentSize = soa.positions.size();
 
-            while (i < n)
+            for (sf::base::SizeT i = currentSize; i-- > 0u;)
             {
                 if (!predicate(soa, i))
-                {
-                    ++i;
                     continue;
-                }
 
-                // Swap the current element with the last one, then reduce the container size.
-                --n;
-                soa.forEachVector([&](auto& vec) { vec[i] = SFML_BASE_MOVE(vec[n]); });
-
-                // Do not increment `i`; check the new element at `i`.
+                --currentSize;
+                soa.forEachVector([&](auto& vec) { vec[i] = SFML_BASE_MOVE(vec[currentSize]); });
             }
 
-            // Resize all columns to the new size.
-            soa.forEachVector([&](auto& vec) { vec.resize(n); });
+            soa.forEachVector([&](auto& vec) { vec.resize(currentSize); });
         };
 
         soaEraseIf(smokeParticles,
