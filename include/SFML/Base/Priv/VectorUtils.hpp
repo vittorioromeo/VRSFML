@@ -218,28 +218,6 @@ template <typename T>
         return data() + size();                                                                                      \
     }                                                                                                                \
                                                                                                                      \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept                               \
-    {                                                                                                                \
-        SFML_BASE_ASSERT(size() > 0u);                                                                               \
-        return *data();                                                                                              \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept                   \
-    {                                                                                                                \
-        SFML_BASE_ASSERT(size() > 0u);                                                                               \
-        return *data();                                                                                              \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept                                \
-    {                                                                                                                \
-        return this->operator[](size() - 1u);                                                                        \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept                    \
-    {                                                                                                                \
-        return this->operator[](size() - 1u);                                                                        \
-    }                                                                                                                \
-                                                                                                                     \
     [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept                                         \
     {                                                                                                                \
         return size() == 0u;                                                                                         \

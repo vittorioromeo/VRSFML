@@ -391,6 +391,38 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *m_data;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *m_data;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *(m_endSize - 1u);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *(m_endSize - 1u);
+    }
+
+
+    ////////////////////////////////////////////////////////////
     SFML_BASE_PRIV_DEFINE_COMMON_VECTOR_OPERATIONS(Vector);
 };
 
