@@ -192,6 +192,8 @@ jobs:
       run: |
         for i in 1 2 3; do brew install flac libvorbis && break || sleep 15; done
 
+    # In addition to installing a known working version of CCache, this action also takes care of saving and restoring the cache for us
+    # Additionally it outputs information at the end of each job that helps us to verify if the cache is working properly
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2.12
       with:
