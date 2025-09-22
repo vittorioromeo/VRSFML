@@ -39,14 +39,8 @@ MusicReader::MusicReader(base::PassKey<MusicReader>&&, InputSoundFile&& file) :
 
 
 ////////////////////////////////////////////////////////////
-MusicReader::~MusicReader() = default;
-
-
-////////////////////////////////////////////////////////////
-MusicReader::MusicReader(MusicReader&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+MusicReader::~MusicReader()                                 = default;
+MusicReader::MusicReader(MusicReader&&) noexcept            = default;
 MusicReader& MusicReader::operator=(MusicReader&&) noexcept = default;
 
 

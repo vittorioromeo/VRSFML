@@ -8,6 +8,7 @@
 #include "SFML/System/RectPacker.hpp"
 
 #include "SFML/Base/Optional.hpp"
+#include "SFML/Base/SizeT.hpp"
 
 #define STBRP_STATIC
 #define STB_RECT_PACK_IMPLEMENTATION
@@ -92,7 +93,7 @@ bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::
 
     stbrp_rect toPack[512];
 
-    for (std::size_t i = 0; i < rectSizes.size(); ++i)
+    for (base::SizeT i = 0u; i < rectSizes.size(); ++i)
     {
         const auto& size = rectSizes[i];
 
@@ -114,7 +115,7 @@ bool RectPacker::packMultiple(const base::Span<Vec2u> outPositions, const base::
 
     SFML_BASE_ASSERT(rc == /* success */ 1);
 
-    for (std::size_t i = 0; i < rectSizes.size(); ++i)
+    for (base::SizeT i = 0u; i < rectSizes.size(); ++i)
     {
         const auto& packed = toPack[i];
         SFML_BASE_ASSERT(packed.was_packed);

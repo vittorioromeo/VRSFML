@@ -16,7 +16,7 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf::DrawableBatchUtils
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
@@ -72,7 +72,7 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteVertices(
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
     const Transform& transform,
     const FloatRect& textureRect,
     const Color      color,
@@ -91,7 +91,8 @@ namespace sf
     vertexPtr[2].position.x = transform.a00 * absSize.x + transform.a02;
     vertexPtr[2].position.y = transform.a10 * absSize.x + transform.a12;
 
-    vertexPtr[3].position = transform.transformPoint(absSize);
+    vertexPtr[3].position.x = transform.a00 * absSize.x + vertexPtr[1].position.x;
+    vertexPtr[3].position.y = transform.a10 * absSize.x + vertexPtr[1].position.y;
 
     // Color
     vertexPtr[0].color = color;
@@ -115,34 +116,10 @@ namespace sf
     const Vertex& SFML_BASE_RESTRICT c,
     const Vertex& SFML_BASE_RESTRICT d) noexcept
 {
-    // The code below should be equivalent to:
-    /*
-        vertexPtr[0] = {transform.transformPoint(a.position), a.color, a.texCoords};
-        vertexPtr[1] = {transform.transformPoint(b.position), b.color, b.texCoords};
-        vertexPtr[2] = {transform.transformPoint(c.position), c.color, c.texCoords};
-        vertexPtr[3] = {transform.transformPoint(d.position), d.color, d.texCoords};
-    */
-
-    SFML_BASE_ASSUME(a.position.x == c.position.x);
-    SFML_BASE_ASSUME(b.position.x == d.position.x);
-
-    SFML_BASE_ASSUME(a.position.y == b.position.y);
-    SFML_BASE_ASSUME(c.position.y == d.position.y);
-
-    const float t00ax = transform.a00 * a.position.x;
-    const float t10ax = transform.a10 * a.position.x;
-    const float t00bx = transform.a00 * b.position.x;
-    const float t10bx = transform.a10 * b.position.x;
-
-    const float t01ayPlusT02 = transform.a01 * a.position.y + transform.a02;
-    const float t11ayPlusT12 = transform.a11 * a.position.y + transform.a12;
-    const float t01cyPlusT02 = transform.a01 * c.position.y + transform.a02;
-    const float t11cyPlusT12 = transform.a11 * c.position.y + transform.a12;
-
-    vertexPtr[0] = {{t00ax + t01ayPlusT02, t10ax + t11ayPlusT12}, a.color, a.texCoords};
-    vertexPtr[1] = {{t00bx + t01ayPlusT02, t10bx + t11ayPlusT12}, b.color, b.texCoords};
-    vertexPtr[2] = {{t00ax + t01cyPlusT02, t10ax + t11cyPlusT12}, c.color, c.texCoords};
-    vertexPtr[3] = {{t00bx + t01cyPlusT02, t10bx + t11cyPlusT12}, d.color, d.texCoords};
+    vertexPtr[0] = {transform.transformPoint(a.position), a.color, a.texCoords};
+    vertexPtr[1] = {transform.transformPoint(b.position), b.color, b.texCoords};
+    vertexPtr[2] = {transform.transformPoint(c.position), c.color, c.texCoords};
+    vertexPtr[3] = {transform.transformPoint(d.position), d.color, d.texCoords};
 }
 
 ////////////////////////////////////////////////////////////
@@ -153,7 +130,7 @@ namespace sf
     Vertex* const   vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
-    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
+    appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
 
 ////////////////////////////////////////////////////////////
@@ -231,4 +208,4 @@ namespace sf
         *indexPtr++ = nextIndex + i;
 }
 
-} // namespace sf
+} // namespace sf::DrawableBatchUtils

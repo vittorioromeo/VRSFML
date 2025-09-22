@@ -26,14 +26,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-InputSoundFile::~InputSoundFile() = default;
-
-
-////////////////////////////////////////////////////////////
-InputSoundFile::InputSoundFile(InputSoundFile&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+InputSoundFile::~InputSoundFile()                                    = default;
+InputSoundFile::InputSoundFile(InputSoundFile&&) noexcept            = default;
 InputSoundFile& InputSoundFile::operator=(InputSoundFile&&) noexcept = default;
 
 

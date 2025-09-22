@@ -152,8 +152,8 @@ private:
 /// \ingroup graphics
 ///
 /// This class inherits all the functions of `sf::Transformable`
-/// (position, rotation, scale, bounds, ...) as well as the
-/// functions of `sf::Shape` (outline, color, texture, ...).
+/// (position, rotation, scale, bounds, etc...) as well as the
+/// functions of `sf::Shape` (outline, color, texture, etc...).
 ///
 /// It is important to keep in mind that a convex shape must
 /// always be... convex, otherwise it may not be drawn correctly.

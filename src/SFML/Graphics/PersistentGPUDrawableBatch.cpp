@@ -67,18 +67,9 @@ struct PersistentGPUStorage::Impl
 
 
 ////////////////////////////////////////////////////////////
-PersistentGPUStorage::PersistentGPUStorage() = default;
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage::~PersistentGPUStorage() = default;
-
-
-////////////////////////////////////////////////////////////
-PersistentGPUStorage::PersistentGPUStorage(PersistentGPUStorage&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+PersistentGPUStorage::PersistentGPUStorage()                                           = default;
+PersistentGPUStorage::~PersistentGPUStorage()                                          = default;
+PersistentGPUStorage::PersistentGPUStorage(PersistentGPUStorage&&) noexcept            = default;
 PersistentGPUStorage& PersistentGPUStorage::operator=(PersistentGPUStorage&&) noexcept = default;
 
 

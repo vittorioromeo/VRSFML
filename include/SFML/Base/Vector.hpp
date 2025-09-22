@@ -324,7 +324,7 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        m_endSize = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
+        m_endSize = priv::VectorUtils::eraseRangeImpl(end(), first, last);
 
         // Return an iterator to the element that now occupies the position
         // where the first erased element (`first`) was. This is `first` itself,
@@ -341,7 +341,7 @@ public:
         SFML_BASE_ASSERT(m_data != nullptr);
         SFML_BASE_ASSERT(m_endSize != nullptr);
 
-        (SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)), ...);
+        (..., SFML_BASE_PLACEMENT_NEW(m_endSize++) TItem(static_cast<TItems&&>(items)));
     }
 
 
@@ -387,6 +387,38 @@ public:
         base::swap(m_data, rhs.m_data);
         base::swap(m_endSize, rhs.m_endSize);
         base::swap(m_endCapacity, rhs.m_endCapacity);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *m_data;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *m_data;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *(m_endSize - 1u);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *(m_endSize - 1u);
     }
 
 

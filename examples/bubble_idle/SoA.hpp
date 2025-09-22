@@ -1,11 +1,11 @@
 #pragma once
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/IndexSequence.hpp"
+#include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Vector.hpp"
 #include "SFML/Base/TypePackElement.hpp"
+#include "SFML/Base/Vector.hpp"
 
 
 ////////////////////////////////////////////////////////////
@@ -40,25 +40,25 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void clear()
     {
-        (SOA_ALL_BASES().data.clear(), ...);
+        (..., SOA_ALL_BASES().data.clear());
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(sf::base::SizeT capacity)
+    [[gnu::always_inline]] void reserve(const sf::base::SizeT capacity)
     {
-        (SOA_ALL_BASES().data.reserve(capacity), ...);
+        (..., SOA_ALL_BASES().data.reserve(capacity));
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void resize(sf::base::SizeT size)
+    [[gnu::always_inline]] void resize(const sf::base::SizeT size)
     {
-        (SOA_ALL_BASES().data.resize(size), ...);
+        (..., SOA_ALL_BASES().data.resize(size));
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void pushBack(auto&&... values)
     {
-        (SOA_ALL_BASES().data.pushBack(SFML_BASE_FORWARD(values)), ...);
+        (..., SOA_ALL_BASES().data.pushBack(SFML_BASE_FORWARD(values)));
     }
 
     ////////////////////////////////////////////////////////////
@@ -68,28 +68,42 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT I>
+    [[nodiscard, gnu::always_inline]] auto& get() noexcept
+    {
+        return SOA_AS_BASE(I).data;
+    }
+
+    ////////////////////////////////////////////////////////////
+    template <sf::base::SizeT I>
+    [[nodiscard, gnu::always_inline]] const auto& get() const noexcept
+    {
+        return SOA_AS_CONST_BASE(I).data;
+    }
+
+    ////////////////////////////////////////////////////////////
     template <sf::base::SizeT... Js>
-    [[gnu::always_inline]] void withNth(sf::base::SizeT i, auto&& f)
+    [[gnu::always_inline]] void withNth(const sf::base::SizeT i, auto&& f)
     {
         f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllNth(sf::base::SizeT i, auto&& f)
+    [[gnu::always_inline]] void withAllNth(const sf::base::SizeT i, auto&& f)
     {
         f(SOA_ALL_BASES().data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
     template <sf::base::SizeT... Js>
-    [[gnu::always_inline]] void withSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    [[gnu::always_inline]] void withSubRange(const sf::base::SizeT start, const sf::base::SizeT end, auto&& f)
     {
         for (sf::base::SizeT i = start; i < end; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void withAllSubRange(sf::base::SizeT start, sf::base::SizeT end, auto&& f)
+    [[gnu::always_inline]] void withAllSubRange(const sf::base::SizeT start, const sf::base::SizeT end, auto&& f)
     {
         for (sf::base::SizeT i = start; i < end; ++i)
             f(SOA_ALL_BASES().data[i]...);
@@ -99,14 +113,18 @@ public:
     template <sf::base::SizeT... Js>
     [[gnu::always_inline]] void with(auto&& f)
     {
-        for (sf::base::SizeT i = 0u; i < getSize(); ++i)
+        const sf::base::SizeT size = getSize();
+
+        for (sf::base::SizeT i = 0u; i < size; ++i)
             f(SOA_AS_BASE(Js).data[i]...);
     }
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void withAll(auto&& f)
     {
-        for (sf::base::SizeT i = 0u; i < getSize(); ++i)
+        const sf::base::SizeT size = getSize();
+
+        for (sf::base::SizeT i = 0u; i < size; ++i)
             f(SOA_ALL_BASES().data[i]...);
     }
 
@@ -117,7 +135,7 @@ public:
         const sf::base::SizeT n = getSize();
 
         // Find the first element to remove.
-        sf::base::SizeT i = 0;
+        sf::base::SizeT i = 0u;
         while (i < n && !f(SOA_AS_BASE(Js).data[i]...))
             ++i;
 
@@ -130,40 +148,31 @@ public:
                 continue;
 
             if (newSize != i)
-                ((SOA_ALL_BASES().data[newSize] = SFML_BASE_MOVE(SOA_ALL_BASES().data[i])), ...);
+                (..., (SOA_ALL_BASES().data[newSize] = SFML_BASE_MOVE(SOA_ALL_BASES().data[i])));
 
             ++newSize;
         }
 
         // Resize all columns to the new size.
-        ((SOA_ALL_BASES().data.resize(newSize)), ...);
+        (..., SOA_ALL_BASES().data.resize(newSize));
     }
 
     ////////////////////////////////////////////////////////////
     template <sf::base::SizeT... Js>
     void eraseIfBySwapping(auto&& f)
     {
-        sf::base::SizeT n = getSize();
-        sf::base::SizeT i = 0;
+        sf::base::SizeT currentSize = getSize();
 
-        // Process elements, swapping out removed ones.
-        while (i < n)
+        for (sf::base::SizeT i = currentSize; i-- > 0u;)
         {
-            if (!f(static_cast<SoABase<Js, SFML_BASE_TYPE_PACK_ELEMENT(Js, Ts...)>&>(*this).data[i]...))
-            {
-                ++i;
+            if (!f(SOA_AS_BASE(Js).data[i]...))
                 continue;
-            }
 
-            // Swap the current element with the last one, then reduce the container size.
-            --n;
-            ((sf::base::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n])), ...);
-
-            // Do not increment i; check the new element at i.
+            --currentSize;
+            (..., (SOA_ALL_BASES().data[i] = SFML_BASE_MOVE(SOA_ALL_BASES().data[currentSize])));
         }
 
-        // Resize all columns to the new size.
-        ((SOA_ALL_BASES().data.resize(n)), ...);
+        (..., SOA_ALL_BASES().data.resize(currentSize));
     }
 };
 
@@ -174,4 +183,4 @@ public:
 
 ////////////////////////////////////////////////////////////
 template <typename... Ts>
-using SoAFor = SoA<SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(Ts)), Ts...>;
+using SoAFor = SoA<SFML_BASE_INDEX_SEQUENCE_FOR(Ts), Ts...>;

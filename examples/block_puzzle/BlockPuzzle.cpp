@@ -61,7 +61,7 @@
 
 #include <initializer_list>
 
-// TODO P0:
+// TODO P2:
 // - keys should have different colors compared to blocks
 // - kill blocks in lava
 // - portals
@@ -1847,7 +1847,7 @@ public:
                 m_rtSpriteBg.setView(downscaleView);
 
                 m_rtSpriteBg.clear(sf::Color::Transparent);
-                (m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}), ...);
+                (..., m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}));
                 m_rtSpriteBg.display();
 
                 m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});

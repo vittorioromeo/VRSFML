@@ -1026,14 +1026,8 @@ ImGuiContext::ImGuiContext(const bool loadDefaultFont) :
 
 
 ////////////////////////////////////////////////////////////
-ImGuiContext::~ImGuiContext() = default;
-
-
-////////////////////////////////////////////////////////////
-ImGuiContext::ImGuiContext(ImGuiContext&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+ImGuiContext::~ImGuiContext()                                  = default;
+ImGuiContext::ImGuiContext(ImGuiContext&&) noexcept            = default;
 ImGuiContext& ImGuiContext::operator=(ImGuiContext&&) noexcept = default;
 
 

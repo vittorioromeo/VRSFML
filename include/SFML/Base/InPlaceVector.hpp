@@ -249,7 +249,7 @@ public:
         if (first == last)
             return first; // No elements to erase
 
-        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(begin(), end(), first, last);
+        TItem* currWritePtr = priv::VectorUtils::eraseRangeImpl(end(), first, last);
         m_size              = static_cast<SizeT>(currWritePtr - data());
 
         // Return an iterator to the element that now occupies the position
@@ -264,7 +264,7 @@ public:
     [[gnu::always_inline]] void unsafePushBackMultiple(TItems&&... items)
     {
         SFML_BASE_ASSERT(m_size + sizeof...(items) <= N);
-        (SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)), ...);
+        (..., SFML_BASE_PLACEMENT_NEW(data() + m_size++) TItem(static_cast<TItems&&>(items)));
     }
 
 
@@ -346,6 +346,36 @@ public:
 
         // Swap the effective sizes
         base::swap(m_size, rhs.m_size);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *data();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept
+    {
+        SFML_BASE_ASSERT(!empty());
+        return *data();
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept
+    {
+        return this->operator[](size() - 1u);
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept
+    {
+        return this->operator[](size() - 1u);
     }
 
 

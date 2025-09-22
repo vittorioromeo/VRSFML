@@ -8,6 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/GlDataType.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -16,6 +17,7 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
@@ -86,7 +88,7 @@ concept ShapeDataConcept =                             //
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-/// \brief Base class for all render targets (window, texture, ...)
+/// \brief Base class for all render targets (window, texture, etc...)
 ///
 ////////////////////////////////////////////////////////////
 class [[nodiscard]] SFML_GRAPHICS_API RenderTarget
@@ -520,64 +522,184 @@ public:
     VertexSpan draw(const Font& font, const TextData& textData, RenderStates states = {}); // TODO P1: RenderStatesWithoutTexture?
 
     ////////////////////////////////////////////////////////////
-    /// \brief Draw primitives defined by an array of vertices
-    ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
+    /// \brief Settings used to draw an array of vertices
     ///
     ////////////////////////////////////////////////////////////
-    void drawVertices(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
+    struct [[nodiscard]] DrawVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        const Vertex* vertexData;
+        base::SizeT   vertexCount;
+        PrimitiveType primitiveType;
+        RenderStates  renderStates;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Draw primitives defined by an array of vertices
+    ///
+    /// \param settings Draw settings
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawVertices(const DrawVerticesSettings& settings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Settings used to draw an array of indices and vertices
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] DrawIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        const Vertex*    vertexData;
+        base::SizeT      vertexCount;
+        const IndexType* indexData;
+        base::SizeT      indexCount;
+        PrimitiveType    primitiveType;
+        RenderStates     renderStates;
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by an array of indices and vertices
     ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param indexData   Pointer to the indices
-    /// \param indexCount  Number of indices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawIndexedVertices(const Vertex*       vertexData,
-                             base::SizeT         vertexCount,
-                             const IndexType*    indexData,
-                             base::SizeT         indexCount,
-                             PrimitiveType       type,
-                             const RenderStates& states = {});
+    void drawIndexedVertices(const DrawIndexedVerticesSettings& settings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Settings used to draw an array of vertices and precomputed quad indices
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] DrawQuadsSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        const Vertex* vertexData;
+        base::SizeT   vertexCount;
+        PrimitiveType primitiveType;
+        RenderStates  renderStates;
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw quads defined by an array of vertices and precomputed quad indices
     ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawQuads(const Vertex* vertexData, base::SizeT vertexCount, PrimitiveType type, const RenderStates& states = {});
+    void drawQuads(const DrawQuadsSettings& settings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Settings used to draw a persistent mapped buffer and indices
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] DrawPersistentMappedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        const PersistentGPUDrawableBatch& gpuDrawableBatch;
+        base::SizeT                       indexCount;
+        base::SizeT                       indexOffset;
+        base::SizeT                       vertexOffset;
+        PrimitiveType                     primitiveType;
+        RenderStates                      renderStates;
+    };
 
     ////////////////////////////////////////////////////////////
     /// \brief Draw primitives defined by a persistent mapped buffer and indices
     ///
-    /// \param batch        Reference to the persistent mapped buffer
-    /// \param indexCount   Number of indices in the array
-    /// \param indexOffset  Offset of the first index to use when drawing
-    /// \param vertexOffset Offset of the first vertex to use when drawing
-    /// \param vertexCount  Number of vertices in the array
-    /// \param type         Type of primitives to draw
-    /// \param states       Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void drawPersistentMappedIndexedVertices(
-        const PersistentGPUDrawableBatch& batch,
-        base::SizeT                       indexCount,
-        base::SizeT                       indexOffset,
-        base::SizeT                       vertexOffset,
-        PrimitiveType                     type,
-        const RenderStates&               states = {});
+    void drawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct InstanceAttributeBinder;
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class [[nodiscard]] VAOHandle
+    {
+    public:
+        VAOHandle();
+        ~VAOHandle();
+
+        VAOHandle(const VAOHandle&)            = delete;
+        VAOHandle& operator=(const VAOHandle&) = delete;
+
+        VAOHandle(VAOHandle&&) noexcept;
+        VAOHandle& operator=(VAOHandle&&) noexcept;
+
+    private:
+        friend RenderTarget;
+
+        struct Impl;
+        base::InPlacePImpl<Impl, 128> m_impl;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    class [[nodiscard]] VBOHandle
+    {
+    public:
+        VBOHandle();
+        ~VBOHandle();
+
+        VBOHandle(const VBOHandle&)            = delete;
+        VBOHandle& operator=(const VBOHandle&) = delete;
+
+        VBOHandle(VBOHandle&&) noexcept;
+        VBOHandle& operator=(VBOHandle&&) noexcept;
+
+    private:
+        friend InstanceAttributeBinder;
+
+        struct Impl;
+        base::InPlacePImpl<Impl, 64> m_impl;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        VAOHandle&    vaoHandle;
+        const Vertex* vertexData;
+        base::SizeT   vertexCount;
+        base::SizeT   instanceCount;
+        PrimitiveType primitiveType;
+        RenderStates  renderStates;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    {
+        VAOHandle&       vaoHandle;
+        const Vertex*    vertexData;
+        base::SizeT      vertexCount;
+        const IndexType* indexData;
+        base::SizeT      indexCount;
+        base::SizeT      instanceCount;
+        PrimitiveType    primitiveType;
+        RenderStates     renderStates;
+    };
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawInstancedVertices(const DrawInstancedVerticesSettings&                           settings,
+                               const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void drawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&                    settings,
+                                      const base::FixedFunction<void(InstanceAttributeBinder&), 64>& setupFn);
 
     ////////////////////////////////////////////////////////////
     /// \brief Return the size of the rendering region of the target
@@ -647,6 +769,45 @@ public:
     ////////////////////////////////////////////////////////////
     RenderTarget::DrawStatistics flush();
 
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    struct [[nodiscard]] InstanceAttributeBinder
+    {
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder() = default;
+
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder(const InstanceAttributeBinder&)            = delete;
+        InstanceAttributeBinder& operator=(const InstanceAttributeBinder&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        InstanceAttributeBinder(InstanceAttributeBinder&&)            = delete;
+        InstanceAttributeBinder& operator=(InstanceAttributeBinder&&) = delete;
+
+        ////////////////////////////////////////////////////////////
+        void bindVBO(VBOHandle& vboHandle);
+
+        ////////////////////////////////////////////////////////////
+        void uploadData(base::SizeT instanceCount, const void* data, base::SizeT stride);
+
+        ////////////////////////////////////////////////////////////
+        template <typename T>
+        void uploadContiguousData(const base::SizeT instanceCount, const T* const data)
+        {
+            uploadData(instanceCount, data, sizeof(T));
+        }
+
+        ////////////////////////////////////////////////////////////
+        void setup(unsigned int location,
+                   unsigned int size,
+                   GlDataType   type,
+                   bool         normalized,
+                   base::SizeT  stride,
+                   base::SizeT  fieldOffset);
+    };
+
 protected:
     ////////////////////////////////////////////////////////////
     /// \brief Constructor from view
@@ -677,16 +838,10 @@ private:
     /// Will result in an OpenGL draw call.
     /// Does not flush any batch in-flight.
     ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawVertices(const Vertex*       vertexData,
-                               base::SizeT         vertexCount,
-                               PrimitiveType       type,
-                               const RenderStates& states = {});
+    void immediateDrawVertices(const DrawVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by an array of indices and vertices
@@ -694,39 +849,10 @@ private:
     /// Will result in an OpenGL draw call.
     /// Does not flush any batch in-flight.
     ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param indexData   Pointer to the indices
-    /// \param indexCount  Number of indices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawIndexedVertices(const Vertex*       vertexData,
-                                      base::SizeT         vertexCount,
-                                      const IndexType*    indexData,
-                                      base::SizeT         indexCount,
-                                      PrimitiveType       type,
-                                      const RenderStates& states = {});
-
-    ////////////////////////////////////////////////////////////
-    /// \brief Immediately draw quads defined by an array of vertices and precomputed quad indices
-    ///
-    /// Will result in an OpenGL draw call.
-    /// Does not flush any batch in-flight.
-    /// Indices follow the sequence `[0, 1, 2, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 9, 10, ...]`.
-    /// Vertex count must be a multiple of `4`.
-    ///
-    /// \param vertexData  Pointer to the vertices
-    /// \param vertexCount Number of vertices in the array
-    /// \param type        Type of primitives to draw
-    /// \param states      Render states to use for drawing
-    ///
-    ////////////////////////////////////////////////////////////
-    void immediateDrawIndexedQuads(const Vertex*       vertexData,
-                                   base::SizeT         vertexCount,
-                                   PrimitiveType       type,
-                                   const RenderStates& states = {});
+    void immediateDrawIndexedVertices(const DrawIndexedVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by a persistent mapped buffer and indices
@@ -734,28 +860,30 @@ private:
     /// Will result in an OpenGL draw call.
     /// Does not flush any batch in-flight.
     ///
-    /// \param batch        Reference to the persistent mapped buffer
-    /// \param indexCount   Number of indices in the array
-    /// \param indexOffset  Offset of the first index to use when drawing
-    /// \param vertexOffset Offset of the first vertex to use when drawing
-    /// \param vertexCount  Number of vertices in the array
-    /// \param type         Type of primitives to draw
-    /// \param states       Render states to use for drawing
+    /// \param settings Draw settings
     ///
     ////////////////////////////////////////////////////////////
-    void immediateDrawPersistentMappedIndexedVertices(
-        const PersistentGPUDrawableBatch& batch,
-        base::SizeT                       indexCount,
-        base::SizeT                       indexOffset,
-        base::SizeT                       vertexOffset,
-        PrimitiveType                     type,
-        const RenderStates&               states = {});
+    void immediateDrawPersistentMappedIndexedVertices(const DrawPersistentMappedIndexedVerticesSettings& settings);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
     void immediateDrawDrawableBatch(const CPUDrawableBatch& drawableBatch, RenderStates states);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawInstancedVertices(const DrawInstancedVerticesSettings&                    settings,
+                                        base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    ////////////////////////////////////////////////////////////
+    void immediateDrawInstancedIndexedVertices(const DrawInstancedIndexedVerticesSettings&             settings,
+                                               base::FixedFunction<void(InstanceAttributeBinder&), 64> setupFn);
 
     ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
@@ -893,6 +1021,42 @@ private:
                                                   base::SizeT   vertexOffset);
 
     ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: instanced, non-indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type          Type of primitives to draw
+    /// \param vertexOffset  Offset of the first vertex to use when drawing
+    /// \param vertexCount   Number of vertices to use when drawing
+    /// \param instanceCount Number of instances to draw
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokeInstancedPrimitiveDrawCall(PrimitiveType type,
+                                          base::SizeT   vertexOffset,
+                                          base::SizeT   vertexCount,
+                                          base::SizeT   instanceCount);
+
+    ////////////////////////////////////////////////////////////
+    /// \brief Invoke primitive draw call: instanced, indexed
+    ///
+    /// Immediately executes an OpenGL draw call.
+    /// This function is not intended to be used directly.
+    /// Does not flush any batch in-flight.
+    ///
+    /// \param type          Type of primitives to draw
+    /// \param indexOffset   Offset of the first index to use when drawing
+    /// \param indexCount    Number of indices to use when drawing
+    /// \param instanceCount Number of instances to draw
+    ///
+    ////////////////////////////////////////////////////////////
+    void invokeInstancedPrimitiveDrawCallIndexed(PrimitiveType type,
+                                                 base::SizeT   indexOffset,
+                                                 base::SizeT   indexCount,
+                                                 base::SizeT   instanceCount);
+
+    ////////////////////////////////////////////////////////////
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
@@ -912,9 +1076,14 @@ public:
     ////////////////////////////////////////////////////////////
     template <typename ContiguousVertexRange>
     [[gnu::always_inline]] void draw(const ContiguousVertexRange& vertices, PrimitiveType type, const RenderStates& states = {})
-        requires(requires { drawVertices(vertices.data(), vertices.size(), type, states); })
+        requires(requires { drawVertices({vertices.data(), vertices.size(), type, states}); })
     {
-        drawVertices(vertices.data(), vertices.size(), type, states);
+        drawVertices({
+            .vertexData    = vertices.data(),
+            .vertexCount   = vertices.size(),
+            .primitiveType = type,
+            .renderStates  = states,
+        });
     }
 
     ////////////////////////////////////////////////////////////
@@ -928,7 +1097,12 @@ public:
     template <base::SizeT N>
     [[gnu::always_inline]] void draw(const Vertex (&vertices)[N], PrimitiveType type, const RenderStates& states = {})
     {
-        drawVertices(vertices, N, type, states);
+        drawVertices({
+            .vertexData    = vertices,
+            .vertexCount   = N,
+            .primitiveType = type,
+            .renderStates  = states,
+        });
     }
 
     ////////////////////////////////////////////////////////////

@@ -27,26 +27,11 @@ struct String::Impl
 
 
 ////////////////////////////////////////////////////////////
-String::String() = default;
-
-
-////////////////////////////////////////////////////////////
-String::~String() = default;
-
-
-////////////////////////////////////////////////////////////
-String::String(const String&) = default;
-
-
-////////////////////////////////////////////////////////////
-String& String::operator=(const String&) = default;
-
-
-////////////////////////////////////////////////////////////
-String::String(String&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+String::String()                             = default;
+String::~String()                            = default;
+String::String(const String&)                = default;
+String& String::operator=(const String&)     = default;
+String::String(String&&) noexcept            = default;
 String& String::operator=(String&&) noexcept = default;
 
 

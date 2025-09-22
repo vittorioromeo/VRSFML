@@ -77,15 +77,9 @@ Ftp::Response::Response(Status code, base::StringView message) : m_impl{code, me
 
 
 ////////////////////////////////////////////////////////////
-Ftp::Response::~Response() = default;
-
-
-////////////////////////////////////////////////////////////
-Ftp::Response::Response(const Response&)                 = default;
-Ftp::Response& Ftp::Response::operator=(const Response&) = default;
-
-
-////////////////////////////////////////////////////////////
+Ftp::Response::~Response()                                   = default;
+Ftp::Response::Response(const Response&)                     = default;
+Ftp::Response& Ftp::Response::operator=(const Response&)     = default;
 Ftp::Response::Response(Response&&) noexcept                 = default;
 Ftp::Response& Ftp::Response::operator=(Response&&) noexcept = default;
 

@@ -362,10 +362,6 @@ struct OutFileStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream::OutFileStream() = default;
-
-
-////////////////////////////////////////////////////////////
 OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) :
     m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
@@ -373,14 +369,9 @@ OutFileStream::OutFileStream(const Path& filename, FileOpenMode mode) :
 
 
 ////////////////////////////////////////////////////////////
-OutFileStream::~OutFileStream() = default;
-
-
-////////////////////////////////////////////////////////////
-OutFileStream::OutFileStream(OutFileStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+OutFileStream::OutFileStream()                                    = default;
+OutFileStream::~OutFileStream()                                   = default;
+OutFileStream::OutFileStream(OutFileStream&&) noexcept            = default;
 OutFileStream& OutFileStream::operator=(OutFileStream&&) noexcept = default;
 
 
@@ -541,25 +532,16 @@ struct OutStringStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-OutStringStream::OutStringStream() = default;
+OutStringStream::OutStringStream()                                      = default;
+OutStringStream::~OutStringStream()                                     = default;
+OutStringStream::OutStringStream(OutStringStream&&) noexcept            = default;
+OutStringStream& OutStringStream::operator=(OutStringStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
 OutStringStream::OutStringStream(const char* str) : m_impl(str)
 {
 }
-
-
-////////////////////////////////////////////////////////////
-OutStringStream::~OutStringStream() = default;
-
-
-////////////////////////////////////////////////////////////
-OutStringStream::OutStringStream(OutStringStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-OutStringStream& OutStringStream::operator=(OutStringStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -726,7 +708,10 @@ struct InFileStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-InFileStream::InFileStream() = default;
+InFileStream::InFileStream()                                   = default;
+InFileStream::~InFileStream()                                  = default;
+InFileStream::InFileStream(InFileStream&&) noexcept            = default;
+InFileStream& InFileStream::operator=(InFileStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -734,18 +719,6 @@ InFileStream::InFileStream(const Path& filename, FileOpenMode mode) :
     m_impl(filename.to<std::filesystem::path>(), mapFileOpenMode(mode))
 {
 }
-
-
-////////////////////////////////////////////////////////////
-InFileStream::~InFileStream() = default;
-
-
-////////////////////////////////////////////////////////////
-InFileStream::InFileStream(InFileStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-InFileStream& InFileStream::operator=(InFileStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
@@ -875,25 +848,16 @@ struct InStringStream::Impl
 
 
 ////////////////////////////////////////////////////////////
-InStringStream::InStringStream() = default;
+InStringStream::InStringStream()                                     = default;
+InStringStream::~InStringStream()                                    = default;
+InStringStream::InStringStream(InStringStream&&) noexcept            = default;
+InStringStream& InStringStream::operator=(InStringStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////
 InStringStream::InStringStream(const std::string& str, FileOpenMode mode) : m_impl(str, mapFileOpenMode(mode))
 {
 }
-
-
-////////////////////////////////////////////////////////////
-InStringStream::~InStringStream() = default;
-
-
-////////////////////////////////////////////////////////////
-InStringStream::InStringStream(InStringStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-InStringStream& InStringStream::operator=(InStringStream&&) noexcept = default;
 
 
 ////////////////////////////////////////////////////////////

@@ -9,7 +9,6 @@
 #include <latch>
 
 #include <cassert>
-#include <cstddef>
 
 
 class SweepAndPrune
