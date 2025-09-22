@@ -388,6 +388,7 @@ template <typename Vector, typename Predicate>
     return static_cast<SizeT>(initialSize - currentSize);
 }
 
+
 ////////////////////////////////////////////////////////////
 /// \brief Check if a range is sorted according to a comparison function
 ///

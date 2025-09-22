@@ -17,8 +17,9 @@ enum class [[nodiscard]] GlDataType : unsigned int
     UnsignedShort = 3u,
     Int           = 4u,
     UnsignedInt   = 5u,
-    Float         = 6u,
-    Double        = 7u
+    HalfFloat     = 6u,
+    Float         = 7u,
+    Double        = 8u
 };
 
 } // namespace sf
