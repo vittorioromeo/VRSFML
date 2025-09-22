@@ -1,6 +1,4 @@
 #pragma once
-#include "GlDataType.hpp"
-
 #include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
 
 
@@ -10,6 +8,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Graphics/Color.hpp"
+#include "SFML/Graphics/GlDataType.hpp"
 #include "SFML/Graphics/IndexType.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
@@ -616,7 +615,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    class VAOHandle
+    class [[nodiscard]] VAOHandle
     {
     public:
         VAOHandle();
@@ -639,7 +638,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    class VBOHandle
+    class [[nodiscard]] VBOHandle
     {
     public:
         VBOHandle();
@@ -662,7 +661,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    struct [[nodiscard]] DrawInstancedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         VAOHandle&    vaoHandle;
         const Vertex* vertexData;
@@ -676,7 +675,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
+    struct [[nodiscard]] DrawInstancedIndexedVerticesSettings // NOLINT(cppcoreguidelines-pro-type-member-init)
     {
         VAOHandle&       vaoHandle;
         const Vertex*    vertexData;
@@ -774,7 +773,7 @@ public:
     /// \brief TODO P1: docs
     ///
     ////////////////////////////////////////////////////////////
-    struct InstanceAttributeBinder
+    struct [[nodiscard]] InstanceAttributeBinder
     {
         ////////////////////////////////////////////////////////////
         InstanceAttributeBinder() = default;

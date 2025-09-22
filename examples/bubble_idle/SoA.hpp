@@ -161,27 +161,18 @@ public:
     template <sf::base::SizeT... Js>
     void eraseIfBySwapping(auto&& f)
     {
-        sf::base::SizeT n = getSize();
-        sf::base::SizeT i = 0u;
+        sf::base::SizeT currentSize = getSize();
 
-        // Process elements, swapping out removed ones.
-        while (i < n)
+        for (sf::base::SizeT i = currentSize; i-- > 0u;)
         {
             if (!f(SOA_AS_BASE(Js).data[i]...))
-            {
-                ++i;
                 continue;
-            }
 
-            // Swap the current element with the last one, then reduce the container size.
-            --n;
-            (..., sf::base::swap(SOA_ALL_BASES().data[i], SOA_ALL_BASES().data[n]));
-
-            // Do not increment `i`; check the new element at `i`.
+            --currentSize;
+            (..., (SOA_ALL_BASES().data[i] = SFML_BASE_MOVE(SOA_ALL_BASES().data[currentSize])));
         }
 
-        // Resize all columns to the new size.
-        (..., SOA_ALL_BASES().data.resize(n));
+        (..., SOA_ALL_BASES().data.resize(currentSize));
     }
 };
 
