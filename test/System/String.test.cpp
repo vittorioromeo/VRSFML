@@ -54,7 +54,7 @@ struct StringMaker<std::u8string>
             if (character >= 32 && character < 127)
                 output << std::string(1, static_cast<char>(character));
             else
-                output << toHex(character);
+                output << toHex(static_cast<char32_t>(character));
         }
 
         const auto result = output.str();
