@@ -13,7 +13,6 @@
 #include "SFML/System/PathUtils.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/MinMax.hpp"
@@ -28,9 +27,11 @@
     #include "SFML/System/Android/ResourceStream.hpp"
 #endif
 
+#define QOI_IMPLEMENTATION
+#include <qoi.h>
+
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
-
 #include <stb_image.h>
 
 #pragma GCC diagnostic push
@@ -96,6 +97,75 @@ struct StbDeleter
 
 ////////////////////////////////////////////////////////////
 using StbPtr = sf::base::UniquePtr<stbi_uc, StbDeleter>;
+
+
+////////////////////////////////////////////////////////////
+// RAII wrapper for malloc-ed pointers
+// (this is used with qoi.h)
+struct MallocPointerDeleter
+{
+    void operator()(sf::base::U8* ptr) const
+    {
+        free(ptr); // NOLINT(*-no-malloc)
+    }
+};
+
+
+////////////////////////////////////////////////////////////
+using MallocPtr = sf::base::UniquePtr<sf::base::U8, MallocPointerDeleter>;
+
+
+////////////////////////////////////////////////////////////
+// A helper to check if the given buffer is a valid QOI file magic number
+[[nodiscard]] bool isQoiMagicNumber(const char* const buffer, const sf::base::SizeT size)
+{
+    return size >= 4 && buffer[0] == 'q' && buffer[1] == 'o' && buffer[2] == 'i' && buffer[3] == 'f';
+}
+
+
+////////////////////////////////////////////////////////////
+struct QOISaveData
+{
+    MallocPtr       ptr;
+    sf::base::SizeT size;
+};
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] QOISaveData saveQOIImpl(const sf::base::U8* pixels, const sf::Vec2u size)
+{
+    const qoi_desc desc = {
+        .width      = size.x,
+        .height     = size.y,
+        .channels   = 4,
+        .colorspace = QOI_LINEAR,
+    };
+
+    int dataSize = 0;
+    if (auto ptr = MallocPtr(static_cast<sf::base::U8*>(qoi_encode(pixels, &desc, &dataSize))))
+        return {SFML_BASE_MOVE(ptr), static_cast<sf::base::SizeT>(dataSize)};
+
+    return {nullptr, 0u};
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] sf::base::Optional<sf::Image> loadQOIImpl(sf::base::PassKey<sf::Image>&& passKey,
+                                                        const sf::base::U8* const      data,
+                                                        const sf::base::SizeT          size)
+{
+    qoi_desc   formatDesc{};
+    const auto ptr = MallocPtr(static_cast<sf::base::U8*>(qoi_decode(data, static_cast<int>(size), &formatDesc, 4)));
+
+    if (!ptr)
+        return sf::base::nullOpt;
+
+    const sf::Vec2u imageSize{formatDesc.width, formatDesc.height};
+    return sf::base::makeOptional<sf::Image>(SFML_BASE_MOVE(passKey),
+                                             imageSize,
+                                             ptr.get(),
+                                             ptr.get() + imageSize.x * imageSize.y * 4);
+}
 
 } // namespace
 
@@ -216,9 +286,30 @@ base::Optional<Image> Image::loadFromFile(const Path& filename)
         return base::nullOpt;
     }
 
+    // Read a (possible) QOI magic number
+    char qoiMagicNumber[4]{};
+    file.read(qoiMagicNumber, 4);
+
+    // Seek back to the start of the file for reading
+    file.seekg(0, SeekDir::beg);
+
+    // Read the QOI file if it's valid
+    if (isQoiMagicNumber(qoiMagicNumber, static_cast<base::SizeT>(file.gcount())))
+    {
+        // Get the size of the file
+        file.seekg(0, SeekDir::end);
+        const auto streamSize = file.tellg();
+        file.seekg(0, SeekDir::beg);
+
+        // Read in the file contents since QOI doesn't support streams
+        base::Vector<base::U8> buffer(static_cast<base::SizeT>(streamSize));
+        file.read(reinterpret_cast<char*>(buffer.data()), streamSize);
+        return loadQOIImpl(base::PassKey<Image>{}, buffer.data(), static_cast<base::SizeT>(streamSize));
+    }
+
     // Load the image and get a pointer to the pixels in memory
-    sf::Vec2i imageSize;
-    int       channels = 0;
+    Vec2i imageSize;
+    int   channels = 0;
 
     if (const auto ptr = StbPtr(
             stbi_load_from_callbacks(&callbacks, &file, &imageSize.x, &imageSize.y, &channels, STBI_rgb_alpha)))
@@ -282,6 +373,28 @@ base::Optional<Image> Image::loadFromStream(InputStream& stream)
     {
         priv::err() << "Failed to seek image stream";
         return base::nullOpt;
+    }
+
+    // Read a (possible) QOI magic number
+    char       qoiMagicNumber[4]{};
+    const auto qoiMagicCount = stream.read(qoiMagicNumber, 4);
+
+    if (const auto seekToStartResult = stream.seek(0); !seekToStartResult.hasValue())
+    {
+        priv::err() << "Failed to seek back the image stream";
+        return base::nullOpt;
+    }
+
+    // Read the QOI file if it's valid
+    if (qoiMagicCount.hasValue() && isQoiMagicNumber(qoiMagicNumber, *qoiMagicCount))
+    {
+        if (const auto streamSize = stream.getSize(); streamSize.hasValue())
+        {
+            // Read in the file contents since QOI doesn't support streams
+            base::Vector<base::U8> buffer(*streamSize);
+            const auto             readDataSize = stream.read(buffer.data(), *streamSize);
+            return loadQOIImpl(base::PassKey<Image>{}, buffer.data(), static_cast<base::SizeT>(*readDataSize));
+        }
     }
 
     // Setup the stb_image callbacks
@@ -558,6 +671,15 @@ bool Image::saveToFile(const Path& filename) const
         if (stbi_write_jpg_to_func(writeStdOfstream, &file, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90) && file)
             return true;
     }
+    else if (extension == ".qoi")
+    {
+        if (const auto [data, size] = saveQOIImpl(m_pixels.data(), m_size); data)
+        {
+            OutFileStream file(filename.c_str(), FileOpenMode::bin);
+            file.write(reinterpret_cast<const char*>(data.get()), static_cast<base::PtrDiffT>(size));
+            return true;
+        }
+    }
     else
     {
         priv::err() << "Image file extension " << extension << " not supported\n";
@@ -595,6 +717,15 @@ base::Vector<base::U8> Image::saveToMemory(SaveFormat format) const
     {
         if (stbi_write_jpg_to_func(bufferFromCallback, &buffer, convertedSize.x, convertedSize.y, 4, m_pixels.data(), 90))
             return buffer; // Non-empty
+    }
+    else if (format == SaveFormat::QOI)
+    {
+        if (const auto [data, size] = saveQOIImpl(m_pixels.data(), m_size); data)
+        {
+            buffer.resize(size);
+            SFML_BASE_MEMCPY(buffer.data(), data.get(), size);
+            return buffer;
+        }
     }
 
     SFML_BASE_ASSERT(false);

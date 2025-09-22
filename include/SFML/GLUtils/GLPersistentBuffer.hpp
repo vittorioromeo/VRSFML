@@ -151,7 +151,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] void flushWritesToGPU([[maybe_unused]] const base::SizeT unitSize,
                                                                [[maybe_unused]] const base::SizeT count,
-                                                               [[maybe_unused]] const base::SizeT offset)
+                                                               [[maybe_unused]] const base::SizeT offset) const
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";

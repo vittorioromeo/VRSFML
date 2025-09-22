@@ -1333,7 +1333,7 @@ int main()
     });
 
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
-    window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::CPUStorage);
+    window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
 
     //
     //

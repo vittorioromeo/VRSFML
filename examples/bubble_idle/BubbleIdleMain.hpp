@@ -4109,7 +4109,6 @@ struct Main
     void gameLoopUpdateCatActionAttracto(const float /* deltaTimeMs */, Cat& cat)
     {
         const auto maxCooldown = getComputedCooldownByCatTypeOrCopyCat(cat.type);
-        const auto range       = getComputedRangeByCatTypeOrCopyCat(cat.type);
 
         // TODO P1: ? maybe absorb all bubbles in range and give a reward based on the number of bubbles absorbed
 

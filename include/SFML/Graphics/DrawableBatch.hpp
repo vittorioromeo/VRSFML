@@ -332,7 +332,7 @@ struct PersistentGPUStorage
     /// \param offset Offset (in number of vertices) from the beginning of the buffer
     ///
     ////////////////////////////////////////////////////////////
-    void flushVertexWritesToGPU(base::SizeT count, base::SizeT offset);
+    void flushVertexWritesToGPU(base::SizeT count, base::SizeT offset) const;
 
     ////////////////////////////////////////////////////////////
     /// \brief Flushes a range of index writes to the GPU
@@ -346,7 +346,11 @@ struct PersistentGPUStorage
     /// \param offset Offset (in number of indices) from the beginning of the buffer
     ///
     ////////////////////////////////////////////////////////////
-    void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset);
+    void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset) const;
+
+    // TODO P0: docs, refactor
+    void startSync();
+    void endSync();
 
     ////////////////////////////////////////////////////////////
     // Member data
@@ -861,7 +865,7 @@ public:
     /// \see sf::priv::PersistentGPUStorage::flushVertexWritesToGPU
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+    [[gnu::always_inline]] void flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
     {
         m_storage.flushVertexWritesToGPU(count, offset);
     }
@@ -883,9 +887,21 @@ public:
     /// \see sf::priv::PersistentGPUStorage::flushIndexWritesToGPU
     ///
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+    [[gnu::always_inline]] void flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
     {
         m_storage.flushIndexWritesToGPU(count, offset);
+    }
+
+    // TODO P0: docs, refactor
+    void startSync()
+    {
+        m_storage.startSync();
+    }
+
+    // TODO P0: docs, refactor
+    void endSync()
+    {
+        m_storage.endSync();
     }
 };
 
