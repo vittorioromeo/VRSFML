@@ -221,7 +221,7 @@ public:
             InternalServerError = 500, //!< The server encountered an unexpected error
             NotImplemented      = 501, //!< The server doesn't implement a requested feature
             BadGateway          = 502, //!< The gateway server has received an error from the source server
-            ServiceNotAvailable = 503, //!< The server is temporarily unavailable (overloaded, in maintenance, ...)
+            ServiceNotAvailable = 503, //!< The server is temporarily unavailable (overloaded, in maintenance, etc...)
             GatewayTimeout      = 504, //!< The gateway server couldn't receive a response from the source server
             VersionNotSupported = 505, //!< The server doesn't support the requested HTTP version
 

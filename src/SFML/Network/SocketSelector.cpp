@@ -39,18 +39,9 @@ SocketSelector::SocketSelector()
 
 
 ////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(const SocketSelector&) = default;
-
-
-////////////////////////////////////////////////////////////
-SocketSelector& SocketSelector::operator=(const SocketSelector&) = default;
-
-
-////////////////////////////////////////////////////////////
-SocketSelector::SocketSelector(SocketSelector&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////]
+SocketSelector::SocketSelector(const SocketSelector&)                = default;
+SocketSelector& SocketSelector::operator=(const SocketSelector&)     = default;
+SocketSelector::SocketSelector(SocketSelector&&) noexcept            = default;
 SocketSelector& SocketSelector::operator=(SocketSelector&&) noexcept = default;
 
 

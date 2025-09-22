@@ -1,0 +1,66 @@
+
+        /*
+        if (false)
+        {
+            static auto shader = sf::Shader::loadFromMemory({.vertexCode   = instancedVertexShader,
+                                                             .fragmentCode = sf::DefaultShader::srcFragment})
+                                     .value();
+
+            // Base geometry for a unit quad (from 0,0 to 1,1)
+            static constexpr sf::Vertex baseQuad[4]{
+                {{0, 0}, sf::Color::White, {0, 0}}, // Top-left
+                {{1, 0}, sf::Color::White, {1, 0}}, // Top-right
+                {{1, 1}, sf::Color::White, {1, 1}}, // Bottom-right
+                {{0, 1}, sf::Color::White, {0, 1}}, // Bottom-left
+            };
+
+            static constexpr unsigned int quadIndices[6]{
+                0,
+                1,
+                2, // First triangle
+                2,
+                3,
+                0 // Second triangle
+            };
+
+            // Static vectors to reuse memory allocation across frames
+            static sf::base::Vector<SpriteInstanceData> smokeInstanceData;
+
+            // --- Prepare Smoke Particle Data ---
+            smokeInstanceData.clear();
+            smokeInstanceData.reserve(smokeParticles.getSize());
+
+            smokeParticles.with<Field::Position, Field::Scale, Field::Opacity, Field::Rotation>(
+                [&](const sf::Vec2f& position, float scale, float opacity, float rotation)
+            { smokeInstanceData.emplaceBack(position, txrSmoke, scale, rotation, opacity); });
+
+            // The C++ lambda that configures the instance attributes
+            auto setupSpriteInstanceAttribs = [&](sf::RenderTarget::InstanceAttributeBinder& binder)
+            {
+                constexpr auto stride = sizeof(SpriteInstanceData);
+                using IAB             = sf::RenderTarget::InstanceAttributeBinder;
+
+                binder.createAndBindVBO();
+
+                binder.uploadData(smokeInstanceData.size(), smokeInstanceData.data(), sizeof(SpriteInstanceData));
+
+                binder.setup(3, 2, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(SpriteInstanceData, position));
+                binder.setup(4, 4, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(SpriteInstanceData,
+        textureRect)); binder.setup(5, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(SpriteInstanceData,
+        scale)); binder.setup(6, 1, IAB::Type::Float, false, stride, SFML_BASE_OFFSETOF(SpriteInstanceData, rotation));
+                binder.setup(7, 1, IAB::Type::Float, true, stride, SFML_BASE_OFFSETOF(SpriteInstanceData, opacity));
+            };
+
+            // Draw all smoke particles in one single call
+            rt.immediateDrawInstancedIndexedVertices(baseQuad,
+                                                     4,
+                                                     quadIndices,
+                                                     6,
+                                                     smokeInstanceData.size(),
+                                                     sf::PrimitiveType::Triangles,
+                                                     {.texture = txAtlas, .shader = &shader},
+                                                     setupSpriteInstanceAttribs);
+
+            return;
+        }
+        */

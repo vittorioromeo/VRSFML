@@ -102,11 +102,11 @@ private:
         max_size      = impl::variadic_max(sizeof(Alternatives)...)
     };
 
-    static inline constexpr bool triviallyDestructible = (sf::base::isTriviallyDestructible<Alternatives> && ...);
-    static inline constexpr bool triviallyCopyConstructible = (sf::base::isTriviallyCopyConstructible<Alternatives> && ...);
-    static inline constexpr bool triviallyMoveConstructible = (sf::base::isTriviallyMoveConstructible<Alternatives> && ...);
-    static inline constexpr bool triviallyCopyAssignable = (sf::base::isTriviallyCopyAssignable<Alternatives> && ...);
-    static inline constexpr bool triviallyMoveAssignable = (sf::base::isTriviallyMoveAssignable<Alternatives> && ...);
+    static inline constexpr bool triviallyDestructible = (... && sf::base::isTriviallyDestructible<Alternatives>);
+    static inline constexpr bool triviallyCopyConstructible = (... && sf::base::isTriviallyCopyConstructible<Alternatives>);
+    static inline constexpr bool triviallyMoveConstructible = (... && sf::base::isTriviallyMoveConstructible<Alternatives>);
+    static inline constexpr bool triviallyCopyAssignable = (... && sf::base::isTriviallyCopyAssignable<Alternatives>);
+    static inline constexpr bool triviallyMoveAssignable = (... && sf::base::isTriviallyMoveAssignable<Alternatives>);
 
     using index_type = unsigned char; // Support up to 255 alternatives
 
@@ -129,7 +129,7 @@ private:
     do                                                                                                \
     {                                                                                                 \
         [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN \
-        { ((((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0), ...); }(alternative_index_sequence);      \
+        { (..., (((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0)); }(alternative_index_sequence);      \
     } while (false)
 
 #define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)

@@ -300,7 +300,7 @@ private:
 /// Sound buffers alone are not very useful: they hold the audio data
 /// but cannot be played. To do so, you need to use the `sf::Sound` class,
 /// which provides functions to play/pause/stop the sound as well as
-/// changing the way it is outputted (volume, pitch, 3D position, ...).
+/// changing the way it is outputted (volume, pitch, 3D position, etc...).
 /// This separation allows more flexibility and better performances:
 /// indeed a `sf::SoundBuffer` is a heavy resource, and any operation on it
 /// is slow (often too slow for real-time applications). On the other

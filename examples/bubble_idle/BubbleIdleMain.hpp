@@ -503,8 +503,8 @@ struct Main
         sf::Music       music;
 
         explicit BGMBuffer(sf::PlaybackDevice& playbackDevice, sf::MusicReader&& theMusicSource) :
-        musicReader{SFML_BASE_MOVE(theMusicSource)},
-        music{playbackDevice, musicReader}
+            musicReader{SFML_BASE_MOVE(theMusicSource)},
+            music{playbackDevice, musicReader}
         {
         }
     };
@@ -3524,7 +3524,7 @@ struct Main
         {
             return pickRandomBubbleInRadiusMatching({cx, cy},
                                                     range,
-                                                    [&](const Bubble& b) { return ((b.type == types) || ...); });
+                                                    [&](const Bubble& b) { return (... || (b.type == types)); });
         };
 
         if (!pt->perm.geniusCatsPurchased)
@@ -9209,7 +9209,7 @@ struct Main
         const float yBelowMinimap = pt->mapPurchased ? (boundaries.y / profile.minimapScale) + 12.f : 0.f;
 
         //
-        // Demo text (TODO P0: cleanup)
+        // Demo text (TODO P2: cleanup)
         if constexpr (isDemoVersion)
         {
             const float xStartOverlay = getAspectRatioScalingFactor(gameScreenSize, getResolution()) *

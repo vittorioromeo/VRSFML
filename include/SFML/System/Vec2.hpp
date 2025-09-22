@@ -750,7 +750,24 @@ template <typename T>
 template <typename T>
 [[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vec2<T> operator*(const T lhs, const Vec2<T> rhs)
 {
-    return Vec2<T>(rhs.x * lhs, rhs.y * lhs);
+    return Vec2<T>(lhs * rhs.x, lhs * rhs.y);
+}
+
+
+////////////////////////////////////////////////////////////
+/// \relates Vec2
+/// \brief Overload of binary `operator/`
+///
+/// \param lhs  Left operand (a scalar value)
+/// \param rhs Right operand (a vec2)
+///
+/// \return Member-wise division by `lhs`
+///
+////////////////////////////////////////////////////////////
+template <typename T>
+[[nodiscard, gnu::always_inline, gnu::flatten, gnu::const]] constexpr Vec2<T> operator/(const T lhs, const Vec2<T> rhs)
+{
+    return Vec2<T>(lhs / rhs.x, lhs / rhs.y);
 }
 
 
@@ -819,7 +836,6 @@ template <typename T>
 
     return lhs;
 }
-
 
 } // namespace sf
 

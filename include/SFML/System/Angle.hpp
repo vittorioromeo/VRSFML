@@ -521,7 +521,8 @@ struct [[nodiscard]] Angle
     /// \param radians Angle in radians
     ///
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float radians) : radians(radians)
+    [[nodiscard, gnu::always_inline, gnu::flatten]] constexpr explicit Angle(const float theRadians) :
+        radians{theRadians}
     {
     }
 
