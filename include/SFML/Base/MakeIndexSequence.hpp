@@ -63,3 +63,7 @@ using MakeIndexSequence = std::make_index_sequence<N>;
     #define SFML_BASE_MAKE_INDEX_SEQUENCE(N) ::sf::base::MakeIndexSequence<N>
 
 #endif
+
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_INDEX_SEQUENCE_FOR(...) SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(__VA_ARGS__))

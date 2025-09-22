@@ -69,26 +69,11 @@ struct Clock::Impl
 
 
 ////////////////////////////////////////////////////////////
-Clock::Clock() = default;
-
-
-////////////////////////////////////////////////////////////
-Clock::~Clock() = default;
-
-
-////////////////////////////////////////////////////////////
-Clock::Clock(const Clock&) = default;
-
-
-////////////////////////////////////////////////////////////
-Clock& Clock::operator=(const Clock&) = default;
-
-
-////////////////////////////////////////////////////////////
-Clock::Clock(Clock&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+Clock::Clock()                            = default;
+Clock::~Clock()                           = default;
+Clock::Clock(const Clock&)                = default;
+Clock& Clock::operator=(const Clock&)     = default;
+Clock::Clock(Clock&&) noexcept            = default;
 Clock& Clock::operator=(Clock&&) noexcept = default;
 
 

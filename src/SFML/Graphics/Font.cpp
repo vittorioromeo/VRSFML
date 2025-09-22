@@ -436,14 +436,8 @@ Font::Font(base::PassKey<Font>&&, TextureAtlas* textureAtlas) : m_impl(base::mak
 
 
 ////////////////////////////////////////////////////////////
-Font::~Font() = default;
-
-
-////////////////////////////////////////////////////////////
-Font::Font(Font&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+Font::~Font()                          = default;
+Font::Font(Font&&) noexcept            = default;
 Font& Font::operator=(Font&&) noexcept = default;
 
 

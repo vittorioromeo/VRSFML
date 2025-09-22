@@ -26,27 +26,12 @@ struct MiniaudioSoundSource::Impl
 
 
 ////////////////////////////////////////////////////////////
-MiniaudioSoundSource::MiniaudioSoundSource() = default;
-
-
-////////////////////////////////////////////////////////////
-MiniaudioSoundSource::MiniaudioSoundSource(const MiniaudioSoundSource&) = default;
-
-
-////////////////////////////////////////////////////////////
-MiniaudioSoundSource::MiniaudioSoundSource(MiniaudioSoundSource&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+MiniaudioSoundSource::MiniaudioSoundSource()                                           = default;
+MiniaudioSoundSource::MiniaudioSoundSource(const MiniaudioSoundSource&)                = default;
+MiniaudioSoundSource::MiniaudioSoundSource(MiniaudioSoundSource&&) noexcept            = default;
 MiniaudioSoundSource& MiniaudioSoundSource::operator=(const MiniaudioSoundSource& rhs) = default;
-
-
-////////////////////////////////////////////////////////////
 MiniaudioSoundSource& MiniaudioSoundSource::operator=(MiniaudioSoundSource&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
-MiniaudioSoundSource::~MiniaudioSoundSource() = default;
+MiniaudioSoundSource::~MiniaudioSoundSource()                                          = default;
 
 
 ////////////////////////////////////////////////////////////

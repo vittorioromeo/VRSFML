@@ -63,7 +63,7 @@ public:
     /// This constructor creates the window with the size and pixel
     /// depth defined in `mode`. An optional style can be passed to
     /// customize the look and behavior of the window (borders,
-    /// title bar, resizable, closable, ...). An optional state can
+    /// title bar, resizable, closable, etc...). An optional state can
     /// be provided. If `state` is `State::Fullscreen`, then `mode`
     /// must be a valid video mode.
     ///
@@ -509,13 +509,13 @@ public:
     [[nodiscard]] bool hasTitlebar() const;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Set whether the window is resizable or not
     ///
     ////////////////////////////////////////////////////////////
     void setResizable(bool resizable);
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Set whether the window has a titlebar or not
     ///
     ////////////////////////////////////////////////////////////
     void setHasTitlebar(bool hasTitleBar);
@@ -524,7 +524,7 @@ private:
     friend class Window;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P1: docs
+    /// \brief Get the SDL implementation of the window
     ///
     ////////////////////////////////////////////////////////////
     priv::SDLWindowImpl& getWindowImpl();
