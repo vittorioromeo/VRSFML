@@ -117,16 +117,13 @@ template <typename T>
                               numElementsToMove * sizeof(T)); // Number of bytes
         }
     }
-    else
+    else if (nextElement != currentEnd) // If 'it' is not the last element
     {
-        if (nextElement != currentEnd) // If 'it' is not the last element
-        {
-            T* currentWrite = it;
-            T* currentRead  = nextElement;
+        T* currentWrite = it;
+        T* currentRead  = nextElement;
 
-            while (currentRead != currentEnd)
-                *currentWrite++ = static_cast<T&&>(*currentRead++);
-        }
+        while (currentRead != currentEnd)
+            *currentWrite++ = static_cast<T&&>(*currentRead++);
     }
 
     return it;
@@ -135,10 +132,10 @@ template <typename T>
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-[[gnu::always_inline, gnu::flatten]] inline T* eraseRangeImpl(T* const begin, T* const end, T* const first, T* const last)
+[[gnu::always_inline, gnu::flatten]] inline T* eraseRangeImpl(T* const end, T* const first, T* const last)
 {
-    SFML_BASE_ASSERT(first >= begin && first <= end);
-    SFML_BASE_ASSERT(last >= begin && last <= end);
+    SFML_BASE_ASSERT(first <= end);
+    SFML_BASE_ASSERT(last <= end);
     SFML_BASE_ASSERT(first != last);
 
     // Tracks the position where the next non-erased element should be moved to
@@ -219,28 +216,6 @@ template <typename T>
     [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem* cend() const noexcept                    \
     {                                                                                                                \
         return data() + size();                                                                                      \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& front() noexcept                               \
-    {                                                                                                                \
-        SFML_BASE_ASSERT(size() > 0u);                                                                               \
-        return *data();                                                                                              \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& front() const noexcept                   \
-    {                                                                                                                \
-        SFML_BASE_ASSERT(size() > 0u);                                                                               \
-        return *data();                                                                                              \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] TItem& back() noexcept                                \
-    {                                                                                                                \
-        return this->operator[](size() - 1u);                                                                        \
-    }                                                                                                                \
-                                                                                                                     \
-    [[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] const TItem& back() const noexcept                    \
-    {                                                                                                                \
-        return this->operator[](size() - 1u);                                                                        \
     }                                                                                                                \
                                                                                                                      \
     [[nodiscard, gnu::always_inline, gnu::pure]] bool empty() const noexcept                                         \

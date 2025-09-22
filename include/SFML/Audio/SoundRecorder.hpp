@@ -185,7 +185,7 @@ private:
 /// the recorded data in real time, for example.
 ///
 /// If you have multiple sound input devices connected to your
-/// computer (for example: microphone, external sound card, webcam mic, ...)
+/// computer (for example: microphone, external sound card, webcam mic, etc...)
 /// you can get a list of all available devices through the
 /// getAvailableDevices() function. You can then select a device
 /// by calling `setCurrentDevice()` with the appropriate device. Otherwise
@@ -231,7 +231,7 @@ private:
 ///
 ///     [[nodiscard]] bool onProcessSamples(const base::I16* samples, base::SizeT sampleCount) override
 ///     {
-///         // Do something with the new chunk of samples (store them, send them, ...)
+///         // Do something with the new chunk of samples (store them, send them, etc...)
 ///         ...
 ///
 ///         // Return true to continue playing

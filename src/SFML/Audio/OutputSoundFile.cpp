@@ -18,14 +18,8 @@
 namespace sf
 {
 ////////////////////////////////////////////////////////////
-OutputSoundFile::~OutputSoundFile() = default;
-
-
-////////////////////////////////////////////////////////////
-OutputSoundFile::OutputSoundFile(OutputSoundFile&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+OutputSoundFile::~OutputSoundFile()                                     = default;
+OutputSoundFile::OutputSoundFile(OutputSoundFile&&) noexcept            = default;
 OutputSoundFile& OutputSoundFile::operator=(OutputSoundFile&&) noexcept = default;
 
 
