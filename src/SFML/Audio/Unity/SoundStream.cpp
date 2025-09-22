@@ -237,7 +237,7 @@ void SoundStream::setPlayingOffset(Time playingOffset)
     SFML_BASE_ASSERT(sound.pDataSource != nullptr);
     SFML_BASE_ASSERT(sound.engineNode.pEngine != nullptr);
 
-    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(m_impl->soundBase.getSound(), playingOffset).value();
+    const auto frameIndex = priv::MiniaudioUtils::getFrameIndex(sound, playingOffset).value();
 
     m_impl->streaming = true;
     m_impl->sampleBuffer.clear();

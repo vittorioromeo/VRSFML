@@ -31,3 +31,4 @@ old/x.x
 
 examples/bubble_idle/userdata*
 *.psd
+.DS_Store

@@ -192,6 +192,8 @@ jobs:
       run: |
         for i in 1 2 3; do brew install flac libvorbis && break || sleep 15; done
 
+    # In addition to installing a known working version of CCache, this action also takes care of saving and restoring the cache for us
+    # Additionally it outputs information at the end of each job that helps us to verify if the cache is working properly
     - name: Setup CCache
       uses: hendrikmuhs/ccache-action@v1.2.12
       with:
@@ -233,6 +235,9 @@ jobs:
         fi
         echo "Using $(which ccache)"
         ccache --version
+        rm -f "C:\Program Files\mingw64\bin\cmake.exe"
+        echo "Using $(which cmake)"
+        cmake --version
 
     - name: Configure CMake
       run: |
@@ -263,7 +268,8 @@ jobs:
 
     - name: Test (Windows)
       if: runner.os == 'Windows' && !contains(matrix.platform.name, 'MinGW') && !contains(matrix.platform.name, 'arm64')
-      run: cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
+      run: |
+        cmake --build build --target runtests --config ${{ matrix.type.name == 'Debug' && 'Debug' || 'Release' }}
 
     # --- Updated Test Step (Using xvfb-run for Linux, Simplified Path) ---
     - name: Test (Linux/macOS/MinGW)
@@ -289,6 +295,7 @@ jobs:
         else
           GET_GL_INFO_CMD="echo 'Warning: test-sfml-window executable not found in $BASE_BUILD_DIR.'"
         fi
+        ls build/
 
         # Execute tests: Use xvfb-run wrapper only on Linux
         if [ "${{ runner.os }}" == "Linux" ]; then
