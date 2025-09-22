@@ -304,10 +304,10 @@ public:
                               const sf::Font&         font,
                               const sf::TextureAtlas& textureAtlas,
                               const sf::FloatRect (&bunnyTextureRects)[8]) :
-    m_window{window},
-    m_font{font},
-    m_textureAtlas{textureAtlas},
-    m_bunnyTextureRects{bunnyTextureRects}
+        m_window{window},
+        m_font{font},
+        m_textureAtlas{textureAtlas},
+        m_bunnyTextureRects{bunnyTextureRects}
     {
     }
 
@@ -881,8 +881,8 @@ private:
 public:
     ////////////////////////////////////////////////////////////
     explicit Game(sf::RenderWindow& window, sf::ImGuiContext& imGuiContext) :
-    m_window{window},
-    m_imGuiContext{imGuiContext}
+        m_window{window},
+        m_imGuiContext{imGuiContext}
     {
     }
 

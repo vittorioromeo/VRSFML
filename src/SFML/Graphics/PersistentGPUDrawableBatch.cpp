@@ -27,6 +27,9 @@ struct PersistentGPUStorage::Impl
     GLPersistentBuffer<GLVertexBufferObject>  vboPersistentBuffer; //!< GPU persistent buffer for vertices
     GLPersistentBuffer<GLElementBufferObject> eboPersistentBuffer; //!< GPU persistent buffer for indices
 
+    // TODO P0: docs, refactor
+    GLsync fence{}; //!< Fence for synchronizing CPU/GPU access
+
     Impl() : vboPersistentBuffer(persistentVaoGroup.vbo), eboPersistentBuffer(persistentVaoGroup.ebo)
     {
     }
@@ -97,16 +100,56 @@ IndexType* PersistentGPUStorage::reserveMoreIndices(const base::SizeT count)
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+void PersistentGPUStorage::flushVertexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
     impl->vboPersistentBuffer.flushWritesToGPU(sizeof(Vertex), count, offset);
 }
 
 
 ////////////////////////////////////////////////////////////
-void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset)
+void PersistentGPUStorage::flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
 {
     impl->eboPersistentBuffer.flushWritesToGPU(sizeof(IndexType), count, offset);
+}
+
+
+// TODO P0: docs, refactor
+void PersistentGPUStorage::startSync()
+{
+    if (!impl->fence)
+        return;
+
+    const GLenum waitResult = glCheck(glClientWaitSync(impl->fence, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
+
+    if (waitResult == GL_WAIT_FAILED) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Error waiting on GPU fence";
+        base::abort();
+    }
+
+    if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Fence wait timed out";
+        base::abort();
+    }
+
+    glCheck(glDeleteSync(impl->fence));
+    impl->fence = nullptr;
+}
+
+
+// TODO P0: docs, refactor
+void PersistentGPUStorage::endSync()
+{
+    auto& fenceToCreate = impl->fence;
+    SFML_BASE_ASSERT(fenceToCreate == nullptr);
+
+    fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+    if (fenceToCreate == nullptr) [[unlikely]]
+    {
+        priv::err() << "FATAL ERROR: Error creating fence sync object";
+        base::abort();
+    }
 }
 
 
