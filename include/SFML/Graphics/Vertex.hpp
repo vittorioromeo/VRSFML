@@ -41,7 +41,7 @@ struct [[nodiscard]] Vertex
 ///
 /// The vertex is the building block of drawing. Everything which
 /// is visible on screen is made of vertices. They are grouped
-/// as 2D primitives (lines, triangles, ...), and these primitives
+/// as 2D primitives (lines, triangles, etc...), and these primitives
 /// are grouped to create even more complex 2D entities such as
 /// sprites, texts, etc.
 ///

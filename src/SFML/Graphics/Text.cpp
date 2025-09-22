@@ -60,22 +60,10 @@ Text::Text(const Font& font, const Data& data) :
 
 
 ////////////////////////////////////////////////////////////
-Text::~Text() = default;
-
-
-////////////////////////////////////////////////////////////
-Text::Text(const Text&) = default;
-
-
-////////////////////////////////////////////////////////////
-Text& Text::operator=(const Text&) = default;
-
-
-////////////////////////////////////////////////////////////
-Text::Text(Text&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+Text::~Text()                          = default;
+Text::Text(const Text&)                = default;
+Text& Text::operator=(const Text&)     = default;
+Text::Text(Text&&) noexcept            = default;
 Text& Text::operator=(Text&&) noexcept = default;
 
 
@@ -392,7 +380,12 @@ void Text::draw(RenderTarget& target, RenderStates states) const
 
     ensureGeometryUpdate(*m_font);
 
-    target.drawQuads(m_vertices.data(), m_vertices.size(), PrimitiveType::Triangles, states);
+    target.drawQuads({
+        .vertexData    = m_vertices.data(),
+        .vertexCount   = m_vertices.size(),
+        .primitiveType = PrimitiveType::Triangles,
+        .renderStates  = states,
+    });
 }
 
 

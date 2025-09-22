@@ -491,7 +491,7 @@ struct tuple_hash_helper {
     template <typename T, sf::base::SizeT... Idx>
     [[nodiscard]] static auto calc_hash(T const& t, sf::base::IndexSequence<Idx...>) noexcept -> sf::base::U64 {
         auto h = sf::base::U64{};
-        ((h = mix64(h, to64(std::get<Idx>(t)))), ...);
+        (..., (h = mix64(h, to64(std::get<Idx>(t)))));
         return h;
     }
 };
@@ -500,7 +500,7 @@ template <typename... Args>
 struct hash<std::tuple<Args...>> : tuple_hash_helper<Args...> {
     using is_avalanching = void;
     auto operator()(std::tuple<Args...> const& t) const noexcept -> sf::base::U64 {
-        return tuple_hash_helper<Args...>::calc_hash(t, SFML_BASE_MAKE_INDEX_SEQUENCE(sizeof...(Args)){});
+        return tuple_hash_helper<Args...>::calc_hash(t, SFML_BASE_INDEX_SEQUENCE_FOR(Args){});
     }
 };
 

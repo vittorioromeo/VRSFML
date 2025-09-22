@@ -154,14 +154,16 @@ void DrawableBatchImpl<TStorage>::add(const Vertex* const SFML_BASE_RESTRICT ver
     else if (type == PrimitiveType::TriangleStrip)
     {
         for (IndexType i = 0u; i < numTrianglesInStripOrFan; ++i)
-            appendTriangleStripIndices(dstIndices, firstNewVertexIndex, i);
+            DrawableBatchUtils::appendTriangleStripIndices(dstIndices, firstNewVertexIndex, i);
     }
     else
     {
         SFML_BASE_ASSERT(type == PrimitiveType::TriangleFan);
 
         for (IndexType i = 0u; i < numTrianglesInStripOrFan; ++i)
-            appendTriangleFanIndices(dstIndices, firstNewVertexIndex, /* second vertex relative index */ i + 1u);
+            DrawableBatchUtils::appendTriangleFanIndices(dstIndices,
+                                                         firstNewVertexIndex,
+                                                         /* second vertex relative index */ i + 1u);
     }
 
     m_storage.commitMoreIndices(numIndicesToGenerate);
@@ -280,12 +282,12 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
 
     const auto numQuads = static_cast<IndexType>(size / 4u);
 
-    appendTextIndicesAndVertices(text.getTransform(),
-                                 data,
-                                 numQuads,
-                                 m_storage.getNumVertices(),
-                                 m_storage.reserveMoreIndices(6u * numQuads),
-                                 m_storage.reserveMoreVertices(4u * numQuads));
+    DrawableBatchUtils::appendTextIndicesAndVertices(text.getTransform(),
+                                                     data,
+                                                     numQuads,
+                                                     m_storage.getNumVertices(),
+                                                     m_storage.reserveMoreIndices(6u * numQuads),
+                                                     m_storage.reserveMoreVertices(4u * numQuads));
 
     m_storage.commitMoreIndices(6u * numQuads);
     m_storage.commitMoreVertices(4u * numQuads);
@@ -296,10 +298,10 @@ void DrawableBatchImpl<TStorage>::add(const Text& text)
 template <typename TStorage>
 void DrawableBatchImpl<TStorage>::add(const Sprite& sprite) // TODO P1: batched versions for (Sprite* b, Sprite* e)
 {
-    appendSpriteIndicesAndVertices(sprite,
-                                   m_storage.getNumVertices(),
-                                   m_storage.reserveMoreIndices(6u),
-                                   m_storage.reserveMoreVertices(4u));
+    DrawableBatchUtils::appendSpriteIndicesAndVertices(sprite,
+                                                       m_storage.getNumVertices(),
+                                                       m_storage.reserveMoreIndices(6u),
+                                                       m_storage.reserveMoreVertices(4u));
 
     m_storage.commitMoreIndices(6u);
     m_storage.commitMoreVertices(4u);
@@ -315,12 +317,12 @@ void DrawableBatchImpl<TStorage>::addShapeFill(const Transform& transform, const
 
     const base::SizeT indexCount = 3u * (size - 2u);
 
-    appendShapeFillIndicesAndVertices(transform,
-                                      data,
-                                      static_cast<IndexType>(size),
-                                      m_storage.getNumVertices(),
-                                      m_storage.reserveMoreIndices(indexCount),
-                                      m_storage.reserveMoreVertices(size));
+    DrawableBatchUtils::appendShapeFillIndicesAndVertices(transform,
+                                                          data,
+                                                          static_cast<IndexType>(size),
+                                                          m_storage.getNumVertices(),
+                                                          m_storage.reserveMoreIndices(indexCount),
+                                                          m_storage.reserveMoreVertices(size));
 
     m_storage.commitMoreIndices(indexCount);
     m_storage.commitMoreVertices(size);
@@ -336,12 +338,12 @@ void DrawableBatchImpl<TStorage>::addShapeOutline(const Transform& transform, co
 
     const base::SizeT indexCount = 3u * (size - 2u);
 
-    appendShapeOutlineIndicesAndVertices(transform,
-                                         data,
-                                         static_cast<IndexType>(size),
-                                         m_storage.getNumVertices(),
-                                         m_storage.reserveMoreIndices(indexCount),
-                                         m_storage.reserveMoreVertices(size));
+    DrawableBatchUtils::appendShapeOutlineIndicesAndVertices(transform,
+                                                             data,
+                                                             static_cast<IndexType>(size),
+                                                             m_storage.getNumVertices(),
+                                                             m_storage.reserveMoreIndices(indexCount),
+                                                             m_storage.reserveMoreVertices(size));
 
     m_storage.commitMoreIndices(indexCount);
     m_storage.commitMoreVertices(size);
@@ -429,7 +431,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     IndexType* indexPtr = m_storage.reserveMoreIndices(fillIndexCount);
 
     for (IndexType i = 1u; i < fillVertexCount - 1u; ++i)
-        appendTriangleFanIndices(indexPtr, firstFillVertexIndex, i);
+        DrawableBatchUtils::appendTriangleFanIndices(indexPtr, firstFillVertexIndex, i);
 
     m_storage.commitMoreIndices(fillIndexCount);
 
@@ -461,7 +463,7 @@ VertexSpan DrawableBatchImpl<TStorage>::drawTriangleFanShapeFromPoints(
     auto* outlineIndexPtr = m_storage.reserveMoreIndices(outlineIndexCount);
 
     for (IndexType i = 0u; i < outlineVertexCount - 2; ++i)
-        appendTriangleIndices(outlineIndexPtr, firstOutlineVertexIndex + i);
+        DrawableBatchUtils::appendTriangleIndices(outlineIndexPtr, firstOutlineVertexIndex + i);
 
     m_storage.commitMoreIndices(outlineIndexCount);
 
@@ -700,7 +702,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
         IndexType*        outlineIndexPtr   = m_storage.reserveMoreIndices(outlineIndexCount);
 
         for (IndexType i = 0u; i < outlineVertexCount - 2u; ++i)
-            appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
+            DrawableBatchUtils::appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
 
         m_storage.commitMoreIndices(outlineIndexCount);
 
@@ -851,7 +853,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
 
         IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
         for (IndexType i = 0u; i < numFillTriangles; ++i)
-            appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
+            DrawableBatchUtils::appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
 
         m_storage.commitMoreIndices(fillIndexCount);
     }
@@ -898,7 +900,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
         // Generate outline indices
         IndexType* chosenOutlineIndexPtrStart = chosenOutlineIndexPtr;
         for (IndexType i = 0u; i < outlineVerticesPerLoop - 2u; ++i)
-            appendTriangleIndices(chosenOutlineIndexPtrStart, firstChonsenOutlineLoopVertexIndex + i);
+            DrawableBatchUtils::appendTriangleIndices(chosenOutlineIndexPtrStart, firstChonsenOutlineLoopVertexIndex + i);
     };
 
     //
@@ -999,7 +1001,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
 
         IndexType* fillIndexPtr = m_storage.reserveMoreIndices(fillIndexCount);
         for (IndexType i = 0u; i < numFillTriangles; ++i)
-            appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
+            DrawableBatchUtils::appendTriangleStripIndices(fillIndexPtr, firstFillVertexIndex, i);
 
         m_storage.commitMoreIndices(fillIndexCount);
     }
@@ -1036,7 +1038,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     // Generate outline indices
     IndexType* outlineIndexPtr = m_storage.reserveMoreIndices(totalOutlineIndices);
     for (IndexType i = 0u; i < numOutlineTriangles; ++i)
-        appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
+        DrawableBatchUtils::appendTriangleStripIndices(outlineIndexPtr, firstOutlineVertexIndex, i);
 
     //
     // Update outline colors and outline tex coords
@@ -1081,7 +1083,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
     const auto nextIndex = m_storage.getNumVertices();
 
     for (IndexType i = 0u; i < numQuads; ++i)
-        appendQuadIndices(indexPtr, nextIndex + (i * 4u));
+        DrawableBatchUtils::appendQuadIndices(indexPtr, nextIndex + (i * 4u));
 
     const auto [sine, cosine] = base::fastSinCos(textData.rotation.asRadians());
     const auto transform      = Transform::from(textData.position, textData.scale, textData.origin, sine, cosine);

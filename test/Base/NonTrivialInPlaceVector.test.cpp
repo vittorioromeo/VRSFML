@@ -436,40 +436,7 @@ TEST_CASE("[Base] Base/InPlaceVector.hpp")
         for (sf::base::SizeT i = 0; i < tv.size(); ++i)
             CHECK(tv[i].value == expectedValues1[i]);
 
-        // Move assignments: 5 elements (5,6,7,8,9) shifted left by 3 positions
-        // Destructions: 3 elements (original 2,3,4) + 3 elements from old tail (original 7,8,9)
-        // eraseRangeImpl already destroys the elements that were moved over.
-        // The elements [2,3,4] are effectively overwritten and their memory reused or their originals destroyed by
-        // VectorUtils::destroyRange. The elements shifted from the end are move-assigned. VectorUtils::eraseRangeImpl
-        // destroys the elements from currWritePtr (new end) to originalEnd. In this case, 5 items were moved. 3 items
-        // (2,3,4) were removed. The last 3 items in the original buffer (7,8,9) were effectively destroyed by
-        // destroyRange in eraseRangeImpl.
         CHECK(moveAssignCount == 5); // 5,6,7,8,9 are moved
-        CHECK(dtorCount ==
-              3); // elements 2,3,4 are destructed
-                  // and the 3 slots at the end that are now empty (originally held 7,8,9) are also destructed.
-                  // Total 3 + 3 = 6? No, VectorUtils::eraseRangeImpl destroys from new logical end to old logical end.
-                  // So, if 3 elements were removed, 3 elements are destroyed.
-                  // The original elements 2,3,4 are destroyed.
-                  // The elements 7,8,9 at old end are destroyed by destroyRange(currWritePtr, originalEnd)
-                  // Let's re-evaluate:
-                  // elements 2,3,4 are targeted for erase.
-                  // elements 5,6,7,8,9 are moved left.
-                  // original elements at 2,3,4 are overwritten/destroyed.
-                  // The previous contents of 7,8,9 (which were moved from) are destroyed.
-                  // The eraseRangeImpl destroys [new_end, old_end).
-                  // new_end is tv.data()+7, old_end is tv.data()+10.
-                  // So original elements 7,8,9 are destroyed by destroyRange.
-                  // The original elements 2,3,4 are overwritten.
-                  // If T is not trivially copyable, they are move assigned over.
-                  // No, eraseRangeImpl destroys the objects from the new logical end (currWritePtr) up to the original end.
-                  // The elements [2,3,4] are gone. The elements [5,6,7,8,9] moved.
-                  // The memory where [2,3,4] existed is now [5,6,7].
-                  // The memory where [5,6,7] existed is now [8,9, garbage].
-                  // The memory where [8,9] existed is now [garbage, garbage].
-                  // The elements from `currWritePtr` to `originalEnd` are destroyed.
-                  // `currWritePtr` is `tv.data() + 7`. `originalEnd` is `tv.data() + 10`.
-                  // So elements at original indices 7,8,9 are destroyed.
         CHECK(dtorCount == 3);
 
         resetCounters();

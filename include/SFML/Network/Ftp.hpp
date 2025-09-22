@@ -580,7 +580,7 @@ private:
 /// `sf::Ftp` is a very simple FTP client that allows you
 /// to communicate with a FTP server. The FTP protocol allows
 /// you to manipulate a remote file system (list files,
-/// upload, download, create, remove, ...).
+/// upload, download, create, remove, etc...).
 ///
 /// Using the FTP client consists of 4 parts:
 /// \li Connecting to the FTP server

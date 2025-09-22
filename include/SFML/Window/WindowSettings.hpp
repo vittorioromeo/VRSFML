@@ -20,7 +20,7 @@ namespace sf
 /// This struct defines window creation settings such as the
 /// size and pixel depth. An optional style can be passed to
 /// customize the look and behavior of the window (borders,
-/// title bar, resizable, closable, ...).
+/// title bar, resizable, closable, etc...).
 ///
 /// The last field is an optional structure specifying
 /// advanced OpenGL context settings such as antialiasing,

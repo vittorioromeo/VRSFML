@@ -130,6 +130,30 @@
       }
     },
     {
+      "name": "vrdev_clang_arm64",
+      "inherits": "build_base_debug",
+      "binaryDir": "build_vrdev_clang_arm64",
+      "installDir": "${sourceDir}/build_vrdev_clang_arm64/install",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-fuse-ld=lld $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-fuse-ld=lld -ftime-trace -flto=thin $env{CXX_WARNINGS}"
+      }
+    },
+    {
+      "name": "vrdev_clang_rel_arm64",
+      "inherits": "build_base_release",
+      "binaryDir": "build_vrdev_clang_rel_arm64",
+      "installDir": "${sourceDir}/build_vrdev_clang_rel_arm64/install",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++",
+        "CMAKE_C_FLAGS": "-march=native -fuse-ld=lld -Ofast $env{CXX_WARNINGS}",
+        "CMAKE_CXX_FLAGS": "-march=native -fuse-ld=lld -ftime-trace -flto=thin -Ofast $env{CXX_WARNINGS}"
+      }
+    },
+    {
       "name": "vrdev_clang_egl_rel",
       "inherits": "vrdev_clang_rel",
       "binaryDir": "build_vrdev_clang_egl_rel",

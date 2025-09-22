@@ -16,7 +16,7 @@
 #include "SFML/Base/SizeT.hpp"
 
 
-namespace sf
+namespace sf::DrawableBatchUtils
 {
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleIndices(IndexType*&     indexPtr,
@@ -72,7 +72,7 @@ namespace sf
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteVertices(
+[[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
     const Transform& transform,
     const FloatRect& textureRect,
     const Color      color,
@@ -91,7 +91,8 @@ namespace sf
     vertexPtr[2].position.x = transform.a00 * absSize.x + transform.a02;
     vertexPtr[2].position.y = transform.a10 * absSize.x + transform.a12;
 
-    vertexPtr[3].position = transform.transformPoint(absSize);
+    vertexPtr[3].position.x = transform.a00 * absSize.x + vertexPtr[1].position.x;
+    vertexPtr[3].position.y = transform.a10 * absSize.x + vertexPtr[1].position.y;
 
     // Color
     vertexPtr[0].color = color;
@@ -129,7 +130,7 @@ namespace sf
     Vertex* const   vertexPtr) noexcept
 {
     appendQuadIndices(indexPtr, nextIndex);
-    appendPreTransformedSpriteVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
+    appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
 
 ////////////////////////////////////////////////////////////
@@ -207,4 +208,4 @@ namespace sf
         *indexPtr++ = nextIndex + i;
 }
 
-} // namespace sf
+} // namespace sf::DrawableBatchUtils

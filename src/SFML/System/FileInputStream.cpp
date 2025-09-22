@@ -32,14 +32,8 @@ void FileInputStream::FileCloser::operator()(std::FILE* file)
 
 
 ////////////////////////////////////////////////////////////
-FileInputStream::~FileInputStream() = default;
-
-
-////////////////////////////////////////////////////////////
-FileInputStream::FileInputStream(FileInputStream&&) noexcept = default;
-
-
-////////////////////////////////////////////////////////////
+FileInputStream::~FileInputStream()                                     = default;
+FileInputStream::FileInputStream(FileInputStream&&) noexcept            = default;
 FileInputStream& FileInputStream::operator=(FileInputStream&&) noexcept = default;
 
 

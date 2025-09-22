@@ -207,7 +207,7 @@ private:
 /// Apart from that, a `sf::Music` has almost the same features as
 /// the `sf::SoundBuffer` / `sf::Sound` pair: you can play/pause/stop
 /// it, request its parameters (channels, sample rate), change
-/// the way it is played (pitch, volume, 3D position, ...), etc.
+/// the way it is played (pitch, volume, 3D position, etc...), etc.
 ///
 /// As a sound stream, a music is played in its own thread in order
 /// not to block the rest of the program. This means that you can
