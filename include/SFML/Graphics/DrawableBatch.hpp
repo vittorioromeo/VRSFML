@@ -348,10 +348,6 @@ struct PersistentGPUStorage
     ////////////////////////////////////////////////////////////
     void flushIndexWritesToGPU(base::SizeT count, base::SizeT offset) const;
 
-    // TODO P0: docs, refactor
-    void startSync();
-    void endSync();
-
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
@@ -891,18 +887,6 @@ public:
     [[gnu::always_inline]] void flushIndexWritesToGPU(const base::SizeT count, const base::SizeT offset) const
     {
         m_storage.flushIndexWritesToGPU(count, offset);
-    }
-
-    // TODO P0: docs, refactor
-    void startSync()
-    {
-        m_storage.startSync();
-    }
-
-    // TODO P0: docs, refactor
-    void endSync()
-    {
-        m_storage.endSync();
     }
 };
 

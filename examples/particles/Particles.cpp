@@ -773,13 +773,7 @@ int main()
             const auto doMultithreadedDraw = [&](auto& batchesArray)
             {
                 for (auto& batch : batchesArray)
-                {
-                    // TODO P0: docs, refactor
-                    if constexpr (requires { batch.startSync(); })
-                        batch.startSync();
-
                     batch.clear();
-                }
 
                 doInBatches(static_cast<sf::base::SizeT>(numEntities),
                             [&](const sf::base::SizeT iBatch, const sf::base::SizeT batchStartIdx, const sf::base::SizeT batchEndIdx)
@@ -791,20 +785,13 @@ int main()
                 });
 
                 for (auto& batch : batchesArray)
-                {
                     window.draw(batch, {.texture = &textureAtlas.getTexture()});
-
-                    // TODO P0: docs, refactor
-                    if constexpr (requires { batch.endSync(); })
-                        batch.endSync();
-                }
             };
 
             if (batchType == BatchType::Disabled || !multithreadedDraw)
             {
                 cpuDrawableBatches[0].clear();
 
-                gpuDrawableBatches[0].startSync();
                 gpuDrawableBatches[0].clear();
 
                 for (sf::base::SizeT i = 0u; i < static_cast<sf::base::SizeT>(numEntities); ++i)
@@ -822,10 +809,7 @@ int main()
                 if (batchType == BatchType::CPUStorage)
                     window.draw(cpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
                 else if (batchType == BatchType::GPUStorage)
-                {
                     window.draw(gpuDrawableBatches[0], {.texture = &textureAtlas.getTexture()});
-                    gpuDrawableBatches[0].endSync();
-                }
             }
             else if (batchType == BatchType::CPUStorage)
             {

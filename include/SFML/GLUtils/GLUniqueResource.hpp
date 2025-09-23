@@ -137,22 +137,6 @@ public:
         SFML_BASE_ASSERT(!isBound());
     }
 
-    ////////////////////////////////////////////////////////////
-    /// \brief Reallocate the underlying OpenGL resource.
-    ///
-    /// Destroys the current OpenGL object (if any) and creates a new one,
-    /// assigning the new ID to this wrapper instance.
-    ///
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void reallocate()
-    {
-        if (m_id != 0u)
-            TFuncs::destroy(m_id);
-
-        TFuncs::create(m_id);
-        SFML_BASE_ASSERT(m_id != 0u);
-    }
-
 private:
     ////////////////////////////////////////////////////////////
     // Member data
