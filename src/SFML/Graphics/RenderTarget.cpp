@@ -349,6 +349,7 @@ struct [[nodiscard]] RenderTarget::Impl
     RenderTargetImpl::PersistentGPUAutoBatchState gpuAutoBatchStates[RenderTargetImpl::maxGPUAutoBatchFramesInFlight]{};
     sf::base::SizeT currentGPUAutoBatchIndex{0u}; //!< Cycles `0`, `1`, ..., `maxGPUAutoBatchFramesInFlight - 1`
 
+    ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] auto& currentGPUAutoBatchState() noexcept
     {
         return gpuAutoBatchStates[currentGPUAutoBatchIndex];
@@ -1294,7 +1295,6 @@ void RenderTarget::syncGPUStartFrame()
     auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
     if (!RenderTargetImpl::waitOnFence(fenceToWaitOn))
         return;
-
 
     batch.clear();
 

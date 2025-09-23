@@ -12,6 +12,7 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -46,59 +47,12 @@ class [[nodiscard]] GLPersistentBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
-    [[nodiscard]] explicit GLPersistentBuffer(TBufferObject& obj) : m_obj{&obj}
-    {
-    }
-
-    ////////////////////////////////////////////////////////////
-    ~GLPersistentBuffer()
-    {
-#ifndef SFML_OPENGL_ES
-        unmapIfNeeded();
-#endif
-    }
-
-    ////////////////////////////////////////////////////////////
-    GLPersistentBuffer(const GLPersistentBuffer&)            = delete;
-    GLPersistentBuffer& operator=(const GLPersistentBuffer&) = delete;
-
-    ////////////////////////////////////////////////////////////
-    GLPersistentBuffer(GLPersistentBuffer&& rhs) noexcept :
-        m_obj{rhs.m_obj},
-        m_mappedPtr{rhs.m_mappedPtr},
-        m_capacity{rhs.m_capacity}
-    {
-        rhs.m_obj       = nullptr;
-        rhs.m_mappedPtr = nullptr;
-    }
-
-    ////////////////////////////////////////////////////////////
-    GLPersistentBuffer& operator=(GLPersistentBuffer&& rhs) noexcept
-    {
-        if (&rhs == this)
-            return *this;
-
-#ifndef SFML_OPENGL_ES
-        unmapIfNeeded();
-#endif
-
-        m_obj       = rhs.m_obj;
-        m_mappedPtr = rhs.m_mappedPtr;
-        m_capacity  = rhs.m_capacity;
-
-        rhs.m_obj       = nullptr;
-        rhs.m_mappedPtr = nullptr;
-
-        return *this;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(const base::SizeT byteCount)
+    [[gnu::always_inline]] void reserve(TBufferObject& obj, const base::SizeT byteCount)
     {
         if (m_capacity >= byteCount) [[likely]]
             return;
 
-        reserveImpl(byteCount);
+        reserveImpl(obj, byteCount);
     }
 
     ////////////////////////////////////////////////////////////
@@ -114,7 +68,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    void unmapIfNeeded()
+    void unmapIfNeeded(TBufferObject& obj)
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -125,32 +79,24 @@ public:
 
         m_mappedPtr = nullptr;
 
-        SFML_BASE_ASSERT(m_obj != nullptr);
-        m_obj->bind();
+        obj.bind();
 
-        [[maybe_unused]] const bool rc = glCheck(glUnmapNamedBuffer(m_obj->getId()));
+        [[maybe_unused]] const bool rc = glCheck(glUnmapNamedBuffer(obj.getId()));
         SFML_BASE_ASSERT(rc);
 #endif
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void adjustObjPointer(TBufferObject& obj)
-    {
-        // This is needed to avoid dangling pointers when the object is moved as part
-        // of persistent GPU batch.
-        m_obj = &obj;
-    }
-
-    ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void flushWritesToGPU([[maybe_unused]] const base::SizeT unitSize,
-                                                 [[maybe_unused]] const base::SizeT count,
-                                                 [[maybe_unused]] const base::SizeT offset) const
+    [[gnu::always_inline]] void flushWritesToGPU([[maybe_unused]] const TBufferObject& obj,
+                                                 [[maybe_unused]] const base::SizeT    unitSize,
+                                                 [[maybe_unused]] const base::SizeT    count,
+                                                 [[maybe_unused]] const base::SizeT    offset) const
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
         base::abort();
 #else
-        const auto objId = m_obj->getId();
+        const auto objId = obj.getId();
 
         SFML_BASE_ASSERT(objId != 0u);
         SFML_BASE_ASSERT(m_mappedPtr != nullptr);
@@ -163,51 +109,54 @@ public:
 
 private:
     ////////////////////////////////////////////////////////////
-    [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] const base::SizeT byteCount)
+    [[gnu::cold, gnu::noinline]] void reserveImpl([[maybe_unused]] TBufferObject&    obj,
+                                                  [[maybe_unused]] const base::SizeT byteCount)
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
         base::abort();
 #else
         SFML_BASE_ASSERT(m_capacity < byteCount);
-        SFML_BASE_ASSERT(m_obj != nullptr);
 
         const auto geometricGrowthTarget = m_capacity + (m_capacity / 2u); // Equivalent to `capacity * 1.5`
         const auto newCapacity           = SFML_BASE_MAX(byteCount, geometricGrowthTarget);
 
-        m_obj->bind();
+        TBufferObject newObj;
+        newObj.bind();
 
-        unmapIfNeeded();
-
-        m_obj->reallocate();
-        m_obj->bind();
-
-        const auto objId = m_obj->getId();
-        SFML_BASE_ASSERT(objId != 0u);
-
-        glCheck(glNamedBufferStorage(objId,
+        glCheck(glNamedBufferStorage(newObj.getId(),
                                      static_cast<GLsizeiptr>(newCapacity),
                                      /* data */ nullptr,
                                      GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
-        m_mappedPtr = glCheck(
-            glMapNamedBufferRange(objId,
+        void* const newMappedPtr = glCheck(
+            glMapNamedBufferRange(newObj.getId(),
                                   /* offset */ 0u,
                                   /* length */ static_cast<GLsizeiptr>(newCapacity),
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
                                       GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
                                       GL_MAP_FLUSH_EXPLICIT_BIT));
 
-        m_capacity = newCapacity;
+        SFML_BASE_ASSERT(newMappedPtr != nullptr);
+
+        if (m_mappedPtr != nullptr)
+        {
+            SFML_BASE_MEMCPY(newMappedPtr, m_mappedPtr, m_capacity);
+            unmapIfNeeded(obj);
+        }
+
+        obj = SFML_BASE_MOVE(newObj);
+
+        m_mappedPtr = newMappedPtr;
+        m_capacity  = newCapacity;
 #endif
     }
 
     ////////////////////////////////////////////////////////////
     // Member data
     ////////////////////////////////////////////////////////////
-    TBufferObject* m_obj;                //!< Associated GL object handle
-    void*          m_mappedPtr{nullptr}; //!< Write-only mapped pointer
-    base::SizeT    m_capacity{0u};       //!< Currently allocated capacity of the buffer
+    void*       m_mappedPtr{nullptr}; //!< Write-only mapped pointer
+    base::SizeT m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
 
 
