@@ -195,7 +195,7 @@ template <typename Iter, typename Predicate>
 ///
 ////////////////////////////////////////////////////////////
 template <typename T, auto N>
-[[nodiscard, gnu::always_inline, gnu::const]] consteval SizeT getArraySize(const T (&)[N]) noexcept
+[[nodiscard]] consteval SizeT getArraySize(const T (&)[N]) noexcept
 {
     return N;
 }
@@ -210,7 +210,7 @@ template <typename T, auto N>
 ///
 ////////////////////////////////////////////////////////////
 template <typename S, typename T, auto N>
-[[nodiscard, gnu::always_inline, gnu::const]] consteval auto getArraySize(const T (S::*)[N]) noexcept
+[[nodiscard]] consteval auto getArraySize(const T (S::*)[N]) noexcept
 {
     return N;
 }
@@ -252,7 +252,7 @@ public:
 
     [[gnu::always_inline]] BackInserter& operator=(value_type&& value)
     {
-        if constexpr (requires { m_container->push_back(static_cast<value_type &&>(value)); })
+        if constexpr (requires { m_container->push_back(static_cast<value_type&&>(value)); })
         {
             m_container->push_back(static_cast<value_type&&>(value));
         }

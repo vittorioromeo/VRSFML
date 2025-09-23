@@ -32,12 +32,12 @@ using sf::base::SizeT;
 
 namespace sfvr::impl
 {
-[[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X) noexcept
+[[nodiscard]] consteval auto variadic_max(auto X) noexcept
 {
     return X;
 }
 
-[[nodiscard, gnu::always_inline, gnu::const]] consteval auto variadic_max(auto X, auto... Xs) noexcept
+[[nodiscard]] consteval auto variadic_max(auto X, auto... Xs) noexcept
 {
     decltype(X) result = X;
     decltype(X) rest[]{Xs...};
@@ -55,7 +55,7 @@ enum : SizeT
 };
 
 template <typename T, typename... Ts>
-[[nodiscard, gnu::always_inline]] consteval SizeT index_of() noexcept
+[[nodiscard]] consteval SizeT index_of() noexcept
 {
     constexpr bool matches[]{SFML_BASE_IS_SAME(T, Ts)...};
 

@@ -102,19 +102,19 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] void* data()
+    [[nodiscard, gnu::always_inline]] void* data()
     {
         return m_mappedPtr;
     }
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::flatten]] const void* data() const
+    [[nodiscard, gnu::always_inline]] const void* data() const
     {
         return m_mappedPtr;
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void unmapIfNeeded()
+    void unmapIfNeeded()
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -134,7 +134,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void adjustObjPointer(TBufferObject& obj)
+    [[gnu::always_inline]] void adjustObjPointer(TBufferObject& obj)
     {
         // This is needed to avoid dangling pointers when the object is moved as part
         // of persistent GPU batch.
@@ -142,9 +142,9 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void flushWritesToGPU([[maybe_unused]] const base::SizeT unitSize,
-                                                               [[maybe_unused]] const base::SizeT count,
-                                                               [[maybe_unused]] const base::SizeT offset) const
+    [[gnu::always_inline]] void flushWritesToGPU([[maybe_unused]] const base::SizeT unitSize,
+                                                 [[maybe_unused]] const base::SizeT count,
+                                                 [[maybe_unused]] const base::SizeT offset) const
     {
 #ifdef SFML_OPENGL_ES
         priv::err() << "FATAL ERROR: Persistent OpenGL buffers are not available in OpenGL ES";
@@ -209,6 +209,7 @@ private:
     void*          m_mappedPtr{nullptr}; //!< Write-only mapped pointer
     base::SizeT    m_capacity{0u};       //!< Currently allocated capacity of the buffer
 };
+
 
 ////////////////////////////////////////////////////////////
 // Explicit instantiation declarations
