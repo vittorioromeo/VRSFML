@@ -1011,7 +1011,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingPieSliceShapeData& sdRingP
     if (sdRingPieSlice.outlineThickness == 0.f || numArcPoints < 3)
         return {fillVertexPtr, fillVertexCount};
 
-    const base::SizeT numBoundaryPoints    = 2 * numArcPoints;
+    const base::SizeT numBoundaryPoints    = 2u * numArcPoints;
     const base::SizeT totalOutlineVertices = (numBoundaryPoints + 1u) * 2u;
     const base::SizeT numOutlineTriangles  = totalOutlineVertices - 2u;
     const base::SizeT totalOutlineIndices  = numOutlineTriangles * 3u;

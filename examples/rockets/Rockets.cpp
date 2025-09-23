@@ -1332,6 +1332,7 @@ int main()
         .contextSettings = {.antiAliasingLevel = 16u},
     });
 
+    // TODO P0: remember to change for NDC presentation
     // TODO P0: GPUStorage is still glitchy, some synchronization issue persists...
     window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::GPUStorage);
 
