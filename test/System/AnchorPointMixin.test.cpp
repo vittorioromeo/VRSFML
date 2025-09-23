@@ -34,7 +34,7 @@ struct TestLayoutObject : sf::AnchorPointMixin<TestLayoutObject>
 
 
 ////////////////////////////////////////////////////////////
-consteval bool doSetAnchorPointTest(sf::Vec2f factors)
+[[nodiscard]] consteval bool doSetAnchorPointTest(sf::Vec2f factors)
 {
     constexpr sf::Vec2f newPos{24.f, 24.f};
 

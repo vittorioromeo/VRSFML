@@ -597,7 +597,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_deg(const long double angle)
+[[nodiscard]] consteval Angle operator""_deg(const long double angle)
 {
     return degrees(static_cast<float>(angle));
 }
@@ -612,7 +612,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_deg(const unsigned long long int angle)
+[[nodiscard]] consteval Angle operator""_deg(const unsigned long long int angle)
 {
     return degrees(static_cast<float>(angle));
 }
@@ -627,7 +627,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_rad(const long double angle)
+[[nodiscard]] consteval Angle operator""_rad(const long double angle)
 {
     return radians(static_cast<float>(angle));
 }
@@ -641,7 +641,7 @@ namespace Literals
 /// \return Angle
 ///
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval Angle operator""_rad(const unsigned long long int angle)
+[[nodiscard]] consteval Angle operator""_rad(const unsigned long long int angle)
 {
     return radians(static_cast<float>(angle));
 }

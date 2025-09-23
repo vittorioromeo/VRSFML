@@ -107,13 +107,13 @@ struct Anything
 {
     ////////////////////////////////////////////////////////////
     template <typename T>
-    consteval operator T&() const;
+    [[nodiscard]] consteval operator T&() const;
 };
 
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-consteval SizeT countFields()
+[[nodiscard]] consteval SizeT countFields()
 {
     Anything x;
 
@@ -203,7 +203,7 @@ extern const FakeObjectWrapper<T> fakeObjectImpl;
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-consteval const T& getFakeObject() noexcept
+[[nodiscard]] consteval const T& getFakeObject() noexcept
 {
     return fakeObjectImpl<T>.value;
 }
