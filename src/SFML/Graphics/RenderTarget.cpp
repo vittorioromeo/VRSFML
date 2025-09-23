@@ -256,6 +256,49 @@ struct [[nodiscard]] PersistentGPUAutoBatchState
            type == sf::PrimitiveType::TriangleFan;
 }
 
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] GLsync makeFence()
+{
+    GLsync fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
+
+    if (fenceToCreate == nullptr) [[unlikely]]
+    {
+        sf::priv::err() << "FATAL ERROR: Error creating fence sync object";
+        sf::base::abort();
+    }
+
+    return fenceToCreate;
+}
+
+
+////////////////////////////////////////////////////////////
+[[nodiscard]] bool waitOnFence(GLsync& fenceToWaitOn)
+{
+    if (!fenceToWaitOn) // No need to wait
+        return false;
+
+    const GLenum waitResult = glCheck(glClientWaitSync(fenceToWaitOn, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
+
+    if (waitResult == GL_WAIT_FAILED) [[unlikely]]
+    {
+        sf::priv::err() << "FATAL ERROR: Error waiting on GPU fence";
+        sf::base::abort();
+    }
+
+    if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
+    {
+        sf::priv::err() << "FATAL ERROR: Fence wait timed out";
+        sf::base::abort();
+    }
+
+    // Delete the fence now that we're done with it
+    glCheck(glDeleteSync(fenceToWaitOn));
+    fenceToWaitOn = nullptr;
+
+    return true;
+}
+
 } // namespace RenderTargetImpl
 } // namespace
 
@@ -1249,29 +1292,9 @@ void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
     auto& [batch, fenceToWaitOn, indexOffset, vertexOffset] = m_impl->currentGPUAutoBatchState();
-
-    if (!fenceToWaitOn) // No need to wait
+    if (!RenderTargetImpl::waitOnFence(fenceToWaitOn))
         return;
 
-    // Wait potentially indefinitely...
-    // The N-buffering makes stalls *less likely*, but the wait must be blocking for correctness
-    const GLenum waitResult = glCheck(glClientWaitSync(fenceToWaitOn, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED));
-
-    if (waitResult == GL_WAIT_FAILED) [[unlikely]]
-    {
-        priv::err() << "FATAL ERROR: Error waiting on GPU fence";
-        base::abort();
-    }
-
-    if (waitResult == GL_TIMEOUT_EXPIRED) [[unlikely]]
-    {
-        priv::err() << "FATAL ERROR: Fence wait timed out";
-        base::abort();
-    }
-
-    // Delete the fence now that we're done with it
-    glCheck(glDeleteSync(fenceToWaitOn));
-    fenceToWaitOn = nullptr;
 
     batch.clear();
 
@@ -1288,12 +1311,7 @@ void RenderTarget::syncGPUEndFrame()
     auto& fenceToCreate = m_impl->currentGPUAutoBatchState().fence;
     SFML_BASE_ASSERT(fenceToCreate == nullptr);
 
-    fenceToCreate = glCheck(glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0));
-    if (fenceToCreate == nullptr) [[unlikely]]
-    {
-        priv::err() << "FATAL ERROR: Error creating fence sync object";
-        base::abort();
-    }
+    fenceToCreate = RenderTargetImpl::makeFence();
 
     // Advance to the next fence index for the *next* frame
     m_impl->currentGPUAutoBatchIndex = (m_impl->currentGPUAutoBatchIndex + 1u) %

@@ -12,7 +12,6 @@
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Memcpy.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -103,12 +102,6 @@ public:
     }
 
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline, gnu::flatten]] void memcpyToBuffer(const void* data, const base::SizeT byteCount)
-    {
-        SFML_BASE_MEMCPY(m_mappedPtr, data, byteCount);
-    }
-
-    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] void* data()
     {
         return m_mappedPtr;
@@ -192,13 +185,15 @@ private:
         const auto objId = m_obj->getId();
         SFML_BASE_ASSERT(objId != 0u);
 
-        glCheck(
-            glNamedBufferStorage(objId, static_cast<GLsizeiptr>(newCapacity), nullptr, GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
+        glCheck(glNamedBufferStorage(objId,
+                                     static_cast<GLsizeiptr>(newCapacity),
+                                     /* data */ nullptr,
+                                     GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT));
 
         m_mappedPtr = glCheck(
             glMapNamedBufferRange(objId,
-                                  0u,
-                                  static_cast<GLsizeiptr>(newCapacity),
+                                  /* offset */ 0u,
+                                  /* length */ static_cast<GLsizeiptr>(newCapacity),
                                   GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_UNSYNCHRONIZED_BIT |
                                       GL_MAP_INVALIDATE_RANGE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT |
                                       GL_MAP_FLUSH_EXPLICIT_BIT));
