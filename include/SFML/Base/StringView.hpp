@@ -441,8 +441,7 @@ StreamLike& operator<<(StreamLike& stream, const StringView& stringView)
 namespace sf::base::literals
 {
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::always_inline, gnu::flatten, gnu::pure]] inline consteval StringView operator""_sv(const char* cStr,
-                                                                                                     SizeT len) noexcept
+[[nodiscard]] consteval StringView operator""_sv(const char* cStr, SizeT len) noexcept
 {
     return StringView{cStr, len};
 }

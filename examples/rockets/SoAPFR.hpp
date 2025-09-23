@@ -39,7 +39,7 @@ class SoA<T, sf::base::IndexSequence<Is...>, Ts...> : private priv::SoABase<Is, 
 private:
     ////////////////////////////////////////////////////////////
     template <auto PM>
-    [[gnu::always_inline]] static consteval sf::base::SizeT fieldIndexFromPM()
+    [[nodiscard]] static consteval sf::base::SizeT fieldIndexFromPM()
     {
         // const auto& obj = minipfr::priv::getFakeObject<T>();
         constexpr T obj{};

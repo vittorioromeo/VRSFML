@@ -46,7 +46,7 @@ template <SizeT N,
           typename T8 = void,
           typename T9 = void,
           typename... Ts>
-[[nodiscard, gnu::always_inline]] consteval auto typePackElementImpl() noexcept
+[[nodiscard]] consteval auto typePackElementImpl() noexcept
 {
     // clang-format off
     if constexpr(N == 0)      { return TypeWrapper<T0>{}; }
