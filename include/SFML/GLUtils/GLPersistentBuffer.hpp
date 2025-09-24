@@ -146,6 +146,7 @@ private:
         }
 
         obj = SFML_BASE_MOVE(newObj);
+        obj.bind();
 
         m_mappedPtr = newMappedPtr;
         m_capacity  = newCapacity;
