@@ -1367,7 +1367,7 @@ public:
 
             updateTurn(deltaTimeMs);
 
-            m_world.forTiles([&](const ObjectId objectId, const Tile& tile)
+            m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
             {
                 float particleBudget = deltaTimeMs;
 
@@ -1498,7 +1498,7 @@ public:
             m_dbObject.clear();
             m_dbObjectAttributes.clear();
 
-            m_world.forTiles([&](const ObjectId objectId, const Tile& tile)
+            m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
             {
                 const sf::Vec2f drawPosition = sf::Vec2f{tile.position.x * 128.f, tile.position.y * 128.f} +
                                                sf::Vec2f{64.f, 64.f};
@@ -1655,8 +1655,6 @@ public:
 
                 const auto drawAttributes = [&](const auto& blockImpl)
                 {
-                    const float offset = 32.f - 6.f;
-
                     if (block.fixed)
                         m_dbObjectAttributes.add(sf::Sprite{
                             .position    = drawPosition,
@@ -1786,7 +1784,7 @@ public:
 
                     drawAttributes(bKey);
                 },
-                    [&](const BPadlock& bPadlock)
+                    [&](const BPadlock& /* bPadlock */)
                 {
                     const sf::FloatRect* txr = &m_txrLock0;
 

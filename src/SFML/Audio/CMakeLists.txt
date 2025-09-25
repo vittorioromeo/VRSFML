@@ -45,7 +45,7 @@ else()
             GIT_TAG v1.3.5
             SYSTEM TRUE
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
-            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=${FETCHCONTENT_BASE_DIR}/ogg-src  -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
+            PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=.  -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
         )
 
         CPMAddPackage(
