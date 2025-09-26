@@ -1068,7 +1068,7 @@ private:
         {
             if (!makeProgress(burn, deltaTimeMs * 0.00025f))
             {
-                const auto blockPos       = m_world.getBlockById(burn->objectId).position;
+                const auto blockPos       = m_world.getBlockById(burn->objectId).position.toVec2f();
                 const auto blockRenderPos = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + sf::Vec2f{64.f, 64.f};
 
                 const float     offset = sf::base::max(4.f, 64.f * (1.f - burn->progress));
@@ -1125,8 +1125,8 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
-            const sf::Vec2f drawPosition = sf::Vec2f{block.position.x * 128.f, block.position.y * 128.f} +
-                                           sf::Vec2f{64.f, 64.f};
+            const auto      blockPos     = block.position.toVec2f();
+            const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + sf::Vec2f{64.f, 64.f};
 
             const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
                                         getAdjustedMousePos().x < drawPosition.x + 128.f &&
@@ -1391,11 +1391,12 @@ public:
 
                         const auto rndOffset = m_rngFast.getF(-64.f, 64.f);
                         const auto dirOffset = m_rngFast.getF(-2.f, 6.f);
+                        const auto dirF      = dir.toVec2f();
 
                         if (dir.x == 0)
-                            makeLavaParticle(getParticlePos({rndOffset, dir.y * 64.f + -dir.y * dirOffset}));
+                            makeLavaParticle(getParticlePos({rndOffset, dirF.y * 64.f + -dirF.y * dirOffset}));
                         else if (dir.y == 0)
-                            makeLavaParticle(getParticlePos({dir.x * 64.f + -dir.x * dirOffset, rndOffset}));
+                            makeLavaParticle(getParticlePos({dirF.x * 64.f + -dirF.x * dirOffset, rndOffset}));
 
                         particleBudget -= deltaTimeMs * 0.35f;
                     };
@@ -1430,8 +1431,9 @@ public:
                     p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
                 }
 
-                sf::base::vectorEraseIf(particleLikeVec,
-                                        [](const auto& particleLike) { return particleLike.opacity <= 0.f; });
+                sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
+                    return particleLike.opacity <= 0.f;
+                });
             };
 
             updateParticleLike(m_lavaParticles);
@@ -1500,8 +1502,8 @@ public:
 
             m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
             {
-                const sf::Vec2f drawPosition = sf::Vec2f{tile.position.x * 128.f, tile.position.y * 128.f} +
-                                               sf::Vec2f{64.f, 64.f};
+                const auto      tilePos      = tile.position.toVec2f();
+                const sf::Vec2f drawPosition = sf::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} + sf::Vec2f{64.f, 64.f};
 
                 tile.type.linear_match(
                     [&](const TGravityRotator& gravityRotator)
@@ -1638,8 +1640,9 @@ public:
                     return false;
                 });
 
-                const sf::Vec2f drawPosition = sf::Vec2f{block.position.x * 128.f, block.position.y * 128.f} +
-                                               drawPositionOffset + sf::Vec2f{64.f, 64.f};
+                const auto      blockPos     = block.position.toVec2f();
+                const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + drawPositionOffset +
+                                               sf::Vec2f{64.f, 64.f};
 
                 const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
                                             getAdjustedMousePos().x < drawPosition.x + 128.f &&
@@ -1706,8 +1709,8 @@ public:
                     if (m_world.isWall(block.position + sf::Vec2i{0, 1}))
                         neighbors |= 1u << 3;
 
-                    unsigned int tileX = neighbors % 4u;
-                    unsigned int tileY = neighbors / 4u;
+                    const auto tileX = static_cast<float>(neighbors % 4u);
+                    const auto tileY = static_cast<float>(neighbors / 4u);
 
                     const sf::FloatRect txr{
                         .position = m_txrWallSet.position + sf::Vec2f{tileX * 128.f, tileY * 128.f},
@@ -1816,10 +1819,10 @@ public:
                     if (m_world.isLava({iX, iY}))
                         continue;
 
-                    const sf::FloatRect* txr = iX % 2 == 0 ^ iY % 2 == 0 ? &m_txrGrid1 : &m_txrGrid0;
+                    const sf::FloatRect* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
 
                     m_dbBackground.add(sf::Sprite{
-                        .position    = {iX * 128.f, iY * 128.f},
+                        .position    = {static_cast<float>(iX) * 128.f, static_cast<float>(iY) * 128.f},
                         .textureRect = *txr,
                         .color       = getHueColor(0.f),
                     });

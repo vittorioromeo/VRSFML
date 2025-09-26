@@ -30,6 +30,41 @@ private:
         return false;
     }
 
+    ////////////////////////////////////////////////////////////
+#ifdef __GNUC__
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr SizeT constexprStrLen(const char* const cStr) noexcept
+    {
+        const char* end = cStr;
+
+        while (*end != '\0')
+            ++end;
+
+        return static_cast<SizeT>(end - cStr);
+    }
+
+    [[nodiscard, gnu::always_inline, gnu::const]] static constexpr int constexprStrNCmp(const char* s1, const char* s2, SizeT n)
+    {
+        while (n && *s1 && (*s1 == *s2))
+        {
+            ++s1;
+            ++s2;
+            --n;
+        }
+
+        if (n == 0)
+            return 0;
+
+        return *s1 - *s2;
+    }
+
+    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN constexprStrLen
+    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP constexprStrNCmp
+#else
+    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN
+    #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP SFML_BASE_STRNCMP
+#endif
+
+
 public:
     ////////////////////////////////////////////////////////////
     enum : SizeT
@@ -49,7 +84,7 @@ public:
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] constexpr StringView(const char* cStr) noexcept :
         theData{cStr},
-        theSize{SFML_BASE_STRLEN(cStr)}
+        theSize{SFML_BASE_PRIV_CONSTEXPR_STRLEN(cStr)}
     {
         SFML_BASE_ASSERT(cStr != nullptr);
     }
@@ -112,6 +147,23 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] constexpr void removePrefix(const SizeT n) noexcept
+    {
+        SFML_BASE_ASSERT(n <= theSize);
+        theData += n;
+        theSize -= n;
+    }
+
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] constexpr void removeSuffix(const SizeT n) noexcept
+    {
+        SFML_BASE_ASSERT(n <= theSize);
+        theSize -= n;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT find(const StringView v, const SizeT startPos = 0u) const noexcept
     {
         // Exit early if substring is bigger than actual string
@@ -155,7 +207,7 @@ public:
 
 
     ////////////////////////////////////////////////////////////
-    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(StringView v, SizeT startPos = 0u) const noexcept
+    [[nodiscard, gnu::always_inline, gnu::pure]] constexpr SizeT rfind(const StringView v, SizeT startPos = nPos) const noexcept
     {
         if (empty())
             return v.empty() ? SizeT{0u} : static_cast<SizeT>(nPos);
@@ -166,9 +218,13 @@ public:
         if (v.theSize > theSize)
             return nPos;
 
-        for (SizeT i = base::min(startPos, (theSize - v.theSize)); i != nPos; --i)
-            if (substrByPosLen(i, v.theSize) == v)
-                return i;
+        SizeT pos = base::min(startPos, theSize - v.theSize);
+
+        do
+        {
+            if (substrByPosLen(pos, v.theSize) == v)
+                return pos;
+        } while (pos-- > 0);
 
         return nPos;
     }
@@ -390,7 +446,7 @@ public:
         if (lhs.theSize != rhs.theSize)
             return false;
 
-        return SFML_BASE_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
+        return SFML_BASE_PRIV_CONSTEXPR_STRNCMP(lhs.theData, rhs.theData, lhs.theSize) == 0;
     }
 
 
@@ -424,6 +480,11 @@ public:
     const char* theData{nullptr};
     SizeT       theSize{0u};
 };
+
+
+////////////////////////////////////////////////////////////
+#undef SFML_BASE_PRIV_CONSTEXPR_STRNCMP
+#undef SFML_BASE_PRIV_CONSTEXPR_STRLEN
 
 
 ////////////////////////////////////////////////////////////
