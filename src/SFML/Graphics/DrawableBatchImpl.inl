@@ -39,6 +39,7 @@
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
+#include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 
@@ -543,16 +544,9 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const CurvedArrowShapeData& sd)
     const float angleStep    = sweepAngleRadians / static_cast<float>(numArcPoints - 1u);
     const float startRadians = sd.startAngle.asRadians();
 
-    generateRingVertices(sd.textureRect,
-                         sd.fillColor,
-                         sd.outerRadius,
-                         sd.innerRadius,
-                         [](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return p; },
-                         numArcPoints,
-                         startRadians,
-                         angleStep,
-                         invLocalBoundsSize,
-                         bodyFillVertexPtr);
+    generateRingVertices(sd.textureRect, sd.fillColor, sd.outerRadius, sd.innerRadius, [](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return p;
+    }, numArcPoints, startRadians, angleStep, invLocalBoundsSize, bodyFillVertexPtr);
 
     m_storage.commitMoreVertices(bodyFillVertexCount);
     const Vec2f ringNaturalCenter = {sd.outerRadius, sd.outerRadius};
@@ -776,10 +770,9 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const PieSliceShapeData& sdPieSlice)
 template <typename TStorage>
 VertexSpan DrawableBatchImpl<TStorage>::add(const RectangleShapeData& sdRectangle)
 {
-    return drawTriangleFanShapeFromPoints(4u,
-                                          sdRectangle,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return ShapeUtils::computeRectanglePoint(i, sdRectangle.size); });
+    return drawTriangleFanShapeFromPoints(4u, sdRectangle, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return ShapeUtils::computeRectanglePoint(i, sdRectangle.size);
+    });
 }
 
 
@@ -826,17 +819,9 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const RingShapeData& sdRing)
     const IndexType   firstFillVertexIndex = m_storage.getNumVertices();
     Vertex* const     fillVertexPtr        = m_storage.reserveMoreVertices(fillVertexCount);
 
-    generateRingVertices(sdRing.textureRect,
-                         sdRing.fillColor,
-                         sdRing.outerRadius,
-                         sdRing.innerRadius,
-                         [&](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return transform.transformPoint(p); },
-                         nPoints,
-                         sdRing.startAngle.asRadians(),
-                         angleStep,
-                         invLocalBoundsSize,
-                         fillVertexPtr);
+    generateRingVertices(sdRing.textureRect, sdRing.fillColor, sdRing.outerRadius, sdRing.innerRadius, [&](const Vec2f p) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return transform.transformPoint(p);
+    }, nPoints, sdRing.startAngle.asRadians(), angleStep, invLocalBoundsSize, fillVertexPtr);
 
     //
     // Repeat first pair to close the strip
@@ -1060,10 +1045,9 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const StarShapeData& sdStar)
     SFML_BASE_ASSERT(nPoints != 0u);
     const float angleStep = base::tau / static_cast<float>(nPoints);
 
-    return drawTriangleFanShapeFromPoints(nPoints,
-                                          sdStar,
-                                          [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius); });
+    return drawTriangleFanShapeFromPoints(nPoints, sdStar, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return ShapeUtils::computeStarPointFromAngleStep(i, angleStep, sdStar.outerRadius, sdStar.innerRadius);
+    });
 }
 
 

@@ -1,5 +1,7 @@
 #include "SFML/Base/MiniPFR.hpp"
 
+#include "StringifyStringViewUtil.hpp" // used
+
 #include <Doctest.hpp>
 
 
@@ -124,5 +126,26 @@ TEST_CASE("[Base] Base/MiniPFR.hpp")
             sf::base::minipfr::getField<0>(obj) = 10;
             CHECK(obj.i == 10);
         }
+    }
+
+    SECTION("GetFieldName")
+    {
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S1, 0>() == "i");
+
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S2, 0>() == "i");
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S2, 1>() == "f");
+
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S3, 0>() == "i");
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S3, 1>() == "f");
+        STATIC_CHECK(sf::base::minipfr::getFieldName<S3, 2>() == "c");
+
+        struct TestNames
+        {
+            int  hello;
+            char world;
+        };
+
+        STATIC_CHECK(sf::base::minipfr::getFieldName<TestNames, 0>() == "hello");
+        STATIC_CHECK(sf::base::minipfr::getFieldName<TestNames, 1>() == "world");
     }
 }

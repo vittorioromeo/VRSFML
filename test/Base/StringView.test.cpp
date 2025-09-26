@@ -180,6 +180,20 @@ TEST_CASE("[Base] Base/StringView.hpp")
         REQUIRE(view.substrByPosLen(6, 10) == "Fghil");
     }
 
+    SECTION("Prefix removal method")
+    {
+        sf::base::StringView view = "AbcdeXFghil";
+        view.removePrefix(6);
+        REQUIRE(view == "Fghil");
+    }
+
+    SECTION("Suffix removal method")
+    {
+        sf::base::StringView view = "AbcdeXFghil";
+        view.removeSuffix(6);
+        REQUIRE(view == "Abcde");
+    }
+
     //----------------------------------------------------------------------------
 
     SECTION("Find method")
@@ -347,375 +361,392 @@ TEST_CASE("[Base] Base/StringView.hpp")
                 const auto res = sv.rfind(sv);
                 REQUIRE(res == 0u);
             }
-        }
-    }
 
-    SECTION("FindFirstOf method")
-    {
-        SECTION("Empty view")
-        {
-            const auto sv = sf::base::StringView{""};
-            SECTION("Empty characters")
+            SECTION("Other Tests")
             {
-                SECTION("Out-of-bounds position")
                 {
-                    const auto res = sv.findFirstOf("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    const sf::base::StringView xsv{" () abc.def.x () "};
+                    REQUIRE(xsv.rfind(".") == 11);
                 }
 
-                SECTION("In-bounds position")
                 {
-                    const auto res = sv.findFirstOf("", 0);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    const sf::base::StringView xsv{
+                        "auto sf::base::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = (anonymous namespace)::S1, "
+                        "ptr = ClangWrapper<const int *>{&fakeObjectImpl.value.i}]"};
+
+                    const sf::base::StringView untilRuntime{"."};
+                    REQUIRE(xsv.rfind(untilRuntime) != sf::base::StringView::nPos);
                 }
             }
         }
 
-        SECTION("Non-empty view")
+        SECTION("FindFirstOf method")
         {
-            const auto sv = sf::base::StringView{"Hello xyz"};
-
-            SECTION("Empty characters")
+            SECTION("Empty view")
             {
-                REQUIRE(sv.findFirstOf("", 100) == sf::base::StringView::nPos);
-                REQUIRE(sv.findFirstOf("", 5) == sf::base::StringView::nPos);
-            }
-
-            SECTION("Non-empty characters")
-            {
-                REQUIRE(sv.findFirstOf("y", 4) == 7u);
-                REQUIRE(sv.findFirstOf("zH!") == 0u);
-                REQUIRE(sv.findFirstOf("zd~") == (sv.size() - 1));
-                REQUIRE(sv.findFirstOf("5 2_") == 5u);
-                REQUIRE(sv.findFirstOf("l15") == 2u);
-
-                REQUIRE(sv.findFirstOf("12-09'") == sf::base::StringView::nPos);
-            }
-        }
-    }
-
-    SECTION("FindFirstNotOf method")
-    {
-        SECTION("Empty view")
-        {
-            const auto sv = sf::base::StringView{""};
-            SECTION("Empty characters")
-            {
-                SECTION("Out-of-bounds position")
+                const auto sv = sf::base::StringView{""};
+                SECTION("Empty characters")
                 {
-                    const auto res = sv.findFirstNotOf("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
-                }
+                    SECTION("Out-of-bounds position")
+                    {
+                        const auto res = sv.findFirstOf("", 100);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
 
-                SECTION("In-bounds position")
-                {
-                    const auto res = sv.findFirstNotOf("", 0);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findFirstOf("", 0);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
                 }
             }
-        }
 
-        SECTION("Non-empty view")
-        {
-            const auto sv = sf::base::StringView{"Hello xyz"};
-
-            SECTION("Empty characters")
+            SECTION("Non-empty view")
             {
-                REQUIRE(sv.findFirstOf("y", 5) == 7u);
-                REQUIRE(sv.findFirstNotOf("", 100) == sf::base::StringView::nPos);
-                REQUIRE(sv.findFirstNotOf("", 5) == 5u);
-            }
+                const auto sv = sf::base::StringView{"Hello xyz"};
 
-            SECTION("Non-empty characters")
-            {
-                SECTION("Characters in string")
+                SECTION("Empty characters")
                 {
-                    REQUIRE(sv.findFirstNotOf("elo") == 0u);
-                    REQUIRE(sv.findFirstNotOf("Helo wr") == 6u);
-                    REQUIRE(sv.findFirstNotOf("Helowrd") == 5u);
-                    REQUIRE(sv.findFirstNotOf("Heo") == 2u);
+                    REQUIRE(sv.findFirstOf("", 100) == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstOf("", 5) == sf::base::StringView::nPos);
                 }
 
-                REQUIRE(sv.findFirstNotOf("123") == 0u);
-            }
-        }
-    }
-
-    SECTION("findLastOf method")
-    {
-        SECTION("Empty view")
-        {
-            const auto sv = sf::base::StringView{""};
-            SECTION("Empty characters")
-            {
-                SECTION("Out-of-bounds position")
+                SECTION("Non-empty characters")
                 {
-                    const auto res = sv.findLastOf("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
-                }
+                    REQUIRE(sv.findFirstOf("y", 4) == 7u);
+                    REQUIRE(sv.findFirstOf("zH!") == 0u);
+                    REQUIRE(sv.findFirstOf("zd~") == (sv.size() - 1));
+                    REQUIRE(sv.findFirstOf("5 2_") == 5u);
+                    REQUIRE(sv.findFirstOf("l15") == 2u);
 
-                SECTION("In-bounds position")
-                {
-                    const auto res = sv.findLastOf("", 0);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstOf("12-09'") == sf::base::StringView::nPos);
                 }
             }
         }
 
-        SECTION("Non-empty view")
+        SECTION("FindFirstNotOf method")
         {
-            const auto sv = sf::base::StringView{"Hello xyz"};
-
-            SECTION("Empty characters")
+            SECTION("Empty view")
             {
-                SECTION("Out-of-bounds position")
+                const auto sv = sf::base::StringView{""};
+                SECTION("Empty characters")
                 {
-                    const auto res = sv.findLastOf("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
-                }
+                    SECTION("Out-of-bounds position")
+                    {
+                        const auto res = sv.findFirstNotOf("", 100);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
 
-                SECTION("In-bounds position")
-                {
-                    const auto res = sv.findLastOf("", 5);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findFirstNotOf("", 0);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
                 }
             }
 
-            SECTION("Non-empty characters")
+            SECTION("Non-empty view")
             {
-                SECTION("Characters in string")
+                const auto sv = sf::base::StringView{"Hello xyz"};
+
+                SECTION("Empty characters")
+                {
+                    REQUIRE(sv.findFirstOf("y", 5) == 7u);
+                    REQUIRE(sv.findFirstNotOf("", 100) == sf::base::StringView::nPos);
+                    REQUIRE(sv.findFirstNotOf("", 5) == 5u);
+                }
+
+                SECTION("Non-empty characters")
+                {
+                    SECTION("Characters in string")
+                    {
+                        REQUIRE(sv.findFirstNotOf("elo") == 0u);
+                        REQUIRE(sv.findFirstNotOf("Helo wr") == 6u);
+                        REQUIRE(sv.findFirstNotOf("Helowrd") == 5u);
+                        REQUIRE(sv.findFirstNotOf("Heo") == 2u);
+                    }
+
+                    REQUIRE(sv.findFirstNotOf("123") == 0u);
+                }
+            }
+        }
+
+        SECTION("findLastOf method")
+        {
+            SECTION("Empty view")
+            {
+                const auto sv = sf::base::StringView{""};
+                SECTION("Empty characters")
+                {
+                    SECTION("Out-of-bounds position")
+                    {
+                        const auto res = sv.findLastOf("", 100);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findLastOf("", 0);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+                }
+            }
+
+            SECTION("Non-empty view")
+            {
+                const auto sv = sf::base::StringView{"Hello xyz"};
+
+                SECTION("Empty characters")
+                {
+                    SECTION("Out-of-bounds position")
+                    {
+                        const auto res = sv.findLastOf("", 100);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findLastOf("", 5);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+                }
+
+                SECTION("Non-empty characters")
+                {
+                    SECTION("Characters in string")
+                    {
+                        SECTION("Offset by index")
+                        {
+                            const auto res = sv.findLastOf("l", 5);
+                            REQUIRE(res == 3u);
+                        }
+
+                        SECTION("Match at beginning")
+                        {
+                            const auto res = sv.findLastOf("zH!");
+                            REQUIRE(res == 8u);
+                        }
+
+                        SECTION("Match at end")
+                        {
+                            const auto res = sv.findLastOf("zd~");
+                            REQUIRE(res == (sv.size() - 1));
+                        }
+
+                        SECTION("Match in middle")
+                        {
+                            const auto res = sv.findLastOf("5 2_");
+                            REQUIRE(res == 5u);
+                        }
+
+                        SECTION("Duplicate match")
+                        {
+                            const auto res = sv.findLastOf("l15");
+                            REQUIRE(res == 3u);
+                        }
+                    }
+
+                    SECTION("Characters not in string")
+                    {
+                        const auto res = sv.findLastOf("12-09'");
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+                }
+            }
+        }
+
+        SECTION("FindLastNotOf method")
+        {
+            SECTION("Empty view")
+            {
+                const auto sv = sf::base::StringView{""};
+                SECTION("Empty characters")
+                {
+                    SECTION("Out-of-bounds position")
+                    {
+                        const auto res = sv.findLastNotOf("", 100);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findLastNotOf("", 0);
+                        REQUIRE(res == sf::base::StringView::nPos);
+                    }
+                }
+            }
+
+            SECTION("Non-empty view")
+            {
+                const auto sv = sf::base::StringView{"Hello xyz"};
+
+                SECTION("Empty characters")
                 {
                     SECTION("Offset by index")
                     {
-                        const auto res = sv.findLastOf("l", 5);
-                        REQUIRE(res == 3u);
-                    }
-
-                    SECTION("Match at beginning")
-                    {
-                        const auto res = sv.findLastOf("zH!");
-                        REQUIRE(res == 8u);
-                    }
-
-                    SECTION("Match at end")
-                    {
-                        const auto res = sv.findLastOf("zd~");
-                        REQUIRE(res == (sv.size() - 1));
-                    }
-
-                    SECTION("Match in middle")
-                    {
-                        const auto res = sv.findLastOf("5 2_");
+                        const auto res = sv.findLastNotOf("l", 5);
                         REQUIRE(res == 5u);
                     }
 
-                    SECTION("Duplicate match")
+                    SECTION("Out-of-bounds position")
                     {
-                        const auto res = sv.findLastOf("l15");
-                        REQUIRE(res == 3u);
+                        const auto res = sv.findLastNotOf("", 100);
+                        REQUIRE(res == (sv.size() - 1));
+                    }
+
+                    SECTION("In-bounds position")
+                    {
+                        const auto res = sv.findLastNotOf("", 5);
+                        REQUIRE(res == 5u);
                     }
                 }
 
-                SECTION("Characters not in string")
+                SECTION("Non-empty characters")
                 {
-                    const auto res = sv.findLastOf("12-09'");
-                    REQUIRE(res == sf::base::StringView::nPos);
-                }
-            }
-        }
-    }
-
-    SECTION("FindLastNotOf method")
-    {
-        SECTION("Empty view")
-        {
-            const auto sv = sf::base::StringView{""};
-            SECTION("Empty characters")
-            {
-                SECTION("Out-of-bounds position")
-                {
-                    const auto res = sv.findLastNotOf("", 100);
-                    REQUIRE(res == sf::base::StringView::nPos);
-                }
-
-                SECTION("In-bounds position")
-                {
-                    const auto res = sv.findLastNotOf("", 0);
-                    REQUIRE(res == sf::base::StringView::nPos);
+                    SECTION("Characters not in string")
+                    {
+                        const auto res = sv.findLastNotOf("123");
+                        REQUIRE(res == (sv.size() - 1));
+                    }
                 }
             }
         }
 
-        SECTION("Non-empty view")
+        //----------------------------------------------------------------------------
+
+        SECTION("Equality operator")
         {
-            const auto sv = sf::base::StringView{"Hello xyz"};
+            sf::base::StringView view = "Abcdef";
 
-            SECTION("Empty characters")
+            SECTION("Equal cases")
             {
-                SECTION("Offset by index")
                 {
-                    const auto res = sv.findLastNotOf("l", 5);
-                    REQUIRE(res == 5u);
+                    sf::base::StringView view2 = "Abcdef";
+                    REQUIRE(view == view2);
                 }
 
-                SECTION("Out-of-bounds position")
+                REQUIRE("Abcdef" == view);
+                REQUIRE(view == "Abcdef");
+
                 {
-                    const auto res = sv.findLastNotOf("", 100);
-                    REQUIRE(res == (sv.size() - 1));
+                    const char* str = "Abcdef";
+                    REQUIRE(str == view);
                 }
 
-                SECTION("In-bounds position")
                 {
-                    const auto res = sv.findLastNotOf("", 5);
-                    REQUIRE(res == 5u);
+                    const char* str = "Abcdef";
+                    REQUIRE(view == str);
+                }
+
+                {
+                    std::string str = "Abcdef";
+                    REQUIRE(str == view);
+                }
+
+                {
+                    std::string str = "Abcdef";
+                    REQUIRE(view == str);
                 }
             }
 
-            SECTION("Non-empty characters")
+            SECTION("Not equal cases")
             {
-                SECTION("Characters not in string")
                 {
-                    const auto res = sv.findLastNotOf("123");
-                    REQUIRE(res == (sv.size() - 1));
+                    sf::base::StringView view2 = "Xyzw";
+                    REQUIRE_FALSE(view == view2);
+                }
+
+                REQUIRE_FALSE("Xyzw" == view);
+                REQUIRE_FALSE(view == "Xyzw");
+
+                {
+                    const char* str = "Xyzw";
+                    REQUIRE_FALSE(str == view);
+                }
+
+                {
+                    const char* str = "Xyzw";
+                    REQUIRE_FALSE(view == str);
+                }
+
+                {
+                    std::string str = "Xyzw";
+                    REQUIRE_FALSE(str == view);
+                }
+
+                {
+                    std::string str = "Xyzw";
+                    REQUIRE_FALSE(view == str);
                 }
             }
         }
-    }
 
-    //----------------------------------------------------------------------------
+        //----------------------------------------------------------------------------
 
-    SECTION("Equality operator")
-    {
-        sf::base::StringView view = "Abcdef";
-
-        SECTION("Equal cases")
+        SECTION("Inequality operator")
         {
+            sf::base::StringView view = "Abcdef";
+
+            SECTION("Equal cases")
             {
-                sf::base::StringView view2 = "Abcdef";
-                REQUIRE(view == view2);
+                {
+                    sf::base::StringView view2 = "Abcdef";
+                    REQUIRE_FALSE(view != view2);
+                }
+
+                REQUIRE_FALSE("Abcdef" != view);
+                REQUIRE_FALSE(view != "Abcdef");
+
+                {
+                    const char* str = "Abcdef";
+                    REQUIRE_FALSE(str != view);
+                }
+
+                {
+                    const char* str = "Abcdef";
+                    REQUIRE_FALSE(view != str);
+                }
+
+                {
+                    std::string str = "Abcdef";
+                    REQUIRE_FALSE(str != view);
+                }
+
+                {
+                    std::string str = "Abcdef";
+                    REQUIRE_FALSE(view != str);
+                }
             }
 
-            REQUIRE("Abcdef" == view);
-            REQUIRE(view == "Abcdef");
-
+            SECTION("Not equal cases")
             {
-                const char* str = "Abcdef";
-                REQUIRE(str == view);
-            }
+                {
+                    sf::base::StringView view2 = "Xyzw";
+                    REQUIRE(view != view2);
+                }
 
-            {
-                const char* str = "Abcdef";
-                REQUIRE(view == str);
-            }
+                REQUIRE("Xyzw" != view);
+                REQUIRE(view != "Xyzw");
 
-            {
-                std::string str = "Abcdef";
-                REQUIRE(str == view);
-            }
+                {
+                    const char* str = "Xyzw";
+                    REQUIRE(str != view);
+                }
 
-            {
-                std::string str = "Abcdef";
-                REQUIRE(view == str);
-            }
-        }
+                {
+                    const char* str = "Xyzw";
+                    REQUIRE(view != str);
+                }
 
-        SECTION("Not equal cases")
-        {
-            {
-                sf::base::StringView view2 = "Xyzw";
-                REQUIRE_FALSE(view == view2);
-            }
+                {
+                    std::string str = "Xyzw";
+                    REQUIRE(str != view);
+                }
 
-            REQUIRE_FALSE("Xyzw" == view);
-            REQUIRE_FALSE(view == "Xyzw");
-
-            {
-                const char* str = "Xyzw";
-                REQUIRE_FALSE(str == view);
-            }
-
-            {
-                const char* str = "Xyzw";
-                REQUIRE_FALSE(view == str);
-            }
-
-            {
-                std::string str = "Xyzw";
-                REQUIRE_FALSE(str == view);
-            }
-
-            {
-                std::string str = "Xyzw";
-                REQUIRE_FALSE(view == str);
-            }
-        }
-    }
-
-    //----------------------------------------------------------------------------
-
-    SECTION("Inequality operator")
-    {
-        sf::base::StringView view = "Abcdef";
-
-        SECTION("Equal cases")
-        {
-            {
-                sf::base::StringView view2 = "Abcdef";
-                REQUIRE_FALSE(view != view2);
-            }
-
-            REQUIRE_FALSE("Abcdef" != view);
-            REQUIRE_FALSE(view != "Abcdef");
-
-            {
-                const char* str = "Abcdef";
-                REQUIRE_FALSE(str != view);
-            }
-
-            {
-                const char* str = "Abcdef";
-                REQUIRE_FALSE(view != str);
-            }
-
-            {
-                std::string str = "Abcdef";
-                REQUIRE_FALSE(str != view);
-            }
-
-            {
-                std::string str = "Abcdef";
-                REQUIRE_FALSE(view != str);
-            }
-        }
-
-        SECTION("Not equal cases")
-        {
-            {
-                sf::base::StringView view2 = "Xyzw";
-                REQUIRE(view != view2);
-            }
-
-            REQUIRE("Xyzw" != view);
-            REQUIRE(view != "Xyzw");
-
-            {
-                const char* str = "Xyzw";
-                REQUIRE(str != view);
-            }
-
-            {
-                const char* str = "Xyzw";
-                REQUIRE(view != str);
-            }
-
-            {
-                std::string str = "Xyzw";
-                REQUIRE(str != view);
-            }
-
-            {
-                std::string str = "Xyzw";
-                REQUIRE(view != str);
+                {
+                    std::string str = "Xyzw";
+                    REQUIRE(view != str);
+                }
             }
         }
     }
