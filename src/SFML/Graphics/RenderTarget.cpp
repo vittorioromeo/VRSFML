@@ -863,10 +863,10 @@ void RenderTarget::InstanceAttributeBinder::setup(
     glCheck(glEnableVertexAttribArray(location));
 
     glCheck(glVertexAttribPointer(/*      index */ location,
-                                  /*       size */ size,
+                                  /*       size */ static_cast<GLint>(size),
                                   /*       type */ RenderTargetImpl::dataTypeToOpenGLDataType(type),
                                   /* normalized */ normalized ? GL_TRUE : GL_FALSE,
-                                  /*     stride */ stride,
+                                  /*     stride */ static_cast<GLsizei>(stride),
                                   /*     offset */ reinterpret_cast<void*>(fieldOffset)));
 
     glCheck(glVertexAttribDivisor(location, 1));

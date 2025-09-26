@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/MinMax.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/Traits/IsSame.hpp"
 
 
@@ -43,11 +43,14 @@ public:
     {
         // Rectangles with negative dimensions are allowed, so we must handle them correctly
 
+        const auto right  = static_cast<T>(position.x + size.x);
+        const auto bottom = static_cast<T>(position.y + size.y);
+
         // Compute the real min and max of the rectangle on both axes
-        const T minX = base::min(position.x, static_cast<T>(position.x + size.x));
-        const T maxX = base::max(position.x, static_cast<T>(position.x + size.x));
-        const T minY = base::min(position.y, static_cast<T>(position.y + size.y));
-        const T maxY = base::max(position.y, static_cast<T>(position.y + size.y));
+        const T minX = SFML_BASE_MIN(position.x, right);
+        const T maxX = SFML_BASE_MAX(position.x, right);
+        const T minY = SFML_BASE_MIN(position.y, bottom);
+        const T maxY = SFML_BASE_MAX(position.y, bottom);
 
         return (point.x >= minX) && (point.x < maxX) && (point.y >= minY) && (point.y < maxY);
     }

@@ -974,7 +974,7 @@ struct Main
     struct EarnedCoinParticle
     {
         sf::Vec2f startPosition;
-        Timer     progress;
+        Timer     progress{};
     };
 
     sf::base::Vector<EarnedCoinParticle> earnedCoinParticles; // HUD space

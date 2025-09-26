@@ -402,15 +402,21 @@ struct Rocket final : Entity
 
 } // namespace OOP
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wmissing-designated-field-initializers"
+#endif
 
 ////////////////////////////////////////////////////////////
 namespace Shared
 {
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
 ////////////////////////////////////////////////////////////
 template <typename TParticle>
-[[nodiscard, gnu::always_inline]] TParticle makeAoSSmokeParticle(const sf::Vec2f position)
+[[nodiscard, gnu::always_inline]] inline TParticle makeAoSSmokeParticle(const sf::Vec2f position)
 {
     return {
         .position     = position,
@@ -430,7 +436,7 @@ template <typename TParticle>
 
 ////////////////////////////////////////////////////////////
 template <typename TParticle>
-[[nodiscard, gnu::always_inline]] TParticle makeAoSFireParticle(const sf::Vec2f position)
+[[nodiscard, gnu::always_inline]] inline TParticle makeAoSFireParticle(const sf::Vec2f position)
 {
     return {
         .position     = position,
@@ -446,6 +452,8 @@ template <typename TParticle>
         .angularVelocity = rng.getF(-0.002f, 0.002f),
     };
 }
+
+#pragma GCC diagnostic pop
 
 }; // namespace Shared
 
@@ -1575,6 +1583,9 @@ int main()
         }
         // ---
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
+
         ////////////////////////////////////////////////////////////
         // Update step
         ////////////////////////////////////////////////////////////
@@ -1636,6 +1647,8 @@ int main()
         }
         samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
+
+#pragma GCC diagnostic pop
 
         ////////////////////////////////////////////////////////////
         // ImGui step
@@ -1832,7 +1845,7 @@ int main()
 
                 window.draw(txBanners[i],
                             {
-                                .position    = {(resolution.x - txBanners[0].getSize().x) / 2.f, top},
+                                .position = {(resolution.x - static_cast<float>(txBanners[0].getSize().x)) / 2.f, top},
                                 .textureRect = txBanners[i].getRect(),
                                 .color = sf::Color::whiteMask(static_cast<sf::base::U8>(bannerAlpha[i] * 255.f * 0.85f)),
                             });
@@ -1856,4 +1869,6 @@ int main()
     }
 }
 
-#pragma clang diagnostic pop
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif

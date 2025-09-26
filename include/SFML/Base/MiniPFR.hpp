@@ -1,10 +1,15 @@
 #pragma once
 
+#include "SFML/Base/Array.hpp"
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/IndexSequence.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MakeIndexSequence.hpp"
+#include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/StringView.hpp"
+#include "SFML/Base/Traits/IsArray.hpp"
+#include "SFML/Base/Traits/IsUnion.hpp"
 #include "SFML/Base/Traits/RemoveCVRef.hpp"
 #include "SFML/Base/Traits/RemoveReference.hpp"
 #include "SFML/Base/TypePackElement.hpp"
@@ -302,5 +307,214 @@ using FieldType = SFML_BASE_REMOVE_REFERENCE(decltype(getField<I>(declVal<T&>())
 {
     tieAsTuple(SFML_BASE_FORWARD(obj)).forEach(SFML_BASE_FORWARD(f));
 }
+
+
+namespace priv
+{
+////////////////////////////////////////////////////////////
+struct CoreNameSkip // NOLINT(cppcoreguidelines-pro-type-member-init)
+{
+    SizeT      sizeAtBegin;
+    SizeT      sizeAtEnd;
+    bool       isBackward;
+    StringView untilRuntime;
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] consteval StringView apply(StringView sv) const noexcept
+    {
+        // We use std::min here to make the compiler diagnostic shorter and
+        // cleaner in case of misconfigured SFML_BASE_MINIPFR_PRIV_CORE_PARSING
+        sv.removePrefix(SFML_BASE_MIN(sizeAtBegin, sv.size()));
+        sv.removeSuffix(SFML_BASE_MIN(sizeAtEnd, sv.size()));
+
+        if (untilRuntime.empty())
+            return sv;
+
+        const auto found = isBackward ? sv.rfind(untilRuntime) : sv.find(untilRuntime);
+
+        const auto cutUntil     = found + untilRuntime.size();
+        const auto safeCutUntil = SFML_BASE_MIN(cutUntil, sv.size());
+
+        return sv.substrByPosLen(safeCutUntil);
+    }
+};
+
+// it might be compilation failed without this workaround sometimes
+// See https://github.com/llvm/llvm-project/issues/41751 for details
+template <typename>
+consteval StringView clangWorkaround(StringView value) noexcept
+{
+    return value;
+}
+
+#ifndef SFML_BASE_MINIPFR_PRIV_CORE_PARSING
+    #if defined(_MSC_VER) && !defined(__clang__)
+        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                \
+            {sizeof("auto __cdecl sf::base::minipfr::priv::nameOfFieldImpl<") - 1, \
+             sizeof(">(void) noexcept") - 1,                                       \
+             true,                                                                 \
+             "->"}
+    #elif defined(__clang__)
+        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                            \
+            {sizeof("auto sf::base::minipfr::priv::nameOfFieldImpl() [MsvcWorkaround = ") - 1, \
+             sizeof("}]") - 1,                                                                 \
+             true,                                                                             \
+             "."}
+    #elif defined(__GNUC__)
+        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING                                                           \
+            {sizeof("consteval auto sf::base::minipfr::priv::nameOfFieldImpl() [with MsvcWorkaround = ") - 1, \
+             sizeof(")]") - 1,                                                                                \
+             true,                                                                                            \
+             "::"}
+    #else
+        // Default parser for other platforms... Just skip nothing!
+        #define SFML_BASE_MINIPFR_PRIV_CORE_PARSING {0, 0, false, ""}
+    #endif
+#endif
+
+template <typename MsvcWorkaround, auto ptr>
+consteval auto nameOfFieldImpl() noexcept
+{
+    // Some of the following compiler specific macro may be defined only
+    // inside the function body:
+
+#ifndef SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE
+    #if defined(__FUNCSIG__)
+        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE __FUNCSIG__
+    #elif defined(__PRETTY_FUNCTION__) || defined(__GNUC__) || defined(__clang__)
+        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+    #else
+        #define SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE ""
+    #endif
+#endif
+
+    constexpr StringView sv = clangWorkaround<MsvcWorkaround>(SFML_BASE_MINIPFR_PRIV_FUNCTION_SIGNATURE);
+    static_assert(!sv.empty(), "Field name extraction misconfigured for your compiler");
+
+    constexpr CoreNameSkip skip SFML_BASE_MINIPFR_PRIV_CORE_PARSING;
+    static_assert(skip.sizeAtBegin + skip.sizeAtEnd + skip.untilRuntime.size() < sv.size(),
+                  "Field name extraction misconfigured for your compiler"
+                  "It attempts to skip more chars than available. ");
+
+    constexpr auto fn = skip.apply(sv);
+    static_assert(!fn.empty(),
+                  "Field name extraction misconfigured for your compiler"
+                  "It skipped all the input, leaving the field name empty. ");
+
+    Array<char, fn.size() + 1> res{};
+
+    char* out = res.data();
+    for (const char x : fn)
+        *out++ = x;
+
+    return res;
+}
+
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wundefined-var-template"
+
+// clang 16 and earlier don't support address of non-static member as template parameter
+// but fortunately it's possible to use C++20 non-type template parameters in another way
+// even in clang 16 and more older clangs
+// all we need is to wrap pointer into 'ClangWrapper' and then pass it into template
+template <typename T>
+struct ClangWrapper
+{
+    T v;
+};
+template <typename T>
+ClangWrapper(T) -> ClangWrapper<T>;
+
+template <typename T>
+constexpr auto makeClangWrapper(const T& arg) noexcept
+{
+    return ClangWrapper{arg};
+}
+
+#else
+
+template <typename T>
+constexpr const T& makeClangWrapper(const T& arg) noexcept
+{
+    // It's everything OK with address of non-static member as template parameter support on this compiler
+    // so we don't need a wrapper here, just pass the pointer into template
+    return arg;
+}
+
+#endif
+
+template <typename MsvcWorkaround, auto ptr>
+consteval auto nameOfField() noexcept
+{
+    // Sanity check: known field name must match the deduced one
+    static_assert(sizeof(MsvcWorkaround) // do not trigger if `nameOfField()` is not used
+                      &&
+                      StringView{nameOfFieldImpl<CoreNameSkip, makeClangWrapper(&getFakeObject<CoreNameSkip>().sizeAtBegin)>()
+                                     .data()} == "sizeAtBegin",
+                  "Field name extraction misconfigured for your compiler");
+
+    return nameOfFieldImpl<MsvcWorkaround, ptr>();
+}
+
+// Storing part of a string literal into an array minimizes the binary size.
+//
+// Without passing 'T' into 'nameOfField' different fields from different structures might have the same name!
+// See https://developercommunity.visualstudio.com/t/__FUNCSIG__-outputs-wrong-value-with-C/10458554 for details
+template <typename T, SizeT I>
+inline constexpr auto
+    storedNameOfField = nameOfField<T, makeClangWrapper(&(tieAsTuple(getFakeObject<T>()).template get<I>()))>();
+
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
+
+template <typename T, SizeT... I>
+constexpr auto tieAsNamesTupleImpl(IndexSequence<I...>) noexcept
+{
+    return Tuple{StringView{storedNameOfField<T, I>.data()}...};
+}
+
+} // namespace priv
+
+template <typename T, SizeT I>
+constexpr StringView getFieldName() noexcept
+{
+    static_assert(!SFML_BASE_IS_UNION(T), "union reflection is forbidden");
+    static_assert(!SFML_BASE_IS_ARRAY(T), "impossible to extract name from C-style array");
+
+    return priv::storedNameOfField<T, I>.data();
+}
+
+template <typename T>
+constexpr auto tieAsFieldNamesTuple() noexcept
+{
+    static_assert(!SFML_BASE_IS_UNION(T), "union reflection is forbidden");
+    static_assert(!SFML_BASE_IS_ARRAY(T), "impossible to extract name from C-style array");
+
+    return priv::tieAsNamesTupleImpl<T>(MakeIndexSequence<numFields<T>>{});
+}
+
+/*
+template <typename T, typename F>
+constexpr void forEachFieldWithName(T&& value, F&& func)
+{
+    return boost::pfr::for_each_field(SFML_BASE_FORWARD(value),
+                                      [f = SFML_BASE_FORWARD(func)](auto&& field, auto index) mutable
+    {
+        using IndexType     = decltype(index);
+        using FieldType     = decltype(field);
+        constexpr auto name = boost::pfr::getName<std::remove_reference_t<T>, IndexType::value>();
+        if constexpr (std::is_invocable_v<F, StringView, FieldType, IndexType>)
+        {
+            f(name, SFML_BASE_FORWARD(field), index);
+        }
+        else
+        {
+            f(name, SFML_BASE_FORWARD(field));
+        }
+    });
+}
+    */
 
 } // namespace sf::base::minipfr

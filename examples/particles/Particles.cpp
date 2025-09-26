@@ -47,7 +47,7 @@
 namespace
 {
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] void updateParticle(
+[[gnu::always_inline]] inline void updateParticle(
     sf::Vec2f&      position,
     sf::Vec2f&      velocity,
     const sf::Vec2f acceleration,
@@ -69,7 +69,7 @@ namespace
 }
 
 ////////////////////////////////////////////////////////////
-[[gnu::always_inline]] void drawParticleImpl(
+[[gnu::always_inline]] inline void drawParticleImpl(
     const sf::Texture&   texture,
     const sf::FloatRect& txr,
     const sf::Vec2f      origin,
@@ -184,24 +184,24 @@ int main()
         float rotation;
         float torque;
 
-        ParticleOOP(sf::Vec2f position,
-                    sf::Vec2f velocity,
-                    sf::Vec2f acceleration,
-                    float     scale,
-                    float     scaleGrowth,
-                    float     opacity,
-                    float     opacityGrowth,
-                    float     rotation,
-                    float     torque) :
-            position(position),
-            velocity(velocity),
-            acceleration(acceleration),
-            scale(scale),
-            scaleGrowth(scaleGrowth),
-            opacity(opacity),
-            opacityGrowth(opacityGrowth),
-            rotation(rotation),
-            torque(torque)
+        ParticleOOP(sf::Vec2f thePosition,
+                    sf::Vec2f theVelocity,
+                    sf::Vec2f theAcceleration,
+                    float     theScale,
+                    float     theScaleGrowth,
+                    float     theOpacity,
+                    float     theOpacityGrowth,
+                    float     theRotation,
+                    float     theTorque) :
+            position(thePosition),
+            velocity(theVelocity),
+            acceleration(theAcceleration),
+            scale(theScale),
+            scaleGrowth(theScaleGrowth),
+            opacity(theOpacity),
+            opacityGrowth(theOpacityGrowth),
+            rotation(theRotation),
+            torque(theTorque)
         {
         }
 
