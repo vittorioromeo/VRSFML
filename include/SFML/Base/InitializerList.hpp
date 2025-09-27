@@ -1,5 +1,6 @@
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
 #if !defined(_LIBCPP_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST) && !defined(_INITIALIZER_LIST_)

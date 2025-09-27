@@ -1,6 +1,7 @@
 #pragma once
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
 ////////////////////////////////////////////////////////////
