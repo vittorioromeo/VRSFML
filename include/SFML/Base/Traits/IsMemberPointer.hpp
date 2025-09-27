@@ -10,7 +10,7 @@
 
 #else
 
-namespace priv
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename>
@@ -20,7 +20,7 @@ inline constexpr bool isMemberPointerImpl = false;
 template <typename T, typename C>
 inline constexpr bool isMemberPointerImpl<T C::*> = true;
 
-} // namespace priv
+} // namespace sf::base::priv
 
     ////////////////////////////////////////////////////////////
     #define SFML_BASE_IS_MEMBER_POINTER(...) ::sf::base::priv::isMemberPointerImpl<__VA_ARGS__>

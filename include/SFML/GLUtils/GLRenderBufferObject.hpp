@@ -33,6 +33,7 @@ struct GLRenderBufferObjectFuncs
         glCheck(glGenRenderbuffers(1, &id));
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
@@ -41,11 +42,13 @@ struct GLRenderBufferObjectFuncs
         glCheck(glDeleteRenderbuffers(1, &id));
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void bind(unsigned int id)
     {
         glCheck(glBindRenderbuffer(GL_RENDERBUFFER, id));
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void get(unsigned int& id)

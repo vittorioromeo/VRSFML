@@ -38,11 +38,13 @@ public:
         SFML_BASE_ASSERT(m_id != 0u);
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline, gnu::flatten]] explicit GLUniqueResource(const unsigned int id) : m_id{id}
     {
         SFML_BASE_ASSERT(m_id != 0u);
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] ~GLUniqueResource()
@@ -51,9 +53,11 @@ public:
             TFuncs::destroy(m_id);
     }
 
+
     ////////////////////////////////////////////////////////////
     GLUniqueResource(const GLUniqueResource&)            = delete;
     GLUniqueResource& operator=(const GLUniqueResource&) = delete;
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource(GLUniqueResource&& rhs) noexcept :
@@ -61,6 +65,7 @@ public:
     {
         SFML_BASE_ASSERT(m_id != 0u);
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] GLUniqueResource& operator=(GLUniqueResource&& rhs) noexcept
@@ -77,6 +82,7 @@ public:
         return *this;
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the ID of the currently bound object of this type.
     ///
@@ -90,6 +96,7 @@ public:
         return out;
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Get the OpenGL ID of this resource.
     ///
@@ -101,6 +108,7 @@ public:
         return m_id;
     }
 
+
     ////////////////////////////////////////////////////////////
     /// \brief Check if this specific resource instance is currently bound.
     ///
@@ -111,6 +119,7 @@ public:
     {
         return getBoundId() == m_id;
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind this resource to the current OpenGL context.
@@ -125,6 +134,7 @@ public:
 
         SFML_BASE_ASSERT(isBound());
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Unbind this resource type from the current OpenGL context.
