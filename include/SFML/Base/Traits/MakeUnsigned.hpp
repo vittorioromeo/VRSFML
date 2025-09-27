@@ -10,7 +10,7 @@
 
 #else
 
-namespace sf::base
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T>
@@ -35,10 +35,10 @@ template <> struct MakeUnsignedImpl<  signed long long> { using type = unsigned 
 template <> struct MakeUnsignedImpl<unsigned long long> { using type = unsigned long long; };
 // clang-format on
 
-} // namespace sf::base
+} // namespace sf::base::priv
 
     ////////////////////////////////////////////////////////////
-    #define SFML_BASE_MAKE_UNSIGNED(...) typename ::sf::base::MakeUnsignedImpl<__VA_ARGS__>::type
+    #define SFML_BASE_MAKE_UNSIGNED(...) typename ::sf::base::priv::MakeUnsignedImpl<__VA_ARGS__>::type
 
 #endif
 

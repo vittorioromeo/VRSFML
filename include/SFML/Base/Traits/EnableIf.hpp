@@ -3,7 +3,7 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
-namespace sf::base
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
 template <bool, typename T = void>
@@ -19,9 +19,12 @@ struct EnableIfImpl<true, T>
     using type = T;
 };
 
+} // namespace sf::base::priv
 
+namespace sf::base
+{
 ////////////////////////////////////////////////////////////
 template <bool B, typename T = void>
-using EnableIf = typename EnableIfImpl<B, T>::type;
+using EnableIf = typename priv::EnableIfImpl<B, T>::type;
 
 } // namespace sf::base

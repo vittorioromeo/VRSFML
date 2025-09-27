@@ -43,17 +43,21 @@ struct TupleBase<IndexSequence<Is...>, Ts...> : TupleMember<Is, Ts>...
         memberCount = sizeof...(Ts)
     };
 
+
     ////////////////////////////////////////////////////////////
     constexpr TupleBase() = default;
+
 
     ////////////////////////////////////////////////////////////
     constexpr TupleBase(const TupleBase&) = default;
     constexpr TupleBase(TupleBase&&)      = default;
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr TupleBase(Ts... v) : TupleMember<Is, Ts>{v}...
     {
     }
+
 
     ////////////////////////////////////////////////////////////
     template <SizeT I>
@@ -62,6 +66,7 @@ struct TupleBase<IndexSequence<Is...>, Ts...> : TupleMember<Is, Ts>...
         return static_cast<TupleMember<I, SFML_BASE_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this).value;
     }
 
+
     ////////////////////////////////////////////////////////////
     template <SizeT I>
     [[gnu::always_inline]] constexpr const auto& get() const
@@ -69,11 +74,13 @@ struct TupleBase<IndexSequence<Is...>, Ts...> : TupleMember<Is, Ts>...
         return static_cast<const TupleMember<I, SFML_BASE_TYPE_PACK_ELEMENT(I, Ts...)>&>(*this).value;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void forEach(auto&& f)
     {
         (..., f(static_cast<TupleMember<Is, Ts>&>(*this).value));
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] constexpr void forEach(auto&& f) const
@@ -92,6 +99,7 @@ struct TupleBase<IndexSequence<>>
     {
         memberCount = 0u
     };
+
 
     ////////////////////////////////////////////////////////////
     constexpr TupleBase() = default;
@@ -495,6 +503,7 @@ constexpr auto tieAsFieldNamesTuple() noexcept
     return priv::tieAsNamesTupleImpl<T>(MakeIndexSequence<numFields<T>>{});
 }
 
+// TODO P0: restore? Also cleanup and add PFR copyright
 /*
 template <typename T, typename F>
 constexpr void forEachFieldWithName(T&& value, F&& func)

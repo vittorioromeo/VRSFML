@@ -36,9 +36,11 @@ struct GLVAOGroup
     ////////////////////////////////////////////////////////////
     mutable ankerl::unordered_dense::map<unsigned int, unsigned int> perContextVAOIds; //!< Vertex array object (unshared, per context)
 
+
     ////////////////////////////////////////////////////////////
     GLVertexBufferObject  vbo; //!< Vertex buffer object (shared context)
     GLElementBufferObject ebo; //!< Element index buffer object (shared context)
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Default constructor.
@@ -47,6 +49,7 @@ struct GLVAOGroup
     ///
     ////////////////////////////////////////////////////////////
     explicit GLVAOGroup() = default;
+
 
     ////////////////////////////////////////////////////////////
     ~GLVAOGroup()
@@ -60,13 +63,16 @@ struct GLVAOGroup
             GraphicsContext::unregisterUnsharedVAO(glContextId, it->second);
     }
 
+
     ////////////////////////////////////////////////////////////
     GLVAOGroup(const GLVAOGroup&)            = delete;
     GLVAOGroup& operator=(const GLVAOGroup&) = delete;
 
+
     ////////////////////////////////////////////////////////////
     GLVAOGroup(GLVAOGroup&&) noexcept            = default;
     GLVAOGroup& operator=(GLVAOGroup&&) noexcept = default;
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Bind the associated VAO, VBO, and EBO for the current context.
@@ -109,6 +115,7 @@ struct GLVAOGroup
         vbo.bind();
         ebo.bind();
     }
+
 
     ////////////////////////////////////////////////////////////
     /// \brief Get the OpenGL ID of the VAO for the current context.

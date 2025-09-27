@@ -57,17 +57,20 @@ public:
         return true;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] void* data()
     {
         return m_mappedPtr;
     }
 
+
     ////////////////////////////////////////////////////////////
     [[nodiscard, gnu::always_inline]] const void* data() const
     {
         return m_mappedPtr;
     }
+
 
     ////////////////////////////////////////////////////////////
     void unmapIfNeeded(TBufferObject& obj)
@@ -87,6 +90,7 @@ public:
         SFML_BASE_ASSERT(rc);
 #endif
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] void flushWritesToGPU([[maybe_unused]] const TBufferObject& obj,
@@ -108,6 +112,7 @@ public:
                                               static_cast<GLsizeiptr>(unitSize * count)));
 #endif
     }
+
 
 private:
     ////////////////////////////////////////////////////////////
