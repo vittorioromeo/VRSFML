@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Texture.hpp"
+
 #include "SFML/Graphics/GraphicsContext.hpp"
 #include "SFML/Graphics/Image.hpp"
-#include "SFML/Graphics/Texture.hpp"
 #include "SFML/Graphics/TextureWrapMode.hpp"
 
 #include "SFML/Window/Window.hpp"

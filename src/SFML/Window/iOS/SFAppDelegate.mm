@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/iOS/SFAppDelegate.hpp"
+
 #include "SFML/Window/iOS/SFMain.hpp"
 
 #import <TargetConditionals.h>

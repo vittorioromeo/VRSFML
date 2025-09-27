@@ -190,10 +190,9 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Verify that all the input channels exist in the target channel map
         for (const SoundChannel channel : channelMap)
         {
-            if (base::findIf(targetChannelMap.begin(),
-                             targetChannelMap.end(),
-                             [channel](const SupportedChannel& c)
-            { return c.channel == channel; }) == targetChannelMap.end())
+            if (base::findIf(targetChannelMap.begin(), targetChannelMap.end(), [channel](const SupportedChannel& c) {
+                return c.channel == channel;
+            }) == targetChannelMap.end())
             {
                 priv::err() << "Could not map all input channels to a channel supported by WAV";
                 return false;

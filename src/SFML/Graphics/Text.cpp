@@ -5,13 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Text.hpp"
+
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Font.hpp"
 #include "SFML/Graphics/Glyph.hpp"
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/RenderStates.hpp"
 #include "SFML/Graphics/RenderTarget.hpp"
-#include "SFML/Graphics/Text.hpp"
 #include "SFML/Graphics/TextUtils.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 

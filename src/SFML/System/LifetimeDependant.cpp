@@ -7,6 +7,7 @@
     // Headers
     ////////////////////////////////////////////////////////////
     #include "SFML/System/LifetimeDependant.hpp"
+
     #include "SFML/System/LifetimeDependee.hpp"
 
 

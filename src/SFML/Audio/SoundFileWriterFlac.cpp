@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/SoundFileWriterFlac.hpp"
+
+#include "SFML/Audio/ChannelMap.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/FileUtils.hpp"

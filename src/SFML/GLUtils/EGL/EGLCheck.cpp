@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/GLUtils/EGL/EGLCheck.hpp"
+
 #include "SFML/GLUtils/EGL/EGLGlad.hpp"
 
 #include "SFML/System/Err.hpp"

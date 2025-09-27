@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/IpAddressUtils.hpp"
+
+#include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/Base/Optional.hpp"
