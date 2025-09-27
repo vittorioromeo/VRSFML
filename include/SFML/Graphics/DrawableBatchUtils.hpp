@@ -10,7 +10,6 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Builtins/Assume.hpp"
 #include "SFML/Base/Builtins/Restrict.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"
@@ -27,6 +26,7 @@ namespace sf::DrawableBatchUtils
     *indexPtr++ = startIndex + 2u;
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleFanIndices(
     IndexType*&     indexPtr,
@@ -38,6 +38,7 @@ namespace sf::DrawableBatchUtils
     *indexPtr++ = startIndex + i + 1u;
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTriangleStripIndices(
     IndexType*&     indexPtr,
@@ -48,21 +49,16 @@ namespace sf::DrawableBatchUtils
     const IndexType idx1 = startIndex + i + 1u;
     const IndexType idx2 = startIndex + i + 2u;
 
-    if ((i % 2u) == 0u)
-    {
-        // Even triangle: uses vertices `(i, i+1, i+2)` in that order
-        *indexPtr++ = idx0;
-        *indexPtr++ = idx1;
-        *indexPtr++ = idx2;
-    }
-    else
-    {
-        // Odd triangle: uses vertices `(i, i+1, i+2)` but in order `(i+2, i+1, i)` to flip winding
-        *indexPtr++ = idx2;
-        *indexPtr++ = idx1;
-        *indexPtr++ = idx0;
-    }
+    // Even triangle: uses vertices `(i, i+1, i+2)` in that order
+    // Odd triangle: uses same vertices, but in reverse order to flip winding
+
+    const bool evenTriangle = (i % 2u) == 0u;
+
+    *indexPtr++ = evenTriangle ? idx0 : idx2;
+    *indexPtr++ = idx1;
+    *indexPtr++ = evenTriangle ? idx2 : idx0;
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendQuadIndices(IndexType*& indexPtr, const IndexType startIndex) noexcept
@@ -70,6 +66,7 @@ namespace sf::DrawableBatchUtils
     appendTriangleIndices(indexPtr, startIndex);      // Triangle strip: triangle #0
     appendTriangleIndices(indexPtr, startIndex + 1u); // Triangle strip: triangle #1
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedSpriteQuadVertices(
@@ -107,6 +104,7 @@ namespace sf::DrawableBatchUtils
     vertexPtr[3].texCoords = position + size;
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendPreTransformedTextQuadVertices(
     Vertex* const SFML_BASE_RESTRICT vertexPtr,
@@ -122,6 +120,7 @@ namespace sf::DrawableBatchUtils
     vertexPtr[3] = {transform.transformPoint(d.position), d.color, d.texCoords};
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline void appendSpriteIndicesAndVertices(
     const Sprite&   sprite,
@@ -132,6 +131,7 @@ namespace sf::DrawableBatchUtils
     appendQuadIndices(indexPtr, nextIndex);
     appendPreTransformedSpriteQuadVertices(sprite.getTransform(), sprite.textureRect, sprite.color, vertexPtr);
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTextIndicesAndVertices(
@@ -154,6 +154,7 @@ namespace sf::DrawableBatchUtils
                                              data[(i * 4u) + 3u]);
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendTransformedVertices(
     const Transform&                 transform,
@@ -164,6 +165,7 @@ namespace sf::DrawableBatchUtils
     for (const auto* const target = data + size; data != target; ++data)
         *vertexPtr++ = {transform.transformPoint(data->position), data->color, data->texCoords};
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeFillIndicesAndVertices(
@@ -176,11 +178,12 @@ namespace sf::DrawableBatchUtils
 {
     SFML_BASE_ASSERT(fillSize > 2u);
 
-    for (IndexType i = 1u; i < fillSize - 1; ++i)
+    for (IndexType i = 1u; i < fillSize - 1u; ++i)
         appendTriangleFanIndices(indexPtr, nextFillIndex, i);
 
     appendTransformedVertices(transform, fillData, fillSize, vertexPtr);
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendShapeOutlineIndicesAndVertices(
@@ -193,11 +196,12 @@ namespace sf::DrawableBatchUtils
 {
     SFML_BASE_ASSERT(outlineSize > 2u);
 
-    for (IndexType i = 0u; i < outlineSize - 2; ++i)
+    for (IndexType i = 0u; i < outlineSize - 2u; ++i)
         appendTriangleIndices(indexPtr, nextOutlineIndex + i);
 
     appendTransformedVertices(transform, outlineData, outlineSize, vertexPtr);
 }
+
 
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline, gnu::flatten]] inline constexpr void appendIncreasingIndices(const IndexType count,

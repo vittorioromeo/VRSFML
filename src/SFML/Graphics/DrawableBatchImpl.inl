@@ -59,6 +59,7 @@ namespace
     }
 }
 
+
 ////////////////////////////////////////////////////////////
 [[gnu::always_inline]] inline void generateRingVertices(
     const sf::FloatRect&  textureRect,
@@ -1072,7 +1073,7 @@ VertexSpan DrawableBatchImpl<TStorage>::add(const Font& font, const TextData& te
     const auto [sine, cosine] = base::fastSinCos(textData.rotation.asRadians());
     const auto transform      = Transform::from(textData.position, textData.scale, textData.origin, sine, cosine);
 
-    Vertex* vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
+    Vertex* const vertexPtr = m_storage.reserveMoreVertices(4u * numQuads);
 
     TextUtils::createTextGeometryAndGetBounds<
         /* CalculateBounds */ false>(/* outlineVertexCount */ outlineQuadCount * 4u,
