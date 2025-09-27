@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/WindowContext.hpp"
-
 #include "SFML/GLUtils/GLContextSaver.hpp"
+
+#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/System/Err.hpp"
 

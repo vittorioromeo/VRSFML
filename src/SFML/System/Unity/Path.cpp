@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/Path.hpp"
+
 #include "SFML/System/StringUtils.hpp"
 
 #include "SFML/Base/Traits/IsSame.hpp"

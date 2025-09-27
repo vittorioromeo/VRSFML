@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/OutputSoundFile.hpp"
+
 #include "SFML/Audio/SoundFileFactory.hpp"
 #include "SFML/Audio/SoundFileWriter.hpp"
 

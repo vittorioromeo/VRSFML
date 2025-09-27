@@ -5,11 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/WindowBase.hpp"
+
 #include "SFML/Window/Cursor.hpp"
 #include "SFML/Window/Event.hpp"
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/Vulkan.hpp"
-#include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowHandle.hpp"
 
 #include "SFML/System/String.hpp"

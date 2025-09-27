@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Mouse.hpp"
+
 #include "SFML/Config.hpp"
 
-#include "SFML/Window/Mouse.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/WindowBase.hpp"
 

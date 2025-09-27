@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/System/Err.hpp"
 #include "SFML/System/RectPacker.hpp"
+
+#include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"

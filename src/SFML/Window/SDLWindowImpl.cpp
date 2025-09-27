@@ -5,6 +5,8 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/SDLWindowImpl.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/Window/Event.hpp"
@@ -13,7 +15,6 @@
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/SDLLayer.hpp"
-#include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/Sensor.hpp"
 #include "SFML/Window/SensorManager.hpp"
 #include "SFML/Window/VideoMode.hpp"

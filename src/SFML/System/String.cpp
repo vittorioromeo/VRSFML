@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/String.hpp"
+
 #include "SFML/System/Utf.hpp"
 
 #include "SFML/Base/Algorithm.hpp"

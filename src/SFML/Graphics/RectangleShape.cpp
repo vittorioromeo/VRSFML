@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/RectangleShape.hpp"
+
 #include "SFML/Graphics/ShapeUtils.hpp"
 
 #include "SFML/System/Vec2.hpp"

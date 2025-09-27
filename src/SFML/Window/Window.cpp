@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/Window.hpp"
+
 #include "SFML/Window/VideoMode.hpp"
 #include "SFML/Window/VideoModeUtils.hpp"
-#include "SFML/Window/Window.hpp"
 #include "SFML/Window/WindowBase.hpp"
 #include "SFML/Window/WindowContext.hpp"
 #include "SFML/Window/WindowSettings.hpp"

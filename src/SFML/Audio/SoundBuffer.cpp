@@ -5,10 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundBuffer.hpp"
+
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
 #include "SFML/Audio/OutputSoundFile.hpp"
-#include "SFML/Audio/SoundBuffer.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Path.hpp"

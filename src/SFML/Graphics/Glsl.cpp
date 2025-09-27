@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Graphics/Glsl.hpp"
+
 #include "SFML/Graphics/Transform.hpp"
 
 

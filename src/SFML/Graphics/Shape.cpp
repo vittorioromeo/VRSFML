@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/Shape.hpp"
+
+#include "SFML/Graphics/RenderTarget.hpp"
 #include "SFML/Graphics/ShapeUtils.hpp"
 #include "SFML/Graphics/VertexUtils.hpp"
 

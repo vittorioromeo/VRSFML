@@ -5,10 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
+
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/EffectProcessor.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
-#include "SFML/Audio/Priv/MiniaudioSoundSource.hpp"
 #include "SFML/Audio/SoundBase.hpp"
 
 #include "SFML/Base/Clamp.hpp"

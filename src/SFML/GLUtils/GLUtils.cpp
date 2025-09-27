@@ -5,11 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/GLUtils.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/GLUtils/FramebufferSaver.hpp"
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
 #ifdef SFML_OPENGL_ES

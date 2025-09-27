@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/ImGui/Backend.hpp"
 #include "SFML/ImGui/ImGuiContext.hpp"
+
+#include "SFML/ImGui/Backend.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"

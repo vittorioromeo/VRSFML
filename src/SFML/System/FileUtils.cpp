@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/System/FileUtils.hpp"
+
 #include "SFML/System/Path.hpp"
 
 #include <string>

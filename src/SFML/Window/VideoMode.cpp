@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/VideoMode.hpp"
+
 #include "SFML/Window/VideoModeUtils.hpp"
 
 #include "SFML/Base/Algorithm.hpp"

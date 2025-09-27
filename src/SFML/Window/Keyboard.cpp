@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Keyboard.hpp"
+
 #include "SFML/Window/SDLLayer.hpp"
 
 #include "SFML/System/String.hpp"

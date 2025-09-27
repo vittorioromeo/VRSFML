@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Network/Packet.hpp"
+
 #include "SFML/Network/SocketImpl.hpp"
 
 #include "SFML/System/String.hpp"

@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/Music.hpp"
+
 #include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/InputSoundFile.hpp"
-#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 
 #include "SFML/System/Err.hpp"

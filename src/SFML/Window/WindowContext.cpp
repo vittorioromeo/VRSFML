@@ -5,13 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/WindowContext.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/SDLLayer.hpp" // TODO P0:
 #include "SFML/Window/SensorManager.hpp"
-#include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLContextSaver.hpp"

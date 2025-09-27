@@ -5,10 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/TextureSaver.hpp"
+
 #include "SFML/GLUtils/GLCheck.hpp"
 #include "SFML/GLUtils/GLUtils.hpp"
 #include "SFML/GLUtils/Glad.hpp"
-#include "SFML/GLUtils/TextureSaver.hpp"
 
 
 namespace sf::priv

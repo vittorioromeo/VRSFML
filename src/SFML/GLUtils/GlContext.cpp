@@ -5,13 +5,14 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/GlContext.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/WindowContext.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GlContext.hpp"
 #include "SFML/GLUtils/GlContextTypeImpl.hpp"
 #include "SFML/GLUtils/GlFuncTypesImpl.hpp"
 

@@ -92,11 +92,11 @@ struct [[nodiscard]] SFML_GRAPHICS_API StencilValue
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] SFML_GRAPHICS_API StencilMode
 {
-    StencilComparison stencilComparison : 3 {
-        StencilComparison::Always}; //!< The comparison we're performing the stencil test with
+    StencilComparison stencilComparison
+        : 3 {StencilComparison::Always}; //!< The comparison we're performing the stencil test with
 
-    StencilUpdateOperation stencilUpdateOperation : 3 {
-        StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
+    StencilUpdateOperation stencilUpdateOperation
+        : 3 {StencilUpdateOperation::Keep}; //!< The update operation to perform if the stencil test passes
 
     bool stencilOnly : 1 {false}; //!< Whether we should update the color buffer in addition to the stencil buffer
 

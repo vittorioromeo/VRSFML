@@ -590,12 +590,9 @@ inline constexpr void updateOutlineFromTriangleFanFill(
 {
     SFML_BASE_ASSERT_AND_ASSUME(fillVertices != nullptr);
 
-    updateOutlineImpl(outlineThickness,
-                      [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN
-    { return fillVertices[i].position; },
-                      outlineVertices,
-                      pointCount,
-                      miterLimit);
+    updateOutlineImpl(outlineThickness, [&](const base::SizeT i) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+        return fillVertices[i].position;
+    }, outlineVertices, pointCount, miterLimit);
 }
 
 ////////////////////////////////////////////////////////////
