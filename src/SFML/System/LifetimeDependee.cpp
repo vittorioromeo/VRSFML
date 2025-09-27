@@ -6,8 +6,9 @@
     ////////////////////////////////////////////////////////////
     // Headers
     ////////////////////////////////////////////////////////////
-    #include "SFML/System/Err.hpp"
     #include "SFML/System/LifetimeDependee.hpp"
+
+    #include "SFML/System/Err.hpp"
 
     #include "SFML/Base/Abort.hpp"
     #include "SFML/Base/Assert.hpp"

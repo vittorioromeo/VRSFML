@@ -58,7 +58,7 @@ private:
         return *s1 - *s2;
     }
 
-    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN constexprStrLen
+    #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  constexprStrLen
     #define SFML_BASE_PRIV_CONSTEXPR_STRNCMP constexprStrNCmp
 #else
     #define SFML_BASE_PRIV_CONSTEXPR_STRLEN  SFML_BASE_STRLEN

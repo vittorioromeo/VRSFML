@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundBufferRecorder.hpp"
+
 #include "SFML/Audio/CaptureDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
-#include "SFML/Audio/SoundBufferRecorder.hpp"
 #include "SFML/Audio/SoundRecorder.hpp"
 
 #include "SFML/System/Err.hpp"

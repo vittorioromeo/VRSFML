@@ -5,11 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Graphics/Shader.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/Graphics/DefaultShader.hpp"
 #include "SFML/Graphics/GraphicsContext.hpp"
-#include "SFML/Graphics/Shader.hpp"
 #include "SFML/Graphics/Texture.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"

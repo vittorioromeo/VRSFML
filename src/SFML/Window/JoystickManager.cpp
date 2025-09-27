@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Window/JoystickManager.hpp"
+
 #include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"
-#include "SFML/Window/JoystickManager.hpp"
 #include "SFML/Window/JoystickState.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 
@@ -256,9 +257,9 @@ void JoystickManager::update()
         SFML_BASE_ASSERT(connectedJoystickInfos[iInfo].hasValue());
         const auto& [id, guid] = *connectedJoystickInfos[iInfo];
 
-        if (base::anyOf(m_impl->impls,
-                        m_impl->impls + Joystick::MaxCount,
-                        [&](const base::Optional<JoystickImpl>& impl) { return impl.hasValue() && impl->id == id; }))
+        if (base::anyOf(m_impl->impls, m_impl->impls + Joystick::MaxCount, [&](const base::Optional<JoystickImpl>& impl) {
+            return impl.hasValue() && impl->id == id;
+        }))
             continue; // Not newly connected
 
         // Find an empty slot

@@ -5,10 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Network/TcpSocket.hpp"
+
 #include "SFML/Network/IpAddress.hpp"
 #include "SFML/Network/Packet.hpp"
 #include "SFML/Network/SocketImpl.hpp"
-#include "SFML/Network/TcpSocket.hpp"
 
 #include "SFML/System/Err.hpp"
 

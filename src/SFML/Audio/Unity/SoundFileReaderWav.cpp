@@ -5,9 +5,10 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundFileReaderWav.hpp"
+
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
-#include "SFML/Audio/SoundFileReaderWav.hpp"
 
 #include "SFML/System/InputStream.hpp"
 

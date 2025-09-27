@@ -5,11 +5,12 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/Audio/SoundStream.hpp"
+
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBase.hpp"
-#include "SFML/Audio/SoundStream.hpp"
 
 #include "SFML/System/Err.hpp"
 #include "SFML/System/Sleep.hpp"

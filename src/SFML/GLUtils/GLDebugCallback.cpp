@@ -5,10 +5,11 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
+#include "SFML/GLUtils/GLDebugCallback.hpp"
+
 #include "SFML/Config.hpp"
 
 #include "SFML/GLUtils/GLCheck.hpp"
-#include "SFML/GLUtils/GLDebugCallback.hpp"
 #include "SFML/GLUtils/Glad.hpp"
 
 #include "SFML/System/Err.hpp"

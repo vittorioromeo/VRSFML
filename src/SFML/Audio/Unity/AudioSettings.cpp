@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Audio/AudioSettings.hpp"
+
 #include "SFML/Audio/Listener.hpp"
 
 #include "SFML/System/Vec3.hpp"

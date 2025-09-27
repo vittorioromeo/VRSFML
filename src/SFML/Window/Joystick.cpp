@@ -6,6 +6,7 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Window/Joystick.hpp"
+
 #include "SFML/Window/JoystickCapabilities.hpp"
 #include "SFML/Window/JoystickIdentification.hpp"
 #include "SFML/Window/JoystickManager.hpp"

@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/SDLGlContext.hpp"
+
+#include "SFML/Window/ContextSettings.hpp"
 #include "SFML/Window/SDLLayer.hpp"
 #include "SFML/Window/SDLWindowImpl.hpp"
 #include "SFML/Window/WindowContext.hpp"

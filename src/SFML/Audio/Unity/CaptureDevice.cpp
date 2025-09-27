@@ -5,8 +5,9 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/CaptureDevice.hpp"
+
+#include "SFML/Audio/AudioContext.hpp"
 #include "SFML/Audio/CaptureDeviceHandle.hpp"
 #include "SFML/Audio/ChannelMap.hpp"
 #include "SFML/Audio/MiniaudioUtils.hpp"
