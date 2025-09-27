@@ -47,12 +47,13 @@ class [[nodiscard]] GLPersistentBuffer
 {
 public:
     ////////////////////////////////////////////////////////////
-    [[gnu::always_inline]] void reserve(TBufferObject& obj, const base::SizeT byteCount)
+    [[gnu::always_inline]] bool reserve(TBufferObject& obj, const base::SizeT byteCount)
     {
         if (m_capacity >= byteCount) [[likely]]
-            return;
+            return false;
 
         reserveImpl(obj, byteCount);
+        return true;
     }
 
     ////////////////////////////////////////////////////////////
