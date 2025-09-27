@@ -29,8 +29,8 @@ namespace sf::base
 ////////////////////////////////////////////////////////////
 enum : SizeT
 {
-    hardwareDestructiveInterferenceSize  = 64,
-    hardwareConstructiveInterferenceSize = 64,
+    hardwareDestructiveInterferenceSize  = 64u,
+    hardwareConstructiveInterferenceSize = 64u,
 };
 
 } // namespace sf::base

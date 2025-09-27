@@ -17,7 +17,7 @@ namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename T, typename = void>
-struct AddLvalueReferenceHelper
+struct AddLvalueReferenceImpl
 {
     using type = T;
 };
@@ -25,7 +25,7 @@ struct AddLvalueReferenceHelper
 
 ////////////////////////////////////////////////////////////
 template <typename T>
-struct AddLvalueReferenceHelper<T, VoidT<T&>>
+struct AddLvalueReferenceImpl<T, VoidT<T&>>
 {
     using type = T&;
 };
@@ -33,7 +33,7 @@ struct AddLvalueReferenceHelper<T, VoidT<T&>>
 } // namespace sf::base::priv
 
     ////////////////////////////////////////////////////////////
-    #define SFML_BASE_ADD_LVALUE_REFERENCE(...) typename ::sf::base::priv::AddLvalueReferenceHelper<__VA_ARGS__>::type
+    #define SFML_BASE_ADD_LVALUE_REFERENCE(...) typename ::sf::base::priv::AddLvalueReferenceImpl<__VA_ARGS__>::type
 
 #endif
 

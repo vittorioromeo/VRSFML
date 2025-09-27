@@ -28,17 +28,20 @@ struct GLVertexArrayObjectFuncs
         glCheck(glGenVertexArrays(1, &id));
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void destroy(unsigned int& id)
     {
         glCheck(glDeleteVertexArrays(1, &id));
     }
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void bind(unsigned int id)
     {
         glCheck(glBindVertexArray(id));
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline, gnu::flatten]] static void get(unsigned int& id)

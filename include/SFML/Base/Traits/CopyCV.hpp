@@ -3,7 +3,7 @@
 // https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 
-namespace sf::base
+namespace sf::base::priv
 {
 ////////////////////////////////////////////////////////////
 template <typename From>
@@ -40,9 +40,13 @@ struct CopyCVImpl<const volatile From>
     using Type = const volatile To;
 };
 
+} // namespace sf::base::priv
 
+
+namespace sf::base
+{
 ////////////////////////////////////////////////////////////
 template <typename From, typename To>
-using CopyCV = typename CopyCVImpl<From>::template Type<To>;
+using CopyCV = typename priv::CopyCVImpl<From>::template Type<To>;
 
 } // namespace sf::base
