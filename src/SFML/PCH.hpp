@@ -1,5 +1,6 @@
 #pragma once
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 #ifndef SFML_ENABLE_PCH
     #error "PCH header included, but `SFML_ENABLE_PCH` was not defined"
