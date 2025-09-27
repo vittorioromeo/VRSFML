@@ -4,7 +4,8 @@
 
 #include "SFML/System/Path.hpp"
 
-#include <SFML/Copyright.hpp> // LICENSE AND COPYRIGHT (C) INFORMATION
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
 // These define are used for converting the color of the NSPopUpButton
 #define BLUE  @"Blue"
