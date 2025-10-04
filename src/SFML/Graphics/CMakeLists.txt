@@ -49,7 +49,7 @@ else()
         CPMAddPackage(
             NAME freetype
             GITHUB_REPOSITORY freetype/freetype
-            GIT_TAG VER-2-13-3
+            GIT_TAG VER-2-14-1
             # patch out parts we don't want of the FreeType CMake configuration
             # - installing pkgconfig files
             PATCH_COMMAND ${CMAKE_COMMAND} -DFREETYPE_DIR=. -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/freetype/PatchFreetype.cmake
