@@ -42,7 +42,7 @@ else()
         CPMAddPackage(
             NAME ogg
             GITHUB_REPOSITORY xiph/ogg
-            GIT_TAG v1.3.5
+            GIT_TAG v1.3.6
             SYSTEM TRUE
             # patch CMAKE_DEBUG_POSTFIX into the Ogg CMake configuration
             PATCH_COMMAND ${CMAKE_COMMAND} -DOGG_DIR=.  -P ${CMAKE_CURRENT_LIST_DIR}/../../../tools/ogg/PatchOgg.cmake
