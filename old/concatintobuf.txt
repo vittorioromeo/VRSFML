@@ -1,0 +1,12 @@
+ char        buf[512];
+    base::SizeT nextBufPos = 0u;
+
+    const auto concatIntoBuf = [&](const char* const str)
+    {
+        const base::SizeT len = SFML_BASE_STRLEN(str);
+        if (nextBufPos + len + 1u < sizeof(buf))
+        {
+            SFML_BASE_STRNCPY(buf + nextBufPos, str, len + 1u);
+            nextBufPos += len;
+        }
+    };
