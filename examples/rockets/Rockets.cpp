@@ -1359,16 +1359,6 @@ int main()
 
     //
     //
-    // Set up presentation textures
-    sf::Texture txBanners[4] = {
-        sf::Texture::loadFromFile("resources/banner0.png").value(),
-        sf::Texture::loadFromFile("resources/banner1.png").value(),
-        sf::Texture::loadFromFile("resources/banner2.png").value(),
-        sf::Texture::loadFromFile("resources/banner3.png").value(),
-    };
-
-    //
-    //
     // Load fonts
     ImFont* const fontImGuiGeistMono{ImGui::GetIO().Fonts->AddFontFromFileTTF("resources/geistmono.ttf", 32.f)};
 
@@ -1408,17 +1398,11 @@ int main()
     // Options
     Mode  mode            = Mode::OOP;
     bool  drawStep        = true;
-    bool  drawUI          = false;
+    bool  drawUI          = true;
     float simulationSpeed = 0.1f;
     float rocketSpawnRate = 0.f;
     float zoom            = 3.f;
     float imguiMult       = 1.f;
-
-    //
-    //
-    // Presentation state
-    float bannerAlpha[4]       = {0.f, 0.f, 0.f, 0.f};
-    float bannerTargetAlpha[4] = {0.f, 0.f, 0.f, 0.f};
 
     //
     //
@@ -1457,13 +1441,23 @@ int main()
     //
     //
     // Set up clock and time sampling
-    sf::Clock clock;
     sf::Clock fpsClock;
 
     Sampler samplesUpdateMs(/* capacity */ 32u);
     Sampler samplesDrawMs(/* capacity */ 32u);
     Sampler samplesDisplayMs(/* capacity */ 32u);
     Sampler samplesFPS(/* capacity */ 32u);
+
+    struct [[nodiscard]] SamplerScopeGuard
+    {
+        Sampler& sampler;
+        sf::Time startTime = sf::Clock::now();
+
+        ~SamplerScopeGuard()
+        {
+            sampler.record((sf::Clock::now() - startTime).asSeconds() * 1000.f);
+        }
+    };
 
     //
     //
@@ -1502,7 +1496,6 @@ int main()
         // Event handling
         ////////////////////////////////////////////////////////////
         // ---
-        clock.restart();
         {
             while (sf::base::Optional event = window.pollEvent())
             {
@@ -1516,61 +1509,7 @@ int main()
 
                 if (auto* eKeyPressed = event->getIf<sf::Event::KeyPressed>())
                 {
-                    if (eKeyPressed->code == sf::Keyboard::Key::Num1)
-                    {
-                        mode            = Mode::OOP;
-                        drawStep        = true;
-                        drawUI          = false;
-                        simulationSpeed = 0.1f;
-                        rocketSpawnRate = 0.f;
-                        zoom            = 3.f;
-
-                        oopWorld = {};
-
-                        for (int k = 0; k < 64; ++k)
-                        {
-                            {
-                                auto& r        = oopWorld.addEntity<OOP::Rocket>();
-                                r.position     = {-256.f * static_cast<float>(k) + -16.f, resolution.y / 2.f};
-                                r.velocity     = {1.0f, 0.f};
-                                r.acceleration = {0.03f, 0.f};
-                                r.init();
-                            }
-
-                            for (int i = 1; i <= 5; ++i)
-                            {
-                                auto& r0    = oopWorld.addEntity<OOP::Rocket>();
-                                r0.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
-                                               resolution.y / 2.f - 32.f * static_cast<float>(i)};
-                                r0.velocity = {1.0f, 0.f};
-                                r0.acceleration = {0.03f, 0.f};
-                                r0.init();
-
-                                auto& r1    = oopWorld.addEntity<OOP::Rocket>();
-                                r1.position = {-256.f * static_cast<float>(k) - 16.f + -48.f * static_cast<float>(i),
-                                               resolution.y / 2.f + 32.f * static_cast<float>(i)};
-                                r1.velocity = {1.0f, 0.f};
-                                r1.acceleration = {0.03f, 0.f};
-                                r1.init();
-                            }
-                        }
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num2)
-                        bannerTargetAlpha[0] = 1.f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num3)
-                        bannerTargetAlpha[1] = 1.f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num4)
-                        bannerTargetAlpha[2] = 1.f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num5)
-                        bannerTargetAlpha[3] = 1.f;
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num6)
-                    {
-                        for (float& ta : bannerTargetAlpha)
-                            ta = 0.f;
-
-                        drawUI = true;
-                    }
-                    else if (eKeyPressed->code == sf::Keyboard::Key::Num8)
+                    if (eKeyPressed->code == sf::Keyboard::Key::Num8)
                         imguiMult -= 0.25f;
                     else if (eKeyPressed->code == sf::Keyboard::Key::Num9)
                         imguiMult += 0.25f;
@@ -1590,8 +1529,9 @@ int main()
         // Update step
         ////////////////////////////////////////////////////////////
         // ---
-        clock.restart();
         {
+            SamplerScopeGuard guard{samplesUpdateMs};
+
             rocketSpawnTimer += rocketSpawnRate * simulationSpeed;
 
             const auto updateNonOOPWorld = [&](auto& world)
@@ -1633,19 +1573,7 @@ int main()
                 updateNonOOPWorld(soaManualWorld);
             else if (mode == Mode::SOAMeta)
                 updateNonOOPWorld(soaMetaWorld);
-
-            const auto moveFloatTowards = [](float& value, const float target, const float delta)
-            {
-                if (value < target)
-                    value = sf::base::min(target, value + delta);
-                else if (value > target)
-                    value = sf::base::max(target, value - delta);
-            };
-
-            for (int i = 0; i < 4; ++i)
-                moveFloatTowards(bannerAlpha[i], bannerTargetAlpha[i], 0.025f);
         }
-        samplesUpdateMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
 
 #pragma GCC diagnostic pop
@@ -1654,8 +1582,6 @@ int main()
         // ImGui step
         ////////////////////////////////////////////////////////////
         // ---
-        clock.restart();
-
         if (drawUI)
         {
             const auto clearSamples = [&]
@@ -1797,6 +1723,8 @@ int main()
             ImGui::Text("Zoom level: %.1fx", static_cast<double>(zoom));
             ImGui::SliderFloat("##Zoom", &zoom, 1.f, 3.f);
 
+            ImGui::Separator();
+
             ImGui::End();
 
             ImGui::PopStyleVar();
@@ -1808,8 +1736,9 @@ int main()
         // Draw step
         ////////////////////////////////////////////////////////////
         // ---
-        clock.restart();
         {
+            SamplerScopeGuard guard{samplesDrawMs};
+
             window.clear();
 
             const auto prevView = window.getView();
@@ -1833,36 +1762,18 @@ int main()
             }
 
             window.setView(prevView);
-
-            for (int i = 0; i < 4; ++i)
-            {
-                constexpr float offset = 53.f;
-
-                float top = offset;
-
-                for (int j = 0; j < i; ++j)
-                    top += txBanners[j].getRect().size.y + offset;
-
-                window.draw(txBanners[i],
-                            {
-                                .position = {(resolution.x - static_cast<float>(txBanners[0].getSize().x)) / 2.f, top},
-                                .textureRect = txBanners[i].getRect(),
-                                .color = sf::Color::whiteMask(static_cast<sf::base::U8>(bannerAlpha[i] * 255.f * 0.85f)),
-                            });
-            }
         }
-        samplesDrawMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
 
         // ---
-        clock.restart();
         {
+            SamplerScopeGuard guard{samplesDisplayMs};
+
             if (drawUI)
                 imGuiContext.render(window);
 
             window.display();
         }
-        samplesDisplayMs.record(clock.getElapsedTime().asSeconds() * 1000.f);
         // ---
 
         samplesFPS.record(1.f / fpsClock.getElapsedTime().asSeconds());
