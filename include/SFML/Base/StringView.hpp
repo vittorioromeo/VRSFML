@@ -460,6 +460,25 @@ public:
 
 
     ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline, gnu::pure]] inline constexpr int compare(const StringView& rhs) const noexcept
+    {
+        const SizeT minSize = base::min(theSize, rhs.theSize);
+        const int   result  = SFML_BASE_PRIV_CONSTEXPR_STRNCMP(theData, rhs.theData, minSize);
+
+        if (result != 0)
+            return result;
+
+        if (theSize < rhs.theSize)
+            return -1;
+
+        if (theSize > rhs.theSize)
+            return 1;
+
+        return 0;
+    }
+
+
+    ////////////////////////////////////////////////////////////
     template <typename StringLike>
     [[nodiscard, gnu::always_inline]] StringLike toString() const
     {

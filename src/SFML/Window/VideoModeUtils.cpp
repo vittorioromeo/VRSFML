@@ -13,9 +13,8 @@
 #include "SFML/System/Err.hpp"
 
 #include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <algorithm> // std::sort
 
 
 namespace sf
@@ -73,7 +72,7 @@ base::Span<const VideoMode> VideoModeUtils::getFullscreenModes()
                 result.pushBack(res);
         }
 
-        std::sort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
+        base::quickSort(result.begin(), result.end(), [](const auto& lhs, const auto& rhs) { return lhs > rhs; });
         return result;
     }();
 
