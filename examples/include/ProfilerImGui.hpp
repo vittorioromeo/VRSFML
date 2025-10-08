@@ -34,8 +34,7 @@ using SamplerVec  = sf::base::Vector<Sampler>;
 
 
 ////////////////////////////////////////////////////////////
-[[nodiscard, gnu::const, gnu::always_inline]] inline double calcNodePercentage(const auto&            scopeInfos,
-                                                                               const sfex::ScopeInfo& info)
+[[nodiscard, gnu::pure, gnu::always_inline]] inline double calcNodePercentage(const auto& scopeInfos, const sfex::ScopeInfo& info)
 {
     return info.parentNodeId == sfex::nullNode ? 0.0 : calcPercentage(info.timeUs, scopeInfos[info.parentNodeId].timeUs);
 }
