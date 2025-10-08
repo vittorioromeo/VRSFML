@@ -432,8 +432,8 @@ template <typename Iter, typename Comparer>
 /// \return An iterator to the new logical end of the range
 ///
 ////////////////////////////////////////////////////////////
-template <class ForwardIt>
-ForwardIt unique(ForwardIt first, ForwardIt last)
+template <typename ForwardIt>
+ForwardIt unique(ForwardIt first, const ForwardIt last)
 {
     if (first == last)
         return last;
@@ -445,6 +445,43 @@ ForwardIt unique(ForwardIt first, ForwardIt last)
             *result = SFML_BASE_MOVE(*first);
 
     return ++result;
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+template <typename ForwardIt, typename BinaryPredicate>
+ForwardIt adjacentFind(ForwardIt first, const ForwardIt last, BinaryPredicate p)
+{
+    if (first == last)
+        return last; // Empty range
+
+    ForwardIt next = first;
+    ++next;
+
+    while (next != last)
+    {
+        if (p(*first, *next))
+            return first; // Found a pair
+
+        ++first;
+        ++next;
+    }
+
+    return last; // No pair found
+}
+
+
+////////////////////////////////////////////////////////////
+/// \brief TODO P1: docs
+///
+////////////////////////////////////////////////////////////
+template <typename ForwardIt>
+[[gnu::always_inline]] ForwardIt adjacentFind(const ForwardIt first, const ForwardIt last)
+{
+    return sf::base::adjacentFind(first, last, [](const auto& a, const auto& b) { return a == b; });
 }
 
 } // namespace sf::base

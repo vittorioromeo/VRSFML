@@ -492,7 +492,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     drawList->PathClear();
     drawList->PathRect(bb.Min, bb.Max, rounding);
 
-    for (int i = 0; i < drawList->_Path.Size; i++)
+    for (int i = 0; i < drawList->_Path.Size; ++i)
         drawList->_Path[i] = transformPoint(drawList->_Path[i]);
 
     drawList->PathFillConvex(btnBgColor);
@@ -503,7 +503,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
         drawList->PathClear();
         drawList->PathRect(bb.Min, bb.Max, rounding);
 
-        for (int i = 0; i < drawList->_Path.Size; i++)
+        for (int i = 0; i < drawList->_Path.Size; ++i)
             drawList->_Path[i] = transformPoint(drawList->_Path[i]);
 
         drawList->PathStroke(ImGui::GetColorU32(ImGuiCol_Border), ImDrawFlags_Closed, ImGui::GetStyle().FrameBorderSize);
@@ -522,7 +522,7 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     drawList->AddText(textPos, ImGui::GetColorU32(ImGuiCol_Text), label, labelEnd);
 
     // Then, apply our transform to only the new text vertices.
-    for (int i = vtxBufferSizeBeforeTransformation; i < drawList->VtxBuffer.Size; i++)
+    for (int i = vtxBufferSizeBeforeTransformation; i < drawList->VtxBuffer.Size; ++i)
         drawList->VtxBuffer[i].pos = transformPoint(drawList->VtxBuffer[i].pos);
 
     // Restore the previous clip rect and cursor position.

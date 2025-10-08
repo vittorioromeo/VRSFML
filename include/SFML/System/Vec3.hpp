@@ -35,7 +35,7 @@ public:
     {
         static_assert(SFML_BASE_IS_FLOATING_POINT(T), "Vec3::length() is only supported for floating point types");
 
-        // don't use std::hypot because of slow performance
+        // don't use `std::hypot` because of slow performance
         return base::sqrt(x * x + y * y + z * z);
     }
 

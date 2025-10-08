@@ -762,7 +762,7 @@ struct [[nodiscard]] ImGuiContext::Impl
                 io.MousePos = ImVec2(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
             }
 
-            for (unsigned int i = 0; i < 3; i++)
+            for (unsigned int i = 0; i < 3; ++i)
             {
                 io.MouseDown[i] = Touch::isDown(i) || touchDown[i] || mousePressed[i] ||
                                   Mouse::isButtonPressed(static_cast<Mouse::Button>(i));
