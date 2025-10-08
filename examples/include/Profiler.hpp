@@ -22,9 +22,11 @@ namespace sfex
 ////////////////////////////////////////////////////////////
 using NodeId = sf::base::SizeT;
 
+
 ////////////////////////////////////////////////////////////
 inline constexpr auto   nullNode = static_cast<NodeId>(-1u);
 inline constexpr NodeId maxNodes = 128u;
+
 
 ////////////////////////////////////////////////////////////
 struct [[nodiscard]] ScopeInfo
@@ -49,8 +51,6 @@ struct [[nodiscard]] ScopeInfo
 namespace sfex::priv
 {
 ////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////
 struct [[nodiscard]] Database
 {
     ////////////////////////////////////////////////////////////
@@ -60,6 +60,7 @@ struct [[nodiscard]] Database
     NodeId currentNodeId = nullNode;
 
     sf::base::SizeT currentDepth = 0u;
+
 
     ////////////////////////////////////////////////////////////
     [[nodiscard]] ScopeInfo& initNode(const sf::base::StringView label,
@@ -101,6 +102,7 @@ struct [[nodiscard]] ScopeGuard
     sf::Time   startTime;
     NodeId     previousNodeId;
 
+
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] explicit ScopeGuard(ScopeInfo& theScopeInfo) :
         scopeInfo{theScopeInfo},
@@ -113,6 +115,7 @@ struct [[nodiscard]] ScopeGuard
         db.currentNodeId       = scopeInfo.nodeId;
         db.currentDepth        = scopeInfo.depth + 1u;
     }
+
 
     ////////////////////////////////////////////////////////////
     [[gnu::always_inline]] ~ScopeGuard()
@@ -136,12 +139,14 @@ namespace sfex
     return sf::base::Span<const ScopeInfo>{priv::tlDatabase.nodes, priv::tlDatabase.nextNodeId};
 }
 
+
 ////////////////////////////////////////////////////////////
 inline void populateNodes(sf::base::Span<const ScopeInfo>             scopeInfos,
                           sf::base::Vector<sf::base::Vector<NodeId>>& childrenMap,
                           sf::base::Vector<NodeId>&                   rootNodes)
 {
     childrenMap.resize(maxNodes);
+
     for (auto& vec : childrenMap)
         vec.clear();
 
@@ -160,14 +165,17 @@ inline void populateNodes(sf::base::Span<const ScopeInfo>             scopeInfos
 ////////////////////////////////////////////////////////////
 #define SFEX_PRIV_CONCAT_TOKENS_IMPL(a, b) a##b
 
+
 ////////////////////////////////////////////////////////////
 #define SFEX_PRIV_CONCAT_TOKENS(a, b) SFEX_PRIV_CONCAT_TOKENS_IMPL(a, b)
+
 
 ////////////////////////////////////////////////////////////
 #define SFEX_PRIV_UNIQUE_NAME(name) SFEX_PRIV_CONCAT_TOKENS(name, __LINE__)
 
+
 ////////////////////////////////////////////////////////////
-#define SFEX_PROFILE_SCOPE(label)                                                                       \
+#define SFEX_PROFILE_SCOPE(label)                                                                        \
                                                                                                          \
     static thread_local auto& SFEX_PRIV_UNIQUE_NAME(                                                     \
         sfProfilerScopeInfo) = ::sfex::priv::tlDatabase.initNode((label), __FILE__, __func__, __LINE__); \
