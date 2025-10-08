@@ -16,9 +16,8 @@
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Vector.hpp"
-
-#include <algorithm> // std::sort, std::adjacent_find
 
 
 namespace
@@ -169,9 +168,9 @@ bool SoundFileWriterWav::open(const Path& filename, unsigned int sampleRate, uns
         // Check for duplicate channel entries
         {
             auto sortedChannelMap = channelMap;
-            std::sort(sortedChannelMap.begin(), sortedChannelMap.end());
+            sf::base::quickSort(sortedChannelMap.begin(), sortedChannelMap.end());
 
-            if (std::adjacent_find(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
+            if (sf::base::adjacentFind(sortedChannelMap.begin(), sortedChannelMap.end()) != sortedChannelMap.end())
             {
                 priv::err() << "Duplicate channels in channel map";
                 return false;

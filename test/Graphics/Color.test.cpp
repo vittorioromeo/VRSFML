@@ -303,16 +303,16 @@ TEST_CASE("[Graphics] sf::Color")
             // 30° - 50° → 340°
             color        = sf::Color::fromHSLA({30.f, 1.f, 0.5f});
             shiftedColor = color.withRotatedHue(-50.f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({340.f, 1.f, 0.5f}));
+            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({340.f, 1.f, 0.5f})));
 
             // 300° + 120° → 60° (Yellow)
             color        = sf::Color::fromHSLA({300.f, 1.f, 0.5f});
             shiftedColor = color.withRotatedHue(120.f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
+            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({60.f, 1.f, 0.5f})));
 
             // 300° + 480° → (300 + 480) % 360 = 60°
             shiftedColor = color.withRotatedHue(480.f);
-            CHECK(shiftedColor == sf::Color::fromHSLA({60.f, 1.f, 0.5f}));
+            CHECK(shiftedColor == Approx(sf::Color::fromHSLA({60.f, 1.f, 0.5f})));
         }
 
         SECTION("Alpha preservation")

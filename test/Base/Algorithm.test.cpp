@@ -217,4 +217,89 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         CHECK(removedCount == 0);
         CHECK(v.empty());
     }
+
+
+    SECTION("AdjacentFind (Default): Core functionality")
+    {
+        SUBCASE("Pair found at the beginning")
+        {
+            int   vec[] = {5, 5, 2, 3, 4};
+            auto* it    = sf::base::adjacentFind(vec, vec + 5);
+            REQUIRE(it == vec);
+            CHECK(*it == 5);
+        }
+
+        SUBCASE("Pair found in the middle")
+        {
+            int   vec[] = {1, 2, 8, 8, 3};
+            auto* it    = sf::base::adjacentFind(vec, vec + 5);
+            REQUIRE(it == vec + 2);
+            CHECK(*it == 8);
+        }
+
+        SUBCASE("Pair found at the end")
+        {
+            int   vec[] = {1, 2, 3, 9, 9};
+            auto* it    = sf::base::adjacentFind(vec, vec + 5);
+            REQUIRE(it == vec + 3);
+            CHECK(*it == 9);
+        }
+
+        SUBCASE("Multiple pairs exist, finds the first one")
+        {
+            int   vec[] = {1, 2, 2, 3, 4, 4};
+            auto* it    = sf::base::adjacentFind(vec, vec + 6);
+            REQUIRE(it == vec + 1);
+            CHECK(*it == 2);
+        }
+    }
+
+    SECTION("AdjacentFind (Default): Edge cases")
+    {
+        SUBCASE("No adjacent pair found")
+        {
+            int   vec[] = {1, 2, 3, 4, 5, 4, 3, 2, 1};
+            auto* it    = sf::base::adjacentFind(vec, vec + 9);
+            CHECK(it == vec + 9);
+        }
+
+        SUBCASE("Empty range")
+        {
+            int   vec[1]{};
+            auto* it = sf::base::adjacentFind(vec, vec + 0);
+            CHECK(it == vec + 0);
+        }
+
+        SUBCASE("Single element range")
+        {
+            int   vec[] = {100};
+            auto* it    = sf::base::adjacentFind(vec, vec + 1);
+            CHECK(it == vec + 1);
+        }
+    }
+
+    SECTION("Adjacent find")
+    {
+        SUBCASE("Find where second element is greater than first")
+        {
+            int  vec[5]     = {5, 2, 3, 1, 8};
+            auto greaterCmp = [](int a, int b) { return b > a; };
+
+            auto* it = sf::base::adjacentFind(vec, vec + 5, greaterCmp);
+
+            // The first pair where b > a is (2, 3)
+            REQUIRE(it == vec + 1);
+            CHECK(*it == 2);
+            CHECK(*(it + 1) == 3);
+        }
+
+        SUBCASE("Predicate is never satisfied")
+        {
+            int  vec[5]     = {10, 8, 6, 4, 2};
+            auto greaterCmp = [](int a, int b) { return b > a; };
+
+            auto* it = sf::base::adjacentFind(vec, vec + 5, greaterCmp);
+            CHECK(it == vec + 5);
+        }
+    }
 }

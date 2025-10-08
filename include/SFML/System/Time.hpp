@@ -541,9 +541,6 @@ private:
 ///
 /// sf::Time t3 = sf::microseconds(-800'000);
 /// float sec = t3.asSeconds(); // -0.8
-///
-/// sf::Time t4 = std::chrono::milliseconds(250);
-/// std::chrono::microseconds micro2 = t4.toDuration(); // 250'000us
 /// \endcode
 ///
 /// \code

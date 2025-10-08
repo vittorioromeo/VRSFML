@@ -17,7 +17,7 @@
 namespace
 {
 
-template <class T>
+template <typename T>
 constexpr const T& asConst(T& t) noexcept
 {
     return t;

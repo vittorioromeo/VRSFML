@@ -3,6 +3,8 @@
 #include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
 #include "../bubble_idle/MathUtils.hpp"   // TODO P1: avoid the relative path...?
 #include "../bubble_idle/RNGFast.hpp"     // TODO P1: avoid the relative path...?
+#include "Profiler.hpp"
+#include "ProfilerImGui.hpp"
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -49,12 +51,11 @@
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"
+#include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Variant.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"
-
-#include <algorithm>
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
@@ -735,7 +736,7 @@ private:
             return ControlFlow::Continue;
         });
 
-        std::sort(blocksToKill.begin(), blocksToKill.end());
+        sf::base::quickSort(blocksToKill.begin(), blocksToKill.end());
         blocksToKill.erase(sf::base::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
@@ -765,7 +766,7 @@ private:
             return ControlFlow::Continue;
         });
 
-        std::sort(blocksToBurn.begin(), blocksToBurn.end());
+        sf::base::quickSort(blocksToBurn.begin(), blocksToBurn.end());
         blocksToBurn.erase(sf::base::unique(blocksToBurn.begin(), blocksToBurn.end()), blocksToBurn.end());
 
         for (const ObjectId objectId : blocksToBurn)
@@ -808,7 +809,7 @@ private:
             return ControlFlow::Continue;
         });
 
-        std::sort(blocksToKill.begin(), blocksToKill.end());
+        sf::base::quickSort(blocksToKill.begin(), blocksToKill.end());
         blocksToKill.erase(sf::base::unique(blocksToKill.begin(), blocksToKill.end()), blocksToKill.end());
 
         for (const ObjectId objectId : blocksToKill)
@@ -1359,87 +1360,91 @@ public:
             const auto  deltaTime   = m_fpsClock.restart();
             const float deltaTimeMs = deltaTime.asSeconds() * 1000.f;
 
-            m_time += deltaTimeMs;
-            m_shader.setUniform(m_ulTime, m_time);
-
-            if (!isLMBPressed())
-                m_grabbedObjectId.reset();
-
-            updateTurn(deltaTimeMs);
-
-            m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
             {
-                float particleBudget = deltaTimeMs;
+                SFEX_PROFILE_SCOPE("update");
 
-                tile.type.linear_match([&](const TGravityRotator&) {},
-                                       [&](const TLava&)
+                m_time += deltaTimeMs;
+                m_shader.setUniform(m_ulTime, m_time);
+
+                if (!isLMBPressed())
+                    m_grabbedObjectId.reset();
+
+                updateTurn(deltaTimeMs);
+
+                m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
                 {
-                    const auto getParticlePos = [&](const sf::Vec2f offset)
-                    { return tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset; };
+                    float particleBudget = deltaTimeMs;
 
-                    const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
+                    tile.type.linear_match([&](const TGravityRotator&) {},
+                                           [&](const TLava&)
                     {
-                        if (m_rngFast.getI(0, 100) > 30)
-                            return;
+                        const auto getParticlePos = [&](const sf::Vec2f offset)
+                        { return tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset; };
 
-                        if (m_world.isOOB(tile.position + dir) || m_world.isLava(tile.position + dir) ||
-                            m_world.isWall(tile.position + dir))
-                            return;
+                        const auto makeLavaParticlePerDirection = [&](const sf::Vec2i dir)
+                        {
+                            if (m_rngFast.getI(0, 100) > 30)
+                                return;
 
-                        if (particleBudget <= 0.f)
-                            return;
+                            if (m_world.isOOB(tile.position + dir) || m_world.isLava(tile.position + dir) ||
+                                m_world.isWall(tile.position + dir))
+                                return;
 
-                        const auto rndOffset = m_rngFast.getF(-64.f, 64.f);
-                        const auto dirOffset = m_rngFast.getF(-2.f, 6.f);
-                        const auto dirF      = dir.toVec2f();
+                            if (particleBudget <= 0.f)
+                                return;
 
-                        if (dir.x == 0)
-                            makeLavaParticle(getParticlePos({rndOffset, dirF.y * 64.f + -dirF.y * dirOffset}));
-                        else if (dir.y == 0)
-                            makeLavaParticle(getParticlePos({dirF.x * 64.f + -dirF.x * dirOffset, rndOffset}));
+                            const auto rndOffset = m_rngFast.getF(-64.f, 64.f);
+                            const auto dirOffset = m_rngFast.getF(-2.f, 6.f);
+                            const auto dirF      = dir.toVec2f();
 
-                        particleBudget -= deltaTimeMs * 0.35f;
-                    };
+                            if (dir.x == 0)
+                                makeLavaParticle(getParticlePos({rndOffset, dirF.y * 64.f + -dirF.y * dirOffset}));
+                            else if (dir.y == 0)
+                                makeLavaParticle(getParticlePos({dirF.x * 64.f + -dirF.x * dirOffset, rndOffset}));
 
-                    makeLavaParticlePerDirection({1, 0});
-                    makeLavaParticlePerDirection({-1, 0});
-                    makeLavaParticlePerDirection({0, 1});
-                    makeLavaParticlePerDirection({0, -1});
+                            particleBudget -= deltaTimeMs * 0.35f;
+                        };
 
-                    while (particleBudget > 0.f)
+                        makeLavaParticlePerDirection({1, 0});
+                        makeLavaParticlePerDirection({-1, 0});
+                        makeLavaParticlePerDirection({0, 1});
+                        makeLavaParticlePerDirection({0, -1});
+
+                        while (particleBudget > 0.f)
+                        {
+                            if (m_rngFast.getI(0, 100) > 98)
+                                makeLavaParticle(getParticlePos({m_rngFast.getF(-64.f, 64.f), m_rngFast.getF(-64.f, 64.f)}));
+
+                            particleBudget -= deltaTimeMs * 0.35f;
+                        }
+                    });
+
+                    return ControlFlow::Continue;
+                });
+
+                const auto updateParticleLike = [&](auto& particleLikeVec)
+                {
+                    for (auto& p : particleLikeVec)
                     {
-                        if (m_rngFast.getI(0, 100) > 98)
-                            makeLavaParticle(getParticlePos({m_rngFast.getF(-64.f, 64.f), m_rngFast.getF(-64.f, 64.f)}));
+                        p.velocity.y += p.accelerationY * deltaTimeMs;
+                        p.position += p.velocity * deltaTimeMs;
 
-                        particleBudget -= deltaTimeMs * 0.35f;
+                        p.rotation += p.torque * deltaTimeMs;
+
+                        p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
+                        p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
                     }
-                });
 
-                return ControlFlow::Continue;
-            });
+                    sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
+                        return particleLike.opacity <= 0.f;
+                    });
+                };
 
-            const auto updateParticleLike = [&](auto& particleLikeVec)
-            {
-                for (auto& p : particleLikeVec)
-                {
-                    p.velocity.y += p.accelerationY * deltaTimeMs;
-                    p.position += p.velocity * deltaTimeMs;
+                updateParticleLike(m_lavaParticles);
+                updateParticleLike(m_lavaParticlesTop);
 
-                    p.rotation += p.torque * deltaTimeMs;
-
-                    p.opacity = sf::base::clamp(p.opacity - p.opacityDecay * deltaTimeMs, 0.f, 1.f);
-                    p.scale   = sf::base::max(p.scale - p.scaleDecay * deltaTimeMs, 0.f);
-                }
-
-                sf::base::vectorEraseIf(particleLikeVec, [](const auto& particleLike) {
-                    return particleLike.opacity <= 0.f;
-                });
-            };
-
-            updateParticleLike(m_lavaParticles);
-            updateParticleLike(m_lavaParticlesTop);
-
-            m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
+                m_undoCountdown = sf::base::max(m_undoCountdown - deltaTimeMs * 0.0065f, 0.f);
+            }
             // ---
             ////////////////////////////////////////////////////////////
 
@@ -1482,6 +1487,10 @@ public:
             ImGui::Checkbox("Clockwise", &m_editorObjectClockwise);
 
             ImGui::End();
+
+            ImGui::Begin("SFEX Profiler");
+            sfex::showImguiProfiler();
+            ImGui::End();
             // ---
             ////////////////////////////////////////////////////////////
 
@@ -1489,447 +1498,473 @@ public:
             // Draw step
             ////////////////////////////////////////////////////////////
             // ---
-            m_window.clear();
-
-            m_dbBackground.clear();
-            m_dbLavaParticles.clear();
-            m_dbLavaParticlesTop.clear();
-            m_dbTile.clear();
-            m_dbWall.clear();
-            m_dbObjectBg.clear();
-            m_dbObject.clear();
-            m_dbObjectAttributes.clear();
-
-            m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
             {
-                const auto      tilePos      = tile.position.toVec2f();
-                const sf::Vec2f drawPosition = sf::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} + sf::Vec2f{64.f, 64.f};
+                SFEX_PROFILE_SCOPE("draw");
 
-                tile.type.linear_match(
-                    [&](const TGravityRotator& gravityRotator)
+                m_window.clear();
+
+                m_dbBackground.clear();
+                m_dbLavaParticles.clear();
+                m_dbLavaParticlesTop.clear();
+                m_dbTile.clear();
+                m_dbWall.clear();
+                m_dbObjectBg.clear();
+                m_dbObject.clear();
+                m_dbObjectAttributes.clear();
+
                 {
-                    m_dbTile.add(sf::CurvedArrowShapeData{
-                        .position = drawPosition,
-                        .scale    = {gravityRotator.clockwise ? 0.6f : -0.6f, 0.6f},
-                        .origin   = {32.f, 32.f},
-                        .rotation = sf::radians(gravityRotator.clockwise ? m_time * 0.002f : -m_time * 0.002f).wrapUnsigned(),
-                        .textureRect      = m_txrWhiteDot,
-                        .fillColor        = sf::Color::LightYellow,
-                        .outlineColor     = sf::Color::White,
-                        .outlineThickness = gravityRotator.clockwise ? 2.f : -2.f,
-                        .outerRadius      = 32.f,
-                        .innerRadius      = 24.f,
-                        .startAngle       = sf::degrees(0.f),
-                        .sweepAngle       = sf::degrees(270.f),
-                        .headLength       = 16.f,
-                        .headWidth        = 24.f,
-                    });
-                },
-                    [&](const TLava&) {});
+                    SFEX_PROFILE_SCOPE("tiles");
 
-                return ControlFlow::Continue;
-            });
-
-            const sf::Cursor* cursorToUse = &m_cursorArrow;
-
-            m_world.forBlocks([&](const ObjectId objectId, const Block& block)
-            {
-                sf::Vec2f drawPositionOffset   = {0.f, 0.f};
-                sf::Vec2f scaleMultiplier      = {1.f, 1.f};
-                float     rotationRadians      = 0.f;
-                float     arrowRotationRadians = 0.f;
-                float     lockRotationRadians  = 0.f;
-
-                forTurnEventsToProcess([&](TurnEvent& turnEvent)
-                {
-                    if (const auto* moveBlock = turnEvent.get_if<TEMoveBlock>())
+                    m_world.forTiles([&](const ObjectId /* objectId */, const Tile& tile)
                     {
-                        if (moveBlock->objectId != objectId)
-                            return false;
+                        const auto      tilePos      = tile.position.toVec2f();
+                        const sf::Vec2f drawPosition = sf::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} +
+                                                       sf::Vec2f{64.f, 64.f};
 
-                        const auto worldOffset = moveBlock->newPosition.toVec2f() - block.position.toVec2f();
-                        drawPositionOffset     = easeInOutBack(moveBlock->progress) * worldOffset * 128.f;
+                        tile.type.linear_match(
+                            [&](const TGravityRotator& gravityRotator)
+                        {
+                            m_dbTile.add(sf::CurvedArrowShapeData{
+                                .position = drawPosition,
+                                .scale    = {gravityRotator.clockwise ? 0.6f : -0.6f, 0.6f},
+                                .origin   = {32.f, 32.f},
+                                .rotation = sf::radians(gravityRotator.clockwise ? m_time * 0.002f : -m_time * 0.002f)
+                                                .wrapUnsigned(),
+                                .textureRect      = m_txrWhiteDot,
+                                .fillColor        = sf::Color::LightYellow,
+                                .outlineColor     = sf::Color::White,
+                                .outlineThickness = gravityRotator.clockwise ? 2.f : -2.f,
+                                .outerRadius      = 32.f,
+                                .innerRadius      = 24.f,
+                                .startAngle       = sf::degrees(0.f),
+                                .sweepAngle       = sf::degrees(270.f),
+                                .headLength       = 16.f,
+                                .headWidth        = 24.f,
+                            });
+                        },
+                            [&](const TLava&) {});
 
-                        const auto dir = (moveBlock->newPosition - block.position).toVec2f().abs();
-                        scaleMultiplier += easeInOutSine(bounce(moveBlock->progress)) * dir * 0.25f;
-                        scaleMultiplier -= easeInOutSine(bounce(moveBlock->progress)) * dir.perpendicular().abs() * 0.25f;
-
-                        return false;
-                    }
-
-                    if (const auto* fallBlock = turnEvent.get_if<TEFallBlock>())
-                    {
-                        if (fallBlock->objectId != objectId)
-                            return false;
-
-                        const auto worldOffset = fallBlock->newPosition.toVec2f() - block.position.toVec2f();
-                        drawPositionOffset     = easeInBack(fallBlock->progress) * worldOffset * 128.f;
-
-                        const auto dir = (fallBlock->newPosition - block.position).toVec2f().normalized().abs();
-                        scaleMultiplier += easeInOutSine(fallBlock->progress) * dir * 0.25f;
-                        scaleMultiplier -= easeInOutSine(fallBlock->progress) * dir.perpendicular().abs() * 0.25f;
-
-                        return false;
-                    }
-
-                    if (const auto* squishBlock = turnEvent.get_if<TESquishBlock>())
-                    {
-                        if (squishBlock->objectId != objectId)
-                            return false;
-
-                        const auto absDir = sf::Vec2f{sf::base::fabs(static_cast<float>(squishBlock->dir.x)),
-                                                      sf::base::fabs(static_cast<float>(squishBlock->dir.y))};
-
-                        const float progress = easeInOutBack(bounce(squishBlock->progress));
-
-                        scaleMultiplier += (progress * absDir * -0.35f);
-                        scaleMultiplier += (progress * sf::Vec2f{absDir.y, absDir.x} * 0.35f);
-
-                        drawPositionOffset = progress * squishBlock->dir.toVec2f() * 32.f;
-
-                        return false;
-                    }
-
-                    if (const auto* kill = turnEvent.get_if<TEKill>())
-                    {
-                        if (kill->objectId != objectId)
-                            return false;
-
-                        scaleMultiplier *= 1.f - easeInOutBack(kill->progress);
-                        rotationRadians = easeInOutSine(kill->progress) * sf::base::tau;
-
-                        return false;
-                    }
-
-                    if (const auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
-                    {
-                        if (rotateGravityDir->objectId != objectId)
-                            return false;
-
-                        const float mult     = rotateGravityDir->clockwise ? 1.f : -1.f;
-                        arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * sf::base::halfPi * mult;
-
-                        scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
-                        scaleMultiplier.y += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
-
-                        return false;
-                    }
-
-                    if (const auto* unlock = turnEvent.get_if<TEUnlock>())
-                    {
-                        if (unlock->objectId != objectId)
-                            return false;
-
-                        lockRotationRadians = easeInOutSine(unlock->progress) * sf::base::tau;
-
-                        scaleMultiplier.x += 0.35f * easeInOutSine(bounce(unlock->progress));
-                        scaleMultiplier.y += 0.35f * easeInOutSine(bounce(unlock->progress));
-
-                        return false;
-                    }
-
-                    if (const auto& burn = turnEvent.get_if<TEBurn>())
-                    {
-                        if (burn->objectId != objectId)
-                            return false;
-
-                        scaleMultiplier *= 1.f - easeInOutSine(burn->progress);
-                        rotationRadians = easeInOutSine(burn->progress) * -sf::base::tau * 2.f;
-                    }
-
-                    return false;
-                });
-
-                const auto      blockPos     = block.position.toVec2f();
-                const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} + drawPositionOffset +
-                                               sf::Vec2f{64.f, 64.f};
-
-                const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
-                                            getAdjustedMousePos().x < drawPosition.x + 128.f &&
-                                            getAdjustedMousePos().y > drawPosition.y &&
-                                            getAdjustedMousePos().y < drawPosition.y + 128.f;
-
-                const bool canInteractWithHoveredBlock = !block.fixed && !isLocked(block) && hoveredByMouse;
-
-                if (cursorToUse == &m_cursorArrow && canInteractWithHoveredBlock)
-                    cursorToUse = &m_cursorHand;
-                else if (cursorToUse == &m_cursorArrow && hoveredByMouse && !canInteractWithHoveredBlock)
-                    cursorToUse = &m_cursorNotAllowed;
-
-                const auto drawAttributes = [&](const auto& blockImpl)
-                {
-                    if (block.fixed)
-                        m_dbObjectAttributes.add(sf::Sprite{
-                            .position    = drawPosition,
-                            .scale       = scaleMultiplier,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                            .textureRect = m_txrPinned,
-                            .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
-                        });
-
-                    if (block.gravityDir != sf::Vec2i{0, 0})
-                        m_dbObjectAttributes.add(sf::Sprite{
-                            .position = drawPosition,
-                            .scale    = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
-                            .origin   = {64.f, 64.f},
-                            .rotation = sf::radians(
-                                            block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
-                                            rotationRadians + arrowRotationRadians)
-                                            .wrapUnsigned(),
-                            .textureRect = m_txrGravArrow,
-                            .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
-                        });
-
-                    if (isLocked(block))
-                        m_dbObjectAttributes.add(sf::Sprite{
-                            .position    = drawPosition + sf::Vec2f{40.f, 30.f},
-                            .scale       = scaleMultiplier * 0.5f,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians + lockRotationRadians + 0.2f).wrapUnsigned(),
-                            .textureRect = m_txrLock0,
-                            .color       = getHueColor(kindToColor(block.locked.value()).toHSL().hue),
-                        });
-                };
-
-                block.type.linear_match(
-                    [&](const BWall&)
-                {
-                    unsigned int neighbors = 0u;
-
-                    if (m_world.isWall(block.position + sf::Vec2i{0, -1}))
-                        neighbors |= 1u << 0;
-
-                    if (m_world.isWall(block.position + sf::Vec2i{-1, 0}))
-                        neighbors |= 1u << 1;
-
-                    if (m_world.isWall(block.position + sf::Vec2i{1, 0}))
-                        neighbors |= 1u << 2;
-
-                    if (m_world.isWall(block.position + sf::Vec2i{0, 1}))
-                        neighbors |= 1u << 3;
-
-                    const auto tileX = static_cast<float>(neighbors % 4u);
-                    const auto tileY = static_cast<float>(neighbors / 4u);
-
-                    const sf::FloatRect txr{
-                        .position = m_txrWallSet.position + sf::Vec2f{tileX * 128.f, tileY * 128.f},
-                        .size     = {128.f, 128.f},
-                    };
-
-                    m_dbWall.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = txr,
-                        .color       = getHueColor(0.f),
-                    });
-
-                    const auto patchCorner = [&](const float index)
-                    {
-                        m_dbWall.add(sf::Sprite{
-                            .position    = drawPosition,
-                            .scale       = scaleMultiplier,
-                            .origin      = {64.f, 64.f},
-                            .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                            .textureRect = {m_txrWallBits.position + sf::Vec2f{128.f * index, 0.f}, {128.f, 128.f}},
-                            .color       = getHueColor(0.f),
-                        });
-                    };
-
-                    if (!m_world.isWall(block.position + sf::Vec2i{-1, -1}) && (neighbors & 1u << 1) &&
-                        (neighbors & 1u << 0))
-                        patchCorner(0.f);
-
-                    if (!m_world.isWall(block.position + sf::Vec2i{1, -1}) && (neighbors & 1u << 2) &&
-                        (neighbors & 1u << 0))
-                        patchCorner(1.f);
-
-                    if (!m_world.isWall(block.position + sf::Vec2i{1, 1}) && (neighbors & 1u << 2) && (neighbors & 1u << 3))
-                        patchCorner(2.f);
-
-                    if (!m_world.isWall(block.position + sf::Vec2i{-1, 1}) && (neighbors & 1u << 1) &&
-                        (neighbors & 1u << 3))
-                        patchCorner(3.f);
-                },
-                    [&](const BColored& bColored)
-                {
-                    const sf::FloatRect* txr = bColored.kind == BlockKind::A
-                                                   ? &m_txrBlock0
-                                                   : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
-
-                    m_dbObject.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = *txr,
-                        .color       = getHueColor(kindToColor(bColored.kind).toHSL().hue),
-                    });
-
-                    drawAttributes(bColored);
-                },
-                    [&](const BKey& bKey)
-                {
-                    const sf::FloatRect* txr = bKey.kind == BlockKind::A
-                                                   ? &m_txrKey0
-                                                   : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
-
-                    m_dbObject.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = *txr,
-                        .color       = getHueColor(kindToColor(bKey.kind).toHSL().hue),
-                    });
-
-                    drawAttributes(bKey);
-                },
-                    [&](const BPadlock& /* bPadlock */)
-                {
-                    const sf::FloatRect* txr = &m_txrLock0;
-
-                    m_dbObject.add(sf::Sprite{
-                        .position    = drawPosition,
-                        .scale       = scaleMultiplier,
-                        .origin      = {64.f, 64.f},
-                        .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
-                        .textureRect = *txr,
-                        .color       = getHueColor(kindToColor(BlockKind::A).toHSL().hue),
-                    });
-
-                    // drawAttributes(bPadlock);
-                });
-
-                return ControlFlow::Continue;
-            });
-
-            m_window.setMouseCursor(*cursorToUse);
-
-            const sf::RenderStates states{
-                .texture = &m_textureAtlas.getTexture(),
-                .shader  = &m_shader,
-            };
-
-            for (int iX = 0; iX < 16; ++iX)
-                for (int iY = 0; iY < 16; ++iY)
-                {
-                    if (m_world.isLava({iX, iY}))
-                        continue;
-
-                    const sf::FloatRect* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
-
-                    m_dbBackground.add(sf::Sprite{
-                        .position    = {static_cast<float>(iX) * 128.f, static_cast<float>(iY) * 128.f},
-                        .textureRect = *txr,
-                        .color       = getHueColor(0.f),
+                        return ControlFlow::Continue;
                     });
                 }
 
-            for (sf::base::SizeT i = 0; i < m_lavaParticles.size(); ++i)
-                m_dbLavaParticles.add(
-                    particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1], m_txrLavaParticle, getLavaColor()));
+                const sf::Cursor* cursorToUse = &m_cursorArrow;
 
-            for (sf::base::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
-                m_dbLavaParticlesTop.add(particleToSprite(m_lavaParticlesTop[m_lavaParticlesTop.size() - i - 1],
-                                                          m_txrLavaParticle,
-                                                          getLavaColor()));
+                {
+                    SFEX_PROFILE_SCOPE("blocks");
 
-            const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
-            {
-                const auto downscaleSize = m_rtGame.getSize().toVec2f();
+                    m_world.forBlocks([&](const ObjectId objectId, const Block& block)
+                    {
+                        sf::Vec2f drawPositionOffset   = {0.f, 0.f};
+                        sf::Vec2f scaleMultiplier      = {1.f, 1.f};
+                        float     rotationRadians      = 0.f;
+                        float     arrowRotationRadians = 0.f;
+                        float     lockRotationRadians  = 0.f;
 
-                sf::View downscaleView;
-                downscaleView.size   = downscaleSize;
-                downscaleView.center = downscaleSize / 2.f;
+                        forTurnEventsToProcess([&](TurnEvent& turnEvent)
+                        {
+                            if (const auto* moveBlock = turnEvent.get_if<TEMoveBlock>())
+                            {
+                                if (moveBlock->objectId != objectId)
+                                    return false;
 
-                m_rtSpriteBg.setView(downscaleView);
+                                const auto worldOffset = moveBlock->newPosition.toVec2f() - block.position.toVec2f();
+                                drawPositionOffset     = easeInOutBack(moveBlock->progress) * worldOffset * 128.f;
 
-                m_rtSpriteBg.clear(sf::Color::Transparent);
-                (..., m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}));
-                m_rtSpriteBg.display();
+                                const auto dir = (moveBlock->newPosition - block.position).toVec2f().abs();
+                                scaleMultiplier += easeInOutSine(bounce(moveBlock->progress)) * dir * 0.25f;
+                                scaleMultiplier -= easeInOutSine(bounce(moveBlock->progress)) *
+                                                   dir.perpendicular().abs() * 0.25f;
 
-                m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
-                m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius);
+                                return false;
+                            }
 
-                m_rtSpriteBgTemp.clear(sf::Color::Transparent);
-                m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
-                m_rtSpriteBgTemp.display();
+                            if (const auto* fallBlock = turnEvent.get_if<TEFallBlock>())
+                            {
+                                if (fallBlock->objectId != objectId)
+                                    return false;
 
-                m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
+                                const auto worldOffset = fallBlock->newPosition.toVec2f() - block.position.toVec2f();
+                                drawPositionOffset     = easeInBack(fallBlock->progress) * worldOffset * 128.f;
 
-                m_rtSpriteBg.clear(sf::Color::Transparent);
-                m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
-                m_rtSpriteBg.display();
+                                const auto dir = (fallBlock->newPosition - block.position).toVec2f().normalized().abs();
+                                scaleMultiplier += easeInOutSine(fallBlock->progress) * dir * 0.25f;
+                                scaleMultiplier -= easeInOutSine(fallBlock->progress) * dir.perpendicular().abs() * 0.25f;
 
-                m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());
-            };
+                                return false;
+                            }
+
+                            if (const auto* squishBlock = turnEvent.get_if<TESquishBlock>())
+                            {
+                                if (squishBlock->objectId != objectId)
+                                    return false;
+
+                                const auto absDir = sf::Vec2f{sf::base::fabs(static_cast<float>(squishBlock->dir.x)),
+                                                              sf::base::fabs(static_cast<float>(squishBlock->dir.y))};
+
+                                const float progress = easeInOutBack(bounce(squishBlock->progress));
+
+                                scaleMultiplier += (progress * absDir * -0.35f);
+                                scaleMultiplier += (progress * sf::Vec2f{absDir.y, absDir.x} * 0.35f);
+
+                                drawPositionOffset = progress * squishBlock->dir.toVec2f() * 32.f;
+
+                                return false;
+                            }
+
+                            if (const auto* kill = turnEvent.get_if<TEKill>())
+                            {
+                                if (kill->objectId != objectId)
+                                    return false;
+
+                                scaleMultiplier *= 1.f - easeInOutBack(kill->progress);
+                                rotationRadians = easeInOutSine(kill->progress) * sf::base::tau;
+
+                                return false;
+                            }
+
+                            if (const auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
+                            {
+                                if (rotateGravityDir->objectId != objectId)
+                                    return false;
+
+                                const float mult = rotateGravityDir->clockwise ? 1.f : -1.f;
+                                arrowRotationRadians = easeInOutSine(rotateGravityDir->progress) * sf::base::halfPi * mult;
+
+                                scaleMultiplier.x += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
+                                scaleMultiplier.y += 0.35f * easeInOutSine(bounce(rotateGravityDir->progress));
+
+                                return false;
+                            }
+
+                            if (const auto* unlock = turnEvent.get_if<TEUnlock>())
+                            {
+                                if (unlock->objectId != objectId)
+                                    return false;
+
+                                lockRotationRadians = easeInOutSine(unlock->progress) * sf::base::tau;
+
+                                scaleMultiplier.x += 0.35f * easeInOutSine(bounce(unlock->progress));
+                                scaleMultiplier.y += 0.35f * easeInOutSine(bounce(unlock->progress));
+
+                                return false;
+                            }
+
+                            if (const auto& burn = turnEvent.get_if<TEBurn>())
+                            {
+                                if (burn->objectId != objectId)
+                                    return false;
+
+                                scaleMultiplier *= 1.f - easeInOutSine(burn->progress);
+                                rotationRadians = easeInOutSine(burn->progress) * -sf::base::tau * 2.f;
+                            }
+
+                            return false;
+                        });
+
+                        const auto      blockPos     = block.position.toVec2f();
+                        const sf::Vec2f drawPosition = sf::Vec2f{blockPos.x * 128.f, blockPos.y * 128.f} +
+                                                       drawPositionOffset + sf::Vec2f{64.f, 64.f};
+
+                        const bool hoveredByMouse = getAdjustedMousePos().x > drawPosition.x &&
+                                                    getAdjustedMousePos().x < drawPosition.x + 128.f &&
+                                                    getAdjustedMousePos().y > drawPosition.y &&
+                                                    getAdjustedMousePos().y < drawPosition.y + 128.f;
+
+                        const bool canInteractWithHoveredBlock = !block.fixed && !isLocked(block) && hoveredByMouse;
+
+                        if (cursorToUse == &m_cursorArrow && canInteractWithHoveredBlock)
+                            cursorToUse = &m_cursorHand;
+                        else if (cursorToUse == &m_cursorArrow && hoveredByMouse && !canInteractWithHoveredBlock)
+                            cursorToUse = &m_cursorNotAllowed;
+
+                        const auto drawAttributes = [&](const auto& blockImpl)
+                        {
+                            if (block.fixed)
+                                m_dbObjectAttributes.add(sf::Sprite{
+                                    .position    = drawPosition,
+                                    .scale       = scaleMultiplier,
+                                    .origin      = {64.f, 64.f},
+                                    .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                    .textureRect = m_txrPinned,
+                                    .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
+                                });
+
+                            if (block.gravityDir != sf::Vec2i{0, 0})
+                                m_dbObjectAttributes.add(sf::Sprite{
+                                    .position = drawPosition,
+                                    .scale = scaleMultiplier.rotatedBy(block.gravityDir.toVec2f().abs().angle()) * 0.6f,
+                                    .origin   = {64.f, 64.f},
+                                    .rotation = sf::radians(
+                                                    block.gravityDir.toVec2f().componentWiseMul({-1.f, 1.f}).angle().asRadians() +
+                                                    rotationRadians + arrowRotationRadians)
+                                                    .wrapUnsigned(),
+                                    .textureRect = m_txrGravArrow,
+                                    .color       = getHueColor(kindToColor(blockImpl.kind).toHSL().hue),
+                                });
+
+                            if (isLocked(block))
+                                m_dbObjectAttributes.add(sf::Sprite{
+                                    .position = drawPosition + sf::Vec2f{40.f, 30.f},
+                                    .scale    = scaleMultiplier * 0.5f,
+                                    .origin   = {64.f, 64.f},
+                                    .rotation = sf::radians(rotationRadians + lockRotationRadians + 0.2f).wrapUnsigned(),
+                                    .textureRect = m_txrLock0,
+                                    .color       = getHueColor(kindToColor(block.locked.value()).toHSL().hue),
+                                });
+                        };
+
+                        block.type.linear_match(
+                            [&](const BWall&)
+                        {
+                            unsigned int neighbors = 0u;
+
+                            if (m_world.isWall(block.position + sf::Vec2i{0, -1}))
+                                neighbors |= 1u << 0;
+
+                            if (m_world.isWall(block.position + sf::Vec2i{-1, 0}))
+                                neighbors |= 1u << 1;
+
+                            if (m_world.isWall(block.position + sf::Vec2i{1, 0}))
+                                neighbors |= 1u << 2;
+
+                            if (m_world.isWall(block.position + sf::Vec2i{0, 1}))
+                                neighbors |= 1u << 3;
+
+                            const auto tileX = static_cast<float>(neighbors % 4u);
+                            const auto tileY = static_cast<float>(neighbors / 4u);
+
+                            const sf::FloatRect txr{
+                                .position = m_txrWallSet.position + sf::Vec2f{tileX * 128.f, tileY * 128.f},
+                                .size     = {128.f, 128.f},
+                            };
+
+                            m_dbWall.add(sf::Sprite{
+                                .position    = drawPosition,
+                                .scale       = scaleMultiplier,
+                                .origin      = {64.f, 64.f},
+                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .textureRect = txr,
+                                .color       = getHueColor(0.f),
+                            });
+
+                            const auto patchCorner = [&](const float index)
+                            {
+                                m_dbWall.add(sf::Sprite{
+                                    .position = drawPosition,
+                                    .scale    = scaleMultiplier,
+                                    .origin   = {64.f, 64.f},
+                                    .rotation = sf::radians(rotationRadians).wrapUnsigned(),
+                                    .textureRect = {m_txrWallBits.position + sf::Vec2f{128.f * index, 0.f}, {128.f, 128.f}},
+                                    .color = getHueColor(0.f),
+                                });
+                            };
+
+                            if (!m_world.isWall(block.position + sf::Vec2i{-1, -1}) && (neighbors & 1u << 1) &&
+                                (neighbors & 1u << 0))
+                                patchCorner(0.f);
+
+                            if (!m_world.isWall(block.position + sf::Vec2i{1, -1}) && (neighbors & 1u << 2) &&
+                                (neighbors & 1u << 0))
+                                patchCorner(1.f);
+
+                            if (!m_world.isWall(block.position + sf::Vec2i{1, 1}) && (neighbors & 1u << 2) &&
+                                (neighbors & 1u << 3))
+                                patchCorner(2.f);
+
+                            if (!m_world.isWall(block.position + sf::Vec2i{-1, 1}) && (neighbors & 1u << 1) &&
+                                (neighbors & 1u << 3))
+                                patchCorner(3.f);
+                        },
+                            [&](const BColored& bColored)
+                        {
+                            const sf::FloatRect* txr = bColored.kind == BlockKind::A
+                                                           ? &m_txrBlock0
+                                                           : (bColored.kind == BlockKind::B ? &m_txrBlock1 : &m_txrBlock2);
+
+                            m_dbObject.add(sf::Sprite{
+                                .position    = drawPosition,
+                                .scale       = scaleMultiplier,
+                                .origin      = {64.f, 64.f},
+                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .textureRect = *txr,
+                                .color       = getHueColor(kindToColor(bColored.kind).toHSL().hue),
+                            });
+
+                            drawAttributes(bColored);
+                        },
+                            [&](const BKey& bKey)
+                        {
+                            const sf::FloatRect* txr = bKey.kind == BlockKind::A
+                                                           ? &m_txrKey0
+                                                           : (bKey.kind == BlockKind::B ? &m_txrKey1 : &m_txrKey2);
+
+                            m_dbObject.add(sf::Sprite{
+                                .position    = drawPosition,
+                                .scale       = scaleMultiplier,
+                                .origin      = {64.f, 64.f},
+                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .textureRect = *txr,
+                                .color       = getHueColor(kindToColor(bKey.kind).toHSL().hue),
+                            });
+
+                            drawAttributes(bKey);
+                        },
+                            [&](const BPadlock& /* bPadlock */)
+                        {
+                            const sf::FloatRect* txr = &m_txrLock0;
+
+                            m_dbObject.add(sf::Sprite{
+                                .position    = drawPosition,
+                                .scale       = scaleMultiplier,
+                                .origin      = {64.f, 64.f},
+                                .rotation    = sf::radians(rotationRadians).wrapUnsigned(),
+                                .textureRect = *txr,
+                                .color       = getHueColor(kindToColor(BlockKind::A).toHSL().hue),
+                            });
+
+                            // drawAttributes(bPadlock);
+                        });
+
+                        return ControlFlow::Continue;
+                    });
+                }
+
+                m_window.setMouseCursor(*cursorToUse);
+
+                const sf::RenderStates states{
+                    .texture = &m_textureAtlas.getTexture(),
+                    .shader  = &m_shader,
+                };
+
+                for (int iX = 0; iX < 16; ++iX)
+                    for (int iY = 0; iY < 16; ++iY)
+                    {
+                        if (m_world.isLava({iX, iY}))
+                            continue;
+
+                        const sf::FloatRect* txr = (iX % 2 == 0) ^ (iY % 2 == 0) ? &m_txrGrid1 : &m_txrGrid0;
+
+                        m_dbBackground.add(sf::Sprite{
+                            .position    = {static_cast<float>(iX) * 128.f, static_cast<float>(iY) * 128.f},
+                            .textureRect = *txr,
+                            .color       = getHueColor(0.f),
+                        });
+                    }
+
+                {
+                    SFEX_PROFILE_SCOPE("particles");
+
+                    for (sf::base::SizeT i = 0; i < m_lavaParticles.size(); ++i)
+                        m_dbLavaParticles.add(particleToSprite(m_lavaParticles[m_lavaParticles.size() - i - 1],
+                                                               m_txrLavaParticle,
+                                                               getLavaColor()));
+
+                    for (sf::base::SizeT i = 0; i < m_lavaParticlesTop.size(); ++i)
+                        m_dbLavaParticlesTop.add(particleToSprite(m_lavaParticlesTop[m_lavaParticlesTop.size() - i - 1],
+                                                                  m_txrLavaParticle,
+                                                                  getLavaColor()));
+                }
+
+                const auto updateShadowTexture = [&](const float blurRadius, const sf::base::U8 alpha, auto&&... toDraw)
+                {
+                    const auto downscaleSize = m_rtGame.getSize().toVec2f();
+
+                    sf::View downscaleView;
+                    downscaleView.size   = downscaleSize;
+                    downscaleView.center = downscaleSize / 2.f;
+
+                    // m_rtSpriteBg.setView(downscaleView);
+
+                    m_rtSpriteBg.clear(sf::Color::Transparent);
+                    (...,
+                     m_rtSpriteBg.draw(toDraw, {.texture = &m_textureAtlas.getTexture(), .shader = &m_shaderSpriteAlpha}));
+                    m_rtSpriteBg.display();
+
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{1.f, 0.f});
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadRadiusPixels, blurRadius);
+
+                    m_rtSpriteBgTemp.clear(sf::Color::Transparent);
+                    m_rtSpriteBgTemp.draw(m_rtSpriteBg.getTexture(), {.shader = &m_shaderBlurQuad});
+                    m_rtSpriteBgTemp.display();
+
+                    m_shaderBlurQuad.setUniform(m_ulBlurQuadBlurDirection, sf::Vec2f{0.f, 1.f});
+
+                    m_rtSpriteBg.clear(sf::Color::Transparent);
+                    m_rtSpriteBg.draw(m_rtSpriteBgTemp.getTexture(), {.shader = &m_shaderBlurQuad});
+                    m_rtSpriteBg.display();
+
+                    m_shaderShadow.setUniform(m_ulShadowColor, sf::Color::blackMask(alpha).toVec4<sf::Glsl::Vec4>());
+                };
+
+                {
+                    SFEX_PROFILE_SCOPE("shadow pass");
+
+                    m_rtGame.clear();
+                    m_shader.setUniform(m_ulWaveEnabled, true);
+                    m_rtGame.draw(m_txLava,
+                                  {.position = {0.f, 0.f}, .scale = {2.f, 2.f}, .color = getLavaColor()},
+                                  {.shader = &m_shader});
+                    m_rtGame.flush();
+                    m_shader.setUniform(m_ulWaveEnabled, false);
+                    m_rtGame.draw(m_dbBackground, states);
+                    m_rtGame.draw(m_dbLavaParticles,
+                                  {
+                                      .blendMode = sf::BlendAdd,
+                                      .texture   = &m_textureAtlas.getTexture(),
+                                      .shader    = &m_shader,
+                                  });
+                    m_rtGame.draw(m_dbTile, states);
+
+                    updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
+                    m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
+
+                    m_rtGame.draw(m_dbWall, states);
+                    m_rtGame.draw(m_dbObject, states);
+
+                    m_rtGame.draw(m_dbLavaParticlesTop,
+                                  {
+                                      .blendMode = sf::BlendAdd,
+                                      .texture   = &m_textureAtlas.getTexture(),
+                                      .shader    = &m_shader,
+                                  });
+
+                    updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
+                    m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
+
+                    m_rtGame.draw(m_dbObjectAttributes, states);
+                }
+
+                if (false)
+                    m_rtGame.draw(sf::RectangleShapeData{
+                        .position  = getMousePos(),
+                        .fillColor = sf::Color::Black,
+                        .size      = {20.f, 20.f},
+                    });
+
+                m_rtGame.display();
 
 
-            m_rtGame.clear();
-            m_shader.setUniform(m_ulWaveEnabled, true);
-            m_rtGame.draw(m_txLava,
-                          {.position = {0.f, 0.f}, .scale = {2.f, 2.f}, .color = getLavaColor()},
-                          {.shader = &m_shader});
-            m_rtGame.flush();
-            m_shader.setUniform(m_ulWaveEnabled, false);
-            m_rtGame.draw(m_dbBackground, states);
-            m_rtGame.draw(m_dbLavaParticles,
-                          {
-                              .blendMode = sf::BlendAdd,
-                              .texture   = &m_textureAtlas.getTexture(),
-                              .shader    = &m_shader,
-                          });
-            m_rtGame.draw(m_dbTile, states);
+                m_window.clear();
 
-            updateShadowTexture(/* blurRadius */ 10.f, /* alpha */ 128u, m_dbWall, m_dbObject);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {8.f, 8.f}}, {.shader = &m_shaderShadow});
-
-            m_rtGame.draw(m_dbWall, states);
-            m_rtGame.draw(m_dbObject, states);
-
-            m_rtGame.draw(m_dbLavaParticlesTop,
-                          {
-                              .blendMode = sf::BlendAdd,
-                              .texture   = &m_textureAtlas.getTexture(),
-                              .shader    = &m_shader,
-                          });
-
-            updateShadowTexture(/* blurRadius */ 5.f, /* alpha */ 196u, m_dbObjectAttributes);
-            m_rtGame.draw(m_rtSpriteBg.getTexture(), {.position = {4.f, 4.f}}, {.shader = &m_shaderShadow});
-
-            m_rtGame.draw(m_dbObjectAttributes, states);
-
-            if (false)
-                m_rtGame.draw(sf::RectangleShapeData{
-                    .position  = getMousePos(),
-                    .fillColor = sf::Color::Black,
-                    .size      = {20.f, 20.f},
-                });
-
-            m_rtGame.display();
-
-
-            m_window.clear();
-
-            m_window.draw(m_rtGame.getTexture(),
-                          {
-                              .scale = {0.5f, 0.5f},
-                          },
-                          {.shader = &m_shader});
-
-            if (m_undoCountdown > 0.f)
-                m_window.draw(m_txUndo,
+                m_window.draw(m_rtGame.getTexture(),
                               {
                                   .scale = {0.5f, 0.5f},
-                                  .color = sf::Color::whiteMask(static_cast<sf::base::U8>(
-                                      remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
                               },
                               {.shader = &m_shader});
 
-            m_imGuiContext.render(m_window);
+                if (m_undoCountdown > 0.f)
+                    m_window.draw(m_txUndo,
+                                  {
+                                      .scale = {0.5f, 0.5f},
+                                      .color = sf::Color::whiteMask(static_cast<sf::base::U8>(
+                                          remap(easeInOutSine(m_undoCountdown), 0.f, 1.f, 0.f, 255.f))),
+                                  },
+                                  {.shader = &m_shader});
+
+                m_imGuiContext.render(m_window);
+            }
+
             m_window.display();
         }
 
