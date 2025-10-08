@@ -1,8 +1,10 @@
 #include "../bubble_idle/RNGFast.hpp" // TODO P1: avoid the relative path...?
 #include "../bubble_idle/Sampler.hpp" // TODO P1: avoid the relative path...?
+#include "SoAPFR.hpp"                 // TODO P1: avoid the relative path...?
+
+#define SFEX_PROFILER_ENABLED
 #include "Profiler.hpp"
 #include "ProfilerImGui.hpp"
-#include "SoAPFR.hpp" // TODO P1: avoid the relative path...?
 
 #include "SFML/ImGui/ImGuiContext.hpp"
 
@@ -562,45 +564,56 @@ struct World
     ////////////////////////////////////////////////////////////
     void update(const float dt)
     {
-        for (Particle& p : particles)
         {
-            p.position += p.velocity * dt;
-            p.velocity += p.acceleration * dt;
-            p.scale += p.scaleRate * dt;
-            p.opacity += p.opacityChange * dt;
-            p.rotation += p.angularVelocity * dt;
-        }
+            SFEX_PROFILE_SCOPE("particles");
 
-        for (sf::base::Optional<Emitter>& e : emitters)
-        {
-            if (!e.hasValue())
-                continue;
-
-            e->position += e->velocity * dt;
-            e->velocity += e->acceleration * dt;
-            e->spawnTimer += e->spawnRate * dt;
-
-            for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+            for (Particle& p : particles)
             {
-                if (e->type == ParticleType::Smoke)
-                    particles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position));
-                else if (e->type == ParticleType::Fire)
-                    particles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position));
-
-                particles.back().type = e->type;
+                p.position += p.velocity * dt;
+                p.velocity += p.acceleration * dt;
+                p.scale += p.scaleRate * dt;
+                p.opacity += p.opacityChange * dt;
+                p.rotation += p.angularVelocity * dt;
             }
         }
 
-        for (Rocket& r : rockets)
         {
-            r.position += r.velocity * dt;
-            r.velocity += r.acceleration * dt;
+            SFEX_PROFILE_SCOPE("emitters");
+            for (sf::base::Optional<Emitter>& e : emitters)
+            {
+                if (!e.hasValue())
+                    continue;
 
-            if (sf::base::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
-                se->position = r.position - sf::Vec2f{12.f, 0.f};
+                e->position += e->velocity * dt;
+                e->velocity += e->acceleration * dt;
+                e->spawnTimer += e->spawnRate * dt;
 
-            if (sf::base::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
-                fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+                {
+                    if (e->type == ParticleType::Smoke)
+                        particles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position));
+                    else if (e->type == ParticleType::Fire)
+                        particles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position));
+
+                    particles.back().type = e->type;
+                }
+            }
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (Rocket& r : rockets)
+            {
+                r.position += r.velocity * dt;
+                r.velocity += r.acceleration * dt;
+
+                if (sf::base::Optional<Emitter>& se = emitters[r.smokeEmitterIdx])
+                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+
+                if (sf::base::Optional<Emitter>& fe = emitters[r.fireEmitterIdx])
+                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+            }
         }
     }
 
@@ -659,11 +672,22 @@ struct World
             (p.type == ParticleType::Smoke ? instanceRenderingDataBuffer[0] : instanceRenderingDataBuffer[1])
                 .emplaceBack(p.position, p.scale, p.rotation, p.opacity);
 
-        drawParticlesInstanced(instanceRenderingDataBuffer[0], 0, txrSmoke);
-        drawParticlesInstanced(instanceRenderingDataBuffer[1], 1, txrFire);
+        {
+            SFEX_PROFILE_SCOPE("smoke particles");
+            drawParticlesInstanced(instanceRenderingDataBuffer[0], 0, txrSmoke);
+        }
 
-        for (const auto& r : rockets)
-            drawRocketImpl(rt, r.position);
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+            drawParticlesInstanced(instanceRenderingDataBuffer[1], 1, txrFire);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (const auto& r : rockets)
+                drawRocketImpl(rt, r.position);
+        }
     }
 };
 
@@ -801,28 +825,48 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
                 fSpawn();
         };
 
-        for (Particle& p : smokeParticles)
-            updateParticle(p);
-
-        for (Particle& p : fireParticles)
-            updateParticle(p);
-
-        for (sf::base::Optional<Emitter>& e : smokeEmitters)
-            updateEmitter(e, [&] { smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position)); });
-
-        for (sf::base::Optional<Emitter>& e : fireEmitters)
-            updateEmitter(e, [&] { fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position)); });
-
-        for (Rocket& r : rockets)
         {
-            r.position += r.velocity * dt;
-            r.velocity += r.acceleration * dt;
+            SFEX_PROFILE_SCOPE("smoke particles");
 
-            if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
-                se->position = r.position - sf::Vec2f{12.f, 0.f};
+            for (Particle& p : smokeParticles)
+                updateParticle(p);
+        }
 
-            if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                fe->position = r.position - sf::Vec2f{12.f, 0.f};
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+
+            for (Particle& p : fireParticles)
+                updateParticle(p);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("smoke emitters");
+
+            for (sf::base::Optional<Emitter>& e : smokeEmitters)
+                updateEmitter(e, [&] { smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position)); });
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("fire emitters");
+
+            for (sf::base::Optional<Emitter>& e : fireEmitters)
+                updateEmitter(e, [&] { fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position)); });
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (Rocket& r : rockets)
+            {
+                r.position += r.velocity * dt;
+                r.velocity += r.acceleration * dt;
+
+                if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+
+                if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+            }
         }
     }
 
@@ -879,11 +923,22 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
-        drawParticlesInstanced(0, txrSmoke, smokeParticles);
-        drawParticlesInstanced(1, txrFire, fireParticles);
+        {
+            SFEX_PROFILE_SCOPE("smoke particles");
+            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+        }
 
-        for (const auto& r : rockets)
-            drawRocketImpl(rt, r.position);
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+            drawParticlesInstanced(1, txrFire, fireParticles);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (const auto& r : rockets)
+                drawRocketImpl(rt, r.position);
+        }
     }
 };
 
@@ -979,68 +1034,86 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             }
         };
 
-        updateParticles(smokeParticles);
-        updateParticles(fireParticles);
-
-        for (sf::base::Optional<Emitter>& e : smokeEmitters)
         {
-            if (!e.hasValue())
-                continue;
+            SFEX_PROFILE_SCOPE("smoke particles");
+            updateParticles(smokeParticles);
+        }
 
-            e->position += e->velocity * dt;
-            e->velocity += e->acceleration * dt;
-            e->spawnTimer += e->spawnRate * dt;
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+            updateParticles(fireParticles);
+        }
 
-            for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+        {
+            SFEX_PROFILE_SCOPE("smoke emitters");
+
+            for (sf::base::Optional<Emitter>& e : smokeEmitters)
             {
-                smokeParticles.positions.pushBack(e->position);
-                smokeParticles.velocities.pushBack(rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f);
-                smokeParticles.accelerations.pushBack({0.f, -0.011f});
-                smokeParticles.scales.pushBack(rng.getF(0.0025f, 0.0035f));
-                smokeParticles.opacities.pushBack(rng.getF(0.05f, 0.25f));
-                smokeParticles.rotations.pushBack(rng.getF(0.f, 6.28f));
-                smokeParticles.scaleRates.pushBack(rng.getF(0.001f, 0.003f) * 2.75f);
-                smokeParticles.opacityChanges.pushBack(-rng.getF(0.001f, 0.002f) * 3.25f);
-                smokeParticles.angularVelocities.pushBack(rng.getF(-0.02f, 0.02f));
+                if (!e.hasValue())
+                    continue;
+
+                e->position += e->velocity * dt;
+                e->velocity += e->acceleration * dt;
+                e->spawnTimer += e->spawnRate * dt;
+
+                for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+                {
+                    smokeParticles.positions.pushBack(e->position);
+                    smokeParticles.velocities.pushBack(rng.getVec2f({-0.2f, -0.2f}, {0.2f, 0.2f}) * 0.5f);
+                    smokeParticles.accelerations.pushBack({0.f, -0.011f});
+                    smokeParticles.scales.pushBack(rng.getF(0.0025f, 0.0035f));
+                    smokeParticles.opacities.pushBack(rng.getF(0.05f, 0.25f));
+                    smokeParticles.rotations.pushBack(rng.getF(0.f, 6.28f));
+                    smokeParticles.scaleRates.pushBack(rng.getF(0.001f, 0.003f) * 2.75f);
+                    smokeParticles.opacityChanges.pushBack(-rng.getF(0.001f, 0.002f) * 3.25f);
+                    smokeParticles.angularVelocities.pushBack(rng.getF(-0.02f, 0.02f));
+                }
             }
         }
 
-        for (sf::base::Optional<Emitter>& e : fireEmitters)
         {
-            if (!e.hasValue())
-                continue;
+            SFEX_PROFILE_SCOPE("fire emitters");
 
-            e->position += e->velocity * dt;
-            e->velocity += e->acceleration * dt;
-            e->spawnTimer += e->spawnRate * dt;
-
-            for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+            for (sf::base::Optional<Emitter>& e : fireEmitters)
             {
-                fireParticles.positions.pushBack(e->position);
-                fireParticles.velocities.pushBack(rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}));
-                fireParticles.accelerations.pushBack({0.f, 0.07f});
-                fireParticles.scales.pushBack(rng.getF(0.5f, 0.7f) * 0.085f);
-                fireParticles.opacities.pushBack(rng.getF(0.2f, 0.4f) * 0.85f);
-                fireParticles.rotations.pushBack(rng.getF(0.f, 6.28f));
-                fireParticles.scaleRates.pushBack(-rng.getF(0.001f, 0.003f) * 0.25f);
-                fireParticles.opacityChanges.pushBack(-0.001f);
-                fireParticles.angularVelocities.pushBack(rng.getF(-0.002f, 0.002f));
+                if (!e.hasValue())
+                    continue;
+
+                e->position += e->velocity * dt;
+                e->velocity += e->acceleration * dt;
+                e->spawnTimer += e->spawnRate * dt;
+
+                for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
+                {
+                    fireParticles.positions.pushBack(e->position);
+                    fireParticles.velocities.pushBack(rng.getVec2f({-0.3f, -0.8f}, {0.3f, -0.2f}));
+                    fireParticles.accelerations.pushBack({0.f, 0.07f});
+                    fireParticles.scales.pushBack(rng.getF(0.5f, 0.7f) * 0.085f);
+                    fireParticles.opacities.pushBack(rng.getF(0.2f, 0.4f) * 0.85f);
+                    fireParticles.rotations.pushBack(rng.getF(0.f, 6.28f));
+                    fireParticles.scaleRates.pushBack(-rng.getF(0.001f, 0.003f) * 0.25f);
+                    fireParticles.opacityChanges.pushBack(-0.001f);
+                    fireParticles.angularVelocities.pushBack(rng.getF(-0.002f, 0.002f));
+                }
             }
         }
 
-        for (Rocket& r : rockets)
         {
-            r.position += r.velocity * dt;
-            r.velocity += r.acceleration * dt;
+            SFEX_PROFILE_SCOPE("rockets");
 
-            if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
-                se->position = r.position - sf::Vec2f{12.f, 0.f};
+            for (Rocket& r : rockets)
+            {
+                r.position += r.velocity * dt;
+                r.velocity += r.acceleration * dt;
 
-            if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
-                fe->position = r.position - sf::Vec2f{12.f, 0.f};
+                if (sf::base::Optional<Emitter>& se = smokeEmitters[r.smokeEmitterIdx])
+                    se->position = r.position - sf::Vec2f{12.f, 0.f};
+
+                if (sf::base::Optional<Emitter>& fe = fireEmitters[r.fireEmitterIdx])
+                    fe->position = r.position - sf::Vec2f{12.f, 0.f};
+            }
         }
     }
-
     ////////////////////////////////////////////////////////////
     void cleanup()
     {
@@ -1110,11 +1183,22 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
-        drawParticlesInstanced(0, txrSmoke, smokeParticles);
-        drawParticlesInstanced(4, txrFire, fireParticles);
+        {
+            SFEX_PROFILE_SCOPE("smoke particles");
+            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+        }
 
-        for (const auto& r : rockets)
-            drawRocketImpl(rt, r.position);
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+            drawParticlesInstanced(4, txrFire, fireParticles);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (const auto& r : rockets)
+                drawRocketImpl(rt, r.position);
+        }
     }
 };
 
@@ -1209,6 +1293,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
         {
             SFEX_PROFILE_SCOPE("smoke emitters");
+
             for (sf::base::Optional<Emitter>& e : smokeEmitters)
             {
                 if (!e.hasValue())
@@ -1220,6 +1305,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
                 {
                     SFEX_PROFILE_SCOPE("spawn particles");
+
                     for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
                         smokeParticles.pushBack(Shared::makeAoSSmokeParticle<Particle>(e->position));
                 }
@@ -1228,6 +1314,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
         {
             SFEX_PROFILE_SCOPE("fire emitters");
+
             for (sf::base::Optional<Emitter>& e : fireEmitters)
             {
                 if (!e.hasValue())
@@ -1239,6 +1326,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
                 {
                     SFEX_PROFILE_SCOPE("spawn particles");
+
                     for (; e->spawnTimer >= 1.f; e->spawnTimer -= 1.f)
                         fireParticles.pushBack(Shared::makeAoSFireParticle<Particle>(e->position));
                 }
@@ -1247,6 +1335,7 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
 
         {
             SFEX_PROFILE_SCOPE("rockets");
+
             for (Rocket& r : rockets)
             {
                 r.position += r.velocity * dt;
@@ -1313,11 +1402,22 @@ struct World : Shared::AddU16EmitterMixin<Emitter>, Shared::AddRocketMixin<Rocke
             rt.drawInstancedIndexedVertices(makeInstancedDrawSettings(nParticles), setupSpriteInstanceAttribs);
         };
 
-        drawParticlesInstanced(0, txrSmoke, smokeParticles);
-        drawParticlesInstanced(4, txrFire, fireParticles);
+        {
+            SFEX_PROFILE_SCOPE("smoke particles");
+            drawParticlesInstanced(0, txrSmoke, smokeParticles);
+        }
 
-        for (const auto& r : rockets)
-            drawRocketImpl(rt, r.position);
+        {
+            SFEX_PROFILE_SCOPE("fire particles");
+            drawParticlesInstanced(4, txrFire, fireParticles);
+        }
+
+        {
+            SFEX_PROFILE_SCOPE("rockets");
+
+            for (const auto& r : rockets)
+                drawRocketImpl(rt, r.position);
+        }
     }
 };
 
@@ -1572,7 +1672,11 @@ int main()
                 }
 
                 world.update(simulationSpeed);
-                world.cleanup();
+
+                {
+                    SFEX_PROFILE_SCOPE("cleanup");
+                    world.cleanup();
+                }
             };
 
             if (mode == Mode::OOP)
@@ -1589,7 +1693,11 @@ int main()
                 }
 
                 oopWorld.update(simulationSpeed);
-                oopWorld.cleanup();
+
+                {
+                    SFEX_PROFILE_SCOPE("cleanup");
+                    oopWorld.cleanup();
+                }
             }
             else if (mode == Mode::AOS)
                 updateNonOOPWorld(aosWorld);
@@ -1616,6 +1724,8 @@ int main()
                 samplesDrawMs.clear();
                 samplesDisplayMs.clear();
                 samplesFPS.clear();
+
+                sfex::resetNodes();
             };
 
             const auto setFontScale = [&](const float x) { ImGui::SetWindowFontScale(x * imguiMult); };
@@ -1770,6 +1880,8 @@ int main()
         // ---
         {
             SamplerScopeGuard guard{samplesDrawMs};
+
+            SFEX_PROFILE_SCOPE("draw");
 
             window.clear();
 
