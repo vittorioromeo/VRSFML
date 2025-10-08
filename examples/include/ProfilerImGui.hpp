@@ -100,23 +100,27 @@ inline void renderNode(const SamplerVec&                            timeSamplers
         nodeFlags |= ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
     }
 
+    constexpr const char spaces[33] = "                                ";
+    const char*          spacesPtr  = spaces + sizeof(spaces) - 1u - (info.depth * 2); // points to the null terminator
+
     // We use the node's ID as a unique identifier for ImGui
     const bool isNodeOpen = ImGui::TreeNodeEx(reinterpret_cast<void*>(nodeId), nodeFlags, "%s", info.label.data());
 
     //
     // Column 2: time
     ImGui::TableSetColumnIndex(1);
-    ImGui::Text("%.3f", static_cast<double>(timeSamplers[nodeId].getAverage())); // Already in ms
+    ImGui::Text("%s%.3f", spacesPtr, static_cast<double>(timeSamplers[nodeId].getAverage())); // Already in ms
 
     //
     // Column 3: % of parent
     ImGui::TableSetColumnIndex(2);
     if (info.parentNodeId != sfex::nullNode)
     {
+
         if (const auto& parentInfo = allNodes[info.parentNodeId]; parentInfo.timeUs > 0)
-            ImGui::Text("%.1f%%", percentSamplers[nodeId].getAverage());
+            ImGui::Text("%s%.1f%%", spacesPtr + 1, percentSamplers[nodeId].getAverage());
         else
-            ImGui::Text("N/A");
+            ImGui::Text("%sN/A", spacesPtr + 1);
     }
     else
         ImGui::Text(""); // Root nodes have no parent

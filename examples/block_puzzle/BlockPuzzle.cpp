@@ -3,6 +3,8 @@
 #include "../bubble_idle/HueColor.hpp"    // TODO P1: avoid the relative path...?
 #include "../bubble_idle/MathUtils.hpp"   // TODO P1: avoid the relative path...?
 #include "../bubble_idle/RNGFast.hpp"     // TODO P1: avoid the relative path...?
+
+#define SFEX_PROFILER_ENABLED
 #include "Profiler.hpp"
 #include "ProfilerImGui.hpp"
 
