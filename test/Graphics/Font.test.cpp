@@ -44,7 +44,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
             const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
             for (const auto& filenameSuffix : filenameSuffixes)
             {
-                const sf::Path filename = U"Graphics/tuffy" + filenameSuffix + U".ttf";
+                const sf::Path filename = U"tuffy" + filenameSuffix + U".ttf";
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                 const auto font = sf::Font::openFromFile(filename).value();
@@ -85,7 +85,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 
         SECTION("Valid data")
         {
-            const auto memory = loadIntoMemory("Graphics/tuffy.ttf");
+            const auto memory = loadIntoMemory("tuffy.ttf");
             const auto font   = sf::Font::openFromMemory(memory.data(), memory.size()).value();
             CHECK(font.getInfo().family == "Tuffy");
             const auto& glyph = font.getGlyph(0x45, 16, false, /* outlineThickness */ 0.f);
@@ -113,7 +113,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 
     SECTION("openFromStream()")
     {
-        auto       stream = sf::FileInputStream::open("Graphics/tuffy.ttf").value();
+        auto       stream = sf::FileInputStream::open("tuffy.ttf").value();
         const auto font   = sf::Font::openFromStream(stream).value();
         CHECK(font.getInfo().family == "Tuffy");
         const auto& glyph = font.getGlyph(0x45, 16, false, /* outlineThickness */ 0.f);
@@ -140,7 +140,7 @@ TEST_CASE("[Graphics] sf::Font" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get smooth")
     {
-        auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+        auto font = sf::Font::openFromFile("tuffy.ttf").value();
         font.setSmooth(false);
         CHECK(!font.isSmooth());
     }

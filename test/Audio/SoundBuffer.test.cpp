@@ -30,7 +30,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Copy semantics")
     {
-        const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         SECTION("Construction")
         {
@@ -44,7 +44,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Assignment")
         {
-            sf::SoundBuffer soundBufferCopy = sf::SoundBuffer::loadFromFile("Audio/doodle_pop.ogg").value();
+            sf::SoundBuffer soundBufferCopy = sf::SoundBuffer::loadFromFile("doodle_pop.ogg").value();
             soundBufferCopy                 = soundBuffer;
             CHECK(soundBufferCopy.getSamples() != nullptr);
             CHECK(soundBufferCopy.getSampleCount() == 87'798);
@@ -56,7 +56,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Move construction")
     {
-        auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         const sf::SoundBuffer soundBufferMove(SFML_BASE_MOVE(soundBuffer));
         CHECK(soundBufferMove.getSamples() != nullptr);
@@ -68,8 +68,8 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Move assignmment")
     {
-        auto soundBuffer     = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        auto soundBufferMove = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBuffer     = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferMove = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         soundBufferMove = SFML_BASE_MOVE(soundBuffer);
         CHECK(soundBufferMove.getSamples() != nullptr);
@@ -92,11 +92,11 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
             for (const auto& filenameSuffix : filenameSuffixes)
             {
-                const sf::Path filename = U"Audio/ding" + filenameSuffix + U".flac";
+                const sf::Path filename = U"ding" + filenameSuffix + U".flac";
 
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
-                const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+                const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
                 CHECK(soundBuffer.getSamples() != nullptr);
                 CHECK(soundBuffer.getSampleCount() == 87'798);
@@ -117,7 +117,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid memory")
         {
-            const auto memory      = loadIntoMemory("Audio/ding.flac");
+            const auto memory      = loadIntoMemory("ding.flac");
             const auto soundBuffer = sf::SoundBuffer::loadFromMemory(memory.data(), memory.size()).value();
             CHECK(soundBuffer.getSamples() != nullptr);
             CHECK(soundBuffer.getSampleCount() == 87'798);
@@ -129,7 +129,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("loadFromStream()")
     {
-        auto       stream      = sf::FileInputStream::open("Audio/ding.flac").value();
+        auto       stream      = sf::FileInputStream::open("ding.flac").value();
         const auto soundBuffer = sf::SoundBuffer::loadFromStream(stream).value();
         CHECK(soundBuffer.getSamples() != nullptr);
         CHECK(soundBuffer.getSampleCount() == 87'798);
@@ -152,7 +152,7 @@ TEST_CASE("[Audio] sf::SoundBuffer" * doctest::skip(skipAudioDeviceTests))
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
                 {
-                    const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+                    const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
                     REQUIRE(soundBuffer.saveToFile(filename));
                 }
 

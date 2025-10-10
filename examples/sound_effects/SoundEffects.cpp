@@ -36,6 +36,7 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
+#include "SFML/Base/Abort.hpp"
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
@@ -168,10 +169,10 @@ class PitchVolume : public Effect
 {
 public:
     explicit PitchVolume(sf::Listener& listener, const sf::Font& font) :
-    Effect("Pitch / Volume"),
-    m_listener(listener),
-    m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
-    m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}})
+        Effect("Pitch / Volume"),
+        m_listener(listener),
+        m_pitchText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 80.f}}),
+        m_volumeText(font, {.position = {windowWidth / 2.f - 120.f, windowHeight / 2.f - 30.f}})
     {
     }
 
@@ -236,14 +237,16 @@ class Attenuation : public Effect
 {
 public:
     explicit Attenuation(sf::Listener& listener, const sf::Font& font) :
-    Effect("Attenuation"),
-    m_listener(listener),
-    m_text(font,
-           {.position = {20.f, 20.f},
-            .string   = "Attenuation factor dampens full volume of sound while within inner cone based on distance to "
-                        "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen within "
-                        "outer cone, volume is linearly interpolated between inner and outer volumes.",
-            .characterSize = 18u})
+        Effect("Attenuation"),
+        m_listener(listener),
+        m_text(font,
+               {.position = {20.f, 20.f},
+                .string   = "Attenuation factor dampens full volume of sound while within inner cone based on distance "
+                            "to "
+                            "listener.\nCone outer gain determines volume of sound while outside outer cone.\nWhen "
+                            "within "
+                            "outer cone, volume is linearly interpolated between inner and outer volumes.",
+                .characterSize = 18u})
     {
     }
 
@@ -352,8 +355,8 @@ private:
                         sf::PlaybackDevice&   playbackDevice,
                         const sf::ChannelMap& channelMap,
                         const unsigned int    theSampleRate) :
-        sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-        tone(theTone)
+            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
+            tone(theTone)
         {
         }
 
@@ -413,14 +416,14 @@ private:
 
 public:
     explicit Tone(sf::Listener& listener, const sf::Font& font) :
-    Effect("Tone Generator"),
-    m_listener(listener),
-    m_instruction(font,
-                  {.position = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
-                   .string   = "Press up and down arrows to change the current wave type"}),
-    m_currentType(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f}}),
-    m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
-    m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
+        Effect("Tone Generator"),
+        m_listener(listener),
+        m_instruction(font,
+                      {.position = {windowWidth / 2.f - 370.f, windowHeight / 2.f - 200.f},
+                       .string   = "Press up and down arrows to change the current wave type"}),
+        m_currentType(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 100.f}}),
+        m_currentAmplitude(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f - 50.f}}),
+        m_currentFrequency(font, {.position = {windowWidth / 2.f - 150.f, windowHeight / 2.f}})
     {
     }
 
@@ -506,8 +509,8 @@ private:
                            sf::PlaybackDevice&   playbackDevice,
                            const sf::ChannelMap& channelMap,
                            const unsigned int    theSampleRate) :
-        sf::SoundStream(playbackDevice, channelMap, theSampleRate),
-        doppler(theDoppler)
+            sf::SoundStream(playbackDevice, channelMap, theSampleRate),
+            doppler(theDoppler)
         {
             setAttenuation(0.05f);
         }
@@ -540,10 +543,10 @@ private:
 
 public:
     explicit Doppler(sf::Listener& listener, const sf::Font& font) :
-    Effect("Doppler Shift"),
-    m_listener(listener),
-    m_currentVelocity(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f}}),
-    m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
+        Effect("Doppler Shift"),
+        m_listener(listener),
+        m_currentVelocity(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f - 50.f}}),
+        m_currentFactor(font, {.position = {windowWidth / 2.f - 150.f, windowHeight * 3.f / 4.f}})
     {
         m_position.y = (windowHeight - 20.f) / 2.f - 40.f;
     }
@@ -665,10 +668,10 @@ public:
 
 protected:
     explicit Processing(sf::Listener& listener, const sf::Font& font, std::string name) :
-    Effect(SFML_BASE_MOVE(name)),
-    m_listener(listener),
-    m_enabledText(font, {.string = "Processing: Enabled"}),
-    m_instructions(font, {.string = "Press Space to enable/disable processing"})
+        Effect(SFML_BASE_MOVE(name)),
+        m_listener(listener),
+        m_enabledText(font, {.string = "Processing: Enabled"}),
+        m_instructions(font, {.string = "Press Space to enable/disable processing"})
     {
         m_listenerShape.position = {(windowWidth - 20.f) / 2.f, (windowHeight - 20.f) / 2.f};
 
@@ -735,7 +738,7 @@ protected:
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have usable coefficients and state until the music and the
         // associated lambda are destroyed
-        m_music->setEffectProcessor(
+        const bool success = m_music->setEffectProcessor(
             [coefficients,
              &enabled = m_enabled,
              state    = sf::base::Vector<State>()](const float*  inputFrames,
@@ -777,6 +780,12 @@ protected:
             // We processed data 1:1
             inputFrameCount = outputFrameCount;
         });
+
+        if (!success)
+        {
+            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::abort();
+        }
     }
 };
 
@@ -787,7 +796,7 @@ protected:
 struct HighPassFilter : BiquadFilter
 {
     explicit HighPassFilter(sf::Listener& listener, const sf::Font& font) :
-    BiquadFilter(listener, font, "High-pass Filter")
+        BiquadFilter(listener, font, "High-pass Filter")
     {
     }
 
@@ -816,7 +825,7 @@ struct HighPassFilter : BiquadFilter
 struct LowPassFilter : BiquadFilter
 {
     explicit LowPassFilter(sf::Listener& listener, const sf::Font& font) :
-    BiquadFilter(listener, font, "Low-pass Filter")
+        BiquadFilter(listener, font, "Low-pass Filter")
     {
     }
 
@@ -865,7 +874,7 @@ struct Echo : Processing
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
-        m_music->setEffectProcessor(
+        const bool success = m_music->setEffectProcessor(
             [delayInFrames,
              &enabled = m_enabled,
              buffer   = sf::base::Vector<float>(),
@@ -901,6 +910,12 @@ struct Echo : Processing
             // We processed data 1:1
             inputFrameCount = outputFrameCount;
         });
+
+        if (!success)
+        {
+            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::abort();
+        }
     }
 };
 
@@ -926,7 +941,7 @@ public:
         // While the music object exists, it is possible that the audio engine will try to call
         // this lambda hence we need to always have a usable state until the music and the
         // associated lambda are destroyed
-        m_music->setEffectProcessor(
+        const bool success = m_music->setEffectProcessor(
             [sampleRate = musicReader.getSampleRate(),
              filters    = sf::base::Vector<ReverbFilter<float>>(),
              &enabled   = m_enabled](const float*  inputFrames,
@@ -957,6 +972,12 @@ public:
             // We processed data 1:1
             inputFrameCount = outputFrameCount;
         });
+
+        if (!success)
+        {
+            sf::cErr() << "Failed to set effect processor\n";
+            sf::base::abort();
+        }
     }
 
 private:
@@ -1015,17 +1036,17 @@ private:
     {
     public:
         ReverbFilter(unsigned int sampleRate, float feedbackGain) :
-        m_allPass{{sampleRate / 10, 0.6f}, {sampleRate / 30, -0.6f}, {sampleRate / 90, 0.6f}, {sampleRate / 270, -0.6f}},
-        m_fir({0.003369f,  0.002810f,  0.001758f,  0.000340f,  -0.001255f, -0.002793f, -0.004014f, -0.004659f,
-               -0.004516f, -0.003464f, -0.001514f, 0.001148f,  0.004157f,  0.006986f,  0.009003f,  0.009571f,
-               0.008173f,  0.004560f,  -0.001120f, -0.008222f, -0.015581f, -0.021579f, -0.024323f, -0.021933f,
-               -0.012904f, 0.003500f,  0.026890f,  0.055537f,  0.086377f,  0.115331f,  0.137960f,  0.150407f,
-               0.150407f,  0.137960f,  0.115331f,  0.086377f,  0.055537f,  0.026890f,  0.003500f,  -0.012904f,
-               -0.021933f, -0.024323f, -0.021579f, -0.015581f, -0.008222f, -0.001120f, 0.004560f,  0.008173f,
-               0.009571f,  0.009003f,  0.006986f,  0.004157f,  0.001148f,  -0.001514f, -0.003464f, -0.004516f,
-               -0.004659f, -0.004014f, -0.002793f, -0.001255f, 0.000340f,  0.001758f,  0.002810f,  0.003369f}),
-        m_buffer(sampleRate / 5, {}), // sample rate / 5 = 200ms buffer size
-        m_feedbackGain(feedbackGain)
+            m_allPass{{sampleRate / 10, 0.6f}, {sampleRate / 30, -0.6f}, {sampleRate / 90, 0.6f}, {sampleRate / 270, -0.6f}},
+            m_fir({0.003369f,  0.002810f,  0.001758f,  0.000340f,  -0.001255f, -0.002793f, -0.004014f, -0.004659f,
+                   -0.004516f, -0.003464f, -0.001514f, 0.001148f,  0.004157f,  0.006986f,  0.009003f,  0.009571f,
+                   0.008173f,  0.004560f,  -0.001120f, -0.008222f, -0.015581f, -0.021579f, -0.024323f, -0.021933f,
+                   -0.012904f, 0.003500f,  0.026890f,  0.055537f,  0.086377f,  0.115331f,  0.137960f,  0.150407f,
+                   0.150407f,  0.137960f,  0.115331f,  0.086377f,  0.055537f,  0.026890f,  0.003500f,  -0.012904f,
+                   -0.021933f, -0.024323f, -0.021579f, -0.015581f, -0.008222f, -0.001120f, 0.004560f,  0.008173f,
+                   0.009571f,  0.009003f,  0.006986f,  0.004157f,  0.001148f,  -0.001514f, -0.003464f, -0.004516f,
+                   -0.004659f, -0.004014f, -0.002793f, -0.001255f, 0.000340f,  0.001758f,  0.002810f,  0.003369f}),
+            m_buffer(sampleRate / 5, {}), // sample rate / 5 = 200ms buffer size
+            m_feedbackGain(feedbackGain)
         {
         }
 
