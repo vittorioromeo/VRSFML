@@ -97,7 +97,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromFile()")
     {
-        const auto texture = sf::Texture::loadFromFile("Graphics/sfml-logo-big.png").value();
+        const auto texture = sf::Texture::loadFromFile("sfml-logo-big.png").value();
         CHECK(texture.getSize() == sf::Vec2u{1001, 304});
         CHECK(!texture.isSmooth());
         CHECK(!texture.isSrgb());
@@ -107,7 +107,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromMemory()")
     {
-        const auto memory  = loadIntoMemory("Graphics/sfml-logo-big.png");
+        const auto memory  = loadIntoMemory("sfml-logo-big.png");
         const auto texture = sf::Texture::loadFromMemory(memory.data(), memory.size()).value();
         CHECK(texture.getSize() == sf::Vec2u{1001, 304});
         CHECK(!texture.isSmooth());
@@ -118,7 +118,7 @@ TEST_CASE("[Graphics] sf::Texture" * doctest::skip(skipDisplayTests))
 
     SECTION("loadFromStream()")
     {
-        auto       stream  = sf::FileInputStream::open("Graphics/sfml-logo-big.png").value();
+        auto       stream  = sf::FileInputStream::open("sfml-logo-big.png").value();
         const auto texture = sf::Texture::loadFromStream(stream).value();
         CHECK(texture.getSize() == sf::Vec2u{1001, 304});
         CHECK(!texture.isSmooth());

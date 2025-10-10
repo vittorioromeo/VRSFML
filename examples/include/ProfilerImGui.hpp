@@ -123,7 +123,7 @@ inline void renderNode(const SamplerVec&                            timeSamplers
             ImGui::Text("%sN/A", spacesPtr + 1);
     }
     else
-        ImGui::Text(""); // Root nodes have no parent
+        ImGui::Text(" "); // Root nodes have no parent
 
     //
     // Column 3: Location

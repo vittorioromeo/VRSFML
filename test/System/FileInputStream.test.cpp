@@ -122,7 +122,7 @@ TEST_CASE("[System] sf::FileInputStream")
         const std::u32string filenameSuffixes[] = {U"", U"-ń", U"-🐌"};
         for (const auto& filenameSuffix : filenameSuffixes)
         {
-            const sf::Path filename = U"System/test" + filenameSuffix + U".txt";
+            const sf::Path filename = U"test" + filenameSuffix + U".txt";
             INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
             auto fileInputStream = sf::FileInputStream::open(filename).value();

@@ -53,7 +53,7 @@ void insertionSort(const RandomIt first, const RandomIt last, auto&& comp)
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] void insertionSort(const RandomIt first, const RandomIt last)
+[[gnu::always_inline]] inline void insertionSort(const RandomIt first, const RandomIt last)
 {
     insertionSort(first, last, priv::cmpLess);
 }
@@ -68,7 +68,7 @@ namespace sf::base::priv
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] void iterSwap(const RandomIt a, const RandomIt b)
+[[gnu::always_inline]] inline void iterSwap(const RandomIt a, const RandomIt b)
 {
     auto temp = SFML_BASE_MOVE(*a);
     *a        = SFML_BASE_MOVE(*b);
@@ -162,7 +162,7 @@ namespace sf::base
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] void quickSort(const RandomIt first, const RandomIt last, auto&& comp)
+[[gnu::always_inline]] inline void quickSort(const RandomIt first, const RandomIt last, auto&& comp)
 {
     if (first >= last)
         return;
@@ -176,7 +176,7 @@ template <typename RandomIt>
 ///
 ////////////////////////////////////////////////////////////
 template <typename RandomIt>
-[[gnu::always_inline]] void quickSort(const RandomIt first, const RandomIt last)
+[[gnu::always_inline]] inline void quickSort(const RandomIt first, const RandomIt last)
 {
     quickSort(first, last, priv::cmpLess);
 }

@@ -41,7 +41,7 @@ TEST_CASE("[Audio] sf::priv::MiniaudioSoundSource" * doctest::skip(skipAudioDevi
 {
     auto               audioContext = sf::AudioContext::create().value();
     sf::PlaybackDevice playbackDevice{sf::AudioContext::getDefaultPlaybackDeviceHandle().value()};
-    const auto         soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+    const auto         soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
     using TestSoundSource = sf::Sound;
 

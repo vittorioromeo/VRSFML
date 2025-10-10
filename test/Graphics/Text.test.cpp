@@ -34,7 +34,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         STATIC_CHECK(SFML_BASE_IS_NOTHROW_MOVE_ASSIGNABLE(sf::Text));
     }
 
-    const auto font = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+    const auto font = sf::Font::openFromFile("tuffy.ttf").value();
 
     SECTION("Construction")
     {
@@ -99,7 +99,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
 
     SECTION("Set/get font")
     {
-        const auto otherFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+        const auto otherFont = sf::Font::openFromFile("tuffy.ttf").value();
 
         sf::Text text(font, {});
         text.setFont(otherFont);
@@ -205,7 +205,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             const auto badFunction = []
             {
-                const auto localFont = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+                const auto localFont = sf::Font::openFromFile("tuffy.ttf").value();
                 return sf::Text(localFont, {});
             };
 
@@ -221,9 +221,7 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
         {
             struct BadStruct
             {
-                BadStruct() :
-                    memberFont{sf::Font::openFromFile("Graphics/tuffy.ttf").value()},
-                    memberText{memberFont, {}}
+                BadStruct() : memberFont{sf::Font::openFromFile("tuffy.ttf").value()}, memberText{memberFont, {}}
                 {
                 }
 
@@ -262,13 +260,13 @@ TEST_CASE("[Graphics] sf::Text" * doctest::skip(skipDisplayTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"Font"};
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            auto sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+            auto sb0 = sf::Font::openFromFile("tuffy.ttf").value();
             CHECK(!guard.fatalErrorTriggered("Font"));
 
             sf::Text s0(sb0, {});
             CHECK(!guard.fatalErrorTriggered("Font"));
 
-            sb0 = sf::Font::openFromFile("Graphics/tuffy.ttf").value();
+            sb0 = sf::Font::openFromFile("tuffy.ttf").value();
             CHECK(!guard.fatalErrorTriggered("Font"));
         }
     }

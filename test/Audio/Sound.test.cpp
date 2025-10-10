@@ -37,7 +37,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         STATIC_CHECK(SFML_BASE_HAS_VIRTUAL_DESTRUCTOR(sf::Sound));
     }
 
-    const auto soundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+    const auto soundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
     SECTION("Construction")
     {
@@ -70,8 +70,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Sound buffer move")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         const sf::Sound sound(playbackDevice, soundBufferA);
         CHECK(&sound.getBuffer() == &soundBufferA);
@@ -85,8 +85,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Multiple sounds and buffers -- copy")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         const sf::Sound soundA(playbackDevice, soundBufferA);
         const sf::Sound soundB(playbackDevice, soundBufferB);
@@ -102,8 +102,8 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("Multiple sounds and buffers")
     {
-        auto soundBufferA = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
-        auto soundBufferB = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+        auto soundBufferA = sf::SoundBuffer::loadFromFile("ding.flac").value();
+        auto soundBufferB = sf::SoundBuffer::loadFromFile("ding.flac").value();
 
         const sf::Sound soundA(playbackDevice, soundBufferA);
         const sf::Sound soundB(playbackDevice, soundBufferB);
@@ -124,7 +124,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
         {
             const auto badFunction = [&playbackDevice]
             {
-                const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+                const auto localSoundBuffer = sf::SoundBuffer::loadFromFile("ding.flac").value();
                 return sf::Sound(playbackDevice, localSoundBuffer);
             };
 
@@ -141,7 +141,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             struct BadStruct
             {
                 explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
-                    memberSoundBuffer{sf::SoundBuffer::loadFromFile("Audio/ding.flac").value()},
+                    memberSoundBuffer{sf::SoundBuffer::loadFromFile("ding.flac").value()},
                     memberSound{thePlaybackDevice, memberSoundBuffer}
                 {
                 }
@@ -166,13 +166,13 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            auto sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+            auto sb0 = sf::SoundBuffer::loadFromFile("ding.flac").value();
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
             sf::Sound s0(playbackDevice, sb0);
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            sb0 = sf::SoundBuffer::loadFromFile("Audio/ding.flac").value();
+            sb0 = sf::SoundBuffer::loadFromFile("ding.flac").value();
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
         }
 
@@ -181,7 +181,7 @@ TEST_CASE("[Audio] sf::Sound" * doctest::skip(skipAudioDeviceTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"SoundBuffer"};
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
-            auto optDependee = sf::SoundBuffer::loadFromFile("Audio/ding.flac");
+            auto optDependee = sf::SoundBuffer::loadFromFile("ding.flac");
             CHECK(optDependee.hasValue());
             CHECK(!guard.fatalErrorTriggered("SoundBuffer"));
 
