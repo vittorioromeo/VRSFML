@@ -21,8 +21,6 @@ include(${doctest_SOURCE_DIR}/scripts/cmake/doctest.cmake)
 # add_library(tracyclient SHARED ${PROJECT_SOURCE_DIR}/tracy/public/TracyClient.cpp)
 # target_link_libraries(tracyclient PRIVATE ws2_32 winmm gdi32 dbghelp)
 
-
-
 # Build doctest in C++20 mode to enable C++20 features
 target_compile_features(doctest INTERFACE cxx_std_20)
 
@@ -81,72 +79,13 @@ if(SFML_RUN_AUDIO_DEVICE_TESTS)
     target_compile_definitions(sfml-test-main PRIVATE SFML_RUN_AUDIO_DEVICE_TESTS)
 endif()
 
-file(GLOB BASE_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Base/*.cpp" "${TEST_SRCROOT}/Base/*.hpp" "${TEST_SRCROOT}/Base/*.inl")
-sfml_add_test(test-sfml-base "${BASE_SRC}" "")
-
-file(GLOB SYSTEM_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/System/*.cpp" "${TEST_SRCROOT}/System/*.hpp" "${TEST_SRCROOT}/System/*.inl")
-sfml_add_test(test-sfml-system "${SYSTEM_SRC}" "")
-target_compile_definitions(test-sfml-system PRIVATE
-    EXPECTED_SFML_VERSION_MAJOR=${SFML_VERSION_MAJOR}
-    EXPECTED_SFML_VERSION_MINOR=${SFML_VERSION_MINOR}
-    EXPECTED_SFML_VERSION_PATCH=${SFML_VERSION_PATCH}
-    EXPECTED_SFML_VERSION_IS_RELEASE=$<IF:$<BOOL:${VERSION_IS_RELEASE}>,true,false>
-)
-
-file(GLOB GLUTILS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/GLUtils/*.cpp" "${TEST_SRCROOT}/GLUtils/*.hpp" "${TEST_SRCROOT}/GLUtils/*.inl")
-sfml_add_test(test-sfml-glutils "${GLUTILS_SRC}" SFML::GLUtils) # TODO P1: cleanup these circular deps
-
-file(GLOB WINDOW_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Window/*.cpp" "${TEST_SRCROOT}/Window/*.hpp" "${TEST_SRCROOT}/Window/*.inl")
-sfml_add_test(test-sfml-window "${WINDOW_SRC}" SFML::Window) # TODO P1: cleanup these circular deps
-
-file(GLOB GRAPHICS_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Graphics/*.cpp" "${TEST_SRCROOT}/Graphics/*.hpp" "${TEST_SRCROOT}/Graphics/*.inl")
-sfml_add_test(test-sfml-graphics "${GRAPHICS_SRC}" SFML::Graphics)
-
-if(SFML_RUN_DISPLAY_TESTS)
-    target_compile_definitions(test-sfml-graphics PRIVATE SFML_RUN_DISPLAY_TESTS)
-endif()
-if(SFML_OS_EMSCRIPTEN)
-    set(GRAPHICS_TEST_RESOURCES
-        Graphics/invalid_shader.vert
-        Graphics/sfml-logo-big.bmp
-        Graphics/sfml-logo-big.gif
-        Graphics/sfml-logo-big.jpg
-        Graphics/sfml-logo-big.png
-        Graphics/sfml-logo-big.psd
-        Graphics/shader.frag
-        Graphics/shader.geom
-        Graphics/shader.vert
-        Graphics/tuffy.ttf)
-
-    foreach(RESOURCE ${GRAPHICS_TEST_RESOURCES})
-        target_link_options(test-sfml-graphics PRIVATE "SHELL:--embed-file ${RESOURCE}")
-    endforeach()
-endif()
-
-file(GLOB NETWORK_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Network/*.cpp" "${TEST_SRCROOT}/Network/*.hpp" "${TEST_SRCROOT}/Network/*.inl")
-sfml_add_test(test-sfml-network "${NETWORK_SRC}" SFML::Network)
-
-file(GLOB AUDIO_SRC CONFIGURE_DEPENDS "${TEST_SRCROOT}/Audio/*.cpp" "${TEST_SRCROOT}/Audio/*.hpp" "${TEST_SRCROOT}/Audio/*.inl")
-sfml_add_test(test-sfml-audio "${AUDIO_SRC}" SFML::Audio)
-
-if(SFML_OS_IOS)
-    set(AUDIO_RESOURCE
-        Audio/ding-🐌.flac
-        Audio/ding-🐌.mp3
-        Audio/ding-ń.flac
-        Audio/ding-ń.mp3
-        Audio/ding.flac
-        Audio/ding.mp3
-        Audio/doodle_pop-🐌.ogg
-        Audio/doodle_pop-ń.ogg
-        Audio/doodle_pop.ogg
-        Audio/killdeer-🐌.wav
-        Audio/killdeer-ń.wav
-        Audio/killdeer.wav
-    )
-    target_sources(test-sfml-audio PRIVATE ${AUDIO_RESOURCE})
-    set_source_files_properties(${AUDIO_RESOURCE} PROPERTIES MACOSX_PACKAGE_LOCATION "Audio")
-endif()
+add_subdirectory(Audio)
+add_subdirectory(Base)
+add_subdirectory(GLUtils)
+add_subdirectory(Graphics)
+add_subdirectory(Network)
+add_subdirectory(System)
+add_subdirectory(Window)
 
 if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Because we can only write to the tmp directory on the Android virtual device we will need to build our directory tree under it
@@ -156,23 +95,26 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/prepare-android-files.sh" CONTENT
         "#!/bin/bash\n\
         adb shell \"mkdir -p ${TARGET_DIR}\"\n\
-        adb push $<TARGET_FILE:test-sfml-audio>    ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-base>     ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-graphics> ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-network>  ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-system>   ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-glutils>  ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:test-sfml-window>   ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Audio>        ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Graphics>     ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::ImGui>        ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Network>      ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::System>       ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:SFML::Window>       ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:doctest>            ${TARGET_DIR}\n\
-        adb push $<TARGET_FILE:doctest_with_main>  ${TARGET_DIR}\n\
-        adb push $ENV{LIBCXX_SHARED_SO}            ${TARGET_DIR}\n\
-        adb push ${CMAKE_CURRENT_LIST_DIR}         ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-audio>       ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-base>        ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-graphics>    ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-network>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-system>      ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-glutils>     ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:test-sfml-window>      ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::Audio>           ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::Graphics>        ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::ImGui>           ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::Network>         ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::System>          ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:SFML::Window>          ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest>               ${TARGET_DIR}\n\
+        adb push $<TARGET_FILE:doctest_with_main>     ${TARGET_DIR}\n\
+        adb push $ENV{LIBCXX_SHARED_SO}               ${TARGET_DIR}\n\
+        adb push ${CMAKE_CURRENT_LIST_DIR}/Audio/.    ${TARGET_DIR}\n\
+        adb push ${CMAKE_CURRENT_LIST_DIR}/Graphics/. ${TARGET_DIR}\n\
+        adb push ${CMAKE_CURRENT_LIST_DIR}/System/.   ${TARGET_DIR}\n\
+        adb push ${CMAKE_CURRENT_LIST_DIR}/Window/.   ${TARGET_DIR}\n\
         adb shell \"chmod -R 775 ${TARGET_DIR} && ls -la ${TARGET_DIR}\"\n"
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
 
@@ -182,7 +124,7 @@ if(SFML_OS_ANDROID AND DEFINED ENV{LIBCXX_SHARED_SO})
     # Generate proxy script that translates CTest commands into adb shell commands
     file(GENERATE OUTPUT "${PROJECT_BINARY_DIR}/run-in-adb-shell.sh" CONTENT
         "#!/bin/bash\n\
-        adb shell \"cd ${TARGET_DIR}/test; LD_LIBRARY_PATH=${TARGET_DIR} /data/local/tmp/$1 \\\"$2\\\" \\\"$3\\\" \\\"$4\\\" \\\"$5\\\" \\\"$6\\\" \\\"$7\\\" \\\"$8\\\" \\\"$9\\\"\"\n"
+        adb shell \"cd ${TARGET_DIR}; LD_LIBRARY_PATH=${TARGET_DIR} /data/local/tmp/$1 \\\"$2\\\" \\\"$3\\\" \\\"$4\\\" \\\"$5\\\" \\\"$6\\\" \\\"$7\\\" \\\"$8\\\" \\\"$9\\\"\"\n"
         FILE_PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE)
 endif()
 

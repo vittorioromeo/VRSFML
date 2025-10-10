@@ -479,7 +479,7 @@ ForwardIt adjacentFind(ForwardIt first, const ForwardIt last, BinaryPredicate p)
 ///
 ////////////////////////////////////////////////////////////
 template <typename ForwardIt>
-[[gnu::always_inline]] ForwardIt adjacentFind(const ForwardIt first, const ForwardIt last)
+[[gnu::always_inline]] inline ForwardIt adjacentFind(const ForwardIt first, const ForwardIt last)
 {
     return sf::base::adjacentFind(first, last, [](const auto& a, const auto& b) { return a == b; });
 }

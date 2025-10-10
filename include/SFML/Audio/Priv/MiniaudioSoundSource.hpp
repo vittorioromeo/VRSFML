@@ -336,8 +336,10 @@ public:
     ///
     /// \param effectProcessor The effect processor to attach to this sound, attach an empty processor to disable processing
     ///
+    /// \return `true` on success, `false` on failure
+    ///
     ////////////////////////////////////////////////////////////
-    void setEffectProcessor(const EffectProcessor& effectProcessor);
+    [[nodiscard]] bool setEffectProcessor(const EffectProcessor& effectProcessor);
 
     ////////////////////////////////////////////////////////////
     /// \brief Set whether or not the sound should loop after reaching the end
@@ -621,8 +623,10 @@ protected:
     ////////////////////////////////////////////////////////////
     /// \brief Apply the stored settings onto `sound`
     ///
+    /// \return `true` on success, `false` on failure
+    ///
     ////////////////////////////////////////////////////////////
-    void applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const;
+    [[nodiscard]] bool applySettingsAndEffectProcessorTo(MiniaudioUtils::SoundBase& soundBase) const;
 
     ////////////////////////////////////////////////////////////
     // Member data

@@ -69,10 +69,10 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
             for (const auto& filenameSuffix : filenameSuffixes)
             {
-                const sf::Path filename = U"Audio/ding" + filenameSuffix + U".mp3";
+                const sf::Path filename = U"ding" + filenameSuffix + U".mp3";
                 INFO("Filename: " << reinterpret_cast<const char*>(filename.to<std::u8string>().c_str()));
 
-                auto musicReader = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+                auto musicReader = sf::MusicReader::openFromFile("ding.mp3").value();
                 CHECK(musicReader.getDuration() == sf::microseconds(1'990'884));
 
                 sf::Music music(playbackDevice, musicReader);
@@ -100,7 +100,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Valid buffer")
         {
-            memory = loadIntoMemory("Audio/ding.flac");
+            memory = loadIntoMemory("ding.flac");
 
             auto musicReader = sf::MusicReader::openFromMemory(memory.data(), memory.size()).value();
             CHECK(static_cast<const sf::MusicReader&>(musicReader).getDuration() == sf::microseconds(1'990'884));
@@ -121,7 +121,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("openFromStream()")
     {
-        auto stream      = sf::FileInputStream::open("Audio/doodle_pop.ogg").value();
+        auto stream      = sf::FileInputStream::open("doodle_pop.ogg").value();
         auto musicReader = sf::MusicReader::openFromStream(stream).value();
         CHECK(static_cast<const sf::MusicReader&>(musicReader).getDuration() == sf::microseconds(24'002'176));
         CHECK(static_cast<const sf::MusicReader&>(musicReader).getChannelCount() == 2);
@@ -140,7 +140,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("play/pause/stop")
     {
-        auto musicReader = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+        auto musicReader = sf::MusicReader::openFromFile("ding.mp3").value();
 
         sf::Music music(playbackDevice, musicReader);
 
@@ -165,7 +165,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
     SECTION("setLoopPoints()")
     {
-        auto musicReader = sf::MusicReader::openFromFile("Audio/killdeer.wav").value();
+        auto musicReader = sf::MusicReader::openFromFile("killdeer.wav").value();
 
         sf::Music music(playbackDevice, musicReader);
 
@@ -191,7 +191,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
 
         SECTION("Offset too long")
         {
-            musicReader = sf::MusicReader::openFromFile("Audio/killdeer.wav").value();
+            musicReader = sf::MusicReader::openFromFile("killdeer.wav").value();
 
             music.setLoopPoints({sf::seconds(1000), sf::milliseconds(10)});
             const auto [offset, length] = music.getLoopPoints();
@@ -213,7 +213,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
         {
             const auto badFunction = [&playbackDevice]
             {
-                auto localMusicSource = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+                auto localMusicSource = sf::MusicReader::openFromFile("ding.mp3").value();
                 return sf::Music(playbackDevice, localMusicSource);
             };
 
@@ -230,7 +230,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             struct BadStruct
             {
                 explicit BadStruct(sf::PlaybackDevice& thePlaybackDevice) :
-                    memberMusicSource{sf::MusicReader::openFromFile("Audio/ding.mp3").value()},
+                    memberMusicSource{sf::MusicReader::openFromFile("ding.mp3").value()},
                     memberSound{thePlaybackDevice, memberMusicSource}
                 {
                 }
@@ -255,13 +255,13 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            auto sb0 = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+            auto sb0 = sf::MusicReader::openFromFile("ding.mp3").value();
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
             sf::Music s0(playbackDevice, sb0);
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            sb0 = sf::MusicReader::openFromFile("Audio/ding.mp3").value();
+            sb0 = sf::MusicReader::openFromFile("ding.mp3").value();
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
         }
 
@@ -270,7 +270,7 @@ TEST_CASE("[Audio] sf::Music" * doctest::skip(skipAudioDeviceTests))
             const sf::priv::LifetimeDependee::TestingModeGuard guard{"MusicReader"};
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 
-            auto optDependee = sf::MusicReader::openFromFile("Audio/ding.mp3");
+            auto optDependee = sf::MusicReader::openFromFile("ding.mp3");
             CHECK(optDependee.hasValue());
             CHECK(!guard.fatalErrorTriggered("MusicReader"));
 

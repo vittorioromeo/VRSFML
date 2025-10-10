@@ -113,7 +113,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("bmp")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.bmp");
+                image = sf::Image::loadFromFile("sfml-logo-big.bmp");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color::White);
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -121,7 +121,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("png")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.png");
+                image = sf::Image::loadFromFile("sfml-logo-big.png");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -129,7 +129,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("jpg")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.jpg");
+                image = sf::Image::loadFromFile("sfml-logo-big.jpg");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color::White);
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -137,7 +137,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("gif")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.gif");
+                image = sf::Image::loadFromFile("sfml-logo-big.gif");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color::White);
                 CHECK(image->getPixel({200, 150}) == sf::Color(146, 210, 62));
@@ -145,7 +145,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("psd")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.psd");
+                image = sf::Image::loadFromFile("sfml-logo-big.psd");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color::White);
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -153,7 +153,7 @@ TEST_CASE("[Graphics] sf::Image")
 
             SECTION("qoi")
             {
-                image = sf::Image::loadFromFile("Graphics/sfml-logo-big.qoi");
+                image = sf::Image::loadFromFile("sfml-logo-big.qoi");
                 REQUIRE(image.hasValue());
                 CHECK(image->getPixel({0, 0}) == sf::Color(255, 255, 255, 0));
                 CHECK(image->getPixel({200, 150}) == sf::Color(144, 208, 62));
@@ -209,7 +209,7 @@ TEST_CASE("[Graphics] sf::Image")
 
     SECTION("loadFromStream()")
     {
-        auto       stream = sf::FileInputStream::open("Graphics/sfml-logo-big.png").value();
+        auto       stream = sf::FileInputStream::open("sfml-logo-big.png").value();
         const auto image  = sf::Image::loadFromStream(stream).value();
         CHECK(image.getSize() == sf::Vec2u{1001, 304});
         CHECK(image.getPixelsPtr() != nullptr);
