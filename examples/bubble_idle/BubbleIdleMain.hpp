@@ -446,6 +446,7 @@ struct Main
 
     bool loadingGuard{[&]
     {
+        window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::CPUStorage); // TODO P1: might solve flickering
         window.clear(sf::Color::Black);
 
         sf::TextData loadingTextData{.position         = window.getSize() / 2.f,
@@ -1636,9 +1637,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] Bubble* pickRandomBubbleInRadius(const sf::Vec2f center, const float radius)
     {
-        return pickRandomBubbleInRadiusMatching(center,
-                                                radius,
-                                                [](const Bubble&) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN { return true; });
+        return pickRandomBubbleInRadiusMatching(center, radius, [](const Bubble&) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN {
+            return true;
+        });
     }
 
     ////////////////////////////////////////////////////////////
@@ -3108,10 +3109,9 @@ struct Main
                 }
 
                 // Find rightmost cat
-                const auto rightmostIt = std::max_element(pt->cats.begin(),
-                                                          pt->cats.end(),
-                                                          [](const Cat& a, const Cat& b)
-                { return a.position.x < b.position.x; });
+                const auto rightmostIt = std::max_element(pt->cats.begin(), pt->cats.end(), [](const Cat& a, const Cat& b) {
+                    return a.position.x < b.position.x;
+                });
 
                 const float targetScroll = (rightmostIt->position.x - gameScreenSize.x / 2.f) / 2.f;
                 scroll                   = exponentialApproach(scroll, targetScroll, deltaTimeMs, 15.f);
@@ -3186,8 +3186,9 @@ struct Main
 
             scroll = 0.f;
 
-            sf::base::vectorEraseIf(pt->bubbles,
-                                    [&](const Bubble& b) { return b.position.x > pt->getMapLimit() + 128.f; });
+            sf::base::vectorEraseIf(pt->bubbles, [&](const Bubble& b) {
+                return b.position.x > pt->getMapLimit() + 128.f;
+            });
         }
 
         // Despawn bubbles after other things
@@ -3522,9 +3523,9 @@ struct Main
 
         const auto pickAny = [&](const auto... types) -> Bubble*
         {
-            return pickRandomBubbleInRadiusMatching({cx, cy},
-                                                    range,
-                                                    [&](const Bubble& b) { return (... || (b.type == types)); });
+            return pickRandomBubbleInRadiusMatching({cx, cy}, range, [&](const Bubble& b) {
+                return (... || (b.type == types));
+            });
         };
 
         if (!pt->perm.geniusCatsPurchased)
@@ -3596,10 +3597,9 @@ struct Main
         }
         else
         {
-            Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat),
-                                                         range,
-                                                         [&](const Bubble& bubble)
-            { return bubble.type == BubbleType::Normal; });
+            Bubble* b = pickRandomBubbleInRadiusMatching(getCatRangeCenter(cat), range, [&](const Bubble& bubble) {
+                return bubble.type == BubbleType::Normal;
+            });
 
             if (b == nullptr)
                 return;
@@ -3720,9 +3720,9 @@ struct Main
     ////////////////////////////////////////////////////////////
     [[nodiscard]] bool anyCatCopyHexed() const
     {
-        return sf::base::anyOf(pt->cats.begin(),
-                               pt->cats.end(),
-                               [](const Cat& cat) { return cat.hexedCopyTimer.hasValue(); });
+        return sf::base::anyOf(pt->cats.begin(), pt->cats.end(), [](const Cat& cat) {
+            return cat.hexedCopyTimer.hasValue();
+        });
     }
 
     ////////////////////////////////////////////////////////////
@@ -3938,10 +3938,9 @@ struct Main
         forEachBubbleInRadius({cx, cy}, range, findRotatedStarBubble);
 
         if (starBubble == nullptr)
-            starBubble = pickRandomBubbleInRadiusMatching({cx, cy},
-                                                          range,
-                                                          [&](Bubble& bubble)
-            { return bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova; });
+            starBubble = pickRandomBubbleInRadiusMatching({cx, cy}, range, [&](Bubble& bubble) {
+                return bubble.type == BubbleType::Star || bubble.type == BubbleType::Nova;
+            });
 
         if (starBubble == nullptr)
             return;
@@ -4086,10 +4085,9 @@ struct Main
 
         if (pt->repulsoCatConverterEnabled && !pt->repulsoCatIgnoreBubbles.normal)
         {
-            Bubble* b = pickRandomBubbleInRadiusMatching(cat.position,
-                                                         range,
-                                                         [&](Bubble& bubble)
-            { return bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova; });
+            Bubble* b = pickRandomBubbleInRadiusMatching(cat.position, range, [&](Bubble& bubble) {
+                return bubble.type != BubbleType::Star && bubble.type != BubbleType::Nova;
+            });
 
             if (b != nullptr && rng.getF(0.f, 100.f) < pt->psvPPRepulsoCatConverterChance.currentValue())
             {
@@ -5098,8 +5096,9 @@ struct Main
 
                             victoryTC.emplace(TargetedCountdown{.startingValue = 6500.f});
                             victoryTC->restart();
-                            delayedActions.emplaceBack(Countdown{.value = 7000.f},
-                                                       [this] { playSound(sounds.letterchime); });
+                            delayedActions.emplaceBack(Countdown{.value = 7000.f}, [this] {
+                                playSound(sounds.letterchime);
+                            });
                         }
 
                         const auto catType = asIdx(shrineTypeToCatType(shrine.type));
@@ -5163,10 +5162,9 @@ struct Main
         d.tcDeath.emplace(TargetedCountdown{.startingValue = 750.f});
         d.tcDeath->restart();
 
-        const bool allDollsCollected = sf::base::allOf(dollsToUse.begin(),
-                                                       dollsToUse.end(),
-                                                       [&](const Doll& otherDoll)
-        { return otherDoll.tcDeath.hasValue(); });
+        const bool allDollsCollected = sf::base::allOf(dollsToUse.begin(), dollsToUse.end(), [&](const Doll& otherDoll) {
+            return otherDoll.tcDeath.hasValue();
+        });
 
         if (allDollsCollected)
         {
@@ -7902,6 +7900,7 @@ struct Main
         const sf::Vec2u newResolution = getNewResolution();
 
         window = makeWindow();
+        window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::CPUStorage); // TODO P1: might solve flickering
 
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);
@@ -8190,9 +8189,9 @@ struct Main
             screenShakeTimer = sf::base::max(0.f, screenShakeTimer);
         }
 
-        const bool anyShrineDying = sf::base::anyOf(pt->shrines.begin(),
-                                                    pt->shrines.end(),
-                                                    [](const Shrine& shrine) { return shrine.tcDeath.hasValue(); });
+        const bool anyShrineDying = sf::base::anyOf(pt->shrines.begin(), pt->shrines.end(), [](const Shrine& shrine) {
+            return shrine.tcDeath.hasValue();
+        });
 
         if (!anyShrineDying && screenShakeTimer <= 0.f && screenShakeAmount > 0.f)
         {
@@ -8562,13 +8561,13 @@ struct Main
         char  buffStrBuffer[1024]{};
         SizeT writeIdx = 0u;
 
-        const SizeT nDollsToClick = sf::base::countIf(pt->dolls.begin(),
-                                                      pt->dolls.end(),
-                                                      [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
+        const SizeT nDollsToClick = sf::base::countIf(pt->dolls.begin(), pt->dolls.end(), [](const Doll& doll) {
+            return !doll.tcDeath.hasValue();
+        });
 
-        const SizeT nCopyDollsToClick = sf::base::countIf(pt->copyDolls.begin(),
-                                                          pt->copyDolls.end(),
-                                                          [](const Doll& doll) { return !doll.tcDeath.hasValue(); });
+        const SizeT nCopyDollsToClick = sf::base::countIf(pt->copyDolls.begin(), pt->copyDolls.end(), [](const Doll& doll) {
+            return !doll.tcDeath.hasValue();
+        });
 
         if (nDollsToClick > 0u)
             writeIdx += static_cast<SizeT>(
@@ -8826,9 +8825,9 @@ struct Main
             clampNPurchases(pt->psvShrineActivation);
             clampNPurchases(pt->psvBubbleValue);
 
-            sf::base::vectorEraseIf(pt->cats,
-                                    [](const Cat& cat)
-            { return cat.type >= CatType::Mouse && cat.type <= CatType::Duck; });
+            sf::base::vectorEraseIf(pt->cats, [](const Cat& cat) {
+                return cat.type >= CatType::Mouse && cat.type <= CatType::Duck;
+            });
         }
 
         //
@@ -9014,8 +9013,9 @@ struct Main
             if (delayCountdown.updateAndStop(deltaTimeMs) == CountdownStatusStop::JustFinished)
                 func();
 
-        sf::base::vectorEraseIf(delayedActions,
-                                [](const auto& delayedAction) { return delayedAction.delayCountdown.isDone(); });
+        sf::base::vectorEraseIf(delayedActions, [](const auto& delayedAction) {
+            return delayedAction.delayCountdown.isDone();
+        });
 
         //
         // Screen shake
