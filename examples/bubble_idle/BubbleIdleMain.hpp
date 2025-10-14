@@ -444,9 +444,18 @@ struct Main
     sf::RenderWindow window{makeWindow()};
     float            dpiScalingFactor = 1.f;
 
+    ////////////////////////////////////////////////////////////
+    void refreshWindowAutoBatchModeFromProfile() // TODO P1: check if this solves flickering
+    {
+        window.setAutoBatchMode(profile.autobatchMode == 0   ? sf::RenderTarget::AutoBatchMode::Disabled
+                                : profile.autobatchMode == 1 ? sf::RenderTarget::AutoBatchMode::CPUStorage
+                                                             : sf::RenderTarget::AutoBatchMode::GPUStorage);
+    }
+
+    ////////////////////////////////////////////////////////////
     bool loadingGuard{[&]
     {
-        window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::CPUStorage); // TODO P1: might solve flickering
+        refreshWindowAutoBatchModeFromProfile();
         window.clear(sf::Color::Black);
 
         sf::TextData loadingTextData{.position         = window.getSize() / 2.f,
@@ -7900,7 +7909,7 @@ struct Main
         const sf::Vec2u newResolution = getNewResolution();
 
         window = makeWindow();
-        window.setAutoBatchMode(sf::RenderTarget::AutoBatchMode::CPUStorage); // TODO P1: might solve flickering
+        refreshWindowAutoBatchModeFromProfile();
 
         recreateImGuiRenderTexture(newResolution);
         recreateGameRenderTexture(newResolution);

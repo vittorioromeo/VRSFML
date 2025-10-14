@@ -4202,6 +4202,12 @@ void Main::uiTabBarSettings()
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderFloat("Sharpness", &profile.ppSSharpness, 0.f, 1.f, "%.2f");
 
+        constexpr const char* autobatchModes[3]{"Off", "CPU", "GPU"};
+
+        ImGui::SetNextItemWidth(210.f * profile.uiScale);
+        if (ImGui::Combo("Batching mode", &profile.autobatchMode, autobatchModes, 3))
+            refreshWindowAutoBatchModeFromProfile();
+
         ImGui::EndTabItem();
     }
 
