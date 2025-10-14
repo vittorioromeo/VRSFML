@@ -453,6 +453,14 @@ struct Main
     }
 
     ////////////////////////////////////////////////////////////
+    bool flushAfterEveryBatch  = false; // TODO P1: check if this solves flickering
+    bool finishAfterEveryBatch = false; // TODO P1: check if this solves flickering
+    bool flushBeforeDisplay    = false; // TODO P1: check if this solves flickering
+    bool finishBeforeDisplay   = false; // TODO P1: check if this solves flickering
+    bool flushAfterDisplay     = false; // TODO P1: check if this solves flickering
+    bool finishAfterDisplay    = false; // TODO P1: check if this solves flickering
+
+    ////////////////////////////////////////////////////////////
     bool loadingGuard{[&]
     {
         refreshWindowAutoBatchModeFromProfile();
@@ -1054,6 +1062,18 @@ struct Main
     sf::CPUDrawableBatch hudBottomDrawableBatch;  // drawn below ImGui
     sf::CPUDrawableBatch cpuTopDrawableBatch;     // drawn on top of ImGui
     sf::CPUDrawableBatch catTextTopDrawableBatch; // drawn on top of ImGui
+
+    ////////////////////////////////////////////////////////////
+    void drawBatch(const sf::CPUDrawableBatch& batch, const sf::RenderStates& states)
+    {
+        rtGame.draw(batch, states);
+
+        if (flushAfterEveryBatch)
+            rtGame.flushGPUCommands();
+
+        if (finishAfterEveryBatch)
+            rtGame.finishGPUCommands();
+    }
 
     ////////////////////////////////////////////////////////////
     // Scrolling state
@@ -6287,9 +6307,9 @@ struct Main
     {
         shader.setUniform(suBubbleEffect, false);
 
-        rtGame.draw(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame.draw(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame.draw(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(bubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(starBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(bombBubbleDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
     }
 
     ////////////////////////////////////////////////////////////
@@ -6441,18 +6461,18 @@ struct Main
         shader.setUniform(suSubTexOrigin, txrBubble.position);
         shader.setUniform(suSubTexSize, txrBubble.size);
 
-        rtGame.draw(bubbleDrawableBatch, bubbleStates);
+        drawBatch(bubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleLightness, profile.bsBubbleLightness * 1.25f);
         shader.setUniform(suIridescenceStrength, profile.bsIridescenceStrength * 0.01f);
         shader.setUniform(suSubTexOrigin, txrBubbleStar.position);
         shader.setUniform(suSubTexSize, txrBubbleStar.size);
 
-        rtGame.draw(starBubbleDrawableBatch, bubbleStates);
+        drawBatch(starBubbleDrawableBatch, bubbleStates);
 
         shader.setUniform(suBubbleEffect, false);
 
-        rtGame.draw(bombBubbleDrawableBatch, bubbleStates);
+        drawBatch(bombBubbleDrawableBatch, bubbleStates);
     }
 
     ////////////////////////////////////////////////////////////
@@ -9164,8 +9184,8 @@ struct Main
         gameLoopDrawDolls(mousePos);
         gameLoopDrawParticles();
         gameLoopDrawTextParticles();
-        rtGame.draw(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame.draw(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(cpuDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(catTextDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Scroll arrow hint
@@ -9190,7 +9210,7 @@ struct Main
         {
             hudBottomDrawableBatch.clear();
             gameLoopDrawHUDBottomParticles();
-            rtGame.draw(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudBottomDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         rtGame.draw(sf::RectangleShapeData{.position         = gameView.viewport.position.componentWiseMul(resolution),
@@ -9209,7 +9229,7 @@ struct Main
                 gameLoopDrawHUDParticles();
 
             gameLoopDrawEarnedCoinParticles();
-            rtGame.draw(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
@@ -9346,8 +9366,8 @@ struct Main
         //
         // Draw cats on top of UI
         rtGame.setView(scaledTopGameView);
-        rtGame.draw(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
-        rtGame.draw(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(cpuTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+        drawBatch(catTextTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
 
         //
         // Purchase unlocked/available effects
@@ -9361,7 +9381,7 @@ struct Main
         {
             hudTopDrawableBatch.clear();
             gameLoopDrawHUDTopParticles();
-            rtGame.draw(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
+            drawBatch(hudTopDrawableBatch, {.texture = &textureAtlas.getTexture(), .shader = &shader});
         }
 
         //
@@ -9447,7 +9467,19 @@ struct Main
 
         //
         // Display window
+        if (flushBeforeDisplay)
+            rtGame.flushGPUCommands();
+
+        if (finishBeforeDisplay)
+            rtGame.finishGPUCommands();
+
         rtGame.display();
+
+        if (flushAfterDisplay)
+            rtGame.flushGPUCommands();
+
+        if (finishAfterDisplay)
+            rtGame.finishGPUCommands();
 
         shaderPostProcess.setUniform(suPPVibrance, profile.ppSVibrance);
         shaderPostProcess.setUniform(suPPSaturation, profile.ppSSaturation);
@@ -9458,7 +9490,20 @@ struct Main
 
         window.clear();
         window.draw(rtGame.getTexture(), {.shader = &shaderPostProcess});
+
+        if (flushBeforeDisplay)
+            rtGame.flushGPUCommands();
+
+        if (finishBeforeDisplay)
+            rtGame.finishGPUCommands();
+
         window.display();
+
+        if (flushAfterDisplay)
+            rtGame.flushGPUCommands();
+
+        if (finishAfterDisplay)
+            rtGame.finishGPUCommands();
 
         //
         // Save last mouse pos

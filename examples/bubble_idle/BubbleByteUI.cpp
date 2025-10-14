@@ -4202,11 +4202,23 @@ void Main::uiTabBarSettings()
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         ImGui::SliderFloat("Sharpness", &profile.ppSSharpness, 0.f, 1.f, "%.2f");
 
+        ImGui::Separator();
+
+        // TODO P1: check if this solves flickering
+        ImGui::Text("Flickering troubleshooting");
+
         constexpr const char* autobatchModes[3]{"Off", "CPU", "GPU"};
 
         ImGui::SetNextItemWidth(210.f * profile.uiScale);
         if (ImGui::Combo("Batching mode", &profile.autobatchMode, autobatchModes, 3))
             refreshWindowAutoBatchModeFromProfile();
+
+        uiCheckbox("Flush after every batch", &flushAfterEveryBatch);
+        uiCheckbox("Finish after every batch", &finishAfterEveryBatch);
+        uiCheckbox("Flush before display", &flushBeforeDisplay);
+        uiCheckbox("Finish before display", &finishBeforeDisplay);
+        uiCheckbox("Flush after display", &flushAfterDisplay);
+        uiCheckbox("Finish after display", &finishAfterDisplay);
 
         ImGui::EndTabItem();
     }
