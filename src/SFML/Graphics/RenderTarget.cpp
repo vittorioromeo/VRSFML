@@ -1291,6 +1291,20 @@ RenderTarget::DrawStatistics RenderTarget::flush()
 
 
 ////////////////////////////////////////////////////////////
+void RenderTarget::flushGPUCommands()
+{
+    glCheck(glFlush());
+}
+
+
+////////////////////////////////////////////////////////////
+void RenderTarget::finishGPUCommands()
+{
+    glCheck(glFinish());
+}
+
+
+////////////////////////////////////////////////////////////
 void RenderTarget::syncGPUStartFrame()
 {
 #ifndef SFML_OPENGL_ES
