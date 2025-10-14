@@ -95,4 +95,6 @@ struct [[nodiscard]] Profile
 
     bool hideMaxedOutPurchasables = false;
     bool hideCategorySeparators   = false;
+
+    int autobatchMode = 2; // 0=off 1=cpu 2=gpu
 };

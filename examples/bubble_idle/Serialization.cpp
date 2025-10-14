@@ -656,7 +656,9 @@ void twoWaySerializer(isSameDecayed<nlohmann::json> auto&& j, isSameDecayed<Prof
                       p.sfxVolume,
 
                       p.hideMaxedOutPurchasables,
-                      p.hideCategorySeparators);
+                      p.hideCategorySeparators,
+
+                      p.autobatchMode);
 }
 
 ////////////////////////////////////////////////////////////
