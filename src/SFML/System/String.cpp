@@ -9,9 +9,9 @@
 
 #include "SFML/System/Utf.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/BackInserter.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 
 #include <locale>
 #include <string>

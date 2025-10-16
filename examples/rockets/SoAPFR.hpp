@@ -6,7 +6,7 @@
 #include "SFML/Base/MakeIndexSequence.hpp"
 #include "SFML/Base/MiniPFR.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsMemberPointer.hpp"
+#include "SFML/Base/Trait/IsMemberPointer.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 #include "SFML/Base/Vector.hpp"
 

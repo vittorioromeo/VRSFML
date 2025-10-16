@@ -13,7 +13,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/Vector.hpp"

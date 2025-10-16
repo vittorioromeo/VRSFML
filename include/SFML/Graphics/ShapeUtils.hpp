@@ -11,7 +11,7 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Builtins/Restrict.hpp"
+#include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FastSinCos.hpp"
 #include "SFML/Base/Math/Fabs.hpp"

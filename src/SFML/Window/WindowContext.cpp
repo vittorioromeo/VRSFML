@@ -27,7 +27,7 @@
 #include "SFML/System/SignalErrHandler.hpp"
 
 #include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Optional.hpp"

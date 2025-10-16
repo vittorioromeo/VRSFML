@@ -9,7 +9,7 @@
 
 #include "SFML/System/Win32/WindowsHeader.hpp"
 
-#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 

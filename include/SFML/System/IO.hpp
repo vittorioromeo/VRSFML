@@ -13,8 +13,8 @@
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsEnum.hpp"
-#include "SFML/Base/Traits/UnderlyingType.hpp"
+#include "SFML/Base/Trait/IsEnum.hpp"
+#include "SFML/Base/Trait/UnderlyingType.hpp"
 
 #include <iosfwd>
 

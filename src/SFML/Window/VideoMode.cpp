@@ -9,7 +9,7 @@
 
 #include "SFML/Window/VideoModeUtils.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Span.hpp"
 
 

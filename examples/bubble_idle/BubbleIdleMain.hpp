@@ -1,9 +1,5 @@
 #pragma once
 
-#include "SFML/Audio/AudioSettings.hpp"
-#include "SFML/Audio/Music.hpp"
-
-#include "SFML/Base/FloatMax.hpp"
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
@@ -74,7 +70,9 @@
 #include "SFML/Graphics/View.hpp"
 
 #include "SFML/Audio/AudioContext.hpp"
+#include "SFML/Audio/AudioSettings.hpp"
 #include "SFML/Audio/Listener.hpp"
+#include "SFML/Audio/Music.hpp"
 #include "SFML/Audio/MusicReader.hpp"
 #include "SFML/Audio/PlaybackDevice.hpp"
 #include "SFML/Audio/SoundBuffer.hpp"
@@ -95,7 +93,11 @@
 #include "SFML/System/Time.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/AllOf.hpp"
+#include "SFML/Base/Algorithm/AnyOf.hpp"
+#include "SFML/Base/Algorithm/Count.hpp"
+#include "SFML/Base/GetArraySize.hpp"
+#include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"

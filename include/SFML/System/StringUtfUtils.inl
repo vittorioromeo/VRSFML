@@ -9,7 +9,7 @@
 #include "SFML/System/StringUtfUtils.hpp" // NOLINT(misc-header-include-cycle)
 #include "SFML/System/Utf.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/BackInserter.hpp"
 
 
 namespace sf

@@ -8,7 +8,7 @@
 #include "SFML/System/Path.hpp"
 
 #include "SFML/Base/Macros.hpp"
-#include "SFML/Base/Traits/IsNothrowSwappable.hpp"
+#include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
 

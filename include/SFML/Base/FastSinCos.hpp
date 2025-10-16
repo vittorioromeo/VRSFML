@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Array.hpp"
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Builtins/IsConstantEvaluated.hpp"
+#include "SFML/Base/Builtin/IsConstantEvaluated.hpp"
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Priv/ConstexprSinCos.hpp"

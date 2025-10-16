@@ -25,9 +25,9 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/PtrDiffT.hpp"
@@ -504,9 +504,9 @@ int main()
                     sf::base::SizeT chunkDrawnVertices = 0u; // avoid false sharing
 
                     for (sf::base::SizeT i = batchStartIdx; i < batchEndIdx; ++i)
-                        drawEntity(entities[i],
-                                   chunkDrawnVertices,
-                                   [&](const auto& drawable, const auto&...) { batchesArray[iBatch].add(drawable); });
+                        drawEntity(entities[i], chunkDrawnVertices, [&](const auto& drawable, const auto&...) {
+                            batchesArray[iBatch].add(drawable);
+                        });
 
                     totalChunkDrawnVertices[iBatch] += chunkDrawnVertices;
                 });

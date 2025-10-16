@@ -1,6 +1,6 @@
 #include "BubbleIdleMain.hpp"
 
-#include "SFML/Base/Builtins/Strcmp.hpp"
+#include "SFML/Base/Builtin/Strcmp.hpp"
 #include "SFML/Base/UniquePtr.hpp"
 
 

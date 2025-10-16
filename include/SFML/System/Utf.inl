@@ -9,9 +9,9 @@
 
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsIntegral.hpp"
-#include "SFML/Base/Traits/MakeUnsigned.hpp"
-#include "SFML/Base/Traits/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/MakeUnsigned.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 #include <iterator>
 

@@ -10,7 +10,7 @@
 
 #else
 
-    #include "SFML/Base/Traits/VoidT.hpp"
+    #include "SFML/Base/Trait/VoidT.hpp"
 
 
 namespace sf::base::priv

@@ -24,9 +24,11 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Erase.hpp"
+#include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/InterferenceSize.hpp"
 #include "SFML/Base/LambdaMacros.hpp"

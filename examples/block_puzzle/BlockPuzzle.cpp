@@ -45,10 +45,12 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Erase.hpp"
+#include "SFML/Base/Algorithm/Unique.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/Clamp.hpp"
 #include "SFML/Base/Constants.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
 #include "SFML/Base/Math/Fmod.hpp"
 #include "SFML/Base/Optional.hpp"

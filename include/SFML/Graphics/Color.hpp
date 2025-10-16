@@ -9,7 +9,7 @@
 #include "SFML/Graphics/Export.hpp"
 
 #include "SFML/Base/AssertAndAssume.hpp"
-#include "SFML/Base/Builtins/Unreachable.hpp"
+#include "SFML/Base/Builtin/Unreachable.hpp"
 #include "SFML/Base/ClampMacro.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"

@@ -21,7 +21,7 @@
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/InPlacePImpl.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 
 
 ////////////////////////////////////////////////////////////

@@ -3,7 +3,7 @@
 #include "StringifyStringUtil.hpp" // used
 #include "StringifyVectorUtil.hpp" // used
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/IsSorted.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>

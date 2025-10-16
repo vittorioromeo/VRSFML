@@ -1,11 +1,19 @@
-#include "SFML/Base/Algorithm.hpp"
-
+#include "SFML/Base/Algorithm/AdjacentFind.hpp"
+#include "SFML/Base/Algorithm/AllOf.hpp"
+#include "SFML/Base/Algorithm/AnyOf.hpp"
+#include "SFML/Base/Algorithm/Copy.hpp"
+#include "SFML/Base/Algorithm/Count.hpp"
+#include "SFML/Base/Algorithm/Erase.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
+#include "SFML/Base/Algorithm/IsSorted.hpp"
+#include "SFML/Base/Algorithm/Remove.hpp"
+#include "SFML/Base/Algorithm/SwapAndPop.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>
 
 
-TEST_CASE("[Base] Base/Algorithm.hpp")
+TEST_CASE("[Base] Base/Algorithm/*.hpp")
 {
     SECTION("Copy")
     {
@@ -79,35 +87,6 @@ TEST_CASE("[Base] Base/Algorithm.hpp")
         CHECK(sf::base::allOf(evenValues, evenValues + 0, alwaysTrue)); // Vacuously true
     }
 
-    SECTION("Get Array Size")
-    {
-        const int values[]{0, 1, 2, 3, 4, 5, 6, 7};
-        CHECK(sf::base::getArraySize(values) == 8);
-    }
-
-    SECTION("Back Inserter")
-    {
-        const int             values[]{0, 1, 2, 3};
-        sf::base::Vector<int> target{-1};
-
-        sf::base::copy(values, values + 4, sf::base::BackInserter{target});
-
-        CHECK(target[0] == -1);
-        CHECK(target[1] == 0);
-        CHECK(target[2] == 1);
-        CHECK(target[3] == 2);
-        CHECK(target[4] == 3);
-    }
-
-
-    SECTION("Exchange")
-    {
-        int a = 0;
-        int b = 1;
-
-        CHECK(sf::base::exchange(a, b) == 0);
-        CHECK(a == 1);
-    }
 
     SECTION("RemoveIf")
     {

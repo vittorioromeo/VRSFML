@@ -5,7 +5,7 @@
 // Other 1st party headers
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Traits/IsNothrowSwappable.hpp"
+#include "SFML/Base/Trait/IsNothrowSwappable.hpp"
 
 #include <Doctest.hpp>
 

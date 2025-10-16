@@ -14,7 +14,7 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/MinMax.hpp"
 

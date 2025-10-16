@@ -8,10 +8,10 @@
 #include "SFML/Base/MinMaxMacros.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Traits/IsArray.hpp"
-#include "SFML/Base/Traits/IsUnion.hpp"
-#include "SFML/Base/Traits/RemoveCVRef.hpp"
-#include "SFML/Base/Traits/RemoveReference.hpp"
+#include "SFML/Base/Trait/IsArray.hpp"
+#include "SFML/Base/Trait/IsUnion.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/RemoveReference.hpp"
 #include "SFML/Base/TypePackElement.hpp"
 
 

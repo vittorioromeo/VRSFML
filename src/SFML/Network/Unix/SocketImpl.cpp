@@ -9,7 +9,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Builtins/Memcpy.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
 #include "SFML/Base/IntTypes.hpp"
 
 #include <arpa/inet.h>
