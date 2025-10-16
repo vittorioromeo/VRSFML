@@ -16,7 +16,7 @@
 
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/Optional.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include "ExampleUtils.hpp"

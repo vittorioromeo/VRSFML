@@ -24,8 +24,8 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/Rect.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/Exchange.hpp"
 #include "SFML/Base/Macros.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"

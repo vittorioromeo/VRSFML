@@ -11,7 +11,7 @@
 #include "SFML/Graphics/Transform.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 
-#include "SFML/Base/Builtins/Restrict.hpp"
+#include "SFML/Base/Builtin/Restrict.hpp"
 #include "SFML/Base/Math/Fabs.hpp"
 #include "SFML/Base/SizeT.hpp"
 

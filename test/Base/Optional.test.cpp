@@ -1,14 +1,14 @@
 #include "SFML/Base/Optional.hpp"
 
-#include "SFML/Base/Traits/IsCopyAssignable.hpp"
-#include "SFML/Base/Traits/IsCopyConstructible.hpp"
-#include "SFML/Base/Traits/IsMoveAssignable.hpp"
-#include "SFML/Base/Traits/IsMoveConstructible.hpp"
-#include "SFML/Base/Traits/IsTrivial.hpp"
-#include "SFML/Base/Traits/IsTriviallyCopyConstructible.hpp"
-#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Traits/IsTriviallyMoveAssignable.hpp"
-#include "SFML/Base/Traits/IsTriviallyMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsCopyAssignable.hpp"
+#include "SFML/Base/Trait/IsCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsMoveConstructible.hpp"
+#include "SFML/Base/Trait/IsTrivial.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyConstructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveAssignable.hpp"
+#include "SFML/Base/Trait/IsTriviallyMoveConstructible.hpp"
 
 #include <Doctest.hpp>
 

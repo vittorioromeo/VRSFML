@@ -3,7 +3,7 @@
 #include "CatType.hpp"
 #include "ExactArray.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Span.hpp"
 #include "SFML/Base/StringView.hpp"
 #include "SFML/Base/Vector.hpp"

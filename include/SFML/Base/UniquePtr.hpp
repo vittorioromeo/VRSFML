@@ -7,8 +7,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Traits/IsBaseOf.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Trait/IsBaseOf.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 #include "SFML/Base/TrivialAbi.hpp"
 
 

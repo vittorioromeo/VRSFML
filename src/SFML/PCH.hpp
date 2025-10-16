@@ -28,9 +28,8 @@
     #include "SFML/System/Time.hpp"
     #include "SFML/System/Vec2.hpp"
 
-    #include "SFML/Base/Algorithm.hpp"
     #include "SFML/Base/Assert.hpp"
-    #include "SFML/Base/Builtins/Memcpy.hpp"
+    #include "SFML/Base/Builtin/Memcpy.hpp"
     #include "SFML/Base/InPlacePImpl.hpp"
     #include "SFML/Base/IntTypes.hpp"
     #include "SFML/Base/Macros.hpp"

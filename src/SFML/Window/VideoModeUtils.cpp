@@ -12,7 +12,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Sort.hpp"
 #include "SFML/Base/Vector.hpp"
 

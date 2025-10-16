@@ -11,7 +11,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Exchange.hpp"
 
 
 namespace sf

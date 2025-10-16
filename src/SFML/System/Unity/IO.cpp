@@ -14,7 +14,7 @@
 
 #include "SFML/Base/StackTrace.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
 
 #include <filesystem>
 #include <fstream>

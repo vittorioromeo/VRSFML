@@ -12,7 +12,7 @@
 
     #include "SFML/Base/Abort.hpp"
     #include "SFML/Base/Assert.hpp"
-    #include "SFML/Base/Builtins/Strcmp.hpp"
+    #include "SFML/Base/Builtin/Strcmp.hpp"
     #include "SFML/Base/Launder.hpp"
     #include "SFML/Base/PlacementNew.hpp"
     #include "SFML/Base/StackTrace.hpp"

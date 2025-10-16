@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/SizeT.hpp"
 
 

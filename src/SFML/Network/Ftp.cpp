@@ -13,7 +13,7 @@
 #include "SFML/System/IO.hpp"
 #include "SFML/System/Path.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Copy.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Macros.hpp"

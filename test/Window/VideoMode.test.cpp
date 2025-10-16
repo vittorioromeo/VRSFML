@@ -2,7 +2,7 @@
 
 #include "SFML/Window/VideoModeUtils.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/IsSorted.hpp"
 
 #include <Doctest.hpp>
 

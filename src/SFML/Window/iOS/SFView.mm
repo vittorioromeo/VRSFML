@@ -10,7 +10,7 @@
 
 #include "SFML/System/Utf.hpp"
 
-#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 
 #include <QuartzCore/CAEAGLLayer.h>
 

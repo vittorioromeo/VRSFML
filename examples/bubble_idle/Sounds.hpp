@@ -7,7 +7,7 @@
 
 #include "SFML/System/Path.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/Optional.hpp"
@@ -25,7 +25,7 @@ struct Sounds
 
         ////////////////////////////////////////////////////////////
         explicit LoadedSound(const sf::Path& filename) :
-        buffer(sf::SoundBuffer::loadFromFile("resources/" / filename).value())
+            buffer(sf::SoundBuffer::loadFromFile("resources/" / filename).value())
         {
         }
     };

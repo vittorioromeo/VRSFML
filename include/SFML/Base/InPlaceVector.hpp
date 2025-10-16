@@ -14,7 +14,7 @@
 #include "SFML/Base/PtrDiffT.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"
-#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace sf::base

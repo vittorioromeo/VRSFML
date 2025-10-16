@@ -18,7 +18,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Builtins/Strstr.hpp"
+#include "SFML/Base/Builtin/Strstr.hpp"
 
 
 namespace sf::priv
