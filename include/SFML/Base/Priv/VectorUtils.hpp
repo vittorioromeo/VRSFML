@@ -6,13 +6,13 @@
 ////////////////////////////////////////////////////////////
 // Headers
 ////////////////////////////////////////////////////////////
-#include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/Builtins/Memmove.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/Builtin/Memmove.hpp"
 #include "SFML/Base/FwdStdAlignedNewDelete.hpp"
 #include "SFML/Base/PlacementNew.hpp"
 #include "SFML/Base/SizeT.hpp"
-#include "SFML/Base/Traits/IsTriviallyCopyable.hpp"
-#include "SFML/Base/Traits/IsTriviallyDestructible.hpp"
+#include "SFML/Base/Trait/IsTriviallyCopyable.hpp"
+#include "SFML/Base/Trait/IsTriviallyDestructible.hpp"
 
 
 namespace sf::base::priv::VectorUtils

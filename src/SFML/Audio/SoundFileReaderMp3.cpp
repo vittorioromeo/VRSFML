@@ -36,7 +36,7 @@
 #include "SFML/System/InputStream.hpp"
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Memcmp.hpp"
+#include "SFML/Base/Builtin/Memcmp.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/MinMax.hpp"
 

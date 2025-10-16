@@ -7,8 +7,8 @@
 // Headers
 ////////////////////////////////////////////////////////////
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Strlen.hpp"
-#include "SFML/Base/Builtins/Strncmp.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
+#include "SFML/Base/Builtin/Strncmp.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Swap.hpp"

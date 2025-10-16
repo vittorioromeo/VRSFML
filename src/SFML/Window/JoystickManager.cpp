@@ -14,7 +14,7 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Assert.hpp"
 
 // TODO P1: move to SDLLayer

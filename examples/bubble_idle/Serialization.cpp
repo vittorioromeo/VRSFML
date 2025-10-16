@@ -26,9 +26,9 @@
 
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/StringView.hpp"
-#include "SFML/Base/Traits/IsArray.hpp"
-#include "SFML/Base/Traits/IsSame.hpp"
-#include "SFML/Base/Traits/RemoveCVRef.hpp"
+#include "SFML/Base/Trait/IsArray.hpp"
+#include "SFML/Base/Trait/IsSame.hpp"
+#include "SFML/Base/Trait/RemoveCVRef.hpp"
 
 #include <filesystem>
 #include <string>

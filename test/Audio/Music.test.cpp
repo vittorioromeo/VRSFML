@@ -12,7 +12,7 @@
 #include "SFML/System/Sleep.hpp"
 #include "SFML/System/Time.hpp"
 
-#include "SFML/Base/Builtins/Memset.hpp"
+#include "SFML/Base/Builtin/Memset.hpp"
 #include "SFML/Base/Vector.hpp"
 
 #include <Doctest.hpp>

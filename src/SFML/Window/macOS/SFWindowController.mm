@@ -12,7 +12,6 @@
 
 #include "SFML/System/Err.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
 #include "SFML/Base/MinMax.hpp"
 
 #include <ApplicationServices/ApplicationServices.h>

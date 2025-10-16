@@ -22,8 +22,8 @@
 #endif
 
 #include "SFML/Base/Assert.hpp"
-#include "SFML/Base/Builtins/Memcpy.hpp"
-#include "SFML/Base/Builtins/OffsetOf.hpp"
+#include "SFML/Base/Builtin/Memcpy.hpp"
+#include "SFML/Base/Builtin/OffsetOf.hpp"
 #include "SFML/Base/InPlaceVector.hpp"
 #include "SFML/Base/MinMax.hpp"
 #include "SFML/Base/Optional.hpp"

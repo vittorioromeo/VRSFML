@@ -8,8 +8,8 @@
 #include "SFML/Base/Math/Cos.hpp"
 #include "SFML/Base/Math/Sin.hpp"
 #include "SFML/Base/Math/Sqrt.hpp"
-#include "SFML/Base/Traits/IsIntegral.hpp"
-#include "SFML/Base/Traits/MakeUnsigned.hpp"
+#include "SFML/Base/Trait/IsIntegral.hpp"
+#include "SFML/Base/Trait/MakeUnsigned.hpp"
 
 
 ////////////////////////////////////////////////////////////

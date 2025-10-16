@@ -12,8 +12,10 @@
 #include "SFML/System/Path.hpp"
 #include "SFML/System/PathUtils.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
+#include "SFML/Base/Algorithm/AdjacentFind.hpp"
+#include "SFML/Base/Algorithm/Find.hpp"
 #include "SFML/Base/Assert.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/SizeT.hpp"
 #include "SFML/Base/Sort.hpp"

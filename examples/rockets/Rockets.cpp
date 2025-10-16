@@ -36,8 +36,8 @@
 #include "SFML/System/Rect.hpp"
 #include "SFML/System/Vec2.hpp"
 
-#include "SFML/Base/Algorithm.hpp"
-#include "SFML/Base/Builtins/OffsetOf.hpp"
+#include "SFML/Base/Algorithm/SwapAndPop.hpp"
+#include "SFML/Base/Builtin/OffsetOf.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/Optional.hpp"
 #include "SFML/Base/SizeT.hpp"

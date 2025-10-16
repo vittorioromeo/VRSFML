@@ -19,9 +19,9 @@
 #include "SFML/System/Vec2.hpp"
 
 #include "SFML/Base/Abort.hpp"
-#include "SFML/Base/Builtins/Memcmp.hpp"
-#include "SFML/Base/Builtins/Strcmp.hpp"
-#include "SFML/Base/Builtins/Strlen.hpp"
+#include "SFML/Base/Builtin/Memcmp.hpp"
+#include "SFML/Base/Builtin/Strcmp.hpp"
+#include "SFML/Base/Builtin/Strlen.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/ScopeGuard.hpp"
 
