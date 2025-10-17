@@ -422,7 +422,11 @@ Main::AnimatedButtonOutcome Main::uiAnimatedButton(const char* label, const ImVe
     {
         static sf::base::Vector<sf::base::UniquePtr<AnimState>> animStateStorage;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
         animState = animStateStorage.emplaceBack(sf::base::makeUnique<AnimState>(0.f, 0.f, -1.f)).get();
+#pragma GCC diagnostic pop
+
         storage->SetVoidPtr(animStateId, animState);
     }
 

@@ -1496,10 +1496,11 @@ int main()
     //
     //
     // Instanced rendering setup
-    // TODO P0: cleanup
+    // TODO P0: cleanup, improve user-facing API
     auto instancedRenderingShaderImpl = sf::Shader::loadFromMemory({.vertexCode   = instancedVertexShader,
                                                                     .fragmentCode = sf::DefaultShader::srcFragment})
                                             .value();
+
     instanceRenderingShader = &instancedRenderingShaderImpl;
 
     auto instancedRenderingVAOGroupImpl = sf::RenderTarget::VAOHandle{};
