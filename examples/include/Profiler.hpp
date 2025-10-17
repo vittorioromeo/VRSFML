@@ -32,7 +32,7 @@ inline constexpr NodeId maxNodes = 128u;
 
 
 ////////////////////////////////////////////////////////////
-struct [[nodiscard]] ScopeInfo
+struct [[nodiscard]] ScopeInfo // NOLINT(cppcoreguidelines-pro-type-member-init)
 {
     sf::base::StringView label;
     sf::base::StringView file;
@@ -148,6 +148,7 @@ namespace sfex
 
 
 ////////////////////////////////////////////////////////////
+// TODO P1: nicer interface?
 inline void populateNodes([[maybe_unused]] sf::base::Span<const ScopeInfo>             scopeInfos,
                           [[maybe_unused]] sf::base::Vector<sf::base::Vector<NodeId>>& childrenMap,
                           [[maybe_unused]] sf::base::Vector<NodeId>&                   rootNodes)
@@ -215,6 +216,7 @@ inline void resetNodes()
     #define SFEX_PROFILE_SCOPE(label) (void)0
 
 #endif
+
 
 ////////////////////////////////////////////////////////////
 /// \class sf::Profiler

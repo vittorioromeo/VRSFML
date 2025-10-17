@@ -136,14 +136,6 @@ public:
     RenderTarget& operator=(RenderTarget&&) noexcept;
 
     ////////////////////////////////////////////////////////////
-    /// \brief TODO P0:
-    ///
-    /// TODO P0: no need to call if clear is called
-    ///
-    ////////////////////////////////////////////////////////////
-    [[nodiscard]] bool prepare();
-
-    ////////////////////////////////////////////////////////////
     /// \brief Clear the entire target with a single color
     ///
     /// This function is usually called once every frame,
@@ -845,6 +837,14 @@ protected:
     void syncGPUEndFrame();
 
 private:
+    ////////////////////////////////////////////////////////////
+    /// \brief TODO P1: docs
+    ///
+    /// no need to call if clear is called
+    ///
+    ////////////////////////////////////////////////////////////
+    [[nodiscard]] bool prepare();
+
     ////////////////////////////////////////////////////////////
     /// \brief Immediately draw primitives defined by an array of vertices
     ///

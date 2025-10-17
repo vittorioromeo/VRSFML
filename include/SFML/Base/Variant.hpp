@@ -1,10 +1,11 @@
 #pragma once
+// LICENSE AND COPYRIGHT (C) INFORMATION
+// https://github.com/vittorioromeo/VRSFML/blob/master/license.md
 
-// NOLINTBEGIN
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-
+////////////////////////////////////////////////////////////
+// Headers
+////////////////////////////////////////////////////////////
 #include "SFML/Base/DeclVal.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Launder.hpp"
@@ -25,517 +26,625 @@
 #include "SFML/Base/TypePackElement.hpp"
 
 
-namespace sfvr::impl
-{
-using sf::base::SizeT;
-} // namespace sfvr::impl
+////////////////////////////////////////////////////////////
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
 
-namespace sfvr::impl
+
+namespace sf::base::priv
 {
-[[nodiscard]] consteval auto variadic_max(auto X) noexcept
+////////////////////////////////////////////////////////////
+[[nodiscard]] consteval auto variadicMax(auto x, auto... xs) noexcept
 {
-    return X;
+    if constexpr (sizeof...(xs) == 0)
+    {
+        return x;
+    }
+    else
+    {
+        decltype(x) result = x;
+        decltype(x) rest[]{xs...};
+
+        for (auto value : rest)
+            if (result < value)
+                result = value;
+
+        return result;
+    }
 }
 
-[[nodiscard]] consteval auto variadic_max(auto X, auto... Xs) noexcept
-{
-    decltype(X) result = X;
-    decltype(X) rest[]{Xs...};
 
-    for (auto value : rest)
-        if (result < value)
-            result = value;
-
-    return result;
-}
-
+////////////////////////////////////////////////////////////
 enum : SizeT
 {
-    bad_index = static_cast<SizeT>(-1)
+    badIndex = static_cast<SizeT>(-1)
 };
 
+
+////////////////////////////////////////////////////////////
 template <typename T, typename... Ts>
-[[nodiscard]] consteval SizeT index_of() noexcept
+[[nodiscard]] consteval SizeT indexOf() noexcept
+// TODO P0: is this the fastest way? Extract to separate header in case
 {
     constexpr bool matches[]{SFML_BASE_IS_SAME(T, Ts)...};
 
-    for (SizeT i = 0; i < sizeof...(Ts); ++i)
+    for (SizeT i = 0u; i < sizeof...(Ts); ++i)
         if (matches[i])
             return i;
 
-    return bad_index;
+    return badIndex;
 }
 
+
+////////////////////////////////////////////////////////////
 template <typename>
-struct inplace_type_t
+struct InPlaceType
 {
 };
 
+
+////////////////////////////////////////////////////////////
 template <SizeT>
-struct inplace_index_t
+struct InPlaceIndex
 {
 };
 
-} // namespace sfvr::impl
+} // namespace sf::base::priv
 
-namespace sfvr
+
+namespace sf::base
 {
-
+////////////////////////////////////////////////////////////
 template <typename T>
-inline constexpr impl::inplace_type_t<T> inplace_type{};
+inline constexpr priv::InPlaceType<T> inPlaceType{};
 
-template <impl::SizeT N>
-inline constexpr impl::inplace_index_t<N> inplace_index{};
 
-#define TINYVARIANT_NTH_TYPE(i) SFML_BASE_TYPE_PACK_ELEMENT(i, Alternatives...)
+////////////////////////////////////////////////////////////
+template <SizeT N>
+inline constexpr priv::InPlaceIndex<N> inPlaceIndex{};
 
+
+////////////////////////////////////////////////////////////
+#define SFML_BASE_VARIANT_NTH_TYPE(i) SFML_BASE_TYPE_PACK_ELEMENT(i, Alternatives...)
+
+
+////////////////////////////////////////////////////////////
 template <typename... Alternatives>
-class [[nodiscard]] tinyvariant
+class [[nodiscard]] Variant
 {
-private:
-    using byte = unsigned char;
+    static_assert(sizeof...(Alternatives) < 255);
 
-    enum : impl::SizeT
+private:
+    ////////////////////////////////////////////////////////////
+    using Byte = unsigned char;
+
+
+    ////////////////////////////////////////////////////////////
+    enum : SizeT
     {
-        type_count    = sizeof...(Alternatives),
-        max_alignment = impl::variadic_max(alignof(Alternatives)...),
-        max_size      = impl::variadic_max(sizeof(Alternatives)...)
+        alternativeCount = sizeof...(Alternatives),
+        maxAlignment     = priv::variadicMax(alignof(Alternatives)...),
+        maxSize          = priv::variadicMax(sizeof(Alternatives)...)
     };
 
-    static inline constexpr bool triviallyDestructible = (... && sf::base::isTriviallyDestructible<Alternatives>);
-    static inline constexpr bool triviallyCopyConstructible = (... && sf::base::isTriviallyCopyConstructible<Alternatives>);
-    static inline constexpr bool triviallyMoveConstructible = (... && sf::base::isTriviallyMoveConstructible<Alternatives>);
-    static inline constexpr bool triviallyCopyAssignable = (... && sf::base::isTriviallyCopyAssignable<Alternatives>);
-    static inline constexpr bool triviallyMoveAssignable = (... && sf::base::isTriviallyMoveAssignable<Alternatives>);
 
-    using index_type = unsigned char; // Support up to 255 alternatives
+    ////////////////////////////////////////////////////////////
+    static inline constexpr bool triviallyDestructible      = (... && isTriviallyDestructible<Alternatives>);
+    static inline constexpr bool triviallyCopyConstructible = (... && isTriviallyCopyConstructible<Alternatives>);
+    static inline constexpr bool triviallyMoveConstructible = (... && isTriviallyMoveConstructible<Alternatives>);
+    static inline constexpr bool triviallyCopyAssignable    = (... && isTriviallyCopyAssignable<Alternatives>);
+    static inline constexpr bool triviallyMoveAssignable    = (... && isTriviallyMoveAssignable<Alternatives>);
+
+
+    ////////////////////////////////////////////////////////////
+    using IndexType = unsigned char; // Support up to 255 alternatives
+
 
 public:
+    ////////////////////////////////////////////////////////////
     template <typename T>
-    static constexpr impl::SizeT index_of = impl::index_of<T, Alternatives...>();
+    static constexpr SizeT indexOf = priv::indexOf<T, Alternatives...>();
+
 
 private:
-    static constexpr sf::base::MakeIndexSequence<type_count> alternative_index_sequence{};
+    ////////////////////////////////////////////////////////////
+    static constexpr MakeIndexSequence<alternativeCount> alternativeIndexSequence{};
 
-    alignas(max_alignment) byte _buffer[max_size];
-    index_type _index;
 
-#define TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                                     \
-    static_assert((I) != impl::bad_index, "Alternative type not supported by variant"); \
-                                                                                        \
-    static_assert((I) >= 0 && (I) < type_count, "Alternative index out of range")
+    ////////////////////////////////////////////////////////////
+    alignas(maxAlignment) Byte m_buffer[maxSize];
+    IndexType m_index;
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                                           \
-    do                                                                                                \
-    {                                                                                                 \
-        [&]<impl::SizeT... Is>(sf::base::IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE_FLATTEN \
-        { (..., (((obj)._index == Is) ? ((__VA_ARGS__), 0) : 0)); }(alternative_index_sequence);      \
+
+    ////////////////////////////////////////////////////////////
+#define SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I)                              \
+    static_assert((I) != priv::badIndex, "Alternative type not supported by variant"); \
+    static_assert((I) >= 0 && (I) < alternativeCount, "Alternative index out of range")
+
+
+    ////////////////////////////////////////////////////////////
+#define SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(obj, Is, ...)                               \
+    do                                                                                          \
+    {                                                                                           \
+        [&]<SizeT... Is>(IndexSequence<Is...>) SFML_BASE_LAMBDA_ALWAYS_INLINE                   \
+        { (..., (((obj).m_index == Is) ? ((__VA_ARGS__), 0) : 0)); }(alternativeIndexSequence); \
     } while (false)
 
-#define TINYVARIANT_DO_WITH_CURRENT_INDEX(Is, ...) TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
 
-    template <typename T, impl::SizeT I, typename... Args>
-    [[nodiscard,
-      gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T>, impl::inplace_index_t<I>, Args&&... args) noexcept :
-        _index{static_cast<index_type>(I)}
+    ////////////////////////////////////////////////////////////
+#define SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(Is, ...) \
+    SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ((*this), Is, __VA_ARGS__)
+
+
+    ////////////////////////////////////////////////////////////
+    template <typename T, SizeT I, typename... Args>
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T>, priv::InPlaceIndex<I>, Args&&... args) noexcept
+        :
+        m_index{static_cast<IndexType>(I)}
     {
-        TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        SFML_BASE_PLACEMENT_NEW(_buffer) T{static_cast<Args&&>(args)...};
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
+        SFML_BASE_PLACEMENT_NEW(m_buffer) T{static_cast<Args&&>(args)...};
     }
 
-    template <impl::SizeT I>
-    [[gnu::always_inline]] void destroy_at() noexcept
-    {
-        using type = TINYVARIANT_NTH_TYPE(I);
 
-        as<type>().~type();
+    ////////////////////////////////////////////////////////////
+    template <SizeT I>
+    [[gnu::always_inline]] void destroyAt() noexcept
+    {
+        using Type = SFML_BASE_VARIANT_NTH_TYPE(I);
+        as<Type>().~Type();
     }
 
-    template <impl::SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursive_visit_impl(Visitor&& visitor)
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I, typename R, typename Visitor>
+    [[nodiscard, gnu::always_inline]] R recursiveVisitImpl(Visitor&& visitor)
     {
         if constexpr (I < sizeof...(Alternatives) - 1)
         {
-            return (_index == I) ? visitor(get_by_index<I>())
-                                 : recursive_visit_impl<I + 1, R>(static_cast<Visitor&&>(visitor));
+            return (m_index == I) ? visitor(getByIndex<I>())
+                                  : recursiveVisitImpl<I + 1, R>(static_cast<Visitor&&>(visitor));
         }
         else
         {
-            return visitor(get_by_index<I>());
+            return visitor(getByIndex<I>());
         }
     }
 
-    template <impl::SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursive_visit_opt5_impl(Visitor&& visitor)
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I, typename R, typename Visitor>
+    [[nodiscard, gnu::always_inline]] R recursiveVisitImplOpt5(Visitor&& visitor)
     {
         if constexpr (I == 0 && sizeof...(Alternatives) == 5)
         {
             // clang-format off
-            return (_index == I + 0) ? visitor(get_by_index<I + 0>()) :
-                   (_index == I + 1) ? visitor(get_by_index<I + 1>()) :
-                   (_index == I + 2) ? visitor(get_by_index<I + 2>()) :
-                   (_index == I + 3) ? visitor(get_by_index<I + 3>()) :
-                                       visitor(get_by_index<I + 4>()) ;
+            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
+                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
+                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
+                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
+                                       visitor(getByIndex<I + 4>()) ;
             // clang-format on
         }
         else if constexpr (I + 4 < sizeof...(Alternatives))
         {
             // clang-format off
-            return (_index == I + 0) ? visitor(get_by_index<I + 0>()) :
-                   (_index == I + 1) ? visitor(get_by_index<I + 1>()) :
-                   (_index == I + 2) ? visitor(get_by_index<I + 2>()) :
-                   (_index == I + 3) ? visitor(get_by_index<I + 3>()) :
-                   (_index == I + 4) ? visitor(get_by_index<I + 4>()) :
-                   recursive_visit_opt5_impl<I + 5, R>(static_cast<Visitor&&>(visitor));
+            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
+                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
+                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
+                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
+                   (m_index == I + 4) ? visitor(getByIndex<I + 4>()) :
+                   recursiveVisitImplOpt5<I + 5, R>(static_cast<Visitor&&>(visitor));
             // clang-format on
         }
         else
         {
-            return recursive_visit_impl<I, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImpl<I, R>(static_cast<Visitor&&>(visitor));
         }
     }
 
-    template <impl::SizeT I, typename R, typename Visitor>
-    [[nodiscard, gnu::always_inline]] R recursive_visit_opt10_impl(Visitor&& visitor)
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I, typename R, typename Visitor>
+    [[nodiscard, gnu::always_inline]] R recursiveVisitImplOpt10(Visitor&& visitor)
     {
         if constexpr (I + 9 < sizeof...(Alternatives))
         {
             // clang-format off
-            return (_index == I + 0) ? visitor(get_by_index<I + 0>()) :
-                   (_index == I + 1) ? visitor(get_by_index<I + 1>()) :
-                   (_index == I + 2) ? visitor(get_by_index<I + 2>()) :
-                   (_index == I + 3) ? visitor(get_by_index<I + 3>()) :
-                   (_index == I + 4) ? visitor(get_by_index<I + 4>()) :
-                   (_index == I + 5) ? visitor(get_by_index<I + 5>()) :
-                   (_index == I + 6) ? visitor(get_by_index<I + 6>()) :
-                   (_index == I + 7) ? visitor(get_by_index<I + 7>()) :
-                   (_index == I + 8) ? visitor(get_by_index<I + 8>()) :
-                   (_index == I + 9) ? visitor(get_by_index<I + 9>()) :
-                   recursive_visit_opt10_impl<I + 10, R>(static_cast<Visitor&&>(visitor));
+            return (m_index == I + 0) ? visitor(getByIndex<I + 0>()) :
+                   (m_index == I + 1) ? visitor(getByIndex<I + 1>()) :
+                   (m_index == I + 2) ? visitor(getByIndex<I + 2>()) :
+                   (m_index == I + 3) ? visitor(getByIndex<I + 3>()) :
+                   (m_index == I + 4) ? visitor(getByIndex<I + 4>()) :
+                   (m_index == I + 5) ? visitor(getByIndex<I + 5>()) :
+                   (m_index == I + 6) ? visitor(getByIndex<I + 6>()) :
+                   (m_index == I + 7) ? visitor(getByIndex<I + 7>()) :
+                   (m_index == I + 8) ? visitor(getByIndex<I + 8>()) :
+                   (m_index == I + 9) ? visitor(getByIndex<I + 9>()) :
+                   recursiveVisitImplOpt10<I + 10, R>(static_cast<Visitor&&>(visitor));
             // clang-format on
         }
         else
         {
-            return recursive_visit_opt5_impl<I, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt5<I, R>(static_cast<Visitor&&>(visitor));
         }
     }
 
+
 public:
+    ////////////////////////////////////////////////////////////
     template <typename T, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_type_t<T> inplace_type, Args&&... args) noexcept :
-        tinyvariant{inplace_type, inplace_index<index_of<T>>, static_cast<Args&&>(args)...}
+    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceType<T> inPlaceType, Args&&... args) noexcept :
+        Variant{inPlaceType, inPlaceIndex<indexOf<T>>, static_cast<Args&&>(args)...}
     {
     }
 
-    template <impl::SizeT I, typename... Args>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(impl::inplace_index_t<I> inplace_index, Args&&... args) noexcept :
-        tinyvariant{inplace_type<TINYVARIANT_NTH_TYPE(I)>, inplace_index, static_cast<Args&&>(args)...}
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I, typename... Args>
+    [[nodiscard, gnu::always_inline]] explicit Variant(const priv::InPlaceIndex<I> inPlaceIndex, Args&&... args) noexcept :
+        Variant{inPlaceType<SFML_BASE_VARIANT_NTH_TYPE(I)>, inPlaceIndex, static_cast<Args&&>(args)...}
     {
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant(T&& x) noexcept
-        requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
-        : tinyvariant{inplace_type<sf::base::RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
+    [[nodiscard, gnu::always_inline]] explicit Variant(T&& x) noexcept
+        requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
+        : Variant{inPlaceType<RemoveCVRefIndirect<T>>, static_cast<T&&>(x)}
     {
     }
 
-    [[nodiscard, gnu::always_inline]] explicit tinyvariant() noexcept : tinyvariant{inplace_index<0>}
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] explicit Variant() noexcept : Variant{inPlaceIndex<0>}
     {
     }
 
-    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+
+    ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[gnu::always_inline]] Variant(const Variant& rhs)
         requires(!triviallyCopyConstructible)
-        : _index{rhs._index}
+        : m_index{rhs.m_index}
     {
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
-                                          SFML_BASE_PLACEMENT_NEW(_buffer)
-                                              TINYVARIANT_NTH_TYPE(I)(static_cast<const TINYVARIANT_NTH_TYPE(I) &>(
-                                                  *SFML_BASE_LAUNDER_CAST(const TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
+                                                SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
+                                                    I)(static_cast<const SFML_BASE_VARIANT_NTH_TYPE(I) &>(
+                                                    *SFML_BASE_LAUNDER_CAST(const SFML_BASE_VARIANT_NTH_TYPE(I)*,
+                                                                            rhs.m_buffer))));
     }
 
-    [[gnu::always_inline]] tinyvariant(const tinyvariant& rhs)
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant(const Variant& rhs)
         requires(triviallyCopyConstructible)
     = default;
 
-    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+
+    ////////////////////////////////////////////////////////////
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+    [[gnu::always_inline]] Variant(Variant&& rhs) noexcept
         requires(!triviallyMoveConstructible)
-        : _index{rhs._index}
+        : m_index{rhs.m_index}
     {
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I,
-                                          SFML_BASE_PLACEMENT_NEW(_buffer)
-                                              TINYVARIANT_NTH_TYPE(I)(static_cast<TINYVARIANT_NTH_TYPE(I) &&>(
-                                                  *SFML_BASE_LAUNDER_CAST(TINYVARIANT_NTH_TYPE(I)*, rhs._buffer))));
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I,
+                                                SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
+                                                    I)(static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(
+                                                    *SFML_BASE_LAUNDER_CAST(SFML_BASE_VARIANT_NTH_TYPE(I)*, rhs.m_buffer))));
     }
 
-    [[gnu::always_inline]] tinyvariant(tinyvariant&& rhs) noexcept
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant(Variant&& rhs) noexcept
         requires(triviallyMoveConstructible)
     = default;
 
-    [[gnu::always_inline]] ~tinyvariant()
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] ~Variant()
         requires(!triviallyDestructible)
     {
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
     }
 
-    [[gnu::always_inline]] ~tinyvariant()
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] ~Variant()
         requires(triviallyDestructible)
     = default;
 
-    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant& operator=(const Variant& rhs)
         requires(!triviallyCopyAssignable)
     {
         if (this == &rhs)
             return *this;
 
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
-        TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
-                                              I,
-                                              (SFML_BASE_PLACEMENT_NEW(_buffer)
-                                                   TINYVARIANT_NTH_TYPE(I)(rhs.template as<TINYVARIANT_NTH_TYPE(I)>())));
-        _index = rhs._index;
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
+                                                    I,
+                                                    (SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(I)(
+                                                        rhs.template as<SFML_BASE_VARIANT_NTH_TYPE(I)>())));
+        m_index = rhs.m_index;
 
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(const tinyvariant& rhs)
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant& operator=(const Variant& rhs)
         requires(triviallyCopyAssignable)
     = default;
 
-    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant& operator=(Variant&& rhs) noexcept
         requires(!triviallyMoveAssignable)
     {
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
+        if (this == &rhs)
+            return *this;
 
-        TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
-                                              I,
-                                              (SFML_BASE_PLACEMENT_NEW(_buffer)
-                                                   TINYVARIANT_NTH_TYPE(I)(static_cast<TINYVARIANT_NTH_TYPE(I) &&>(
-                                                       rhs.template as<TINYVARIANT_NTH_TYPE(I)>()))));
-        _index = rhs._index;
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
+
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ(rhs,
+                                                    I,
+                                                    (SFML_BASE_PLACEMENT_NEW(m_buffer) SFML_BASE_VARIANT_NTH_TYPE(
+                                                        I)(static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(
+                                                        rhs.template as<SFML_BASE_VARIANT_NTH_TYPE(I)>()))));
+        m_index = rhs.m_index;
 
         return *this;
     }
 
-    [[gnu::always_inline]] tinyvariant& operator=(tinyvariant&& rhs) noexcept
+
+    ////////////////////////////////////////////////////////////
+    [[gnu::always_inline]] Variant& operator=(Variant&& rhs) noexcept
         requires(triviallyMoveAssignable)
     = default;
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
-    [[gnu::always_inline]] tinyvariant& operator=(T&& x)
-        requires(!sf::base::isSame<sf::base::RemoveCVRefIndirect<T>, tinyvariant>)
+    [[gnu::always_inline]] Variant& operator=(T&& x)
+        requires(!isSame<RemoveCVRefIndirect<T>, Variant>)
     {
-        TINYVARIANT_DO_WITH_CURRENT_INDEX(I, destroy_at<I>());
+        SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, destroyAt<I>());
 
-        using type = SFML_BASE_REMOVE_CVREF(T);
+        using Type = SFML_BASE_REMOVE_CVREF(T);
 
-        SFML_BASE_PLACEMENT_NEW(_buffer) type{static_cast<T&&>(x)};
-        _index = index_of<type>;
+        SFML_BASE_PLACEMENT_NEW(m_buffer) Type{static_cast<T&&>(x)};
+        m_index = indexOf<Type>;
 
         return *this;
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] bool is() const noexcept
     {
-        return _index == index_of<T>;
+        return m_index == indexOf<T>;
     }
 
-    [[nodiscard, gnu::always_inline]] bool has_index(index_type index) const noexcept
+
+    ////////////////////////////////////////////////////////////
+    [[nodiscard, gnu::always_inline]] bool hasIndex(const IndexType index) const noexcept
     {
-        return _index == index;
+        return m_index == index;
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard, gnu::always_inline]] T* get_if() & noexcept
+    [[nodiscard, gnu::always_inline]] T* getIf() noexcept
     {
-        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(T*, _buffer) : nullptr;
+        return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(T*, m_buffer) : nullptr;
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
-    [[nodiscard, gnu::always_inline]] const T* get_if() const& noexcept
+    [[nodiscard, gnu::always_inline]] const T* getIf() const noexcept
     {
-        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(const T*, _buffer) : nullptr;
+        return m_index == indexOf<T> ? SFML_BASE_LAUNDER_CAST(const T*, m_buffer) : nullptr;
     }
 
-    template <typename T>
-    [[nodiscard, gnu::always_inline]] T* get_if() && noexcept
-    {
-        return _index == index_of<T> ? SFML_BASE_LAUNDER_CAST(T*, _buffer) : nullptr;
-    }
 
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] T& as() & noexcept
     {
-        return *SFML_BASE_LAUNDER_CAST(T*, _buffer);
+        return *SFML_BASE_LAUNDER_CAST(T*, m_buffer);
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] const T& as() const& noexcept
     {
-        return *SFML_BASE_LAUNDER_CAST(const T*, _buffer);
+        return *SFML_BASE_LAUNDER_CAST(const T*, m_buffer);
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename T>
     [[nodiscard, gnu::always_inline]] T&& as() && noexcept
     {
-        return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, _buffer));
+        return static_cast<T&&>(*SFML_BASE_LAUNDER_CAST(T*, m_buffer));
     }
 
-    template <impl::SizeT I>
-    [[nodiscard, gnu::always_inline]] auto& get_by_index() & noexcept
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I>
+    [[nodiscard, gnu::always_inline]] auto& getByIndex() & noexcept
     {
-        TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<TINYVARIANT_NTH_TYPE(I)>();
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
+        return as<SFML_BASE_VARIANT_NTH_TYPE(I)>();
     }
 
-    template <impl::SizeT I>
-    [[nodiscard, gnu::always_inline]] const auto& get_by_index() const& noexcept
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I>
+    [[nodiscard, gnu::always_inline]] const auto& getByIndex() const& noexcept
     {
-        TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return as<TINYVARIANT_NTH_TYPE(I)>();
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
+        return as<SFML_BASE_VARIANT_NTH_TYPE(I)>();
     }
 
-    template <impl::SizeT I>
-    [[nodiscard, gnu::always_inline]] auto&& get_by_index() && noexcept
+
+    ////////////////////////////////////////////////////////////
+    template <SizeT I>
+    [[nodiscard, gnu::always_inline]] auto&& getByIndex() && noexcept
     {
-        TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
-        return static_cast<TINYVARIANT_NTH_TYPE(I) &&>(as<TINYVARIANT_NTH_TYPE(I)>());
+        SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY(I);
+        return static_cast<SFML_BASE_VARIANT_NTH_TYPE(I) &&>(as<SFML_BASE_VARIANT_NTH_TYPE(I)>());
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename Visitor,
-              typename R = decltype(sf::base::declVal<Visitor&&>()(
-                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
-    [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) &
+              typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
+    [[nodiscard, gnu::always_inline]] R recursiveVisit(Visitor&& visitor) &
     {
         if constexpr (sizeof...(Alternatives) >= 10)
         {
-            return recursive_visit_opt10_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt10<0, R>(static_cast<Visitor&&>(visitor));
         }
         else if constexpr (sizeof...(Alternatives) >= 5)
         {
-            return recursive_visit_opt5_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt5<0, R>(static_cast<Visitor&&>(visitor));
         }
         else
         {
-            return recursive_visit_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImpl<0, R>(static_cast<Visitor&&>(visitor));
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename Visitor,
-              typename R = decltype(sf::base::declVal<Visitor&&>()(
-                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
-    [[nodiscard, gnu::always_inline]] R recursive_visit(Visitor&& visitor) const&
+              typename R = decltype(declVal<Visitor&&>()(
+                  declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
+    [[nodiscard, gnu::always_inline]] R recursiveVisit(Visitor&& visitor) const&
     {
         if constexpr (sizeof...(Alternatives) >= 10)
         {
-            return recursive_visit_opt10_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt10<0, R>(static_cast<Visitor&&>(visitor));
         }
         else if constexpr (sizeof...(Alternatives) >= 5)
         {
-            return recursive_visit_opt5_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImplOpt5<0, R>(static_cast<Visitor&&>(visitor));
         }
         else
         {
-            return recursive_visit_impl<0, R>(static_cast<Visitor&&>(visitor));
+            return recursiveVisitImpl<0, R>(static_cast<Visitor&&>(visitor));
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursive_match(Fs&&... fs) & -> decltype(recursive_visit(sf::base::OverloadSet{
+    [[nodiscard, gnu::always_inline]] auto recursiveMatch(Fs&&... fs) & -> decltype(recursiveVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
     {
-        return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
+        return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto recursive_match(
-        Fs&&... fs) const& -> decltype(recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...}))
+    [[nodiscard, gnu::always_inline]] auto recursiveMatch(Fs&&... fs) const& -> decltype(recursiveVisit(OverloadSet{
+        static_cast<Fs&&>(fs)...}))
     {
-        return recursive_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
+        return recursiveVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename Visitor,
-              typename R = decltype(sf::base::declVal<Visitor&&>()(
-                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(TINYVARIANT_NTH_TYPE(0))>()))>
-    [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) &
+              typename R = decltype(declVal<Visitor&&>()(declVal<SFML_BASE_ADD_LVALUE_REFERENCE(SFML_BASE_VARIANT_NTH_TYPE(0))>()))>
+    [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) &
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
         {
-            SFML_BASE_REMOVE_CVREF(R) * ret;
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
+            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(getByIndex<I>())));
             return static_cast<R>(*ret);
         }
         else if constexpr (SFML_BASE_IS_SAME(R, void))
         {
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(getByIndex<I>())));
         }
         else
         {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-            alignas(R) byte ret_buffer[sizeof(R)];
+            alignas(R) Byte retBuffer[sizeof(R)];
 #pragma GCC diagnostic pop
 
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(ret_buffer) R(visitor(get_by_index<I>())));
-
-            return *(SFML_BASE_LAUNDER_CAST(R*, ret_buffer));
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
+            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename Visitor,
-              typename R = decltype(sf::base::declVal<Visitor&&>()(
-                  sf::base::declVal<SFML_BASE_ADD_LVALUE_REFERENCE(sf::base::AddConst<TINYVARIANT_NTH_TYPE(0)>)>()))>
-    [[nodiscard, gnu::always_inline]] R linear_visit(Visitor&& visitor) const&
+              typename R = decltype(declVal<Visitor&&>()(
+                  declVal<SFML_BASE_ADD_LVALUE_REFERENCE(AddConst<SFML_BASE_VARIANT_NTH_TYPE(0)>)>()))>
+    [[nodiscard, gnu::always_inline]] R linearVisit(Visitor&& visitor) const&
     {
         if constexpr (SFML_BASE_IS_REFERENCE(R))
         {
-            SFML_BASE_REMOVE_CVREF(R) * ret;
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(get_by_index<I>())));
+            SFML_BASE_REMOVE_CVREF(R) * ret; // NOLINT(cppcoreguidelines-init-variables)
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, ret = &(visitor(getByIndex<I>())));
             return static_cast<R>(*ret);
         }
         else if constexpr (SFML_BASE_IS_SAME(R, void))
         {
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(get_by_index<I>())));
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, (visitor(getByIndex<I>())));
         }
         else
         {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-            alignas(R) byte ret_buffer[sizeof(R)];
+            alignas(R) Byte retBuffer[sizeof(R)];
 #pragma GCC diagnostic pop
 
-            TINYVARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(ret_buffer) R(visitor(get_by_index<I>())));
-
-            return *(SFML_BASE_LAUNDER_CAST(R*, ret_buffer));
+            SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX(I, SFML_BASE_PLACEMENT_NEW(retBuffer) R(visitor(getByIndex<I>())));
+            return *(SFML_BASE_LAUNDER_CAST(R*, retBuffer));
         }
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) & -> decltype(linear_visit(sf::base::OverloadSet{
+    [[nodiscard, gnu::always_inline]] auto linearMatch(Fs&&... fs) & -> decltype(linearVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
     {
-        return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
+        return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 
+
+    ////////////////////////////////////////////////////////////
     template <typename... Fs>
-    [[nodiscard, gnu::always_inline]] auto linear_match(Fs&&... fs) const& -> decltype(linear_visit(sf::base::OverloadSet{
+    [[nodiscard, gnu::always_inline]] auto linearMatch(Fs&&... fs) const& -> decltype(linearVisit(OverloadSet{
         static_cast<Fs&&>(fs)...}))
     {
-        return linear_visit(sf::base::OverloadSet{static_cast<Fs&&>(fs)...});
+        return linearVisit(OverloadSet{static_cast<Fs&&>(fs)...});
     }
 };
 
-#undef TINYVARIANT_DO_WITH_CURRENT_INDEX
-#undef TINYVARIANT_DO_WITH_CURRENT_INDEX_OBJ
-#undef TINYVARIANT_STATIC_ASSERT_INDEX_VALIDITY
-#undef TINYVARIANT_NTH_TYPE
+#undef SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX
+#undef SFML_BASE_VARIANT_DO_WITH_CURRENT_INDEX_OBJ
+#undef SFML_BASE_VARIANT_STATIC_ASSERT_INDEX_VALIDITY
+#undef SFML_BASE_VARIANT_NTH_TYPE
 
-} // namespace sfvr
+} // namespace sf::base
 
 #pragma GCC diagnostic pop
-
-// NOLINTEND
-
-// TODO P0: cleanup

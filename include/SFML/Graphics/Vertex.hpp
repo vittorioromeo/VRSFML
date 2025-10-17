@@ -99,4 +99,4 @@ struct [[nodiscard]] Vertex
 ///
 ////////////////////////////////////////////////////////////
 
-// TODO P0: investigate what it would take to make `sf::Vertex` customizable!
+// TODO P1: investigate what it would take to make `sf::Vertex` customizable!

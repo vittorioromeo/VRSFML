@@ -96,7 +96,6 @@
 #include "SFML/Base/Algorithm/AllOf.hpp"
 #include "SFML/Base/Algorithm/AnyOf.hpp"
 #include "SFML/Base/Algorithm/Count.hpp"
-#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/Algorithm/Erase.hpp"
 #include "SFML/Base/AnkerlUnorderedDense.hpp"
 #include "SFML/Base/Assert.hpp"
@@ -104,6 +103,7 @@
 #include "SFML/Base/Constants.hpp"
 #include "SFML/Base/FixedFunction.hpp"
 #include "SFML/Base/FloatMax.hpp"
+#include "SFML/Base/GetArraySize.hpp"
 #include "SFML/Base/IntTypes.hpp"
 #include "SFML/Base/LambdaMacros.hpp"
 #include "SFML/Base/Math/Ceil.hpp"
@@ -3393,7 +3393,10 @@ struct Main
         if (!clickPosition.hasValue())
             return false;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
         const auto clickPos = window.mapPixelToCoords(clickPosition->toVec2i(), gameView);
+#pragma GCC diagnostic pop
 
         if (!particleCullingBoundaries.isInside(clickPos))
         {
