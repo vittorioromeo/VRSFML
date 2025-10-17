@@ -335,7 +335,7 @@ public:
     template <typename Visitor>
     decltype(auto) visit(Visitor&& visitor)
     {
-        return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+        return m_data.linearVisit(static_cast<Visitor&&>(visitor));
     }
 
 
@@ -348,7 +348,7 @@ public:
     template <typename Visitor>
     decltype(auto) visit(Visitor&& visitor) const
     {
-        return m_data.linear_visit(static_cast<Visitor&&>(visitor));
+        return m_data.linearVisit(static_cast<Visitor&&>(visitor));
     }
 
 
@@ -361,7 +361,7 @@ public:
     template <typename... Handlers>
     decltype(auto) match(Handlers&&... handlers)
     {
-        return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
+        return m_data.linearMatch(static_cast<Handlers&&>(handlers)...);
     }
 
 
@@ -374,7 +374,7 @@ public:
     template <typename... Handlers>
     decltype(auto) match(Handlers&&... handlers) const
     {
-        return m_data.linear_match(static_cast<Handlers&&>(handlers)...);
+        return m_data.linearMatch(static_cast<Handlers&&>(handlers)...);
     }
 
 private:
@@ -411,7 +411,7 @@ private:
 #define SFML_PRIV_EVENT_X_COMMA()   ,
 
 #define SFML_PRIV_EVENT_VARIANT_TYPE \
-    ::sfvr::tinyvariant<SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXPAND, SFML_PRIV_EVENT_X_COMMA)>
+    ::sf::base::Variant<SFML_PRIV_EVENTS_X_MACRO(SFML_PRIV_EVENT_X_EXPAND, SFML_PRIV_EVENT_X_COMMA)>
 
     using VariantType = SFML_PRIV_EVENT_VARIANT_TYPE;
 

@@ -7,11 +7,15 @@
 
 #include "SFML/System/Rect.hpp"
 
-#include "SFML/Base/UniquePtr.hpp"
-
 #include <iosfwd>
 
 // String conversions for Catch2
+namespace sf::base
+{
+template <typename T, typename TDeleter>
+class UniquePtr;
+}
+
 namespace sf
 {
 struct Angle;

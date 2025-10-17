@@ -58,7 +58,7 @@ TEventSubtype* Event::getIf()
 {
     static_assert(isEventSubtype<TEventSubtype>, "`TEventSubtype` must be a subtype of `sf::Event`");
     if constexpr (isEventSubtype<TEventSubtype>)
-        return m_data.get_if<TEventSubtype>();
+        return m_data.getIf<TEventSubtype>();
 }
 
 
@@ -68,7 +68,7 @@ const TEventSubtype* Event::getIf() const
 {
     static_assert(isEventSubtype<TEventSubtype>, "`TEventSubtype` must be a subtype of `sf::Event`");
     if constexpr (isEventSubtype<TEventSubtype>)
-        return m_data.get_if<TEventSubtype>();
+        return m_data.getIf<TEventSubtype>();
 }
 
 } // namespace sf

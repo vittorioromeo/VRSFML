@@ -136,7 +136,7 @@ struct BPadlock
 
 
 ////////////////////////////////////////////////////////////
-using BlockType = sfvr::tinyvariant<BWall, BColored, BKey, BPadlock>;
+using BlockType = sf::base::Variant<BWall, BColored, BKey, BPadlock>;
 
 
 ////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ struct TLava
 
 
 ////////////////////////////////////////////////////////////
-using TileType = sfvr::tinyvariant<TGravityRotator, TLava>;
+using TileType = sf::base::Variant<TGravityRotator, TLava>;
 
 
 ////////////////////////////////////////////////////////////
@@ -191,7 +191,7 @@ struct Tile
 
 
 ////////////////////////////////////////////////////////////
-using Object = sfvr::tinyvariant<Block, Tile>;
+using Object = sf::base::Variant<Block, Tile>;
 
 
 ////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ public:
                 continue;
 
             if (object->as<Tile>().position == position)
-                return object->as<Tile>().type.get_if<TGravityRotator>();
+                return object->as<Tile>().type.getIf<TGravityRotator>();
         }
 
         return nullptr;
@@ -497,7 +497,7 @@ struct TEBurn
 
 
 ////////////////////////////////////////////////////////////
-using TurnEvent = sfvr::tinyvariant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
+using TurnEvent = sf::base::Variant<TEMoveBlock, TEFallBlock, TESquishBlock, TEKill, TERotateGravityDir, TEUnlock, TEBurn>;
 
 
 ////////////////////////////////////////////////////////////
@@ -712,7 +712,7 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
-            const auto* blockColored = block.type.get_if<BColored>();
+            const auto* blockColored = block.type.getIf<BColored>();
             if (blockColored == nullptr || isLocked(block))
                 return ControlFlow::Continue;
 
@@ -723,7 +723,7 @@ private:
                     return ControlFlow::Continue;
 
                 const Block& neighborBlock        = m_world.getBlockById(neighborObjectId);
-                const auto*  neighborBlockColored = neighborBlock.type.get_if<BColored>();
+                const auto*  neighborBlockColored = neighborBlock.type.getIf<BColored>();
 
                 if (neighborBlockColored == nullptr || isLocked(neighborBlock))
                     return ControlFlow::Continue;
@@ -754,7 +754,7 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
-            const auto* blockColored = block.type.get_if<BColored>();
+            const auto* blockColored = block.type.getIf<BColored>();
             if (blockColored == nullptr)
                 return ControlFlow::Continue;
 
@@ -784,7 +784,7 @@ private:
 
         m_world.forBlocks([&](const ObjectId objectId, const Block& block)
         {
-            const auto* blockKey = block.type.get_if<BKey>();
+            const auto* blockKey = block.type.getIf<BKey>();
             if (blockKey == nullptr)
                 return ControlFlow::Continue;
 
@@ -798,8 +798,8 @@ private:
                 if (neighborBlock.locked.value() != blockKey->kind)
                     return ControlFlow::Continue;
 
-                const auto* neighborBlockColored = neighborBlock.type.get_if<BColored>();
-                const auto* neighborBlockKey     = neighborBlock.type.get_if<BKey>();
+                const auto* neighborBlockColored = neighborBlock.type.getIf<BColored>();
+                const auto* neighborBlockKey     = neighborBlock.type.getIf<BKey>();
 
                 if (neighborBlockColored != nullptr || neighborBlockKey != nullptr)
                 {
@@ -1005,7 +1005,7 @@ private:
     /////////////////////////////////////////////////////////////
     [[nodiscard]] bool updateTurnEvent(TurnEvent& turnEvent, const float deltaTimeMs)
     {
-        if (auto* moveBlock = turnEvent.get_if<TEMoveBlock>())
+        if (auto* moveBlock = turnEvent.getIf<TEMoveBlock>())
         {
             if (!makeProgress(moveBlock, deltaTimeMs * 0.0075f))
                 return false;
@@ -1018,7 +1018,7 @@ private:
             return true;
         }
 
-        if (auto* fallBlock = turnEvent.get_if<TEFallBlock>())
+        if (auto* fallBlock = turnEvent.getIf<TEFallBlock>())
         {
             if (!makeProgress(fallBlock, deltaTimeMs * 0.0015f))
                 return false;
@@ -1032,10 +1032,10 @@ private:
             return true;
         }
 
-        if (auto* squishBlock = turnEvent.get_if<TESquishBlock>())
+        if (auto* squishBlock = turnEvent.getIf<TESquishBlock>())
             return makeProgress(squishBlock, deltaTimeMs * 0.0020f);
 
-        if (auto* kill = turnEvent.get_if<TEKill>())
+        if (auto* kill = turnEvent.getIf<TEKill>())
         {
             if (!makeProgress(kill, deltaTimeMs * 0.0015f))
                 return false;
@@ -1046,7 +1046,7 @@ private:
             return true;
         }
 
-        if (auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
+        if (auto* rotateGravityDir = turnEvent.getIf<TERotateGravityDir>())
         {
             if (!makeProgress(rotateGravityDir, deltaTimeMs * 0.0020f))
                 return false;
@@ -1060,7 +1060,7 @@ private:
             return true;
         }
 
-        if (auto* unlock = turnEvent.get_if<TEUnlock>())
+        if (auto* unlock = turnEvent.getIf<TEUnlock>())
         {
             if (!makeProgress(unlock, deltaTimeMs * 0.0020f))
                 return false;
@@ -1069,7 +1069,7 @@ private:
             return true;
         }
 
-        if (auto* burn = turnEvent.get_if<TEBurn>())
+        if (auto* burn = turnEvent.getIf<TEBurn>())
         {
             if (!makeProgress(burn, deltaTimeMs * 0.00025f))
             {
@@ -1379,8 +1379,8 @@ public:
                 {
                     float particleBudget = deltaTimeMs;
 
-                    tile.type.linear_match([&](const TGravityRotator&) {},
-                                           [&](const TLava&)
+                    tile.type.linearMatch([&](const TGravityRotator&) {},
+                                          [&](const TLava&)
                     {
                         const auto getParticlePos = [&](const sf::Vec2f offset)
                         { return tile.position.toVec2f() * 128.f + sf::Vec2f{64.f, 64.f} + offset; };
@@ -1525,7 +1525,7 @@ public:
                         const sf::Vec2f drawPosition = sf::Vec2f{tilePos.x * 128.f, tilePos.y * 128.f} +
                                                        sf::Vec2f{64.f, 64.f};
 
-                        tile.type.linear_match(
+                        tile.type.linearMatch(
                             [&](const TGravityRotator& gravityRotator)
                         {
                             m_dbTile.add(sf::CurvedArrowShapeData{
@@ -1567,7 +1567,7 @@ public:
 
                         forTurnEventsToProcess([&](TurnEvent& turnEvent)
                         {
-                            if (const auto* moveBlock = turnEvent.get_if<TEMoveBlock>())
+                            if (const auto* moveBlock = turnEvent.getIf<TEMoveBlock>())
                             {
                                 if (moveBlock->objectId != objectId)
                                     return false;
@@ -1583,7 +1583,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto* fallBlock = turnEvent.get_if<TEFallBlock>())
+                            if (const auto* fallBlock = turnEvent.getIf<TEFallBlock>())
                             {
                                 if (fallBlock->objectId != objectId)
                                     return false;
@@ -1598,7 +1598,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto* squishBlock = turnEvent.get_if<TESquishBlock>())
+                            if (const auto* squishBlock = turnEvent.getIf<TESquishBlock>())
                             {
                                 if (squishBlock->objectId != objectId)
                                     return false;
@@ -1616,7 +1616,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto* kill = turnEvent.get_if<TEKill>())
+                            if (const auto* kill = turnEvent.getIf<TEKill>())
                             {
                                 if (kill->objectId != objectId)
                                     return false;
@@ -1627,7 +1627,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto* rotateGravityDir = turnEvent.get_if<TERotateGravityDir>())
+                            if (const auto* rotateGravityDir = turnEvent.getIf<TERotateGravityDir>())
                             {
                                 if (rotateGravityDir->objectId != objectId)
                                     return false;
@@ -1641,7 +1641,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto* unlock = turnEvent.get_if<TEUnlock>())
+                            if (const auto* unlock = turnEvent.getIf<TEUnlock>())
                             {
                                 if (unlock->objectId != objectId)
                                     return false;
@@ -1654,7 +1654,7 @@ public:
                                 return false;
                             }
 
-                            if (const auto& burn = turnEvent.get_if<TEBurn>())
+                            if (const auto& burn = turnEvent.getIf<TEBurn>())
                             {
                                 if (burn->objectId != objectId)
                                     return false;
@@ -1718,7 +1718,7 @@ public:
                                 });
                         };
 
-                        block.type.linear_match(
+                        block.type.linearMatch(
                             [&](const BWall&)
                         {
                             unsigned int neighbors = 0u;
